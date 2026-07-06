@@ -44,7 +44,3 @@ An AI-powered interview platform that helps candidates practice technical and HR
 - Vercel
 - Render / Railway
 
----
-
-## 📂 Project Structure
-login.jsx
