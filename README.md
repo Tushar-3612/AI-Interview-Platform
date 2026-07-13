@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # AI-Powered Resume-Based Mock Interview and Candidate Evaluation Platform
 
 A full-stack MERN application that enables students to practice AI-driven mock interviews tailored to their resumes, with automated evaluation and placement analytics for institutions.
@@ -304,3 +305,51 @@ This project is developed as a Final Year Project. All rights reserved.
 <p align="center">
   Built with React, Node.js, MongoDB, and Google Gemini AI
 </p>
+=======
+# 🤖 AI Interview Platform
+
+An AI-powered interview platform that helps candidates practice technical and HR interviews while enabling recruiters and organizations to conduct automated, intelligent interview sessions.
+
+## 🚀 Features
+
+- 🎤 AI-powered interview questions
+- 💬 Real-time conversational interview experience
+- 🧠 Intelligent answer evaluation
+- 📊 Candidate performance analysis
+- 📈 Interview score and feedback
+- 📝 Technical & HR interview support
+- 🔒 Secure authentication
+- 👤 Candidate profile management
+- 📂 Interview history
+- 📱 Responsive UI
+
+---
+
+## 🛠️ Tech Stack
+
+### Frontend
+- React.js
+- Next.js
+- TypeScript
+- Tailwind CSS
+- Shadcn UI
+
+### Backend
+- Node.js
+- Express.js
+- REST API
+
+### Database
+- MongoDB
+
+### Authentication
+- Clerk / JWT Authentication
+
+### AI
+- OpenAI API / Google Gemini API
+
+### Deployment
+- Vercel
+- Render / Railway
+
+>>>>>>> 611cb9d78d6f52693b356c09a2f74787e73ec306
