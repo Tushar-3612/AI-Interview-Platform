@@ -1,0 +1,57 @@
+/* ================================
+   THEME VARIABLES — Light & Dark
+   Premium Placement SaaS Color System
+   ================================ */
+
+:root,
+[data-theme="light"] {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-gradient-start: #f8fafc;
+  --bg-gradient-end: #f8fafc;
+  --card-bg: #ffffff;
+  --card-border: #e2e8f0;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --border: #e2e8f0;
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --accent: #14b8a6;
+  --success: #10b981;
+  --error: #ef4444;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.02);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.03), 0 2px 4px -2px rgba(0, 0, 0, 0.03);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.04), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+  --shadow-card: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+  --input-bg: #ffffff;
+  --glass-blur: 8px;
+  --toggle-bg: #ffffff;
+  --feature-bg: #ffffff;
+  --illustration-glow: rgba(37, 99, 235, 0.03);
+}
+
+[data-theme="dark"] {
+  --bg-primary: #000000;
+  --bg-secondary: #0a0a0a;
+  --bg-gradient-start: #0a0a0a;
+  --bg-gradient-end: #000000;
+  --card-bg: #111111;
+  --card-border: #222222;
+  --text-primary: #ffffff;
+  --text-secondary: #a1a1aa;
+  --border: #222222;
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --accent: #14b8a6;
+  --success: #10b981;
+  --error: #f87171;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.7), 0 2px 4px -2px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.8), 0 4px 6px -4px rgba(0, 0, 0, 0.6);
+  --shadow-card: 0 20px 25px -5px rgba(0, 0, 0, 0.9), 0 10px 10px -5px rgba(0, 0, 0, 0.8);
+  --input-bg: #111111;
+  --glass-blur: 0px;
+  --toggle-bg: #111111;
+  --feature-bg: #111111;
+  --illustration-glow: rgba(37, 99, 235, 0.01);
+}
