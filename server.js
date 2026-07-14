@@ -3,11 +3,17 @@ import cors from "cors";
 import multer from "multer";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
-import connectDB from "./backend/config/db.js";
-import authRoutes from "./backend/routes/auth.js";
-import { initializeCSVExports } from "./backend/utils/csvExporter.js";
+import connectDB from "./backend/config/db.js";  // ← Path sahi hai
+import authRoutes from "./backend/routes/auth.js"; // ← Path sahi hai
+import { initializeCSVExports } from "./backend/utils/csvExporter.js"; // ← Path sahi hai
 
-dotenv.config();
+// Load .env from root
+dotenv.config(); // ← Ye root mein .env file dhoondhega
+
+// Debug - Check if .env loaded
+console.log('📁 Current directory:', process.cwd());
+console.log('🔑 MONGO_URI:', process.env.MONGO_URI ? '✅ Loaded' : '❌ Not Loaded');
+console.log('🔑 GEMINI_API_KEY:', process.env.GEMINI_API_KEY ? '✅ Loaded' : '❌ Not Loaded');
 
 /* ================================
    DATABASE CONNECTION
@@ -22,13 +28,28 @@ initializeCSVExports();
 
 const app = express();
 
-app.use(cors());
+// CORS setup - Frontend URL ke saath
+app.use(cors({
+  origin: 'http://localhost:5173',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 
 /* ================================
    AUTH ROUTES
    ================================ */
 app.use("/api/auth", authRoutes);
+
+// Health Check Route (Add this for testing)
+app.get("/api/health", (req, res) => {
+  res.json({
+    status: "OK",
+    message: "Server is running",
+    timestamp: new Date().toISOString()
+  });
+});
 
 const ai = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY,
@@ -64,8 +85,7 @@ app.post(
       console.log("\n===== RESUME RECEIVED =====");
       console.log("File Name:", req.file.originalname);
 
-      const resumeBase64 =
-        req.file.buffer.toString("base64");
+      const resumeBase64 = req.file.buffer.toString("base64");
 
       const prompt = `
 You are an AI resume analyzer and professional technical interviewer.
@@ -184,29 +204,25 @@ Use exactly this JSON structure:
 }
 `;
 
-      const response =
-        await ai.models.generateContent({
-          model: "gemini-2.5-flash",
-
-          contents: [
-            {
-              inlineData: {
-                mimeType: req.file.mimetype,
-                data: resumeBase64,
-              },
+      const response = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: [
+          {
+            inlineData: {
+              mimeType: req.file.mimetype,
+              data: resumeBase64,
             },
-            {
-              text: prompt,
-            },
-          ],
-
-          config: {
-            responseMimeType: "application/json",
           },
-        });
+          {
+            text: prompt,
+          },
+        ],
+        config: {
+          responseMimeType: "application/json",
+        },
+      });
 
-      const interviewData =
-        JSON.parse(response.text);
+      const interviewData = JSON.parse(response.text);
 
       const {
         candidateProfile,
@@ -221,101 +237,51 @@ Use exactly this JSON structure:
         !Array.isArray(technicalQuestions) ||
         !Array.isArray(codingQuestions)
       ) {
-        throw new Error(
-          "Invalid interview data returned by AI"
-        );
+        throw new Error("Invalid interview data returned by AI");
       }
 
-      console.log(
-        "\n===== CANDIDATE PROFILE =====\n"
-      );
+      console.log("\n===== CANDIDATE PROFILE =====\n");
+      console.log(JSON.stringify(candidateProfile, null, 2));
 
-      console.log(
-        JSON.stringify(candidateProfile, null, 2)
-      );
+      console.log("\n===== QUESTION COUNT =====\n");
+      console.log("Resume Questions:", resumeQuestions.length);
+      console.log("Technical Questions:", technicalQuestions.length);
+      console.log("Coding Questions:", codingQuestions.length);
 
-      console.log(
-        "\n===== QUESTION COUNT =====\n"
-      );
+      console.log("\n===== RESUME QUESTIONS =====\n");
+      console.log(JSON.stringify(resumeQuestions, null, 2));
 
-      console.log(
-        "Resume Questions:",
-        resumeQuestions.length
-      );
+      console.log("\n===== TECHNICAL QUESTIONS =====\n");
+      console.log(JSON.stringify(technicalQuestions, null, 2));
 
-      console.log(
-        "Technical Questions:",
-        technicalQuestions.length
-      );
-
-      console.log(
-        "Coding Questions:",
-        codingQuestions.length
-      );
-
-      console.log(
-        "\n===== RESUME QUESTIONS =====\n"
-      );
-
-      console.log(
-        JSON.stringify(resumeQuestions, null, 2)
-      );
-
-      console.log(
-        "\n===== TECHNICAL QUESTIONS =====\n"
-      );
-
-      console.log(
-        JSON.stringify(technicalQuestions, null, 2)
-      );
-
-      console.log(
-        "\n===== CODING QUESTIONS =====\n"
-      );
-
-      console.log(
-        JSON.stringify(codingQuestions, null, 2)
-      );
+      console.log("\n===== CODING QUESTIONS =====\n");
+      console.log(JSON.stringify(codingQuestions, null, 2));
 
       res.json({
-        message:
-          "Resume analyzed and interview generated successfully",
-
+        message: "Resume analyzed and interview generated successfully",
         candidateProfile,
         resumeQuestions,
         technicalQuestions,
         codingQuestions,
-
         questionCount: {
           resume: resumeQuestions.length,
           technical: technicalQuestions.length,
           coding: codingQuestions.length,
-          total:
-            resumeQuestions.length +
-            technicalQuestions.length +
-            codingQuestions.length,
+          total: resumeQuestions.length + technicalQuestions.length + codingQuestions.length,
         },
       });
     } catch (error) {
-      console.error(
-        "\nInterview Generation Error:",
-        error.message
-      );
-
+      console.error("\nInterview Generation Error:", error.message);
       res.status(500).json({
-        message:
-          "Resume analysis or interview generation failed",
-
+        message: "Resume analysis or interview generation failed",
         error: error.message,
       });
     }
   }
 );
 
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(
-    `Backend server running on port ${PORT}`
-  );
+  console.log(`Backend server running on port ${PORT}`);
 });

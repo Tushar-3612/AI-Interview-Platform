@@ -24,7 +24,7 @@ const CSV_FILES = {
 };
 
 const CSV_HEADERS = {
-  users: "id,name,email,department,year,attemptUsed,createdAt",
+  users: "id,name,email,department,year,Portfolio,GitHub,LinkedIn,attemptUsed,createdAt",
   interviews:
     "id,userId,status,resumeFileName,startedAt,completedAt,totalQuestions,questionsAnswered,createdAt",
   answers:
@@ -82,13 +82,27 @@ export const exportUsersCSV = async () => {
 
   writeCSV(
     "users",
-    ["id", "name", "email", "department", "year", "attemptUsed", "createdAt"],
+    [
+      "id",
+      "name",
+      "email",
+      "department",
+      "year",
+      "Portfolio",
+      "GitHub",
+      "LinkedIn",
+      "attemptUsed",
+      "createdAt",
+    ],
     users.map((u) => ({
       id: u._id.toString(),
       name: u.name,
       email: u.email,
       department: u.department,
       year: u.year,
+      Portfolio: u.portfolio || "",
+      GitHub: u.github || "",
+      LinkedIn: u.linkedin || "",
       attemptUsed: u.attemptUsed,
       createdAt: u.createdAt?.toISOString() || "",
     }))

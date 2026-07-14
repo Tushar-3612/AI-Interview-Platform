@@ -33,6 +33,18 @@ const userSchema = new mongoose.Schema(
       required: [true, "Year is required"],
       trim: true,
     },
+    portfolio: {
+      type: String,
+      default: "",
+    },
+    github: {
+      type: String,
+      default: "",
+    },
+    linkedin: {
+      type: String,
+      default: "",
+    },
     attemptUsed: {
       type: Number,
       default: 0,

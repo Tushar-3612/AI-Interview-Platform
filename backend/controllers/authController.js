@@ -30,8 +30,17 @@ const ADMIN_CREDENTIALS = {
    ================================ */
 export const signup = async (req, res) => {
   try {
-    const { name, email, password, confirmPassword, department, year } =
-      req.body;
+    const {
+      name,
+      email,
+      password,
+      confirmPassword,
+      department,
+      year,
+      portfolio,
+      github,
+      linkedin,
+    } = req.body;
 
     // Required field validation
     if (!name || !email || !password || !confirmPassword || !department || !year) {
@@ -41,6 +50,27 @@ export const signup = async (req, res) => {
     // Email format validation
     if (!validateEmail(email)) {
       return res.status(400).json({ message: "Please enter a valid email address" });
+    }
+
+    // Optional fields URL validation
+    const validateUrl = (url) => {
+      if (!url) return true;
+      try {
+        const parsed = new URL(url);
+        return parsed.protocol === "http:" || parsed.protocol === "https:";
+      } catch (_) {
+        return false;
+      }
+    };
+
+    if (portfolio && !validateUrl(portfolio)) {
+      return res.status(400).json({ message: "Portfolio Website must be a valid URL (http:// or https://)" });
+    }
+    if (github && !validateUrl(github)) {
+      return res.status(400).json({ message: "GitHub Profile must be a valid URL (http:// or https://)" });
+    }
+    if (linkedin && !validateUrl(linkedin)) {
+      return res.status(400).json({ message: "LinkedIn Profile must be a valid URL (http:// or https://)" });
     }
 
     // Strong password validation
@@ -69,6 +99,9 @@ export const signup = async (req, res) => {
       password,
       department,
       year,
+      portfolio: portfolio || "",
+      github: github || "",
+      linkedin: linkedin || "",
     });
 
     /* Auto-update users.csv for admin export */
@@ -84,6 +117,9 @@ export const signup = async (req, res) => {
         email: user.email,
         department: user.department,
         year: user.year,
+        portfolio: user.portfolio,
+        github: user.github,
+        linkedin: user.linkedin,
       },
     });
   } catch (error) {

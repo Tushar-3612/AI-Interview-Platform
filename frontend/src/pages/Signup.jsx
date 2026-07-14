@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { User, Mail, Lock, Building2, GraduationCap } from "lucide-react";
+import { User, Mail, Lock, Building2, GraduationCap, Link2 } from "lucide-react";
 import toast from "react-hot-toast";
 import AuthLayout from "../layouts/AuthLayout";
 import InputField from "../components/ui/InputField";
@@ -26,6 +26,7 @@ function Signup() {
     year: "",
     password: "",
     confirmPassword: "",
+    portfolio: "", // ← Added portfolio field
     termsAccepted: false,
   });
   const [errors, setErrors] = useState({});
@@ -61,12 +62,27 @@ function Signup() {
       newErrors.confirmPassword = "Mismatch";
     }
 
+    // Portfolio validation - optional, but if provided should be a valid URL
+    if (formData.portfolio && !isValidUrl(formData.portfolio)) {
+      newErrors.portfolio = "Please enter a valid URL";
+    }
+
     if (!formData.termsAccepted) {
       newErrors.termsAccepted = "You must accept the terms";
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  // Helper function to validate URL
+  const isValidUrl = (string) => {
+    try {
+      const url = new URL(string);
+      return url.protocol === "http:" || url.protocol === "https:";
+    } catch (_) {
+      return false;
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -82,6 +98,7 @@ function Signup() {
         confirmPassword: formData.confirmPassword,
         department: formData.department,
         year: formData.year,
+        portfolio: formData.portfolio || null, // Send null if empty
       });
 
       toast.success("Account created successfully!");
@@ -125,6 +142,19 @@ function Signup() {
           icon={Mail}
         />
 
+        {/* Portfolio Field - Optional */}
+        <InputField
+          label="Portfolio Link (Optional)"
+          type="url"
+          name="portfolio"
+          value={formData.portfolio}
+          onChange={handleChange}
+          placeholder="https://your-portfolio.com"
+          error={errors.portfolio}
+          autoComplete="url"
+          icon={Link2}
+        />
+
         {/* Department & Year side-by-side to save vertical space */}
         <div className="grid grid-cols-2 gap-3">
           <InputField
@@ -137,7 +167,6 @@ function Signup() {
             required
             as="select"
             options={DEPARTMENTS}
-            // icon={Building2}
           />
 
           <InputField
@@ -150,7 +179,6 @@ function Signup() {
             required
             as="select"
             options={YEARS}
-            // icon={GraduationCap}
           />
         </div>
 
@@ -219,7 +247,7 @@ function Signup() {
         </Button>
       </form>
 
-      <p className="text-center text-xs mt-4 pt-3 border-t border-[var(--border)]" style={{ color: "var(--text-secondary)" }}>
+      <p className="text-center text-xs mt-4 pt-3 border-t border-[var(--border])" style={{ color: "var(--text-secondary)" }}>
         Already have an account?{" "}
         <Link
           to="/"

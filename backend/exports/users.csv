@@ -1,1 +1,3 @@
-id,name,email,department,year,attemptUsed,createdAt
+id,name,email,department,year,Portfolio,GitHub,LinkedIn,attemptUsed,createdAt
+6a566f322f681d770359254e,Tushar  Nagare,tusharnagare2006@gmail.com,Computer Science,Final Year,,,,0,2026-07-14T17:17:38.870Z
+6a566fbc2f681d770359254f,Amol Lende,amollende02@gmail.com,Computer Science,Final Year,,,,0,2026-07-14T17:19:56.178Z
