@@ -223,16 +223,7 @@ function Signup() {
             />
             <span className="text-xs leading-snug" style={{ color: "var(--text-secondary)" }}>
               I agree to the{" "}
-              <button
-                type="button"
-                onClick={() =>
-                  toast("Terms & Conditions page coming soon", { icon: "ℹ️" })
-                }
-                className="font-semibold cursor-pointer underline"
-                style={{ color: "var(--primary)" }}
-              >
-                Terms & Conditions
-              </button>
+              <Link to="/terms-and-conditions" className="font-semibold underline" style={{color:"var(--primary)"}}>Terms&conditions</Link>
             </span>
           </label>
           {errors.termsAccepted && (
