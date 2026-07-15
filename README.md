@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # AI-Powered Resume-Based Mock Interview and Candidate Evaluation Platform
 
 A full-stack MERN application that enables students to practice AI-driven mock interviews tailored to their resumes, with automated evaluation and placement analytics for institutions.
