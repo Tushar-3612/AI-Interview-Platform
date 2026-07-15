@@ -301,6 +301,7 @@ This project is developed as a Final Year Project. All rights reserved.
 | Tushar Nagare  | Full Stack Developer |
 | Roshan Langhi  | Testing & Quality Assurance |
 
+| Amol Lende | AI/ML & DevOps Engineer |
 
 ---
 
