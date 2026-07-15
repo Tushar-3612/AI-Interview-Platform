@@ -299,6 +299,9 @@ This project is developed as a Final Year Project. All rights reserved.
 | Name           | Role              |
 |----------------|-------------------|
 | Tushar Nagare  | Full Stack Developer |
+|----------------|-------------------|
+| Roshan Langhi  | Testing & Quality Assurance |
+
 
 ---
 
