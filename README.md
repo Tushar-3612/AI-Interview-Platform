@@ -294,16 +294,13 @@ This project is developed as a Final Year Project. All rights reserved.
 
 ---
 
-## Contributors
+## 👥 Contributors
 
-| Name           | Role              |
-|----------------|-------------------|
-| Tushar Nagare  | Full Stack Developer |
-| Roshan Langhi  | Testing & Quality Assurance |
-
-| Amol Lende | AI/ML & DevOps Engineer |
-
----
+| Name | Role |
+|------|------|
+| **Tushar Nagare** | Full Stack Developer |
+| **Roshan Langhi** | Testing & Quality Assurance |
+| **Amol Lende** | AI/ML & DevOps Engineer |
 
 <p align="center">
   Built with React, Node.js, MongoDB, and Google Gemini AI
