@@ -294,7 +294,7 @@ This project is developed as a Final Year Project. All rights reserved.
 
 ---
 
-## 👥 Contributors
+##  Contributors
 
 | Name | Role |
 |------|------|
