@@ -5,6 +5,8 @@ import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
 import connectDB from "./backend/config/db.js";  // ← Path sahi hai
 import authRoutes from "./backend/routes/auth.js"; // ← Path sahi hai
+import adminRoutes from "./backend/routes/admin.js";
+import studentRoutes from "./backend/routes/student.js";
 import { initializeCSVExports } from "./backend/utils/csvExporter.js"; // ← Path sahi hai
 
 // Load .env from root
@@ -41,6 +43,8 @@ app.use(express.json());
    AUTH ROUTES
    ================================ */
 app.use("/api/auth", authRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/student", studentRoutes);
 
 // Health Check Route (Add this for testing)
 app.get("/api/health", (req, res) => {

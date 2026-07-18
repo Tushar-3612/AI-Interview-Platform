@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import api from "../utils/api";
 
 const PROFILE_KEY = "student-profile";
 
@@ -20,8 +21,8 @@ const defaultProfile = {
 };
 
 /**
- * Student profile state — persisted in localStorage.
- * Merges auth user data with extended profile fields.
+ * Student profile state — persisted in MongoDB & localStorage.
+ * Merges auth user data with database profile fields.
  */
 export function useStudentProfile() {
   const [profile, setProfile] = useState(() => {
@@ -31,6 +32,25 @@ export function useStudentProfile() {
     return { ...defaultProfile, ...authUser, ...parsed };
   });
 
+  // Sync with MongoDB on load
+  useEffect(() => {
+    const syncProfile = async () => {
+      const token = getAuthToken();
+      if (!token) return;
+      try {
+        const { data } = await api.get("/api/student/profile", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (data) {
+          setProfile((prev) => ({ ...prev, ...data }));
+        }
+      } catch (err) {
+        console.warn("MongoDB profile sync failed, using localStorage fallback.", err.message);
+      }
+    };
+    syncProfile();
+  }, []);
+
   useEffect(() => {
     localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
   }, [profile]);
@@ -38,6 +58,24 @@ export function useStudentProfile() {
   const updateProfile = useCallback((updates) => {
     setProfile((prev) => ({ ...prev, ...updates }));
   }, []);
+
+  const saveProfile = useCallback(async (updates = {}) => {
+    const token = getAuthToken();
+    if (!token) return;
+    try {
+      const merged = { ...profile, ...updates };
+      const { data } = await api.put("/api/student/profile", merged, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (data && data.user) {
+        setProfile((prev) => ({ ...prev, ...data.user }));
+      }
+      return true;
+    } catch (err) {
+      console.error("Failed to sync profile to database:", err.message);
+      throw err;
+    }
+  }, [profile]);
 
   const addSkill = useCallback((skill) => {
     const trimmed = skill.trim();
@@ -72,6 +110,7 @@ export function useStudentProfile() {
   return {
     profile,
     updateProfile,
+    saveProfile,
     addSkill,
     removeSkill,
     getProfileForInterview,

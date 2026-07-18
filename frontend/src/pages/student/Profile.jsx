@@ -20,24 +20,30 @@ import {
 } from "lucide-react";
 import InputField from "../../components/ui/InputField";
 import Button from "../../components/ui/Button";
+import api from "../../utils/api";
+import { getAuthToken } from "../../hooks/useStudentProfile";
 
 /**
  * Candidate Profile — comprehensive student profile management.
  */
 function Profile() {
-  const { profile, updateProfile, addSkill, removeSkill, completionPercent } =
+  const { profile, updateProfile, saveProfile, addSkill, removeSkill, completionPercent } =
     useOutletContext();
   const avatarInputRef = useRef(null);
   const resumeInputRef = useRef(null);
   const [skillInput, setSkillInput] = useState("");
   const [saving, setSaving] = useState(false);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setSaving(true);
-    setTimeout(() => {
-      setSaving(false);
+    try {
+      await saveProfile();
       toast.success("Profile saved successfully");
-    }, 600);
+    } catch (err) {
+      toast.error("Failed to sync profile changes to database");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleChange = (e) => {
@@ -52,14 +58,36 @@ function Profile() {
     reader.readAsDataURL(file);
   };
 
-  const handleResumeUpload = (e) => {
+  const handleResumeUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    updateProfile({
-      resumeFileName: file.name,
-      resumeUploadedAt: new Date().toISOString(),
-    });
-    toast.success("Resume uploaded");
+
+    const formData = new FormData();
+    formData.append("resume", file);
+
+    setSaving(true);
+    const toastId = toast.loading("Uploading and analyzing resume with Gemini AI...");
+    try {
+      const token = getAuthToken();
+      const { data } = await api.post("/api/student/resume/upload", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      updateProfile({
+        resumeFileName: data.resumeFileName,
+        resumeUploadedAt: data.resumeUploadedAt,
+        atsScore: data.atsScore,
+        skills: data.skills,
+      });
+      toast.success("Resume analyzed and profile skills updated!", { id: toastId });
+    } catch (err) {
+      console.error(err);
+      toast.error(err.response?.data?.message || "Failed to analyze resume", { id: toastId });
+    } finally {
+      setSaving(false);
+    }
   };
 
   const ProfileLink = ({ label, name, icon: Icon }) => (

@@ -13,6 +13,14 @@ import About from "../pages/student/About";
 import Contact from "../pages/student/Contact";
 import InterviewHistory from "../pages/student/InterviewHistory";
 import Results from "../pages/student/Results";
+import StudentInterview from "../pages/student/StudentInterview";
+
+// Admin Imports
+import AdminLayout from "../layouts/AdminLayout";
+import AdminDashboard from "../pages/admin/AdminDashboard";
+import StudentsList from "../pages/admin/StudentsList";
+import StudentDetails from "../pages/admin/StudentDetails";
+import CompanyManagement from "../pages/admin/CompanyManagement";
 
 /**
  * Application route definitions.
@@ -31,12 +39,21 @@ function AppRoutes() {
       <Route element={<StudentLayout />}>
         <Route path="/dashboard" element={<Home />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/interview" element={<StudentInterview />} />
         <Route path="/interview-practice" element={<InterviewPractice />} />
         <Route path="/interview-practice/:companyId" element={<PracticeQuestion />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/interview-history" element={<InterviewHistory />} />
         <Route path="/results" element={<Results />} />
+      </Route>
+
+      {/* Admin portal */}
+      <Route element={<AdminLayout />}>
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/students" element={<StudentsList />} />
+        <Route path="/admin/students/:id" element={<StudentDetails />} />
+        <Route path="/admin/companies" element={<CompanyManagement />} />
       </Route>
     </Routes>
   );

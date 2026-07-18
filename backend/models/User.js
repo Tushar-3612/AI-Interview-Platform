@@ -49,6 +49,33 @@ const userSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    phone: {
+      type: String,
+      default: "",
+    },
+    skills: {
+      type: [String],
+      default: [],
+    },
+    profilePicture: {
+      type: String,
+      default: "",
+    },
+    resumeFileName: {
+      type: String,
+      default: "",
+    },
+    resumeUploadedAt: {
+      type: Date,
+    },
+    resumeBase64: {
+      type: String,
+      default: "",
+    },
+    atsScore: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,

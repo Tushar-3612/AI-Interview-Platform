@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Outlet, Navigate } from "react-router-dom";
+import { Outlet, Navigate, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import Navbar from "../components/student/Navbar";
@@ -12,7 +12,15 @@ import { useStudentProfile } from "../hooks/useStudentProfile";
  */
 function StudentLayout() {
   const token = getAuthToken();
-  const { profile, updateProfile, getProfileForInterview } = useStudentProfile();
+  const navigate = useNavigate();
+  const {
+    profile,
+    updateProfile,
+    saveProfile,
+    addSkill,
+    removeSkill,
+    getProfileForInterview,
+  } = useStudentProfile();
   const [interviewModalOpen, setInterviewModalOpen] = useState(false);
 
   if (!token) {
@@ -25,7 +33,7 @@ function StudentLayout() {
       interviewStatus: "in_progress",
     });
     setInterviewModalOpen(false);
-    toast.success("Interview session ready. Full interview module coming soon.");
+    navigate("/interview");
   };
 
   return (
@@ -42,6 +50,9 @@ function StudentLayout() {
           context={{
             profile,
             updateProfile,
+            saveProfile,
+            addSkill,
+            removeSkill,
             getProfileForInterview,
             openInterviewModal: () => setInterviewModalOpen(true),
           }}
