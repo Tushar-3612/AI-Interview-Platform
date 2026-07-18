@@ -1,0 +1,6502 @@
+[
+  {
+    "id": "apt-1",
+    "category": "Quantitative",
+    "question": "A car travels at 11 km/h. How many meters does it cover in 5.5 minutes?",
+    "options": [
+      "1008 m",
+      "1058 m",
+      "958 m",
+      "None of these"
+    ],
+    "answer": "1008 m",
+    "explanation": "Speed in m/s = 11 * 5/18 = 3.06 m/s. Time = 5.5 min = 330 s. Distance = speed * time = 1008 meters."
+  },
+  {
+    "id": "apt-2",
+    "category": "Quantitative",
+    "question": "Find the simple interest on Rs. 12000 at 7% per annum for 2 years.",
+    "options": [
+      "Rs. 1680",
+      "Rs. 1880",
+      "Rs. 1530",
+      "Rs. 2180"
+    ],
+    "answer": "Rs. 1680",
+    "explanation": "SI = (P * R * T) / 100 = (12000 * 7 * 2) / 100 = Rs. 1680."
+  },
+  {
+    "id": "apt-3",
+    "category": "Quantitative",
+    "question": "If A's salary is 13% more than B's, by what percentage is B's salary less than A's?",
+    "options": [
+      "18.7%",
+      "20.7%",
+      "17.7%",
+      "None of these"
+    ],
+    "answer": "18.7%",
+    "explanation": "B is less than A by [R / (100 + R)] * 100 = [23 / (100 + 23)] * 100 = 18.7%."
+  },
+  {
+    "id": "apt-4",
+    "category": "Quantitative",
+    "question": "Two numbers are in the ratio 4:5. If their sum is 126, find the larger number.",
+    "options": [
+      "70",
+      "56",
+      "84",
+      "140"
+    ],
+    "answer": "70",
+    "explanation": "Sum of ratios = 4 + 5 = 9. Given sum is 126. Value of 1 unit = 14. Larger number = 5 * 14 = 70."
+  },
+  {
+    "id": "apt-5",
+    "category": "Quantitative",
+    "question": "A can do a work in 15 days and B in 30 days. How many days will they take together?",
+    "options": [
+      "10 days",
+      "12 days",
+      "9 days",
+      "None of these"
+    ],
+    "answer": "10 days",
+    "explanation": "Together work rate is 1/15 + 1/30 = 3/30. Hence, days taken = 30/3 = 10 days."
+  },
+  {
+    "id": "apt-6",
+    "category": "Quantitative",
+    "question": "A car travels at 16 km/h. How many meters does it cover in 8 minutes?",
+    "options": [
+      "2133 m",
+      "2183 m",
+      "2083 m",
+      "None of these"
+    ],
+    "answer": "2133 m",
+    "explanation": "Speed in m/s = 16 * 5/18 = 4.44 m/s. Time = 8 min = 480 s. Distance = speed * time = 2133 meters."
+  },
+  {
+    "id": "apt-7",
+    "category": "Quantitative",
+    "question": "Find the simple interest on Rs. 17000 at 7% per annum for 4 years.",
+    "options": [
+      "Rs. 4760",
+      "Rs. 4960",
+      "Rs. 4610",
+      "Rs. 5260"
+    ],
+    "answer": "Rs. 4760",
+    "explanation": "SI = (P * R * T) / 100 = (17000 * 7 * 4) / 100 = Rs. 4760."
+  },
+  {
+    "id": "apt-8",
+    "category": "Quantitative",
+    "question": "If A's salary is 18% more than B's, by what percentage is B's salary less than A's?",
+    "options": [
+      "21.88%",
+      "23.88%",
+      "20.88%",
+      "None of these"
+    ],
+    "answer": "21.88%",
+    "explanation": "B is less than A by [R / (100 + R)] * 100 = [28 / (100 + 28)] * 100 = 21.88%."
+  },
+  {
+    "id": "apt-9",
+    "category": "Quantitative",
+    "question": "Two numbers are in the ratio 3:4. If their sum is 133, find the larger number.",
+    "options": [
+      "76",
+      "57",
+      "95",
+      "152"
+    ],
+    "answer": "76",
+    "explanation": "Sum of ratios = 3 + 4 = 7. Given sum is 133. Value of 1 unit = 19. Larger number = 4 * 19 = 76."
+  },
+  {
+    "id": "apt-10",
+    "category": "Quantitative",
+    "question": "A can do a work in 20 days and B in 40 days. How many days will they take together?",
+    "options": [
+      "13.33 days",
+      "15.33 days",
+      "12.33 days",
+      "None of these"
+    ],
+    "answer": "13.33 days",
+    "explanation": "Together work rate is 1/20 + 1/40 = 3/40. Hence, days taken = 40/3 = 13.33 days."
+  },
+  {
+    "id": "apt-11",
+    "category": "Quantitative",
+    "question": "A car travels at 21 km/h. How many meters does it cover in 10.5 minutes?",
+    "options": [
+      "3675 m",
+      "3725 m",
+      "3625 m",
+      "None of these"
+    ],
+    "answer": "3675 m",
+    "explanation": "Speed in m/s = 21 * 5/18 = 5.83 m/s. Time = 10.5 min = 630 s. Distance = speed * time = 3675 meters."
+  },
+  {
+    "id": "apt-12",
+    "category": "Quantitative",
+    "question": "Find the simple interest on Rs. 22000 at 7% per annum for 3 years.",
+    "options": [
+      "Rs. 4620",
+      "Rs. 4820",
+      "Rs. 4470",
+      "Rs. 5120"
+    ],
+    "answer": "Rs. 4620",
+    "explanation": "SI = (P * R * T) / 100 = (22000 * 7 * 3) / 100 = Rs. 4620."
+  },
+  {
+    "id": "apt-13",
+    "category": "Quantitative",
+    "question": "If A's salary is 23% more than B's, by what percentage is B's salary less than A's?",
+    "options": [
+      "24.81%",
+      "26.81%",
+      "23.81%",
+      "None of these"
+    ],
+    "answer": "24.81%",
+    "explanation": "B is less than A by [R / (100 + R)] * 100 = [33 / (100 + 33)] * 100 = 24.81%."
+  },
+  {
+    "id": "apt-14",
+    "category": "Quantitative",
+    "question": "Two numbers are in the ratio 2:3. If their sum is 120, find the larger number.",
+    "options": [
+      "72",
+      "48",
+      "96",
+      "144"
+    ],
+    "answer": "72",
+    "explanation": "Sum of ratios = 2 + 3 = 5. Given sum is 120. Value of 1 unit = 24. Larger number = 3 * 24 = 72."
+  },
+  {
+    "id": "apt-15",
+    "category": "Quantitative",
+    "question": "A can do a work in 25 days and B in 50 days. How many days will they take together?",
+    "options": [
+      "16.67 days",
+      "18.67 days",
+      "15.670000000000002 days",
+      "None of these"
+    ],
+    "answer": "16.67 days",
+    "explanation": "Together work rate is 1/25 + 1/50 = 3/50. Hence, days taken = 50/3 = 16.67 days."
+  },
+  {
+    "id": "apt-16",
+    "category": "Quantitative",
+    "question": "A car travels at 26 km/h. How many meters does it cover in 13 minutes?",
+    "options": [
+      "5633 m",
+      "5683 m",
+      "5583 m",
+      "None of these"
+    ],
+    "answer": "5633 m",
+    "explanation": "Speed in m/s = 26 * 5/18 = 7.22 m/s. Time = 13 min = 780 s. Distance = speed * time = 5633 meters."
+  },
+  {
+    "id": "apt-17",
+    "category": "Quantitative",
+    "question": "Find the simple interest on Rs. 27000 at 7% per annum for 2 years.",
+    "options": [
+      "Rs. 3780",
+      "Rs. 3980",
+      "Rs. 3630",
+      "Rs. 4280"
+    ],
+    "answer": "Rs. 3780",
+    "explanation": "SI = (P * R * T) / 100 = (27000 * 7 * 2) / 100 = Rs. 3780."
+  },
+  {
+    "id": "apt-18",
+    "category": "Quantitative",
+    "question": "If A's salary is 28% more than B's, by what percentage is B's salary less than A's?",
+    "options": [
+      "27.54%",
+      "29.54%",
+      "26.54%",
+      "None of these"
+    ],
+    "answer": "27.54%",
+    "explanation": "B is less than A by [R / (100 + R)] * 100 = [38 / (100 + 38)] * 100 = 27.54%."
+  },
+  {
+    "id": "apt-19",
+    "category": "Quantitative",
+    "question": "Two numbers are in the ratio 4:5. If their sum is 261, find the larger number.",
+    "options": [
+      "145",
+      "116",
+      "174",
+      "290"
+    ],
+    "answer": "145",
+    "explanation": "Sum of ratios = 4 + 5 = 9. Given sum is 261. Value of 1 unit = 29. Larger number = 5 * 29 = 145."
+  },
+  {
+    "id": "apt-20",
+    "category": "Quantitative",
+    "question": "A can do a work in 30 days and B in 60 days. How many days will they take together?",
+    "options": [
+      "20 days",
+      "22 days",
+      "19 days",
+      "None of these"
+    ],
+    "answer": "20 days",
+    "explanation": "Together work rate is 1/30 + 1/60 = 3/60. Hence, days taken = 60/3 = 20 days."
+  },
+  {
+    "id": "apt-21",
+    "category": "Quantitative",
+    "question": "A car travels at 31 km/h. How many meters does it cover in 15.5 minutes?",
+    "options": [
+      "8008 m",
+      "8058 m",
+      "7958 m",
+      "None of these"
+    ],
+    "answer": "8008 m",
+    "explanation": "Speed in m/s = 31 * 5/18 = 8.61 m/s. Time = 15.5 min = 930 s. Distance = speed * time = 8008 meters."
+  },
+  {
+    "id": "apt-22",
+    "category": "Quantitative",
+    "question": "Find the simple interest on Rs. 32000 at 7% per annum for 4 years.",
+    "options": [
+      "Rs. 8960",
+      "Rs. 9160",
+      "Rs. 8810",
+      "Rs. 9460"
+    ],
+    "answer": "Rs. 8960",
+    "explanation": "SI = (P * R * T) / 100 = (32000 * 7 * 4) / 100 = Rs. 8960."
+  },
+  {
+    "id": "apt-23",
+    "category": "Quantitative",
+    "question": "If A's salary is 33% more than B's, by what percentage is B's salary less than A's?",
+    "options": [
+      "30.07%",
+      "32.07%",
+      "29.07%",
+      "None of these"
+    ],
+    "answer": "30.07%",
+    "explanation": "B is less than A by [R / (100 + R)] * 100 = [43 / (100 + 43)] * 100 = 30.07%."
+  },
+  {
+    "id": "apt-24",
+    "category": "Quantitative",
+    "question": "Two numbers are in the ratio 3:4. If their sum is 238, find the larger number.",
+    "options": [
+      "136",
+      "102",
+      "170",
+      "272"
+    ],
+    "answer": "136",
+    "explanation": "Sum of ratios = 3 + 4 = 7. Given sum is 238. Value of 1 unit = 34. Larger number = 4 * 34 = 136."
+  },
+  {
+    "id": "apt-25",
+    "category": "Quantitative",
+    "question": "A can do a work in 35 days and B in 70 days. How many days will they take together?",
+    "options": [
+      "23.33 days",
+      "25.33 days",
+      "22.33 days",
+      "None of these"
+    ],
+    "answer": "23.33 days",
+    "explanation": "Together work rate is 1/35 + 1/70 = 3/70. Hence, days taken = 70/3 = 23.33 days."
+  },
+  {
+    "id": "apt-26",
+    "category": "Quantitative",
+    "question": "A car travels at 36 km/h. How many meters does it cover in 18 minutes?",
+    "options": [
+      "10800 m",
+      "10850 m",
+      "10750 m",
+      "None of these"
+    ],
+    "answer": "10800 m",
+    "explanation": "Speed in m/s = 36 * 5/18 = 10.00 m/s. Time = 18 min = 1080 s. Distance = speed * time = 10800 meters."
+  },
+  {
+    "id": "apt-27",
+    "category": "Quantitative",
+    "question": "Find the simple interest on Rs. 37000 at 7% per annum for 3 years.",
+    "options": [
+      "Rs. 7770",
+      "Rs. 7970",
+      "Rs. 7620",
+      "Rs. 8270"
+    ],
+    "answer": "Rs. 7770",
+    "explanation": "SI = (P * R * T) / 100 = (37000 * 7 * 3) / 100 = Rs. 7770."
+  },
+  {
+    "id": "apt-28",
+    "category": "Quantitative",
+    "question": "If A's salary is 38% more than B's, by what percentage is B's salary less than A's?",
+    "options": [
+      "32.43%",
+      "34.43%",
+      "31.43%",
+      "None of these"
+    ],
+    "answer": "32.43%",
+    "explanation": "B is less than A by [R / (100 + R)] * 100 = [48 / (100 + 48)] * 100 = 32.43%."
+  },
+  {
+    "id": "apt-29",
+    "category": "Quantitative",
+    "question": "Two numbers are in the ratio 2:3. If their sum is 195, find the larger number.",
+    "options": [
+      "117",
+      "78",
+      "156",
+      "234"
+    ],
+    "answer": "117",
+    "explanation": "Sum of ratios = 2 + 3 = 5. Given sum is 195. Value of 1 unit = 39. Larger number = 3 * 39 = 117."
+  },
+  {
+    "id": "apt-30",
+    "category": "Quantitative",
+    "question": "A can do a work in 40 days and B in 80 days. How many days will they take together?",
+    "options": [
+      "26.67 days",
+      "28.67 days",
+      "25.67 days",
+      "None of these"
+    ],
+    "answer": "26.67 days",
+    "explanation": "Together work rate is 1/40 + 1/80 = 3/80. Hence, days taken = 80/3 = 26.67 days."
+  },
+  {
+    "id": "apt-31",
+    "category": "Quantitative",
+    "question": "A car travels at 41 km/h. How many meters does it cover in 20.5 minutes?",
+    "options": [
+      "14008 m",
+      "14058 m",
+      "13958 m",
+      "None of these"
+    ],
+    "answer": "14008 m",
+    "explanation": "Speed in m/s = 41 * 5/18 = 11.39 m/s. Time = 20.5 min = 1230 s. Distance = speed * time = 14008 meters."
+  },
+  {
+    "id": "apt-32",
+    "category": "Quantitative",
+    "question": "Find the simple interest on Rs. 42000 at 7% per annum for 2 years.",
+    "options": [
+      "Rs. 5880",
+      "Rs. 6080",
+      "Rs. 5730",
+      "Rs. 6380"
+    ],
+    "answer": "Rs. 5880",
+    "explanation": "SI = (P * R * T) / 100 = (42000 * 7 * 2) / 100 = Rs. 5880."
+  },
+  {
+    "id": "apt-33",
+    "category": "Quantitative",
+    "question": "If A's salary is 43% more than B's, by what percentage is B's salary less than A's?",
+    "options": [
+      "11.5%",
+      "13.5%",
+      "10.5%",
+      "None of these"
+    ],
+    "answer": "11.5%",
+    "explanation": "B is less than A by [R / (100 + R)] * 100 = [13 / (100 + 13)] * 100 = 11.5%."
+  },
+  {
+    "id": "apt-34",
+    "category": "Quantitative",
+    "question": "Two numbers are in the ratio 4:5. If their sum is 396, find the larger number.",
+    "options": [
+      "220",
+      "176",
+      "264",
+      "440"
+    ],
+    "answer": "220",
+    "explanation": "Sum of ratios = 4 + 5 = 9. Given sum is 396. Value of 1 unit = 44. Larger number = 5 * 44 = 220."
+  },
+  {
+    "id": "apt-35",
+    "category": "Quantitative",
+    "question": "A can do a work in 45 days and B in 90 days. How many days will they take together?",
+    "options": [
+      "30 days",
+      "32 days",
+      "29 days",
+      "None of these"
+    ],
+    "answer": "30 days",
+    "explanation": "Together work rate is 1/45 + 1/90 = 3/90. Hence, days taken = 90/3 = 30 days."
+  },
+  {
+    "id": "apt-36",
+    "category": "Quantitative",
+    "question": "A car travels at 46 km/h. How many meters does it cover in 23 minutes?",
+    "options": [
+      "17633 m",
+      "17683 m",
+      "17583 m",
+      "None of these"
+    ],
+    "answer": "17633 m",
+    "explanation": "Speed in m/s = 46 * 5/18 = 12.78 m/s. Time = 23 min = 1380 s. Distance = speed * time = 17633 meters."
+  },
+  {
+    "id": "apt-37",
+    "category": "Quantitative",
+    "question": "Find the simple interest on Rs. 47000 at 7% per annum for 4 years.",
+    "options": [
+      "Rs. 13160",
+      "Rs. 13360",
+      "Rs. 13010",
+      "Rs. 13660"
+    ],
+    "answer": "Rs. 13160",
+    "explanation": "SI = (P * R * T) / 100 = (47000 * 7 * 4) / 100 = Rs. 13160."
+  },
+  {
+    "id": "apt-38",
+    "category": "Quantitative",
+    "question": "If A's salary is 48% more than B's, by what percentage is B's salary less than A's?",
+    "options": [
+      "15.25%",
+      "17.25%",
+      "14.25%",
+      "None of these"
+    ],
+    "answer": "15.25%",
+    "explanation": "B is less than A by [R / (100 + R)] * 100 = [18 / (100 + 18)] * 100 = 15.25%."
+  },
+  {
+    "id": "apt-39",
+    "category": "Quantitative",
+    "question": "Two numbers are in the ratio 3:4. If their sum is 343, find the larger number.",
+    "options": [
+      "196",
+      "147",
+      "245",
+      "392"
+    ],
+    "answer": "196",
+    "explanation": "Sum of ratios = 3 + 4 = 7. Given sum is 343. Value of 1 unit = 49. Larger number = 4 * 49 = 196."
+  },
+  {
+    "id": "apt-40",
+    "category": "Quantitative",
+    "question": "A can do a work in 50 days and B in 100 days. How many days will they take together?",
+    "options": [
+      "33.33 days",
+      "35.33 days",
+      "32.33 days",
+      "None of these"
+    ],
+    "answer": "33.33 days",
+    "explanation": "Together work rate is 1/50 + 1/100 = 3/100. Hence, days taken = 100/3 = 33.33 days."
+  },
+  {
+    "id": "apt-41",
+    "category": "Quantitative",
+    "question": "A car travels at 51 km/h. How many meters does it cover in 25.5 minutes?",
+    "options": [
+      "21675 m",
+      "21725 m",
+      "21625 m",
+      "None of these"
+    ],
+    "answer": "21675 m",
+    "explanation": "Speed in m/s = 51 * 5/18 = 14.17 m/s. Time = 25.5 min = 1530 s. Distance = speed * time = 21675 meters."
+  },
+  {
+    "id": "apt-42",
+    "category": "Quantitative",
+    "question": "Find the simple interest on Rs. 52000 at 7% per annum for 3 years.",
+    "options": [
+      "Rs. 10920",
+      "Rs. 11120",
+      "Rs. 10770",
+      "Rs. 11420"
+    ],
+    "answer": "Rs. 10920",
+    "explanation": "SI = (P * R * T) / 100 = (52000 * 7 * 3) / 100 = Rs. 10920."
+  },
+  {
+    "id": "apt-43",
+    "category": "Quantitative",
+    "question": "If A's salary is 53% more than B's, by what percentage is B's salary less than A's?",
+    "options": [
+      "18.7%",
+      "20.7%",
+      "17.7%",
+      "None of these"
+    ],
+    "answer": "18.7%",
+    "explanation": "B is less than A by [R / (100 + R)] * 100 = [23 / (100 + 23)] * 100 = 18.7%."
+  },
+  {
+    "id": "apt-44",
+    "category": "Quantitative",
+    "question": "Two numbers are in the ratio 2:3. If their sum is 270, find the larger number.",
+    "options": [
+      "162",
+      "108",
+      "216",
+      "324"
+    ],
+    "answer": "162",
+    "explanation": "Sum of ratios = 2 + 3 = 5. Given sum is 270. Value of 1 unit = 54. Larger number = 3 * 54 = 162."
+  },
+  {
+    "id": "apt-45",
+    "category": "Quantitative",
+    "question": "A can do a work in 55 days and B in 110 days. How many days will they take together?",
+    "options": [
+      "36.67 days",
+      "38.67 days",
+      "35.67 days",
+      "None of these"
+    ],
+    "answer": "36.67 days",
+    "explanation": "Together work rate is 1/55 + 1/110 = 3/110. Hence, days taken = 110/3 = 36.67 days."
+  },
+  {
+    "id": "apt-46",
+    "category": "Quantitative",
+    "question": "A car travels at 56 km/h. How many meters does it cover in 28 minutes?",
+    "options": [
+      "26133 m",
+      "26183 m",
+      "26083 m",
+      "None of these"
+    ],
+    "answer": "26133 m",
+    "explanation": "Speed in m/s = 56 * 5/18 = 15.56 m/s. Time = 28 min = 1680 s. Distance = speed * time = 26133 meters."
+  },
+  {
+    "id": "apt-47",
+    "category": "Quantitative",
+    "question": "Find the simple interest on Rs. 57000 at 7% per annum for 2 years.",
+    "options": [
+      "Rs. 7980",
+      "Rs. 8180",
+      "Rs. 7830",
+      "Rs. 8480"
+    ],
+    "answer": "Rs. 7980",
+    "explanation": "SI = (P * R * T) / 100 = (57000 * 7 * 2) / 100 = Rs. 7980."
+  },
+  {
+    "id": "apt-48",
+    "category": "Quantitative",
+    "question": "If A's salary is 58% more than B's, by what percentage is B's salary less than A's?",
+    "options": [
+      "21.88%",
+      "23.88%",
+      "20.88%",
+      "None of these"
+    ],
+    "answer": "21.88%",
+    "explanation": "B is less than A by [R / (100 + R)] * 100 = [28 / (100 + 28)] * 100 = 21.88%."
+  },
+  {
+    "id": "apt-49",
+    "category": "Quantitative",
+    "question": "Two numbers are in the ratio 4:5. If their sum is 531, find the larger number.",
+    "options": [
+      "295",
+      "236",
+      "354",
+      "590"
+    ],
+    "answer": "295",
+    "explanation": "Sum of ratios = 4 + 5 = 9. Given sum is 531. Value of 1 unit = 59. Larger number = 5 * 59 = 295."
+  },
+  {
+    "id": "apt-50",
+    "category": "Quantitative",
+    "question": "A can do a work in 60 days and B in 120 days. How many days will they take together?",
+    "options": [
+      "40 days",
+      "42 days",
+      "39 days",
+      "None of these"
+    ],
+    "answer": "40 days",
+    "explanation": "Together work rate is 1/60 + 1/120 = 3/120. Hence, days taken = 120/3 = 40 days."
+  },
+  {
+    "id": "apt-51",
+    "category": "Quantitative",
+    "question": "A car travels at 61 km/h. How many meters does it cover in 30.5 minutes?",
+    "options": [
+      "31008 m",
+      "31058 m",
+      "30958 m",
+      "None of these"
+    ],
+    "answer": "31008 m",
+    "explanation": "Speed in m/s = 61 * 5/18 = 16.94 m/s. Time = 30.5 min = 1830 s. Distance = speed * time = 31008 meters."
+  },
+  {
+    "id": "apt-52",
+    "category": "Quantitative",
+    "question": "Find the simple interest on Rs. 62000 at 7% per annum for 4 years.",
+    "options": [
+      "Rs. 17360",
+      "Rs. 17560",
+      "Rs. 17210",
+      "Rs. 17860"
+    ],
+    "answer": "Rs. 17360",
+    "explanation": "SI = (P * R * T) / 100 = (62000 * 7 * 4) / 100 = Rs. 17360."
+  },
+  {
+    "id": "apt-53",
+    "category": "Quantitative",
+    "question": "If A's salary is 63% more than B's, by what percentage is B's salary less than A's?",
+    "options": [
+      "24.81%",
+      "26.81%",
+      "23.81%",
+      "None of these"
+    ],
+    "answer": "24.81%",
+    "explanation": "B is less than A by [R / (100 + R)] * 100 = [33 / (100 + 33)] * 100 = 24.81%."
+  },
+  {
+    "id": "apt-54",
+    "category": "Quantitative",
+    "question": "Two numbers are in the ratio 3:4. If their sum is 448, find the larger number.",
+    "options": [
+      "256",
+      "192",
+      "320",
+      "512"
+    ],
+    "answer": "256",
+    "explanation": "Sum of ratios = 3 + 4 = 7. Given sum is 448. Value of 1 unit = 64. Larger number = 4 * 64 = 256."
+  },
+  {
+    "id": "apt-55",
+    "category": "Quantitative",
+    "question": "A can do a work in 65 days and B in 130 days. How many days will they take together?",
+    "options": [
+      "43.33 days",
+      "45.33 days",
+      "42.33 days",
+      "None of these"
+    ],
+    "answer": "43.33 days",
+    "explanation": "Together work rate is 1/65 + 1/130 = 3/130. Hence, days taken = 130/3 = 43.33 days."
+  },
+  {
+    "id": "apt-56",
+    "category": "Quantitative",
+    "question": "A car travels at 66 km/h. How many meters does it cover in 33 minutes?",
+    "options": [
+      "36300 m",
+      "36350 m",
+      "36250 m",
+      "None of these"
+    ],
+    "answer": "36300 m",
+    "explanation": "Speed in m/s = 66 * 5/18 = 18.33 m/s. Time = 33 min = 1980 s. Distance = speed * time = 36300 meters."
+  },
+  {
+    "id": "apt-57",
+    "category": "Quantitative",
+    "question": "Find the simple interest on Rs. 67000 at 7% per annum for 3 years.",
+    "options": [
+      "Rs. 14070",
+      "Rs. 14270",
+      "Rs. 13920",
+      "Rs. 14570"
+    ],
+    "answer": "Rs. 14070",
+    "explanation": "SI = (P * R * T) / 100 = (67000 * 7 * 3) / 100 = Rs. 14070."
+  },
+  {
+    "id": "apt-58",
+    "category": "Quantitative",
+    "question": "If A's salary is 68% more than B's, by what percentage is B's salary less than A's?",
+    "options": [
+      "27.54%",
+      "29.54%",
+      "26.54%",
+      "None of these"
+    ],
+    "answer": "27.54%",
+    "explanation": "B is less than A by [R / (100 + R)] * 100 = [38 / (100 + 38)] * 100 = 27.54%."
+  },
+  {
+    "id": "apt-59",
+    "category": "Quantitative",
+    "question": "Two numbers are in the ratio 2:3. If their sum is 345, find the larger number.",
+    "options": [
+      "207",
+      "138",
+      "276",
+      "414"
+    ],
+    "answer": "207",
+    "explanation": "Sum of ratios = 2 + 3 = 5. Given sum is 345. Value of 1 unit = 69. Larger number = 3 * 69 = 207."
+  },
+  {
+    "id": "apt-60",
+    "category": "Quantitative",
+    "question": "A can do a work in 70 days and B in 140 days. How many days will they take together?",
+    "options": [
+      "46.67 days",
+      "48.67 days",
+      "45.67 days",
+      "None of these"
+    ],
+    "answer": "46.67 days",
+    "explanation": "Together work rate is 1/70 + 1/140 = 3/140. Hence, days taken = 140/3 = 46.67 days."
+  },
+  {
+    "id": "apt-61",
+    "category": "Quantitative",
+    "question": "A car travels at 71 km/h. How many meters does it cover in 35.5 minutes?",
+    "options": [
+      "42008 m",
+      "42058 m",
+      "41958 m",
+      "None of these"
+    ],
+    "answer": "42008 m",
+    "explanation": "Speed in m/s = 71 * 5/18 = 19.72 m/s. Time = 35.5 min = 2130 s. Distance = speed * time = 42008 meters."
+  },
+  {
+    "id": "apt-62",
+    "category": "Quantitative",
+    "question": "Find the simple interest on Rs. 72000 at 7% per annum for 2 years.",
+    "options": [
+      "Rs. 10080",
+      "Rs. 10280",
+      "Rs. 9930",
+      "Rs. 10580"
+    ],
+    "answer": "Rs. 10080",
+    "explanation": "SI = (P * R * T) / 100 = (72000 * 7 * 2) / 100 = Rs. 10080."
+  },
+  {
+    "id": "apt-63",
+    "category": "Quantitative",
+    "question": "If A's salary is 73% more than B's, by what percentage is B's salary less than A's?",
+    "options": [
+      "30.07%",
+      "32.07%",
+      "29.07%",
+      "None of these"
+    ],
+    "answer": "30.07%",
+    "explanation": "B is less than A by [R / (100 + R)] * 100 = [43 / (100 + 43)] * 100 = 30.07%."
+  },
+  {
+    "id": "apt-64",
+    "category": "Quantitative",
+    "question": "Two numbers are in the ratio 4:5. If their sum is 666, find the larger number.",
+    "options": [
+      "370",
+      "296",
+      "444",
+      "740"
+    ],
+    "answer": "370",
+    "explanation": "Sum of ratios = 4 + 5 = 9. Given sum is 666. Value of 1 unit = 74. Larger number = 5 * 74 = 370."
+  },
+  {
+    "id": "apt-65",
+    "category": "Quantitative",
+    "question": "A can do a work in 75 days and B in 150 days. How many days will they take together?",
+    "options": [
+      "50 days",
+      "52 days",
+      "49 days",
+      "None of these"
+    ],
+    "answer": "50 days",
+    "explanation": "Together work rate is 1/75 + 1/150 = 3/150. Hence, days taken = 150/3 = 50 days."
+  },
+  {
+    "id": "apt-66",
+    "category": "Quantitative",
+    "question": "A car travels at 76 km/h. How many meters does it cover in 38 minutes?",
+    "options": [
+      "48133 m",
+      "48183 m",
+      "48083 m",
+      "None of these"
+    ],
+    "answer": "48133 m",
+    "explanation": "Speed in m/s = 76 * 5/18 = 21.11 m/s. Time = 38 min = 2280 s. Distance = speed * time = 48133 meters."
+  },
+  {
+    "id": "apt-67",
+    "category": "Quantitative",
+    "question": "Find the simple interest on Rs. 77000 at 7% per annum for 4 years.",
+    "options": [
+      "Rs. 21560",
+      "Rs. 21760",
+      "Rs. 21410",
+      "Rs. 22060"
+    ],
+    "answer": "Rs. 21560",
+    "explanation": "SI = (P * R * T) / 100 = (77000 * 7 * 4) / 100 = Rs. 21560."
+  },
+  {
+    "id": "apt-68",
+    "category": "Quantitative",
+    "question": "If A's salary is 78% more than B's, by what percentage is B's salary less than A's?",
+    "options": [
+      "32.43%",
+      "34.43%",
+      "31.43%",
+      "None of these"
+    ],
+    "answer": "32.43%",
+    "explanation": "B is less than A by [R / (100 + R)] * 100 = [48 / (100 + 48)] * 100 = 32.43%."
+  },
+  {
+    "id": "apt-69",
+    "category": "Quantitative",
+    "question": "Two numbers are in the ratio 3:4. If their sum is 553, find the larger number.",
+    "options": [
+      "316",
+      "237",
+      "395",
+      "632"
+    ],
+    "answer": "316",
+    "explanation": "Sum of ratios = 3 + 4 = 7. Given sum is 553. Value of 1 unit = 79. Larger number = 4 * 79 = 316."
+  },
+  {
+    "id": "apt-70",
+    "category": "Quantitative",
+    "question": "A can do a work in 80 days and B in 160 days. How many days will they take together?",
+    "options": [
+      "53.33 days",
+      "55.33 days",
+      "52.33 days",
+      "None of these"
+    ],
+    "answer": "53.33 days",
+    "explanation": "Together work rate is 1/80 + 1/160 = 3/160. Hence, days taken = 160/3 = 53.33 days."
+  },
+  {
+    "id": "apt-71",
+    "category": "Quantitative",
+    "question": "A car travels at 81 km/h. How many meters does it cover in 40.5 minutes?",
+    "options": [
+      "54675 m",
+      "54725 m",
+      "54625 m",
+      "None of these"
+    ],
+    "answer": "54675 m",
+    "explanation": "Speed in m/s = 81 * 5/18 = 22.50 m/s. Time = 40.5 min = 2430 s. Distance = speed * time = 54675 meters."
+  },
+  {
+    "id": "apt-72",
+    "category": "Quantitative",
+    "question": "Find the simple interest on Rs. 82000 at 7% per annum for 3 years.",
+    "options": [
+      "Rs. 17220",
+      "Rs. 17420",
+      "Rs. 17070",
+      "Rs. 17720"
+    ],
+    "answer": "Rs. 17220",
+    "explanation": "SI = (P * R * T) / 100 = (82000 * 7 * 3) / 100 = Rs. 17220."
+  },
+  {
+    "id": "apt-73",
+    "category": "Quantitative",
+    "question": "If A's salary is 83% more than B's, by what percentage is B's salary less than A's?",
+    "options": [
+      "11.5%",
+      "13.5%",
+      "10.5%",
+      "None of these"
+    ],
+    "answer": "11.5%",
+    "explanation": "B is less than A by [R / (100 + R)] * 100 = [13 / (100 + 13)] * 100 = 11.5%."
+  },
+  {
+    "id": "apt-74",
+    "category": "Quantitative",
+    "question": "Two numbers are in the ratio 2:3. If their sum is 420, find the larger number.",
+    "options": [
+      "252",
+      "168",
+      "336",
+      "504"
+    ],
+    "answer": "252",
+    "explanation": "Sum of ratios = 2 + 3 = 5. Given sum is 420. Value of 1 unit = 84. Larger number = 3 * 84 = 252."
+  },
+  {
+    "id": "apt-75",
+    "category": "Quantitative",
+    "question": "A can do a work in 85 days and B in 170 days. How many days will they take together?",
+    "options": [
+      "56.67 days",
+      "58.67 days",
+      "55.67 days",
+      "None of these"
+    ],
+    "answer": "56.67 days",
+    "explanation": "Together work rate is 1/85 + 1/170 = 3/170. Hence, days taken = 170/3 = 56.67 days."
+  },
+  {
+    "id": "apt-76",
+    "category": "Quantitative",
+    "question": "A car travels at 86 km/h. How many meters does it cover in 43 minutes?",
+    "options": [
+      "61633 m",
+      "61683 m",
+      "61583 m",
+      "None of these"
+    ],
+    "answer": "61633 m",
+    "explanation": "Speed in m/s = 86 * 5/18 = 23.89 m/s. Time = 43 min = 2580 s. Distance = speed * time = 61633 meters."
+  },
+  {
+    "id": "apt-77",
+    "category": "Quantitative",
+    "question": "Find the simple interest on Rs. 87000 at 7% per annum for 2 years.",
+    "options": [
+      "Rs. 12180",
+      "Rs. 12380",
+      "Rs. 12030",
+      "Rs. 12680"
+    ],
+    "answer": "Rs. 12180",
+    "explanation": "SI = (P * R * T) / 100 = (87000 * 7 * 2) / 100 = Rs. 12180."
+  },
+  {
+    "id": "apt-78",
+    "category": "Quantitative",
+    "question": "If A's salary is 88% more than B's, by what percentage is B's salary less than A's?",
+    "options": [
+      "15.25%",
+      "17.25%",
+      "14.25%",
+      "None of these"
+    ],
+    "answer": "15.25%",
+    "explanation": "B is less than A by [R / (100 + R)] * 100 = [18 / (100 + 18)] * 100 = 15.25%."
+  },
+  {
+    "id": "apt-79",
+    "category": "Quantitative",
+    "question": "Two numbers are in the ratio 4:5. If their sum is 801, find the larger number.",
+    "options": [
+      "445",
+      "356",
+      "534",
+      "890"
+    ],
+    "answer": "445",
+    "explanation": "Sum of ratios = 4 + 5 = 9. Given sum is 801. Value of 1 unit = 89. Larger number = 5 * 89 = 445."
+  },
+  {
+    "id": "apt-80",
+    "category": "Quantitative",
+    "question": "A can do a work in 90 days and B in 180 days. How many days will they take together?",
+    "options": [
+      "60 days",
+      "62 days",
+      "59 days",
+      "None of these"
+    ],
+    "answer": "60 days",
+    "explanation": "Together work rate is 1/90 + 1/180 = 3/180. Hence, days taken = 180/3 = 60 days."
+  },
+  {
+    "id": "apt-81",
+    "category": "Quantitative",
+    "question": "A car travels at 91 km/h. How many meters does it cover in 45.5 minutes?",
+    "options": [
+      "69008 m",
+      "69058 m",
+      "68958 m",
+      "None of these"
+    ],
+    "answer": "69008 m",
+    "explanation": "Speed in m/s = 91 * 5/18 = 25.28 m/s. Time = 45.5 min = 2730 s. Distance = speed * time = 69008 meters."
+  },
+  {
+    "id": "apt-82",
+    "category": "Quantitative",
+    "question": "Find the simple interest on Rs. 92000 at 7% per annum for 4 years.",
+    "options": [
+      "Rs. 25760",
+      "Rs. 25960",
+      "Rs. 25610",
+      "Rs. 26260"
+    ],
+    "answer": "Rs. 25760",
+    "explanation": "SI = (P * R * T) / 100 = (92000 * 7 * 4) / 100 = Rs. 25760."
+  },
+  {
+    "id": "apt-83",
+    "category": "Quantitative",
+    "question": "If A's salary is 93% more than B's, by what percentage is B's salary less than A's?",
+    "options": [
+      "18.7%",
+      "20.7%",
+      "17.7%",
+      "None of these"
+    ],
+    "answer": "18.7%",
+    "explanation": "B is less than A by [R / (100 + R)] * 100 = [23 / (100 + 23)] * 100 = 18.7%."
+  },
+  {
+    "id": "apt-84",
+    "category": "Quantitative",
+    "question": "Two numbers are in the ratio 3:4. If their sum is 658, find the larger number.",
+    "options": [
+      "376",
+      "282",
+      "470",
+      "752"
+    ],
+    "answer": "376",
+    "explanation": "Sum of ratios = 3 + 4 = 7. Given sum is 658. Value of 1 unit = 94. Larger number = 4 * 94 = 376."
+  },
+  {
+    "id": "apt-85",
+    "category": "Quantitative",
+    "question": "A can do a work in 95 days and B in 190 days. How many days will they take together?",
+    "options": [
+      "63.33 days",
+      "65.33 days",
+      "62.33 days",
+      "None of these"
+    ],
+    "answer": "63.33 days",
+    "explanation": "Together work rate is 1/95 + 1/190 = 3/190. Hence, days taken = 190/3 = 63.33 days."
+  },
+  {
+    "id": "apt-86",
+    "category": "Quantitative",
+    "question": "A car travels at 96 km/h. How many meters does it cover in 48 minutes?",
+    "options": [
+      "76800 m",
+      "76850 m",
+      "76750 m",
+      "None of these"
+    ],
+    "answer": "76800 m",
+    "explanation": "Speed in m/s = 96 * 5/18 = 26.67 m/s. Time = 48 min = 2880 s. Distance = speed * time = 76800 meters."
+  },
+  {
+    "id": "apt-87",
+    "category": "Quantitative",
+    "question": "Find the simple interest on Rs. 97000 at 7% per annum for 3 years.",
+    "options": [
+      "Rs. 20370",
+      "Rs. 20570",
+      "Rs. 20220",
+      "Rs. 20870"
+    ],
+    "answer": "Rs. 20370",
+    "explanation": "SI = (P * R * T) / 100 = (97000 * 7 * 3) / 100 = Rs. 20370."
+  },
+  {
+    "id": "apt-88",
+    "category": "Quantitative",
+    "question": "If A's salary is 98% more than B's, by what percentage is B's salary less than A's?",
+    "options": [
+      "21.88%",
+      "23.88%",
+      "20.88%",
+      "None of these"
+    ],
+    "answer": "21.88%",
+    "explanation": "B is less than A by [R / (100 + R)] * 100 = [28 / (100 + 28)] * 100 = 21.88%."
+  },
+  {
+    "id": "apt-89",
+    "category": "Quantitative",
+    "question": "Two numbers are in the ratio 2:3. If their sum is 495, find the larger number.",
+    "options": [
+      "297",
+      "198",
+      "396",
+      "594"
+    ],
+    "answer": "297",
+    "explanation": "Sum of ratios = 2 + 3 = 5. Given sum is 495. Value of 1 unit = 99. Larger number = 3 * 99 = 297."
+  },
+  {
+    "id": "apt-90",
+    "category": "Quantitative",
+    "question": "A can do a work in 100 days and B in 200 days. How many days will they take together?",
+    "options": [
+      "66.67 days",
+      "68.67 days",
+      "65.67 days",
+      "None of these"
+    ],
+    "answer": "66.67 days",
+    "explanation": "Together work rate is 1/100 + 1/200 = 3/200. Hence, days taken = 200/3 = 66.67 days."
+  },
+  {
+    "id": "apt-91",
+    "category": "Quantitative",
+    "question": "A car travels at 101 km/h. How many meters does it cover in 50.5 minutes?",
+    "options": [
+      "85008 m",
+      "85058 m",
+      "84958 m",
+      "None of these"
+    ],
+    "answer": "85008 m",
+    "explanation": "Speed in m/s = 101 * 5/18 = 28.06 m/s. Time = 50.5 min = 3030 s. Distance = speed * time = 85008 meters."
+  },
+  {
+    "id": "apt-92",
+    "category": "Quantitative",
+    "question": "Find the simple interest on Rs. 102000 at 7% per annum for 2 years.",
+    "options": [
+      "Rs. 14280",
+      "Rs. 14480",
+      "Rs. 14130",
+      "Rs. 14780"
+    ],
+    "answer": "Rs. 14280",
+    "explanation": "SI = (P * R * T) / 100 = (102000 * 7 * 2) / 100 = Rs. 14280."
+  },
+  {
+    "id": "apt-93",
+    "category": "Quantitative",
+    "question": "If A's salary is 103% more than B's, by what percentage is B's salary less than A's?",
+    "options": [
+      "24.81%",
+      "26.81%",
+      "23.81%",
+      "None of these"
+    ],
+    "answer": "24.81%",
+    "explanation": "B is less than A by [R / (100 + R)] * 100 = [33 / (100 + 33)] * 100 = 24.81%."
+  },
+  {
+    "id": "apt-94",
+    "category": "Quantitative",
+    "question": "Two numbers are in the ratio 4:5. If their sum is 936, find the larger number.",
+    "options": [
+      "520",
+      "416",
+      "624",
+      "1040"
+    ],
+    "answer": "520",
+    "explanation": "Sum of ratios = 4 + 5 = 9. Given sum is 936. Value of 1 unit = 104. Larger number = 5 * 104 = 520."
+  },
+  {
+    "id": "apt-95",
+    "category": "Quantitative",
+    "question": "A can do a work in 105 days and B in 210 days. How many days will they take together?",
+    "options": [
+      "70 days",
+      "72 days",
+      "69 days",
+      "None of these"
+    ],
+    "answer": "70 days",
+    "explanation": "Together work rate is 1/105 + 1/210 = 3/210. Hence, days taken = 210/3 = 70 days."
+  },
+  {
+    "id": "apt-96",
+    "category": "Quantitative",
+    "question": "A car travels at 106 km/h. How many meters does it cover in 53 minutes?",
+    "options": [
+      "93633 m",
+      "93683 m",
+      "93583 m",
+      "None of these"
+    ],
+    "answer": "93633 m",
+    "explanation": "Speed in m/s = 106 * 5/18 = 29.44 m/s. Time = 53 min = 3180 s. Distance = speed * time = 93633 meters."
+  },
+  {
+    "id": "apt-97",
+    "category": "Quantitative",
+    "question": "Find the simple interest on Rs. 107000 at 7% per annum for 4 years.",
+    "options": [
+      "Rs. 29960",
+      "Rs. 30160",
+      "Rs. 29810",
+      "Rs. 30460"
+    ],
+    "answer": "Rs. 29960",
+    "explanation": "SI = (P * R * T) / 100 = (107000 * 7 * 4) / 100 = Rs. 29960."
+  },
+  {
+    "id": "apt-98",
+    "category": "Quantitative",
+    "question": "If A's salary is 108% more than B's, by what percentage is B's salary less than A's?",
+    "options": [
+      "27.54%",
+      "29.54%",
+      "26.54%",
+      "None of these"
+    ],
+    "answer": "27.54%",
+    "explanation": "B is less than A by [R / (100 + R)] * 100 = [38 / (100 + 38)] * 100 = 27.54%."
+  },
+  {
+    "id": "apt-99",
+    "category": "Quantitative",
+    "question": "Two numbers are in the ratio 3:4. If their sum is 763, find the larger number.",
+    "options": [
+      "436",
+      "327",
+      "545",
+      "872"
+    ],
+    "answer": "436",
+    "explanation": "Sum of ratios = 3 + 4 = 7. Given sum is 763. Value of 1 unit = 109. Larger number = 4 * 109 = 436."
+  },
+  {
+    "id": "apt-100",
+    "category": "Quantitative",
+    "question": "A can do a work in 110 days and B in 220 days. How many days will they take together?",
+    "options": [
+      "73.33 days",
+      "75.33 days",
+      "72.33 days",
+      "None of these"
+    ],
+    "answer": "73.33 days",
+    "explanation": "Together work rate is 1/110 + 1/220 = 3/220. Hence, days taken = 220/3 = 73.33 days."
+  },
+  {
+    "id": "apt-101",
+    "category": "Quantitative",
+    "question": "A car travels at 111 km/h. How many meters does it cover in 55.5 minutes?",
+    "options": [
+      "102675 m",
+      "102725 m",
+      "102625 m",
+      "None of these"
+    ],
+    "answer": "102675 m",
+    "explanation": "Speed in m/s = 111 * 5/18 = 30.83 m/s. Time = 55.5 min = 3330 s. Distance = speed * time = 102675 meters."
+  },
+  {
+    "id": "apt-102",
+    "category": "Quantitative",
+    "question": "Find the simple interest on Rs. 112000 at 7% per annum for 3 years.",
+    "options": [
+      "Rs. 23520",
+      "Rs. 23720",
+      "Rs. 23370",
+      "Rs. 24020"
+    ],
+    "answer": "Rs. 23520",
+    "explanation": "SI = (P * R * T) / 100 = (112000 * 7 * 3) / 100 = Rs. 23520."
+  },
+  {
+    "id": "apt-103",
+    "category": "Quantitative",
+    "question": "If A's salary is 113% more than B's, by what percentage is B's salary less than A's?",
+    "options": [
+      "30.07%",
+      "32.07%",
+      "29.07%",
+      "None of these"
+    ],
+    "answer": "30.07%",
+    "explanation": "B is less than A by [R / (100 + R)] * 100 = [43 / (100 + 43)] * 100 = 30.07%."
+  },
+  {
+    "id": "apt-104",
+    "category": "Quantitative",
+    "question": "Two numbers are in the ratio 2:3. If their sum is 570, find the larger number.",
+    "options": [
+      "342",
+      "228",
+      "456",
+      "684"
+    ],
+    "answer": "342",
+    "explanation": "Sum of ratios = 2 + 3 = 5. Given sum is 570. Value of 1 unit = 114. Larger number = 3 * 114 = 342."
+  },
+  {
+    "id": "apt-105",
+    "category": "Quantitative",
+    "question": "A can do a work in 115 days and B in 230 days. How many days will they take together?",
+    "options": [
+      "76.67 days",
+      "78.67 days",
+      "75.67 days",
+      "None of these"
+    ],
+    "answer": "76.67 days",
+    "explanation": "Together work rate is 1/115 + 1/230 = 3/230. Hence, days taken = 230/3 = 76.67 days."
+  },
+  {
+    "id": "apt-106",
+    "category": "Quantitative",
+    "question": "A car travels at 116 km/h. How many meters does it cover in 58 minutes?",
+    "options": [
+      "112133 m",
+      "112183 m",
+      "112083 m",
+      "None of these"
+    ],
+    "answer": "112133 m",
+    "explanation": "Speed in m/s = 116 * 5/18 = 32.22 m/s. Time = 58 min = 3480 s. Distance = speed * time = 112133 meters."
+  },
+  {
+    "id": "apt-107",
+    "category": "Quantitative",
+    "question": "Find the simple interest on Rs. 117000 at 7% per annum for 2 years.",
+    "options": [
+      "Rs. 16380",
+      "Rs. 16580",
+      "Rs. 16230",
+      "Rs. 16880"
+    ],
+    "answer": "Rs. 16380",
+    "explanation": "SI = (P * R * T) / 100 = (117000 * 7 * 2) / 100 = Rs. 16380."
+  },
+  {
+    "id": "apt-108",
+    "category": "Quantitative",
+    "question": "If A's salary is 118% more than B's, by what percentage is B's salary less than A's?",
+    "options": [
+      "32.43%",
+      "34.43%",
+      "31.43%",
+      "None of these"
+    ],
+    "answer": "32.43%",
+    "explanation": "B is less than A by [R / (100 + R)] * 100 = [48 / (100 + 48)] * 100 = 32.43%."
+  },
+  {
+    "id": "apt-109",
+    "category": "Quantitative",
+    "question": "Two numbers are in the ratio 4:5. If their sum is 1071, find the larger number.",
+    "options": [
+      "595",
+      "476",
+      "714",
+      "1190"
+    ],
+    "answer": "595",
+    "explanation": "Sum of ratios = 4 + 5 = 9. Given sum is 1071. Value of 1 unit = 119. Larger number = 5 * 119 = 595."
+  },
+  {
+    "id": "apt-110",
+    "category": "Quantitative",
+    "question": "A can do a work in 120 days and B in 240 days. How many days will they take together?",
+    "options": [
+      "80 days",
+      "82 days",
+      "79 days",
+      "None of these"
+    ],
+    "answer": "80 days",
+    "explanation": "Together work rate is 1/120 + 1/240 = 3/240. Hence, days taken = 240/3 = 80 days."
+  },
+  {
+    "id": "apt-111",
+    "category": "Quantitative",
+    "question": "A car travels at 121 km/h. How many meters does it cover in 60.5 minutes?",
+    "options": [
+      "122008 m",
+      "122058 m",
+      "121958 m",
+      "None of these"
+    ],
+    "answer": "122008 m",
+    "explanation": "Speed in m/s = 121 * 5/18 = 33.61 m/s. Time = 60.5 min = 3630 s. Distance = speed * time = 122008 meters."
+  },
+  {
+    "id": "apt-112",
+    "category": "Quantitative",
+    "question": "Find the simple interest on Rs. 122000 at 7% per annum for 4 years.",
+    "options": [
+      "Rs. 34160",
+      "Rs. 34360",
+      "Rs. 34010",
+      "Rs. 34660"
+    ],
+    "answer": "Rs. 34160",
+    "explanation": "SI = (P * R * T) / 100 = (122000 * 7 * 4) / 100 = Rs. 34160."
+  },
+  {
+    "id": "apt-113",
+    "category": "Quantitative",
+    "question": "If A's salary is 123% more than B's, by what percentage is B's salary less than A's?",
+    "options": [
+      "11.5%",
+      "13.5%",
+      "10.5%",
+      "None of these"
+    ],
+    "answer": "11.5%",
+    "explanation": "B is less than A by [R / (100 + R)] * 100 = [13 / (100 + 13)] * 100 = 11.5%."
+  },
+  {
+    "id": "apt-114",
+    "category": "Quantitative",
+    "question": "Two numbers are in the ratio 3:4. If their sum is 868, find the larger number.",
+    "options": [
+      "496",
+      "372",
+      "620",
+      "992"
+    ],
+    "answer": "496",
+    "explanation": "Sum of ratios = 3 + 4 = 7. Given sum is 868. Value of 1 unit = 124. Larger number = 4 * 124 = 496."
+  },
+  {
+    "id": "apt-115",
+    "category": "Quantitative",
+    "question": "A can do a work in 125 days and B in 250 days. How many days will they take together?",
+    "options": [
+      "83.33 days",
+      "85.33 days",
+      "82.33 days",
+      "None of these"
+    ],
+    "answer": "83.33 days",
+    "explanation": "Together work rate is 1/125 + 1/250 = 3/250. Hence, days taken = 250/3 = 83.33 days."
+  },
+  {
+    "id": "apt-116",
+    "category": "Quantitative",
+    "question": "A car travels at 126 km/h. How many meters does it cover in 63 minutes?",
+    "options": [
+      "132300 m",
+      "132350 m",
+      "132250 m",
+      "None of these"
+    ],
+    "answer": "132300 m",
+    "explanation": "Speed in m/s = 126 * 5/18 = 35.00 m/s. Time = 63 min = 3780 s. Distance = speed * time = 132300 meters."
+  },
+  {
+    "id": "apt-117",
+    "category": "Quantitative",
+    "question": "Find the simple interest on Rs. 127000 at 7% per annum for 3 years.",
+    "options": [
+      "Rs. 26670",
+      "Rs. 26870",
+      "Rs. 26520",
+      "Rs. 27170"
+    ],
+    "answer": "Rs. 26670",
+    "explanation": "SI = (P * R * T) / 100 = (127000 * 7 * 3) / 100 = Rs. 26670."
+  },
+  {
+    "id": "apt-118",
+    "category": "Quantitative",
+    "question": "If A's salary is 128% more than B's, by what percentage is B's salary less than A's?",
+    "options": [
+      "15.25%",
+      "17.25%",
+      "14.25%",
+      "None of these"
+    ],
+    "answer": "15.25%",
+    "explanation": "B is less than A by [R / (100 + R)] * 100 = [18 / (100 + 18)] * 100 = 15.25%."
+  },
+  {
+    "id": "apt-119",
+    "category": "Quantitative",
+    "question": "Two numbers are in the ratio 2:3. If their sum is 645, find the larger number.",
+    "options": [
+      "387",
+      "258",
+      "516",
+      "774"
+    ],
+    "answer": "387",
+    "explanation": "Sum of ratios = 2 + 3 = 5. Given sum is 645. Value of 1 unit = 129. Larger number = 3 * 129 = 387."
+  },
+  {
+    "id": "apt-120",
+    "category": "Quantitative",
+    "question": "A can do a work in 130 days and B in 260 days. How many days will they take together?",
+    "options": [
+      "86.67 days",
+      "88.67 days",
+      "85.67 days",
+      "None of these"
+    ],
+    "answer": "86.67 days",
+    "explanation": "Together work rate is 1/130 + 1/260 = 3/260. Hence, days taken = 260/3 = 86.67 days."
+  },
+  {
+    "id": "apt-121",
+    "category": "Quantitative",
+    "question": "A car travels at 131 km/h. How many meters does it cover in 65.5 minutes?",
+    "options": [
+      "143008 m",
+      "143058 m",
+      "142958 m",
+      "None of these"
+    ],
+    "answer": "143008 m",
+    "explanation": "Speed in m/s = 131 * 5/18 = 36.39 m/s. Time = 65.5 min = 3930 s. Distance = speed * time = 143008 meters."
+  },
+  {
+    "id": "apt-122",
+    "category": "Quantitative",
+    "question": "Find the simple interest on Rs. 132000 at 7% per annum for 2 years.",
+    "options": [
+      "Rs. 18480",
+      "Rs. 18680",
+      "Rs. 18330",
+      "Rs. 18980"
+    ],
+    "answer": "Rs. 18480",
+    "explanation": "SI = (P * R * T) / 100 = (132000 * 7 * 2) / 100 = Rs. 18480."
+  },
+  {
+    "id": "apt-123",
+    "category": "Quantitative",
+    "question": "If A's salary is 133% more than B's, by what percentage is B's salary less than A's?",
+    "options": [
+      "18.7%",
+      "20.7%",
+      "17.7%",
+      "None of these"
+    ],
+    "answer": "18.7%",
+    "explanation": "B is less than A by [R / (100 + R)] * 100 = [23 / (100 + 23)] * 100 = 18.7%."
+  },
+  {
+    "id": "apt-124",
+    "category": "Quantitative",
+    "question": "Two numbers are in the ratio 4:5. If their sum is 1206, find the larger number.",
+    "options": [
+      "670",
+      "536",
+      "804",
+      "1340"
+    ],
+    "answer": "670",
+    "explanation": "Sum of ratios = 4 + 5 = 9. Given sum is 1206. Value of 1 unit = 134. Larger number = 5 * 134 = 670."
+  },
+  {
+    "id": "apt-125",
+    "category": "Quantitative",
+    "question": "A can do a work in 135 days and B in 270 days. How many days will they take together?",
+    "options": [
+      "90 days",
+      "92 days",
+      "89 days",
+      "None of these"
+    ],
+    "answer": "90 days",
+    "explanation": "Together work rate is 1/135 + 1/270 = 3/270. Hence, days taken = 270/3 = 90 days."
+  },
+  {
+    "id": "apt-126",
+    "category": "Quantitative",
+    "question": "A car travels at 136 km/h. How many meters does it cover in 68 minutes?",
+    "options": [
+      "154133 m",
+      "154183 m",
+      "154083 m",
+      "None of these"
+    ],
+    "answer": "154133 m",
+    "explanation": "Speed in m/s = 136 * 5/18 = 37.78 m/s. Time = 68 min = 4080 s. Distance = speed * time = 154133 meters."
+  },
+  {
+    "id": "apt-127",
+    "category": "Quantitative",
+    "question": "Find the simple interest on Rs. 137000 at 7% per annum for 4 years.",
+    "options": [
+      "Rs. 38360",
+      "Rs. 38560",
+      "Rs. 38210",
+      "Rs. 38860"
+    ],
+    "answer": "Rs. 38360",
+    "explanation": "SI = (P * R * T) / 100 = (137000 * 7 * 4) / 100 = Rs. 38360."
+  },
+  {
+    "id": "apt-128",
+    "category": "Quantitative",
+    "question": "If A's salary is 138% more than B's, by what percentage is B's salary less than A's?",
+    "options": [
+      "21.88%",
+      "23.88%",
+      "20.88%",
+      "None of these"
+    ],
+    "answer": "21.88%",
+    "explanation": "B is less than A by [R / (100 + R)] * 100 = [28 / (100 + 28)] * 100 = 21.88%."
+  },
+  {
+    "id": "apt-129",
+    "category": "Quantitative",
+    "question": "Two numbers are in the ratio 3:4. If their sum is 973, find the larger number.",
+    "options": [
+      "556",
+      "417",
+      "695",
+      "1112"
+    ],
+    "answer": "556",
+    "explanation": "Sum of ratios = 3 + 4 = 7. Given sum is 973. Value of 1 unit = 139. Larger number = 4 * 139 = 556."
+  },
+  {
+    "id": "apt-130",
+    "category": "Quantitative",
+    "question": "A can do a work in 140 days and B in 280 days. How many days will they take together?",
+    "options": [
+      "93.33 days",
+      "95.33 days",
+      "92.33 days",
+      "None of these"
+    ],
+    "answer": "93.33 days",
+    "explanation": "Together work rate is 1/140 + 1/280 = 3/280. Hence, days taken = 280/3 = 93.33 days."
+  },
+  {
+    "id": "apt-131",
+    "category": "Quantitative",
+    "question": "A car travels at 141 km/h. How many meters does it cover in 70.5 minutes?",
+    "options": [
+      "165675 m",
+      "165725 m",
+      "165625 m",
+      "None of these"
+    ],
+    "answer": "165675 m",
+    "explanation": "Speed in m/s = 141 * 5/18 = 39.17 m/s. Time = 70.5 min = 4230 s. Distance = speed * time = 165675 meters."
+  },
+  {
+    "id": "apt-132",
+    "category": "Quantitative",
+    "question": "Find the simple interest on Rs. 142000 at 7% per annum for 3 years.",
+    "options": [
+      "Rs. 29820",
+      "Rs. 30020",
+      "Rs. 29670",
+      "Rs. 30320"
+    ],
+    "answer": "Rs. 29820",
+    "explanation": "SI = (P * R * T) / 100 = (142000 * 7 * 3) / 100 = Rs. 29820."
+  },
+  {
+    "id": "apt-133",
+    "category": "Quantitative",
+    "question": "If A's salary is 143% more than B's, by what percentage is B's salary less than A's?",
+    "options": [
+      "24.81%",
+      "26.81%",
+      "23.81%",
+      "None of these"
+    ],
+    "answer": "24.81%",
+    "explanation": "B is less than A by [R / (100 + R)] * 100 = [33 / (100 + 33)] * 100 = 24.81%."
+  },
+  {
+    "id": "apt-134",
+    "category": "Quantitative",
+    "question": "Two numbers are in the ratio 2:3. If their sum is 720, find the larger number.",
+    "options": [
+      "432",
+      "288",
+      "576",
+      "864"
+    ],
+    "answer": "432",
+    "explanation": "Sum of ratios = 2 + 3 = 5. Given sum is 720. Value of 1 unit = 144. Larger number = 3 * 144 = 432."
+  },
+  {
+    "id": "apt-135",
+    "category": "Quantitative",
+    "question": "A can do a work in 145 days and B in 290 days. How many days will they take together?",
+    "options": [
+      "96.67 days",
+      "98.67 days",
+      "95.67 days",
+      "None of these"
+    ],
+    "answer": "96.67 days",
+    "explanation": "Together work rate is 1/145 + 1/290 = 3/290. Hence, days taken = 290/3 = 96.67 days."
+  },
+  {
+    "id": "apt-136",
+    "category": "Quantitative",
+    "question": "A car travels at 146 km/h. How many meters does it cover in 73 minutes?",
+    "options": [
+      "177633 m",
+      "177683 m",
+      "177583 m",
+      "None of these"
+    ],
+    "answer": "177633 m",
+    "explanation": "Speed in m/s = 146 * 5/18 = 40.56 m/s. Time = 73 min = 4380 s. Distance = speed * time = 177633 meters."
+  },
+  {
+    "id": "apt-137",
+    "category": "Quantitative",
+    "question": "Find the simple interest on Rs. 147000 at 7% per annum for 2 years.",
+    "options": [
+      "Rs. 20580",
+      "Rs. 20780",
+      "Rs. 20430",
+      "Rs. 21080"
+    ],
+    "answer": "Rs. 20580",
+    "explanation": "SI = (P * R * T) / 100 = (147000 * 7 * 2) / 100 = Rs. 20580."
+  },
+  {
+    "id": "apt-138",
+    "category": "Quantitative",
+    "question": "If A's salary is 148% more than B's, by what percentage is B's salary less than A's?",
+    "options": [
+      "27.54%",
+      "29.54%",
+      "26.54%",
+      "None of these"
+    ],
+    "answer": "27.54%",
+    "explanation": "B is less than A by [R / (100 + R)] * 100 = [38 / (100 + 38)] * 100 = 27.54%."
+  },
+  {
+    "id": "apt-139",
+    "category": "Quantitative",
+    "question": "Two numbers are in the ratio 4:5. If their sum is 1341, find the larger number.",
+    "options": [
+      "745",
+      "596",
+      "894",
+      "1490"
+    ],
+    "answer": "745",
+    "explanation": "Sum of ratios = 4 + 5 = 9. Given sum is 1341. Value of 1 unit = 149. Larger number = 5 * 149 = 745."
+  },
+  {
+    "id": "apt-140",
+    "category": "Quantitative",
+    "question": "A can do a work in 150 days and B in 300 days. How many days will they take together?",
+    "options": [
+      "100 days",
+      "102 days",
+      "99 days",
+      "None of these"
+    ],
+    "answer": "100 days",
+    "explanation": "Together work rate is 1/150 + 1/300 = 3/300. Hence, days taken = 300/3 = 100 days."
+  },
+  {
+    "id": "apt-141",
+    "category": "Quantitative",
+    "question": "A car travels at 151 km/h. How many meters does it cover in 75.5 minutes?",
+    "options": [
+      "190008 m",
+      "190058 m",
+      "189958 m",
+      "None of these"
+    ],
+    "answer": "190008 m",
+    "explanation": "Speed in m/s = 151 * 5/18 = 41.94 m/s. Time = 75.5 min = 4530 s. Distance = speed * time = 190008 meters."
+  },
+  {
+    "id": "apt-142",
+    "category": "Quantitative",
+    "question": "Find the simple interest on Rs. 152000 at 7% per annum for 4 years.",
+    "options": [
+      "Rs. 42560",
+      "Rs. 42760",
+      "Rs. 42410",
+      "Rs. 43060"
+    ],
+    "answer": "Rs. 42560",
+    "explanation": "SI = (P * R * T) / 100 = (152000 * 7 * 4) / 100 = Rs. 42560."
+  },
+  {
+    "id": "apt-143",
+    "category": "Quantitative",
+    "question": "If A's salary is 153% more than B's, by what percentage is B's salary less than A's?",
+    "options": [
+      "30.07%",
+      "32.07%",
+      "29.07%",
+      "None of these"
+    ],
+    "answer": "30.07%",
+    "explanation": "B is less than A by [R / (100 + R)] * 100 = [43 / (100 + 43)] * 100 = 30.07%."
+  },
+  {
+    "id": "apt-144",
+    "category": "Quantitative",
+    "question": "Two numbers are in the ratio 3:4. If their sum is 1078, find the larger number.",
+    "options": [
+      "616",
+      "462",
+      "770",
+      "1232"
+    ],
+    "answer": "616",
+    "explanation": "Sum of ratios = 3 + 4 = 7. Given sum is 1078. Value of 1 unit = 154. Larger number = 4 * 154 = 616."
+  },
+  {
+    "id": "apt-145",
+    "category": "Quantitative",
+    "question": "A can do a work in 155 days and B in 310 days. How many days will they take together?",
+    "options": [
+      "103.33 days",
+      "105.33 days",
+      "102.33 days",
+      "None of these"
+    ],
+    "answer": "103.33 days",
+    "explanation": "Together work rate is 1/155 + 1/310 = 3/310. Hence, days taken = 310/3 = 103.33 days."
+  },
+  {
+    "id": "apt-146",
+    "category": "Quantitative",
+    "question": "A car travels at 156 km/h. How many meters does it cover in 78 minutes?",
+    "options": [
+      "202800 m",
+      "202850 m",
+      "202750 m",
+      "None of these"
+    ],
+    "answer": "202800 m",
+    "explanation": "Speed in m/s = 156 * 5/18 = 43.33 m/s. Time = 78 min = 4680 s. Distance = speed * time = 202800 meters."
+  },
+  {
+    "id": "apt-147",
+    "category": "Quantitative",
+    "question": "Find the simple interest on Rs. 157000 at 7% per annum for 3 years.",
+    "options": [
+      "Rs. 32970",
+      "Rs. 33170",
+      "Rs. 32820",
+      "Rs. 33470"
+    ],
+    "answer": "Rs. 32970",
+    "explanation": "SI = (P * R * T) / 100 = (157000 * 7 * 3) / 100 = Rs. 32970."
+  },
+  {
+    "id": "apt-148",
+    "category": "Quantitative",
+    "question": "If A's salary is 158% more than B's, by what percentage is B's salary less than A's?",
+    "options": [
+      "32.43%",
+      "34.43%",
+      "31.43%",
+      "None of these"
+    ],
+    "answer": "32.43%",
+    "explanation": "B is less than A by [R / (100 + R)] * 100 = [48 / (100 + 48)] * 100 = 32.43%."
+  },
+  {
+    "id": "apt-149",
+    "category": "Quantitative",
+    "question": "Two numbers are in the ratio 2:3. If their sum is 795, find the larger number.",
+    "options": [
+      "477",
+      "318",
+      "636",
+      "954"
+    ],
+    "answer": "477",
+    "explanation": "Sum of ratios = 2 + 3 = 5. Given sum is 795. Value of 1 unit = 159. Larger number = 3 * 159 = 477."
+  },
+  {
+    "id": "apt-150",
+    "category": "Quantitative",
+    "question": "A can do a work in 160 days and B in 320 days. How many days will they take together?",
+    "options": [
+      "106.67 days",
+      "108.67 days",
+      "105.67 days",
+      "None of these"
+    ],
+    "answer": "106.67 days",
+    "explanation": "Together work rate is 1/160 + 1/320 = 3/320. Hence, days taken = 320/3 = 106.67 days."
+  },
+  {
+    "id": "apt-151",
+    "category": "Quantitative",
+    "question": "A car travels at 161 km/h. How many meters does it cover in 80.5 minutes?",
+    "options": [
+      "216008 m",
+      "216058 m",
+      "215958 m",
+      "None of these"
+    ],
+    "answer": "216008 m",
+    "explanation": "Speed in m/s = 161 * 5/18 = 44.72 m/s. Time = 80.5 min = 4830 s. Distance = speed * time = 216008 meters."
+  },
+  {
+    "id": "apt-152",
+    "category": "Quantitative",
+    "question": "Find the simple interest on Rs. 162000 at 7% per annum for 2 years.",
+    "options": [
+      "Rs. 22680",
+      "Rs. 22880",
+      "Rs. 22530",
+      "Rs. 23180"
+    ],
+    "answer": "Rs. 22680",
+    "explanation": "SI = (P * R * T) / 100 = (162000 * 7 * 2) / 100 = Rs. 22680."
+  },
+  {
+    "id": "apt-153",
+    "category": "Quantitative",
+    "question": "If A's salary is 163% more than B's, by what percentage is B's salary less than A's?",
+    "options": [
+      "11.5%",
+      "13.5%",
+      "10.5%",
+      "None of these"
+    ],
+    "answer": "11.5%",
+    "explanation": "B is less than A by [R / (100 + R)] * 100 = [13 / (100 + 13)] * 100 = 11.5%."
+  },
+  {
+    "id": "apt-154",
+    "category": "Quantitative",
+    "question": "Two numbers are in the ratio 4:5. If their sum is 1476, find the larger number.",
+    "options": [
+      "820",
+      "656",
+      "984",
+      "1640"
+    ],
+    "answer": "820",
+    "explanation": "Sum of ratios = 4 + 5 = 9. Given sum is 1476. Value of 1 unit = 164. Larger number = 5 * 164 = 820."
+  },
+  {
+    "id": "apt-155",
+    "category": "Quantitative",
+    "question": "A can do a work in 165 days and B in 330 days. How many days will they take together?",
+    "options": [
+      "110 days",
+      "112 days",
+      "109 days",
+      "None of these"
+    ],
+    "answer": "110 days",
+    "explanation": "Together work rate is 1/165 + 1/330 = 3/330. Hence, days taken = 330/3 = 110 days."
+  },
+  {
+    "id": "apt-156",
+    "category": "Quantitative",
+    "question": "A car travels at 166 km/h. How many meters does it cover in 83 minutes?",
+    "options": [
+      "229633 m",
+      "229683 m",
+      "229583 m",
+      "None of these"
+    ],
+    "answer": "229633 m",
+    "explanation": "Speed in m/s = 166 * 5/18 = 46.11 m/s. Time = 83 min = 4980 s. Distance = speed * time = 229633 meters."
+  },
+  {
+    "id": "apt-157",
+    "category": "Quantitative",
+    "question": "Find the simple interest on Rs. 167000 at 7% per annum for 4 years.",
+    "options": [
+      "Rs. 46760",
+      "Rs. 46960",
+      "Rs. 46610",
+      "Rs. 47260"
+    ],
+    "answer": "Rs. 46760",
+    "explanation": "SI = (P * R * T) / 100 = (167000 * 7 * 4) / 100 = Rs. 46760."
+  },
+  {
+    "id": "apt-158",
+    "category": "Quantitative",
+    "question": "If A's salary is 168% more than B's, by what percentage is B's salary less than A's?",
+    "options": [
+      "15.25%",
+      "17.25%",
+      "14.25%",
+      "None of these"
+    ],
+    "answer": "15.25%",
+    "explanation": "B is less than A by [R / (100 + R)] * 100 = [18 / (100 + 18)] * 100 = 15.25%."
+  },
+  {
+    "id": "apt-159",
+    "category": "Quantitative",
+    "question": "Two numbers are in the ratio 3:4. If their sum is 1183, find the larger number.",
+    "options": [
+      "676",
+      "507",
+      "845",
+      "1352"
+    ],
+    "answer": "676",
+    "explanation": "Sum of ratios = 3 + 4 = 7. Given sum is 1183. Value of 1 unit = 169. Larger number = 4 * 169 = 676."
+  },
+  {
+    "id": "apt-160",
+    "category": "Quantitative",
+    "question": "A can do a work in 170 days and B in 340 days. How many days will they take together?",
+    "options": [
+      "113.33 days",
+      "115.33 days",
+      "112.33 days",
+      "None of these"
+    ],
+    "answer": "113.33 days",
+    "explanation": "Together work rate is 1/170 + 1/340 = 3/340. Hence, days taken = 340/3 = 113.33 days."
+  },
+  {
+    "id": "apt-161",
+    "category": "Quantitative",
+    "question": "A car travels at 171 km/h. How many meters does it cover in 85.5 minutes?",
+    "options": [
+      "243675 m",
+      "243725 m",
+      "243625 m",
+      "None of these"
+    ],
+    "answer": "243675 m",
+    "explanation": "Speed in m/s = 171 * 5/18 = 47.50 m/s. Time = 85.5 min = 5130 s. Distance = speed * time = 243675 meters."
+  },
+  {
+    "id": "apt-162",
+    "category": "Quantitative",
+    "question": "Find the simple interest on Rs. 172000 at 7% per annum for 3 years.",
+    "options": [
+      "Rs. 36120",
+      "Rs. 36320",
+      "Rs. 35970",
+      "Rs. 36620"
+    ],
+    "answer": "Rs. 36120",
+    "explanation": "SI = (P * R * T) / 100 = (172000 * 7 * 3) / 100 = Rs. 36120."
+  },
+  {
+    "id": "apt-163",
+    "category": "Quantitative",
+    "question": "If A's salary is 173% more than B's, by what percentage is B's salary less than A's?",
+    "options": [
+      "18.7%",
+      "20.7%",
+      "17.7%",
+      "None of these"
+    ],
+    "answer": "18.7%",
+    "explanation": "B is less than A by [R / (100 + R)] * 100 = [23 / (100 + 23)] * 100 = 18.7%."
+  },
+  {
+    "id": "apt-164",
+    "category": "Quantitative",
+    "question": "Two numbers are in the ratio 2:3. If their sum is 870, find the larger number.",
+    "options": [
+      "522",
+      "348",
+      "696",
+      "1044"
+    ],
+    "answer": "522",
+    "explanation": "Sum of ratios = 2 + 3 = 5. Given sum is 870. Value of 1 unit = 174. Larger number = 3 * 174 = 522."
+  },
+  {
+    "id": "apt-165",
+    "category": "Quantitative",
+    "question": "A can do a work in 175 days and B in 350 days. How many days will they take together?",
+    "options": [
+      "116.67 days",
+      "118.67 days",
+      "115.67 days",
+      "None of these"
+    ],
+    "answer": "116.67 days",
+    "explanation": "Together work rate is 1/175 + 1/350 = 3/350. Hence, days taken = 350/3 = 116.67 days."
+  },
+  {
+    "id": "apt-166",
+    "category": "Quantitative",
+    "question": "A car travels at 176 km/h. How many meters does it cover in 88 minutes?",
+    "options": [
+      "258133 m",
+      "258183 m",
+      "258083 m",
+      "None of these"
+    ],
+    "answer": "258133 m",
+    "explanation": "Speed in m/s = 176 * 5/18 = 48.89 m/s. Time = 88 min = 5280 s. Distance = speed * time = 258133 meters."
+  },
+  {
+    "id": "apt-167",
+    "category": "Quantitative",
+    "question": "Find the simple interest on Rs. 177000 at 7% per annum for 2 years.",
+    "options": [
+      "Rs. 24780",
+      "Rs. 24980",
+      "Rs. 24630",
+      "Rs. 25280"
+    ],
+    "answer": "Rs. 24780",
+    "explanation": "SI = (P * R * T) / 100 = (177000 * 7 * 2) / 100 = Rs. 24780."
+  },
+  {
+    "id": "apt-168",
+    "category": "Quantitative",
+    "question": "If A's salary is 178% more than B's, by what percentage is B's salary less than A's?",
+    "options": [
+      "21.88%",
+      "23.88%",
+      "20.88%",
+      "None of these"
+    ],
+    "answer": "21.88%",
+    "explanation": "B is less than A by [R / (100 + R)] * 100 = [28 / (100 + 28)] * 100 = 21.88%."
+  },
+  {
+    "id": "apt-169",
+    "category": "Quantitative",
+    "question": "Two numbers are in the ratio 4:5. If their sum is 1611, find the larger number.",
+    "options": [
+      "895",
+      "716",
+      "1074",
+      "1790"
+    ],
+    "answer": "895",
+    "explanation": "Sum of ratios = 4 + 5 = 9. Given sum is 1611. Value of 1 unit = 179. Larger number = 5 * 179 = 895."
+  },
+  {
+    "id": "apt-170",
+    "category": "Quantitative",
+    "question": "A can do a work in 180 days and B in 360 days. How many days will they take together?",
+    "options": [
+      "120 days",
+      "122 days",
+      "119 days",
+      "None of these"
+    ],
+    "answer": "120 days",
+    "explanation": "Together work rate is 1/180 + 1/360 = 3/360. Hence, days taken = 360/3 = 120 days."
+  },
+  {
+    "id": "apt-171",
+    "category": "Quantitative",
+    "question": "A car travels at 181 km/h. How many meters does it cover in 90.5 minutes?",
+    "options": [
+      "273008 m",
+      "273058 m",
+      "272958 m",
+      "None of these"
+    ],
+    "answer": "273008 m",
+    "explanation": "Speed in m/s = 181 * 5/18 = 50.28 m/s. Time = 90.5 min = 5430 s. Distance = speed * time = 273008 meters."
+  },
+  {
+    "id": "apt-172",
+    "category": "Quantitative",
+    "question": "Find the simple interest on Rs. 182000 at 7% per annum for 4 years.",
+    "options": [
+      "Rs. 50960",
+      "Rs. 51160",
+      "Rs. 50810",
+      "Rs. 51460"
+    ],
+    "answer": "Rs. 50960",
+    "explanation": "SI = (P * R * T) / 100 = (182000 * 7 * 4) / 100 = Rs. 50960."
+  },
+  {
+    "id": "apt-173",
+    "category": "Quantitative",
+    "question": "If A's salary is 183% more than B's, by what percentage is B's salary less than A's?",
+    "options": [
+      "24.81%",
+      "26.81%",
+      "23.81%",
+      "None of these"
+    ],
+    "answer": "24.81%",
+    "explanation": "B is less than A by [R / (100 + R)] * 100 = [33 / (100 + 33)] * 100 = 24.81%."
+  },
+  {
+    "id": "apt-174",
+    "category": "Quantitative",
+    "question": "Two numbers are in the ratio 3:4. If their sum is 1288, find the larger number.",
+    "options": [
+      "736",
+      "552",
+      "920",
+      "1472"
+    ],
+    "answer": "736",
+    "explanation": "Sum of ratios = 3 + 4 = 7. Given sum is 1288. Value of 1 unit = 184. Larger number = 4 * 184 = 736."
+  },
+  {
+    "id": "apt-175",
+    "category": "Quantitative",
+    "question": "A can do a work in 185 days and B in 370 days. How many days will they take together?",
+    "options": [
+      "123.33 days",
+      "125.33 days",
+      "122.33 days",
+      "None of these"
+    ],
+    "answer": "123.33 days",
+    "explanation": "Together work rate is 1/185 + 1/370 = 3/370. Hence, days taken = 370/3 = 123.33 days."
+  },
+  {
+    "id": "apt-176",
+    "category": "Quantitative",
+    "question": "A car travels at 186 km/h. How many meters does it cover in 93 minutes?",
+    "options": [
+      "288300 m",
+      "288350 m",
+      "288250 m",
+      "None of these"
+    ],
+    "answer": "288300 m",
+    "explanation": "Speed in m/s = 186 * 5/18 = 51.67 m/s. Time = 93 min = 5580 s. Distance = speed * time = 288300 meters."
+  },
+  {
+    "id": "apt-177",
+    "category": "Quantitative",
+    "question": "Find the simple interest on Rs. 187000 at 7% per annum for 3 years.",
+    "options": [
+      "Rs. 39270",
+      "Rs. 39470",
+      "Rs. 39120",
+      "Rs. 39770"
+    ],
+    "answer": "Rs. 39270",
+    "explanation": "SI = (P * R * T) / 100 = (187000 * 7 * 3) / 100 = Rs. 39270."
+  },
+  {
+    "id": "apt-178",
+    "category": "Quantitative",
+    "question": "If A's salary is 188% more than B's, by what percentage is B's salary less than A's?",
+    "options": [
+      "27.54%",
+      "29.54%",
+      "26.54%",
+      "None of these"
+    ],
+    "answer": "27.54%",
+    "explanation": "B is less than A by [R / (100 + R)] * 100 = [38 / (100 + 38)] * 100 = 27.54%."
+  },
+  {
+    "id": "apt-179",
+    "category": "Quantitative",
+    "question": "Two numbers are in the ratio 2:3. If their sum is 945, find the larger number.",
+    "options": [
+      "567",
+      "378",
+      "756",
+      "1134"
+    ],
+    "answer": "567",
+    "explanation": "Sum of ratios = 2 + 3 = 5. Given sum is 945. Value of 1 unit = 189. Larger number = 3 * 189 = 567."
+  },
+  {
+    "id": "apt-180",
+    "category": "Quantitative",
+    "question": "A can do a work in 190 days and B in 380 days. How many days will they take together?",
+    "options": [
+      "126.67 days",
+      "128.67000000000002 days",
+      "125.67 days",
+      "None of these"
+    ],
+    "answer": "126.67 days",
+    "explanation": "Together work rate is 1/190 + 1/380 = 3/380. Hence, days taken = 380/3 = 126.67 days."
+  },
+  {
+    "id": "apt-181",
+    "category": "Quantitative",
+    "question": "A car travels at 191 km/h. How many meters does it cover in 95.5 minutes?",
+    "options": [
+      "304008 m",
+      "304058 m",
+      "303958 m",
+      "None of these"
+    ],
+    "answer": "304008 m",
+    "explanation": "Speed in m/s = 191 * 5/18 = 53.06 m/s. Time = 95.5 min = 5730 s. Distance = speed * time = 304008 meters."
+  },
+  {
+    "id": "apt-182",
+    "category": "Quantitative",
+    "question": "Find the simple interest on Rs. 192000 at 7% per annum for 2 years.",
+    "options": [
+      "Rs. 26880",
+      "Rs. 27080",
+      "Rs. 26730",
+      "Rs. 27380"
+    ],
+    "answer": "Rs. 26880",
+    "explanation": "SI = (P * R * T) / 100 = (192000 * 7 * 2) / 100 = Rs. 26880."
+  },
+  {
+    "id": "apt-183",
+    "category": "Quantitative",
+    "question": "If A's salary is 193% more than B's, by what percentage is B's salary less than A's?",
+    "options": [
+      "30.07%",
+      "32.07%",
+      "29.07%",
+      "None of these"
+    ],
+    "answer": "30.07%",
+    "explanation": "B is less than A by [R / (100 + R)] * 100 = [43 / (100 + 43)] * 100 = 30.07%."
+  },
+  {
+    "id": "apt-184",
+    "category": "Quantitative",
+    "question": "Two numbers are in the ratio 4:5. If their sum is 1746, find the larger number.",
+    "options": [
+      "970",
+      "776",
+      "1164",
+      "1940"
+    ],
+    "answer": "970",
+    "explanation": "Sum of ratios = 4 + 5 = 9. Given sum is 1746. Value of 1 unit = 194. Larger number = 5 * 194 = 970."
+  },
+  {
+    "id": "apt-185",
+    "category": "Quantitative",
+    "question": "A can do a work in 195 days and B in 390 days. How many days will they take together?",
+    "options": [
+      "130 days",
+      "132 days",
+      "129 days",
+      "None of these"
+    ],
+    "answer": "130 days",
+    "explanation": "Together work rate is 1/195 + 1/390 = 3/390. Hence, days taken = 390/3 = 130 days."
+  },
+  {
+    "id": "apt-186",
+    "category": "Quantitative",
+    "question": "A car travels at 196 km/h. How many meters does it cover in 98 minutes?",
+    "options": [
+      "320133 m",
+      "320183 m",
+      "320083 m",
+      "None of these"
+    ],
+    "answer": "320133 m",
+    "explanation": "Speed in m/s = 196 * 5/18 = 54.44 m/s. Time = 98 min = 5880 s. Distance = speed * time = 320133 meters."
+  },
+  {
+    "id": "apt-187",
+    "category": "Quantitative",
+    "question": "Find the simple interest on Rs. 197000 at 7% per annum for 4 years.",
+    "options": [
+      "Rs. 55160",
+      "Rs. 55360",
+      "Rs. 55010",
+      "Rs. 55660"
+    ],
+    "answer": "Rs. 55160",
+    "explanation": "SI = (P * R * T) / 100 = (197000 * 7 * 4) / 100 = Rs. 55160."
+  },
+  {
+    "id": "apt-188",
+    "category": "Quantitative",
+    "question": "If A's salary is 198% more than B's, by what percentage is B's salary less than A's?",
+    "options": [
+      "32.43%",
+      "34.43%",
+      "31.43%",
+      "None of these"
+    ],
+    "answer": "32.43%",
+    "explanation": "B is less than A by [R / (100 + R)] * 100 = [48 / (100 + 48)] * 100 = 32.43%."
+  },
+  {
+    "id": "apt-189",
+    "category": "Quantitative",
+    "question": "Two numbers are in the ratio 3:4. If their sum is 1393, find the larger number.",
+    "options": [
+      "796",
+      "597",
+      "995",
+      "1592"
+    ],
+    "answer": "796",
+    "explanation": "Sum of ratios = 3 + 4 = 7. Given sum is 1393. Value of 1 unit = 199. Larger number = 4 * 199 = 796."
+  },
+  {
+    "id": "apt-190",
+    "category": "Quantitative",
+    "question": "A can do a work in 200 days and B in 400 days. How many days will they take together?",
+    "options": [
+      "133.33 days",
+      "135.33 days",
+      "132.33 days",
+      "None of these"
+    ],
+    "answer": "133.33 days",
+    "explanation": "Together work rate is 1/200 + 1/400 = 3/400. Hence, days taken = 400/3 = 133.33 days."
+  },
+  {
+    "id": "apt-191",
+    "category": "Quantitative",
+    "question": "A car travels at 201 km/h. How many meters does it cover in 100.5 minutes?",
+    "options": [
+      "336675 m",
+      "336725 m",
+      "336625 m",
+      "None of these"
+    ],
+    "answer": "336675 m",
+    "explanation": "Speed in m/s = 201 * 5/18 = 55.83 m/s. Time = 100.5 min = 6030 s. Distance = speed * time = 336675 meters."
+  },
+  {
+    "id": "apt-192",
+    "category": "Quantitative",
+    "question": "Find the simple interest on Rs. 202000 at 7% per annum for 3 years.",
+    "options": [
+      "Rs. 42420",
+      "Rs. 42620",
+      "Rs. 42270",
+      "Rs. 42920"
+    ],
+    "answer": "Rs. 42420",
+    "explanation": "SI = (P * R * T) / 100 = (202000 * 7 * 3) / 100 = Rs. 42420."
+  },
+  {
+    "id": "apt-193",
+    "category": "Quantitative",
+    "question": "If A's salary is 203% more than B's, by what percentage is B's salary less than A's?",
+    "options": [
+      "11.5%",
+      "13.5%",
+      "10.5%",
+      "None of these"
+    ],
+    "answer": "11.5%",
+    "explanation": "B is less than A by [R / (100 + R)] * 100 = [13 / (100 + 13)] * 100 = 11.5%."
+  },
+  {
+    "id": "apt-194",
+    "category": "Quantitative",
+    "question": "Two numbers are in the ratio 2:3. If their sum is 1020, find the larger number.",
+    "options": [
+      "612",
+      "408",
+      "816",
+      "1224"
+    ],
+    "answer": "612",
+    "explanation": "Sum of ratios = 2 + 3 = 5. Given sum is 1020. Value of 1 unit = 204. Larger number = 3 * 204 = 612."
+  },
+  {
+    "id": "apt-195",
+    "category": "Quantitative",
+    "question": "A can do a work in 205 days and B in 410 days. How many days will they take together?",
+    "options": [
+      "136.67 days",
+      "138.67 days",
+      "135.67 days",
+      "None of these"
+    ],
+    "answer": "136.67 days",
+    "explanation": "Together work rate is 1/205 + 1/410 = 3/410. Hence, days taken = 410/3 = 136.67 days."
+  },
+  {
+    "id": "apt-196",
+    "category": "Quantitative",
+    "question": "A car travels at 206 km/h. How many meters does it cover in 103 minutes?",
+    "options": [
+      "353633 m",
+      "353683 m",
+      "353583 m",
+      "None of these"
+    ],
+    "answer": "353633 m",
+    "explanation": "Speed in m/s = 206 * 5/18 = 57.22 m/s. Time = 103 min = 6180 s. Distance = speed * time = 353633 meters."
+  },
+  {
+    "id": "apt-197",
+    "category": "Quantitative",
+    "question": "Find the simple interest on Rs. 207000 at 7% per annum for 2 years.",
+    "options": [
+      "Rs. 28980",
+      "Rs. 29180",
+      "Rs. 28830",
+      "Rs. 29480"
+    ],
+    "answer": "Rs. 28980",
+    "explanation": "SI = (P * R * T) / 100 = (207000 * 7 * 2) / 100 = Rs. 28980."
+  },
+  {
+    "id": "apt-198",
+    "category": "Quantitative",
+    "question": "If A's salary is 208% more than B's, by what percentage is B's salary less than A's?",
+    "options": [
+      "15.25%",
+      "17.25%",
+      "14.25%",
+      "None of these"
+    ],
+    "answer": "15.25%",
+    "explanation": "B is less than A by [R / (100 + R)] * 100 = [18 / (100 + 18)] * 100 = 15.25%."
+  },
+  {
+    "id": "apt-199",
+    "category": "Quantitative",
+    "question": "Two numbers are in the ratio 4:5. If their sum is 1881, find the larger number.",
+    "options": [
+      "1045",
+      "836",
+      "1254",
+      "2090"
+    ],
+    "answer": "1045",
+    "explanation": "Sum of ratios = 4 + 5 = 9. Given sum is 1881. Value of 1 unit = 209. Larger number = 5 * 209 = 1045."
+  },
+  {
+    "id": "apt-200",
+    "category": "Quantitative",
+    "question": "A can do a work in 210 days and B in 420 days. How many days will they take together?",
+    "options": [
+      "140 days",
+      "142 days",
+      "139 days",
+      "None of these"
+    ],
+    "answer": "140 days",
+    "explanation": "Together work rate is 1/210 + 1/420 = 3/420. Hence, days taken = 420/3 = 140 days."
+  },
+  {
+    "id": "apt-201",
+    "category": "Logical",
+    "question": "If 'APPLE' is coded as 'BQQMF', how is 'DOG' coded?",
+    "options": [
+      "EPH",
+      "FPH",
+      "DOG",
+      "EPI"
+    ],
+    "answer": "EPH",
+    "explanation": "Each letter of 'DOG' is incremented by 1 (D->E, O->P, G->H)."
+  },
+  {
+    "id": "apt-202",
+    "category": "Logical",
+    "question": "A's father is B's son. C is the only brother of A. How is C related to B's father?",
+    "options": [
+      "Grandson",
+      "Uncle",
+      "Brother",
+      "Nephew"
+    ],
+    "answer": "Grandson",
+    "explanation": "A is the father of C. A is the son of B. So C is the grandson of B."
+  },
+  {
+    "id": "apt-203",
+    "category": "Logical",
+    "question": "What is the angle between the clock hands at 12:00?",
+    "options": [
+      "360°",
+      "375°",
+      "345°",
+      "180°"
+    ],
+    "answer": "360°",
+    "explanation": "At 12:00, the hour hand is at 12 and the minute hand is at 12. Angle = 12 * 30 = 360 degrees."
+  },
+  {
+    "id": "apt-204",
+    "category": "Logical",
+    "question": "Find the missing term in the sequence: 204, 207, 210, 213, ?",
+    "options": [
+      "216",
+      "219",
+      "213",
+      "221"
+    ],
+    "answer": "216",
+    "explanation": "The common difference in the arithmetic progression is +3. The next term is 213 + 3 = 216."
+  },
+  {
+    "id": "apt-205",
+    "category": "Logical",
+    "question": "If 'APPLE' is coded as 'BQQMF', how is 'DOG' coded?",
+    "options": [
+      "EPH",
+      "FPH",
+      "DOG",
+      "EPI"
+    ],
+    "answer": "EPH",
+    "explanation": "Each letter of 'DOG' is incremented by 1 (D->E, O->P, G->H)."
+  },
+  {
+    "id": "apt-206",
+    "category": "Logical",
+    "question": "A's father is B's son. C is the only brother of A. How is C related to B's father?",
+    "options": [
+      "Grandson",
+      "Uncle",
+      "Brother",
+      "Nephew"
+    ],
+    "answer": "Grandson",
+    "explanation": "A is the father of C. A is the son of B. So C is the grandson of B."
+  },
+  {
+    "id": "apt-207",
+    "category": "Logical",
+    "question": "What is the angle between the clock hands at 4:00?",
+    "options": [
+      "120°",
+      "135°",
+      "105°",
+      "60°"
+    ],
+    "answer": "120°",
+    "explanation": "At 4:00, the hour hand is at 4 and the minute hand is at 12. Angle = 4 * 30 = 120 degrees."
+  },
+  {
+    "id": "apt-208",
+    "category": "Logical",
+    "question": "Find the missing term in the sequence: 208, 211, 214, 217, ?",
+    "options": [
+      "220",
+      "223",
+      "217",
+      "225"
+    ],
+    "answer": "220",
+    "explanation": "The common difference in the arithmetic progression is +3. The next term is 217 + 3 = 220."
+  },
+  {
+    "id": "apt-209",
+    "category": "Logical",
+    "question": "If 'APPLE' is coded as 'BQQMF', how is 'DOG' coded?",
+    "options": [
+      "EPH",
+      "FPH",
+      "DOG",
+      "EPI"
+    ],
+    "answer": "EPH",
+    "explanation": "Each letter of 'DOG' is incremented by 1 (D->E, O->P, G->H)."
+  },
+  {
+    "id": "apt-210",
+    "category": "Logical",
+    "question": "A's father is B's son. C is the only brother of A. How is C related to B's father?",
+    "options": [
+      "Grandson",
+      "Uncle",
+      "Brother",
+      "Nephew"
+    ],
+    "answer": "Grandson",
+    "explanation": "A is the father of C. A is the son of B. So C is the grandson of B."
+  },
+  {
+    "id": "apt-211",
+    "category": "Logical",
+    "question": "What is the angle between the clock hands at 8:00?",
+    "options": [
+      "240°",
+      "255°",
+      "225°",
+      "120°"
+    ],
+    "answer": "240°",
+    "explanation": "At 8:00, the hour hand is at 8 and the minute hand is at 12. Angle = 8 * 30 = 240 degrees."
+  },
+  {
+    "id": "apt-212",
+    "category": "Logical",
+    "question": "Find the missing term in the sequence: 212, 215, 218, 221, ?",
+    "options": [
+      "224",
+      "227",
+      "221",
+      "229"
+    ],
+    "answer": "224",
+    "explanation": "The common difference in the arithmetic progression is +3. The next term is 221 + 3 = 224."
+  },
+  {
+    "id": "apt-213",
+    "category": "Logical",
+    "question": "If 'APPLE' is coded as 'BQQMF', how is 'DOG' coded?",
+    "options": [
+      "EPH",
+      "FPH",
+      "DOG",
+      "EPI"
+    ],
+    "answer": "EPH",
+    "explanation": "Each letter of 'DOG' is incremented by 1 (D->E, O->P, G->H)."
+  },
+  {
+    "id": "apt-214",
+    "category": "Logical",
+    "question": "A's father is B's son. C is the only brother of A. How is C related to B's father?",
+    "options": [
+      "Grandson",
+      "Uncle",
+      "Brother",
+      "Nephew"
+    ],
+    "answer": "Grandson",
+    "explanation": "A is the father of C. A is the son of B. So C is the grandson of B."
+  },
+  {
+    "id": "apt-215",
+    "category": "Logical",
+    "question": "What is the angle between the clock hands at 12:00?",
+    "options": [
+      "360°",
+      "375°",
+      "345°",
+      "180°"
+    ],
+    "answer": "360°",
+    "explanation": "At 12:00, the hour hand is at 12 and the minute hand is at 12. Angle = 12 * 30 = 360 degrees."
+  },
+  {
+    "id": "apt-216",
+    "category": "Logical",
+    "question": "Find the missing term in the sequence: 216, 219, 222, 225, ?",
+    "options": [
+      "228",
+      "231",
+      "225",
+      "233"
+    ],
+    "answer": "228",
+    "explanation": "The common difference in the arithmetic progression is +3. The next term is 225 + 3 = 228."
+  },
+  {
+    "id": "apt-217",
+    "category": "Logical",
+    "question": "If 'APPLE' is coded as 'BQQMF', how is 'DOG' coded?",
+    "options": [
+      "EPH",
+      "FPH",
+      "DOG",
+      "EPI"
+    ],
+    "answer": "EPH",
+    "explanation": "Each letter of 'DOG' is incremented by 1 (D->E, O->P, G->H)."
+  },
+  {
+    "id": "apt-218",
+    "category": "Logical",
+    "question": "A's father is B's son. C is the only brother of A. How is C related to B's father?",
+    "options": [
+      "Grandson",
+      "Uncle",
+      "Brother",
+      "Nephew"
+    ],
+    "answer": "Grandson",
+    "explanation": "A is the father of C. A is the son of B. So C is the grandson of B."
+  },
+  {
+    "id": "apt-219",
+    "category": "Logical",
+    "question": "What is the angle between the clock hands at 4:00?",
+    "options": [
+      "120°",
+      "135°",
+      "105°",
+      "60°"
+    ],
+    "answer": "120°",
+    "explanation": "At 4:00, the hour hand is at 4 and the minute hand is at 12. Angle = 4 * 30 = 120 degrees."
+  },
+  {
+    "id": "apt-220",
+    "category": "Logical",
+    "question": "Find the missing term in the sequence: 220, 223, 226, 229, ?",
+    "options": [
+      "232",
+      "235",
+      "229",
+      "237"
+    ],
+    "answer": "232",
+    "explanation": "The common difference in the arithmetic progression is +3. The next term is 229 + 3 = 232."
+  },
+  {
+    "id": "apt-221",
+    "category": "Logical",
+    "question": "If 'APPLE' is coded as 'BQQMF', how is 'DOG' coded?",
+    "options": [
+      "EPH",
+      "FPH",
+      "DOG",
+      "EPI"
+    ],
+    "answer": "EPH",
+    "explanation": "Each letter of 'DOG' is incremented by 1 (D->E, O->P, G->H)."
+  },
+  {
+    "id": "apt-222",
+    "category": "Logical",
+    "question": "A's father is B's son. C is the only brother of A. How is C related to B's father?",
+    "options": [
+      "Grandson",
+      "Uncle",
+      "Brother",
+      "Nephew"
+    ],
+    "answer": "Grandson",
+    "explanation": "A is the father of C. A is the son of B. So C is the grandson of B."
+  },
+  {
+    "id": "apt-223",
+    "category": "Logical",
+    "question": "What is the angle between the clock hands at 8:00?",
+    "options": [
+      "240°",
+      "255°",
+      "225°",
+      "120°"
+    ],
+    "answer": "240°",
+    "explanation": "At 8:00, the hour hand is at 8 and the minute hand is at 12. Angle = 8 * 30 = 240 degrees."
+  },
+  {
+    "id": "apt-224",
+    "category": "Logical",
+    "question": "Find the missing term in the sequence: 224, 227, 230, 233, ?",
+    "options": [
+      "236",
+      "239",
+      "233",
+      "241"
+    ],
+    "answer": "236",
+    "explanation": "The common difference in the arithmetic progression is +3. The next term is 233 + 3 = 236."
+  },
+  {
+    "id": "apt-225",
+    "category": "Logical",
+    "question": "If 'APPLE' is coded as 'BQQMF', how is 'DOG' coded?",
+    "options": [
+      "EPH",
+      "FPH",
+      "DOG",
+      "EPI"
+    ],
+    "answer": "EPH",
+    "explanation": "Each letter of 'DOG' is incremented by 1 (D->E, O->P, G->H)."
+  },
+  {
+    "id": "apt-226",
+    "category": "Logical",
+    "question": "A's father is B's son. C is the only brother of A. How is C related to B's father?",
+    "options": [
+      "Grandson",
+      "Uncle",
+      "Brother",
+      "Nephew"
+    ],
+    "answer": "Grandson",
+    "explanation": "A is the father of C. A is the son of B. So C is the grandson of B."
+  },
+  {
+    "id": "apt-227",
+    "category": "Logical",
+    "question": "What is the angle between the clock hands at 12:00?",
+    "options": [
+      "360°",
+      "375°",
+      "345°",
+      "180°"
+    ],
+    "answer": "360°",
+    "explanation": "At 12:00, the hour hand is at 12 and the minute hand is at 12. Angle = 12 * 30 = 360 degrees."
+  },
+  {
+    "id": "apt-228",
+    "category": "Logical",
+    "question": "Find the missing term in the sequence: 228, 231, 234, 237, ?",
+    "options": [
+      "240",
+      "243",
+      "237",
+      "245"
+    ],
+    "answer": "240",
+    "explanation": "The common difference in the arithmetic progression is +3. The next term is 237 + 3 = 240."
+  },
+  {
+    "id": "apt-229",
+    "category": "Logical",
+    "question": "If 'APPLE' is coded as 'BQQMF', how is 'DOG' coded?",
+    "options": [
+      "EPH",
+      "FPH",
+      "DOG",
+      "EPI"
+    ],
+    "answer": "EPH",
+    "explanation": "Each letter of 'DOG' is incremented by 1 (D->E, O->P, G->H)."
+  },
+  {
+    "id": "apt-230",
+    "category": "Logical",
+    "question": "A's father is B's son. C is the only brother of A. How is C related to B's father?",
+    "options": [
+      "Grandson",
+      "Uncle",
+      "Brother",
+      "Nephew"
+    ],
+    "answer": "Grandson",
+    "explanation": "A is the father of C. A is the son of B. So C is the grandson of B."
+  },
+  {
+    "id": "apt-231",
+    "category": "Logical",
+    "question": "What is the angle between the clock hands at 4:00?",
+    "options": [
+      "120°",
+      "135°",
+      "105°",
+      "60°"
+    ],
+    "answer": "120°",
+    "explanation": "At 4:00, the hour hand is at 4 and the minute hand is at 12. Angle = 4 * 30 = 120 degrees."
+  },
+  {
+    "id": "apt-232",
+    "category": "Logical",
+    "question": "Find the missing term in the sequence: 232, 235, 238, 241, ?",
+    "options": [
+      "244",
+      "247",
+      "241",
+      "249"
+    ],
+    "answer": "244",
+    "explanation": "The common difference in the arithmetic progression is +3. The next term is 241 + 3 = 244."
+  },
+  {
+    "id": "apt-233",
+    "category": "Logical",
+    "question": "If 'APPLE' is coded as 'BQQMF', how is 'DOG' coded?",
+    "options": [
+      "EPH",
+      "FPH",
+      "DOG",
+      "EPI"
+    ],
+    "answer": "EPH",
+    "explanation": "Each letter of 'DOG' is incremented by 1 (D->E, O->P, G->H)."
+  },
+  {
+    "id": "apt-234",
+    "category": "Logical",
+    "question": "A's father is B's son. C is the only brother of A. How is C related to B's father?",
+    "options": [
+      "Grandson",
+      "Uncle",
+      "Brother",
+      "Nephew"
+    ],
+    "answer": "Grandson",
+    "explanation": "A is the father of C. A is the son of B. So C is the grandson of B."
+  },
+  {
+    "id": "apt-235",
+    "category": "Logical",
+    "question": "What is the angle between the clock hands at 8:00?",
+    "options": [
+      "240°",
+      "255°",
+      "225°",
+      "120°"
+    ],
+    "answer": "240°",
+    "explanation": "At 8:00, the hour hand is at 8 and the minute hand is at 12. Angle = 8 * 30 = 240 degrees."
+  },
+  {
+    "id": "apt-236",
+    "category": "Logical",
+    "question": "Find the missing term in the sequence: 236, 239, 242, 245, ?",
+    "options": [
+      "248",
+      "251",
+      "245",
+      "253"
+    ],
+    "answer": "248",
+    "explanation": "The common difference in the arithmetic progression is +3. The next term is 245 + 3 = 248."
+  },
+  {
+    "id": "apt-237",
+    "category": "Logical",
+    "question": "If 'APPLE' is coded as 'BQQMF', how is 'DOG' coded?",
+    "options": [
+      "EPH",
+      "FPH",
+      "DOG",
+      "EPI"
+    ],
+    "answer": "EPH",
+    "explanation": "Each letter of 'DOG' is incremented by 1 (D->E, O->P, G->H)."
+  },
+  {
+    "id": "apt-238",
+    "category": "Logical",
+    "question": "A's father is B's son. C is the only brother of A. How is C related to B's father?",
+    "options": [
+      "Grandson",
+      "Uncle",
+      "Brother",
+      "Nephew"
+    ],
+    "answer": "Grandson",
+    "explanation": "A is the father of C. A is the son of B. So C is the grandson of B."
+  },
+  {
+    "id": "apt-239",
+    "category": "Logical",
+    "question": "What is the angle between the clock hands at 12:00?",
+    "options": [
+      "360°",
+      "375°",
+      "345°",
+      "180°"
+    ],
+    "answer": "360°",
+    "explanation": "At 12:00, the hour hand is at 12 and the minute hand is at 12. Angle = 12 * 30 = 360 degrees."
+  },
+  {
+    "id": "apt-240",
+    "category": "Logical",
+    "question": "Find the missing term in the sequence: 240, 243, 246, 249, ?",
+    "options": [
+      "252",
+      "255",
+      "249",
+      "257"
+    ],
+    "answer": "252",
+    "explanation": "The common difference in the arithmetic progression is +3. The next term is 249 + 3 = 252."
+  },
+  {
+    "id": "apt-241",
+    "category": "Logical",
+    "question": "If 'APPLE' is coded as 'BQQMF', how is 'DOG' coded?",
+    "options": [
+      "EPH",
+      "FPH",
+      "DOG",
+      "EPI"
+    ],
+    "answer": "EPH",
+    "explanation": "Each letter of 'DOG' is incremented by 1 (D->E, O->P, G->H)."
+  },
+  {
+    "id": "apt-242",
+    "category": "Logical",
+    "question": "A's father is B's son. C is the only brother of A. How is C related to B's father?",
+    "options": [
+      "Grandson",
+      "Uncle",
+      "Brother",
+      "Nephew"
+    ],
+    "answer": "Grandson",
+    "explanation": "A is the father of C. A is the son of B. So C is the grandson of B."
+  },
+  {
+    "id": "apt-243",
+    "category": "Logical",
+    "question": "What is the angle between the clock hands at 4:00?",
+    "options": [
+      "120°",
+      "135°",
+      "105°",
+      "60°"
+    ],
+    "answer": "120°",
+    "explanation": "At 4:00, the hour hand is at 4 and the minute hand is at 12. Angle = 4 * 30 = 120 degrees."
+  },
+  {
+    "id": "apt-244",
+    "category": "Logical",
+    "question": "Find the missing term in the sequence: 244, 247, 250, 253, ?",
+    "options": [
+      "256",
+      "259",
+      "253",
+      "261"
+    ],
+    "answer": "256",
+    "explanation": "The common difference in the arithmetic progression is +3. The next term is 253 + 3 = 256."
+  },
+  {
+    "id": "apt-245",
+    "category": "Logical",
+    "question": "If 'APPLE' is coded as 'BQQMF', how is 'DOG' coded?",
+    "options": [
+      "EPH",
+      "FPH",
+      "DOG",
+      "EPI"
+    ],
+    "answer": "EPH",
+    "explanation": "Each letter of 'DOG' is incremented by 1 (D->E, O->P, G->H)."
+  },
+  {
+    "id": "apt-246",
+    "category": "Logical",
+    "question": "A's father is B's son. C is the only brother of A. How is C related to B's father?",
+    "options": [
+      "Grandson",
+      "Uncle",
+      "Brother",
+      "Nephew"
+    ],
+    "answer": "Grandson",
+    "explanation": "A is the father of C. A is the son of B. So C is the grandson of B."
+  },
+  {
+    "id": "apt-247",
+    "category": "Logical",
+    "question": "What is the angle between the clock hands at 8:00?",
+    "options": [
+      "240°",
+      "255°",
+      "225°",
+      "120°"
+    ],
+    "answer": "240°",
+    "explanation": "At 8:00, the hour hand is at 8 and the minute hand is at 12. Angle = 8 * 30 = 240 degrees."
+  },
+  {
+    "id": "apt-248",
+    "category": "Logical",
+    "question": "Find the missing term in the sequence: 248, 251, 254, 257, ?",
+    "options": [
+      "260",
+      "263",
+      "257",
+      "265"
+    ],
+    "answer": "260",
+    "explanation": "The common difference in the arithmetic progression is +3. The next term is 257 + 3 = 260."
+  },
+  {
+    "id": "apt-249",
+    "category": "Logical",
+    "question": "If 'APPLE' is coded as 'BQQMF', how is 'DOG' coded?",
+    "options": [
+      "EPH",
+      "FPH",
+      "DOG",
+      "EPI"
+    ],
+    "answer": "EPH",
+    "explanation": "Each letter of 'DOG' is incremented by 1 (D->E, O->P, G->H)."
+  },
+  {
+    "id": "apt-250",
+    "category": "Logical",
+    "question": "A's father is B's son. C is the only brother of A. How is C related to B's father?",
+    "options": [
+      "Grandson",
+      "Uncle",
+      "Brother",
+      "Nephew"
+    ],
+    "answer": "Grandson",
+    "explanation": "A is the father of C. A is the son of B. So C is the grandson of B."
+  },
+  {
+    "id": "apt-251",
+    "category": "Logical",
+    "question": "What is the angle between the clock hands at 12:00?",
+    "options": [
+      "360°",
+      "375°",
+      "345°",
+      "180°"
+    ],
+    "answer": "360°",
+    "explanation": "At 12:00, the hour hand is at 12 and the minute hand is at 12. Angle = 12 * 30 = 360 degrees."
+  },
+  {
+    "id": "apt-252",
+    "category": "Logical",
+    "question": "Find the missing term in the sequence: 252, 255, 258, 261, ?",
+    "options": [
+      "264",
+      "267",
+      "261",
+      "269"
+    ],
+    "answer": "264",
+    "explanation": "The common difference in the arithmetic progression is +3. The next term is 261 + 3 = 264."
+  },
+  {
+    "id": "apt-253",
+    "category": "Logical",
+    "question": "If 'APPLE' is coded as 'BQQMF', how is 'DOG' coded?",
+    "options": [
+      "EPH",
+      "FPH",
+      "DOG",
+      "EPI"
+    ],
+    "answer": "EPH",
+    "explanation": "Each letter of 'DOG' is incremented by 1 (D->E, O->P, G->H)."
+  },
+  {
+    "id": "apt-254",
+    "category": "Logical",
+    "question": "A's father is B's son. C is the only brother of A. How is C related to B's father?",
+    "options": [
+      "Grandson",
+      "Uncle",
+      "Brother",
+      "Nephew"
+    ],
+    "answer": "Grandson",
+    "explanation": "A is the father of C. A is the son of B. So C is the grandson of B."
+  },
+  {
+    "id": "apt-255",
+    "category": "Logical",
+    "question": "What is the angle between the clock hands at 4:00?",
+    "options": [
+      "120°",
+      "135°",
+      "105°",
+      "60°"
+    ],
+    "answer": "120°",
+    "explanation": "At 4:00, the hour hand is at 4 and the minute hand is at 12. Angle = 4 * 30 = 120 degrees."
+  },
+  {
+    "id": "apt-256",
+    "category": "Logical",
+    "question": "Find the missing term in the sequence: 256, 259, 262, 265, ?",
+    "options": [
+      "268",
+      "271",
+      "265",
+      "273"
+    ],
+    "answer": "268",
+    "explanation": "The common difference in the arithmetic progression is +3. The next term is 265 + 3 = 268."
+  },
+  {
+    "id": "apt-257",
+    "category": "Logical",
+    "question": "If 'APPLE' is coded as 'BQQMF', how is 'DOG' coded?",
+    "options": [
+      "EPH",
+      "FPH",
+      "DOG",
+      "EPI"
+    ],
+    "answer": "EPH",
+    "explanation": "Each letter of 'DOG' is incremented by 1 (D->E, O->P, G->H)."
+  },
+  {
+    "id": "apt-258",
+    "category": "Logical",
+    "question": "A's father is B's son. C is the only brother of A. How is C related to B's father?",
+    "options": [
+      "Grandson",
+      "Uncle",
+      "Brother",
+      "Nephew"
+    ],
+    "answer": "Grandson",
+    "explanation": "A is the father of C. A is the son of B. So C is the grandson of B."
+  },
+  {
+    "id": "apt-259",
+    "category": "Logical",
+    "question": "What is the angle between the clock hands at 8:00?",
+    "options": [
+      "240°",
+      "255°",
+      "225°",
+      "120°"
+    ],
+    "answer": "240°",
+    "explanation": "At 8:00, the hour hand is at 8 and the minute hand is at 12. Angle = 8 * 30 = 240 degrees."
+  },
+  {
+    "id": "apt-260",
+    "category": "Logical",
+    "question": "Find the missing term in the sequence: 260, 263, 266, 269, ?",
+    "options": [
+      "272",
+      "275",
+      "269",
+      "277"
+    ],
+    "answer": "272",
+    "explanation": "The common difference in the arithmetic progression is +3. The next term is 269 + 3 = 272."
+  },
+  {
+    "id": "apt-261",
+    "category": "Logical",
+    "question": "If 'APPLE' is coded as 'BQQMF', how is 'DOG' coded?",
+    "options": [
+      "EPH",
+      "FPH",
+      "DOG",
+      "EPI"
+    ],
+    "answer": "EPH",
+    "explanation": "Each letter of 'DOG' is incremented by 1 (D->E, O->P, G->H)."
+  },
+  {
+    "id": "apt-262",
+    "category": "Logical",
+    "question": "A's father is B's son. C is the only brother of A. How is C related to B's father?",
+    "options": [
+      "Grandson",
+      "Uncle",
+      "Brother",
+      "Nephew"
+    ],
+    "answer": "Grandson",
+    "explanation": "A is the father of C. A is the son of B. So C is the grandson of B."
+  },
+  {
+    "id": "apt-263",
+    "category": "Logical",
+    "question": "What is the angle between the clock hands at 12:00?",
+    "options": [
+      "360°",
+      "375°",
+      "345°",
+      "180°"
+    ],
+    "answer": "360°",
+    "explanation": "At 12:00, the hour hand is at 12 and the minute hand is at 12. Angle = 12 * 30 = 360 degrees."
+  },
+  {
+    "id": "apt-264",
+    "category": "Logical",
+    "question": "Find the missing term in the sequence: 264, 267, 270, 273, ?",
+    "options": [
+      "276",
+      "279",
+      "273",
+      "281"
+    ],
+    "answer": "276",
+    "explanation": "The common difference in the arithmetic progression is +3. The next term is 273 + 3 = 276."
+  },
+  {
+    "id": "apt-265",
+    "category": "Logical",
+    "question": "If 'APPLE' is coded as 'BQQMF', how is 'DOG' coded?",
+    "options": [
+      "EPH",
+      "FPH",
+      "DOG",
+      "EPI"
+    ],
+    "answer": "EPH",
+    "explanation": "Each letter of 'DOG' is incremented by 1 (D->E, O->P, G->H)."
+  },
+  {
+    "id": "apt-266",
+    "category": "Logical",
+    "question": "A's father is B's son. C is the only brother of A. How is C related to B's father?",
+    "options": [
+      "Grandson",
+      "Uncle",
+      "Brother",
+      "Nephew"
+    ],
+    "answer": "Grandson",
+    "explanation": "A is the father of C. A is the son of B. So C is the grandson of B."
+  },
+  {
+    "id": "apt-267",
+    "category": "Logical",
+    "question": "What is the angle between the clock hands at 4:00?",
+    "options": [
+      "120°",
+      "135°",
+      "105°",
+      "60°"
+    ],
+    "answer": "120°",
+    "explanation": "At 4:00, the hour hand is at 4 and the minute hand is at 12. Angle = 4 * 30 = 120 degrees."
+  },
+  {
+    "id": "apt-268",
+    "category": "Logical",
+    "question": "Find the missing term in the sequence: 268, 271, 274, 277, ?",
+    "options": [
+      "280",
+      "283",
+      "277",
+      "285"
+    ],
+    "answer": "280",
+    "explanation": "The common difference in the arithmetic progression is +3. The next term is 277 + 3 = 280."
+  },
+  {
+    "id": "apt-269",
+    "category": "Logical",
+    "question": "If 'APPLE' is coded as 'BQQMF', how is 'DOG' coded?",
+    "options": [
+      "EPH",
+      "FPH",
+      "DOG",
+      "EPI"
+    ],
+    "answer": "EPH",
+    "explanation": "Each letter of 'DOG' is incremented by 1 (D->E, O->P, G->H)."
+  },
+  {
+    "id": "apt-270",
+    "category": "Logical",
+    "question": "A's father is B's son. C is the only brother of A. How is C related to B's father?",
+    "options": [
+      "Grandson",
+      "Uncle",
+      "Brother",
+      "Nephew"
+    ],
+    "answer": "Grandson",
+    "explanation": "A is the father of C. A is the son of B. So C is the grandson of B."
+  },
+  {
+    "id": "apt-271",
+    "category": "Logical",
+    "question": "What is the angle between the clock hands at 8:00?",
+    "options": [
+      "240°",
+      "255°",
+      "225°",
+      "120°"
+    ],
+    "answer": "240°",
+    "explanation": "At 8:00, the hour hand is at 8 and the minute hand is at 12. Angle = 8 * 30 = 240 degrees."
+  },
+  {
+    "id": "apt-272",
+    "category": "Logical",
+    "question": "Find the missing term in the sequence: 272, 275, 278, 281, ?",
+    "options": [
+      "284",
+      "287",
+      "281",
+      "289"
+    ],
+    "answer": "284",
+    "explanation": "The common difference in the arithmetic progression is +3. The next term is 281 + 3 = 284."
+  },
+  {
+    "id": "apt-273",
+    "category": "Logical",
+    "question": "If 'APPLE' is coded as 'BQQMF', how is 'DOG' coded?",
+    "options": [
+      "EPH",
+      "FPH",
+      "DOG",
+      "EPI"
+    ],
+    "answer": "EPH",
+    "explanation": "Each letter of 'DOG' is incremented by 1 (D->E, O->P, G->H)."
+  },
+  {
+    "id": "apt-274",
+    "category": "Logical",
+    "question": "A's father is B's son. C is the only brother of A. How is C related to B's father?",
+    "options": [
+      "Grandson",
+      "Uncle",
+      "Brother",
+      "Nephew"
+    ],
+    "answer": "Grandson",
+    "explanation": "A is the father of C. A is the son of B. So C is the grandson of B."
+  },
+  {
+    "id": "apt-275",
+    "category": "Logical",
+    "question": "What is the angle between the clock hands at 12:00?",
+    "options": [
+      "360°",
+      "375°",
+      "345°",
+      "180°"
+    ],
+    "answer": "360°",
+    "explanation": "At 12:00, the hour hand is at 12 and the minute hand is at 12. Angle = 12 * 30 = 360 degrees."
+  },
+  {
+    "id": "apt-276",
+    "category": "Logical",
+    "question": "Find the missing term in the sequence: 276, 279, 282, 285, ?",
+    "options": [
+      "288",
+      "291",
+      "285",
+      "293"
+    ],
+    "answer": "288",
+    "explanation": "The common difference in the arithmetic progression is +3. The next term is 285 + 3 = 288."
+  },
+  {
+    "id": "apt-277",
+    "category": "Logical",
+    "question": "If 'APPLE' is coded as 'BQQMF', how is 'DOG' coded?",
+    "options": [
+      "EPH",
+      "FPH",
+      "DOG",
+      "EPI"
+    ],
+    "answer": "EPH",
+    "explanation": "Each letter of 'DOG' is incremented by 1 (D->E, O->P, G->H)."
+  },
+  {
+    "id": "apt-278",
+    "category": "Logical",
+    "question": "A's father is B's son. C is the only brother of A. How is C related to B's father?",
+    "options": [
+      "Grandson",
+      "Uncle",
+      "Brother",
+      "Nephew"
+    ],
+    "answer": "Grandson",
+    "explanation": "A is the father of C. A is the son of B. So C is the grandson of B."
+  },
+  {
+    "id": "apt-279",
+    "category": "Logical",
+    "question": "What is the angle between the clock hands at 4:00?",
+    "options": [
+      "120°",
+      "135°",
+      "105°",
+      "60°"
+    ],
+    "answer": "120°",
+    "explanation": "At 4:00, the hour hand is at 4 and the minute hand is at 12. Angle = 4 * 30 = 120 degrees."
+  },
+  {
+    "id": "apt-280",
+    "category": "Logical",
+    "question": "Find the missing term in the sequence: 280, 283, 286, 289, ?",
+    "options": [
+      "292",
+      "295",
+      "289",
+      "297"
+    ],
+    "answer": "292",
+    "explanation": "The common difference in the arithmetic progression is +3. The next term is 289 + 3 = 292."
+  },
+  {
+    "id": "apt-281",
+    "category": "Logical",
+    "question": "If 'APPLE' is coded as 'BQQMF', how is 'DOG' coded?",
+    "options": [
+      "EPH",
+      "FPH",
+      "DOG",
+      "EPI"
+    ],
+    "answer": "EPH",
+    "explanation": "Each letter of 'DOG' is incremented by 1 (D->E, O->P, G->H)."
+  },
+  {
+    "id": "apt-282",
+    "category": "Logical",
+    "question": "A's father is B's son. C is the only brother of A. How is C related to B's father?",
+    "options": [
+      "Grandson",
+      "Uncle",
+      "Brother",
+      "Nephew"
+    ],
+    "answer": "Grandson",
+    "explanation": "A is the father of C. A is the son of B. So C is the grandson of B."
+  },
+  {
+    "id": "apt-283",
+    "category": "Logical",
+    "question": "What is the angle between the clock hands at 8:00?",
+    "options": [
+      "240°",
+      "255°",
+      "225°",
+      "120°"
+    ],
+    "answer": "240°",
+    "explanation": "At 8:00, the hour hand is at 8 and the minute hand is at 12. Angle = 8 * 30 = 240 degrees."
+  },
+  {
+    "id": "apt-284",
+    "category": "Logical",
+    "question": "Find the missing term in the sequence: 284, 287, 290, 293, ?",
+    "options": [
+      "296",
+      "299",
+      "293",
+      "301"
+    ],
+    "answer": "296",
+    "explanation": "The common difference in the arithmetic progression is +3. The next term is 293 + 3 = 296."
+  },
+  {
+    "id": "apt-285",
+    "category": "Logical",
+    "question": "If 'APPLE' is coded as 'BQQMF', how is 'DOG' coded?",
+    "options": [
+      "EPH",
+      "FPH",
+      "DOG",
+      "EPI"
+    ],
+    "answer": "EPH",
+    "explanation": "Each letter of 'DOG' is incremented by 1 (D->E, O->P, G->H)."
+  },
+  {
+    "id": "apt-286",
+    "category": "Logical",
+    "question": "A's father is B's son. C is the only brother of A. How is C related to B's father?",
+    "options": [
+      "Grandson",
+      "Uncle",
+      "Brother",
+      "Nephew"
+    ],
+    "answer": "Grandson",
+    "explanation": "A is the father of C. A is the son of B. So C is the grandson of B."
+  },
+  {
+    "id": "apt-287",
+    "category": "Logical",
+    "question": "What is the angle between the clock hands at 12:00?",
+    "options": [
+      "360°",
+      "375°",
+      "345°",
+      "180°"
+    ],
+    "answer": "360°",
+    "explanation": "At 12:00, the hour hand is at 12 and the minute hand is at 12. Angle = 12 * 30 = 360 degrees."
+  },
+  {
+    "id": "apt-288",
+    "category": "Logical",
+    "question": "Find the missing term in the sequence: 288, 291, 294, 297, ?",
+    "options": [
+      "300",
+      "303",
+      "297",
+      "305"
+    ],
+    "answer": "300",
+    "explanation": "The common difference in the arithmetic progression is +3. The next term is 297 + 3 = 300."
+  },
+  {
+    "id": "apt-289",
+    "category": "Logical",
+    "question": "If 'APPLE' is coded as 'BQQMF', how is 'DOG' coded?",
+    "options": [
+      "EPH",
+      "FPH",
+      "DOG",
+      "EPI"
+    ],
+    "answer": "EPH",
+    "explanation": "Each letter of 'DOG' is incremented by 1 (D->E, O->P, G->H)."
+  },
+  {
+    "id": "apt-290",
+    "category": "Logical",
+    "question": "A's father is B's son. C is the only brother of A. How is C related to B's father?",
+    "options": [
+      "Grandson",
+      "Uncle",
+      "Brother",
+      "Nephew"
+    ],
+    "answer": "Grandson",
+    "explanation": "A is the father of C. A is the son of B. So C is the grandson of B."
+  },
+  {
+    "id": "apt-291",
+    "category": "Logical",
+    "question": "What is the angle between the clock hands at 4:00?",
+    "options": [
+      "120°",
+      "135°",
+      "105°",
+      "60°"
+    ],
+    "answer": "120°",
+    "explanation": "At 4:00, the hour hand is at 4 and the minute hand is at 12. Angle = 4 * 30 = 120 degrees."
+  },
+  {
+    "id": "apt-292",
+    "category": "Logical",
+    "question": "Find the missing term in the sequence: 292, 295, 298, 301, ?",
+    "options": [
+      "304",
+      "307",
+      "301",
+      "309"
+    ],
+    "answer": "304",
+    "explanation": "The common difference in the arithmetic progression is +3. The next term is 301 + 3 = 304."
+  },
+  {
+    "id": "apt-293",
+    "category": "Logical",
+    "question": "If 'APPLE' is coded as 'BQQMF', how is 'DOG' coded?",
+    "options": [
+      "EPH",
+      "FPH",
+      "DOG",
+      "EPI"
+    ],
+    "answer": "EPH",
+    "explanation": "Each letter of 'DOG' is incremented by 1 (D->E, O->P, G->H)."
+  },
+  {
+    "id": "apt-294",
+    "category": "Logical",
+    "question": "A's father is B's son. C is the only brother of A. How is C related to B's father?",
+    "options": [
+      "Grandson",
+      "Uncle",
+      "Brother",
+      "Nephew"
+    ],
+    "answer": "Grandson",
+    "explanation": "A is the father of C. A is the son of B. So C is the grandson of B."
+  },
+  {
+    "id": "apt-295",
+    "category": "Logical",
+    "question": "What is the angle between the clock hands at 8:00?",
+    "options": [
+      "240°",
+      "255°",
+      "225°",
+      "120°"
+    ],
+    "answer": "240°",
+    "explanation": "At 8:00, the hour hand is at 8 and the minute hand is at 12. Angle = 8 * 30 = 240 degrees."
+  },
+  {
+    "id": "apt-296",
+    "category": "Logical",
+    "question": "Find the missing term in the sequence: 296, 299, 302, 305, ?",
+    "options": [
+      "308",
+      "311",
+      "305",
+      "313"
+    ],
+    "answer": "308",
+    "explanation": "The common difference in the arithmetic progression is +3. The next term is 305 + 3 = 308."
+  },
+  {
+    "id": "apt-297",
+    "category": "Logical",
+    "question": "If 'APPLE' is coded as 'BQQMF', how is 'DOG' coded?",
+    "options": [
+      "EPH",
+      "FPH",
+      "DOG",
+      "EPI"
+    ],
+    "answer": "EPH",
+    "explanation": "Each letter of 'DOG' is incremented by 1 (D->E, O->P, G->H)."
+  },
+  {
+    "id": "apt-298",
+    "category": "Logical",
+    "question": "A's father is B's son. C is the only brother of A. How is C related to B's father?",
+    "options": [
+      "Grandson",
+      "Uncle",
+      "Brother",
+      "Nephew"
+    ],
+    "answer": "Grandson",
+    "explanation": "A is the father of C. A is the son of B. So C is the grandson of B."
+  },
+  {
+    "id": "apt-299",
+    "category": "Logical",
+    "question": "What is the angle between the clock hands at 12:00?",
+    "options": [
+      "360°",
+      "375°",
+      "345°",
+      "180°"
+    ],
+    "answer": "360°",
+    "explanation": "At 12:00, the hour hand is at 12 and the minute hand is at 12. Angle = 12 * 30 = 360 degrees."
+  },
+  {
+    "id": "apt-300",
+    "category": "Logical",
+    "question": "Find the missing term in the sequence: 300, 303, 306, 309, ?",
+    "options": [
+      "312",
+      "315",
+      "309",
+      "317"
+    ],
+    "answer": "312",
+    "explanation": "The common difference in the arithmetic progression is +3. The next term is 309 + 3 = 312."
+  },
+  {
+    "id": "apt-301",
+    "category": "Logical",
+    "question": "If 'APPLE' is coded as 'BQQMF', how is 'DOG' coded?",
+    "options": [
+      "EPH",
+      "FPH",
+      "DOG",
+      "EPI"
+    ],
+    "answer": "EPH",
+    "explanation": "Each letter of 'DOG' is incremented by 1 (D->E, O->P, G->H)."
+  },
+  {
+    "id": "apt-302",
+    "category": "Logical",
+    "question": "A's father is B's son. C is the only brother of A. How is C related to B's father?",
+    "options": [
+      "Grandson",
+      "Uncle",
+      "Brother",
+      "Nephew"
+    ],
+    "answer": "Grandson",
+    "explanation": "A is the father of C. A is the son of B. So C is the grandson of B."
+  },
+  {
+    "id": "apt-303",
+    "category": "Logical",
+    "question": "What is the angle between the clock hands at 4:00?",
+    "options": [
+      "120°",
+      "135°",
+      "105°",
+      "60°"
+    ],
+    "answer": "120°",
+    "explanation": "At 4:00, the hour hand is at 4 and the minute hand is at 12. Angle = 4 * 30 = 120 degrees."
+  },
+  {
+    "id": "apt-304",
+    "category": "Logical",
+    "question": "Find the missing term in the sequence: 304, 307, 310, 313, ?",
+    "options": [
+      "316",
+      "319",
+      "313",
+      "321"
+    ],
+    "answer": "316",
+    "explanation": "The common difference in the arithmetic progression is +3. The next term is 313 + 3 = 316."
+  },
+  {
+    "id": "apt-305",
+    "category": "Logical",
+    "question": "If 'APPLE' is coded as 'BQQMF', how is 'DOG' coded?",
+    "options": [
+      "EPH",
+      "FPH",
+      "DOG",
+      "EPI"
+    ],
+    "answer": "EPH",
+    "explanation": "Each letter of 'DOG' is incremented by 1 (D->E, O->P, G->H)."
+  },
+  {
+    "id": "apt-306",
+    "category": "Logical",
+    "question": "A's father is B's son. C is the only brother of A. How is C related to B's father?",
+    "options": [
+      "Grandson",
+      "Uncle",
+      "Brother",
+      "Nephew"
+    ],
+    "answer": "Grandson",
+    "explanation": "A is the father of C. A is the son of B. So C is the grandson of B."
+  },
+  {
+    "id": "apt-307",
+    "category": "Logical",
+    "question": "What is the angle between the clock hands at 8:00?",
+    "options": [
+      "240°",
+      "255°",
+      "225°",
+      "120°"
+    ],
+    "answer": "240°",
+    "explanation": "At 8:00, the hour hand is at 8 and the minute hand is at 12. Angle = 8 * 30 = 240 degrees."
+  },
+  {
+    "id": "apt-308",
+    "category": "Logical",
+    "question": "Find the missing term in the sequence: 308, 311, 314, 317, ?",
+    "options": [
+      "320",
+      "323",
+      "317",
+      "325"
+    ],
+    "answer": "320",
+    "explanation": "The common difference in the arithmetic progression is +3. The next term is 317 + 3 = 320."
+  },
+  {
+    "id": "apt-309",
+    "category": "Logical",
+    "question": "If 'APPLE' is coded as 'BQQMF', how is 'DOG' coded?",
+    "options": [
+      "EPH",
+      "FPH",
+      "DOG",
+      "EPI"
+    ],
+    "answer": "EPH",
+    "explanation": "Each letter of 'DOG' is incremented by 1 (D->E, O->P, G->H)."
+  },
+  {
+    "id": "apt-310",
+    "category": "Logical",
+    "question": "A's father is B's son. C is the only brother of A. How is C related to B's father?",
+    "options": [
+      "Grandson",
+      "Uncle",
+      "Brother",
+      "Nephew"
+    ],
+    "answer": "Grandson",
+    "explanation": "A is the father of C. A is the son of B. So C is the grandson of B."
+  },
+  {
+    "id": "apt-311",
+    "category": "Logical",
+    "question": "What is the angle between the clock hands at 12:00?",
+    "options": [
+      "360°",
+      "375°",
+      "345°",
+      "180°"
+    ],
+    "answer": "360°",
+    "explanation": "At 12:00, the hour hand is at 12 and the minute hand is at 12. Angle = 12 * 30 = 360 degrees."
+  },
+  {
+    "id": "apt-312",
+    "category": "Logical",
+    "question": "Find the missing term in the sequence: 312, 315, 318, 321, ?",
+    "options": [
+      "324",
+      "327",
+      "321",
+      "329"
+    ],
+    "answer": "324",
+    "explanation": "The common difference in the arithmetic progression is +3. The next term is 321 + 3 = 324."
+  },
+  {
+    "id": "apt-313",
+    "category": "Logical",
+    "question": "If 'APPLE' is coded as 'BQQMF', how is 'DOG' coded?",
+    "options": [
+      "EPH",
+      "FPH",
+      "DOG",
+      "EPI"
+    ],
+    "answer": "EPH",
+    "explanation": "Each letter of 'DOG' is incremented by 1 (D->E, O->P, G->H)."
+  },
+  {
+    "id": "apt-314",
+    "category": "Logical",
+    "question": "A's father is B's son. C is the only brother of A. How is C related to B's father?",
+    "options": [
+      "Grandson",
+      "Uncle",
+      "Brother",
+      "Nephew"
+    ],
+    "answer": "Grandson",
+    "explanation": "A is the father of C. A is the son of B. So C is the grandson of B."
+  },
+  {
+    "id": "apt-315",
+    "category": "Logical",
+    "question": "What is the angle between the clock hands at 4:00?",
+    "options": [
+      "120°",
+      "135°",
+      "105°",
+      "60°"
+    ],
+    "answer": "120°",
+    "explanation": "At 4:00, the hour hand is at 4 and the minute hand is at 12. Angle = 4 * 30 = 120 degrees."
+  },
+  {
+    "id": "apt-316",
+    "category": "Logical",
+    "question": "Find the missing term in the sequence: 316, 319, 322, 325, ?",
+    "options": [
+      "328",
+      "331",
+      "325",
+      "333"
+    ],
+    "answer": "328",
+    "explanation": "The common difference in the arithmetic progression is +3. The next term is 325 + 3 = 328."
+  },
+  {
+    "id": "apt-317",
+    "category": "Logical",
+    "question": "If 'APPLE' is coded as 'BQQMF', how is 'DOG' coded?",
+    "options": [
+      "EPH",
+      "FPH",
+      "DOG",
+      "EPI"
+    ],
+    "answer": "EPH",
+    "explanation": "Each letter of 'DOG' is incremented by 1 (D->E, O->P, G->H)."
+  },
+  {
+    "id": "apt-318",
+    "category": "Logical",
+    "question": "A's father is B's son. C is the only brother of A. How is C related to B's father?",
+    "options": [
+      "Grandson",
+      "Uncle",
+      "Brother",
+      "Nephew"
+    ],
+    "answer": "Grandson",
+    "explanation": "A is the father of C. A is the son of B. So C is the grandson of B."
+  },
+  {
+    "id": "apt-319",
+    "category": "Logical",
+    "question": "What is the angle between the clock hands at 8:00?",
+    "options": [
+      "240°",
+      "255°",
+      "225°",
+      "120°"
+    ],
+    "answer": "240°",
+    "explanation": "At 8:00, the hour hand is at 8 and the minute hand is at 12. Angle = 8 * 30 = 240 degrees."
+  },
+  {
+    "id": "apt-320",
+    "category": "Logical",
+    "question": "Find the missing term in the sequence: 320, 323, 326, 329, ?",
+    "options": [
+      "332",
+      "335",
+      "329",
+      "337"
+    ],
+    "answer": "332",
+    "explanation": "The common difference in the arithmetic progression is +3. The next term is 329 + 3 = 332."
+  },
+  {
+    "id": "apt-321",
+    "category": "Logical",
+    "question": "If 'APPLE' is coded as 'BQQMF', how is 'DOG' coded?",
+    "options": [
+      "EPH",
+      "FPH",
+      "DOG",
+      "EPI"
+    ],
+    "answer": "EPH",
+    "explanation": "Each letter of 'DOG' is incremented by 1 (D->E, O->P, G->H)."
+  },
+  {
+    "id": "apt-322",
+    "category": "Logical",
+    "question": "A's father is B's son. C is the only brother of A. How is C related to B's father?",
+    "options": [
+      "Grandson",
+      "Uncle",
+      "Brother",
+      "Nephew"
+    ],
+    "answer": "Grandson",
+    "explanation": "A is the father of C. A is the son of B. So C is the grandson of B."
+  },
+  {
+    "id": "apt-323",
+    "category": "Logical",
+    "question": "What is the angle between the clock hands at 12:00?",
+    "options": [
+      "360°",
+      "375°",
+      "345°",
+      "180°"
+    ],
+    "answer": "360°",
+    "explanation": "At 12:00, the hour hand is at 12 and the minute hand is at 12. Angle = 12 * 30 = 360 degrees."
+  },
+  {
+    "id": "apt-324",
+    "category": "Logical",
+    "question": "Find the missing term in the sequence: 324, 327, 330, 333, ?",
+    "options": [
+      "336",
+      "339",
+      "333",
+      "341"
+    ],
+    "answer": "336",
+    "explanation": "The common difference in the arithmetic progression is +3. The next term is 333 + 3 = 336."
+  },
+  {
+    "id": "apt-325",
+    "category": "Logical",
+    "question": "If 'APPLE' is coded as 'BQQMF', how is 'DOG' coded?",
+    "options": [
+      "EPH",
+      "FPH",
+      "DOG",
+      "EPI"
+    ],
+    "answer": "EPH",
+    "explanation": "Each letter of 'DOG' is incremented by 1 (D->E, O->P, G->H)."
+  },
+  {
+    "id": "apt-326",
+    "category": "Logical",
+    "question": "A's father is B's son. C is the only brother of A. How is C related to B's father?",
+    "options": [
+      "Grandson",
+      "Uncle",
+      "Brother",
+      "Nephew"
+    ],
+    "answer": "Grandson",
+    "explanation": "A is the father of C. A is the son of B. So C is the grandson of B."
+  },
+  {
+    "id": "apt-327",
+    "category": "Logical",
+    "question": "What is the angle between the clock hands at 4:00?",
+    "options": [
+      "120°",
+      "135°",
+      "105°",
+      "60°"
+    ],
+    "answer": "120°",
+    "explanation": "At 4:00, the hour hand is at 4 and the minute hand is at 12. Angle = 4 * 30 = 120 degrees."
+  },
+  {
+    "id": "apt-328",
+    "category": "Logical",
+    "question": "Find the missing term in the sequence: 328, 331, 334, 337, ?",
+    "options": [
+      "340",
+      "343",
+      "337",
+      "345"
+    ],
+    "answer": "340",
+    "explanation": "The common difference in the arithmetic progression is +3. The next term is 337 + 3 = 340."
+  },
+  {
+    "id": "apt-329",
+    "category": "Logical",
+    "question": "If 'APPLE' is coded as 'BQQMF', how is 'DOG' coded?",
+    "options": [
+      "EPH",
+      "FPH",
+      "DOG",
+      "EPI"
+    ],
+    "answer": "EPH",
+    "explanation": "Each letter of 'DOG' is incremented by 1 (D->E, O->P, G->H)."
+  },
+  {
+    "id": "apt-330",
+    "category": "Logical",
+    "question": "A's father is B's son. C is the only brother of A. How is C related to B's father?",
+    "options": [
+      "Grandson",
+      "Uncle",
+      "Brother",
+      "Nephew"
+    ],
+    "answer": "Grandson",
+    "explanation": "A is the father of C. A is the son of B. So C is the grandson of B."
+  },
+  {
+    "id": "apt-331",
+    "category": "Logical",
+    "question": "What is the angle between the clock hands at 8:00?",
+    "options": [
+      "240°",
+      "255°",
+      "225°",
+      "120°"
+    ],
+    "answer": "240°",
+    "explanation": "At 8:00, the hour hand is at 8 and the minute hand is at 12. Angle = 8 * 30 = 240 degrees."
+  },
+  {
+    "id": "apt-332",
+    "category": "Logical",
+    "question": "Find the missing term in the sequence: 332, 335, 338, 341, ?",
+    "options": [
+      "344",
+      "347",
+      "341",
+      "349"
+    ],
+    "answer": "344",
+    "explanation": "The common difference in the arithmetic progression is +3. The next term is 341 + 3 = 344."
+  },
+  {
+    "id": "apt-333",
+    "category": "Logical",
+    "question": "If 'APPLE' is coded as 'BQQMF', how is 'DOG' coded?",
+    "options": [
+      "EPH",
+      "FPH",
+      "DOG",
+      "EPI"
+    ],
+    "answer": "EPH",
+    "explanation": "Each letter of 'DOG' is incremented by 1 (D->E, O->P, G->H)."
+  },
+  {
+    "id": "apt-334",
+    "category": "Logical",
+    "question": "A's father is B's son. C is the only brother of A. How is C related to B's father?",
+    "options": [
+      "Grandson",
+      "Uncle",
+      "Brother",
+      "Nephew"
+    ],
+    "answer": "Grandson",
+    "explanation": "A is the father of C. A is the son of B. So C is the grandson of B."
+  },
+  {
+    "id": "apt-335",
+    "category": "Logical",
+    "question": "What is the angle between the clock hands at 12:00?",
+    "options": [
+      "360°",
+      "375°",
+      "345°",
+      "180°"
+    ],
+    "answer": "360°",
+    "explanation": "At 12:00, the hour hand is at 12 and the minute hand is at 12. Angle = 12 * 30 = 360 degrees."
+  },
+  {
+    "id": "apt-336",
+    "category": "Logical",
+    "question": "Find the missing term in the sequence: 336, 339, 342, 345, ?",
+    "options": [
+      "348",
+      "351",
+      "345",
+      "353"
+    ],
+    "answer": "348",
+    "explanation": "The common difference in the arithmetic progression is +3. The next term is 345 + 3 = 348."
+  },
+  {
+    "id": "apt-337",
+    "category": "Logical",
+    "question": "If 'APPLE' is coded as 'BQQMF', how is 'DOG' coded?",
+    "options": [
+      "EPH",
+      "FPH",
+      "DOG",
+      "EPI"
+    ],
+    "answer": "EPH",
+    "explanation": "Each letter of 'DOG' is incremented by 1 (D->E, O->P, G->H)."
+  },
+  {
+    "id": "apt-338",
+    "category": "Logical",
+    "question": "A's father is B's son. C is the only brother of A. How is C related to B's father?",
+    "options": [
+      "Grandson",
+      "Uncle",
+      "Brother",
+      "Nephew"
+    ],
+    "answer": "Grandson",
+    "explanation": "A is the father of C. A is the son of B. So C is the grandson of B."
+  },
+  {
+    "id": "apt-339",
+    "category": "Logical",
+    "question": "What is the angle between the clock hands at 4:00?",
+    "options": [
+      "120°",
+      "135°",
+      "105°",
+      "60°"
+    ],
+    "answer": "120°",
+    "explanation": "At 4:00, the hour hand is at 4 and the minute hand is at 12. Angle = 4 * 30 = 120 degrees."
+  },
+  {
+    "id": "apt-340",
+    "category": "Logical",
+    "question": "Find the missing term in the sequence: 340, 343, 346, 349, ?",
+    "options": [
+      "352",
+      "355",
+      "349",
+      "357"
+    ],
+    "answer": "352",
+    "explanation": "The common difference in the arithmetic progression is +3. The next term is 349 + 3 = 352."
+  },
+  {
+    "id": "apt-341",
+    "category": "Logical",
+    "question": "If 'APPLE' is coded as 'BQQMF', how is 'DOG' coded?",
+    "options": [
+      "EPH",
+      "FPH",
+      "DOG",
+      "EPI"
+    ],
+    "answer": "EPH",
+    "explanation": "Each letter of 'DOG' is incremented by 1 (D->E, O->P, G->H)."
+  },
+  {
+    "id": "apt-342",
+    "category": "Logical",
+    "question": "A's father is B's son. C is the only brother of A. How is C related to B's father?",
+    "options": [
+      "Grandson",
+      "Uncle",
+      "Brother",
+      "Nephew"
+    ],
+    "answer": "Grandson",
+    "explanation": "A is the father of C. A is the son of B. So C is the grandson of B."
+  },
+  {
+    "id": "apt-343",
+    "category": "Logical",
+    "question": "What is the angle between the clock hands at 8:00?",
+    "options": [
+      "240°",
+      "255°",
+      "225°",
+      "120°"
+    ],
+    "answer": "240°",
+    "explanation": "At 8:00, the hour hand is at 8 and the minute hand is at 12. Angle = 8 * 30 = 240 degrees."
+  },
+  {
+    "id": "apt-344",
+    "category": "Logical",
+    "question": "Find the missing term in the sequence: 344, 347, 350, 353, ?",
+    "options": [
+      "356",
+      "359",
+      "353",
+      "361"
+    ],
+    "answer": "356",
+    "explanation": "The common difference in the arithmetic progression is +3. The next term is 353 + 3 = 356."
+  },
+  {
+    "id": "apt-345",
+    "category": "Logical",
+    "question": "If 'APPLE' is coded as 'BQQMF', how is 'DOG' coded?",
+    "options": [
+      "EPH",
+      "FPH",
+      "DOG",
+      "EPI"
+    ],
+    "answer": "EPH",
+    "explanation": "Each letter of 'DOG' is incremented by 1 (D->E, O->P, G->H)."
+  },
+  {
+    "id": "apt-346",
+    "category": "Logical",
+    "question": "A's father is B's son. C is the only brother of A. How is C related to B's father?",
+    "options": [
+      "Grandson",
+      "Uncle",
+      "Brother",
+      "Nephew"
+    ],
+    "answer": "Grandson",
+    "explanation": "A is the father of C. A is the son of B. So C is the grandson of B."
+  },
+  {
+    "id": "apt-347",
+    "category": "Logical",
+    "question": "What is the angle between the clock hands at 12:00?",
+    "options": [
+      "360°",
+      "375°",
+      "345°",
+      "180°"
+    ],
+    "answer": "360°",
+    "explanation": "At 12:00, the hour hand is at 12 and the minute hand is at 12. Angle = 12 * 30 = 360 degrees."
+  },
+  {
+    "id": "apt-348",
+    "category": "Logical",
+    "question": "Find the missing term in the sequence: 348, 351, 354, 357, ?",
+    "options": [
+      "360",
+      "363",
+      "357",
+      "365"
+    ],
+    "answer": "360",
+    "explanation": "The common difference in the arithmetic progression is +3. The next term is 357 + 3 = 360."
+  },
+  {
+    "id": "apt-349",
+    "category": "Logical",
+    "question": "If 'APPLE' is coded as 'BQQMF', how is 'DOG' coded?",
+    "options": [
+      "EPH",
+      "FPH",
+      "DOG",
+      "EPI"
+    ],
+    "answer": "EPH",
+    "explanation": "Each letter of 'DOG' is incremented by 1 (D->E, O->P, G->H)."
+  },
+  {
+    "id": "apt-350",
+    "category": "Logical",
+    "question": "A's father is B's son. C is the only brother of A. How is C related to B's father?",
+    "options": [
+      "Grandson",
+      "Uncle",
+      "Brother",
+      "Nephew"
+    ],
+    "answer": "Grandson",
+    "explanation": "A is the father of C. A is the son of B. So C is the grandson of B."
+  },
+  {
+    "id": "apt-351",
+    "category": "Verbal",
+    "question": "Find the synonym of: BENEFICIAL",
+    "options": [
+      "Helpful",
+      "Harmful",
+      "Useless",
+      "Worthless"
+    ],
+    "answer": "Helpful",
+    "explanation": "Beneficial means favorable or advantageous."
+  },
+  {
+    "id": "apt-352",
+    "category": "Verbal",
+    "question": "Find the antonym of: ANCIENT",
+    "options": [
+      "Modern",
+      "Old",
+      "Historic",
+      "Antique"
+    ],
+    "answer": "Modern",
+    "explanation": "Modern is the antonym of ancient."
+  },
+  {
+    "id": "apt-353",
+    "category": "Verbal",
+    "question": "Identify the error: \"He is senior (A) / than me (B) / in service (C) / No error (D)\"",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": "B",
+    "explanation": "For comparison with 'senior', 'to' is used instead of 'than'. The correct phrase is 'senior to me'."
+  },
+  {
+    "id": "apt-354",
+    "category": "Verbal",
+    "question": "Find the synonym of: ELEVATE",
+    "options": [
+      "Raise",
+      "Lower",
+      "Drop",
+      "Demote"
+    ],
+    "answer": "Raise",
+    "explanation": "Elevate means to raise or lift up."
+  },
+  {
+    "id": "apt-355",
+    "category": "Verbal",
+    "question": "Find the antonym of: EXPAND",
+    "options": [
+      "Shrink",
+      "Grow",
+      "Extend",
+      "Spread"
+    ],
+    "answer": "Shrink",
+    "explanation": "Shrink is the antonym of expand."
+  },
+  {
+    "id": "apt-356",
+    "category": "Verbal",
+    "question": "Identify the error: \"He is senior (A) / than me (B) / in service (C) / No error (D)\"",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": "B",
+    "explanation": "For comparison with 'senior', 'to' is used instead of 'than'. The correct phrase is 'senior to me'."
+  },
+  {
+    "id": "apt-357",
+    "category": "Verbal",
+    "question": "Find the synonym of: CANDID",
+    "options": [
+      "Honest",
+      "Deceitful",
+      "Secretive",
+      "Vague"
+    ],
+    "answer": "Honest",
+    "explanation": "Candid means truthful and straightforward."
+  },
+  {
+    "id": "apt-358",
+    "category": "Verbal",
+    "question": "Find the antonym of: CREATE",
+    "options": [
+      "Destroy",
+      "Build",
+      "Make",
+      "Form"
+    ],
+    "answer": "Destroy",
+    "explanation": "Destroy is the antonym of create."
+  },
+  {
+    "id": "apt-359",
+    "category": "Verbal",
+    "question": "Identify the error: \"He is senior (A) / than me (B) / in service (C) / No error (D)\"",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": "B",
+    "explanation": "For comparison with 'senior', 'to' is used instead of 'than'. The correct phrase is 'senior to me'."
+  },
+  {
+    "id": "apt-360",
+    "category": "Verbal",
+    "question": "Find the synonym of: ABANDON",
+    "options": [
+      "Leave",
+      "Keep",
+      "Hold",
+      "Pursue"
+    ],
+    "answer": "Leave",
+    "explanation": "Abandon means to give up completely or leave."
+  },
+  {
+    "id": "apt-361",
+    "category": "Verbal",
+    "question": "Find the antonym of: BRAVE",
+    "options": [
+      "Cowardly",
+      "Bold",
+      "Fearless",
+      "Heroic"
+    ],
+    "answer": "Cowardly",
+    "explanation": "Cowardly is the opposite of brave."
+  },
+  {
+    "id": "apt-362",
+    "category": "Verbal",
+    "question": "Identify the error: \"He is senior (A) / than me (B) / in service (C) / No error (D)\"",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": "B",
+    "explanation": "For comparison with 'senior', 'to' is used instead of 'than'. The correct phrase is 'senior to me'."
+  },
+  {
+    "id": "apt-363",
+    "category": "Verbal",
+    "question": "Find the synonym of: DILIGENT",
+    "options": [
+      "Hardworking",
+      "Lazy",
+      "Careless",
+      "Slow"
+    ],
+    "answer": "Hardworking",
+    "explanation": "Diligent means having or showing care and conscientiousness."
+  },
+  {
+    "id": "apt-364",
+    "category": "Verbal",
+    "question": "Find the antonym of: ANCIENT",
+    "options": [
+      "Modern",
+      "Old",
+      "Historic",
+      "Antique"
+    ],
+    "answer": "Modern",
+    "explanation": "Modern is the antonym of ancient."
+  },
+  {
+    "id": "apt-365",
+    "category": "Verbal",
+    "question": "Identify the error: \"He is senior (A) / than me (B) / in service (C) / No error (D)\"",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": "B",
+    "explanation": "For comparison with 'senior', 'to' is used instead of 'than'. The correct phrase is 'senior to me'."
+  },
+  {
+    "id": "apt-366",
+    "category": "Verbal",
+    "question": "Find the synonym of: BENEFICIAL",
+    "options": [
+      "Helpful",
+      "Harmful",
+      "Useless",
+      "Worthless"
+    ],
+    "answer": "Helpful",
+    "explanation": "Beneficial means favorable or advantageous."
+  },
+  {
+    "id": "apt-367",
+    "category": "Verbal",
+    "question": "Find the antonym of: EXPAND",
+    "options": [
+      "Shrink",
+      "Grow",
+      "Extend",
+      "Spread"
+    ],
+    "answer": "Shrink",
+    "explanation": "Shrink is the antonym of expand."
+  },
+  {
+    "id": "apt-368",
+    "category": "Verbal",
+    "question": "Identify the error: \"He is senior (A) / than me (B) / in service (C) / No error (D)\"",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": "B",
+    "explanation": "For comparison with 'senior', 'to' is used instead of 'than'. The correct phrase is 'senior to me'."
+  },
+  {
+    "id": "apt-369",
+    "category": "Verbal",
+    "question": "Find the synonym of: ELEVATE",
+    "options": [
+      "Raise",
+      "Lower",
+      "Drop",
+      "Demote"
+    ],
+    "answer": "Raise",
+    "explanation": "Elevate means to raise or lift up."
+  },
+  {
+    "id": "apt-370",
+    "category": "Verbal",
+    "question": "Find the antonym of: CREATE",
+    "options": [
+      "Destroy",
+      "Build",
+      "Make",
+      "Form"
+    ],
+    "answer": "Destroy",
+    "explanation": "Destroy is the antonym of create."
+  },
+  {
+    "id": "apt-371",
+    "category": "Verbal",
+    "question": "Identify the error: \"He is senior (A) / than me (B) / in service (C) / No error (D)\"",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": "B",
+    "explanation": "For comparison with 'senior', 'to' is used instead of 'than'. The correct phrase is 'senior to me'."
+  },
+  {
+    "id": "apt-372",
+    "category": "Verbal",
+    "question": "Find the synonym of: CANDID",
+    "options": [
+      "Honest",
+      "Deceitful",
+      "Secretive",
+      "Vague"
+    ],
+    "answer": "Honest",
+    "explanation": "Candid means truthful and straightforward."
+  },
+  {
+    "id": "apt-373",
+    "category": "Verbal",
+    "question": "Find the antonym of: BRAVE",
+    "options": [
+      "Cowardly",
+      "Bold",
+      "Fearless",
+      "Heroic"
+    ],
+    "answer": "Cowardly",
+    "explanation": "Cowardly is the opposite of brave."
+  },
+  {
+    "id": "apt-374",
+    "category": "Verbal",
+    "question": "Identify the error: \"He is senior (A) / than me (B) / in service (C) / No error (D)\"",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": "B",
+    "explanation": "For comparison with 'senior', 'to' is used instead of 'than'. The correct phrase is 'senior to me'."
+  },
+  {
+    "id": "apt-375",
+    "category": "Verbal",
+    "question": "Find the synonym of: ABANDON",
+    "options": [
+      "Leave",
+      "Keep",
+      "Hold",
+      "Pursue"
+    ],
+    "answer": "Leave",
+    "explanation": "Abandon means to give up completely or leave."
+  },
+  {
+    "id": "apt-376",
+    "category": "Verbal",
+    "question": "Find the antonym of: ANCIENT",
+    "options": [
+      "Modern",
+      "Old",
+      "Historic",
+      "Antique"
+    ],
+    "answer": "Modern",
+    "explanation": "Modern is the antonym of ancient."
+  },
+  {
+    "id": "apt-377",
+    "category": "Verbal",
+    "question": "Identify the error: \"He is senior (A) / than me (B) / in service (C) / No error (D)\"",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": "B",
+    "explanation": "For comparison with 'senior', 'to' is used instead of 'than'. The correct phrase is 'senior to me'."
+  },
+  {
+    "id": "apt-378",
+    "category": "Verbal",
+    "question": "Find the synonym of: DILIGENT",
+    "options": [
+      "Hardworking",
+      "Lazy",
+      "Careless",
+      "Slow"
+    ],
+    "answer": "Hardworking",
+    "explanation": "Diligent means having or showing care and conscientiousness."
+  },
+  {
+    "id": "apt-379",
+    "category": "Verbal",
+    "question": "Find the antonym of: EXPAND",
+    "options": [
+      "Shrink",
+      "Grow",
+      "Extend",
+      "Spread"
+    ],
+    "answer": "Shrink",
+    "explanation": "Shrink is the antonym of expand."
+  },
+  {
+    "id": "apt-380",
+    "category": "Verbal",
+    "question": "Identify the error: \"He is senior (A) / than me (B) / in service (C) / No error (D)\"",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": "B",
+    "explanation": "For comparison with 'senior', 'to' is used instead of 'than'. The correct phrase is 'senior to me'."
+  },
+  {
+    "id": "apt-381",
+    "category": "Verbal",
+    "question": "Find the synonym of: BENEFICIAL",
+    "options": [
+      "Helpful",
+      "Harmful",
+      "Useless",
+      "Worthless"
+    ],
+    "answer": "Helpful",
+    "explanation": "Beneficial means favorable or advantageous."
+  },
+  {
+    "id": "apt-382",
+    "category": "Verbal",
+    "question": "Find the antonym of: CREATE",
+    "options": [
+      "Destroy",
+      "Build",
+      "Make",
+      "Form"
+    ],
+    "answer": "Destroy",
+    "explanation": "Destroy is the antonym of create."
+  },
+  {
+    "id": "apt-383",
+    "category": "Verbal",
+    "question": "Identify the error: \"He is senior (A) / than me (B) / in service (C) / No error (D)\"",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": "B",
+    "explanation": "For comparison with 'senior', 'to' is used instead of 'than'. The correct phrase is 'senior to me'."
+  },
+  {
+    "id": "apt-384",
+    "category": "Verbal",
+    "question": "Find the synonym of: ELEVATE",
+    "options": [
+      "Raise",
+      "Lower",
+      "Drop",
+      "Demote"
+    ],
+    "answer": "Raise",
+    "explanation": "Elevate means to raise or lift up."
+  },
+  {
+    "id": "apt-385",
+    "category": "Verbal",
+    "question": "Find the antonym of: BRAVE",
+    "options": [
+      "Cowardly",
+      "Bold",
+      "Fearless",
+      "Heroic"
+    ],
+    "answer": "Cowardly",
+    "explanation": "Cowardly is the opposite of brave."
+  },
+  {
+    "id": "apt-386",
+    "category": "Verbal",
+    "question": "Identify the error: \"He is senior (A) / than me (B) / in service (C) / No error (D)\"",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": "B",
+    "explanation": "For comparison with 'senior', 'to' is used instead of 'than'. The correct phrase is 'senior to me'."
+  },
+  {
+    "id": "apt-387",
+    "category": "Verbal",
+    "question": "Find the synonym of: CANDID",
+    "options": [
+      "Honest",
+      "Deceitful",
+      "Secretive",
+      "Vague"
+    ],
+    "answer": "Honest",
+    "explanation": "Candid means truthful and straightforward."
+  },
+  {
+    "id": "apt-388",
+    "category": "Verbal",
+    "question": "Find the antonym of: ANCIENT",
+    "options": [
+      "Modern",
+      "Old",
+      "Historic",
+      "Antique"
+    ],
+    "answer": "Modern",
+    "explanation": "Modern is the antonym of ancient."
+  },
+  {
+    "id": "apt-389",
+    "category": "Verbal",
+    "question": "Identify the error: \"He is senior (A) / than me (B) / in service (C) / No error (D)\"",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": "B",
+    "explanation": "For comparison with 'senior', 'to' is used instead of 'than'. The correct phrase is 'senior to me'."
+  },
+  {
+    "id": "apt-390",
+    "category": "Verbal",
+    "question": "Find the synonym of: ABANDON",
+    "options": [
+      "Leave",
+      "Keep",
+      "Hold",
+      "Pursue"
+    ],
+    "answer": "Leave",
+    "explanation": "Abandon means to give up completely or leave."
+  },
+  {
+    "id": "apt-391",
+    "category": "Verbal",
+    "question": "Find the antonym of: EXPAND",
+    "options": [
+      "Shrink",
+      "Grow",
+      "Extend",
+      "Spread"
+    ],
+    "answer": "Shrink",
+    "explanation": "Shrink is the antonym of expand."
+  },
+  {
+    "id": "apt-392",
+    "category": "Verbal",
+    "question": "Identify the error: \"He is senior (A) / than me (B) / in service (C) / No error (D)\"",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": "B",
+    "explanation": "For comparison with 'senior', 'to' is used instead of 'than'. The correct phrase is 'senior to me'."
+  },
+  {
+    "id": "apt-393",
+    "category": "Verbal",
+    "question": "Find the synonym of: DILIGENT",
+    "options": [
+      "Hardworking",
+      "Lazy",
+      "Careless",
+      "Slow"
+    ],
+    "answer": "Hardworking",
+    "explanation": "Diligent means having or showing care and conscientiousness."
+  },
+  {
+    "id": "apt-394",
+    "category": "Verbal",
+    "question": "Find the antonym of: CREATE",
+    "options": [
+      "Destroy",
+      "Build",
+      "Make",
+      "Form"
+    ],
+    "answer": "Destroy",
+    "explanation": "Destroy is the antonym of create."
+  },
+  {
+    "id": "apt-395",
+    "category": "Verbal",
+    "question": "Identify the error: \"He is senior (A) / than me (B) / in service (C) / No error (D)\"",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": "B",
+    "explanation": "For comparison with 'senior', 'to' is used instead of 'than'. The correct phrase is 'senior to me'."
+  },
+  {
+    "id": "apt-396",
+    "category": "Verbal",
+    "question": "Find the synonym of: BENEFICIAL",
+    "options": [
+      "Helpful",
+      "Harmful",
+      "Useless",
+      "Worthless"
+    ],
+    "answer": "Helpful",
+    "explanation": "Beneficial means favorable or advantageous."
+  },
+  {
+    "id": "apt-397",
+    "category": "Verbal",
+    "question": "Find the antonym of: BRAVE",
+    "options": [
+      "Cowardly",
+      "Bold",
+      "Fearless",
+      "Heroic"
+    ],
+    "answer": "Cowardly",
+    "explanation": "Cowardly is the opposite of brave."
+  },
+  {
+    "id": "apt-398",
+    "category": "Verbal",
+    "question": "Identify the error: \"He is senior (A) / than me (B) / in service (C) / No error (D)\"",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": "B",
+    "explanation": "For comparison with 'senior', 'to' is used instead of 'than'. The correct phrase is 'senior to me'."
+  },
+  {
+    "id": "apt-399",
+    "category": "Verbal",
+    "question": "Find the synonym of: ELEVATE",
+    "options": [
+      "Raise",
+      "Lower",
+      "Drop",
+      "Demote"
+    ],
+    "answer": "Raise",
+    "explanation": "Elevate means to raise or lift up."
+  },
+  {
+    "id": "apt-400",
+    "category": "Verbal",
+    "question": "Find the antonym of: ANCIENT",
+    "options": [
+      "Modern",
+      "Old",
+      "Historic",
+      "Antique"
+    ],
+    "answer": "Modern",
+    "explanation": "Modern is the antonym of ancient."
+  },
+  {
+    "id": "apt-401",
+    "category": "Verbal",
+    "question": "Identify the error: \"He is senior (A) / than me (B) / in service (C) / No error (D)\"",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": "B",
+    "explanation": "For comparison with 'senior', 'to' is used instead of 'than'. The correct phrase is 'senior to me'."
+  },
+  {
+    "id": "apt-402",
+    "category": "Verbal",
+    "question": "Find the synonym of: CANDID",
+    "options": [
+      "Honest",
+      "Deceitful",
+      "Secretive",
+      "Vague"
+    ],
+    "answer": "Honest",
+    "explanation": "Candid means truthful and straightforward."
+  },
+  {
+    "id": "apt-403",
+    "category": "Verbal",
+    "question": "Find the antonym of: EXPAND",
+    "options": [
+      "Shrink",
+      "Grow",
+      "Extend",
+      "Spread"
+    ],
+    "answer": "Shrink",
+    "explanation": "Shrink is the antonym of expand."
+  },
+  {
+    "id": "apt-404",
+    "category": "Verbal",
+    "question": "Identify the error: \"He is senior (A) / than me (B) / in service (C) / No error (D)\"",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": "B",
+    "explanation": "For comparison with 'senior', 'to' is used instead of 'than'. The correct phrase is 'senior to me'."
+  },
+  {
+    "id": "apt-405",
+    "category": "Verbal",
+    "question": "Find the synonym of: ABANDON",
+    "options": [
+      "Leave",
+      "Keep",
+      "Hold",
+      "Pursue"
+    ],
+    "answer": "Leave",
+    "explanation": "Abandon means to give up completely or leave."
+  },
+  {
+    "id": "apt-406",
+    "category": "Verbal",
+    "question": "Find the antonym of: CREATE",
+    "options": [
+      "Destroy",
+      "Build",
+      "Make",
+      "Form"
+    ],
+    "answer": "Destroy",
+    "explanation": "Destroy is the antonym of create."
+  },
+  {
+    "id": "apt-407",
+    "category": "Verbal",
+    "question": "Identify the error: \"He is senior (A) / than me (B) / in service (C) / No error (D)\"",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": "B",
+    "explanation": "For comparison with 'senior', 'to' is used instead of 'than'. The correct phrase is 'senior to me'."
+  },
+  {
+    "id": "apt-408",
+    "category": "Verbal",
+    "question": "Find the synonym of: DILIGENT",
+    "options": [
+      "Hardworking",
+      "Lazy",
+      "Careless",
+      "Slow"
+    ],
+    "answer": "Hardworking",
+    "explanation": "Diligent means having or showing care and conscientiousness."
+  },
+  {
+    "id": "apt-409",
+    "category": "Verbal",
+    "question": "Find the antonym of: BRAVE",
+    "options": [
+      "Cowardly",
+      "Bold",
+      "Fearless",
+      "Heroic"
+    ],
+    "answer": "Cowardly",
+    "explanation": "Cowardly is the opposite of brave."
+  },
+  {
+    "id": "apt-410",
+    "category": "Verbal",
+    "question": "Identify the error: \"He is senior (A) / than me (B) / in service (C) / No error (D)\"",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": "B",
+    "explanation": "For comparison with 'senior', 'to' is used instead of 'than'. The correct phrase is 'senior to me'."
+  },
+  {
+    "id": "apt-411",
+    "category": "Verbal",
+    "question": "Find the synonym of: BENEFICIAL",
+    "options": [
+      "Helpful",
+      "Harmful",
+      "Useless",
+      "Worthless"
+    ],
+    "answer": "Helpful",
+    "explanation": "Beneficial means favorable or advantageous."
+  },
+  {
+    "id": "apt-412",
+    "category": "Verbal",
+    "question": "Find the antonym of: ANCIENT",
+    "options": [
+      "Modern",
+      "Old",
+      "Historic",
+      "Antique"
+    ],
+    "answer": "Modern",
+    "explanation": "Modern is the antonym of ancient."
+  },
+  {
+    "id": "apt-413",
+    "category": "Verbal",
+    "question": "Identify the error: \"He is senior (A) / than me (B) / in service (C) / No error (D)\"",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": "B",
+    "explanation": "For comparison with 'senior', 'to' is used instead of 'than'. The correct phrase is 'senior to me'."
+  },
+  {
+    "id": "apt-414",
+    "category": "Verbal",
+    "question": "Find the synonym of: ELEVATE",
+    "options": [
+      "Raise",
+      "Lower",
+      "Drop",
+      "Demote"
+    ],
+    "answer": "Raise",
+    "explanation": "Elevate means to raise or lift up."
+  },
+  {
+    "id": "apt-415",
+    "category": "Verbal",
+    "question": "Find the antonym of: EXPAND",
+    "options": [
+      "Shrink",
+      "Grow",
+      "Extend",
+      "Spread"
+    ],
+    "answer": "Shrink",
+    "explanation": "Shrink is the antonym of expand."
+  },
+  {
+    "id": "apt-416",
+    "category": "Verbal",
+    "question": "Identify the error: \"He is senior (A) / than me (B) / in service (C) / No error (D)\"",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": "B",
+    "explanation": "For comparison with 'senior', 'to' is used instead of 'than'. The correct phrase is 'senior to me'."
+  },
+  {
+    "id": "apt-417",
+    "category": "Verbal",
+    "question": "Find the synonym of: CANDID",
+    "options": [
+      "Honest",
+      "Deceitful",
+      "Secretive",
+      "Vague"
+    ],
+    "answer": "Honest",
+    "explanation": "Candid means truthful and straightforward."
+  },
+  {
+    "id": "apt-418",
+    "category": "Verbal",
+    "question": "Find the antonym of: CREATE",
+    "options": [
+      "Destroy",
+      "Build",
+      "Make",
+      "Form"
+    ],
+    "answer": "Destroy",
+    "explanation": "Destroy is the antonym of create."
+  },
+  {
+    "id": "apt-419",
+    "category": "Verbal",
+    "question": "Identify the error: \"He is senior (A) / than me (B) / in service (C) / No error (D)\"",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": "B",
+    "explanation": "For comparison with 'senior', 'to' is used instead of 'than'. The correct phrase is 'senior to me'."
+  },
+  {
+    "id": "apt-420",
+    "category": "Verbal",
+    "question": "Find the synonym of: ABANDON",
+    "options": [
+      "Leave",
+      "Keep",
+      "Hold",
+      "Pursue"
+    ],
+    "answer": "Leave",
+    "explanation": "Abandon means to give up completely or leave."
+  },
+  {
+    "id": "apt-421",
+    "category": "Verbal",
+    "question": "Find the antonym of: BRAVE",
+    "options": [
+      "Cowardly",
+      "Bold",
+      "Fearless",
+      "Heroic"
+    ],
+    "answer": "Cowardly",
+    "explanation": "Cowardly is the opposite of brave."
+  },
+  {
+    "id": "apt-422",
+    "category": "Verbal",
+    "question": "Identify the error: \"He is senior (A) / than me (B) / in service (C) / No error (D)\"",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": "B",
+    "explanation": "For comparison with 'senior', 'to' is used instead of 'than'. The correct phrase is 'senior to me'."
+  },
+  {
+    "id": "apt-423",
+    "category": "Verbal",
+    "question": "Find the synonym of: DILIGENT",
+    "options": [
+      "Hardworking",
+      "Lazy",
+      "Careless",
+      "Slow"
+    ],
+    "answer": "Hardworking",
+    "explanation": "Diligent means having or showing care and conscientiousness."
+  },
+  {
+    "id": "apt-424",
+    "category": "Verbal",
+    "question": "Find the antonym of: ANCIENT",
+    "options": [
+      "Modern",
+      "Old",
+      "Historic",
+      "Antique"
+    ],
+    "answer": "Modern",
+    "explanation": "Modern is the antonym of ancient."
+  },
+  {
+    "id": "apt-425",
+    "category": "Verbal",
+    "question": "Identify the error: \"He is senior (A) / than me (B) / in service (C) / No error (D)\"",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": "B",
+    "explanation": "For comparison with 'senior', 'to' is used instead of 'than'. The correct phrase is 'senior to me'."
+  },
+  {
+    "id": "apt-426",
+    "category": "Verbal",
+    "question": "Find the synonym of: BENEFICIAL",
+    "options": [
+      "Helpful",
+      "Harmful",
+      "Useless",
+      "Worthless"
+    ],
+    "answer": "Helpful",
+    "explanation": "Beneficial means favorable or advantageous."
+  },
+  {
+    "id": "apt-427",
+    "category": "Verbal",
+    "question": "Find the antonym of: EXPAND",
+    "options": [
+      "Shrink",
+      "Grow",
+      "Extend",
+      "Spread"
+    ],
+    "answer": "Shrink",
+    "explanation": "Shrink is the antonym of expand."
+  },
+  {
+    "id": "apt-428",
+    "category": "Verbal",
+    "question": "Identify the error: \"He is senior (A) / than me (B) / in service (C) / No error (D)\"",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": "B",
+    "explanation": "For comparison with 'senior', 'to' is used instead of 'than'. The correct phrase is 'senior to me'."
+  },
+  {
+    "id": "apt-429",
+    "category": "Verbal",
+    "question": "Find the synonym of: ELEVATE",
+    "options": [
+      "Raise",
+      "Lower",
+      "Drop",
+      "Demote"
+    ],
+    "answer": "Raise",
+    "explanation": "Elevate means to raise or lift up."
+  },
+  {
+    "id": "apt-430",
+    "category": "Verbal",
+    "question": "Find the antonym of: CREATE",
+    "options": [
+      "Destroy",
+      "Build",
+      "Make",
+      "Form"
+    ],
+    "answer": "Destroy",
+    "explanation": "Destroy is the antonym of create."
+  },
+  {
+    "id": "apt-431",
+    "category": "Verbal",
+    "question": "Identify the error: \"He is senior (A) / than me (B) / in service (C) / No error (D)\"",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": "B",
+    "explanation": "For comparison with 'senior', 'to' is used instead of 'than'. The correct phrase is 'senior to me'."
+  },
+  {
+    "id": "apt-432",
+    "category": "Verbal",
+    "question": "Find the synonym of: CANDID",
+    "options": [
+      "Honest",
+      "Deceitful",
+      "Secretive",
+      "Vague"
+    ],
+    "answer": "Honest",
+    "explanation": "Candid means truthful and straightforward."
+  },
+  {
+    "id": "apt-433",
+    "category": "Verbal",
+    "question": "Find the antonym of: BRAVE",
+    "options": [
+      "Cowardly",
+      "Bold",
+      "Fearless",
+      "Heroic"
+    ],
+    "answer": "Cowardly",
+    "explanation": "Cowardly is the opposite of brave."
+  },
+  {
+    "id": "apt-434",
+    "category": "Verbal",
+    "question": "Identify the error: \"He is senior (A) / than me (B) / in service (C) / No error (D)\"",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": "B",
+    "explanation": "For comparison with 'senior', 'to' is used instead of 'than'. The correct phrase is 'senior to me'."
+  },
+  {
+    "id": "apt-435",
+    "category": "Verbal",
+    "question": "Find the synonym of: ABANDON",
+    "options": [
+      "Leave",
+      "Keep",
+      "Hold",
+      "Pursue"
+    ],
+    "answer": "Leave",
+    "explanation": "Abandon means to give up completely or leave."
+  },
+  {
+    "id": "apt-436",
+    "category": "Verbal",
+    "question": "Find the antonym of: ANCIENT",
+    "options": [
+      "Modern",
+      "Old",
+      "Historic",
+      "Antique"
+    ],
+    "answer": "Modern",
+    "explanation": "Modern is the antonym of ancient."
+  },
+  {
+    "id": "apt-437",
+    "category": "Verbal",
+    "question": "Identify the error: \"He is senior (A) / than me (B) / in service (C) / No error (D)\"",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": "B",
+    "explanation": "For comparison with 'senior', 'to' is used instead of 'than'. The correct phrase is 'senior to me'."
+  },
+  {
+    "id": "apt-438",
+    "category": "Verbal",
+    "question": "Find the synonym of: DILIGENT",
+    "options": [
+      "Hardworking",
+      "Lazy",
+      "Careless",
+      "Slow"
+    ],
+    "answer": "Hardworking",
+    "explanation": "Diligent means having or showing care and conscientiousness."
+  },
+  {
+    "id": "apt-439",
+    "category": "Verbal",
+    "question": "Find the antonym of: EXPAND",
+    "options": [
+      "Shrink",
+      "Grow",
+      "Extend",
+      "Spread"
+    ],
+    "answer": "Shrink",
+    "explanation": "Shrink is the antonym of expand."
+  },
+  {
+    "id": "apt-440",
+    "category": "Verbal",
+    "question": "Identify the error: \"He is senior (A) / than me (B) / in service (C) / No error (D)\"",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": "B",
+    "explanation": "For comparison with 'senior', 'to' is used instead of 'than'. The correct phrase is 'senior to me'."
+  },
+  {
+    "id": "apt-441",
+    "category": "Verbal",
+    "question": "Find the synonym of: BENEFICIAL",
+    "options": [
+      "Helpful",
+      "Harmful",
+      "Useless",
+      "Worthless"
+    ],
+    "answer": "Helpful",
+    "explanation": "Beneficial means favorable or advantageous."
+  },
+  {
+    "id": "apt-442",
+    "category": "Verbal",
+    "question": "Find the antonym of: CREATE",
+    "options": [
+      "Destroy",
+      "Build",
+      "Make",
+      "Form"
+    ],
+    "answer": "Destroy",
+    "explanation": "Destroy is the antonym of create."
+  },
+  {
+    "id": "apt-443",
+    "category": "Verbal",
+    "question": "Identify the error: \"He is senior (A) / than me (B) / in service (C) / No error (D)\"",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": "B",
+    "explanation": "For comparison with 'senior', 'to' is used instead of 'than'. The correct phrase is 'senior to me'."
+  },
+  {
+    "id": "apt-444",
+    "category": "Verbal",
+    "question": "Find the synonym of: ELEVATE",
+    "options": [
+      "Raise",
+      "Lower",
+      "Drop",
+      "Demote"
+    ],
+    "answer": "Raise",
+    "explanation": "Elevate means to raise or lift up."
+  },
+  {
+    "id": "apt-445",
+    "category": "Verbal",
+    "question": "Find the antonym of: BRAVE",
+    "options": [
+      "Cowardly",
+      "Bold",
+      "Fearless",
+      "Heroic"
+    ],
+    "answer": "Cowardly",
+    "explanation": "Cowardly is the opposite of brave."
+  },
+  {
+    "id": "apt-446",
+    "category": "Verbal",
+    "question": "Identify the error: \"He is senior (A) / than me (B) / in service (C) / No error (D)\"",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": "B",
+    "explanation": "For comparison with 'senior', 'to' is used instead of 'than'. The correct phrase is 'senior to me'."
+  },
+  {
+    "id": "apt-447",
+    "category": "Verbal",
+    "question": "Find the synonym of: CANDID",
+    "options": [
+      "Honest",
+      "Deceitful",
+      "Secretive",
+      "Vague"
+    ],
+    "answer": "Honest",
+    "explanation": "Candid means truthful and straightforward."
+  },
+  {
+    "id": "apt-448",
+    "category": "Verbal",
+    "question": "Find the antonym of: ANCIENT",
+    "options": [
+      "Modern",
+      "Old",
+      "Historic",
+      "Antique"
+    ],
+    "answer": "Modern",
+    "explanation": "Modern is the antonym of ancient."
+  },
+  {
+    "id": "apt-449",
+    "category": "Verbal",
+    "question": "Identify the error: \"He is senior (A) / than me (B) / in service (C) / No error (D)\"",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": "B",
+    "explanation": "For comparison with 'senior', 'to' is used instead of 'than'. The correct phrase is 'senior to me'."
+  },
+  {
+    "id": "apt-450",
+    "category": "Verbal",
+    "question": "Find the synonym of: ABANDON",
+    "options": [
+      "Leave",
+      "Keep",
+      "Hold",
+      "Pursue"
+    ],
+    "answer": "Leave",
+    "explanation": "Abandon means to give up completely or leave."
+  },
+  {
+    "id": "apt-451",
+    "category": "Verbal",
+    "question": "Find the antonym of: EXPAND",
+    "options": [
+      "Shrink",
+      "Grow",
+      "Extend",
+      "Spread"
+    ],
+    "answer": "Shrink",
+    "explanation": "Shrink is the antonym of expand."
+  },
+  {
+    "id": "apt-452",
+    "category": "Verbal",
+    "question": "Identify the error: \"He is senior (A) / than me (B) / in service (C) / No error (D)\"",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": "B",
+    "explanation": "For comparison with 'senior', 'to' is used instead of 'than'. The correct phrase is 'senior to me'."
+  },
+  {
+    "id": "apt-453",
+    "category": "Verbal",
+    "question": "Find the synonym of: DILIGENT",
+    "options": [
+      "Hardworking",
+      "Lazy",
+      "Careless",
+      "Slow"
+    ],
+    "answer": "Hardworking",
+    "explanation": "Diligent means having or showing care and conscientiousness."
+  },
+  {
+    "id": "apt-454",
+    "category": "Verbal",
+    "question": "Find the antonym of: CREATE",
+    "options": [
+      "Destroy",
+      "Build",
+      "Make",
+      "Form"
+    ],
+    "answer": "Destroy",
+    "explanation": "Destroy is the antonym of create."
+  },
+  {
+    "id": "apt-455",
+    "category": "Verbal",
+    "question": "Identify the error: \"He is senior (A) / than me (B) / in service (C) / No error (D)\"",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": "B",
+    "explanation": "For comparison with 'senior', 'to' is used instead of 'than'. The correct phrase is 'senior to me'."
+  },
+  {
+    "id": "apt-456",
+    "category": "Verbal",
+    "question": "Find the synonym of: BENEFICIAL",
+    "options": [
+      "Helpful",
+      "Harmful",
+      "Useless",
+      "Worthless"
+    ],
+    "answer": "Helpful",
+    "explanation": "Beneficial means favorable or advantageous."
+  },
+  {
+    "id": "apt-457",
+    "category": "Verbal",
+    "question": "Find the antonym of: BRAVE",
+    "options": [
+      "Cowardly",
+      "Bold",
+      "Fearless",
+      "Heroic"
+    ],
+    "answer": "Cowardly",
+    "explanation": "Cowardly is the opposite of brave."
+  },
+  {
+    "id": "apt-458",
+    "category": "Verbal",
+    "question": "Identify the error: \"He is senior (A) / than me (B) / in service (C) / No error (D)\"",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": "B",
+    "explanation": "For comparison with 'senior', 'to' is used instead of 'than'. The correct phrase is 'senior to me'."
+  },
+  {
+    "id": "apt-459",
+    "category": "Verbal",
+    "question": "Find the synonym of: ELEVATE",
+    "options": [
+      "Raise",
+      "Lower",
+      "Drop",
+      "Demote"
+    ],
+    "answer": "Raise",
+    "explanation": "Elevate means to raise or lift up."
+  },
+  {
+    "id": "apt-460",
+    "category": "Verbal",
+    "question": "Find the antonym of: ANCIENT",
+    "options": [
+      "Modern",
+      "Old",
+      "Historic",
+      "Antique"
+    ],
+    "answer": "Modern",
+    "explanation": "Modern is the antonym of ancient."
+  },
+  {
+    "id": "apt-461",
+    "category": "Verbal",
+    "question": "Identify the error: \"He is senior (A) / than me (B) / in service (C) / No error (D)\"",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": "B",
+    "explanation": "For comparison with 'senior', 'to' is used instead of 'than'. The correct phrase is 'senior to me'."
+  },
+  {
+    "id": "apt-462",
+    "category": "Verbal",
+    "question": "Find the synonym of: CANDID",
+    "options": [
+      "Honest",
+      "Deceitful",
+      "Secretive",
+      "Vague"
+    ],
+    "answer": "Honest",
+    "explanation": "Candid means truthful and straightforward."
+  },
+  {
+    "id": "apt-463",
+    "category": "Verbal",
+    "question": "Find the antonym of: EXPAND",
+    "options": [
+      "Shrink",
+      "Grow",
+      "Extend",
+      "Spread"
+    ],
+    "answer": "Shrink",
+    "explanation": "Shrink is the antonym of expand."
+  },
+  {
+    "id": "apt-464",
+    "category": "Verbal",
+    "question": "Identify the error: \"He is senior (A) / than me (B) / in service (C) / No error (D)\"",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": "B",
+    "explanation": "For comparison with 'senior', 'to' is used instead of 'than'. The correct phrase is 'senior to me'."
+  },
+  {
+    "id": "apt-465",
+    "category": "Verbal",
+    "question": "Find the synonym of: ABANDON",
+    "options": [
+      "Leave",
+      "Keep",
+      "Hold",
+      "Pursue"
+    ],
+    "answer": "Leave",
+    "explanation": "Abandon means to give up completely or leave."
+  },
+  {
+    "id": "apt-466",
+    "category": "Verbal",
+    "question": "Find the antonym of: CREATE",
+    "options": [
+      "Destroy",
+      "Build",
+      "Make",
+      "Form"
+    ],
+    "answer": "Destroy",
+    "explanation": "Destroy is the antonym of create."
+  },
+  {
+    "id": "apt-467",
+    "category": "Verbal",
+    "question": "Identify the error: \"He is senior (A) / than me (B) / in service (C) / No error (D)\"",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": "B",
+    "explanation": "For comparison with 'senior', 'to' is used instead of 'than'. The correct phrase is 'senior to me'."
+  },
+  {
+    "id": "apt-468",
+    "category": "Verbal",
+    "question": "Find the synonym of: DILIGENT",
+    "options": [
+      "Hardworking",
+      "Lazy",
+      "Careless",
+      "Slow"
+    ],
+    "answer": "Hardworking",
+    "explanation": "Diligent means having or showing care and conscientiousness."
+  },
+  {
+    "id": "apt-469",
+    "category": "Verbal",
+    "question": "Find the antonym of: BRAVE",
+    "options": [
+      "Cowardly",
+      "Bold",
+      "Fearless",
+      "Heroic"
+    ],
+    "answer": "Cowardly",
+    "explanation": "Cowardly is the opposite of brave."
+  },
+  {
+    "id": "apt-470",
+    "category": "Verbal",
+    "question": "Identify the error: \"He is senior (A) / than me (B) / in service (C) / No error (D)\"",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": "B",
+    "explanation": "For comparison with 'senior', 'to' is used instead of 'than'. The correct phrase is 'senior to me'."
+  },
+  {
+    "id": "apt-471",
+    "category": "Verbal",
+    "question": "Find the synonym of: BENEFICIAL",
+    "options": [
+      "Helpful",
+      "Harmful",
+      "Useless",
+      "Worthless"
+    ],
+    "answer": "Helpful",
+    "explanation": "Beneficial means favorable or advantageous."
+  },
+  {
+    "id": "apt-472",
+    "category": "Verbal",
+    "question": "Find the antonym of: ANCIENT",
+    "options": [
+      "Modern",
+      "Old",
+      "Historic",
+      "Antique"
+    ],
+    "answer": "Modern",
+    "explanation": "Modern is the antonym of ancient."
+  },
+  {
+    "id": "apt-473",
+    "category": "Verbal",
+    "question": "Identify the error: \"He is senior (A) / than me (B) / in service (C) / No error (D)\"",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": "B",
+    "explanation": "For comparison with 'senior', 'to' is used instead of 'than'. The correct phrase is 'senior to me'."
+  },
+  {
+    "id": "apt-474",
+    "category": "Verbal",
+    "question": "Find the synonym of: ELEVATE",
+    "options": [
+      "Raise",
+      "Lower",
+      "Drop",
+      "Demote"
+    ],
+    "answer": "Raise",
+    "explanation": "Elevate means to raise or lift up."
+  },
+  {
+    "id": "apt-475",
+    "category": "Verbal",
+    "question": "Find the antonym of: EXPAND",
+    "options": [
+      "Shrink",
+      "Grow",
+      "Extend",
+      "Spread"
+    ],
+    "answer": "Shrink",
+    "explanation": "Shrink is the antonym of expand."
+  },
+  {
+    "id": "apt-476",
+    "category": "Verbal",
+    "question": "Identify the error: \"He is senior (A) / than me (B) / in service (C) / No error (D)\"",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": "B",
+    "explanation": "For comparison with 'senior', 'to' is used instead of 'than'. The correct phrase is 'senior to me'."
+  },
+  {
+    "id": "apt-477",
+    "category": "Verbal",
+    "question": "Find the synonym of: CANDID",
+    "options": [
+      "Honest",
+      "Deceitful",
+      "Secretive",
+      "Vague"
+    ],
+    "answer": "Honest",
+    "explanation": "Candid means truthful and straightforward."
+  },
+  {
+    "id": "apt-478",
+    "category": "Verbal",
+    "question": "Find the antonym of: CREATE",
+    "options": [
+      "Destroy",
+      "Build",
+      "Make",
+      "Form"
+    ],
+    "answer": "Destroy",
+    "explanation": "Destroy is the antonym of create."
+  },
+  {
+    "id": "apt-479",
+    "category": "Verbal",
+    "question": "Identify the error: \"He is senior (A) / than me (B) / in service (C) / No error (D)\"",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": "B",
+    "explanation": "For comparison with 'senior', 'to' is used instead of 'than'. The correct phrase is 'senior to me'."
+  },
+  {
+    "id": "apt-480",
+    "category": "Verbal",
+    "question": "Find the synonym of: ABANDON",
+    "options": [
+      "Leave",
+      "Keep",
+      "Hold",
+      "Pursue"
+    ],
+    "answer": "Leave",
+    "explanation": "Abandon means to give up completely or leave."
+  },
+  {
+    "id": "apt-481",
+    "category": "Verbal",
+    "question": "Find the antonym of: BRAVE",
+    "options": [
+      "Cowardly",
+      "Bold",
+      "Fearless",
+      "Heroic"
+    ],
+    "answer": "Cowardly",
+    "explanation": "Cowardly is the opposite of brave."
+  },
+  {
+    "id": "apt-482",
+    "category": "Verbal",
+    "question": "Identify the error: \"He is senior (A) / than me (B) / in service (C) / No error (D)\"",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": "B",
+    "explanation": "For comparison with 'senior', 'to' is used instead of 'than'. The correct phrase is 'senior to me'."
+  },
+  {
+    "id": "apt-483",
+    "category": "Verbal",
+    "question": "Find the synonym of: DILIGENT",
+    "options": [
+      "Hardworking",
+      "Lazy",
+      "Careless",
+      "Slow"
+    ],
+    "answer": "Hardworking",
+    "explanation": "Diligent means having or showing care and conscientiousness."
+  },
+  {
+    "id": "apt-484",
+    "category": "Verbal",
+    "question": "Find the antonym of: ANCIENT",
+    "options": [
+      "Modern",
+      "Old",
+      "Historic",
+      "Antique"
+    ],
+    "answer": "Modern",
+    "explanation": "Modern is the antonym of ancient."
+  },
+  {
+    "id": "apt-485",
+    "category": "Verbal",
+    "question": "Identify the error: \"He is senior (A) / than me (B) / in service (C) / No error (D)\"",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": "B",
+    "explanation": "For comparison with 'senior', 'to' is used instead of 'than'. The correct phrase is 'senior to me'."
+  },
+  {
+    "id": "apt-486",
+    "category": "Verbal",
+    "question": "Find the synonym of: BENEFICIAL",
+    "options": [
+      "Helpful",
+      "Harmful",
+      "Useless",
+      "Worthless"
+    ],
+    "answer": "Helpful",
+    "explanation": "Beneficial means favorable or advantageous."
+  },
+  {
+    "id": "apt-487",
+    "category": "Verbal",
+    "question": "Find the antonym of: EXPAND",
+    "options": [
+      "Shrink",
+      "Grow",
+      "Extend",
+      "Spread"
+    ],
+    "answer": "Shrink",
+    "explanation": "Shrink is the antonym of expand."
+  },
+  {
+    "id": "apt-488",
+    "category": "Verbal",
+    "question": "Identify the error: \"He is senior (A) / than me (B) / in service (C) / No error (D)\"",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": "B",
+    "explanation": "For comparison with 'senior', 'to' is used instead of 'than'. The correct phrase is 'senior to me'."
+  },
+  {
+    "id": "apt-489",
+    "category": "Verbal",
+    "question": "Find the synonym of: ELEVATE",
+    "options": [
+      "Raise",
+      "Lower",
+      "Drop",
+      "Demote"
+    ],
+    "answer": "Raise",
+    "explanation": "Elevate means to raise or lift up."
+  },
+  {
+    "id": "apt-490",
+    "category": "Verbal",
+    "question": "Find the antonym of: CREATE",
+    "options": [
+      "Destroy",
+      "Build",
+      "Make",
+      "Form"
+    ],
+    "answer": "Destroy",
+    "explanation": "Destroy is the antonym of create."
+  },
+  {
+    "id": "apt-491",
+    "category": "Verbal",
+    "question": "Identify the error: \"He is senior (A) / than me (B) / in service (C) / No error (D)\"",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": "B",
+    "explanation": "For comparison with 'senior', 'to' is used instead of 'than'. The correct phrase is 'senior to me'."
+  },
+  {
+    "id": "apt-492",
+    "category": "Verbal",
+    "question": "Find the synonym of: CANDID",
+    "options": [
+      "Honest",
+      "Deceitful",
+      "Secretive",
+      "Vague"
+    ],
+    "answer": "Honest",
+    "explanation": "Candid means truthful and straightforward."
+  },
+  {
+    "id": "apt-493",
+    "category": "Verbal",
+    "question": "Find the antonym of: BRAVE",
+    "options": [
+      "Cowardly",
+      "Bold",
+      "Fearless",
+      "Heroic"
+    ],
+    "answer": "Cowardly",
+    "explanation": "Cowardly is the opposite of brave."
+  },
+  {
+    "id": "apt-494",
+    "category": "Verbal",
+    "question": "Identify the error: \"He is senior (A) / than me (B) / in service (C) / No error (D)\"",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": "B",
+    "explanation": "For comparison with 'senior', 'to' is used instead of 'than'. The correct phrase is 'senior to me'."
+  },
+  {
+    "id": "apt-495",
+    "category": "Verbal",
+    "question": "Find the synonym of: ABANDON",
+    "options": [
+      "Leave",
+      "Keep",
+      "Hold",
+      "Pursue"
+    ],
+    "answer": "Leave",
+    "explanation": "Abandon means to give up completely or leave."
+  },
+  {
+    "id": "apt-496",
+    "category": "Verbal",
+    "question": "Find the antonym of: ANCIENT",
+    "options": [
+      "Modern",
+      "Old",
+      "Historic",
+      "Antique"
+    ],
+    "answer": "Modern",
+    "explanation": "Modern is the antonym of ancient."
+  },
+  {
+    "id": "apt-497",
+    "category": "Verbal",
+    "question": "Identify the error: \"He is senior (A) / than me (B) / in service (C) / No error (D)\"",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": "B",
+    "explanation": "For comparison with 'senior', 'to' is used instead of 'than'. The correct phrase is 'senior to me'."
+  },
+  {
+    "id": "apt-498",
+    "category": "Verbal",
+    "question": "Find the synonym of: DILIGENT",
+    "options": [
+      "Hardworking",
+      "Lazy",
+      "Careless",
+      "Slow"
+    ],
+    "answer": "Hardworking",
+    "explanation": "Diligent means having or showing care and conscientiousness."
+  },
+  {
+    "id": "apt-499",
+    "category": "Verbal",
+    "question": "Find the antonym of: EXPAND",
+    "options": [
+      "Shrink",
+      "Grow",
+      "Extend",
+      "Spread"
+    ],
+    "answer": "Shrink",
+    "explanation": "Shrink is the antonym of expand."
+  },
+  {
+    "id": "apt-500",
+    "category": "Verbal",
+    "question": "Identify the error: \"He is senior (A) / than me (B) / in service (C) / No error (D)\"",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "answer": "B",
+    "explanation": "For comparison with 'senior', 'to' is used instead of 'than'. The correct phrase is 'senior to me'."
+  }
+]

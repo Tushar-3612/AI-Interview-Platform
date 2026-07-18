@@ -104,15 +104,6 @@ function InterviewPractice() {
                   <h3 className="font-semibold text-sm" style={{ color: "var(--text-primary)" }}>
                     {company.name}
                   </h3>
-                  <span
-                    className="text-xs font-medium px-2 py-0.5 rounded-full"
-                    style={{
-                      color: company.difficulty === "Hard" ? "var(--error)" : company.difficulty === "Medium" ? "var(--primary)" : "var(--success)",
-                      background: "color-mix(in srgb, var(--primary) 8%, transparent)",
-                    }}
-                  >
-                    {company.difficulty}
-                  </span>
                 </div>
               </div>
 

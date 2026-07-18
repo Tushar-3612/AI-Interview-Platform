@@ -280,6 +280,63 @@ Use exactly this JSON structure:
   }
 );
 
+app.post("/api/interview/evaluate-technical", async (req, res) => {
+  try {
+    const { question, answer } = req.body;
+    if (!question || !answer) {
+      return res.status(400).json({ message: "Question and answer are required" });
+    }
+
+    if (!process.env.GEMINI_API_KEY) {
+      console.warn("GEMINI_API_KEY is not defined, using mock fallback evaluator");
+      let score = 5;
+      let feedback = "Your answer was received. Set GEMINI_API_KEY for AI feedback.";
+      if (answer.trim().length > 100) {
+        score = 8;
+        feedback = "Good explanation. The answer is descriptive, details core properties, and demonstrates understanding.";
+      } else if (answer.trim().length > 40) {
+        score = 6;
+        feedback = "Fair answer. Try to elaborate on technical details, syntax, and use cases.";
+      } else {
+        score = 4;
+        feedback = "The answer is too brief. Please explain the concepts in more depth and detail.";
+      }
+      return res.json({ score, feedback });
+    }
+
+    const prompt = `
+You are an expert technical interviewer. Evaluate the candidate's answer to the following technical question:
+
+Question: ${question}
+Candidate's Answer: ${answer}
+
+Provide your evaluation in a JSON structure containing:
+1. "score": a number from 0 to 10 (representing how correct and complete the answer is)
+2. "feedback": a brief 2-3 sentence explanation of the score, pointing out correctness, missing details, and how to improve.
+
+Return ONLY valid JSON.
+`;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+      },
+    });
+
+    const result = JSON.parse(response.text);
+    res.json({
+      score: result.score ?? 5,
+      feedback: result.feedback ?? "Unable to generate specific feedback."
+    });
+  } catch (error) {
+    console.error("AI evaluation failed:", error.message);
+    res.status(500).json({ message: "AI evaluation failed", error: error.message });
+  }
+});
+
+
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {

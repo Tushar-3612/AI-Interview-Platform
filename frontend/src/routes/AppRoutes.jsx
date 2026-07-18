@@ -14,6 +14,11 @@ import Contact from "../pages/student/Contact";
 import InterviewHistory from "../pages/student/InterviewHistory";
 import Results from "../pages/student/Results";
 
+import RoundSelection from "../pages/student/RoundSelection";
+import AptitudeRound from "../pages/student/AptitudeRound";
+import CodingRound from "../pages/student/CodingRound";
+import InterviewResult from "../pages/student/InterviewResult";
+
 /**
  * Application route definitions.
  */
@@ -32,7 +37,11 @@ function AppRoutes() {
         <Route path="/dashboard" element={<Home />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/interview-practice" element={<InterviewPractice />} />
-        <Route path="/interview-practice/:companyId" element={<PracticeQuestion />} />
+        <Route path="/interview-practice/:companyId" element={<RoundSelection />} />
+        <Route path="/interview-practice/:companyId/aptitude" element={<AptitudeRound />} />
+        <Route path="/interview-practice/:companyId/technical" element={<PracticeQuestion />} />
+        <Route path="/interview-practice/:companyId/coding" element={<CodingRound />} />
+        <Route path="/interview-practice/:companyId/result" element={<InterviewResult />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/interview-history" element={<InterviewHistory />} />
@@ -41,5 +50,6 @@ function AppRoutes() {
     </Routes>
   );
 }
+
 
 export default AppRoutes;
