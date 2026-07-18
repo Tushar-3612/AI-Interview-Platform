@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+// import { Link } from "react-router-dom";
 import { Mail, Lock } from "lucide-react";
 import toast from "react-hot-toast";
 import AuthLayout from "../layouts/AuthLayout";
@@ -7,11 +7,14 @@ import InputField from "../components/ui/InputField";
 import Button from "../components/ui/Button";
 import api from "../utils/api";
 import { validateEmail } from "../utils/validators";
+import { Link, useNavigate } from "react-router-dom";
 
 /**
  * Login Page — student & admin authentication.
  */
 function Login() {
+    const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -56,9 +59,9 @@ function Login() {
       toast.success(data.message);
 
       if (data.user.role === "admin") {
-        toast("Admin dashboard coming soon", { icon: "ℹ️" });
+        navigate("/admin/dashboard");
       } else {
-        toast("Student dashboard coming soon", { icon: "ℹ️" });
+        navigate("/dashboard");
       }
     } catch (error) {
       toast.error(
@@ -125,7 +128,9 @@ function Login() {
 
         <Button type="submit" loading={loading} className="py-2.5">
           Login
+          
         </Button>
+        {/* <link rel="stylesheet" href="" /> */}
       </form>
 
       <p className="text-center text-xs mt-5 pt-3 border-t border-[var(--border)]" style={{ color: "var(--text-secondary)" }}>

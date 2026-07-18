@@ -13,6 +13,7 @@
   --card-border: #e2e8f0;
   --text-primary: #0f172a;
   --text-secondary: #475569;
+  --text-muted: #94a3b8;
   --border: #e2e8f0;
   --primary: #2563eb;
   --primary-hover: #1d4ed8;
@@ -25,6 +26,7 @@
   --shadow-card: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
   --input-bg: #ffffff;
   --glass-blur: 8px;
+  --navbar-bg: rgba(255, 255, 255, 0.82);
   --toggle-bg: #ffffff;
   --feature-bg: #ffffff;
   --illustration-glow: rgba(37, 99, 235, 0.03);
@@ -39,6 +41,8 @@
   --card-border: #222222;
   --text-primary: #ffffff;
   --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
+  --navbar-bg: rgba(10, 10, 10, 0.82);
   --border: #222222;
   --primary: #2563eb;
   --primary-hover: #1d4ed8;
@@ -50,7 +54,7 @@
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.8), 0 4px 6px -4px rgba(0, 0, 0, 0.6);
   --shadow-card: 0 20px 25px -5px rgba(0, 0, 0, 0.9), 0 10px 10px -5px rgba(0, 0, 0, 0.8);
   --input-bg: #111111;
-  --glass-blur: 0px;
+  --glass-blur: 16px;
   --toggle-bg: #111111;
   --feature-bg: #111111;
   --illustration-glow: rgba(37, 99, 235, 0.01);
