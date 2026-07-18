@@ -13,6 +13,7 @@ import About from "../pages/student/About";
 import Contact from "../pages/student/Contact";
 import InterviewHistory from "../pages/student/InterviewHistory";
 import Results from "../pages/student/Results";
+import StartInterview from "../pages/student/StartInterview";
 
 /**
  * Application route definitions.
@@ -26,6 +27,9 @@ function AppRoutes() {
       <Route path="/registration-success" element={<RegistrationSuccess />} />
       <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+
+      {/* Standalone Interview Room */}
+      <Route path="/start-interview" element={<StartInterview />} />
 
       {/* Student portal */}
       <Route element={<StudentLayout />}>
