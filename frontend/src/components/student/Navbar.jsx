@@ -13,6 +13,7 @@ import {
   Settings,
   LogOut,
   Play,
+  ClipboardCheck,
 } from "lucide-react";
 import { useTheme } from "../../hooks/useTheme";
 import { getAuthUser } from "../../hooks/useStudentProfile";
@@ -20,6 +21,7 @@ import Logo from "../ui/Logo";
 
 const NAV_LINKS = [
   { label: "Home", path: "/dashboard" },
+  { label: "My Tests", path: "/tests" },
   { label: "Interview Practice", path: "/interview-practice" },
   { label: "About", path: "/about" },
   { label: "Contact", path: "/contact" },

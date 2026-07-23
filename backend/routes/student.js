@@ -11,6 +11,19 @@ import {
   getInterviews,
   getResults,
 } from "../controllers/studentController.js";
+import {
+  getAssignedTests,
+  startTest,
+  saveAnswer,
+  getAttemptState,
+  recordTabSwitch,
+  submitTest,
+  getTestResult,
+} from "../controllers/testAttemptController.js";
+import {
+  getStudentResults,
+  getStudentResultByAttempt,
+} from "../controllers/resultController.js";
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -33,5 +46,18 @@ router.post("/interviews/:interviewId/complete", completeInterview);
 // Fetching history
 router.get("/interviews", getInterviews);
 router.get("/results", getResults);
+
+// ─── Test Engine ───
+router.get("/tests", getAssignedTests);
+router.post("/tests/:testId/start", startTest);
+router.get("/tests/attempt/:attemptId", getAttemptState);
+router.post("/tests/attempt/:attemptId/answer", saveAnswer);
+router.post("/tests/attempt/:attemptId/tab-switch", recordTabSwitch);
+router.post("/tests/attempt/:attemptId/submit", submitTest);
+router.get("/tests/attempt/:attemptId/result", getTestResult);
+
+// ─── Test Results (Student) ───
+router.get("/tests/results", getStudentResults);
+router.get("/tests/results/:attemptId", getStudentResultByAttempt);
 
 export default router;

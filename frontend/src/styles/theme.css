@@ -30,6 +30,27 @@
   --toggle-bg: #ffffff;
   --feature-bg: #ffffff;
   --illustration-glow: rgba(37, 99, 235, 0.03);
+
+  /* Admin-specific surfaces */
+  --admin-accent: #F97316;
+  --admin-navy: #4CC9F0;
+  --admin-accent-bg: rgba(249, 115, 22, 0.1);
+  --admin-navy-bg: rgba(76, 201, 240, 0.1);
+  --admin-surface-hover: #f1f5f9;
+  --admin-divider: #f1f5f9;
+  --admin-modal-overlay: rgba(0, 0, 0, 0.4);
+  --admin-success-bg: rgba(5, 150, 105, 0.1);
+  --admin-error-bg: rgba(220, 38, 38, 0.1);
+  --badge-success-bg: #ecfdf5;
+  --badge-success-text: #059669;
+  --badge-warning-bg: #fffbeb;
+  --badge-warning-text: #d97706;
+  --badge-error-bg: #fef2f2;
+  --badge-error-text: #dc2626;
+  --badge-info-bg: #eff6ff;
+  --badge-info-text: #2563eb;
+  --badge-purple-bg: #f5f3ff;
+  --badge-purple-text: #7c3aed;
 }
 
 [data-theme="dark"] {
@@ -58,4 +79,25 @@
   --toggle-bg: #111111;
   --feature-bg: #111111;
   --illustration-glow: rgba(37, 99, 235, 0.01);
+
+  /* Admin-specific surfaces */
+  --admin-accent: #F97316;
+  --admin-navy: #4CC9F0;
+  --admin-accent-bg: rgba(249, 115, 22, 0.2);
+  --admin-navy-bg: rgba(76, 201, 240, 0.2);
+  --admin-surface-hover: #27272a;
+  --admin-divider: #27272a;
+  --admin-modal-overlay: rgba(0, 0, 0, 0.7);
+  --admin-success-bg: rgba(5, 150, 105, 0.2);
+  --admin-error-bg: rgba(220, 38, 38, 0.2);
+  --badge-success-bg: rgba(5, 150, 105, 0.15);
+  --badge-success-text: #34d399;
+  --badge-warning-bg: rgba(217, 119, 6, 0.15);
+  --badge-warning-text: #fbbf24;
+  --badge-error-bg: rgba(220, 38, 38, 0.15);
+  --badge-error-text: #f87171;
+  --badge-info-bg: rgba(37, 99, 235, 0.15);
+  --badge-info-text: #60a5fa;
+  --badge-purple-bg: rgba(124, 58, 237, 0.15);
+  --badge-purple-text: #a78bfa;
 }

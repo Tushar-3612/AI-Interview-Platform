@@ -16,6 +16,8 @@ import {
   deleteCompany,
   getCompanyAnalytics,
   getInterviewsReport,
+  getAnalytics,
+  getResumes,
 } from "../controllers/adminController.js";
 
 const router = express.Router();
@@ -44,5 +46,8 @@ router.post("/companies", addCompany);
 router.put("/companies/:id", updateCompany);
 router.delete("/companies/:id", deleteCompany);
 router.get("/companies/analytics", getCompanyAnalytics);
+
+router.get("/analytics", getAnalytics);
+router.get("/resumes/list", getResumes);
 
 export default router;

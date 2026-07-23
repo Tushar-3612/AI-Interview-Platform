@@ -1,13 +1,26 @@
 import express from "express";
 import cors from "cors";
+import helmet from "helmet";
+import compression from "compression";
+import mongoSanitize from "express-mongo-sanitize";
 import multer from "multer";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
-import connectDB from "./backend/config/db.js";  // ← Path sahi hai
-import authRoutes from "./backend/routes/auth.js"; // ← Path sahi hai
+import connectDB from "./backend/config/db.js";
+import authRoutes from "./backend/routes/auth.js";
 import adminRoutes from "./backend/routes/admin.js";
 import studentRoutes from "./backend/routes/student.js";
+import testRoutes from "./backend/routes/test.js";
+import aiEvaluationRoutes from "./backend/routes/aiEvaluation.js";
+import reportRoutes from "./backend/routes/report.js";
+import companyRoutes from "./backend/routes/company.js";
+import emailRoutes from "./backend/routes/email.js";
+import notificationRoutes from "./backend/routes/notification.js";
+import auditLogRoutes from "./backend/routes/auditLog.js";
+import systemConfigRoutes from "./backend/routes/systemConfig.js";
+import backupRoutes from "./backend/routes/backup.js";
 import { initializeCSVExports } from "./backend/utils/csvExporter.js"; // ← Path sahi hai
+import { apiLimiter } from "./backend/middleware/rateLimiter.js";
 
 // Load .env from root
 dotenv.config(); // ← Ye root mein .env file dhoondhega
@@ -30,6 +43,11 @@ initializeCSVExports();
 
 const app = express();
 
+// Security middleware
+app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" }, contentSecurityPolicy: false }));
+app.use(compression());
+app.use(mongoSanitize());
+
 // CORS setup - Frontend URL ke saath
 app.use(cors({
   origin: 'http://localhost:5173',
@@ -37,14 +55,26 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
-app.use(express.json());
+app.use(express.json({ limit: "10mb" }));
+
+// Rate limiting (applied after CORS)
+app.use("/api", apiLimiter);
 
 /* ================================
-   AUTH ROUTES
+   ROUTES
    ================================ */
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/student", studentRoutes);
+app.use("/api/tests", testRoutes);
+app.use("/api/ai-evaluation", aiEvaluationRoutes);
+app.use("/api/reports", reportRoutes);
+app.use("/api/companies", companyRoutes);
+app.use("/api/email", emailRoutes);
+app.use("/api/notifications", notificationRoutes);
+app.use("/api/audit-logs", auditLogRoutes);
+app.use("/api/system-config", systemConfigRoutes);
+app.use("/api/backup", backupRoutes);
 
 // Health Check Route (Add this for testing)
 app.get("/api/health", (req, res) => {

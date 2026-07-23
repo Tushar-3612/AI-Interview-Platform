@@ -1,9 +1,17 @@
-// backend/config/db.js
-
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 
 dotenv.config();
+
+const MONGOOSE_OPTIONS = {
+  tls: true,
+  tlsAllowInvalidCertificates: false,
+  serverSelectionTimeoutMS: 30000,
+  socketTimeoutMS: 45000,
+  heartbeatFrequencyMS: 10000,
+  retryWrites: true,
+  w: "majority",
+};
 
 const connectDB = async () => {
   try {
@@ -13,11 +21,22 @@ const connectDB = async () => {
       throw new Error("MONGO_URI is not defined in .env file");
     }
 
-    await mongoose.connect(mongoURI);
+    mongoose.connection.on("error", (err) => {
+      console.error("❌ MongoDB runtime connection error:", err.message);
+    });
+
+    mongoose.connection.on("disconnected", () => {
+      console.warn("⚠️ MongoDB disconnected. Attempting to reconnect...");
+    });
+
+    mongoose.connection.on("reconnected", () => {
+      console.log("✅ MongoDB reconnected");
+    });
+
+    await mongoose.connect(mongoURI, MONGOOSE_OPTIONS);
 
     console.log("✅ MongoDB Connected Successfully");
 
-    // Seed default companies
     const Company = (await import("../models/Company.js")).default;
     const count = await Company.countDocuments();
     if (count === 0) {
@@ -48,6 +67,8 @@ const connectDB = async () => {
     }
   } catch (error) {
     console.error("❌ MongoDB Connection Error:", error.message);
+    console.error("Stack:", error.stack);
+    process.exit(1);
   }
 };
 

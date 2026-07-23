@@ -1,260 +1,166 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Plus,
-  Edit2,
-  Trash2,
-  Cpu,
-  Code2,
-  MessageSquare,
-  AlertTriangle,
-  Play,
-  TrendingUp,
-} from "lucide-react";
+import { Plus, Edit2, Trash2, AlertTriangle, Building2, Globe, MapPin, DollarSign, Users, Cpu, Code2, MessageSquare, Eye } from "lucide-react";
 import api from "../../utils/api";
 import { getAuthToken } from "../../hooks/useStudentProfile";
 import toast from "react-hot-toast";
 
+const DEPARTMENTS = ["Computer Engineering", "IT Engineering", "Electronics Engineering", "Mechanical Engineering", "Civil Engineering", "ENTC Engineering", "AI & DS"];
+const YEARS = ["FE", "SE", "TE", "BE"];
+const DIFFICULTIES = ["Easy", "Medium", "Hard"];
+const INTERVIEW_TYPES = ["practice", "real", "both"];
+
 function CompanyManagement() {
   const token = getAuthToken();
-
+  const headers = { Authorization: `Bearer ${token}` };
   const [companies, setCompanies] = useState([]);
   const [analytics, setAnalytics] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  // Modals
-  const [modalOpen, setModalOpen] = useState(false);
-  const [modalType, setModalType] = useState("add"); // "add" or "edit"
   const [selectedCompany, setSelectedCompany] = useState(null);
+  const [viewCompany, setViewCompany] = useState(null);
+  const [viewData, setViewData] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalType, setModalType] = useState("add");
   const [form, setForm] = useState({
-    name: "",
-    color: "#2563EB",
-    technical: 10,
-    coding: 5,
-    hr: 5,
-    difficulty: "Medium",
+    name: "", color: "#2563EB", logo: "", description: "", website: "", location: "",
+    package: "", eligibleDepartments: [], eligibleYears: [], requiredSkills: [],
+    selectionProcess: "", passingPercentage: 0, minimumCGPA: 0,
+    interviewType: "practice", status: "active",
+    technical: 15, coding: 10, hr: 5, difficulty: "Medium",
   });
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
 
-  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  const [companyToDelete, setCompanyToDelete] = useState(null);
-
-  const fetchCompaniesAndAnalytics = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const headers = { Authorization: `Bearer ${token}` };
       const [compRes, analyticsRes] = await Promise.all([
-        api.get("/api/admin/companies", { headers }),
-        api.get("/api/admin/companies/analytics", { headers }),
+        api.get("/api/companies", { headers }),
+        api.get("/api/companies/analytics", { headers }),
       ]);
       setCompanies(compRes.data || []);
       setAnalytics(analyticsRes.data || []);
-    } catch (error) {
-      console.error("Error loading companies", error);
-      toast.error("Failed to load companies data");
-    } finally {
-      setLoading(false);
-    }
-  }, [token]);
+    } catch { toast.error("Failed to load companies"); }
+    finally { setLoading(false); }
+  }, []);
 
-  useEffect(() => {
-    fetchCompaniesAndAnalytics();
-  }, [fetchCompaniesAndAnalytics]);
+  useEffect(() => { fetchData(); }, [fetchData]);
 
-  const handleOpenAdd = () => {
-    setModalType("add");
-    setForm({
-      name: "",
-      color: "#2563EB",
-      technical: 15,
-      coding: 10,
-      hr: 5,
-      difficulty: "Medium",
-    });
+  const openAdd = () => {
+    setModalType("add"); setSelectedCompany(null);
+    setForm({ name: "", color: "#2563EB", logo: "", description: "", website: "", location: "", package: "", eligibleDepartments: [], eligibleYears: [], requiredSkills: [], selectionProcess: "", passingPercentage: 0, minimumCGPA: 0, interviewType: "practice", status: "active", technical: 15, coding: 10, hr: 5, difficulty: "Medium" });
     setModalOpen(true);
   };
 
-  const handleOpenEdit = (company) => {
-    setSelectedCompany(company);
-    setModalType("edit");
+  const openEdit = (company) => {
+    setModalType("edit"); setSelectedCompany(company);
     setForm({
-      name: company.name || "",
-      color: company.color || "#2563EB",
-      technical: company.technical || 0,
-      coding: company.coding || 0,
-      hr: company.hr || 0,
+      name: company.name || "", color: company.color || "#2563EB",
+      logo: company.logo || "", description: company.description || "",
+      website: company.website || "", location: company.location || "",
+      package: company.package || "", eligibleDepartments: company.eligibleDepartments || [],
+      eligibleYears: company.eligibleYears || [], requiredSkills: company.requiredSkills || [],
+      selectionProcess: company.selectionProcess || "",
+      passingPercentage: company.passingPercentage || 0, minimumCGPA: company.minimumCGPA || 0,
+      interviewType: company.interviewType || "practice", status: company.status || "active",
+      technical: company.technical ?? 15, coding: company.coding ?? 10, hr: company.hr ?? 5,
       difficulty: company.difficulty || "Medium",
     });
     setModalOpen(true);
   };
 
-  const handleFormSubmit = async (e) => {
+  const handleView = async (company) => {
+    try {
+      const { data } = await api.get(`/api/companies/${company._id}`, { headers });
+      setViewData(data);
+      setViewCompany(company);
+    } catch { toast.error("Failed to load company details"); }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const headers = { Authorization: `Bearer ${token}` };
       if (modalType === "add") {
-        await api.post("/api/admin/companies", form, { headers });
-        toast.success("New company profile generated");
+        await api.post("/api/companies", form, { headers });
+        toast.success("Company added");
       } else {
-        await api.put(`/api/admin/companies/${selectedCompany._id}`, form, { headers });
-        toast.success("Company profile modified");
+        await api.put(`/api/companies/${selectedCompany._id}`, form, { headers });
+        toast.success("Company updated");
       }
-      setModalOpen(false);
-      fetchCompaniesAndAnalytics();
-    } catch (error) {
-      console.error("Error saving company", error);
-      toast.error(error.response?.data?.message || "Failed to save company");
-    }
+      setModalOpen(false); fetchData();
+    } catch (err) { toast.error(err.response?.data?.message || "Failed to save"); }
   };
 
-  const handleOpenDelete = (company) => {
-    setCompanyToDelete(company);
-    setDeleteConfirmOpen(true);
-  };
-
-  const handleConfirmDelete = async () => {
+  const handleDelete = async () => {
     try {
-      await api.delete(`/api/admin/companies/${companyToDelete._id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      toast.success("Company profile deleted successfully");
-      setDeleteConfirmOpen(false);
-      fetchCompaniesAndAnalytics();
-    } catch (error) {
-      console.error("Error deleting company", error);
-      toast.error("Failed to delete company profile");
-    }
+      await api.delete(`/api/companies/${deleteConfirm._id}`, { headers });
+      toast.success("Company deleted"); setDeleteConfirm(null); fetchData();
+    } catch { toast.error("Delete failed"); }
   };
+
+  const toggleArrayField = (field, value) => {
+    setForm(prev => ({
+      ...prev,
+      [field]: prev[field].includes(value) ? prev[field].filter(v => v !== value) : [...prev[field], value],
+    }));
+  };
+
+  const inputCls = "w-full px-3 py-2 text-sm border rounded-xl bg-transparent outline-none focus:ring-2 focus:ring-[var(--primary)]";
+  const selCls = "w-full px-3 py-2 text-sm border rounded-xl bg-transparent outline-none focus:ring-2 focus:ring-[var(--primary)] appearance-none cursor-pointer";
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight" style={{ color: "var(--text-primary)" }}>
-            Company Management
-          </h1>
-          <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>
-            Configure and monitor company specific placement mock databases.
-          </p>
-        </motion.div>
-        <motion.button
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          onClick={handleOpenAdd}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-white btn-gradient cursor-pointer"
-        >
-          <Plus className="w-4 h-4" />
-          Add Placement Target
-        </motion.button>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>Company Management</h1>
+          <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>Manage placement companies and track performance</p>
+        </div>
+        <button onClick={openAdd} className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-white cursor-pointer" style={{ background: "var(--primary)" }}>
+          <Plus className="w-4 h-4" /> Add Company
+        </button>
       </div>
 
-      {/* Grid of Companies */}
       {loading ? (
-        <div className="flex flex-col items-center justify-center min-h-[40vh] gap-4">
-          <div className="w-10 h-10 border-4 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm" style={{ color: "var(--text-secondary)" }}>Loading company profiles...</p>
-        </div>
+        <div className="flex justify-center py-20"><div className="w-8 h-8 border-2 border-[var(--primary)] border-t-transparent rounded-full animate-spin" /></div>
       ) : companies.length === 0 ? (
-        <div className="text-center py-20 student-card">
-          <AlertTriangle className="w-10 h-10 mx-auto mb-3" style={{ color: "var(--text-muted)" }} />
-          <p className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>No companies cataloged yet. Seed them or create one.</p>
+        <div className="text-center py-20 border rounded-2xl" style={{ borderColor: "var(--border)" }}>
+          <Building2 className="w-10 h-10 mx-auto mb-3" style={{ color: "var(--text-muted)" }} />
+          <p className="text-sm" style={{ color: "var(--text-muted)" }}>No companies yet.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {companies.map((company, i) => {
-            // Find analytics matching this company ID
-            const analytic = analytics.find((a) => a.companyId === company.id) || {};
-            const attempts = analytic.attempts || 0;
-            const avgScore = analytic.averageScore || 0;
-            const bestScore = analytic.bestScore || 0;
-
+            const analytic = analytics.find(a => a.companyId === company.id) || {};
             return (
-              <motion.div
-                key={company._id}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.04 }}
-                className="student-card p-5 space-y-4 text-left"
-              >
-                {/* Header card with name and edit actions */}
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-extrabold text-sm shrink-0"
-                      style={{ background: company.color || "#2563EB" }}
-                    >
-                      {company.name[0]?.toUpperCase()}
+              <motion.div key={company._id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}
+                className="border rounded-2xl p-5" style={{ background: "var(--card-bg)", borderColor: "var(--border)" }}>
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm" style={{ background: company.color || "#2563EB" }}>
+                      {company.name?.[0]?.toUpperCase()}
                     </div>
-                    <div className="min-w-0">
-                      <h4 className="font-bold text-sm truncate max-w-[120px]" style={{ color: "var(--text-primary)" }}>
-                        {company.name}
-                      </h4>
-                      <span
-                        className="text-[9px] font-semibold px-2 py-0.5 rounded-full"
-                        style={{
-                          color: company.difficulty === "Hard" ? "var(--error)" : company.difficulty === "Medium" ? "var(--primary)" : "var(--success)",
-                          background: "color-mix(in srgb, var(--primary) 7%, transparent)",
-                        }}
-                      >
-                        {company.difficulty}
+                    <div>
+                      <h4 className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>{company.name}</h4>
+                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${company.status === "active" ? "text-green-600 bg-green-50 dark:bg-green-900/20" : "text-gray-400 bg-gray-100 dark:bg-gray-800"}`}>
+                        {company.status}
                       </span>
                     </div>
                   </div>
                   <div className="flex gap-1">
-                    <button
-                      type="button"
-                      onClick={() => handleOpenEdit(company)}
-                      title="Edit Company"
-                      className="p-1.5 border rounded-lg hover:bg-slate-50 dark:hover:bg-zinc-800 cursor-pointer"
-                      style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
-                    >
-                      <Edit2 className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleOpenDelete(company)}
-                      title="Delete Company"
-                      className="p-1.5 border rounded-lg hover:bg-red-50 dark:hover:bg-red-950/20 cursor-pointer"
-                      style={{ borderColor: "var(--border)", color: "var(--error)" }}
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                    <button onClick={() => handleView(company)} className="p-1.5 rounded-lg cursor-pointer" style={{ color: "var(--primary)" }} title="View"><Eye className="w-3.5 h-3.5" /></button>
+                    <button onClick={() => openEdit(company)} className="p-1.5 rounded-lg cursor-pointer" style={{ color: "var(--text-secondary)" }} title="Edit"><Edit2 className="w-3.5 h-3.5" /></button>
+                    <button onClick={() => setDeleteConfirm(company)} className="p-1.5 rounded-lg cursor-pointer" style={{ color: "var(--error)" }} title="Delete"><Trash2 className="w-3.5 h-3.5" /></button>
                   </div>
                 </div>
-
-                {/* Question Counts breakdown */}
-                <div className="grid grid-cols-3 gap-2.5 text-center text-[10px] py-3.5 border-y" style={{ borderColor: "var(--border)" }}>
-                  <div className="flex flex-col items-center">
-                    <Cpu className="w-3.5 h-3.5 text-blue-500 mb-1" />
-                    <span className="font-semibold" style={{ color: "var(--text-secondary)" }}>Tech</span>
-                    <span className="font-bold text-xs mt-0.5" style={{ color: "var(--text-primary)" }}>{company.technical || 0}</span>
-                  </div>
-                  <div className="flex flex-col items-center">
-                    <Code2 className="w-3.5 h-3.5 text-emerald-500 mb-1" />
-                    <span className="font-semibold" style={{ color: "var(--text-secondary)" }}>Coding</span>
-                    <span className="font-bold text-xs mt-0.5" style={{ color: "var(--text-primary)" }}>{company.coding || 0}</span>
-                  </div>
-                  <div className="flex flex-col items-center">
-                    <MessageSquare className="w-3.5 h-3.5 text-amber-500 mb-1" />
-                    <span className="font-semibold" style={{ color: "var(--text-secondary)" }}>HR</span>
-                    <span className="font-bold text-xs mt-0.5" style={{ color: "var(--text-primary)" }}>{company.hr || 0}</span>
-                  </div>
+                {company.description && <p className="text-xs mb-3 line-clamp-2" style={{ color: "var(--text-secondary)" }}>{company.description}</p>}
+                <div className="flex flex-wrap gap-3 text-xs mb-3">
+                  {company.location && <span className="flex items-center gap-1" style={{ color: "var(--text-muted)" }}><MapPin className="w-3 h-3" />{company.location}</span>}
+                  {company.package && <span className="flex items-center gap-1 font-semibold" style={{ color: "var(--success)" }}><DollarSign className="w-3 h-3" />{company.package}</span>}
                 </div>
-
-                {/* Analytics */}
-                <div className="space-y-1.5 text-xs">
-                  <div className="flex justify-between" style={{ color: "var(--text-secondary)" }}>
-                    <span className="flex items-center gap-1.5"><Play className="w-3.5 h-3.5 text-slate-400" /> Attempts taken:</span>
-                    <span className="font-bold" style={{ color: "var(--text-primary)" }}>{attempts}</span>
-                  </div>
-                  <div className="flex justify-between" style={{ color: "var(--text-secondary)" }}>
-                    <span className="flex items-center gap-1.5"><TrendingUp className="w-3.5 h-3.5 text-slate-400" /> Average score:</span>
-                    <span className="font-bold" style={{ color: "var(--text-primary)" }}>{avgScore}%</span>
-                  </div>
-                  <div className="flex justify-between" style={{ color: "var(--text-secondary)" }}>
-                    <span className="flex items-center gap-1.5"><TrendingUp className="w-3.5 h-3.5 text-emerald-400" /> Highest score:</span>
-                    <span className="font-bold text-emerald-600 dark:text-emerald-400">{bestScore}%</span>
-                  </div>
+                <div className="flex gap-3 text-xs border-t pt-3" style={{ borderColor: "var(--border)" }}>
+                  <span className="flex items-center gap-1" style={{ color: "var(--text-muted)" }}><Cpu className="w-3 h-3" />{company.technical}</span>
+                  <span className="flex items-center gap-1" style={{ color: "var(--text-muted)" }}><Code2 className="w-3 h-3" />{company.coding}</span>
+                  <span className="flex items-center gap-1" style={{ color: "var(--text-muted)" }}><MessageSquare className="w-3 h-3" />{company.hr}</span>
+                  <span className="ml-auto font-semibold" style={{ color: "var(--primary)" }}>{analytic.averageScore || 0}%</span>
                 </div>
               </motion.div>
             );
@@ -262,163 +168,124 @@ function CompanyManagement() {
         </div>
       )}
 
-      {/* Add / Edit Company Modal */}
-      <AnimatePresence>
-        {modalOpen && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setModalOpen(false)} />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="relative w-full max-w-md rounded-3xl p-6 sm:p-8 glass-card"
-            >
-              <h3 className="text-lg font-bold mb-4" style={{ color: "var(--text-primary)" }}>
-                {modalType === "add" ? "Add Company Profile" : "Edit Company Profile"}
-              </h3>
-              <form onSubmit={handleFormSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold mb-1" style={{ color: "var(--text-secondary)" }}>Company Name</label>
-                  <input
-                    value={form.name}
-                    onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    required
-                    placeholder="Google, Microsoft, etc."
-                    className="w-full px-3 py-2 border rounded-xl text-sm outline-none"
-                    style={{ borderColor: "var(--border)", background: "var(--input-bg)", color: "var(--text-primary)" }}
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold mb-1" style={{ color: "var(--text-secondary)" }}>Theme Color (Hex)</label>
-                  <div className="flex gap-2.5">
-                    <input
-                      type="color"
-                      value={form.color}
-                      onChange={(e) => setForm({ ...form, color: e.target.value })}
-                      className="w-10 h-10 border rounded-xl cursor-pointer p-0 overflow-hidden"
-                      style={{ borderColor: "var(--border)" }}
-                    />
-                    <input
-                      value={form.color}
-                      onChange={(e) => setForm({ ...form, color: e.target.value })}
-                      className="flex-1 px-3 py-2 border rounded-xl text-sm outline-none"
-                      style={{ borderColor: "var(--border)", background: "var(--input-bg)", color: "var(--text-primary)" }}
-                    />
+      {/* View Company Modal */}
+      <AnimatePresence>{viewCompany && viewData && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm" style={{ background: "var(--admin-modal-overlay)" }}
+          onClick={() => { setViewCompany(null); setViewData(null); }}>
+          <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }}
+            className="border rounded-2xl p-6 w-full max-w-2xl max-h-[85vh] overflow-y-auto" style={{ background: "var(--card-bg)", borderColor: "var(--border)" }}
+            onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>{viewData.company?.name}</h3>
+              <button onClick={() => { setViewCompany(null); setViewData(null); }} className="cursor-pointer" style={{ color: "var(--text-muted)" }}><AlertTriangle className="w-4 h-4" /></button>
+            </div>
+            <div className="grid grid-cols-2 gap-3 text-sm mb-4">
+              {viewData.company?.website && <div><span className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>Website:</span><p style={{ color: "var(--text-primary)" }}>{viewData.company.website}</p></div>}
+              {viewData.company?.location && <div><span className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>Location:</span><p style={{ color: "var(--text-primary)" }}>{viewData.company.location}</p></div>}
+              {viewData.company?.package && <div><span className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>Package:</span><p style={{ color: "var(--text-primary)" }}>{viewData.company.package}</p></div>}
+              {viewData.company?.minimumCGPA > 0 && <div><span className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>Min CGPA:</span><p style={{ color: "var(--text-primary)" }}>{viewData.company.minimumCGPA}</p></div>}
+            </div>
+            {viewData.stats && (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                {[
+                  ["Students", viewData.stats.totalStudentsAppeared, "var(--primary)"],
+                  ["Avg Score", `${viewData.stats.averageScore}%`, "#f59e0b"],
+                  ["Highest", `${viewData.stats.highestScore}%`, "var(--success)"],
+                  ["Selected", viewData.stats.selectedStudents, "var(--success)"],
+                ].map(([l, v, c]) => (
+                  <div key={l} className="p-3 rounded-xl border text-center" style={{ borderColor: "var(--border)" }}>
+                    <p className="text-xs" style={{ color: "var(--text-muted)" }}>{l}</p>
+                    <p className="text-lg font-bold" style={{ color: c }}>{v}</p>
                   </div>
-                </div>
-                <div className="grid grid-cols-3 gap-3">
-                  <div>
-                    <label className="block text-[10px] font-semibold mb-1" style={{ color: "var(--text-secondary)" }}>Tech Qs</label>
-                    <input
-                      type="number"
-                      min="0"
-                      value={form.technical}
-                      onChange={(e) => setForm({ ...form, technical: Number(e.target.value) })}
-                      required
-                      className="w-full px-3 py-2 border rounded-xl text-sm outline-none"
-                      style={{ borderColor: "var(--border)", background: "var(--input-bg)", color: "var(--text-primary)" }}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-semibold mb-1" style={{ color: "var(--text-secondary)" }}>Coding Qs</label>
-                    <input
-                      type="number"
-                      min="0"
-                      value={form.coding}
-                      onChange={(e) => setForm({ ...form, coding: Number(e.target.value) })}
-                      required
-                      className="w-full px-3 py-2 border rounded-xl text-sm outline-none"
-                      style={{ borderColor: "var(--border)", background: "var(--input-bg)", color: "var(--text-primary)" }}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-semibold mb-1" style={{ color: "var(--text-secondary)" }}>HR Qs</label>
-                    <input
-                      type="number"
-                      min="0"
-                      value={form.hr}
-                      onChange={(e) => setForm({ ...form, hr: Number(e.target.value) })}
-                      required
-                      className="w-full px-3 py-2 border rounded-xl text-sm outline-none"
-                      style={{ borderColor: "var(--border)", background: "var(--input-bg)", color: "var(--text-primary)" }}
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold mb-1" style={{ color: "var(--text-secondary)" }}>Difficulty Category</label>
-                  <select
-                    value={form.difficulty}
-                    onChange={(e) => setForm({ ...form, difficulty: e.target.value })}
-                    required
-                    className="w-full px-3 py-2 border rounded-xl text-sm outline-none cursor-pointer"
-                    style={{ borderColor: "var(--border)", background: "var(--input-bg)", color: "var(--text-primary)" }}
-                  >
-                    <option value="Easy">Easy</option>
-                    <option value="Medium">Medium</option>
-                    <option value="Hard">Hard</option>
-                  </select>
-                </div>
-                <div className="flex gap-3 pt-3">
-                  <button
-                    type="button"
-                    onClick={() => setModalOpen(false)}
-                    className="flex-1 py-2.5 border rounded-xl text-xs font-semibold cursor-pointer"
-                    style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="flex-1 py-2.5 rounded-xl text-xs font-semibold text-white btn-gradient cursor-pointer"
-                  >
-                    Generate Company
-                  </button>
-                </div>
-              </form>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* Delete Confirm Modal */}
-      <AnimatePresence>
-        {deleteConfirmOpen && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setDeleteConfirmOpen(false)} />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="relative w-full max-w-sm rounded-3xl p-6 sm:p-8 glass-card text-center"
-            >
-              <AlertTriangle className="w-12 h-12 mx-auto mb-4" style={{ color: "var(--error)" }} />
-              <h3 className="text-lg font-bold mb-2" style={{ color: "var(--text-primary)" }}>
-                Confirm Deletion
-              </h3>
-              <p className="text-xs mb-6" style={{ color: "var(--text-secondary)" }}>
-                Are you sure you want to delete the company profile for <strong>{companyToDelete?.name}</strong>? Students will no longer see this placement target in their Practice hub.
-              </p>
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => setDeleteConfirmOpen(false)}
-                  className="flex-1 py-2.5 border rounded-xl text-xs font-semibold cursor-pointer"
-                  style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={handleConfirmDelete}
-                  className="flex-1 py-2.5 rounded-xl text-xs font-semibold text-white cursor-pointer bg-[var(--error)]"
-                >
-                  Remove Company
-                </button>
+                ))}
               </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+            )}
+            {viewData.company?.selectionProcess && (
+              <div className="mb-3">
+                <p className="text-xs font-medium mb-1" style={{ color: "var(--text-muted)" }}>Selection Process:</p>
+                <p className="text-xs" style={{ color: "var(--text-secondary)" }}>{viewData.company.selectionProcess}</p>
+              </div>
+            )}
+            {viewData.company?.requiredSkills?.length > 0 && (
+              <div className="mb-3">
+                <p className="text-xs font-medium mb-1" style={{ color: "var(--text-muted)" }}>Required Skills:</p>
+                <div className="flex flex-wrap gap-1.5">{viewData.company.requiredSkills.map((s, i) => <span key={i} className="px-2 py-0.5 rounded-lg text-xs" style={{ background: "color-mix(in srgb, var(--primary) 10%, transparent)", color: "var(--primary)" }}>{s}</span>)}</div>
+              </div>
+            )}
+          </motion.div>
+        </motion.div>
+      )}</AnimatePresence>
+
+      {/* Add/Edit Modal */}
+      <AnimatePresence>{modalOpen && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-8 backdrop-blur-sm overflow-y-auto" style={{ background: "var(--admin-modal-overlay)" }}
+          onClick={() => setModalOpen(false)}>
+          <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }}
+            className="border rounded-2xl p-6 w-full max-w-2xl" style={{ background: "var(--card-bg)", borderColor: "var(--border)" }}
+            onClick={e => e.stopPropagation()}>
+            <h3 className="text-base font-bold mb-4" style={{ color: "var(--text-primary)" }}>{modalType === "add" ? "Add Company" : "Edit Company"}</h3>
+            <form onSubmit={handleSubmit} className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="col-span-2">
+                  <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-secondary)" }}>Company Name *</label>
+                  <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className={inputCls} style={{ color: "var(--text-primary)" }} required />
+                </div>
+                <div><label className="block text-xs font-medium mb-1" style={{ color: "var(--text-secondary)" }}>Color</label><input type="color" value={form.color} onChange={e => setForm({ ...form, color: e.target.value })} className="w-full h-9 rounded-xl border cursor-pointer" style={{ borderColor: "var(--border)" }} /></div>
+                <div><label className="block text-xs font-medium mb-1" style={{ color: "var(--text-secondary)" }}>Difficulty</label><select value={form.difficulty} onChange={e => setForm({ ...form, difficulty: e.target.value })} className={selCls} style={{ color: "var(--text-primary)" }}>{DIFFICULTIES.map(d => <option key={d}>{d}</option>)}</select></div>
+                <div className="col-span-2"><label className="block text-xs font-medium mb-1" style={{ color: "var(--text-secondary)" }}>Description</label><textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={2} className={inputCls} style={{ color: "var(--text-primary)" }} /></div>
+                <div><label className="block text-xs font-medium mb-1" style={{ color: "var(--text-secondary)" }}>Website</label><input value={form.website} onChange={e => setForm({ ...form, website: e.target.value })} className={inputCls} style={{ color: "var(--text-primary)" }} /></div>
+                <div><label className="block text-xs font-medium mb-1" style={{ color: "var(--text-secondary)" }}>Location</label><input value={form.location} onChange={e => setForm({ ...form, location: e.target.value })} className={inputCls} style={{ color: "var(--text-primary)" }} /></div>
+                <div><label className="block text-xs font-medium mb-1" style={{ color: "var(--text-secondary)" }}>Package</label><input value={form.package} onChange={e => setForm({ ...form, package: e.target.value })} placeholder="e.g. 12 LPA" className={inputCls} style={{ color: "var(--text-primary)" }} /></div>
+                <div><label className="block text-xs font-medium mb-1" style={{ color: "var(--text-secondary)" }}>Min CGPA</label><input type="number" step="0.1" value={form.minimumCGPA} onChange={e => setForm({ ...form, minimumCGPA: parseFloat(e.target.value) || 0 })} className={inputCls} style={{ color: "var(--text-primary)" }} /></div>
+                <div><label className="block text-xs font-medium mb-1" style={{ color: "var(--text-secondary)" }}>Passing %</label><input type="number" value={form.passingPercentage} onChange={e => setForm({ ...form, passingPercentage: parseInt(e.target.value) || 0 })} className={inputCls} style={{ color: "var(--text-primary)" }} /></div>
+                <div><label className="block text-xs font-medium mb-1" style={{ color: "var(--text-secondary)" }}>Interview Type</label><select value={form.interviewType} onChange={e => setForm({ ...form, interviewType: e.target.value })} className={selCls} style={{ color: "var(--text-primary)" }}>{INTERVIEW_TYPES.map(t => <option key={t} value={t}>{t}</option>)}</select></div>
+                <div><label className="block text-xs font-medium mb-1" style={{ color: "var(--text-secondary)" }}>Status</label><select value={form.status} onChange={e => setForm({ ...form, status: e.target.value })} className={selCls} style={{ color: "var(--text-primary)" }}><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
+                <div className="col-span-2">
+                  <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-secondary)" }}>Eligible Departments</label>
+                  <div className="flex flex-wrap gap-1.5">{DEPARTMENTS.map(d => <button key={d} type="button" onClick={() => toggleArrayField("eligibleDepartments", d)} className={`px-2.5 py-1 rounded-lg text-xs border cursor-pointer ${form.eligibleDepartments.includes(d) ? "text-white" : ""}`} style={{ borderColor: "var(--border)", background: form.eligibleDepartments.includes(d) ? "var(--primary)" : "transparent", color: form.eligibleDepartments.includes(d) ? "white" : "var(--text-secondary)" }}>{d}</button>)}</div>
+                </div>
+                <div className="col-span-2">
+                  <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-secondary)" }}>Eligible Years</label>
+                  <div className="flex gap-1.5">{YEARS.map(y => <button key={y} type="button" onClick={() => toggleArrayField("eligibleYears", y)} className={`px-3 py-1 rounded-lg text-xs border cursor-pointer ${form.eligibleYears.includes(y) ? "text-white" : ""}`} style={{ borderColor: "var(--border)", background: form.eligibleYears.includes(y) ? "var(--primary)" : "transparent", color: form.eligibleYears.includes(y) ? "white" : "var(--text-secondary)" }}>{y}</button>)}</div>
+                </div>
+                <div className="col-span-2">
+                  <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-secondary)" }}>Required Skills (comma separated)</label>
+                  <input value={form.requiredSkills.join(", ")} onChange={e => setForm({ ...form, requiredSkills: e.target.value.split(",").map(s => s.trim()).filter(Boolean) })} className={inputCls} style={{ color: "var(--text-primary)" }} />
+                </div>
+                <div className="col-span-2">
+                  <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-secondary)" }}>Selection Process</label>
+                  <textarea value={form.selectionProcess} onChange={e => setForm({ ...form, selectionProcess: e.target.value })} rows={2} className={inputCls} style={{ color: "var(--text-primary)" }} placeholder="e.g. Aptitude Test → Technical Interview → HR Round" />
+                </div>
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button type="button" onClick={() => setModalOpen(false)} className="flex-1 py-2.5 text-xs font-semibold border rounded-xl cursor-pointer" style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}>Cancel</button>
+                <button type="submit" className="flex-1 py-2.5 text-xs font-semibold text-white rounded-xl cursor-pointer" style={{ background: "var(--primary)" }}>{modalType === "add" ? "Add Company" : "Save Changes"}</button>
+              </div>
+            </form>
+          </motion.div>
+        </motion.div>
+      )}</AnimatePresence>
+
+      {/* Delete Modal */}
+      <AnimatePresence>{deleteConfirm && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm" style={{ background: "var(--admin-modal-overlay)" }}
+          onClick={() => setDeleteConfirm(null)}>
+          <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }}
+            className="border rounded-2xl p-6 w-full max-w-sm text-center" style={{ background: "var(--card-bg)", borderColor: "var(--border)" }}
+            onClick={e => e.stopPropagation()}>
+            <AlertTriangle className="w-10 h-10 mx-auto mb-3" style={{ color: "var(--error)" }} />
+            <h3 className="text-base font-bold mb-1" style={{ color: "var(--text-primary)" }}>Delete {deleteConfirm.name}?</h3>
+            <p className="text-xs mb-5" style={{ color: "var(--text-secondary)" }}>This cannot be undone.</p>
+            <div className="flex gap-3">
+              <button onClick={() => setDeleteConfirm(null)} className="flex-1 py-2.5 text-xs font-semibold border rounded-xl cursor-pointer" style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}>Cancel</button>
+              <button onClick={handleDelete} className="flex-1 py-2.5 text-xs font-semibold text-white rounded-xl cursor-pointer" style={{ background: "var(--error)" }}>Delete</button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}</AnimatePresence>
     </div>
   );
 }
