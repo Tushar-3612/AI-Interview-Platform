@@ -1,0 +1,1370 @@
+[
+  {
+    "id": "tcs-tech-1",
+    "companyId": "tcs",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q1] What is DBMS and what are its main advantages? (Focusing on TCS interview pattern - Set 1)",
+    "correctAnswer": "A Database Management System is software to manage databases. Advantages include data sharing, security, integration, and recovery.",
+    "explanation": "DBMS provides a systematic way to store, retrieve, and manage data."
+  },
+  {
+    "id": "tcs-tech-2",
+    "companyId": "tcs",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q2] Explain the difference between Primary Key and Unique Key. (Focusing on TCS interview pattern - Set 1)",
+    "correctAnswer": "A Primary Key uniquely identifies a record and cannot be NULL. A Unique Key also ensures uniqueness but allows one NULL value.",
+    "explanation": "Each table can have only one Primary Key but multiple Unique Keys."
+  },
+  {
+    "id": "tcs-tech-3",
+    "companyId": "tcs",
+    "category": "Technical",
+    "difficulty": "Hard",
+    "question": "[Q3] What is normalisation in SQL database design? (Focusing on TCS interview pattern - Set 1)",
+    "correctAnswer": "Normalisation is the process of structuring relational databases to reduce data redundancy and improve data integrity.",
+    "explanation": "Common normal forms are 1NF, 2NF, 3NF, and BCNF."
+  },
+  {
+    "id": "tcs-tech-4",
+    "companyId": "tcs",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q4] Explain SDLC and list its major phases. (Focusing on TCS interview pattern - Set 1)",
+    "correctAnswer": "Software Development Life Cycle is a structured process to build software. Phases: Requirement Analysis, Design, Coding, Testing, Deployment, Maintenance.",
+    "explanation": "Different models include Waterfall, Agile, Scrum, Spiral."
+  },
+  {
+    "id": "tcs-tech-5",
+    "companyId": "tcs",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q5] What is an index in SQL and why is it used? (Focusing on TCS interview pattern - Set 1)",
+    "correctAnswer": "An index is a performance-tuning method that allows faster retrieval of records from a table.",
+    "explanation": "Indexes speed up SELECT queries but slow down INSERT/UPDATE/DELETE queries."
+  },
+  {
+    "id": "tcs-tech-6",
+    "companyId": "tcs",
+    "category": "Technical",
+    "difficulty": "Hard",
+    "question": "[Q6] What is DBMS and what are its main advantages? (Focusing on TCS interview pattern - Set 2)",
+    "correctAnswer": "A Database Management System is software to manage databases. Advantages include data sharing, security, integration, and recovery.",
+    "explanation": "DBMS provides a systematic way to store, retrieve, and manage data."
+  },
+  {
+    "id": "tcs-tech-7",
+    "companyId": "tcs",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q7] Explain the difference between Primary Key and Unique Key. (Focusing on TCS interview pattern - Set 2)",
+    "correctAnswer": "A Primary Key uniquely identifies a record and cannot be NULL. A Unique Key also ensures uniqueness but allows one NULL value.",
+    "explanation": "Each table can have only one Primary Key but multiple Unique Keys."
+  },
+  {
+    "id": "tcs-tech-8",
+    "companyId": "tcs",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q8] What is normalisation in SQL database design? (Focusing on TCS interview pattern - Set 2)",
+    "correctAnswer": "Normalisation is the process of structuring relational databases to reduce data redundancy and improve data integrity.",
+    "explanation": "Common normal forms are 1NF, 2NF, 3NF, and BCNF."
+  },
+  {
+    "id": "tcs-tech-9",
+    "companyId": "tcs",
+    "category": "Technical",
+    "difficulty": "Hard",
+    "question": "[Q9] Explain SDLC and list its major phases. (Focusing on TCS interview pattern - Set 2)",
+    "correctAnswer": "Software Development Life Cycle is a structured process to build software. Phases: Requirement Analysis, Design, Coding, Testing, Deployment, Maintenance.",
+    "explanation": "Different models include Waterfall, Agile, Scrum, Spiral."
+  },
+  {
+    "id": "tcs-tech-10",
+    "companyId": "tcs",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q10] What is an index in SQL and why is it used? (Focusing on TCS interview pattern - Set 2)",
+    "correctAnswer": "An index is a performance-tuning method that allows faster retrieval of records from a table.",
+    "explanation": "Indexes speed up SELECT queries but slow down INSERT/UPDATE/DELETE queries."
+  },
+  {
+    "id": "tcs-tech-11",
+    "companyId": "tcs",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q11] What is DBMS and what are its main advantages? (Focusing on TCS interview pattern - Set 3)",
+    "correctAnswer": "A Database Management System is software to manage databases. Advantages include data sharing, security, integration, and recovery.",
+    "explanation": "DBMS provides a systematic way to store, retrieve, and manage data."
+  },
+  {
+    "id": "tcs-tech-12",
+    "companyId": "tcs",
+    "category": "Technical",
+    "difficulty": "Hard",
+    "question": "[Q12] Explain the difference between Primary Key and Unique Key. (Focusing on TCS interview pattern - Set 3)",
+    "correctAnswer": "A Primary Key uniquely identifies a record and cannot be NULL. A Unique Key also ensures uniqueness but allows one NULL value.",
+    "explanation": "Each table can have only one Primary Key but multiple Unique Keys."
+  },
+  {
+    "id": "tcs-tech-13",
+    "companyId": "tcs",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q13] What is normalisation in SQL database design? (Focusing on TCS interview pattern - Set 3)",
+    "correctAnswer": "Normalisation is the process of structuring relational databases to reduce data redundancy and improve data integrity.",
+    "explanation": "Common normal forms are 1NF, 2NF, 3NF, and BCNF."
+  },
+  {
+    "id": "tcs-tech-14",
+    "companyId": "tcs",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q14] Explain SDLC and list its major phases. (Focusing on TCS interview pattern - Set 3)",
+    "correctAnswer": "Software Development Life Cycle is a structured process to build software. Phases: Requirement Analysis, Design, Coding, Testing, Deployment, Maintenance.",
+    "explanation": "Different models include Waterfall, Agile, Scrum, Spiral."
+  },
+  {
+    "id": "tcs-tech-15",
+    "companyId": "tcs",
+    "category": "Technical",
+    "difficulty": "Hard",
+    "question": "[Q15] What is an index in SQL and why is it used? (Focusing on TCS interview pattern - Set 3)",
+    "correctAnswer": "An index is a performance-tuning method that allows faster retrieval of records from a table.",
+    "explanation": "Indexes speed up SELECT queries but slow down INSERT/UPDATE/DELETE queries."
+  },
+  {
+    "id": "tcs-tech-16",
+    "companyId": "tcs",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q16] What is DBMS and what are its main advantages? (Focusing on TCS interview pattern - Set 4)",
+    "correctAnswer": "A Database Management System is software to manage databases. Advantages include data sharing, security, integration, and recovery.",
+    "explanation": "DBMS provides a systematic way to store, retrieve, and manage data."
+  },
+  {
+    "id": "tcs-tech-17",
+    "companyId": "tcs",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q17] Explain the difference between Primary Key and Unique Key. (Focusing on TCS interview pattern - Set 4)",
+    "correctAnswer": "A Primary Key uniquely identifies a record and cannot be NULL. A Unique Key also ensures uniqueness but allows one NULL value.",
+    "explanation": "Each table can have only one Primary Key but multiple Unique Keys."
+  },
+  {
+    "id": "tcs-tech-18",
+    "companyId": "tcs",
+    "category": "Technical",
+    "difficulty": "Hard",
+    "question": "[Q18] What is normalisation in SQL database design? (Focusing on TCS interview pattern - Set 4)",
+    "correctAnswer": "Normalisation is the process of structuring relational databases to reduce data redundancy and improve data integrity.",
+    "explanation": "Common normal forms are 1NF, 2NF, 3NF, and BCNF."
+  },
+  {
+    "id": "tcs-tech-19",
+    "companyId": "tcs",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q19] Explain SDLC and list its major phases. (Focusing on TCS interview pattern - Set 4)",
+    "correctAnswer": "Software Development Life Cycle is a structured process to build software. Phases: Requirement Analysis, Design, Coding, Testing, Deployment, Maintenance.",
+    "explanation": "Different models include Waterfall, Agile, Scrum, Spiral."
+  },
+  {
+    "id": "tcs-tech-20",
+    "companyId": "tcs",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q20] What is an index in SQL and why is it used? (Focusing on TCS interview pattern - Set 4)",
+    "correctAnswer": "An index is a performance-tuning method that allows faster retrieval of records from a table.",
+    "explanation": "Indexes speed up SELECT queries but slow down INSERT/UPDATE/DELETE queries."
+  },
+  {
+    "id": "tcs-tech-21",
+    "companyId": "tcs",
+    "category": "Technical",
+    "difficulty": "Hard",
+    "question": "[Q21] What is DBMS and what are its main advantages? (Focusing on TCS interview pattern - Set 5)",
+    "correctAnswer": "A Database Management System is software to manage databases. Advantages include data sharing, security, integration, and recovery.",
+    "explanation": "DBMS provides a systematic way to store, retrieve, and manage data."
+  },
+  {
+    "id": "tcs-tech-22",
+    "companyId": "tcs",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q22] Explain the difference between Primary Key and Unique Key. (Focusing on TCS interview pattern - Set 5)",
+    "correctAnswer": "A Primary Key uniquely identifies a record and cannot be NULL. A Unique Key also ensures uniqueness but allows one NULL value.",
+    "explanation": "Each table can have only one Primary Key but multiple Unique Keys."
+  },
+  {
+    "id": "tcs-tech-23",
+    "companyId": "tcs",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q23] What is normalisation in SQL database design? (Focusing on TCS interview pattern - Set 5)",
+    "correctAnswer": "Normalisation is the process of structuring relational databases to reduce data redundancy and improve data integrity.",
+    "explanation": "Common normal forms are 1NF, 2NF, 3NF, and BCNF."
+  },
+  {
+    "id": "tcs-tech-24",
+    "companyId": "tcs",
+    "category": "Technical",
+    "difficulty": "Hard",
+    "question": "[Q24] Explain SDLC and list its major phases. (Focusing on TCS interview pattern - Set 5)",
+    "correctAnswer": "Software Development Life Cycle is a structured process to build software. Phases: Requirement Analysis, Design, Coding, Testing, Deployment, Maintenance.",
+    "explanation": "Different models include Waterfall, Agile, Scrum, Spiral."
+  },
+  {
+    "id": "tcs-tech-25",
+    "companyId": "tcs",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q25] What is an index in SQL and why is it used? (Focusing on TCS interview pattern - Set 5)",
+    "correctAnswer": "An index is a performance-tuning method that allows faster retrieval of records from a table.",
+    "explanation": "Indexes speed up SELECT queries but slow down INSERT/UPDATE/DELETE queries."
+  },
+  {
+    "id": "tcs-tech-26",
+    "companyId": "tcs",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q26] What is DBMS and what are its main advantages? (Focusing on TCS interview pattern - Set 6)",
+    "correctAnswer": "A Database Management System is software to manage databases. Advantages include data sharing, security, integration, and recovery.",
+    "explanation": "DBMS provides a systematic way to store, retrieve, and manage data."
+  },
+  {
+    "id": "tcs-tech-27",
+    "companyId": "tcs",
+    "category": "Technical",
+    "difficulty": "Hard",
+    "question": "[Q27] Explain the difference between Primary Key and Unique Key. (Focusing on TCS interview pattern - Set 6)",
+    "correctAnswer": "A Primary Key uniquely identifies a record and cannot be NULL. A Unique Key also ensures uniqueness but allows one NULL value.",
+    "explanation": "Each table can have only one Primary Key but multiple Unique Keys."
+  },
+  {
+    "id": "tcs-tech-28",
+    "companyId": "tcs",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q28] What is normalisation in SQL database design? (Focusing on TCS interview pattern - Set 6)",
+    "correctAnswer": "Normalisation is the process of structuring relational databases to reduce data redundancy and improve data integrity.",
+    "explanation": "Common normal forms are 1NF, 2NF, 3NF, and BCNF."
+  },
+  {
+    "id": "tcs-tech-29",
+    "companyId": "tcs",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q29] Explain SDLC and list its major phases. (Focusing on TCS interview pattern - Set 6)",
+    "correctAnswer": "Software Development Life Cycle is a structured process to build software. Phases: Requirement Analysis, Design, Coding, Testing, Deployment, Maintenance.",
+    "explanation": "Different models include Waterfall, Agile, Scrum, Spiral."
+  },
+  {
+    "id": "tcs-tech-30",
+    "companyId": "tcs",
+    "category": "Technical",
+    "difficulty": "Hard",
+    "question": "[Q30] What is an index in SQL and why is it used? (Focusing on TCS interview pattern - Set 6)",
+    "correctAnswer": "An index is a performance-tuning method that allows faster retrieval of records from a table.",
+    "explanation": "Indexes speed up SELECT queries but slow down INSERT/UPDATE/DELETE queries."
+  },
+  {
+    "id": "tcs-tech-31",
+    "companyId": "tcs",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q31] What is DBMS and what are its main advantages? (Focusing on TCS interview pattern - Set 7)",
+    "correctAnswer": "A Database Management System is software to manage databases. Advantages include data sharing, security, integration, and recovery.",
+    "explanation": "DBMS provides a systematic way to store, retrieve, and manage data."
+  },
+  {
+    "id": "tcs-tech-32",
+    "companyId": "tcs",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q32] Explain the difference between Primary Key and Unique Key. (Focusing on TCS interview pattern - Set 7)",
+    "correctAnswer": "A Primary Key uniquely identifies a record and cannot be NULL. A Unique Key also ensures uniqueness but allows one NULL value.",
+    "explanation": "Each table can have only one Primary Key but multiple Unique Keys."
+  },
+  {
+    "id": "tcs-tech-33",
+    "companyId": "tcs",
+    "category": "Technical",
+    "difficulty": "Hard",
+    "question": "[Q33] What is normalisation in SQL database design? (Focusing on TCS interview pattern - Set 7)",
+    "correctAnswer": "Normalisation is the process of structuring relational databases to reduce data redundancy and improve data integrity.",
+    "explanation": "Common normal forms are 1NF, 2NF, 3NF, and BCNF."
+  },
+  {
+    "id": "tcs-tech-34",
+    "companyId": "tcs",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q34] Explain SDLC and list its major phases. (Focusing on TCS interview pattern - Set 7)",
+    "correctAnswer": "Software Development Life Cycle is a structured process to build software. Phases: Requirement Analysis, Design, Coding, Testing, Deployment, Maintenance.",
+    "explanation": "Different models include Waterfall, Agile, Scrum, Spiral."
+  },
+  {
+    "id": "tcs-tech-35",
+    "companyId": "tcs",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q35] What is an index in SQL and why is it used? (Focusing on TCS interview pattern - Set 7)",
+    "correctAnswer": "An index is a performance-tuning method that allows faster retrieval of records from a table.",
+    "explanation": "Indexes speed up SELECT queries but slow down INSERT/UPDATE/DELETE queries."
+  },
+  {
+    "id": "tcs-tech-36",
+    "companyId": "tcs",
+    "category": "Technical",
+    "difficulty": "Hard",
+    "question": "[Q36] What is DBMS and what are its main advantages? (Focusing on TCS interview pattern - Set 8)",
+    "correctAnswer": "A Database Management System is software to manage databases. Advantages include data sharing, security, integration, and recovery.",
+    "explanation": "DBMS provides a systematic way to store, retrieve, and manage data."
+  },
+  {
+    "id": "tcs-tech-37",
+    "companyId": "tcs",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q37] Explain the difference between Primary Key and Unique Key. (Focusing on TCS interview pattern - Set 8)",
+    "correctAnswer": "A Primary Key uniquely identifies a record and cannot be NULL. A Unique Key also ensures uniqueness but allows one NULL value.",
+    "explanation": "Each table can have only one Primary Key but multiple Unique Keys."
+  },
+  {
+    "id": "tcs-tech-38",
+    "companyId": "tcs",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q38] What is normalisation in SQL database design? (Focusing on TCS interview pattern - Set 8)",
+    "correctAnswer": "Normalisation is the process of structuring relational databases to reduce data redundancy and improve data integrity.",
+    "explanation": "Common normal forms are 1NF, 2NF, 3NF, and BCNF."
+  },
+  {
+    "id": "infosys-tech-39",
+    "companyId": "infosys",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q39] What is object-oriented programming (OOP)? List core principles. (Focusing on INFOSYS interview pattern - Set 1)",
+    "correctAnswer": "OOP is a programming paradigm based on 'objects'. Core principles: Inheritance, Polymorphism, Encapsulation, and Abstraction.",
+    "explanation": "OOP mirrors real-world items and structures code for reusability."
+  },
+  {
+    "id": "infosys-tech-40",
+    "companyId": "infosys",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q40] What is the difference between list and tuple in Python? (Focusing on INFOSYS interview pattern - Set 1)",
+    "correctAnswer": "Lists are mutable (can be changed); tuples are immutable (cannot be changed after creation).",
+    "explanation": "Lists use square brackets []; tuples use parentheses ()."
+  },
+  {
+    "id": "infosys-tech-41",
+    "companyId": "infosys",
+    "category": "Technical",
+    "difficulty": "Hard",
+    "question": "[Q41] Explain method overloading vs method overriding in Java. (Focusing on INFOSYS interview pattern - Set 1)",
+    "correctAnswer": "Overloading: same method name but different parameters in the same class (compile-time). Overriding: redefine a superclass method in subclass (runtime).",
+    "explanation": "Overloading is static polymorphism; overriding is dynamic polymorphism."
+  },
+  {
+    "id": "infosys-tech-42",
+    "companyId": "infosys",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q42] What is a RESTful API? (Focusing on INFOSYS interview pattern - Set 1)",
+    "correctAnswer": "A RESTful API is an interface that uses HTTP requests (GET, POST, PUT, DELETE) to manage data using stateless operations.",
+    "explanation": "REST stands for Representational State Transfer."
+  },
+  {
+    "id": "infosys-tech-43",
+    "companyId": "infosys",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q43] Explain the concepts of stack and heap memory in Java. (Focusing on INFOSYS interview pattern - Set 1)",
+    "correctAnswer": "Stack memory is used for static memory allocation and thread execution. Heap memory is used for dynamic memory allocation of objects.",
+    "explanation": "Stack memory is fast and local; heap memory is large and shared."
+  },
+  {
+    "id": "infosys-tech-44",
+    "companyId": "infosys",
+    "category": "Technical",
+    "difficulty": "Hard",
+    "question": "[Q44] What is object-oriented programming (OOP)? List core principles. (Focusing on INFOSYS interview pattern - Set 2)",
+    "correctAnswer": "OOP is a programming paradigm based on 'objects'. Core principles: Inheritance, Polymorphism, Encapsulation, and Abstraction.",
+    "explanation": "OOP mirrors real-world items and structures code for reusability."
+  },
+  {
+    "id": "infosys-tech-45",
+    "companyId": "infosys",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q45] What is the difference between list and tuple in Python? (Focusing on INFOSYS interview pattern - Set 2)",
+    "correctAnswer": "Lists are mutable (can be changed); tuples are immutable (cannot be changed after creation).",
+    "explanation": "Lists use square brackets []; tuples use parentheses ()."
+  },
+  {
+    "id": "infosys-tech-46",
+    "companyId": "infosys",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q46] Explain method overloading vs method overriding in Java. (Focusing on INFOSYS interview pattern - Set 2)",
+    "correctAnswer": "Overloading: same method name but different parameters in the same class (compile-time). Overriding: redefine a superclass method in subclass (runtime).",
+    "explanation": "Overloading is static polymorphism; overriding is dynamic polymorphism."
+  },
+  {
+    "id": "infosys-tech-47",
+    "companyId": "infosys",
+    "category": "Technical",
+    "difficulty": "Hard",
+    "question": "[Q47] What is a RESTful API? (Focusing on INFOSYS interview pattern - Set 2)",
+    "correctAnswer": "A RESTful API is an interface that uses HTTP requests (GET, POST, PUT, DELETE) to manage data using stateless operations.",
+    "explanation": "REST stands for Representational State Transfer."
+  },
+  {
+    "id": "infosys-tech-48",
+    "companyId": "infosys",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q48] Explain the concepts of stack and heap memory in Java. (Focusing on INFOSYS interview pattern - Set 2)",
+    "correctAnswer": "Stack memory is used for static memory allocation and thread execution. Heap memory is used for dynamic memory allocation of objects.",
+    "explanation": "Stack memory is fast and local; heap memory is large and shared."
+  },
+  {
+    "id": "infosys-tech-49",
+    "companyId": "infosys",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q49] What is object-oriented programming (OOP)? List core principles. (Focusing on INFOSYS interview pattern - Set 3)",
+    "correctAnswer": "OOP is a programming paradigm based on 'objects'. Core principles: Inheritance, Polymorphism, Encapsulation, and Abstraction.",
+    "explanation": "OOP mirrors real-world items and structures code for reusability."
+  },
+  {
+    "id": "infosys-tech-50",
+    "companyId": "infosys",
+    "category": "Technical",
+    "difficulty": "Hard",
+    "question": "[Q50] What is the difference between list and tuple in Python? (Focusing on INFOSYS interview pattern - Set 3)",
+    "correctAnswer": "Lists are mutable (can be changed); tuples are immutable (cannot be changed after creation).",
+    "explanation": "Lists use square brackets []; tuples use parentheses ()."
+  },
+  {
+    "id": "infosys-tech-51",
+    "companyId": "infosys",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q51] Explain method overloading vs method overriding in Java. (Focusing on INFOSYS interview pattern - Set 3)",
+    "correctAnswer": "Overloading: same method name but different parameters in the same class (compile-time). Overriding: redefine a superclass method in subclass (runtime).",
+    "explanation": "Overloading is static polymorphism; overriding is dynamic polymorphism."
+  },
+  {
+    "id": "infosys-tech-52",
+    "companyId": "infosys",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q52] What is a RESTful API? (Focusing on INFOSYS interview pattern - Set 3)",
+    "correctAnswer": "A RESTful API is an interface that uses HTTP requests (GET, POST, PUT, DELETE) to manage data using stateless operations.",
+    "explanation": "REST stands for Representational State Transfer."
+  },
+  {
+    "id": "infosys-tech-53",
+    "companyId": "infosys",
+    "category": "Technical",
+    "difficulty": "Hard",
+    "question": "[Q53] Explain the concepts of stack and heap memory in Java. (Focusing on INFOSYS interview pattern - Set 3)",
+    "correctAnswer": "Stack memory is used for static memory allocation and thread execution. Heap memory is used for dynamic memory allocation of objects.",
+    "explanation": "Stack memory is fast and local; heap memory is large and shared."
+  },
+  {
+    "id": "infosys-tech-54",
+    "companyId": "infosys",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q54] What is object-oriented programming (OOP)? List core principles. (Focusing on INFOSYS interview pattern - Set 4)",
+    "correctAnswer": "OOP is a programming paradigm based on 'objects'. Core principles: Inheritance, Polymorphism, Encapsulation, and Abstraction.",
+    "explanation": "OOP mirrors real-world items and structures code for reusability."
+  },
+  {
+    "id": "infosys-tech-55",
+    "companyId": "infosys",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q55] What is the difference between list and tuple in Python? (Focusing on INFOSYS interview pattern - Set 4)",
+    "correctAnswer": "Lists are mutable (can be changed); tuples are immutable (cannot be changed after creation).",
+    "explanation": "Lists use square brackets []; tuples use parentheses ()."
+  },
+  {
+    "id": "infosys-tech-56",
+    "companyId": "infosys",
+    "category": "Technical",
+    "difficulty": "Hard",
+    "question": "[Q56] Explain method overloading vs method overriding in Java. (Focusing on INFOSYS interview pattern - Set 4)",
+    "correctAnswer": "Overloading: same method name but different parameters in the same class (compile-time). Overriding: redefine a superclass method in subclass (runtime).",
+    "explanation": "Overloading is static polymorphism; overriding is dynamic polymorphism."
+  },
+  {
+    "id": "infosys-tech-57",
+    "companyId": "infosys",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q57] What is a RESTful API? (Focusing on INFOSYS interview pattern - Set 4)",
+    "correctAnswer": "A RESTful API is an interface that uses HTTP requests (GET, POST, PUT, DELETE) to manage data using stateless operations.",
+    "explanation": "REST stands for Representational State Transfer."
+  },
+  {
+    "id": "infosys-tech-58",
+    "companyId": "infosys",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q58] Explain the concepts of stack and heap memory in Java. (Focusing on INFOSYS interview pattern - Set 4)",
+    "correctAnswer": "Stack memory is used for static memory allocation and thread execution. Heap memory is used for dynamic memory allocation of objects.",
+    "explanation": "Stack memory is fast and local; heap memory is large and shared."
+  },
+  {
+    "id": "infosys-tech-59",
+    "companyId": "infosys",
+    "category": "Technical",
+    "difficulty": "Hard",
+    "question": "[Q59] What is object-oriented programming (OOP)? List core principles. (Focusing on INFOSYS interview pattern - Set 5)",
+    "correctAnswer": "OOP is a programming paradigm based on 'objects'. Core principles: Inheritance, Polymorphism, Encapsulation, and Abstraction.",
+    "explanation": "OOP mirrors real-world items and structures code for reusability."
+  },
+  {
+    "id": "infosys-tech-60",
+    "companyId": "infosys",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q60] What is the difference between list and tuple in Python? (Focusing on INFOSYS interview pattern - Set 5)",
+    "correctAnswer": "Lists are mutable (can be changed); tuples are immutable (cannot be changed after creation).",
+    "explanation": "Lists use square brackets []; tuples use parentheses ()."
+  },
+  {
+    "id": "infosys-tech-61",
+    "companyId": "infosys",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q61] Explain method overloading vs method overriding in Java. (Focusing on INFOSYS interview pattern - Set 5)",
+    "correctAnswer": "Overloading: same method name but different parameters in the same class (compile-time). Overriding: redefine a superclass method in subclass (runtime).",
+    "explanation": "Overloading is static polymorphism; overriding is dynamic polymorphism."
+  },
+  {
+    "id": "infosys-tech-62",
+    "companyId": "infosys",
+    "category": "Technical",
+    "difficulty": "Hard",
+    "question": "[Q62] What is a RESTful API? (Focusing on INFOSYS interview pattern - Set 5)",
+    "correctAnswer": "A RESTful API is an interface that uses HTTP requests (GET, POST, PUT, DELETE) to manage data using stateless operations.",
+    "explanation": "REST stands for Representational State Transfer."
+  },
+  {
+    "id": "infosys-tech-63",
+    "companyId": "infosys",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q63] Explain the concepts of stack and heap memory in Java. (Focusing on INFOSYS interview pattern - Set 5)",
+    "correctAnswer": "Stack memory is used for static memory allocation and thread execution. Heap memory is used for dynamic memory allocation of objects.",
+    "explanation": "Stack memory is fast and local; heap memory is large and shared."
+  },
+  {
+    "id": "infosys-tech-64",
+    "companyId": "infosys",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q64] What is object-oriented programming (OOP)? List core principles. (Focusing on INFOSYS interview pattern - Set 6)",
+    "correctAnswer": "OOP is a programming paradigm based on 'objects'. Core principles: Inheritance, Polymorphism, Encapsulation, and Abstraction.",
+    "explanation": "OOP mirrors real-world items and structures code for reusability."
+  },
+  {
+    "id": "infosys-tech-65",
+    "companyId": "infosys",
+    "category": "Technical",
+    "difficulty": "Hard",
+    "question": "[Q65] What is the difference between list and tuple in Python? (Focusing on INFOSYS interview pattern - Set 6)",
+    "correctAnswer": "Lists are mutable (can be changed); tuples are immutable (cannot be changed after creation).",
+    "explanation": "Lists use square brackets []; tuples use parentheses ()."
+  },
+  {
+    "id": "infosys-tech-66",
+    "companyId": "infosys",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q66] Explain method overloading vs method overriding in Java. (Focusing on INFOSYS interview pattern - Set 6)",
+    "correctAnswer": "Overloading: same method name but different parameters in the same class (compile-time). Overriding: redefine a superclass method in subclass (runtime).",
+    "explanation": "Overloading is static polymorphism; overriding is dynamic polymorphism."
+  },
+  {
+    "id": "infosys-tech-67",
+    "companyId": "infosys",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q67] What is a RESTful API? (Focusing on INFOSYS interview pattern - Set 6)",
+    "correctAnswer": "A RESTful API is an interface that uses HTTP requests (GET, POST, PUT, DELETE) to manage data using stateless operations.",
+    "explanation": "REST stands for Representational State Transfer."
+  },
+  {
+    "id": "infosys-tech-68",
+    "companyId": "infosys",
+    "category": "Technical",
+    "difficulty": "Hard",
+    "question": "[Q68] Explain the concepts of stack and heap memory in Java. (Focusing on INFOSYS interview pattern - Set 6)",
+    "correctAnswer": "Stack memory is used for static memory allocation and thread execution. Heap memory is used for dynamic memory allocation of objects.",
+    "explanation": "Stack memory is fast and local; heap memory is large and shared."
+  },
+  {
+    "id": "infosys-tech-69",
+    "companyId": "infosys",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q69] What is object-oriented programming (OOP)? List core principles. (Focusing on INFOSYS interview pattern - Set 7)",
+    "correctAnswer": "OOP is a programming paradigm based on 'objects'. Core principles: Inheritance, Polymorphism, Encapsulation, and Abstraction.",
+    "explanation": "OOP mirrors real-world items and structures code for reusability."
+  },
+  {
+    "id": "infosys-tech-70",
+    "companyId": "infosys",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q70] What is the difference between list and tuple in Python? (Focusing on INFOSYS interview pattern - Set 7)",
+    "correctAnswer": "Lists are mutable (can be changed); tuples are immutable (cannot be changed after creation).",
+    "explanation": "Lists use square brackets []; tuples use parentheses ()."
+  },
+  {
+    "id": "infosys-tech-71",
+    "companyId": "infosys",
+    "category": "Technical",
+    "difficulty": "Hard",
+    "question": "[Q71] Explain method overloading vs method overriding in Java. (Focusing on INFOSYS interview pattern - Set 7)",
+    "correctAnswer": "Overloading: same method name but different parameters in the same class (compile-time). Overriding: redefine a superclass method in subclass (runtime).",
+    "explanation": "Overloading is static polymorphism; overriding is dynamic polymorphism."
+  },
+  {
+    "id": "infosys-tech-72",
+    "companyId": "infosys",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q72] What is a RESTful API? (Focusing on INFOSYS interview pattern - Set 7)",
+    "correctAnswer": "A RESTful API is an interface that uses HTTP requests (GET, POST, PUT, DELETE) to manage data using stateless operations.",
+    "explanation": "REST stands for Representational State Transfer."
+  },
+  {
+    "id": "infosys-tech-73",
+    "companyId": "infosys",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q73] Explain the concepts of stack and heap memory in Java. (Focusing on INFOSYS interview pattern - Set 7)",
+    "correctAnswer": "Stack memory is used for static memory allocation and thread execution. Heap memory is used for dynamic memory allocation of objects.",
+    "explanation": "Stack memory is fast and local; heap memory is large and shared."
+  },
+  {
+    "id": "infosys-tech-74",
+    "companyId": "infosys",
+    "category": "Technical",
+    "difficulty": "Hard",
+    "question": "[Q74] What is object-oriented programming (OOP)? List core principles. (Focusing on INFOSYS interview pattern - Set 8)",
+    "correctAnswer": "OOP is a programming paradigm based on 'objects'. Core principles: Inheritance, Polymorphism, Encapsulation, and Abstraction.",
+    "explanation": "OOP mirrors real-world items and structures code for reusability."
+  },
+  {
+    "id": "infosys-tech-75",
+    "companyId": "infosys",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q75] What is the difference between list and tuple in Python? (Focusing on INFOSYS interview pattern - Set 8)",
+    "correctAnswer": "Lists are mutable (can be changed); tuples are immutable (cannot be changed after creation).",
+    "explanation": "Lists use square brackets []; tuples use parentheses ()."
+  },
+  {
+    "id": "infosys-tech-76",
+    "companyId": "infosys",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q76] Explain method overloading vs method overriding in Java. (Focusing on INFOSYS interview pattern - Set 8)",
+    "correctAnswer": "Overloading: same method name but different parameters in the same class (compile-time). Overriding: redefine a superclass method in subclass (runtime).",
+    "explanation": "Overloading is static polymorphism; overriding is dynamic polymorphism."
+  },
+  {
+    "id": "accenture-tech-77",
+    "companyId": "accenture",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q77] What is Cloud Computing and what are the main service models? (Focusing on ACCENTURE interview pattern - Set 1)",
+    "correctAnswer": "Delivery of computing services over the internet. Service models: IaaS (Infrastructure), PaaS (Platform), SaaS (Software).",
+    "explanation": "Examples: AWS, Microsoft Azure, Google Cloud Platform."
+  },
+  {
+    "id": "accenture-tech-78",
+    "companyId": "accenture",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q78] What is Git and how does it differ from SVN? (Focusing on ACCENTURE interview pattern - Set 1)",
+    "correctAnswer": "Git is a distributed version control system (every developer has a local clone). SVN is a centralized version control system.",
+    "explanation": "Git supports branch operations and offline work much better than SVN."
+  },
+  {
+    "id": "accenture-tech-79",
+    "companyId": "accenture",
+    "category": "Technical",
+    "difficulty": "Hard",
+    "question": "[Q79] Explain the Agile software development methodology. (Focusing on ACCENTURE interview pattern - Set 1)",
+    "correctAnswer": "Agile is an iterative approach to software development and project management that helps teams deliver value faster and with fewer headaches.",
+    "explanation": "Agile values collaboration, working software, and responding to change."
+  },
+  {
+    "id": "accenture-tech-80",
+    "companyId": "accenture",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q80] What is a firewall in network security? (Focusing on ACCENTURE interview pattern - Set 1)",
+    "correctAnswer": "A firewall is a network security system that monitors and controls incoming and outgoing network traffic based on predetermined security rules.",
+    "explanation": "Firewalls establish a barrier between trusted internal networks and untrusted external ones."
+  },
+  {
+    "id": "accenture-tech-81",
+    "companyId": "accenture",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q81] What is the difference between SQL and NoSQL? (Focusing on ACCENTURE interview pattern - Set 1)",
+    "correctAnswer": "SQL databases are relational, table-based, and structured. NoSQL databases are non-relational, document/key-value based, and flexible.",
+    "explanation": "SQL scales vertically (ACID); NoSQL scales horizontally (CAP theorem)."
+  },
+  {
+    "id": "accenture-tech-82",
+    "companyId": "accenture",
+    "category": "Technical",
+    "difficulty": "Hard",
+    "question": "[Q82] What is Cloud Computing and what are the main service models? (Focusing on ACCENTURE interview pattern - Set 2)",
+    "correctAnswer": "Delivery of computing services over the internet. Service models: IaaS (Infrastructure), PaaS (Platform), SaaS (Software).",
+    "explanation": "Examples: AWS, Microsoft Azure, Google Cloud Platform."
+  },
+  {
+    "id": "accenture-tech-83",
+    "companyId": "accenture",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q83] What is Git and how does it differ from SVN? (Focusing on ACCENTURE interview pattern - Set 2)",
+    "correctAnswer": "Git is a distributed version control system (every developer has a local clone). SVN is a centralized version control system.",
+    "explanation": "Git supports branch operations and offline work much better than SVN."
+  },
+  {
+    "id": "accenture-tech-84",
+    "companyId": "accenture",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q84] Explain the Agile software development methodology. (Focusing on ACCENTURE interview pattern - Set 2)",
+    "correctAnswer": "Agile is an iterative approach to software development and project management that helps teams deliver value faster and with fewer headaches.",
+    "explanation": "Agile values collaboration, working software, and responding to change."
+  },
+  {
+    "id": "accenture-tech-85",
+    "companyId": "accenture",
+    "category": "Technical",
+    "difficulty": "Hard",
+    "question": "[Q85] What is a firewall in network security? (Focusing on ACCENTURE interview pattern - Set 2)",
+    "correctAnswer": "A firewall is a network security system that monitors and controls incoming and outgoing network traffic based on predetermined security rules.",
+    "explanation": "Firewalls establish a barrier between trusted internal networks and untrusted external ones."
+  },
+  {
+    "id": "accenture-tech-86",
+    "companyId": "accenture",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q86] What is the difference between SQL and NoSQL? (Focusing on ACCENTURE interview pattern - Set 2)",
+    "correctAnswer": "SQL databases are relational, table-based, and structured. NoSQL databases are non-relational, document/key-value based, and flexible.",
+    "explanation": "SQL scales vertically (ACID); NoSQL scales horizontally (CAP theorem)."
+  },
+  {
+    "id": "accenture-tech-87",
+    "companyId": "accenture",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q87] What is Cloud Computing and what are the main service models? (Focusing on ACCENTURE interview pattern - Set 3)",
+    "correctAnswer": "Delivery of computing services over the internet. Service models: IaaS (Infrastructure), PaaS (Platform), SaaS (Software).",
+    "explanation": "Examples: AWS, Microsoft Azure, Google Cloud Platform."
+  },
+  {
+    "id": "accenture-tech-88",
+    "companyId": "accenture",
+    "category": "Technical",
+    "difficulty": "Hard",
+    "question": "[Q88] What is Git and how does it differ from SVN? (Focusing on ACCENTURE interview pattern - Set 3)",
+    "correctAnswer": "Git is a distributed version control system (every developer has a local clone). SVN is a centralized version control system.",
+    "explanation": "Git supports branch operations and offline work much better than SVN."
+  },
+  {
+    "id": "accenture-tech-89",
+    "companyId": "accenture",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q89] Explain the Agile software development methodology. (Focusing on ACCENTURE interview pattern - Set 3)",
+    "correctAnswer": "Agile is an iterative approach to software development and project management that helps teams deliver value faster and with fewer headaches.",
+    "explanation": "Agile values collaboration, working software, and responding to change."
+  },
+  {
+    "id": "accenture-tech-90",
+    "companyId": "accenture",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q90] What is a firewall in network security? (Focusing on ACCENTURE interview pattern - Set 3)",
+    "correctAnswer": "A firewall is a network security system that monitors and controls incoming and outgoing network traffic based on predetermined security rules.",
+    "explanation": "Firewalls establish a barrier between trusted internal networks and untrusted external ones."
+  },
+  {
+    "id": "accenture-tech-91",
+    "companyId": "accenture",
+    "category": "Technical",
+    "difficulty": "Hard",
+    "question": "[Q91] What is the difference between SQL and NoSQL? (Focusing on ACCENTURE interview pattern - Set 3)",
+    "correctAnswer": "SQL databases are relational, table-based, and structured. NoSQL databases are non-relational, document/key-value based, and flexible.",
+    "explanation": "SQL scales vertically (ACID); NoSQL scales horizontally (CAP theorem)."
+  },
+  {
+    "id": "accenture-tech-92",
+    "companyId": "accenture",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q92] What is Cloud Computing and what are the main service models? (Focusing on ACCENTURE interview pattern - Set 4)",
+    "correctAnswer": "Delivery of computing services over the internet. Service models: IaaS (Infrastructure), PaaS (Platform), SaaS (Software).",
+    "explanation": "Examples: AWS, Microsoft Azure, Google Cloud Platform."
+  },
+  {
+    "id": "accenture-tech-93",
+    "companyId": "accenture",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q93] What is Git and how does it differ from SVN? (Focusing on ACCENTURE interview pattern - Set 4)",
+    "correctAnswer": "Git is a distributed version control system (every developer has a local clone). SVN is a centralized version control system.",
+    "explanation": "Git supports branch operations and offline work much better than SVN."
+  },
+  {
+    "id": "accenture-tech-94",
+    "companyId": "accenture",
+    "category": "Technical",
+    "difficulty": "Hard",
+    "question": "[Q94] Explain the Agile software development methodology. (Focusing on ACCENTURE interview pattern - Set 4)",
+    "correctAnswer": "Agile is an iterative approach to software development and project management that helps teams deliver value faster and with fewer headaches.",
+    "explanation": "Agile values collaboration, working software, and responding to change."
+  },
+  {
+    "id": "accenture-tech-95",
+    "companyId": "accenture",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q95] What is a firewall in network security? (Focusing on ACCENTURE interview pattern - Set 4)",
+    "correctAnswer": "A firewall is a network security system that monitors and controls incoming and outgoing network traffic based on predetermined security rules.",
+    "explanation": "Firewalls establish a barrier between trusted internal networks and untrusted external ones."
+  },
+  {
+    "id": "accenture-tech-96",
+    "companyId": "accenture",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q96] What is the difference between SQL and NoSQL? (Focusing on ACCENTURE interview pattern - Set 4)",
+    "correctAnswer": "SQL databases are relational, table-based, and structured. NoSQL databases are non-relational, document/key-value based, and flexible.",
+    "explanation": "SQL scales vertically (ACID); NoSQL scales horizontally (CAP theorem)."
+  },
+  {
+    "id": "accenture-tech-97",
+    "companyId": "accenture",
+    "category": "Technical",
+    "difficulty": "Hard",
+    "question": "[Q97] What is Cloud Computing and what are the main service models? (Focusing on ACCENTURE interview pattern - Set 5)",
+    "correctAnswer": "Delivery of computing services over the internet. Service models: IaaS (Infrastructure), PaaS (Platform), SaaS (Software).",
+    "explanation": "Examples: AWS, Microsoft Azure, Google Cloud Platform."
+  },
+  {
+    "id": "accenture-tech-98",
+    "companyId": "accenture",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q98] What is Git and how does it differ from SVN? (Focusing on ACCENTURE interview pattern - Set 5)",
+    "correctAnswer": "Git is a distributed version control system (every developer has a local clone). SVN is a centralized version control system.",
+    "explanation": "Git supports branch operations and offline work much better than SVN."
+  },
+  {
+    "id": "accenture-tech-99",
+    "companyId": "accenture",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q99] Explain the Agile software development methodology. (Focusing on ACCENTURE interview pattern - Set 5)",
+    "correctAnswer": "Agile is an iterative approach to software development and project management that helps teams deliver value faster and with fewer headaches.",
+    "explanation": "Agile values collaboration, working software, and responding to change."
+  },
+  {
+    "id": "accenture-tech-100",
+    "companyId": "accenture",
+    "category": "Technical",
+    "difficulty": "Hard",
+    "question": "[Q100] What is a firewall in network security? (Focusing on ACCENTURE interview pattern - Set 5)",
+    "correctAnswer": "A firewall is a network security system that monitors and controls incoming and outgoing network traffic based on predetermined security rules.",
+    "explanation": "Firewalls establish a barrier between trusted internal networks and untrusted external ones."
+  },
+  {
+    "id": "accenture-tech-101",
+    "companyId": "accenture",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q101] What is the difference between SQL and NoSQL? (Focusing on ACCENTURE interview pattern - Set 5)",
+    "correctAnswer": "SQL databases are relational, table-based, and structured. NoSQL databases are non-relational, document/key-value based, and flexible.",
+    "explanation": "SQL scales vertically (ACID); NoSQL scales horizontally (CAP theorem)."
+  },
+  {
+    "id": "accenture-tech-102",
+    "companyId": "accenture",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q102] What is Cloud Computing and what are the main service models? (Focusing on ACCENTURE interview pattern - Set 6)",
+    "correctAnswer": "Delivery of computing services over the internet. Service models: IaaS (Infrastructure), PaaS (Platform), SaaS (Software).",
+    "explanation": "Examples: AWS, Microsoft Azure, Google Cloud Platform."
+  },
+  {
+    "id": "accenture-tech-103",
+    "companyId": "accenture",
+    "category": "Technical",
+    "difficulty": "Hard",
+    "question": "[Q103] What is Git and how does it differ from SVN? (Focusing on ACCENTURE interview pattern - Set 6)",
+    "correctAnswer": "Git is a distributed version control system (every developer has a local clone). SVN is a centralized version control system.",
+    "explanation": "Git supports branch operations and offline work much better than SVN."
+  },
+  {
+    "id": "accenture-tech-104",
+    "companyId": "accenture",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q104] Explain the Agile software development methodology. (Focusing on ACCENTURE interview pattern - Set 6)",
+    "correctAnswer": "Agile is an iterative approach to software development and project management that helps teams deliver value faster and with fewer headaches.",
+    "explanation": "Agile values collaboration, working software, and responding to change."
+  },
+  {
+    "id": "accenture-tech-105",
+    "companyId": "accenture",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q105] What is a firewall in network security? (Focusing on ACCENTURE interview pattern - Set 6)",
+    "correctAnswer": "A firewall is a network security system that monitors and controls incoming and outgoing network traffic based on predetermined security rules.",
+    "explanation": "Firewalls establish a barrier between trusted internal networks and untrusted external ones."
+  },
+  {
+    "id": "accenture-tech-106",
+    "companyId": "accenture",
+    "category": "Technical",
+    "difficulty": "Hard",
+    "question": "[Q106] What is the difference between SQL and NoSQL? (Focusing on ACCENTURE interview pattern - Set 6)",
+    "correctAnswer": "SQL databases are relational, table-based, and structured. NoSQL databases are non-relational, document/key-value based, and flexible.",
+    "explanation": "SQL scales vertically (ACID); NoSQL scales horizontally (CAP theorem)."
+  },
+  {
+    "id": "accenture-tech-107",
+    "companyId": "accenture",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q107] What is Cloud Computing and what are the main service models? (Focusing on ACCENTURE interview pattern - Set 7)",
+    "correctAnswer": "Delivery of computing services over the internet. Service models: IaaS (Infrastructure), PaaS (Platform), SaaS (Software).",
+    "explanation": "Examples: AWS, Microsoft Azure, Google Cloud Platform."
+  },
+  {
+    "id": "accenture-tech-108",
+    "companyId": "accenture",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q108] What is Git and how does it differ from SVN? (Focusing on ACCENTURE interview pattern - Set 7)",
+    "correctAnswer": "Git is a distributed version control system (every developer has a local clone). SVN is a centralized version control system.",
+    "explanation": "Git supports branch operations and offline work much better than SVN."
+  },
+  {
+    "id": "accenture-tech-109",
+    "companyId": "accenture",
+    "category": "Technical",
+    "difficulty": "Hard",
+    "question": "[Q109] Explain the Agile software development methodology. (Focusing on ACCENTURE interview pattern - Set 7)",
+    "correctAnswer": "Agile is an iterative approach to software development and project management that helps teams deliver value faster and with fewer headaches.",
+    "explanation": "Agile values collaboration, working software, and responding to change."
+  },
+  {
+    "id": "accenture-tech-110",
+    "companyId": "accenture",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q110] What is a firewall in network security? (Focusing on ACCENTURE interview pattern - Set 7)",
+    "correctAnswer": "A firewall is a network security system that monitors and controls incoming and outgoing network traffic based on predetermined security rules.",
+    "explanation": "Firewalls establish a barrier between trusted internal networks and untrusted external ones."
+  },
+  {
+    "id": "accenture-tech-111",
+    "companyId": "accenture",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q111] What is the difference between SQL and NoSQL? (Focusing on ACCENTURE interview pattern - Set 7)",
+    "correctAnswer": "SQL databases are relational, table-based, and structured. NoSQL databases are non-relational, document/key-value based, and flexible.",
+    "explanation": "SQL scales vertically (ACID); NoSQL scales horizontally (CAP theorem)."
+  },
+  {
+    "id": "accenture-tech-112",
+    "companyId": "accenture",
+    "category": "Technical",
+    "difficulty": "Hard",
+    "question": "[Q112] What is Cloud Computing and what are the main service models? (Focusing on ACCENTURE interview pattern - Set 8)",
+    "correctAnswer": "Delivery of computing services over the internet. Service models: IaaS (Infrastructure), PaaS (Platform), SaaS (Software).",
+    "explanation": "Examples: AWS, Microsoft Azure, Google Cloud Platform."
+  },
+  {
+    "id": "accenture-tech-113",
+    "companyId": "accenture",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q113] What is Git and how does it differ from SVN? (Focusing on ACCENTURE interview pattern - Set 8)",
+    "correctAnswer": "Git is a distributed version control system (every developer has a local clone). SVN is a centralized version control system.",
+    "explanation": "Git supports branch operations and offline work much better than SVN."
+  },
+  {
+    "id": "accenture-tech-114",
+    "companyId": "accenture",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q114] Explain the Agile software development methodology. (Focusing on ACCENTURE interview pattern - Set 8)",
+    "correctAnswer": "Agile is an iterative approach to software development and project management that helps teams deliver value faster and with fewer headaches.",
+    "explanation": "Agile values collaboration, working software, and responding to change."
+  },
+  {
+    "id": "wipro-tech-115",
+    "companyId": "wipro",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q115] What is an Operating System and what are its core tasks? (Focusing on WIPRO interview pattern - Set 1)",
+    "correctAnswer": "An OS is system software that manages computer hardware and software resources. Core tasks: memory management, process scheduling, file system, I/O management.",
+    "explanation": "Examples: Windows, Linux, macOS."
+  },
+  {
+    "id": "wipro-tech-116",
+    "companyId": "wipro",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q116] Explain the OSI Reference Model and name its 7 layers. (Focusing on WIPRO interview pattern - Set 1)",
+    "correctAnswer": "It standardizes network communication functions. Layers: Physical, Data Link, Network, Transport, Session, Presentation, Application.",
+    "explanation": "Use the mnemonic: 'Please Do Not Throw Sausage Pizza Away'."
+  },
+  {
+    "id": "wipro-tech-117",
+    "companyId": "wipro",
+    "category": "Technical",
+    "difficulty": "Hard",
+    "question": "[Q117] What is a Pointer in C++? (Focusing on WIPRO interview pattern - Set 1)",
+    "correctAnswer": "A pointer is a variable that stores the memory address of another variable.",
+    "explanation": "Pointers enable direct memory manipulation and dynamic allocation."
+  },
+  {
+    "id": "wipro-tech-118",
+    "companyId": "wipro",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q118] What is the difference between a Process and a Thread? (Focusing on WIPRO interview pattern - Set 1)",
+    "correctAnswer": "A process is an execution of a program (isolated memory). A thread is a path of execution within a process (shared memory).",
+    "explanation": "Creating threads is faster and consumes fewer resources than creating processes."
+  },
+  {
+    "id": "wipro-tech-119",
+    "companyId": "wipro",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q119] What is a virtual function in C++ and why is it used? (Focusing on WIPRO interview pattern - Set 1)",
+    "correctAnswer": "A virtual function is a member function in a base class that you expect to redefine in derived classes. Used to achieve runtime polymorphism.",
+    "explanation": "Declared using the 'virtual' keyword."
+  },
+  {
+    "id": "wipro-tech-120",
+    "companyId": "wipro",
+    "category": "Technical",
+    "difficulty": "Hard",
+    "question": "[Q120] What is an Operating System and what are its core tasks? (Focusing on WIPRO interview pattern - Set 2)",
+    "correctAnswer": "An OS is system software that manages computer hardware and software resources. Core tasks: memory management, process scheduling, file system, I/O management.",
+    "explanation": "Examples: Windows, Linux, macOS."
+  },
+  {
+    "id": "wipro-tech-121",
+    "companyId": "wipro",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q121] Explain the OSI Reference Model and name its 7 layers. (Focusing on WIPRO interview pattern - Set 2)",
+    "correctAnswer": "It standardizes network communication functions. Layers: Physical, Data Link, Network, Transport, Session, Presentation, Application.",
+    "explanation": "Use the mnemonic: 'Please Do Not Throw Sausage Pizza Away'."
+  },
+  {
+    "id": "wipro-tech-122",
+    "companyId": "wipro",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q122] What is a Pointer in C++? (Focusing on WIPRO interview pattern - Set 2)",
+    "correctAnswer": "A pointer is a variable that stores the memory address of another variable.",
+    "explanation": "Pointers enable direct memory manipulation and dynamic allocation."
+  },
+  {
+    "id": "wipro-tech-123",
+    "companyId": "wipro",
+    "category": "Technical",
+    "difficulty": "Hard",
+    "question": "[Q123] What is the difference between a Process and a Thread? (Focusing on WIPRO interview pattern - Set 2)",
+    "correctAnswer": "A process is an execution of a program (isolated memory). A thread is a path of execution within a process (shared memory).",
+    "explanation": "Creating threads is faster and consumes fewer resources than creating processes."
+  },
+  {
+    "id": "wipro-tech-124",
+    "companyId": "wipro",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q124] What is a virtual function in C++ and why is it used? (Focusing on WIPRO interview pattern - Set 2)",
+    "correctAnswer": "A virtual function is a member function in a base class that you expect to redefine in derived classes. Used to achieve runtime polymorphism.",
+    "explanation": "Declared using the 'virtual' keyword."
+  },
+  {
+    "id": "wipro-tech-125",
+    "companyId": "wipro",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q125] What is an Operating System and what are its core tasks? (Focusing on WIPRO interview pattern - Set 3)",
+    "correctAnswer": "An OS is system software that manages computer hardware and software resources. Core tasks: memory management, process scheduling, file system, I/O management.",
+    "explanation": "Examples: Windows, Linux, macOS."
+  },
+  {
+    "id": "wipro-tech-126",
+    "companyId": "wipro",
+    "category": "Technical",
+    "difficulty": "Hard",
+    "question": "[Q126] Explain the OSI Reference Model and name its 7 layers. (Focusing on WIPRO interview pattern - Set 3)",
+    "correctAnswer": "It standardizes network communication functions. Layers: Physical, Data Link, Network, Transport, Session, Presentation, Application.",
+    "explanation": "Use the mnemonic: 'Please Do Not Throw Sausage Pizza Away'."
+  },
+  {
+    "id": "wipro-tech-127",
+    "companyId": "wipro",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q127] What is a Pointer in C++? (Focusing on WIPRO interview pattern - Set 3)",
+    "correctAnswer": "A pointer is a variable that stores the memory address of another variable.",
+    "explanation": "Pointers enable direct memory manipulation and dynamic allocation."
+  },
+  {
+    "id": "wipro-tech-128",
+    "companyId": "wipro",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q128] What is the difference between a Process and a Thread? (Focusing on WIPRO interview pattern - Set 3)",
+    "correctAnswer": "A process is an execution of a program (isolated memory). A thread is a path of execution within a process (shared memory).",
+    "explanation": "Creating threads is faster and consumes fewer resources than creating processes."
+  },
+  {
+    "id": "wipro-tech-129",
+    "companyId": "wipro",
+    "category": "Technical",
+    "difficulty": "Hard",
+    "question": "[Q129] What is a virtual function in C++ and why is it used? (Focusing on WIPRO interview pattern - Set 3)",
+    "correctAnswer": "A virtual function is a member function in a base class that you expect to redefine in derived classes. Used to achieve runtime polymorphism.",
+    "explanation": "Declared using the 'virtual' keyword."
+  },
+  {
+    "id": "wipro-tech-130",
+    "companyId": "wipro",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q130] What is an Operating System and what are its core tasks? (Focusing on WIPRO interview pattern - Set 4)",
+    "correctAnswer": "An OS is system software that manages computer hardware and software resources. Core tasks: memory management, process scheduling, file system, I/O management.",
+    "explanation": "Examples: Windows, Linux, macOS."
+  },
+  {
+    "id": "wipro-tech-131",
+    "companyId": "wipro",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q131] Explain the OSI Reference Model and name its 7 layers. (Focusing on WIPRO interview pattern - Set 4)",
+    "correctAnswer": "It standardizes network communication functions. Layers: Physical, Data Link, Network, Transport, Session, Presentation, Application.",
+    "explanation": "Use the mnemonic: 'Please Do Not Throw Sausage Pizza Away'."
+  },
+  {
+    "id": "wipro-tech-132",
+    "companyId": "wipro",
+    "category": "Technical",
+    "difficulty": "Hard",
+    "question": "[Q132] What is a Pointer in C++? (Focusing on WIPRO interview pattern - Set 4)",
+    "correctAnswer": "A pointer is a variable that stores the memory address of another variable.",
+    "explanation": "Pointers enable direct memory manipulation and dynamic allocation."
+  },
+  {
+    "id": "wipro-tech-133",
+    "companyId": "wipro",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q133] What is the difference between a Process and a Thread? (Focusing on WIPRO interview pattern - Set 4)",
+    "correctAnswer": "A process is an execution of a program (isolated memory). A thread is a path of execution within a process (shared memory).",
+    "explanation": "Creating threads is faster and consumes fewer resources than creating processes."
+  },
+  {
+    "id": "wipro-tech-134",
+    "companyId": "wipro",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q134] What is a virtual function in C++ and why is it used? (Focusing on WIPRO interview pattern - Set 4)",
+    "correctAnswer": "A virtual function is a member function in a base class that you expect to redefine in derived classes. Used to achieve runtime polymorphism.",
+    "explanation": "Declared using the 'virtual' keyword."
+  },
+  {
+    "id": "wipro-tech-135",
+    "companyId": "wipro",
+    "category": "Technical",
+    "difficulty": "Hard",
+    "question": "[Q135] What is an Operating System and what are its core tasks? (Focusing on WIPRO interview pattern - Set 5)",
+    "correctAnswer": "An OS is system software that manages computer hardware and software resources. Core tasks: memory management, process scheduling, file system, I/O management.",
+    "explanation": "Examples: Windows, Linux, macOS."
+  },
+  {
+    "id": "wipro-tech-136",
+    "companyId": "wipro",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q136] Explain the OSI Reference Model and name its 7 layers. (Focusing on WIPRO interview pattern - Set 5)",
+    "correctAnswer": "It standardizes network communication functions. Layers: Physical, Data Link, Network, Transport, Session, Presentation, Application.",
+    "explanation": "Use the mnemonic: 'Please Do Not Throw Sausage Pizza Away'."
+  },
+  {
+    "id": "wipro-tech-137",
+    "companyId": "wipro",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q137] What is a Pointer in C++? (Focusing on WIPRO interview pattern - Set 5)",
+    "correctAnswer": "A pointer is a variable that stores the memory address of another variable.",
+    "explanation": "Pointers enable direct memory manipulation and dynamic allocation."
+  },
+  {
+    "id": "wipro-tech-138",
+    "companyId": "wipro",
+    "category": "Technical",
+    "difficulty": "Hard",
+    "question": "[Q138] What is the difference between a Process and a Thread? (Focusing on WIPRO interview pattern - Set 5)",
+    "correctAnswer": "A process is an execution of a program (isolated memory). A thread is a path of execution within a process (shared memory).",
+    "explanation": "Creating threads is faster and consumes fewer resources than creating processes."
+  },
+  {
+    "id": "wipro-tech-139",
+    "companyId": "wipro",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q139] What is a virtual function in C++ and why is it used? (Focusing on WIPRO interview pattern - Set 5)",
+    "correctAnswer": "A virtual function is a member function in a base class that you expect to redefine in derived classes. Used to achieve runtime polymorphism.",
+    "explanation": "Declared using the 'virtual' keyword."
+  },
+  {
+    "id": "wipro-tech-140",
+    "companyId": "wipro",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q140] What is an Operating System and what are its core tasks? (Focusing on WIPRO interview pattern - Set 6)",
+    "correctAnswer": "An OS is system software that manages computer hardware and software resources. Core tasks: memory management, process scheduling, file system, I/O management.",
+    "explanation": "Examples: Windows, Linux, macOS."
+  },
+  {
+    "id": "wipro-tech-141",
+    "companyId": "wipro",
+    "category": "Technical",
+    "difficulty": "Hard",
+    "question": "[Q141] Explain the OSI Reference Model and name its 7 layers. (Focusing on WIPRO interview pattern - Set 6)",
+    "correctAnswer": "It standardizes network communication functions. Layers: Physical, Data Link, Network, Transport, Session, Presentation, Application.",
+    "explanation": "Use the mnemonic: 'Please Do Not Throw Sausage Pizza Away'."
+  },
+  {
+    "id": "wipro-tech-142",
+    "companyId": "wipro",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q142] What is a Pointer in C++? (Focusing on WIPRO interview pattern - Set 6)",
+    "correctAnswer": "A pointer is a variable that stores the memory address of another variable.",
+    "explanation": "Pointers enable direct memory manipulation and dynamic allocation."
+  },
+  {
+    "id": "wipro-tech-143",
+    "companyId": "wipro",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q143] What is the difference between a Process and a Thread? (Focusing on WIPRO interview pattern - Set 6)",
+    "correctAnswer": "A process is an execution of a program (isolated memory). A thread is a path of execution within a process (shared memory).",
+    "explanation": "Creating threads is faster and consumes fewer resources than creating processes."
+  },
+  {
+    "id": "wipro-tech-144",
+    "companyId": "wipro",
+    "category": "Technical",
+    "difficulty": "Hard",
+    "question": "[Q144] What is a virtual function in C++ and why is it used? (Focusing on WIPRO interview pattern - Set 6)",
+    "correctAnswer": "A virtual function is a member function in a base class that you expect to redefine in derived classes. Used to achieve runtime polymorphism.",
+    "explanation": "Declared using the 'virtual' keyword."
+  },
+  {
+    "id": "wipro-tech-145",
+    "companyId": "wipro",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q145] What is an Operating System and what are its core tasks? (Focusing on WIPRO interview pattern - Set 7)",
+    "correctAnswer": "An OS is system software that manages computer hardware and software resources. Core tasks: memory management, process scheduling, file system, I/O management.",
+    "explanation": "Examples: Windows, Linux, macOS."
+  },
+  {
+    "id": "wipro-tech-146",
+    "companyId": "wipro",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q146] Explain the OSI Reference Model and name its 7 layers. (Focusing on WIPRO interview pattern - Set 7)",
+    "correctAnswer": "It standardizes network communication functions. Layers: Physical, Data Link, Network, Transport, Session, Presentation, Application.",
+    "explanation": "Use the mnemonic: 'Please Do Not Throw Sausage Pizza Away'."
+  },
+  {
+    "id": "wipro-tech-147",
+    "companyId": "wipro",
+    "category": "Technical",
+    "difficulty": "Hard",
+    "question": "[Q147] What is a Pointer in C++? (Focusing on WIPRO interview pattern - Set 7)",
+    "correctAnswer": "A pointer is a variable that stores the memory address of another variable.",
+    "explanation": "Pointers enable direct memory manipulation and dynamic allocation."
+  },
+  {
+    "id": "wipro-tech-148",
+    "companyId": "wipro",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q148] What is the difference between a Process and a Thread? (Focusing on WIPRO interview pattern - Set 7)",
+    "correctAnswer": "A process is an execution of a program (isolated memory). A thread is a path of execution within a process (shared memory).",
+    "explanation": "Creating threads is faster and consumes fewer resources than creating processes."
+  },
+  {
+    "id": "wipro-tech-149",
+    "companyId": "wipro",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q149] What is a virtual function in C++ and why is it used? (Focusing on WIPRO interview pattern - Set 7)",
+    "correctAnswer": "A virtual function is a member function in a base class that you expect to redefine in derived classes. Used to achieve runtime polymorphism.",
+    "explanation": "Declared using the 'virtual' keyword."
+  },
+  {
+    "id": "wipro-tech-150",
+    "companyId": "wipro",
+    "category": "Technical",
+    "difficulty": "Hard",
+    "question": "[Q150] What is an Operating System and what are its core tasks? (Focusing on WIPRO interview pattern - Set 8)",
+    "correctAnswer": "An OS is system software that manages computer hardware and software resources. Core tasks: memory management, process scheduling, file system, I/O management.",
+    "explanation": "Examples: Windows, Linux, macOS."
+  },
+  {
+    "id": "wipro-tech-151",
+    "companyId": "wipro",
+    "category": "Technical",
+    "difficulty": "Easy",
+    "question": "[Q151] Explain the OSI Reference Model and name its 7 layers. (Focusing on WIPRO interview pattern - Set 8)",
+    "correctAnswer": "It standardizes network communication functions. Layers: Physical, Data Link, Network, Transport, Session, Presentation, Application.",
+    "explanation": "Use the mnemonic: 'Please Do Not Throw Sausage Pizza Away'."
+  },
+  {
+    "id": "wipro-tech-152",
+    "companyId": "wipro",
+    "category": "Technical",
+    "difficulty": "Medium",
+    "question": "[Q152] What is a Pointer in C++? (Focusing on WIPRO interview pattern - Set 8)",
+    "correctAnswer": "A pointer is a variable that stores the memory address of another variable.",
+    "explanation": "Pointers enable direct memory manipulation and dynamic allocation."
+  }
+]

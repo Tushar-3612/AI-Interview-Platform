@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
@@ -10,102 +10,256 @@ import {
   BookmarkCheck,
   CheckCircle2,
   ChevronRight,
+  Sparkles
 } from "lucide-react";
 import Button from "../../components/ui/Button";
-import { getCompanyById } from "../../data/practiceQuestions";
-import { getQuestionsForCompany } from "../../data/practiceQuestions";
+import { COMPANIES } from "../../data/companies";
+import technicalQuestionsList from "../../data/technical.json";
+import api from "../../utils/api";
 
-/**
- * Practice Question Page — answer, evaluate, and progress through questions.
- */
 function PracticeQuestion() {
   const { companyId } = useParams();
   const navigate = useNavigate();
-  const company = getCompanyById(companyId);
-  const allQuestions = useMemo(() => getQuestionsForCompany(companyId), [companyId]);
 
+  const company = COMPANIES.find((c) => c.id === companyId);
+  const [session, setSession] = useState(null);
+  const [questions, setQuestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+
   const [answer, setAnswer] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [evaluating, setEvaluating] = useState(false);
   const [evaluation, setEvaluation] = useState(null);
   const [bookmarked, setBookmarked] = useState(new Set());
-  const [completed, setCompleted] = useState(new Set());
   const [recording, setRecording] = useState(false);
+  const [recognition, setRecognition] = useState(null);
+
+  // Initialize Web Speech API for voice dictation
+  useEffect(() => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      const rec = new SpeechRecognition();
+      rec.continuous = true;
+      rec.interimResults = false;
+      rec.lang = "en-US";
+
+      rec.onresult = (event) => {
+        const transcript = event.results[event.results.length - 1][0].transcript;
+        setAnswer((prev) => (prev ? `${prev} ${transcript}` : transcript));
+      };
+
+      rec.onerror = (err) => {
+        console.error("Speech Recognition Error:", err);
+        setRecording(false);
+      };
+
+      rec.onend = () => {
+        setRecording(false);
+      };
+
+      setRecognition(rec);
+    }
+  }, []);
+
+  // Initialize practice session
+  useEffect(() => {
+    if (!companyId) return;
+
+    const sessionKey = `practice-session-${companyId}`;
+    const stored = localStorage.getItem(sessionKey);
+    let currentSession = stored ? JSON.parse(stored) : null;
+
+    if (!currentSession) {
+      currentSession = {
+        companyId,
+        rounds: {
+          aptitude: { completed: false, score: null, maxScore: 30 },
+          technical: { completed: false, score: null, maxScore: 100 },
+          coding: { completed: false, score: null, maxScore: 3 }
+        }
+      };
+    }
+
+    setSession(currentSession);
+
+    // Check if technical questions are already loaded in this session
+    if (currentSession.rounds.technical.questions && currentSession.rounds.technical.questions.length === 20) {
+      setQuestions(currentSession.rounds.technical.questions);
+      // Load current index progress
+      const savedAnswers = currentSession.rounds.technical.answers || {};
+      const savedEvaluations = currentSession.rounds.technical.evaluations || {};
+
+      // Determine where to resume
+      let nextIndex = 0;
+      for (let idx = 0; idx < 20; idx++) {
+        const qId = currentSession.rounds.technical.questions[idx].id;
+        if (savedEvaluations[qId]) {
+          nextIndex = idx + 1;
+        } else {
+          nextIndex = idx;
+          break;
+        }
+      }
+      if (nextIndex >= 20) {
+        nextIndex = 19; // Cap at last question
+      }
+      setCurrentIndex(nextIndex);
+
+      const currentQId = currentSession.rounds.technical.questions[nextIndex].id;
+      setAnswer(savedAnswers[currentQId] || "");
+      if (savedEvaluations[currentQId]) {
+        setEvaluation(savedEvaluations[currentQId]);
+        setSubmitted(true);
+      }
+    } else {
+      // Pick 20 random questions for this company
+      const companyQuestions = technicalQuestionsList.filter((q) => q.companyId === companyId);
+      const shuffled = [...companyQuestions].sort(() => 0.5 - Math.random());
+      const sampled = shuffled.slice(0, 20);
+
+      setQuestions(sampled);
+      currentSession.rounds.technical.questions = sampled;
+      currentSession.rounds.technical.answers = {};
+      currentSession.rounds.technical.evaluations = {};
+      localStorage.setItem(sessionKey, JSON.stringify(currentSession));
+    }
+  }, [companyId]);
 
   if (!company) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-16 text-center">
         <p style={{ color: "var(--text-secondary)" }}>Company not found.</p>
-        <button type="button" onClick={() => navigate("/interview-practice")} className="mt-4 text-sm font-medium cursor-pointer" style={{ color: "var(--primary)" }}>
+        <button
+          type="button"
+          onClick={() => navigate("/interview-practice")}
+          className="mt-4 text-sm font-medium cursor-pointer"
+          style={{ color: "var(--primary)" }}
+        >
           Back to Practice
         </button>
       </div>
     );
   }
 
-  const question = allQuestions[currentIndex];
-  const progress = allQuestions.length ? ((currentIndex + 1) / allQuestions.length) * 100 : 0;
+  if (!session || questions.length === 0) return null;
 
-  const handleSubmit = () => {
-    if (!answer.trim()) {
-      toast.error("Please write your answer first");
+  const question = questions[currentIndex];
+  const progress = ((currentIndex + 1) / questions.length) * 100;
+
+  const handleVoiceToggle = () => {
+    if (!recognition) {
+      toast.error("Speech recognition is not supported in this browser. Please type your answer.");
       return;
     }
+
+    if (recording) {
+      recognition.stop();
+      setRecording(false);
+      toast.success("Voice input stopped.");
+    } else {
+      setRecording(true);
+      recognition.start();
+      toast.success("Listening... Speak your answer.");
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!answer.trim()) {
+      toast.error("Please type or record your answer first");
+      return;
+    }
+
     setEvaluating(true);
-    setTimeout(() => {
-      const score = answer.length > 50 ? "Good" : "Needs Improvement";
-      setEvaluation({
-        score,
-        feedback: score === "Good"
-          ? "Your answer covers key concepts. Consider adding more specific examples."
-          : "Try to expand your answer with more technical detail and structure.",
+    try {
+      const response = await api.post("/api/interview/evaluate-technical", {
+        question: question.question,
+        answer: answer
       });
+
+      const { score, feedback } = response.data;
+
+      // Update state and localStorage
+      const sessionKey = `practice-session-${companyId}`;
+      const updated = { ...session };
+      updated.rounds.technical.answers[question.id] = answer;
+      updated.rounds.technical.evaluations[question.id] = { score, feedback };
+
+      localStorage.setItem(sessionKey, JSON.stringify(updated));
+      setSession(updated);
+      setEvaluation({ score, feedback });
       setSubmitted(true);
+      toast.success("Answer evaluated!");
+    } catch (err) {
+      console.error(err);
+      toast.error("AI evaluation failed. Please try again.");
+    } finally {
       setEvaluating(false);
-    }, 1200);
+    }
   };
 
   const handleNext = () => {
-    if (currentIndex < allQuestions.length - 1) {
-      setCurrentIndex((i) => i + 1);
-      setAnswer("");
-      setSubmitted(false);
-      setEvaluation(null);
+    const nextIndex = currentIndex + 1;
+    if (nextIndex < questions.length) {
+      setCurrentIndex(nextIndex);
+      const nextQId = questions[nextIndex].id;
+      const nextAnswer = session.rounds.technical.answers[nextQId] || "";
+      const nextEvaluation = session.rounds.technical.evaluations[nextQId] || null;
+
+      setAnswer(nextAnswer);
+      if (nextEvaluation) {
+        setEvaluation(nextEvaluation);
+        setSubmitted(true);
+      } else {
+        setEvaluation(null);
+        setSubmitted(false);
+      }
     } else {
-      toast.success("Practice session complete!");
-      navigate("/interview-practice");
+      // All 20 completed. Compute aggregate technical score (as percentage: avg score of 0-10 scale * 10)
+      const evals = Object.values(session.rounds.technical.evaluations);
+      const totalScore = evals.reduce((sum, e) => sum + (e.score || 0), 0);
+      // Average score on a 100% scale
+      const finalScorePercentage = Math.round((totalScore / (questions.length * 10)) * 100);
+
+      const sessionKey = `practice-session-${companyId}`;
+      const updated = { ...session };
+      updated.rounds.technical.completed = true;
+      updated.rounds.technical.score = finalScorePercentage;
+
+      localStorage.setItem(sessionKey, JSON.stringify(updated));
+      toast.success(`Technical Round completed! AI Score: ${finalScorePercentage}%`);
+      navigate(`/interview-practice/${companyId}`);
     }
   };
-
-  if (!question) {
-    return (
-      <div className="max-w-3xl mx-auto px-4 py-16 text-center">
-        <p style={{ color: "var(--text-secondary)" }}>No practice questions available for this company yet.</p>
-        <button type="button" onClick={() => navigate("/interview-practice")} className="mt-4 text-sm font-medium cursor-pointer" style={{ color: "var(--primary)" }}>
-          Back to Practice
-        </button>
-      </div>
-    );
-  }
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
       <button
         type="button"
-        onClick={() => navigate("/interview-practice")}
+        onClick={() => navigate(`/interview-practice/${companyId}`)}
         className="flex items-center gap-2 text-sm font-medium mb-6 cursor-pointer hover:opacity-80"
         style={{ color: "var(--text-secondary)" }}
       >
         <ArrowLeft className="w-4 h-4" />
-        Back to {company.name}
+        Back to Rounds Selection
       </button>
+
+      <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-xs uppercase tracking-[0.24em] mb-2" style={{ color: "var(--text-muted)" }}>
+            Selected Stage
+          </p>
+          <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold" style={{ background: "color-mix(in srgb, var(--primary) 10%, transparent)", color: "var(--primary)" }}>
+            <Sparkles className="w-4 h-4" />
+            Technical Round
+          </span>
+        </div>
+      </div>
 
       {/* Progress */}
       <div className="mb-8">
         <div className="flex justify-between text-xs mb-2" style={{ color: "var(--text-muted)" }}>
-          <span>Progress</span>
-          <span>{currentIndex + 1} / {allQuestions.length}</span>
+          <span>Questions Answered: {currentIndex + (submitted ? 1 : 0)} / {questions.length}</span>
+          <span>Question {currentIndex + 1} of {questions.length}</span>
         </div>
         <div className="h-2 rounded-full overflow-hidden" style={{ background: "var(--border)" }}>
           <motion.div
@@ -113,7 +267,7 @@ function PracticeQuestion() {
             style={{ background: "var(--primary)" }}
             initial={{ width: 0 }}
             animate={{ width: `${progress}%` }}
-            transition={{ duration: 0.4 }}
+            transition={{ duration: 0.3 }}
           />
         </div>
       </div>
@@ -141,7 +295,7 @@ function PracticeQuestion() {
           <textarea
             value={answer}
             onChange={(e) => setAnswer(e.target.value)}
-            disabled={submitted}
+            disabled={submitted || evaluating}
             placeholder="Write your answer here..."
             rows={6}
             className="w-full px-4 py-3 rounded-xl border text-sm outline-none resize-none"
@@ -149,11 +303,9 @@ function PracticeQuestion() {
           />
           <button
             type="button"
-            onClick={() => {
-              setRecording(!recording);
-              toast(recording ? "Recording stopped" : "Voice input started (demo)");
-            }}
-            className="absolute bottom-3 right-3 p-2.5 rounded-xl cursor-pointer transition-all"
+            onClick={handleVoiceToggle}
+            disabled={submitted || evaluating}
+            className="absolute bottom-3 right-3 p-2.5 rounded-xl cursor-pointer transition-all disabled:opacity-40"
             style={{
               background: recording ? "var(--error)" : "var(--primary)",
               color: "#fff",
@@ -165,7 +317,7 @@ function PracticeQuestion() {
 
         {!submitted ? (
           <Button onClick={handleSubmit} loading={evaluating}>
-            Submit Answer
+            Submit Answer for AI Review
           </Button>
         ) : (
           <AnimatePresence>
@@ -175,16 +327,18 @@ function PracticeQuestion() {
               className="space-y-4 mt-4"
             >
               <div className="p-4 rounded-xl border" style={{ borderColor: "var(--border)", background: "var(--input-bg)" }}>
-                <p className="text-xs font-semibold uppercase mb-1" style={{ color: "var(--text-muted)" }}>Evaluation</p>
-                <p className="text-sm font-medium" style={{ color: "var(--success)" }}>{evaluation?.score}</p>
+                <p className="text-xs font-semibold uppercase mb-1" style={{ color: "var(--text-muted)" }}>AI Evaluation Score</p>
+                <p className="text-base font-bold" style={{ color: evaluation?.score >= 6 ? "var(--success)" : "var(--error)" }}>
+                  {evaluation?.score} / 10
+                </p>
                 <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>{evaluation?.feedback}</p>
               </div>
               <div className="p-4 rounded-xl border" style={{ borderColor: "var(--border)" }}>
-                <p className="text-xs font-semibold uppercase mb-1" style={{ color: "var(--text-muted)" }}>Correct Answer</p>
+                <p className="text-xs font-semibold uppercase mb-1" style={{ color: "var(--text-muted)" }}>Sample Reference Answer</p>
                 <p className="text-sm" style={{ color: "var(--text-primary)" }}>{question.correctAnswer}</p>
               </div>
               <div className="p-4 rounded-xl border" style={{ borderColor: "var(--border)" }}>
-                <p className="text-xs font-semibold uppercase mb-1" style={{ color: "var(--text-muted)" }}>Explanation</p>
+                <p className="text-xs font-semibold uppercase mb-1" style={{ color: "var(--text-muted)" }}>Explanation Reference</p>
                 <p className="text-sm" style={{ color: "var(--text-secondary)" }}>{question.explanation}</p>
               </div>
             </motion.div>
@@ -208,25 +362,14 @@ function PracticeQuestion() {
             {bookmarked.has(question.id) ? <BookmarkCheck className="w-4 h-4" style={{ color: "var(--primary)" }} /> : <Bookmark className="w-4 h-4" />}
             Bookmark
           </button>
-          <button
-            type="button"
-            onClick={() => {
-              setCompleted((prev) => new Set(prev).add(question.id));
-              toast.success("Marked as completed");
-            }}
-            className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium border cursor-pointer"
-            style={{ borderColor: "var(--border)", color: completed.has(question.id) ? "var(--success)" : "var(--text-secondary)" }}
-          >
-            <CheckCircle2 className="w-4 h-4" />
-            Mark as Completed
-          </button>
+
           {submitted && (
             <button
               type="button"
               onClick={handleNext}
               className="ml-auto flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-white btn-gradient cursor-pointer"
             >
-              Next Question
+              {currentIndex < questions.length - 1 ? "Next Question" : "Complete Round"}
               <ChevronRight className="w-4 h-4" />
             </button>
           )}

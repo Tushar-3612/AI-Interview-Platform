@@ -1,0 +1,302 @@
+[
+  {
+    "id": "tcs-coding-1",
+    "companyId": "tcs",
+    "difficulty": "Easy",
+    "title": "Find Second Largest Element",
+    "problemStatement": "Given an array of integers, write a function `findSecondLargest(arr)` to return the second largest element in the array. If no such element exists, return -1.",
+    "constraints": "Time: O(N)\nSpace: O(1)\nArray size N >= 2",
+    "sampleInput": "[12, 35, 1, 10, 34, 1]",
+    "sampleOutput": "34",
+    "starterCode": "function findSecondLargest(arr) {\n  // Write your code here\n  \n}",
+    "testCases": [
+      {
+        "input": "[12, 35, 1, 10, 34, 1]",
+        "expected": "34"
+      },
+      {
+        "input": "[10, 10, 10]",
+        "expected": "-1"
+      },
+      {
+        "input": "[5, 10, 20]",
+        "expected": "10"
+      }
+    ]
+  },
+  {
+    "id": "tcs-coding-2",
+    "companyId": "tcs",
+    "difficulty": "Medium",
+    "title": "Longest Subarray with Sum K",
+    "problemStatement": "Given an array `arr` and a target sum `k`, write a function `longestSubarray(arr, k)` that returns the length of the longest subarray whose elements sum up to `k`.",
+    "constraints": "Time: O(N)\nSpace: O(N)",
+    "sampleInput": "[10, 5, 2, 7, 1, 9], k = 15",
+    "sampleOutput": "4",
+    "starterCode": "function longestSubarray(arr, k) {\n  // Write your code here\n  \n}",
+    "testCases": [
+      {
+        "input": "[10, 5, 2, 7, 1, 9], 15",
+        "expected": "4"
+      },
+      {
+        "input": "[-1, 2, 3], 6",
+        "expected": "0"
+      },
+      {
+        "input": "[1, 2, 3, 7, 5], 12",
+        "expected": "4"
+      }
+    ]
+  },
+  {
+    "id": "tcs-coding-3",
+    "companyId": "tcs",
+    "difficulty": "Hard",
+    "title": "Merge Intervals",
+    "problemStatement": "Given an array of intervals where intervals[i] = [start, end], merge all overlapping intervals, and return an array of the non-overlapping intervals that cover all the input intervals. Write function `mergeIntervals(intervals)`.",
+    "constraints": "Time: O(N log N)\nSpace: O(N)",
+    "sampleInput": "[[1,3],[2,6],[8,10],[15,18]]",
+    "sampleOutput": "[[1,6],[8,10],[15,18]]",
+    "starterCode": "function mergeIntervals(intervals) {\n  // Write your code here\n  \n}",
+    "testCases": [
+      {
+        "input": "[[1,3],[2,6],[8,10],[15,18]]",
+        "expected": "[[1,6],[8,10],[15,18]]"
+      },
+      {
+        "input": "[[1,4],[4,5]]",
+        "expected": "[[1,5]]"
+      },
+      {
+        "input": "[[1,4],[2,3]]",
+        "expected": "[[1,4]]"
+      }
+    ]
+  },
+  {
+    "id": "infosys-coding-1",
+    "companyId": "infosys",
+    "difficulty": "Easy",
+    "title": "Valid Parentheses",
+    "problemStatement": "Given a string `s` containing just the characters '(', ')', '{', '}', '[' and ']', write a function `isValid(s)` to determine if the input string is valid. An input string is valid if open brackets are closed by the same type of brackets and closed in the correct order.",
+    "constraints": "Time: O(N)\nSpace: O(N)",
+    "sampleInput": "\"()[]{}\"",
+    "sampleOutput": "true",
+    "starterCode": "function isValid(s) {\n  // Write your code here\n  \n}",
+    "testCases": [
+      {
+        "input": "\"()[]{}\"",
+        "expected": "true"
+      },
+      {
+        "input": "\"(]\"",
+        "expected": "false"
+      },
+      {
+        "input": "\"([)]\"",
+        "expected": "false"
+      }
+    ]
+  },
+  {
+    "id": "infosys-coding-2",
+    "companyId": "infosys",
+    "difficulty": "Medium",
+    "title": "Container With Most Water",
+    "problemStatement": "Given `n` non-negative integers `height` where each represents a point at coordinate (i, height[i]). `n` vertical lines are drawn such that the two endpoints of line i is at (i, height[i]) and (i, 0). Find two lines, which together with x-axis forms a container, such that the container contains the most water. Return the max area using `maxArea(height)`.",
+    "constraints": "Time: O(N)\nSpace: O(1)",
+    "sampleInput": "[1,8,6,2,5,4,8,3,7]",
+    "sampleOutput": "49",
+    "starterCode": "function maxArea(height) {\n  // Write your code here\n  \n}",
+    "testCases": [
+      {
+        "input": "[1,8,6,2,5,4,8,3,7]",
+        "expected": "49"
+      },
+      {
+        "input": "[1,1]",
+        "expected": "1"
+      },
+      {
+        "input": "[4,3,2,1,4]",
+        "expected": "16"
+      }
+    ]
+  },
+  {
+    "id": "infosys-coding-3",
+    "companyId": "infosys",
+    "difficulty": "Hard",
+    "title": "Trapping Rain Water",
+    "problemStatement": "Given `n` non-negative integers representing an elevation map where the width of each bar is 1, compute how much water it can trap after raining. Write function `trap(height)`.",
+    "constraints": "Time: O(N)\nSpace: O(1) or O(N)",
+    "sampleInput": "[0,1,0,2,1,0,1,3,2,1,2,1]",
+    "sampleOutput": "6",
+    "starterCode": "function trap(height) {\n  // Write your code here\n  \n}",
+    "testCases": [
+      {
+        "input": "[0,1,0,2,1,0,1,3,2,1,2,1]",
+        "expected": "6"
+      },
+      {
+        "input": "[4,2,0,3,2,5]",
+        "expected": "9"
+      },
+      {
+        "input": "[2,0,2]",
+        "expected": "2"
+      }
+    ]
+  },
+  {
+    "id": "accenture-coding-1",
+    "companyId": "accenture",
+    "difficulty": "Easy",
+    "title": "Find Duplicate Number",
+    "problemStatement": "Given an array of integers `nums` containing `n + 1` integers where each integer is in the range `[1, n]` inclusive. There is only one duplicate number in `nums`, find the duplicate number using `findDuplicate(nums)`.",
+    "constraints": "Time: O(N)\nSpace: O(1) (without modifying array) or O(N)",
+    "sampleInput": "[1,3,4,2,2]",
+    "sampleOutput": "2",
+    "starterCode": "function findDuplicate(nums) {\n  // Write your code here\n  \n}",
+    "testCases": [
+      {
+        "input": "[1,3,4,2,2]",
+        "expected": "2"
+      },
+      {
+        "input": "[3,1,3,4,2]",
+        "expected": "3"
+      },
+      {
+        "input": "[1,1]",
+        "expected": "1"
+      }
+    ]
+  },
+  {
+    "id": "accenture-coding-2",
+    "companyId": "accenture",
+    "difficulty": "Medium",
+    "title": "Search in Rotated Sorted Array",
+    "problemStatement": "There is an integer array `nums` sorted in ascending order (with distinct values). Prior to being passed to your function, `nums` is possibly rotated at an unknown pivot index. Given the array `nums` after the possible rotation and an integer `target`, return the index of `target` if it is in `nums`, or -1 if it is not in `nums`. Write function `searchRotated(nums, target)`.",
+    "constraints": "Time: O(log N)\nSpace: O(1)",
+    "sampleInput": "[4,5,6,7,0,1,2], target = 0",
+    "sampleOutput": "4",
+    "starterCode": "function searchRotated(nums, target) {\n  // Write your code here\n  \n}",
+    "testCases": [
+      {
+        "input": "[4,5,6,7,0,1,2], 0",
+        "expected": "4"
+      },
+      {
+        "input": "[4,5,6,7,0,1,2], 3",
+        "expected": "-1"
+      },
+      {
+        "input": "[1], 0",
+        "expected": "-1"
+      }
+    ]
+  },
+  {
+    "id": "accenture-coding-3",
+    "companyId": "accenture",
+    "difficulty": "Hard",
+    "title": "Median of Two Sorted Arrays",
+    "problemStatement": "Given two sorted arrays `nums1` and `nums2` of size `m` and `n` respectively, return the median of the two sorted arrays. Write function `findMedianSortedArrays(nums1, nums2)`.",
+    "constraints": "Time: O(log(m+n))\nSpace: O(1) or O(m+n)",
+    "sampleInput": "nums1 = [1,3], nums2 = [2]",
+    "sampleOutput": "2.00000",
+    "starterCode": "function findMedianSortedArrays(nums1, nums2) {\n  // Write your code here\n  \n}",
+    "testCases": [
+      {
+        "input": "[1,3], [2]",
+        "expected": "2"
+      },
+      {
+        "input": "[1,2], [3,4]",
+        "expected": "2.5"
+      },
+      {
+        "input": "[], [1]",
+        "expected": "1"
+      }
+    ]
+  },
+  {
+    "id": "wipro-coding-1",
+    "companyId": "wipro",
+    "difficulty": "Easy",
+    "title": "Reverse Words in String",
+    "problemStatement": "Given an input string `s`, reverse the order of the words. A word is defined as a sequence of non-space characters. The words in `s` will be separated by at least one space. Return a string of the words in reverse order concatenated by a single space using `reverseWords(s)`.",
+    "constraints": "Time: O(N)\nSpace: O(N)",
+    "sampleInput": "\"the sky is blue\"",
+    "sampleOutput": "\"blue is sky the\"",
+    "starterCode": "function reverseWords(s) {\n  // Write your code here\n  \n}",
+    "testCases": [
+      {
+        "input": "\"the sky is blue\"",
+        "expected": "\"blue is sky the\""
+      },
+      {
+        "input": "\"  hello world  \"",
+        "expected": "\"world hello\""
+      },
+      {
+        "input": "\"a good   example\"",
+        "expected": "\"example good a\""
+      }
+    ]
+  },
+  {
+    "id": "wipro-coding-2",
+    "companyId": "wipro",
+    "difficulty": "Medium",
+    "title": "Kth Largest Element",
+    "problemStatement": "Given an integer array `nums` and an integer `k`, return the `k`-th largest element in the array. Note that it is the `k`-th largest element in the sorted order, not the `k`-th distinct element. Write function `findKthLargest(nums, k)`.",
+    "constraints": "Time: O(N)\nSpace: O(1)",
+    "sampleInput": "[3,2,1,5,6,4], k = 2",
+    "sampleOutput": "5",
+    "starterCode": "function findKthLargest(nums, k) {\n  // Write your code here\n  \n}",
+    "testCases": [
+      {
+        "input": "[3,2,1,5,6,4], 2",
+        "expected": "5"
+      },
+      {
+        "input": "[3,2,3,1,2,4,5,5,6], 4",
+        "expected": "4"
+      },
+      {
+        "input": "[1], 1",
+        "expected": "1"
+      }
+    ]
+  },
+  {
+    "id": "wipro-coding-3",
+    "companyId": "wipro",
+    "difficulty": "Hard",
+    "title": "Longest Consecutive Sequence",
+    "problemStatement": "Given an unsorted array of integers `nums`, return the length of the longest consecutive elements sequence. Write function `longestConsecutive(nums)`.",
+    "constraints": "Time: O(N)\nSpace: O(N)",
+    "sampleInput": "[100,4,200,1,3,2]",
+    "sampleOutput": "4",
+    "starterCode": "function longestConsecutive(nums) {\n  // Write your code here\n  \n}",
+    "testCases": [
+      {
+        "input": "[100,4,200,1,3,2]",
+        "expected": "4"
+      },
+      {
+        "input": "[0,3,7,2,5,8,4,6,0,1]",
+        "expected": "9"
+      },
+      {
+        "input": "[]",
+        "expected": "0"
+      }
+    ]
+  }
+]
