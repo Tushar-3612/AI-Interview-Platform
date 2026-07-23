@@ -20,6 +20,17 @@ const interviewSchema = new mongoose.Schema(
     completedAt: { type: Date },
     totalQuestions: { type: Number, default: 0 },
     questionsAnswered: { type: Number, default: 0 },
+    candidateProfile: { type: Object },
+    generatedQuestions: [
+      {
+        id: String,
+        question: String,
+        topic: String,
+        difficulty: String,
+        aiSpeechText: String,
+        category: String // "resume", "technical", "coding"
+      }
+    ]
   },
   { timestamps: true }
 );

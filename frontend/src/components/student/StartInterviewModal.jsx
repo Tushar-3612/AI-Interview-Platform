@@ -1,237 +1,121 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  X,
-  UserCheck,
-  Mail,
-  Phone,
-  Link as LinkIcon,
-  FileText,
-  User,
-} from "lucide-react";
-
-import InputField from "../ui/InputField";
+import { X, Play, Settings2, Loader2 } from "lucide-react";
 import Button from "../ui/Button";
 
-function StartInterviewModal({
-  open,
-  onClose,
-  profile = {},
-  onFillProfile,
-  onSubmit,
-}) {
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    portfolio: "",
-    github: "",
-    linkedin: "",
-    resumeFileName: "",
+function StartInterviewModal({ open, onClose, profile, onSubmit, isStarting = false }) {
+  const [formData, setFormData] = useState({
+    interviewType: "Technical",
+    difficulty: "Medium",
+    duration: 30, // minutes
   });
-
-  useEffect(() => {
-    if (open) {
-      setForm({
-        name: profile?.name || "",
-        email: profile?.email || "",
-        phone: profile?.phone || "",
-        portfolio: profile?.portfolio || "",
-        github: profile?.github || "",
-        linkedin: profile?.linkedin || "",
-        resumeFileName: profile?.resumeFileName || "",
-      });
-    }
-  }, [open, profile]);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleResumeUpload = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setForm((prev) => ({
-        ...prev,
-        resumeFileName: file.name,
-      }));
-    }
-  };
-
-  const handleFillProfile = () => {
-    onFillProfile?.();
-
-    setForm({
-      name: profile?.name || "",
-      email: profile?.email || "",
-      phone: profile?.phone || "",
-      portfolio: profile?.portfolio || "",
-      github: profile?.github || "",
-      linkedin: profile?.linkedin || "",
-      resumeFileName: profile?.resumeFileName || "",
-    });
-  };
 
   if (!open) return null;
 
+  const handleChange = (e) => {
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (isStarting) return;
+    onSubmit(formData);
+  };
+
   return (
     <AnimatePresence>
-      <motion.div
-        className="fixed inset-0 z-[100] flex items-center justify-center p-4"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-      >
-        <div
-          className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-          onClick={onClose}
-        />
-
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
         <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={isStarting ? undefined : onClose}
+          className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        />
+        
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-[32px] p-6 sm:p-8 glass-card"
+          exit={{ opacity: 0, scale: 0.95, y: 10 }}
+          className="relative w-full max-w-lg bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-zinc-800 overflow-hidden"
         >
-          <div className="flex items-center justify-between mb-6">
-            <h2
-              className="text-xl font-semibold"
-              style={{ color: "var(--text-primary)" }}
-            >
-              Start Interview
+          <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-950">
+            <h2 className="text-lg font-bold flex items-center gap-2">
+              <Settings2 className="w-5 h-5 text-primary" />
+              Configure Interview
             </h2>
-
             <button
-              type="button"
-              onClick={onClose}
-              className="p-2 rounded-xl hover:opacity-70"
+              onClick={isStarting ? undefined : onClose}
+              disabled={isStarting}
+              className="p-1 rounded-full hover:bg-slate-200 dark:hover:bg-zinc-800 transition-colors disabled:opacity-40"
             >
-              <X className="w-5 h-5" />
+              <X className="w-5 h-5 text-slate-500" />
             </button>
           </div>
-
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleFillProfile}
-            className="mb-6"
-          >
-            <UserCheck className="w-4 h-4" />
-            Fill Using Profile
-          </Button>
-
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              onSubmit?.(form);
-            }}
-          >
-            <InputField
-              label="Full Name"
-              name="name"
-              value={form.name}
-              onChange={handleChange}
-              icon={User}
-              required
-            />
-
-            <InputField
-              label="Email"
-              name="email"
-              type="email"
-              value={form.email}
-              onChange={handleChange}
-              icon={Mail}
-              required
-            />
-
-            <InputField
-              label="Phone"
-              name="phone"
-              value={form.phone}
-              onChange={handleChange}
-              icon={Phone}
-            />
-
-            <InputField
-              label="Portfolio Website"
-              name="portfolio"
-              value={form.portfolio}
-              onChange={handleChange}
-              icon={LinkIcon}
-            />
-
-            <InputField
-              label="GitHub Profile"
-              name="github"
-              value={form.github}
-              onChange={handleChange}
-              icon={LinkIcon}
-            />
-
-            <InputField
-              label="LinkedIn Profile"
-              name="linkedin"
-              value={form.linkedin}
-              onChange={handleChange}
-              icon={LinkIcon}
-            />
-
-            <div className="mb-6">
-              <label
-                className="block text-sm font-medium mb-2"
-                style={{ color: "var(--text-primary)" }}
-              >
-                Resume
-              </label>
-
-              <div
-                className="flex items-center gap-3 p-4 rounded-xl border"
-                style={{
-                  borderColor: "var(--border)",
-                  background: "var(--input-bg)",
-                }}
-              >
-                <FileText
-                  className="w-5 h-5"
-                  style={{ color: "var(--primary)" }}
-                />
-
-                <span
-                  className="flex-1 truncate text-sm"
-                  style={{ color: "var(--text-secondary)" }}
+          
+          <form onSubmit={handleSubmit} className="p-6 space-y-6">
+            {!profile?.resumeFileName && (
+              <div className="p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 rounded-xl text-amber-800 dark:text-amber-300 text-sm">
+                <strong>Note:</strong> You haven't uploaded a resume yet. For the best AI mock interview experience, we recommend uploading your resume in your Profile first.
+              </div>
+            )}
+          
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Interview Type</label>
+                <select
+                  name="interviewType"
+                  value={formData.interviewType}
+                  onChange={handleChange}
+                  disabled={isStarting}
+                  className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-60"
                 >
-                  {form.resumeFileName || "No resume selected"}
-                </span>
-
-                <label
-                  className="cursor-pointer text-sm font-medium"
-                  style={{ color: "var(--primary)" }}
+                  <option value="Technical">Technical</option>
+                  <option value="HR">HR / Behavioral</option>
+                  <option value="Managerial">Managerial</option>
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Difficulty Level</label>
+                <select
+                  name="difficulty"
+                  value={formData.difficulty}
+                  onChange={handleChange}
+                  disabled={isStarting}
+                  className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-60"
                 >
-                  Upload
-
-                  <input
-                    type="file"
-                    accept=".pdf"
-                    className="hidden"
-                    onChange={handleResumeUpload}
-                  />
-                </label>
+                  <option value="Easy">Easy</option>
+                  <option value="Medium">Medium</option>
+                  <option value="Hard">Hard</option>
+                </select>
               </div>
             </div>
-
-            <Button type="submit">
-              Proceed to Interview
-            </Button>
+            
+            <div className="pt-4 flex justify-end gap-3 border-t border-slate-200 dark:border-zinc-800">
+              <Button type="button" variant="outline" onClick={onClose} disabled={isStarting}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isStarting} className="flex items-center gap-2 min-w-[120px] justify-center">
+                {isStarting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-4 h-4 fill-current" />
+                    Start Now
+                  </>
+                )}
+              </Button>
+            </div>
           </form>
         </motion.div>
-      </motion.div>
+      </div>
     </AnimatePresence>
   );
 }
 
 export default StartInterviewModal;
+

@@ -59,3 +59,22 @@
   --feature-bg: #111111;
   --illustration-glow: rgba(37, 99, 235, 0.01);
 }
+
+/* Layout heights for desktop room fit */
+:root {
+  --timer-height: 90px;
+  --session-info-height: 180px;
+  --progress-height: 160px;
+  --ai-notes-height: 180px;
+  --sidebar-gap: 16px;
+}
+
+@media (max-height: 850px) {
+  :root {
+    --timer-height: 75px;
+    --session-info-height: 135px;
+    --progress-height: 125px;
+    --ai-notes-height: 135px;
+    --sidebar-gap: 12px;
+  }
+}
