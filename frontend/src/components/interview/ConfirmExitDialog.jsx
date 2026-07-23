@@ -1,75 +1,36 @@
+import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { AlertOctagon, X } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
+import Button from "../ui/Button";
 
-/**
- * ConfirmExitDialog Component
- * Overlay modal alert asking for confirmation before exiting an active interview.
- */
-function ConfirmExitDialog({ isOpen = false, onClose, onConfirm }) {
-  if (!isOpen) return null;
+function ConfirmExitDialog({ open, onClose, onConfirm }) {
+  if (!open) return null;
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
-        {/* Backdrop glass blur */}
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="absolute inset-0 bg-black/60 backdrop-blur-sm"
           onClick={onClose}
+          className="absolute inset-0 bg-black/60 backdrop-blur-sm"
         />
-
-        {/* Modal content */}
+        
         <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 15 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 15 }}
-          className="relative w-full max-w-md overflow-hidden rounded-[28px] p-6 sm:p-8 glass-card border border-red-500/10 shadow-2xl z-50 text-center"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.95 }}
+          className="relative w-full max-w-sm bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-zinc-800 p-6 text-center"
         >
-          {/* Close x */}
-          <button
-            type="button"
-            onClick={onClose}
-            className="absolute top-4 right-4 p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors cursor-pointer"
-          >
-            <X className="w-5 h-5" />
-          </button>
-
-          {/* Danger alert icon */}
-          <div className="w-14 h-14 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500 flex items-center justify-center mx-auto mb-5 animate-bounce">
-            <AlertOctagon className="w-7 h-7" />
+          <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertTriangle className="w-8 h-8 text-red-500" />
           </div>
-
-          <h2 className="text-xl font-bold tracking-tight mb-2" style={{ color: "var(--text-primary)" }}>
-            End Interview Session?
-          </h2>
-          
-          <p className="text-sm leading-relaxed mb-6" style={{ color: "var(--text-secondary)" }}>
-            Are you sure you want to end this interview? 
-            <span className="block font-semibold mt-1.5 text-amber-500">
-              Warning: Your current response progress will be evaluated.
-            </span>
-          </p>
-
-          <div className="grid grid-cols-2 gap-3">
-            {/* Cancel Button */}
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-3 rounded-xl border text-sm font-semibold hover:opacity-85 transition-all cursor-pointer bg-slate-50 border-slate-200 text-slate-700 dark:bg-zinc-800/40 dark:border-zinc-700 dark:text-zinc-300"
-            >
-              Cancel
-            </button>
-
-            {/* Confirm End Button */}
-            <button
-              type="button"
-              onClick={onConfirm}
-              className="px-4 py-3 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold transition-all cursor-pointer shadow-sm shadow-red-900/25"
-            >
-              End Interview
-            </button>
+          <h3 className="text-xl font-bold mb-2">End Interview?</h3>
+          <p className="text-sm text-slate-500 mb-6">Are you sure you want to exit? Your progress so far will be saved and evaluated.</p>
+          <div className="flex gap-3">
+            <Button variant="outline" className="flex-1" onClick={onClose}>Cancel</Button>
+            <Button className="flex-1 bg-red-500 hover:bg-red-600 text-white border-none" onClick={onConfirm}>End Session</Button>
           </div>
         </motion.div>
       </div>

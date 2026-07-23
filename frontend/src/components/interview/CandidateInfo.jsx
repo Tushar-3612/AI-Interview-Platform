@@ -1,52 +1,36 @@
-import { User, FileText, Briefcase, Award } from "lucide-react";
+import React from "react";
+import { FileText, Award, BarChart } from "lucide-react";
 
-/**
- * CandidateInfo Component
- * Displays candidate details, resume references, and current session settings.
- */
-function CandidateInfo({
-  name = "Roshan Langhi",
-  resumeName = "Roshan_Langhi_CV.pdf",
-  interviewType = "Full Stack Engineer Mock Interview",
-  difficulty = "Medium",
-}) {
+function CandidateInfo({ name, resumeName, interviewType, difficulty }) {
   return (
-    <div 
-      className="glass-card rounded-[16px] p-3 flex flex-col justify-between w-full"
-      style={{ height: "var(--session-info-height)" }}
-    >
-      <div className="flex items-center justify-between border-b pb-1 shrink-0" style={{ borderColor: "var(--border)" }}>
-        <h3 className="font-bold text-[10px] tracking-wider uppercase text-muted">
-          Session Info
-        </h3>
-        <span className="text-[8px] bg-sky-100 dark:bg-sky-950/40 text-sky-600 px-1.5 py-0.5 rounded font-black uppercase tracking-wider shrink-0">
-          Active
-        </span>
-      </div>
-
-      <div className="flex-1 flex flex-col justify-between pt-1.5 min-h-0">
-        {/* Candidate Row */}
-        <div className="flex items-center justify-between text-xs min-w-0 py-0.5">
-          <span className="text-slate-400 dark:text-zinc-500 font-medium text-[11px] shrink-0">Candidate</span>
-          <span className="font-semibold truncate text-slate-800 dark:text-zinc-200 text-right ml-2 max-w-[70%]">{name}</span>
+    <div className="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl p-5 h-full flex flex-col justify-center">
+      <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-4">
+        Session Info
+      </h3>
+      
+      <div className="space-y-4">
+        <div>
+          <p className="text-xs text-slate-500 mb-1">Candidate</p>
+          <p className="font-semibold">{name}</p>
         </div>
-
-        {/* Resume Row */}
-        <div className="flex items-center justify-between text-xs min-w-0 py-0.5">
-          <span className="text-slate-400 dark:text-zinc-500 font-medium text-[11px] shrink-0">Resume</span>
-          <span className="font-semibold truncate text-slate-800 dark:text-zinc-200 text-right ml-2 max-w-[70%]" title={resumeName}>{resumeName || "None"}</span>
+        
+        <div className="flex items-center gap-3">
+          <FileText className="w-5 h-5 text-primary" />
+          <div>
+            <p className="text-xs text-slate-500">Context</p>
+            <p className="text-sm font-medium truncate max-w-[150px]">{resumeName || "General Interview"}</p>
+          </div>
         </div>
-
-        {/* Role Row */}
-        <div className="flex items-center justify-between text-xs min-w-0 py-0.5">
-          <span className="text-slate-400 dark:text-zinc-500 font-medium text-[11px] shrink-0">Role</span>
-          <span className="font-semibold truncate text-slate-800 dark:text-zinc-200 text-right ml-2 max-w-[70%]" title={interviewType}>{interviewType}</span>
-        </div>
-
-        {/* Difficulty Row */}
-        <div className="flex items-center justify-between text-xs min-w-0 py-0.5">
-          <span className="text-slate-400 dark:text-zinc-500 font-medium text-[11px] shrink-0">Difficulty</span>
-          <span className="font-semibold truncate text-slate-850 dark:text-zinc-200 text-right ml-2 max-w-[70%]">{difficulty}</span>
+        
+        <div className="grid grid-cols-2 gap-3 pt-2">
+          <div className="flex items-center gap-2">
+            <Award className="w-4 h-4 text-slate-400" />
+            <span className="text-xs font-medium">{interviewType}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <BarChart className="w-4 h-4 text-slate-400" />
+            <span className="text-xs font-medium">{difficulty}</span>
+          </div>
         </div>
       </div>
     </div>
