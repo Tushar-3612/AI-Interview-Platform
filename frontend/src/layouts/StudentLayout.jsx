@@ -12,15 +12,7 @@ import { useStudentProfile } from "../hooks/useStudentProfile";
  */
 function StudentLayout() {
   const token = getAuthToken();
-  const navigate = useNavigate();
-  const {
-    profile,
-    updateProfile,
-    saveProfile,
-    addSkill,
-    removeSkill,
-    getProfileForInterview,
-  } = useStudentProfile();
+  const { profile, updateProfile, getProfileForInterview } = useStudentProfile();
   const [interviewModalOpen, setInterviewModalOpen] = useState(false);
 
   if (!token) {
@@ -33,7 +25,7 @@ function StudentLayout() {
       interviewStatus: "in_progress",
     });
     setInterviewModalOpen(false);
-    navigate("/interview");
+    toast.success("Interview session ready. Full interview module coming soon.");
   };
 
   return (

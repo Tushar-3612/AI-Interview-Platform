@@ -20,13 +20,6 @@ const interviewSchema = new mongoose.Schema(
     completedAt: { type: Date },
     totalQuestions: { type: Number, default: 0 },
     questionsAnswered: { type: Number, default: 0 },
-    interviewType: {
-      type: String,
-      enum: ["practice", "real"],
-      default: "real",
-    },
-    companyId: { type: String },
-    overallScore: { type: Number, default: 0 },
   },
   { timestamps: true }
 );
