@@ -5,6 +5,7 @@ import RegistrationSuccess from "../pages/RegistrationSuccess";
 import TermsAndConditions from "../pages/legal/TermsAndConditions";
 import PrivacyPolicy from "../pages/legal/PrivacyPolicy";
 import StudentLayout from "../layouts/StudentLayout";
+import StudentDashboard from "../pages/StudentDashboard";
 import Home from "../pages/student/Home";
 import Profile from "../pages/student/Profile";
 import InterviewPractice from "../pages/student/InterviewPractice";
@@ -47,7 +48,7 @@ function AppRoutes() {
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
 
       <Route element={<StudentLayout />}>
-        <Route path="/dashboard" element={<Home />} />
+        <Route path="/dashboard" element={<StudentDashboard />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/interview" element={<StudentInterview />} />
         <Route path="/interview-practice" element={<InterviewPractice />} />
