@@ -3,21 +3,20 @@
  */
 
 export const DEPARTMENTS = [
-  { value: "Computer Science", label: "Computer Science" },
-  { value: "Information Technology", label: "Information Technology" },
-  { value: "Electronics", label: "Electronics" },
-  { value: "Mechanical", label: "Mechanical" },
-  { value: "Civil", label: "Civil" },
-  { value: "Electrical", label: "Electrical" },
-  { value: "Other", label: "Other" },
+  { value: "Computer Engineering", label: "Computer Engineering" },
+  { value: "IT Engineering", label: "IT Engineering" },
+  { value: "Electronics Engineering", label: "Electronics Engineering" },
+  { value: "Mechanical Engineering", label: "Mechanical Engineering" },
+  { value: "Civil Engineering", label: "Civil Engineering" },
+  { value: "ENTC Engineering", label: "ENTC Engineering" },
+  { value: "AI & DS", label: "AI & DS" },
 ];
 
 export const YEARS = [
   { value: "1st Year", label: "1st Year" },
   { value: "2nd Year", label: "2nd Year" },
   { value: "3rd Year", label: "3rd Year" },
-  { value: "4th Year", label: "4th Year" },
-  { value: "Final Year", label: "Final Year" },
+  { value: "Last Year", label: "Last Year" },
 ];
 
 export const FEATURES = [

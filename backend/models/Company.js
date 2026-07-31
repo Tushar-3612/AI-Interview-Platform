@@ -44,6 +44,9 @@ const companySchema = new mongoose.Schema(
       enum: ["Easy", "Medium", "Hard"],
       default: "Medium",
     },
+    isDeleted: { type: Boolean, default: false },
+    deletedAt: { type: Date, default: null },
+    lastUpdated: { type: Date, default: null },
   },
   { timestamps: true }
 );

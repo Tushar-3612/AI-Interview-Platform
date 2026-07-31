@@ -1,3 +1,5 @@
 id,name,email,department,year,Portfolio,GitHub,LinkedIn,attemptUsed,createdAt
-6a566f322f681d770359254e,Tushar  Nagare,tusharnagare2006@gmail.com,Computer Science,Final Year,,,,0,2026-07-14T17:17:38.870Z
-6a566fbc2f681d770359254f,Amol Lende,amollende02@gmail.com,Computer Science,Final Year,,,,0,2026-07-14T17:19:56.178Z
+6a566f322f681d770359254e,Tushar  Nagare,tusharnagare2006@gmail.com,Computer Science,Final Year,https://tusharnagare.netlify.app/,https://github.com/Tushar-3612,https://www.linkedin.com/in/tushar-nagare-5a17b9287/,2,2026-07-14T17:17:38.870Z
+6a566fbc2f681d770359254f,Amol Lende,amollende02@gmail.com,Computer Science,Final Year,,,,1,2026-07-14T17:19:56.178Z
+6a6af27f8dc468162bb1d521,Bharat Kolhe,bharatkolhe20@gmail.com,Computer Science,4th Year,,,,0,2026-07-30T06:43:11.733Z
+6a6c311f7c258bc4f68f3b5f,E2E Test,e2e.test.12345@test.com,Computer Engineering,BE,,,,0,2026-07-31T05:22:39.024Z

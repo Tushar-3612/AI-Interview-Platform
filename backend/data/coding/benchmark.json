@@ -1,0 +1,284 @@
+[
+  {
+    "id": "benchmark-coding-1",
+    "title": "First Non-Repeating Character",
+    "company": "benchmark",
+    "difficulty": "Easy",
+    "category": "Strings",
+    "tags": [
+      "String",
+      "Hash Map"
+    ],
+    "marks": 10,
+    "problemStatement": "Write a function `firstUniqChar(s)` that returns the index of the first character in the string `s` that does not repeat anywhere else in the string. If every character repeats, return -1.",
+    "description": "The string contains only lowercase English letters.",
+    "constraints": "1 <= s.length <= 10^5\ns contains only lowercase English letters\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "A single string.",
+    "outputFormat": "A single integer — the index of the first non-repeating character, or -1.",
+    "examples": [
+      {
+        "input": "\"leetcode\"",
+        "output": "0",
+        "explanation": "The character 'l' at index 0 appears only once."
+      },
+      {
+        "input": "\"loveleetcode\"",
+        "output": "2",
+        "explanation": "'v' at index 2 is the first character that appears only once."
+      }
+    ],
+    "explanation": "Count the frequency of every character in a first pass, then scan again and return the index of the first character whose count is 1.",
+    "starterCode": "function firstUniqChar(s) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "\"leetcode\"",
+        "expected": "0"
+      },
+      {
+        "input": "\"loveleetcode\"",
+        "expected": "2"
+      },
+      {
+        "input": "\"aabb\"",
+        "expected": "-1"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "\"a\"",
+        "expected": "0"
+      },
+      {
+        "input": "\"abcabc\"",
+        "expected": "-1"
+      },
+      {
+        "input": "\"abacabad\"",
+        "expected": "3"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "createdAt": "2026-03-10T10:00:00.000Z",
+    "updatedAt": "2026-03-10T10:00:00.000Z",
+    "isActive": true
+  },
+  {
+    "id": "benchmark-coding-2",
+    "title": "Maximum Subarray Sum (Kadane)",
+    "company": "benchmark",
+    "difficulty": "Medium",
+    "category": "Arrays",
+    "tags": [
+      "Array",
+      "Dynamic Programming"
+    ],
+    "marks": 15,
+    "problemStatement": "Given an integer array `nums`, write a function `maxSubarraySum(nums)` that returns the sum of the contiguous subarray with the largest sum (Kadane's algorithm).",
+    "description": "The subarray must be contiguous and non-empty. The array can contain negative numbers.",
+    "constraints": "1 <= nums.length <= 10^5\n-10^4 <= nums[i] <= 10^4\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "A single array of integers.",
+    "outputFormat": "A single integer — the maximum subarray sum.",
+    "examples": [
+      {
+        "input": "[-2, 1, -3, 4, -1, 2, 1, -5, 4]",
+        "output": "6",
+        "explanation": "The subarray [4, -1, 2, 1] has the maximum sum of 6."
+      },
+      {
+        "input": "[1, 2]",
+        "output": "3",
+        "explanation": "The whole array sums to 3."
+      }
+    ],
+    "explanation": "Keep a running sum and reset it to 0 whenever it drops below 0, tracking the best sum seen at every step.",
+    "starterCode": "function maxSubarraySum(nums) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[-2, 1, -3, 4, -1, 2, 1, -5, 4]",
+        "expected": "6"
+      },
+      {
+        "input": "[1, 2]",
+        "expected": "3"
+      },
+      {
+        "input": "[5, 4, -1, 7, 8]",
+        "expected": "23"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[-2, -1]",
+        "expected": "-1"
+      },
+      {
+        "input": "[-2, -1]",
+        "expected": "-1"
+      },
+      {
+        "input": "[8, -19, 5, -4, 20]",
+        "expected": "21"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "createdAt": "2026-03-10T10:00:00.000Z",
+    "updatedAt": "2026-03-10T10:00:00.000Z",
+    "isActive": true
+  },
+  {
+    "id": "benchmark-coding-3",
+    "title": "Subarray Sum Equals K",
+    "company": "benchmark",
+    "difficulty": "Medium",
+    "category": "Arrays",
+    "tags": [
+      "Array",
+      "Hash Map",
+      "Prefix Sum"
+    ],
+    "marks": 15,
+    "problemStatement": "Given an array of integers `nums` and an integer `k`, write a function `subarraySum(nums, k)` that returns the total number of contiguous subarrays whose sum equals `k`.",
+    "description": "Subarrays must be contiguous. Count every valid subarray, including overlapping ones.",
+    "constraints": "1 <= nums.length <= 2 * 10^4\n-1000 <= nums[i] <= 1000\n-10^7 <= k <= 10^7\nTime: O(N)\nSpace: O(N)",
+    "inputFormat": "An array of integers and an integer k.",
+    "outputFormat": "A single integer — the number of subarrays with sum k.",
+    "examples": [
+      {
+        "input": "[[1, 1, 1], 2]",
+        "output": "2",
+        "explanation": "The subarrays [1, 1] (indices 0-1) and [1, 1] (indices 1-2) both sum to 2."
+      },
+      {
+        "input": "[[1, 2, 3], 3]",
+        "output": "2",
+        "explanation": "The subarrays [3] (index 2) and [1, 2] (indices 0-1) both sum to 3."
+      }
+    ],
+    "explanation": "Use a hash map of prefix sums. For every prefix sum, check how many earlier prefix sums equal (current - k).",
+    "starterCode": "function subarraySum(nums, k) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[[1, 1, 1], 2]",
+        "expected": "2"
+      },
+      {
+        "input": "[[1, 2, 3], 3]",
+        "expected": "2"
+      },
+      {
+        "input": "[[-1, -1, 1], 0]",
+        "expected": "1"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[[1], 0]",
+        "expected": "0"
+      },
+      {
+        "input": "[[3, 4, 7, 2, -3, 1, 4, 2], 7]",
+        "expected": "4"
+      },
+      {
+        "input": "[[1, 2, 1, 2, 1], 3]",
+        "expected": "4"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "createdAt": "2026-03-10T10:00:00.000Z",
+    "updatedAt": "2026-03-10T10:00:00.000Z",
+    "isActive": true
+  },
+  {
+    "id": "benchmark-coding-4",
+    "title": "Sliding Window Maximum",
+    "company": "benchmark",
+    "difficulty": "Hard",
+    "category": "Arrays",
+    "tags": [
+      "Array",
+      "Sliding Window",
+      "Deque"
+    ],
+    "marks": 20,
+    "problemStatement": "Given an array `nums` and a window size `k`, write a function `maxSlidingWindow(nums, k)` that returns an array containing the maximum element of every contiguous window of size `k` as the window slides from left to right.",
+    "description": "The result has exactly nums.length - k + 1 elements.",
+    "constraints": "1 <= nums.length <= 10^5\n1 <= k <= nums.length\n-10^4 <= nums[i] <= 10^4\nTime: O(N)\nSpace: O(N)",
+    "inputFormat": "An array of integers and an integer k.",
+    "outputFormat": "An array of the maximum of each sliding window.",
+    "examples": [
+      {
+        "input": "[[1, 3, -1, -3, 5, 3, 6, 7], 3]",
+        "output": "[3, 3, 5, 5, 6, 7]",
+        "explanation": "Window [1,3,-1] -> 3, [3,-1,-3] -> 3, [-1,-3,5] -> 5, and so on."
+      },
+      {
+        "input": "[[1], 1]",
+        "output": "[1]",
+        "explanation": "A single-element window contains just 1."
+      }
+    ],
+    "explanation": "Maintain a monotonic deque of indices. Remove indices outside the window and smaller values from the back; the front always holds the current window maximum.",
+    "starterCode": "function maxSlidingWindow(nums, k) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[[1, 3, -1, -3, 5, 3, 6, 7], 3]",
+        "expected": "[3, 3, 5, 5, 6, 7]"
+      },
+      {
+        "input": "[[1], 1]",
+        "expected": "[1]"
+      },
+      {
+        "input": "[[1, -1], 1]",
+        "expected": "[1, -1]"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[[9, 11], 2]",
+        "expected": "[11]"
+      },
+      {
+        "input": "[[4, -2], 2]",
+        "expected": "[4]"
+      },
+      {
+        "input": "[[1, 3, 1, 2, 0, 5], 3]",
+        "expected": "[3, 3, 2, 5]"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "createdAt": "2026-03-10T10:00:00.000Z",
+    "updatedAt": "2026-03-10T10:00:00.000Z",
+    "isActive": true
+  }
+]

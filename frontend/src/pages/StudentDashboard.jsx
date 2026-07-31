@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -9,9 +9,14 @@ import {
   ArrowUpRight,
   Sparkles,
   Loader2,
+  Code2,
+  Target,
+  Timer,
 } from "lucide-react";
 import api from "../utils/api";
 import { getAuthToken } from "../hooks/useStudentProfile";
+import { timeAgo } from "../utils/dateUtils";
+import { SkeletonStudentDashboard, ErrorState } from "../components/ui/Skeleton";
 
 function StudentDashboard() {
   const { profile } = useOutletContext();
@@ -21,25 +26,35 @@ function StudentDashboard() {
   const [interviews, setInterviews] = useState([]);
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [activity, setActivity] = useState(null);
+  const [analytics, setAnalytics] = useState(null);
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const headers = { Authorization: `Bearer ${token}` };
+      const [interviewsRes, resultsRes, activityRes, analyticsRes] = await Promise.all([
+        api.get("/api/student/interviews", { headers }),
+        api.get("/api/student/results", { headers }),
+        api.get("/api/practice/activity", { headers }).catch(() => null),
+        api.get("/api/practice/analytics/student", { headers }).catch(() => null),
+      ]);
+      setInterviews(interviewsRes.data || []);
+      setResults(resultsRes.data || []);
+      setActivity(activityRes?.data || null);
+      setAnalytics(analyticsRes?.data || null);
+    } catch (err) {
+      setError(err.response?.status || "network_failure");
+    } finally {
+      setLoading(false);
+    }
+  }, [token]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const headers = { Authorization: `Bearer ${token}` };
-        const [interviewsRes, resultsRes] = await Promise.all([
-          api.get("/api/student/interviews", { headers }),
-          api.get("/api/student/results", { headers }),
-        ]);
-        setInterviews(interviewsRes.data || []);
-        setResults(resultsRes.data || []);
-      } catch {
-        // data stays empty
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchData();
-  }, [token]);
+  }, [fetchData]);
 
   const completedInterviews = interviews.filter((i) => i.status === "completed");
   const totalCompleted = completedInterviews.length;
@@ -95,9 +110,9 @@ function StudentDashboard() {
         </section>
 
         {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-6 h-6 animate-spin" style={{ color: "var(--primary)" }} />
-          </div>
+          <SkeletonStudentDashboard />
+        ) : error ? (
+          <ErrorState statusCode={error} onRetry={fetchData} />
         ) : (
           <>
             {/* Stats Grid */}
@@ -187,6 +202,131 @@ function StudentDashboard() {
               </div>
 
             </section>
+
+            {/* Practice Activity */}
+            {(activity?.lastAttempt || activity?.lastSubmission || analytics?.aptitudeAttempts > 0 || analytics?.codingAttempts > 0) && (
+              <section className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-3xl p-5 sm:p-6 shadow-[var(--shadow-sm)]">
+                <div className="flex items-center justify-between mb-5">
+                  <div>
+                    <h3 className="text-lg font-bold text-[var(--text-primary)]">
+                      Placement Practice Activity
+                    </h3>
+                    <p className="text-xs text-[var(--text-secondary)]">
+                      Aptitude & coding progress across companies
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => navigate("/interview-practice")}
+                    className="text-xs font-bold text-[var(--primary)] hover:underline cursor-pointer flex items-center gap-1"
+                  >
+                    Continue Practice
+                    <ArrowUpRight className="w-3 h-3" />
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                  {activity?.lastAttempt && (
+                    <div className="border border-[var(--border)] rounded-2xl p-4 bg-[var(--bg-primary)]/20">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-[11px] font-semibold uppercase tracking-wider flex items-center gap-1.5" style={{ color: "var(--text-secondary)" }}>
+                          <Target className="w-3.5 h-3.5" /> Last Aptitude Test
+                        </span>
+                        <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>
+                          {timeAgo(activity.lastAttempt.createdAt)}
+                        </span>
+                      </div>
+                      <p className="text-sm font-bold truncate" style={{ color: "var(--text-primary)" }}>
+                        {activity.lastAttempt.companyName || "Practice"}
+                      </p>
+                      <div className="flex items-center justify-between mt-2">
+                        <span
+                          className="text-sm font-bold"
+                          style={{ color: activity.lastAttempt.percentage >= 60 ? "var(--success)" : "var(--error)" }}
+                        >
+                          {activity.lastAttempt.percentage}%
+                        </span>
+                        <button
+                          onClick={() =>
+                            navigate(`/interview-practice/${activity.lastAttempt.companyId}/aptitude`)
+                          }
+                          className="px-3 py-1.5 rounded-lg text-[11px] font-bold text-white cursor-pointer"
+                          style={{ background: "var(--primary)" }}
+                        >
+                          Practice Again
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {activity?.lastSubmission && (
+                    <div className="border border-[var(--border)] rounded-2xl p-4 bg-[var(--bg-primary)]/20">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-[11px] font-semibold uppercase tracking-wider flex items-center gap-1.5" style={{ color: "var(--text-secondary)" }}>
+                          <Code2 className="w-3.5 h-3.5" /> Last Coding Attempt
+                        </span>
+                        <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>
+                          {timeAgo(activity.lastSubmission.createdAt)}
+                        </span>
+                      </div>
+                      <p className="text-sm font-bold truncate" style={{ color: "var(--text-primary)" }}>
+                        {activity.lastSubmission.title}
+                      </p>
+                      <div className="flex items-center justify-between mt-2">
+                        <span
+                          className="text-xs font-semibold"
+                          style={{
+                            color:
+                              activity.lastSubmission.status === "accepted"
+                                ? "var(--success)"
+                                : activity.lastSubmission.status === "failed"
+                                  ? "var(--error)"
+                                  : "var(--text-secondary)",
+                          }}
+                        >
+                          {activity.lastSubmission.passedCount}/{activity.lastSubmission.totalCount} tests
+                        </span>
+                        <button
+                          onClick={() => navigate("/practice/coding/history")}
+                          className="px-3 py-1.5 rounded-lg text-[11px] font-bold cursor-pointer"
+                          style={{ background: "color-mix(in srgb, var(--primary) 12%, transparent)", color: "var(--primary)" }}
+                        >
+                          View History
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {analytics && (analytics.aptitudeAttempts > 0 || analytics.codingAttempts > 0) && (
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div className="rounded-2xl p-3.5" style={{ background: "var(--bg-primary)/40" }}>
+                      <p className="text-lg font-extrabold" style={{ color: "var(--primary)" }}>
+                        {analytics.aptitudeAttempts}
+                      </p>
+                      <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>Aptitude Tests</p>
+                    </div>
+                    <div className="rounded-2xl p-3.5" style={{ background: "var(--bg-primary)/40" }}>
+                      <p className="text-lg font-extrabold" style={{ color: "var(--primary)" }}>
+                        {analytics.aptitudeAvg}%
+                      </p>
+                      <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>Avg Aptitude Score</p>
+                    </div>
+                    <div className="rounded-2xl p-3.5" style={{ background: "var(--bg-primary)/40" }}>
+                      <p className="text-lg font-extrabold" style={{ color: "var(--primary)" }}>
+                        {analytics.codingAccepted}/{analytics.codingAttempts}
+                      </p>
+                      <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>Coding Solved</p>
+                    </div>
+                    <div className="rounded-2xl p-3.5" style={{ background: "var(--bg-primary)/40" }}>
+                      <p className="text-lg font-extrabold" style={{ color: "var(--primary)" }}>
+                        {analytics.solvedQuestions}
+                      </p>
+                      <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>Questions Solved</p>
+                    </div>
+                  </div>
+                )}
+              </section>
+            )}
 
             {/* Recent Results */}
             <div className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-3xl p-5 sm:p-6 shadow-[var(--shadow-sm)]">

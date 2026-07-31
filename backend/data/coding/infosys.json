@@ -1,0 +1,213 @@
+[
+  {
+    "id": "infosys-coding-1",
+    "title": "Maximum Consecutive Ones",
+    "company": "infosys",
+    "difficulty": "Easy",
+    "category": "Arrays",
+    "tags": [
+      "Array",
+      "Sliding Window"
+    ],
+    "marks": 10,
+    "problemStatement": "Given a binary array `nums`, write a function `maxConsecutiveOnes(nums)` that returns the maximum number of consecutive 1s in the array.",
+    "description": "The array contains only 0s and 1s. Consecutive means uninterrupted by a 0.",
+    "constraints": "1 <= nums.length <= 10^5\nnums[i] is either 0 or 1\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "A single array of 0s and 1s.",
+    "outputFormat": "A single integer — the maximum streak of consecutive 1s.",
+    "examples": [
+      {
+        "input": "[1, 1, 0, 1, 1, 1]",
+        "output": "3",
+        "explanation": "The longest streak of consecutive 1s is at the end: [1, 1, 1]."
+      },
+      {
+        "input": "[0, 0, 0]",
+        "output": "0",
+        "explanation": "There are no 1s in the array."
+      }
+    ],
+    "explanation": "Scan the array keeping a running count. Reset the count whenever a 0 is seen and track the maximum count at each step.",
+    "starterCode": "function maxConsecutiveOnes(nums) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[1, 1, 0, 1, 1, 1]",
+        "expected": "3"
+      },
+      {
+        "input": "[0, 0, 0]",
+        "expected": "0"
+      },
+      {
+        "input": "[1, 1, 1, 1]",
+        "expected": "4"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[1, 0, 1, 1, 0, 1]",
+        "expected": "2"
+      },
+      {
+        "input": "[0, 1, 0]",
+        "expected": "1"
+      },
+      {
+        "input": "[1, 0, 1]",
+        "expected": "1"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "createdAt": "2026-01-20T10:00:00.000Z",
+    "updatedAt": "2026-01-20T10:00:00.000Z",
+    "isActive": true
+  },
+  {
+    "id": "infosys-coding-2",
+    "title": "Find the Missing Number",
+    "company": "infosys",
+    "difficulty": "Easy",
+    "category": "Arrays",
+    "tags": [
+      "Array",
+      "Math"
+    ],
+    "marks": 10,
+    "problemStatement": "Given an array `arr` containing `n - 1` distinct integers from the range 1 to n, write a function `findMissingNumber(arr, n)` that returns the one number from 1 to n which is missing from the array.",
+    "description": "Exactly one number from 1 to n is missing. All other numbers appear exactly once.",
+    "constraints": "2 <= n <= 10^5\narr.length == n - 1\n1 <= arr[i] <= n\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "An array of integers and the integer n.",
+    "outputFormat": "A single integer — the missing number.",
+    "examples": [
+      {
+        "input": "[[1, 2, 4, 5, 6], 6]",
+        "output": "3",
+        "explanation": "The numbers 1 to 6 should be present; 3 is missing."
+      },
+      {
+        "input": "[[1], 2]",
+        "output": "2",
+        "explanation": "Only 1 is present, so 2 is missing."
+      }
+    ],
+    "explanation": "Use the formula sum of 1..n = n * (n + 1) / 2. Subtract the sum of the array from it to get the missing number.",
+    "starterCode": "function findMissingNumber(arr, n) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[[1, 2, 4, 5, 6], 6]",
+        "expected": "3"
+      },
+      {
+        "input": "[[1], 2]",
+        "expected": "2"
+      },
+      {
+        "input": "[[2, 3, 4, 5], 5]",
+        "expected": "1"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[[1, 2, 3, 4], 5]",
+        "expected": "5"
+      },
+      {
+        "input": "[[1, 2, 3, 5, 6, 7], 7]",
+        "expected": "4"
+      },
+      {
+        "input": "[[2], 2]",
+        "expected": "1"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "createdAt": "2026-01-20T10:00:00.000Z",
+    "updatedAt": "2026-01-20T10:00:00.000Z",
+    "isActive": true
+  },
+  {
+    "id": "infosys-coding-3",
+    "title": "Longest Subarray with Sum K",
+    "company": "infosys",
+    "difficulty": "Medium",
+    "category": "Arrays",
+    "tags": [
+      "Array",
+      "Hash Map",
+      "Prefix Sum"
+    ],
+    "marks": 15,
+    "problemStatement": "Given an array `arr` and a target sum `k`, write a function `longestSubarray(arr, k)` that returns the length of the longest contiguous subarray whose elements sum exactly to `k`. If no such subarray exists, return 0.",
+    "description": "The subarray must be contiguous. Elements can be positive or negative.",
+    "constraints": "1 <= arr.length <= 10^5\n-10^4 <= arr[i] <= 10^4\n-10^9 <= k <= 10^9\nTime: O(N)\nSpace: O(N)",
+    "inputFormat": "An array of integers and an integer k.",
+    "outputFormat": "A single integer — the length of the longest subarray, or 0.",
+    "examples": [
+      {
+        "input": "[[10, 5, 2, 7, 1, 9], 15]",
+        "output": "4",
+        "explanation": "The subarray [5, 2, 7, 1] sums to 15 and has length 4."
+      },
+      {
+        "input": "[[-1, 2, 3], 6]",
+        "output": "0",
+        "explanation": "No contiguous subarray sums to 6."
+      }
+    ],
+    "explanation": "Maintain a prefix-sum map from prefix sum to its earliest index. Whenever (current sum - k) exists in the map, a valid subarray ends at the current index; keep track of the maximum length.",
+    "starterCode": "function longestSubarray(arr, k) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[[10, 5, 2, 7, 1, 9], 15]",
+        "expected": "4"
+      },
+      {
+        "input": "[[-1, 2, 3], 6]",
+        "expected": "0"
+      },
+      {
+        "input": "[[1, 2, 3, 7, 5], 17]",
+        "expected": "4"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[[1, -1, 5, -2, 3], 3]",
+        "expected": "4"
+      },
+      {
+        "input": "[[2, 3, 4, 5], 0]",
+        "expected": "0"
+      },
+      {
+        "input": "[[-2, -1, 2, 1], 1]",
+        "expected": "2"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "createdAt": "2026-01-20T10:00:00.000Z",
+    "updatedAt": "2026-01-20T10:00:00.000Z",
+    "isActive": true
+  }
+]

@@ -12,7 +12,7 @@ import { useStudentProfile } from "../hooks/useStudentProfile";
  */
 function StudentLayout() {
   const token = getAuthToken();
-  const { profile, updateProfile, getProfileForInterview } = useStudentProfile();
+  const { profile, updateProfile, saveProfile, addSkill, removeSkill, getProfileForInterview } = useStudentProfile();
   const [interviewModalOpen, setInterviewModalOpen] = useState(false);
 
   if (!token) {

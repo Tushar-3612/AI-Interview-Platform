@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import {
   Users, Play, Briefcase, FileText, Percent, ClipboardCheck, CheckCircle,
   UserPlus, TrendingUp, Building2, Award, Trophy, GraduationCap, BookOpen,
-  Star, Target,
+  Star, Target, BrainCircuit, Code2,
 } from "lucide-react";
 import api from "../../utils/api";
 import { getAuthToken } from "../../hooks/useStudentProfile";
@@ -15,18 +15,24 @@ const NAVY = "var(--admin-navy)";
 function AdminDashboard() {
   const [data, setData] = useState(null);
   const [analytics, setAnalytics] = useState(null);
+  const [aptStats, setAptStats] = useState(null);
+  const [codingStats, setCodingStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchAll = async () => {
       try {
         const headers = { Authorization: `Bearer ${getAuthToken()}` };
-        const [statsRes, analyticsRes] = await Promise.all([
+        const [statsRes, analyticsRes, aptStatsRes, codingStatsRes] = await Promise.all([
           api.get("/api/admin/stats", { headers }),
           api.get("/api/admin/analytics", { headers }).catch(() => null),
+          api.get("/api/aptitude/stats", { headers }).catch(() => null),
+          api.get("/api/coding-questions/stats", { headers }).catch(() => null),
         ]);
         setData(statsRes.data);
         if (analyticsRes) setAnalytics(analyticsRes.data);
+        if (aptStatsRes) setAptStats(aptStatsRes.data);
+        if (codingStatsRes) setCodingStats(codingStatsRes.data);
       } catch {
         toast.error("Failed to load dashboard");
       } finally {
@@ -106,6 +112,47 @@ function AdminDashboard() {
           );
         })}
       </div>
+
+      {/* ── Row: Practice Question Stats ── */}
+      {aptStats && codingStats && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="border rounded-xl p-4"
+            style={{ background: "var(--card-bg)", borderColor: "var(--border)" }}>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "rgba(99,102,241,0.12)" }}>
+                <BrainCircuit className="w-4 h-4" style={{ color: "#6366f1" }} />
+              </div>
+              <p className="text-xs font-semibold" style={{ color: "var(--text-muted)" }}>Aptitude Total</p>
+            </div>
+            <p className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>{aptStats.total || 0}</p>
+            <p className="text-[11px] mt-0.5" style={{ color: "var(--text-muted)" }}>{aptStats.active || 0} active</p>
+          </motion.div>
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="border rounded-xl p-4"
+            style={{ background: "var(--card-bg)", borderColor: "var(--border)" }}>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "rgba(34,197,94,0.12)" }}>
+                <Code2 className="w-4 h-4" style={{ color: "#22c55e" }} />
+              </div>
+              <p className="text-xs font-semibold" style={{ color: "var(--text-muted)" }}>Coding Total</p>
+            </div>
+            <p className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>{codingStats.total || 0}</p>
+            <p className="text-[11px] mt-0.5" style={{ color: "var(--text-muted)" }}>{codingStats.active || 0} active</p>
+          </motion.div>
+          {aptStats.byDifficulty?.map((d) => (
+            <motion.div key={d._id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="border rounded-xl p-4"
+              style={{ background: "var(--card-bg)", borderColor: "var(--border)" }}>
+              <div className="flex items-center gap-3 mb-2">
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center`}
+                  style={{ background: d._id === "easy" ? "rgba(34,197,94,0.12)" : d._id === "hard" ? "rgba(239,68,68,0.12)" : "rgba(234,179,8,0.12)" }}>
+                  <Target className="w-4 h-4" style={{ color: d._id === "easy" ? "#22c55e" : d._id === "hard" ? "#ef4444" : "#eab308" }} />
+                </div>
+                <p className="text-xs font-semibold capitalize" style={{ color: "var(--text-muted)" }}>Apt. {d._id}</p>
+              </div>
+              <p className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>{d.count}</p>
+            </motion.div>
+          ))}
+        </div>
+      )}
 
       {/* ── Row 2: Top Performing Department + Top Performing Students ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">

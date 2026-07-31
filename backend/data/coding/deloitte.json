@@ -1,0 +1,212 @@
+[
+  {
+    "id": "deloitte-coding-1",
+    "title": "Merge Two Sorted Arrays",
+    "company": "deloitte",
+    "difficulty": "Medium",
+    "category": "Arrays",
+    "tags": [
+      "Array",
+      "Two Pointers"
+    ],
+    "marks": 15,
+    "problemStatement": "Given two sorted arrays `a` and `b`, write a function `mergeSortedArrays(a, b)` that merges them into a single sorted array and returns it.",
+    "description": "The result must be sorted in ascending order. Duplicates are preserved.",
+    "constraints": "0 <= a.length, b.length <= 10^5\n-10^9 <= a[i], b[i] <= 10^9\nTime: O(A + B)\nSpace: O(A + B)",
+    "inputFormat": "Two sorted arrays of integers.",
+    "outputFormat": "A single sorted array containing all elements of both arrays.",
+    "examples": [
+      {
+        "input": "[[1, 3, 5], [2, 4, 6]]",
+        "output": "[1, 2, 3, 4, 5, 6]",
+        "explanation": "Elements are interleaved in sorted order."
+      },
+      {
+        "input": "[[], [1, 2]]",
+        "output": "[1, 2]",
+        "explanation": "An empty array contributes nothing."
+      }
+    ],
+    "explanation": "Use two pointers, one per array, always taking the smaller of the two current elements, then append whatever remains.",
+    "starterCode": "function mergeSortedArrays(a, b) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[[1, 3, 5], [2, 4, 6]]",
+        "expected": "[1, 2, 3, 4, 5, 6]"
+      },
+      {
+        "input": "[[], [1, 2]]",
+        "expected": "[1, 2]"
+      },
+      {
+        "input": "[[1, 2, 3], []]",
+        "expected": "[1, 2, 3]"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[[1, 1, 2], [1, 3]]",
+        "expected": "[1, 1, 1, 2, 3]"
+      },
+      {
+        "input": "[[-3, -1], [-2, 4]]",
+        "expected": "[-3, -2, -1, 4]"
+      },
+      {
+        "input": "[[], []]",
+        "expected": "[]"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "createdAt": "2026-03-01T10:00:00.000Z",
+    "updatedAt": "2026-03-01T10:00:00.000Z",
+    "isActive": true
+  },
+  {
+    "id": "deloitte-coding-2",
+    "title": "Longest Common Prefix",
+    "company": "deloitte",
+    "difficulty": "Medium",
+    "category": "Strings",
+    "tags": [
+      "String",
+      "Trie"
+    ],
+    "marks": 15,
+    "problemStatement": "Write a function `longestCommonPrefix(strs)` that returns the longest common prefix shared by all strings in the array `strs`. If there is no common prefix, return an empty string.",
+    "description": "The prefix must appear at the start of every string in the array.",
+    "constraints": "1 <= strs.length <= 200\n0 <= strs[i].length <= 200\nstrs[i] contains only lowercase English letters\nTime: O(N * M)\nSpace: O(1)",
+    "inputFormat": "An array of strings.",
+    "outputFormat": "The longest common prefix string.",
+    "examples": [
+      {
+        "input": "[\"flower\", \"flow\", \"flight\"]",
+        "output": "\"fl\"",
+        "explanation": "All three strings start with \"fl\" but not \"flo\"."
+      },
+      {
+        "input": "[\"dog\", \"racecar\", \"car\"]",
+        "output": "\"\"",
+        "explanation": "The first characters d, r, c differ, so there is no common prefix."
+      }
+    ],
+    "explanation": "Take the first string as the candidate prefix and repeatedly shorten it until every string starts with it.",
+    "starterCode": "function longestCommonPrefix(strs) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[\"flower\", \"flow\", \"flight\"]",
+        "expected": "\"fl\""
+      },
+      {
+        "input": "[\"dog\", \"racecar\", \"car\"]",
+        "expected": "\"\""
+      },
+      {
+        "input": "[\"a\"]",
+        "expected": "\"a\""
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[\"\", \"b\"]",
+        "expected": "\"\""
+      },
+      {
+        "input": "[\"interspecies\", \"interstellar\", \"interstate\"]",
+        "expected": "\"inters\""
+      },
+      {
+        "input": "[\"same\", \"same\", \"same\"]",
+        "expected": "\"same\""
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "createdAt": "2026-03-01T10:00:00.000Z",
+    "updatedAt": "2026-03-01T10:00:00.000Z",
+    "isActive": true
+  },
+  {
+    "id": "deloitte-coding-3",
+    "title": "Longest Increasing Subsequence",
+    "company": "deloitte",
+    "difficulty": "Hard",
+    "category": "Dynamic Programming",
+    "tags": [
+      "Dynamic Programming",
+      "Binary Search"
+    ],
+    "marks": 20,
+    "problemStatement": "Given an integer array `nums`, write a function `lengthOfLIS(nums)` that returns the length of the longest strictly increasing subsequence. A subsequence is obtained by deleting some elements without changing the order of the remaining ones.",
+    "description": "The subsequence must be strictly increasing, so equal values cannot follow each other.",
+    "constraints": "1 <= nums.length <= 2500\n-10^4 <= nums[i] <= 10^4\nTime: O(N log N)\nSpace: O(N)",
+    "inputFormat": "A single array of integers.",
+    "outputFormat": "A single integer — the length of the longest increasing subsequence.",
+    "examples": [
+      {
+        "input": "[10, 9, 2, 5, 3, 7, 101, 18]",
+        "output": "4",
+        "explanation": "One longest increasing subsequence is [2, 3, 7, 101]."
+      },
+      {
+        "input": "[7, 7, 7, 7, 7, 7, 7]",
+        "output": "1",
+        "explanation": "All values are equal, so the longest strictly increasing subsequence has length 1."
+      }
+    ],
+    "explanation": "Maintain a tail array where tails[i] is the smallest possible tail of an increasing subsequence of length i+1, and binary search for each element's position.",
+    "starterCode": "function lengthOfLIS(nums) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[10, 9, 2, 5, 3, 7, 101, 18]",
+        "expected": "4"
+      },
+      {
+        "input": "[0, 1, 0, 3, 2, 3]",
+        "expected": "4"
+      },
+      {
+        "input": "[7, 7, 7, 7, 7, 7, 7]",
+        "expected": "1"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[1, 3, 6, 7, 9, 4, 10, 5, 6]",
+        "expected": "6"
+      },
+      {
+        "input": "[5, 4, 3, 2, 1]",
+        "expected": "1"
+      },
+      {
+        "input": "[2, 1, 2]",
+        "expected": "2"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "createdAt": "2026-03-01T10:00:00.000Z",
+    "updatedAt": "2026-03-01T10:00:00.000Z",
+    "isActive": true
+  }
+]

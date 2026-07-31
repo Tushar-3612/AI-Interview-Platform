@@ -1,0 +1,212 @@
+[
+  {
+    "id": "accenture-coding-1",
+    "title": "Two Sum",
+    "company": "accenture",
+    "difficulty": "Easy",
+    "category": "Arrays",
+    "tags": [
+      "Array",
+      "Hash Map"
+    ],
+    "marks": 10,
+    "problemStatement": "Given an array of integers `nums` and an integer `target`, write a function `twoSum(nums, target)` that returns the indices of the two numbers that add up to `target`. You may assume exactly one solution exists and you may not use the same element twice.",
+    "description": "The answer can be returned in any order. Exactly one valid pair always exists.",
+    "constraints": "2 <= nums.length <= 10^4\n-10^9 <= nums[i] <= 10^9\n-10^9 <= target <= 10^9\nTime: O(N)\nSpace: O(N)",
+    "inputFormat": "An array of integers and an integer target.",
+    "outputFormat": "An array of two indices.",
+    "examples": [
+      {
+        "input": "[[2, 7, 11, 15], 9]",
+        "output": "[0, 1]",
+        "explanation": "nums[0] + nums[1] = 2 + 7 = 9."
+      },
+      {
+        "input": "[[3, 2, 4], 6]",
+        "output": "[1, 2]",
+        "explanation": "nums[1] + nums[2] = 2 + 4 = 6."
+      }
+    ],
+    "explanation": "Store each value with its index in a hash map. For each number, check whether target - number is already in the map.",
+    "starterCode": "function twoSum(nums, target) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[[2, 7, 11, 15], 9]",
+        "expected": "[0, 1]"
+      },
+      {
+        "input": "[[3, 2, 4], 6]",
+        "expected": "[1, 2]"
+      },
+      {
+        "input": "[[3, 3], 6]",
+        "expected": "[0, 1]"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[[1, 2, 3, 4], 7]",
+        "expected": "[2, 3]"
+      },
+      {
+        "input": "[[-1, -2, -3], -5]",
+        "expected": "[1, 2]"
+      },
+      {
+        "input": "[[5, 8, 1], 6]",
+        "expected": "[0, 2]"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "createdAt": "2026-02-10T10:00:00.000Z",
+    "updatedAt": "2026-02-10T10:00:00.000Z",
+    "isActive": true
+  },
+  {
+    "id": "accenture-coding-2",
+    "title": "Move Zeroes",
+    "company": "accenture",
+    "difficulty": "Medium",
+    "category": "Arrays",
+    "tags": [
+      "Array",
+      "Two Pointers"
+    ],
+    "marks": 15,
+    "problemStatement": "Given an integer array `nums`, write a function `moveZeroes(nums)` that moves all zeroes to the end of the array while maintaining the relative order of the non-zero elements. Return the modified array.",
+    "description": "You must preserve the relative order of non-zero elements.",
+    "constraints": "1 <= nums.length <= 10^4\n-10^9 <= nums[i] <= 10^9\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "A single array of integers.",
+    "outputFormat": "The same array with all zeroes moved to the end.",
+    "examples": [
+      {
+        "input": "[0, 1, 0, 3, 12]",
+        "output": "[1, 3, 12, 0, 0]",
+        "explanation": "Non-zero elements 1, 3, 12 keep their order and zeroes move to the end."
+      },
+      {
+        "input": "[0, 0]",
+        "output": "[0, 0]",
+        "explanation": "All zeroes stay at the end."
+      }
+    ],
+    "explanation": "Use a write pointer. Copy every non-zero element forward, then fill the remaining positions with zeroes.",
+    "starterCode": "function moveZeroes(nums) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[0, 1, 0, 3, 12]",
+        "expected": "[1, 3, 12, 0, 0]"
+      },
+      {
+        "input": "[0, 0]",
+        "expected": "[0, 0]"
+      },
+      {
+        "input": "[1, 0, 0, 2]",
+        "expected": "[1, 2, 0, 0]"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[0, 0, 1]",
+        "expected": "[1, 0, 0]"
+      },
+      {
+        "input": "[1, 2, 3]",
+        "expected": "[1, 2, 3]"
+      },
+      {
+        "input": "[0, 0, 0, 5]",
+        "expected": "[5, 0, 0, 0]"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "createdAt": "2026-02-10T10:00:00.000Z",
+    "updatedAt": "2026-02-10T10:00:00.000Z",
+    "isActive": true
+  },
+  {
+    "id": "accenture-coding-3",
+    "title": "Valid Parentheses",
+    "company": "accenture",
+    "difficulty": "Medium",
+    "category": "Strings",
+    "tags": [
+      "String",
+      "Stack"
+    ],
+    "marks": 15,
+    "problemStatement": "Given a string `s` containing just the characters '(', ')', '{', '}', '[' and ']', write a function `isValidParentheses(s)` that returns true if the brackets are correctly balanced and closed in the correct order, and false otherwise.",
+    "description": "An input string is valid if every opening bracket has a matching closing bracket of the same type in the correct order.",
+    "constraints": "1 <= s.length <= 10^4\ns consists only of the characters (){}[]\nTime: O(N)\nSpace: O(N)",
+    "inputFormat": "A single string of brackets.",
+    "outputFormat": "Boolean true or false.",
+    "examples": [
+      {
+        "input": "\"()[]{} \"",
+        "output": "true",
+        "explanation": "Each opening bracket is closed by its matching pair in order."
+      },
+      {
+        "input": "\"(]\"",
+        "output": "false",
+        "explanation": "The opening ( is closed by ] which does not match."
+      }
+    ],
+    "explanation": "Use a stack. Push opening brackets and pop when a matching closing bracket is found. The string is valid if the stack is empty at the end.",
+    "starterCode": "function isValidParentheses(s) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "\"()\"",
+        "expected": "true"
+      },
+      {
+        "input": "\"()[]{}\"",
+        "expected": "true"
+      },
+      {
+        "input": "\"(]\"",
+        "expected": "false"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "\"([)]\"",
+        "expected": "false"
+      },
+      {
+        "input": "\"{[]}\"",
+        "expected": "true"
+      },
+      {
+        "input": "\"(\"",
+        "expected": "false"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "createdAt": "2026-02-10T10:00:00.000Z",
+    "updatedAt": "2026-02-10T10:00:00.000Z",
+    "isActive": true
+  }
+]

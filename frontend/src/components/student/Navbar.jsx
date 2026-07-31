@@ -14,6 +14,7 @@ import {
   LogOut,
   Play,
   ClipboardCheck,
+  Bookmark,
 } from "lucide-react";
 import { useTheme } from "../../hooks/useTheme";
 import { getAuthUser } from "../../hooks/useStudentProfile";
@@ -70,6 +71,9 @@ function Navbar({ onStartInterview }) {
     { label: "My Profile", icon: User, path: "/profile" },
     { label: "Interview History", icon: History, path: "/interview-history" },
     { label: "Results", icon: BarChart3, path: "/results" },
+    { label: "Aptitude History", icon: ClipboardCheck, path: "/practice/aptitude/history" },
+    { label: "Coding History", icon: History, path: "/practice/coding/history" },
+    { label: "Bookmarks", icon: Bookmark, path: "/practice/bookmarks" },
     { label: "Settings", icon: Settings, path: "/profile" },
   ];
 

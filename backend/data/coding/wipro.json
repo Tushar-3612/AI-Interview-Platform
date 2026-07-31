@@ -1,0 +1,212 @@
+[
+  {
+    "id": "wipro-coding-1",
+    "title": "FizzBuzz",
+    "company": "wipro",
+    "difficulty": "Easy",
+    "category": "Math",
+    "tags": [
+      "Math",
+      "Simulation"
+    ],
+    "marks": 10,
+    "problemStatement": "Write a function `fizzBuzz(n)` that returns an array of strings from 1 to n where: for multiples of 3 use \"Fizz\", for multiples of 5 use \"Buzz\", for multiples of both 3 and 5 use \"FizzBuzz\", and otherwise the number itself as a string.",
+    "description": "The output array has exactly n elements, one for each number from 1 to n in order.",
+    "constraints": "1 <= n <= 10^4\nTime: O(N)\nSpace: O(N)",
+    "inputFormat": "A single integer n.",
+    "outputFormat": "An array of n strings.",
+    "examples": [
+      {
+        "input": "[5]",
+        "output": "[\"1\", \"2\", \"Fizz\", \"4\", \"Buzz\"]",
+        "explanation": "3 is a multiple of 3 so it becomes Fizz; 5 is a multiple of 5 so it becomes Buzz."
+      },
+      {
+        "input": "[15]",
+        "output": "[\"1\", \"2\", \"Fizz\", \"4\", \"Buzz\", \"Fizz\", \"7\", \"8\", \"Fizz\", \"Buzz\", \"11\", \"Fizz\", \"13\", \"14\", \"FizzBuzz\"]",
+        "explanation": "15 is a multiple of both 3 and 5 so it becomes FizzBuzz."
+      }
+    ],
+    "explanation": "Loop from 1 to n and append the correct string using modulo checks, checking divisibility by 15 first.",
+    "starterCode": "function fizzBuzz(n) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[5]",
+        "expected": "[\"1\", \"2\", \"Fizz\", \"4\", \"Buzz\"]"
+      },
+      {
+        "input": "[3]",
+        "expected": "[\"1\", \"2\", \"Fizz\"]"
+      },
+      {
+        "input": "[15]",
+        "expected": "[\"1\", \"2\", \"Fizz\", \"4\", \"Buzz\", \"Fizz\", \"7\", \"8\", \"Fizz\", \"Buzz\", \"11\", \"Fizz\", \"13\", \"14\", \"FizzBuzz\"]"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[1]",
+        "expected": "[\"1\"]"
+      },
+      {
+        "input": "[10]",
+        "expected": "[\"1\", \"2\", \"Fizz\", \"4\", \"Buzz\", \"Fizz\", \"7\", \"8\", \"Fizz\", \"Buzz\"]"
+      },
+      {
+        "input": "[30]",
+        "expected": "[\"1\", \"2\", \"Fizz\", \"4\", \"Buzz\", \"Fizz\", \"7\", \"8\", \"Fizz\", \"Buzz\", \"11\", \"Fizz\", \"13\", \"14\", \"FizzBuzz\", \"16\", \"17\", \"Fizz\", \"19\", \"Buzz\", \"Fizz\", \"22\", \"23\", \"Fizz\", \"Buzz\", \"26\", \"Fizz\", \"28\", \"29\", \"FizzBuzz\"]"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "createdAt": "2026-02-02T10:00:00.000Z",
+    "updatedAt": "2026-02-02T10:00:00.000Z",
+    "isActive": true
+  },
+  {
+    "id": "wipro-coding-2",
+    "title": "Palindrome Check",
+    "company": "wipro",
+    "difficulty": "Easy",
+    "category": "Strings",
+    "tags": [
+      "String",
+      "Two Pointers"
+    ],
+    "marks": 10,
+    "problemStatement": "Write a function `isPalindrome(s)` that returns true if the string `s` reads the same forwards and backwards, and false otherwise.",
+    "description": "The comparison is case-sensitive. Empty strings and single-character strings are palindromes.",
+    "constraints": "1 <= s.length <= 10^5\ns contains only lowercase English letters\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "A single string.",
+    "outputFormat": "Boolean true or false.",
+    "examples": [
+      {
+        "input": "\"madam\"",
+        "output": "true",
+        "explanation": "madam reversed is madam."
+      },
+      {
+        "input": "\"hello\"",
+        "output": "false",
+        "explanation": "hello reversed is olleh, which is different."
+      }
+    ],
+    "explanation": "Compare characters from both ends moving towards the centre, or compare the string with its reverse.",
+    "starterCode": "function isPalindrome(s) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "\"madam\"",
+        "expected": "true"
+      },
+      {
+        "input": "\"hello\"",
+        "expected": "false"
+      },
+      {
+        "input": "\"racecar\"",
+        "expected": "true"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "\"a\"",
+        "expected": "true"
+      },
+      {
+        "input": "\"abcba\"",
+        "expected": "true"
+      },
+      {
+        "input": "\"abca\"",
+        "expected": "false"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "createdAt": "2026-02-02T10:00:00.000Z",
+    "updatedAt": "2026-02-02T10:00:00.000Z",
+    "isActive": true
+  },
+  {
+    "id": "wipro-coding-3",
+    "title": "Count Vowels and Consonants",
+    "company": "wipro",
+    "difficulty": "Easy",
+    "category": "Strings",
+    "tags": [
+      "String",
+      "Counting"
+    ],
+    "marks": 10,
+    "problemStatement": "Write a function `countVowelsConsonants(s)` that returns an array [vowels, consonants] with the number of vowels (a, e, i, o, u) and consonants in the string `s`.",
+    "description": "The string contains only lowercase English letters. Vowels are a, e, i, o, u. Every other letter is a consonant.",
+    "constraints": "0 <= s.length <= 10^5\ns contains only lowercase English letters\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "A single string.",
+    "outputFormat": "An array of two integers [vowels, consonants].",
+    "examples": [
+      {
+        "input": "\"hello\"",
+        "output": "[2, 3]",
+        "explanation": "Vowels are e, o; consonants are h, l, l."
+      },
+      {
+        "input": "\"aeiou\"",
+        "output": "[5, 0]",
+        "explanation": "All characters are vowels."
+      }
+    ],
+    "explanation": "Iterate through each character and increment the vowel counter if it is in {a, e, i, o, u}, otherwise increment the consonant counter.",
+    "starterCode": "function countVowelsConsonants(s) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "\"hello\"",
+        "expected": "[2, 3]"
+      },
+      {
+        "input": "\"aeiou\"",
+        "expected": "[5, 0]"
+      },
+      {
+        "input": "\"xyz\"",
+        "expected": "[0, 3]"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "\"programming\"",
+        "expected": "[3, 8]"
+      },
+      {
+        "input": "\"education\"",
+        "expected": "[5, 4]"
+      },
+      {
+        "input": "\"\"",
+        "expected": "[0, 0]"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "createdAt": "2026-02-02T10:00:00.000Z",
+    "updatedAt": "2026-02-02T10:00:00.000Z",
+    "isActive": true
+  }
+]

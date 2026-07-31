@@ -6,19 +6,31 @@ import {
   getCompanyById,
   addCompany,
   updateCompany,
+  uploadCompanyLogo,
+  toggleCompanyStatus,
   deleteCompany,
+  getTrashedCompanies,
+  restoreCompany,
+  hardDeleteCompany,
   getCompanyAnalytics,
 } from "../controllers/companyEnhancedController.js";
 
 const router = express.Router();
 router.use(authMiddleware);
-router.use(authorizeRoles("admin"));
 
+// Students can list/view companies; only admins can modify
 router.get("/", getCompanies);
-router.get("/analytics", getCompanyAnalytics);
+router.get("/analytics", authorizeRoles("admin"), getCompanyAnalytics);
+router.get("/trash", authorizeRoles("admin"), getTrashedCompanies);
 router.get("/:id", getCompanyById);
-router.post("/", auditLog("create_company", "Company"), addCompany);
-router.put("/:id", auditLog("update_company", "Company"), updateCompany);
-router.delete("/:id", auditLog("delete_company", "Company"), deleteCompany);
+
+// Admin-only routes
+router.post("/", authorizeRoles("admin"), auditLog("create_company", "Company"), addCompany);
+router.put("/:id", authorizeRoles("admin"), auditLog("update_company", "Company"), updateCompany);
+router.patch("/:id/logo", authorizeRoles("admin"), uploadCompanyLogo);
+router.patch("/:id/status", authorizeRoles("admin"), toggleCompanyStatus);
+router.delete("/:id", authorizeRoles("admin"), auditLog("delete_company", "Company"), deleteCompany);
+router.delete("/:id/hard", authorizeRoles("admin"), hardDeleteCompany);
+router.post("/:id/restore", authorizeRoles("admin"), restoreCompany);
 
 export default router;

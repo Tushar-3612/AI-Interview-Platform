@@ -1,0 +1,212 @@
+[
+  {
+    "id": "capgemini-coding-1",
+    "title": "Factorial of a Number",
+    "company": "capgemini",
+    "difficulty": "Easy",
+    "category": "Math",
+    "tags": [
+      "Math",
+      "Recursion"
+    ],
+    "marks": 10,
+    "problemStatement": "Write a function `factorial(n)` that returns the factorial of a non-negative integer `n`. The factorial of n is n * (n-1) * (n-2) * ... * 1, and the factorial of 0 is 1.",
+    "description": "The result can be computed iteratively or recursively.",
+    "constraints": "0 <= n <= 12\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "A single integer n.",
+    "outputFormat": "A single integer — the factorial of n.",
+    "examples": [
+      {
+        "input": "[5]",
+        "output": "120",
+        "explanation": "5! = 5 * 4 * 3 * 2 * 1 = 120."
+      },
+      {
+        "input": "[0]",
+        "output": "1",
+        "explanation": "By definition, 0! = 1."
+      }
+    ],
+    "explanation": "Multiply all integers from 1 to n together in a loop, starting from 1.",
+    "starterCode": "function factorial(n) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[5]",
+        "expected": "120"
+      },
+      {
+        "input": "[0]",
+        "expected": "1"
+      },
+      {
+        "input": "[1]",
+        "expected": "1"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[7]",
+        "expected": "5040"
+      },
+      {
+        "input": "[10]",
+        "expected": "3628800"
+      },
+      {
+        "input": "[3]",
+        "expected": "6"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "createdAt": "2026-02-15T10:00:00.000Z",
+    "updatedAt": "2026-02-15T10:00:00.000Z",
+    "isActive": true
+  },
+  {
+    "id": "capgemini-coding-2",
+    "title": "Reverse a String",
+    "company": "capgemini",
+    "difficulty": "Easy",
+    "category": "Strings",
+    "tags": [
+      "String",
+      "Two Pointers"
+    ],
+    "marks": 10,
+    "problemStatement": "Write a function `reverseString(s)` that returns the string `s` with its characters in reverse order.",
+    "description": "Return a new reversed string. The original string must not be modified.",
+    "constraints": "0 <= s.length <= 10^5\ns contains printable ASCII characters\nTime: O(N)\nSpace: O(N)",
+    "inputFormat": "A single string.",
+    "outputFormat": "The reversed string.",
+    "examples": [
+      {
+        "input": "\"hello\"",
+        "output": "\"olleh\"",
+        "explanation": "The characters are reversed: h e l l o -> o l l e h."
+      },
+      {
+        "input": "\"code\"",
+        "output": "\"edoc\"",
+        "explanation": "c o d e -> e d o c."
+      }
+    ],
+    "explanation": "Split the string into characters, reverse the array and join, or iterate from the end to the start building the result.",
+    "starterCode": "function reverseString(s) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "\"hello\"",
+        "expected": "\"olleh\""
+      },
+      {
+        "input": "\"code\"",
+        "expected": "\"edoc\""
+      },
+      {
+        "input": "\"a\"",
+        "expected": "\"a\""
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "\"race\"",
+        "expected": "\"ecar\""
+      },
+      {
+        "input": "\"madam\"",
+        "expected": "\"madam\""
+      },
+      {
+        "input": "\"\"",
+        "expected": "\"\""
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "createdAt": "2026-02-15T10:00:00.000Z",
+    "updatedAt": "2026-02-15T10:00:00.000Z",
+    "isActive": true
+  },
+  {
+    "id": "capgemini-coding-3",
+    "title": "Binary to Decimal",
+    "company": "capgemini",
+    "difficulty": "Easy",
+    "category": "Math",
+    "tags": [
+      "String",
+      "Math"
+    ],
+    "marks": 10,
+    "problemStatement": "Write a function `binaryToDecimal(binStr)` that converts a binary string to its decimal value.",
+    "description": "The input string contains only the characters '0' and '1' and has no leading sign.",
+    "constraints": "1 <= binStr.length <= 20\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "A single binary string.",
+    "outputFormat": "A single integer — the decimal value.",
+    "examples": [
+      {
+        "input": "\"101\"",
+        "output": "5",
+        "explanation": "1*4 + 0*2 + 1*1 = 5."
+      },
+      {
+        "input": "\"1111\"",
+        "output": "15",
+        "explanation": "1*8 + 1*4 + 1*2 + 1*1 = 15."
+      }
+    ],
+    "explanation": "Walk through the string from left to right, doubling the running total and adding the current bit (Horner's method).",
+    "starterCode": "function binaryToDecimal(binStr) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "\"101\"",
+        "expected": "5"
+      },
+      {
+        "input": "\"1111\"",
+        "expected": "15"
+      },
+      {
+        "input": "\"1000\"",
+        "expected": "8"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "\"0\"",
+        "expected": "0"
+      },
+      {
+        "input": "\"1\"",
+        "expected": "1"
+      },
+      {
+        "input": "\"101010\"",
+        "expected": "42"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "createdAt": "2026-02-15T10:00:00.000Z",
+    "updatedAt": "2026-02-15T10:00:00.000Z",
+    "isActive": true
+  }
+]

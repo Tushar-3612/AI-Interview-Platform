@@ -1,0 +1,212 @@
+[
+  {
+    "id": "cognizant-coding-1",
+    "title": "Bubble Sort",
+    "company": "cognizant",
+    "difficulty": "Easy",
+    "category": "Sorting",
+    "tags": [
+      "Sorting",
+      "Array"
+    ],
+    "marks": 10,
+    "problemStatement": "Write a function `bubbleSort(arr)` that sorts the given array of integers in ascending order using the bubble sort technique and returns the sorted array.",
+    "description": "The array should be sorted in non-decreasing order. Duplicates are allowed.",
+    "constraints": "1 <= arr.length <= 10^4\n-10^9 <= arr[i] <= 10^9\nTime: O(N^2)\nSpace: O(1)",
+    "inputFormat": "A single array of integers.",
+    "outputFormat": "The array sorted in ascending order.",
+    "examples": [
+      {
+        "input": "[5, 1, 4, 2, 8]",
+        "output": "[1, 2, 4, 5, 8]",
+        "explanation": "After multiple passes, elements bubble up to their correct positions."
+      },
+      {
+        "input": "[3, 2, 1]",
+        "output": "[1, 2, 3]",
+        "explanation": "The array is sorted in ascending order."
+      }
+    ],
+    "explanation": "Repeatedly swap adjacent elements that are out of order until the whole array is sorted.",
+    "starterCode": "function bubbleSort(arr) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[5, 1, 4, 2, 8]",
+        "expected": "[1, 2, 4, 5, 8]"
+      },
+      {
+        "input": "[1, 2, 3]",
+        "expected": "[1, 2, 3]"
+      },
+      {
+        "input": "[3, 2, 1]",
+        "expected": "[1, 2, 3]"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[10, -1, 5, 0, 7]",
+        "expected": "[-1, 0, 5, 7, 10]"
+      },
+      {
+        "input": "[7, 3]",
+        "expected": "[3, 7]"
+      },
+      {
+        "input": "[9, 9, 9]",
+        "expected": "[9, 9, 9]"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "createdAt": "2026-02-20T10:00:00.000Z",
+    "updatedAt": "2026-02-20T10:00:00.000Z",
+    "isActive": true
+  },
+  {
+    "id": "cognizant-coding-2",
+    "title": "Anagram Check",
+    "company": "cognizant",
+    "difficulty": "Medium",
+    "category": "Strings",
+    "tags": [
+      "String",
+      "Hash Map"
+    ],
+    "marks": 15,
+    "problemStatement": "Write a function `isAnagram(s, t)` that returns true if `t` is an anagram of `s`, i.e. the two strings contain exactly the same characters with the same frequencies (possibly in a different order).",
+    "description": "Both strings contain only lowercase English letters.",
+    "constraints": "1 <= s.length, t.length <= 10^4\ns and t contain only lowercase English letters\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "Two strings s and t.",
+    "outputFormat": "Boolean true or false.",
+    "examples": [
+      {
+        "input": "\"listen\", \"silent\"",
+        "output": "true",
+        "explanation": "Both strings use the same letters: l, i, s, t, e, n."
+      },
+      {
+        "input": "\"hello\", \"world\"",
+        "output": "false",
+        "explanation": "The character frequencies do not match."
+      }
+    ],
+    "explanation": "Count the frequency of each character in s, subtract the frequencies in t; if any count is non-zero the strings are not anagrams.",
+    "starterCode": "function isAnagram(s, t) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "\"listen\", \"silent\"",
+        "expected": "true"
+      },
+      {
+        "input": "\"hello\", \"world\"",
+        "expected": "false"
+      },
+      {
+        "input": "\"anagram\", \"nagaram\"",
+        "expected": "true"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "\"rat\", \"car\"",
+        "expected": "false"
+      },
+      {
+        "input": "\"a\", \"a\"",
+        "expected": "true"
+      },
+      {
+        "input": "\"ab\", \"ba\"",
+        "expected": "true"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "createdAt": "2026-02-20T10:00:00.000Z",
+    "updatedAt": "2026-02-20T10:00:00.000Z",
+    "isActive": true
+  },
+  {
+    "id": "cognizant-coding-3",
+    "title": "First Duplicate Element",
+    "company": "cognizant",
+    "difficulty": "Easy",
+    "category": "Arrays",
+    "tags": [
+      "Array",
+      "Hash Set"
+    ],
+    "marks": 10,
+    "problemStatement": "Write a function `firstDuplicate(arr)` that returns the value of the first element that appears more than once in the array, considering the earliest second occurrence. If no element repeats, return -1.",
+    "description": "When two duplicates occur at different positions, the one whose second occurrence comes first is returned.",
+    "constraints": "1 <= arr.length <= 10^5\n-10^9 <= arr[i] <= 10^9\nTime: O(N)\nSpace: O(N)",
+    "inputFormat": "A single array of integers.",
+    "outputFormat": "A single integer — the first duplicate value, or -1.",
+    "examples": [
+      {
+        "input": "[2, 1, 3, 5, 3, 2]",
+        "output": "3",
+        "explanation": "2 appears at indices 0 and 5; 3 appears at indices 2 and 4. Since 3's second occurrence (4) is before 2's (5), the answer is 3."
+      },
+      {
+        "input": "[1, 2, 3, 4]",
+        "output": "-1",
+        "explanation": "No element appears twice."
+      }
+    ],
+    "explanation": "Scan left to right and insert each element into a set. The first element already present in the set is the answer.",
+    "starterCode": "function firstDuplicate(arr) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[2, 1, 3, 5, 3, 2]",
+        "expected": "3"
+      },
+      {
+        "input": "[1, 2, 3, 4]",
+        "expected": "-1"
+      },
+      {
+        "input": "[2, 2]",
+        "expected": "2"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[1, 1, 2, 2]",
+        "expected": "1"
+      },
+      {
+        "input": "[5, 3, 4, 3, 5]",
+        "expected": "3"
+      },
+      {
+        "input": "[1, 1]",
+        "expected": "1"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "createdAt": "2026-02-20T10:00:00.000Z",
+    "updatedAt": "2026-02-20T10:00:00.000Z",
+    "isActive": true
+  }
+]

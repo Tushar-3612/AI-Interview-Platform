@@ -19,8 +19,15 @@ import notificationRoutes from "./backend/routes/notification.js";
 import auditLogRoutes from "./backend/routes/auditLog.js";
 import systemConfigRoutes from "./backend/routes/systemConfig.js";
 import backupRoutes from "./backend/routes/backup.js";
+import aptitudeRoutes from "./backend/routes/aptitude.js";
+import codingQuestionRoutes from "./backend/routes/codingQuestions.js";
+import practiceRoutes from "./backend/routes/practice.js";
 import { initializeCSVExports } from "./backend/utils/csvExporter.js"; // ← Path sahi hai
 import { apiLimiter } from "./backend/middleware/rateLimiter.js";
+import { runSeeds } from "./backend/utils/seedDefaults.js";
+import { cleanupExpiredTrash } from "./backend/controllers/aptitudeController.js";
+import { cleanupExpiredCodingTrash } from "./backend/controllers/codingQuestionController.js";
+import { cleanupExpiredCompanyTrash } from "./backend/controllers/companyEnhancedController.js";
 
 // Load .env from root
 dotenv.config(); // ← Ye root mein .env file dhoondhega
@@ -31,9 +38,18 @@ console.log('🔑 MONGO_URI:', process.env.MONGO_URI ? '✅ Loaded' : '❌ Not L
 console.log('🔑 GEMINI_API_KEY:', process.env.GEMINI_API_KEY ? '✅ Loaded' : '❌ Not Loaded');
 
 /* ================================
-   DATABASE CONNECTION
+   DATABASE CONNECTION + SEED
+   aptitude.json loaded once into memory; 30-day trash cleanup
    ================================ */
-connectDB();
+connectDB().then(() => {
+  runSeeds()
+    .then(async () => {
+      await cleanupExpiredTrash();
+      await cleanupExpiredCodingTrash();
+      await cleanupExpiredCompanyTrash();
+    })
+    .catch((error) => console.error("Seed/cleanup error:", error.message));
+});
 
 /* ================================
    CSV EXPORT INITIALIZATION
@@ -75,6 +91,9 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api/audit-logs", auditLogRoutes);
 app.use("/api/system-config", systemConfigRoutes);
 app.use("/api/backup", backupRoutes);
+app.use("/api/aptitude", aptitudeRoutes);
+app.use("/api/coding-questions", codingQuestionRoutes);
+app.use("/api/practice", practiceRoutes);
 
 // Health Check Route (Add this for testing)
 app.get("/api/health", (req, res) => {

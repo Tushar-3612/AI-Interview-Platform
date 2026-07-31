@@ -221,3 +221,36 @@ select option, .admin-select option {
   color: var(--text-primary) !important;
   border-color: var(--border) !important;
 }
+
+/* ── Skeleton loading ── */
+@keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--border);
+  background-image: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--border) 60%, transparent) 0px,
+    color-mix(in srgb, var(--card-bg) 70%, var(--border)) 40px,
+    color-mix(in srgb, var(--border) 60%, transparent) 80px
+  );
+  background-size: 800px 100%;
+  background-repeat: no-repeat;
+  animation: shimmer 1.4s linear infinite;
+}
+
+[data-theme="dark"] .skeleton {
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.04) 0px,
+    rgba(255, 255, 255, 0.1) 40px,
+    rgba(255, 255, 255, 0.04) 80px
+  );
+  background-size: 800px 100%;
+  background-repeat: no-repeat;
+  animation: shimmer 1.4s linear infinite;
+}

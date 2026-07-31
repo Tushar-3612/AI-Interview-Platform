@@ -212,7 +212,7 @@ function Signup() {
         </div>
 
         {/* Terms & Conditions */}
-        <div className="mb-4">
+        <div className="mb-3">
           <label className="flex items-start gap-2.5 cursor-pointer select-none">
             <input
               type="checkbox"
@@ -238,7 +238,7 @@ function Signup() {
         </Button>
       </form>
 
-      <p className="text-center text-xs mt-4 pt-3 border-t border-[var(--border])" style={{ color: "var(--text-secondary)" }}>
+      <p className="text-center text-xs mt-3 pt-2.5 border-t border-[var(--border])" style={{ color: "var(--text-secondary)" }}>
         Already have an account?{" "}
         <Link
           to="/"
