@@ -15,18 +15,67 @@ function StudentLayout() {
   const navigate = useNavigate();
   const { profile, updateProfile, getProfileForInterview } = useStudentProfile();
   const [interviewModalOpen, setInterviewModalOpen] = useState(false);
+  const [isStarting, setIsStarting] = useState(false);
 
   if (!token) {
     return <Navigate to="/" replace />;
   }
 
-  const handleStartInterview = (formData) => {
-    updateProfile({
-      ...formData,
-      interviewStatus: "in_progress",
-    });
-    setInterviewModalOpen(false);
-    navigate("/start-interview");
+  const handleStartInterview = async (formData) => {
+    setIsStarting(true);
+    const startToast = toast.loading("🤖 Generating your interview questions...");
+
+    try {
+      const authToken = getAuthToken();
+      const res = await fetch("http://localhost:5000/api/interview/start", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authToken}`,
+        },
+        body: JSON.stringify({
+          interviewType: formData.interviewType,
+          difficulty: formData.difficulty,
+          duration: formData.duration || 30,
+          candidateName: profile.name || "",
+          resumeFileName: profile.resumeFileName || "",
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to start interview");
+      }
+
+      // Persist the new interviewId in the profile for later saves
+      updateProfile({
+        ...formData,
+        interviewStatus: "in_progress",
+        interviewId: data.interviewId,
+      });
+
+      toast.success("Questions ready! Starting interview...", { id: startToast });
+      setInterviewModalOpen(false);
+
+      // Pass pre-fetched data via router state so StartInterview doesn't need to re-fetch
+      navigate("/start-interview", {
+        state: {
+          interviewId: data.interviewId,
+          generatedQuestions: data.generatedQuestions,
+          interviewType: formData.interviewType,
+          difficulty: formData.difficulty,
+          duration: formData.duration || 30,
+          candidateName: profile.name || "Candidate",
+          resumeFileName: profile.resumeFileName || "",
+        },
+      });
+    } catch (err) {
+      console.error("Start Interview Error:", err);
+      toast.error(err.message || "Could not start interview. Please try again.", { id: startToast });
+    } finally {
+      setIsStarting(false);
+    }
   };
 
   return (
@@ -51,8 +100,9 @@ function StudentLayout() {
 
       <StartInterviewModal
         open={interviewModalOpen}
-        onClose={() => setInterviewModalOpen(false)}
+        onClose={() => !isStarting && setInterviewModalOpen(false)}
         profile={profile}
+        isStarting={isStarting}
         onFillProfile={() => toast.success("Profile data filled")}
         onSubmit={handleStartInterview}
       />

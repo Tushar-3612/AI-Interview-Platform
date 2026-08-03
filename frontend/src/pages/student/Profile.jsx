@@ -52,14 +52,50 @@ function Profile() {
     reader.readAsDataURL(file);
   };
 
-  const handleResumeUpload = (e) => {
+  const handleResumeUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    updateProfile({
-      resumeFileName: file.name,
-      resumeUploadedAt: new Date().toISOString(),
-    });
-    toast.success("Resume uploaded");
+    
+    // Create form data
+    const formData = new FormData();
+    formData.append("resume", file);
+    
+    const uploadToast = toast.loading("Analyzing resume and generating interview questions...");
+    setSaving(true);
+    
+    try {
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+      const res = await fetch("http://localhost:5000/api/interview/upload-resume", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`
+        },
+        body: formData
+      });
+      
+      const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to upload resume");
+      }
+      
+      // Update profile with generated info
+      updateProfile({
+        resumeFileName: file.name,
+        resumeUploadedAt: new Date().toISOString(),
+        interviewId: data.interviewId,
+        skills: [...new Set([...(profile.skills || []), ...(data.candidateProfile?.skills || [])])]
+      });
+      
+      toast.success("Resume processed and interview questions generated!", { id: uploadToast });
+    } catch (error) {
+      console.error(error);
+      toast.error(error.message || "Failed to process resume", { id: uploadToast });
+    } finally {
+      setSaving(false);
+      // Reset input so the same file can be uploaded again if needed
+      if (resumeInputRef.current) resumeInputRef.current.value = "";
+    }
   };
 
   const ProfileLink = ({ label, name, icon: Icon }) => (

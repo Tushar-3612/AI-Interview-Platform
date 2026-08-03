@@ -161,6 +161,146 @@ select {
   border-radius: 3px;
 }
 
+/* ================================
+   INTERVIEW ROOM — ANIMATIONS
+   ================================ */
+
+/* Audio visualizer bar wave */
+@keyframes waveBar {
+  0%, 100% { transform: scaleY(0.2); }
+  50% { transform: scaleY(1); }
+}
+
+/* AI Avatar halo ring glow pulse */
+@keyframes haloRing {
+  0%, 100% {
+    box-shadow: 0 0 0 0px rgba(37, 99, 235, 0.5), 0 0 0 8px rgba(37, 99, 235, 0.15);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(37, 99, 235, 0.25), 0 0 0 14px rgba(37, 99, 235, 0.06);
+  }
+}
+
+@keyframes haloRingSpeak {
+  0%, 100% {
+    box-shadow: 0 0 0 0px rgba(20, 184, 166, 0.6), 0 0 0 8px rgba(20, 184, 166, 0.15);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(20, 184, 166, 0.3), 0 0 0 18px rgba(20, 184, 166, 0.07);
+  }
+}
+
+@keyframes haloRingThink {
+  0%, 100% {
+    box-shadow: 0 0 0 0px rgba(245, 158, 11, 0.5), 0 0 0 8px rgba(245, 158, 11, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(245, 158, 11, 0.25), 0 0 0 14px rgba(245, 158, 11, 0.06);
+  }
+}
+
+/* Status dot custom pulse */
+@keyframes statusDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+
+/* Metric bar shimmer fill */
+@keyframes metricFill {
+  from { width: 0%; }
+  to { width: var(--target-width); }
+}
+
+/* Network signal strength bars */
+@keyframes signalBounce {
+  0%, 80%, 100% { transform: scaleY(1); }
+  40% { transform: scaleY(1.4); }
+}
+
+/* Smooth scan-line effect overlay on AI avatar */
+@keyframes scanLine {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+
+/* Subtle background noise grid for AI stage */
+.interview-grid-bg {
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(255,255,255,0.04) 1px, transparent 0);
+  background-size: 28px 28px;
+}
+
+/* Audio visualizer container */
+.audio-visualizer {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 28px;
+}
+
+.audio-bar {
+  width: 3px;
+  border-radius: 2px;
+  transform-origin: bottom;
+  transform: scaleY(0.15);
+  transition: background-color 0.3s ease;
+}
+
+.audio-bar.active {
+  animation: waveBar var(--bar-dur, 0.8s) ease-in-out infinite;
+  animation-delay: var(--bar-delay, 0s);
+}
+
+/* AI Halo animation classes */
+.halo-idle { animation: haloRing 2.8s ease-in-out infinite; }
+.halo-speak { animation: haloRingSpeak 0.9s ease-in-out infinite; }
+.halo-think { animation: haloRingThink 1.4s ease-in-out infinite; }
+
+/* Interview room dark overlay card */
+.room-card {
+  background: rgba(10, 10, 12, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Metric progress bar track */
+.metric-track {
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 9999px;
+  overflow: hidden;
+  height: 6px;
+}
+
+.metric-fill {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Caption bubble styles */
+.caption-ai {
+  background: rgba(37, 99, 235, 0.15);
+  border: 1px solid rgba(37, 99, 235, 0.25);
+  border-radius: 0 14px 14px 14px;
+}
+
+.caption-user {
+  background: rgba(20, 184, 166, 0.12);
+  border: 1px solid rgba(20, 184, 166, 0.25);
+  border-radius: 14px 14px 0 14px;
+}
+
+/* Push-to-talk pulsing ring */
+@keyframes ptlRing {
+  0% { transform: scale(1); opacity: 0.8; }
+  100% { transform: scale(2); opacity: 0; }
+}
+
+.ptl-ring {
+  animation: ptlRing 1.4s ease-out infinite;
+}
+
 /* Toast theme override */
 [data-theme="dark"] .toast-themed {
   background: var(--bg-secondary) !important;

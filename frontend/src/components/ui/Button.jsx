@@ -13,6 +13,7 @@ function Button({
   disabled = false,
   variant = "gradient",
   fullWidth = true,
+  size = "md",
   className = "",
 }) {
   const [ripples, setRipples] = useState([]);
@@ -40,10 +41,15 @@ function Button({
   const widthClass = fullWidth ? "w-full" : "";
 
   const variants = {
-    gradient: "btn-gradient text-white py-3.5 px-6 shadow-lg hover:shadow-xl",
-    outline:
-      "py-3.5 px-6 border hover:opacity-90",
-    ghost: "py-3.5 px-6 hover:opacity-80",
+    gradient: "btn-gradient text-white shadow-lg hover:shadow-xl",
+    outline: "border hover:opacity-90",
+    ghost: "hover:opacity-80",
+  };
+
+  const sizes = {
+    sm: "py-1.5 px-3 text-xs rounded-xl",
+    md: "py-3.5 px-6 text-sm rounded-2xl",
+    lg: "py-4 px-8 text-base rounded-2xl",
   };
 
   const variantStyle =
@@ -58,7 +64,7 @@ function Button({
       type={type}
       onClick={handleClick}
       disabled={disabled || loading}
-      className={`${baseClasses} ${widthClass} ${variants[variant]} ${className}`}
+      className={`${baseClasses} ${widthClass} ${variants[variant]} ${sizes[size] || sizes.md} ${className}`}
       style={variantStyle}
       whileHover={!disabled && !loading ? { scale: 1.01 } : {}}
       whileTap={!disabled && !loading ? { scale: 0.98 } : {}}

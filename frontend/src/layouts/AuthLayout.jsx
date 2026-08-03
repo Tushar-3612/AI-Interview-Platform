@@ -30,12 +30,13 @@ function AuthLayout({ children, title, subtitle }) {
 
         {/* ================= RIGHT PANEL — 40% Clean Auth Card ================= */}
         <motion.div
-          className="w-full lg:w-[45%] xl:w-[40%] h-full flex flex-col justify-center items-center p-5 sm:p-8 md:p-10 overflow-y-auto lg:overflow-hidden bg-[var(--bg-primary)]"
+          className="w-full lg:w-[45%] xl:w-[40%] h-full flex flex-col items-center overflow-y-auto bg-[var(--bg-primary)] py-8 px-5 sm:px-8 md:px-10"
+          style={{ scrollbarWidth: "thin", scrollbarColor: "var(--border) transparent" }}
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, ease: "easeOut", delay: 0.1 }}
         >
-          <div className="w-full max-w-[400px] flex flex-col justify-center">
+          <div className="w-full max-w-[400px] flex flex-col my-auto">
             {/* Minimal Brand Header */}
             <div className="flex flex-col items-center text-center mb-5">
               <div className="w-9 h-9 rounded-xl bg-[var(--primary)] flex items-center justify-center shadow-sm mb-3">
@@ -72,6 +73,7 @@ function AuthLayout({ children, title, subtitle }) {
             </motion.div>
           </div>
         </motion.div>
+
       </div>
     </div>
   );

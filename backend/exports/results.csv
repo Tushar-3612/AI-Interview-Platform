@@ -1,1 +1,7 @@
 id,interviewId,userId,overallScore,resumeScore,technicalScore,codingScore,recommendation,createdAt
+6a5c7a1cfb7989def2a4149d,6a5c79b5fb7989def2a413ce,6a5bb27a1ca64fa817cd3abd,1,0,3,0,Needs Practice,2026-07-19T07:17:48.020Z
+6a5c7b05fb7989def2a41547,6a5c7a71fb7989def2a414a5,6a5bb27a1ca64fa817cd3abd,0,0,0,0,Needs Practice,2026-07-19T07:21:41.422Z
+6a60d9ecdacba9eb798ec8f3,6a60d98fdacba9eb798ec845,6a5bb27a1ca64fa817cd3abd,0,0,0,0,Needs Practice,2026-07-22T14:55:40.264Z
+6a60f0a0dacba9eb798eca34,6a60daf1dacba9eb798ec90d,6a5bb27a1ca64fa817cd3abd,0,0,1,0,Needs Practice,2026-07-22T16:32:32.661Z
+6a60f19ddacba9eb798ecadb,6a60f0d5dacba9eb798eca3e,6a5bb27a1ca64fa817cd3abd,0,0,0,0,Needs Practice,2026-07-22T16:36:45.624Z
+6a61e5f5a8b8126ec635c65c,6a61e55da8b8126ec635c56e,6a5bb27a1ca64fa817cd3abd,0,0,0,0,Needs Practice,2026-07-23T09:59:17.958Z

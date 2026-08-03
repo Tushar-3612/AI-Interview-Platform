@@ -67,6 +67,16 @@ export function useStudentProfile() {
     resumeFileName: profile.resumeFileName || "",
   }), [profile]);
 
+  /** Clears all auth/profile data and redirects to login */
+  const logout = useCallback(() => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    localStorage.removeItem(PROFILE_KEY);
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("user");
+    window.location.href = "/";
+  }, []);
+
   const completionPercent = calculateCompletion(profile);
 
   return {
@@ -76,6 +86,7 @@ export function useStudentProfile() {
     removeSkill,
     getProfileForInterview,
     completionPercent,
+    logout,
   };
 }
 
