@@ -22,7 +22,7 @@ const practiceAttemptSchema = new mongoose.Schema(
     companyId: { type: String, default: "" },
     companyName: { type: String, default: "" },
     questionCount: { type: Number, default: 15 },
-    difficulty: { type: String, enum: ["easy", "medium", "hard"], default: "easy" },
+    difficulty: { type: String, enum: ["easy", "medium", "hard", "mixed"], default: "easy" },
     questions: [questionSnapshotSchema],
     score: { type: Number, default: 0 },
     correct: { type: Number, default: 0 },

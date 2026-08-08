@@ -3,6 +3,7 @@ import Company from "../models/Company.js";
 import SystemConfig from "../models/SystemConfig.js";
 import { syncAptitudeQuestionToBank } from "../utils/seedDefaults.js";
 import { deactivateBankQuestion } from "../services/questionBank.js";
+import { createNotification } from "../services/notificationService.js";
 
 const TRASH_RETENTION_DAYS = 30;
 
@@ -39,6 +40,13 @@ export const seedAptitudeQuestions = async (req, res) => {
       };
     });
     await AptitudeQuestion.insertMany(enriched);
+    await createNotification({
+      role: "all",
+      type: "success",
+      title: "New aptitude questions added",
+      message: `${enriched.length} aptitude questions were added for practice.`,
+      link: "/interview-practice",
+    });
     res.json({ message: `Seeded ${enriched.length} aptitude questions`, count: enriched.length });
   } catch (error) {
     res.status(500).json({ message: "Failed to seed questions", error: error.message });
@@ -182,6 +190,15 @@ export const bulkImportAptitudeQuestions = async (req, res) => {
         await syncAptitudeQuestionToBank(createdDoc);
         created++;
       }
+    }
+    if (created > 0) {
+      await createNotification({
+        role: "all",
+        type: "success",
+        title: "New aptitude questions added",
+        message: `${created} new aptitude questions were added for practice.`,
+        link: "/interview-practice",
+      });
     }
     res.json({ message: `Import complete: ${created} created, ${updated} updated, ${skipped} skipped`, created, updated, skipped });
   } catch (error) {

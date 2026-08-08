@@ -1,0 +1,587 @@
+import { useState, useEffect } from "react";
+import { useNavigate, useOutletContext } from "react-router-dom";
+import { motion } from "framer-motion";
+import toast from "react-hot-toast";
+import {
+  Flame,
+  Trophy,
+  Target,
+  Lightbulb,
+  Calendar,
+  Medal,
+  Map,
+  TrendingUp,
+  ArrowRight,
+  ArrowUpRight,
+  CheckCircle2,
+  AlertTriangle,
+  Clock,
+  Code2,
+  BrainCircuit,
+  Sparkles,
+  Bell,
+  BarChart3,
+  ListChecks,
+  Timer,
+  Bookmark,
+  Building2,
+  Award,
+} from "lucide-react";
+import useCachedApi from "../../hooks/useCachedApi";
+import { ProgressBar, scoreColor } from "../../components/placement/ProgressRing";
+import Heatmap from "../../components/placement/Heatmap";
+import AchievementBadge from "../../components/placement/AchievementBadge";
+import { DonutChart, BarChart, LineChart } from "../../components/placement/Charts";
+import api from "../../utils/api";
+import { getAuthToken } from "../../hooks/useStudentProfile";
+import { timeAgo } from "../../utils/dateUtils";
+
+const TYPE_META = {
+  aptitude: { icon: BrainCircuit, color: "var(--primary)" },
+  coding: { icon: Code2, color: "var(--accent)" },
+  mock: { icon: Timer, color: "var(--success)" },
+  interview: { icon: Medal, color: "var(--success)" },
+  onboarding: { icon: Sparkles, color: "var(--primary)" },
+};
+
+function SectionCard({ title, subtitle, icon: Icon, action, children, className = "" }) {
+  return (
+    <section className={`bg-[var(--card-bg)] border border-[var(--card-border)] rounded-3xl p-5 sm:p-6 shadow-[var(--shadow-sm)] ${className}`}>
+      <div className="flex items-start justify-between mb-5 gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          {Icon && (
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: "color-mix(in srgb, var(--primary) 8%, transparent)", color: "var(--primary)" }}>
+              <Icon className="w-5 h-5" />
+            </div>
+          )}
+          <div className="min-w-0">
+            <h3 className="text-base font-bold truncate" style={{ color: "var(--text-primary)" }}>{title}</h3>
+            {subtitle && <p className="text-xs truncate" style={{ color: "var(--text-muted)" }}>{subtitle}</p>}
+          </div>
+        </div>
+        {action}
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function ReadinessHero({ scores, prediction, profile }) {
+  const navigate = useNavigate();
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+      {/* Overall readiness */}
+      <section className="hero-premium rounded-3xl p-6 lg:col-span-1 flex flex-col items-center justify-center text-center">
+        <div className="hero-premium-grid" />
+        <div className="relative z-10 flex flex-col items-center">
+          <DonutChart value={scores.overall} size={170} stroke={14} color={scoreColor(scores.overall)} label="Overall" sublabel={scores.label} />
+          <p className="mt-4 text-lg font-black" style={{ color: "var(--text-primary)" }}>
+            {scores.label}
+          </p>
+          <p className="text-xs mt-1 max-w-[220px]" style={{ color: "var(--text-muted)" }}>
+            {profile?.name?.split(" ")[0] || "Student"}, here is your placement readiness snapshot.
+          </p>
+        </div>
+      </section>
+
+      {/* Component scores */}
+      <section className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-3xl p-6 lg:col-span-1 space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>Score Breakdown</h3>
+          <TrendingUp className="w-4 h-4" style={{ color: "var(--primary)" }} />
+        </div>
+        {[
+          { label: "Coding", value: scores.coding },
+          { label: "Aptitude", value: scores.aptitude },
+          { label: "Problem Solving", value: scores.problemSolving },
+          { label: "Consistency", value: scores.consistency },
+          { label: "Mock Interview", value: scores.mockInterview },
+          { label: "Resume", value: scores.resume, hint: scores.resume === 0 ? "Upload resume to unlock" : "" },
+        ].map((s) => (
+          <div key={s.label}>
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs font-semibold" style={{ color: "var(--text-secondary)" }}>{s.label}</span>
+              {s.hint && <span className="text-[9px]" style={{ color: "var(--text-muted)" }}>{s.hint}</span>}
+            </div>
+            <ProgressBar value={s.value} />
+          </div>
+        ))}
+      </section>
+
+      {/* Placement prediction */}
+      <section className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-3xl p-6 lg:col-span-1 flex flex-col">
+        <div className="flex items-center gap-2 mb-4">
+          <Sparkles className="w-4 h-4" style={{ color: "var(--primary)" }} />
+          <h3 className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>Placement Prediction</h3>
+        </div>
+        <div className="flex items-center gap-4 mb-4">
+          <DonutChart value={prediction.chance} size={104} stroke={10} color={scoreColor(prediction.chance)} />
+          <div>
+            <p className="text-xs font-bold" style={{ color: "var(--text-secondary)" }}>Estimated Placement Chance</p>
+            <p className="text-lg font-black" style={{ color: scoreColor(prediction.chance) }}>
+              {prediction.chance}% <span className="text-xs font-bold">{prediction.status}</span>
+            </p>
+            <p className="text-[10px] mt-1" style={{ color: "var(--text-muted)" }}>
+              Based on coding, aptitude, consistency, accuracy & time
+            </p>
+          </div>
+        </div>
+        <div className="space-y-3 flex-1">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-wider mb-1.5" style={{ color: "var(--success)" }}>
+              Likely Companies
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {prediction.likelyCompanies?.length > 0 ? prediction.likelyCompanies.map((c) => (
+                <button key={c.companyId} onClick={() => navigate(`/interview-practice/${c.companyId}`)} className="px-2.5 py-1 rounded-lg text-[10px] font-bold cursor-pointer transition hover:opacity-80" style={{ color: "var(--success)", background: "color-mix(in srgb, var(--success) 10%, transparent)" }}>
+                  {c.companyName}
+                </button>
+              )) : <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>Practice more to unlock</span>}
+            </div>
+          </div>
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-wider mb-1.5" style={{ color: "var(--error)" }}>
+              Needs Improvement Before
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {prediction.needsImprovement?.length > 0 ? prediction.needsImprovement.map((c) => (
+                <span key={c.companyId} className="px-2.5 py-1 rounded-lg text-[10px] font-bold" style={{ color: "var(--error)", background: "color-mix(in srgb, var(--error) 8%, transparent)" }}>
+                  {c.companyName}
+                </span>
+              )) : <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>No companies flagged</span>}
+            </div>
+          </div>
+        </div>
+        <button
+          onClick={() => navigate("/placement/mock-oa")}
+          className="mt-4 w-full py-2.5 rounded-xl text-xs font-bold text-white btn-gradient cursor-pointer"
+        >
+          Take a Mock OA Now
+        </button>
+      </section>
+    </div>
+  );
+}
+
+function DailyGoals({ goals }) {
+  if (!goals) return null;
+  return (
+    <SectionCard title="Today's Goal" subtitle={goals.date} icon={Target}
+      action={<span className="text-xs font-bold px-3 py-1.5 rounded-full" style={{ color: goals.completed === goals.total ? "var(--success)" : "var(--primary)", background: goals.completed === goals.total ? "color-mix(in srgb, var(--success) 10%, transparent)" : "color-mix(in srgb, var(--primary) 10%, transparent)" }}>
+        {goals.completed}/{goals.total} completed
+      </span>}>
+      <div className="space-y-3">
+        {goals.goals.map((g) => (
+          <div key={g.key} className="flex items-center gap-3">
+            {g.done ? (
+              <CheckCircle2 className="w-5 h-5 shrink-0" style={{ color: "var(--success)" }} />
+            ) : (
+              <div className="w-5 h-5 rounded-full border-2 shrink-0" style={{ borderColor: "var(--border)" }} />
+            )}
+            <div className="flex-1">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-semibold" style={{ color: g.done ? "var(--text-muted)" : "var(--text-primary)" }}>{g.label}</span>
+                <span className="text-[10px] font-bold" style={{ color: "var(--text-secondary)" }}>
+                  {Math.min(g.progress, g.target)}/{g.target}
+                </span>
+              </div>
+              <ProgressBar value={(g.progress / g.target) * 100} color={g.done ? "var(--success)" : "var(--primary)"} showLabel={false} height={6} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </SectionCard>
+  );
+}
+
+function StreakCard({ streak }) {
+  return (
+    <SectionCard title="Practice Streak" subtitle="Daily consistency tracking" icon={Flame}>
+      <div className="grid grid-cols-3 gap-3 mb-5">
+        <div className="rounded-2xl p-4 text-center" style={{ background: "color-mix(in srgb, #f59e0b 10%, transparent)" }}>
+          <p className="text-2xl font-black" style={{ color: "#f59e0b" }}>🔥 {streak.current}</p>
+          <p className="text-[10px] font-semibold mt-1" style={{ color: "var(--text-secondary)" }}>Day Streak</p>
+        </div>
+        <div className="rounded-2xl p-4 text-center" style={{ background: "color-mix(in srgb, var(--primary) 8%, transparent)" }}>
+          <p className="text-2xl font-black" style={{ color: "var(--primary)" }}>{streak.best}</p>
+          <p className="text-[10px] font-semibold mt-1" style={{ color: "var(--text-secondary)" }}>Best Streak</p>
+        </div>
+        <div className="rounded-2xl p-4 text-center" style={{ background: "color-mix(in srgb, var(--error) 8%, transparent)" }}>
+          <p className="text-2xl font-black" style={{ color: "var(--error)" }}>{streak.missedDays?.length || 0}</p>
+          <p className="text-[10px] font-semibold mt-1" style={{ color: "var(--text-secondary)" }}>Missed Days (30d)</p>
+        </div>
+      </div>
+
+      <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: "var(--text-muted)" }}>Weekly Progress</p>
+      <div className="flex items-end gap-2 h-16 mb-5">
+        {streak.weekly?.map((d) => (
+          <div key={d.date} className="flex-1 flex flex-col items-center gap-1">
+            <span className="text-[9px] font-bold" style={{ color: d.count > 0 ? "var(--primary)" : "var(--text-muted)" }}>{d.count}</span>
+            <div className="w-full rounded-t-md" style={{ height: `${Math.max(d.count * 20, 4)}px`, background: d.count > 0 ? "var(--primary)" : "var(--border)" }} />
+            <span className="text-[8px]" style={{ color: "var(--text-muted)" }}>{d.label}</span>
+          </div>
+        ))}
+      </div>
+
+      <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: "var(--text-muted)" }}>Monthly Activity</p>
+      <LineChart
+        data={streak.monthly?.map((m) => ({ label: new Date(`${m.date}T00:00:00`).getDate(), value: m.count })) || []}
+        height={90}
+        color="var(--primary)"
+        showDots={false}
+      />
+    </SectionCard>
+  );
+}
+
+function RecommendationsCard({ recommendations }) {
+  return (
+    <SectionCard title="AI Recommendations" subtitle="Generated from your performance" icon={Lightbulb}>
+      <div className="space-y-3">
+        {recommendations?.length === 0 && (
+          <p className="text-sm py-4 text-center" style={{ color: "var(--text-muted)" }}>Complete a practice attempt to get personalized recommendations.</p>
+        )}
+        {recommendations?.map((rec, i) => {
+          const meta = TYPE_META[rec.type] || TYPE_META.onboarding;
+          const Icon = meta.icon;
+          return (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, x: -8 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: i * 0.06 }}
+              className="flex items-center gap-3 rounded-2xl border p-4 hover:bg-[var(--bg-secondary)] transition-colors"
+              style={{ borderColor: "var(--border)" }}
+            >
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: `color-mix(in srgb, ${meta.color} 10%, transparent)`, color: meta.color }}>
+                <Icon className="w-5 h-5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold truncate" style={{ color: "var(--text-primary)" }}>{rec.title}</p>
+                <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>{rec.detail}</p>
+              </div>
+              {rec.link && (
+                <a href={rec.link} className="shrink-0 text-[11px] font-bold px-3 py-1.5 rounded-lg cursor-pointer hover:opacity-80" style={{ color: meta.color, background: `color-mix(in srgb, ${meta.color} 10%, transparent)` }}>
+                  {rec.action || "Go"}
+                </a>
+              )}
+            </motion.div>
+          );
+        })}
+      </div>
+    </SectionCard>
+  );
+}
+
+function CompanyReadinessCard({ companies, onViewAll }) {
+  const navigate = useNavigate();
+  return (
+    <SectionCard title="Company Readiness" subtitle="Estimated readiness per company" icon={Building2}
+      action={
+        <button onClick={onViewAll} className="text-xs font-bold flex items-center gap-1 cursor-pointer hover:underline" style={{ color: "var(--primary)" }}>
+          Full Analytics <ArrowUpRight className="w-3 h-3" />
+        </button>
+      }>
+      <div className="space-y-3">
+        {companies?.length === 0 && (
+          <p className="text-sm py-4 text-center" style={{ color: "var(--text-muted)" }}>
+            Practice with any company to see your readiness here.
+          </p>
+        )}
+        {companies?.map((c) => (
+          <div key={c.companyId} className="rounded-2xl border p-4 transition hover:bg-[var(--bg-secondary)]" style={{ borderColor: "var(--border)" }}>
+            <div className="flex items-center justify-between gap-3 mb-2">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center text-xs font-black text-white shrink-0" style={{ background: c.color || "var(--primary)" }}>
+                  {c.companyName?.slice(0, 2).toUpperCase()}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-bold truncate" style={{ color: "var(--text-primary)" }}>{c.companyName}</p>
+                  <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>{c.questionsSolved} questions · {c.breakdown?.aptitude}% aptitude · {c.breakdown?.coding}% coding</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="text-[10px] font-bold px-2.5 py-1 rounded-full" style={{ color: scoreColor(c.readiness), background: `color-mix(in srgb, ${scoreColor(c.readiness)} 10%, transparent)` }}>
+                  {c.label}
+                </span>
+                <span className="text-lg font-black" style={{ color: scoreColor(c.readiness) }}>{c.readiness}%</span>
+              </div>
+            </div>
+            <ProgressBar value={c.readiness} showLabel={false} height={7} color={scoreColor(c.readiness)} />
+            <div className="flex flex-wrap gap-2 mt-3">
+              <button
+                onClick={() => navigate(`/placement/mock-oa?company=${c.companyId}`)}
+                className="text-[10px] font-bold px-2.5 py-1.5 rounded-lg cursor-pointer transition hover:opacity-80"
+                style={{ color: "var(--primary)", background: "color-mix(in srgb, var(--primary) 8%, transparent)" }}
+              >
+                Mock OA
+              </button>
+              <button
+                onClick={() => navigate(`/interview-practice/${c.companyId}`)}
+                className="text-[10px] font-bold px-2.5 py-1.5 rounded-lg cursor-pointer transition hover:opacity-80"
+                style={{ color: "var(--text-secondary)", background: "color-mix(in srgb, var(--border) 40%, transparent)" }}
+              >
+                Practice
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </SectionCard>
+  );
+}
+
+function WeakTopicsCard({ weakTopics }) {
+  return (
+    <SectionCard title="Weak Areas" subtitle="Topics below 70% accuracy" icon={AlertTriangle}>
+      <div className="flex flex-wrap gap-2">
+        {weakTopics?.length === 0 && (
+          <p className="text-sm py-2" style={{ color: "var(--text-muted)" }}>No weak topics detected — great consistency!</p>
+        )}
+        {weakTopics?.map((t) => (
+          <div key={t.kind + t.topic} className="flex items-center gap-2 px-3 py-2 rounded-xl border" style={{ borderColor: "color-mix(in srgb, var(--error) 25%, var(--border))", background: "color-mix(in srgb, var(--error) 6%, transparent)" }}>
+            <span className="text-xs font-bold" style={{ color: "var(--error)" }}>{t.topic}</span>
+            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded" style={{ background: "color-mix(in srgb, var(--error) 12%, transparent)", color: "var(--error)" }}>{t.accuracy}%</span>
+          </div>
+        ))}
+      </div>
+    </SectionCard>
+  );
+}
+
+function RoadmapCard({ roadmap }) {
+  const kindColor = { aptitude: "var(--primary)", coding: "var(--accent)", mock: "var(--success)", interview: "#f59e0b" };
+  return (
+    <SectionCard title="Study Roadmap" subtitle="Your 7-day placement plan" icon={Map}>
+      <div className="space-y-2">
+        {roadmap?.map((item, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, x: -8 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: i * 0.05 }}
+            className="flex items-center gap-3 rounded-2xl border p-3.5"
+            style={{ borderColor: "var(--border)" }}
+          >
+            <div className="w-16 shrink-0 text-center">
+              <p className="text-[10px] font-black uppercase" style={{ color: kindColor[item.kind] || "var(--text-muted)" }}>{item.day}</p>
+              <p className="text-[9px]" style={{ color: "var(--text-muted)" }}>{item.date}</p>
+            </div>
+            <div className="w-px h-8 shrink-0" style={{ background: "var(--border)" }} />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-bold truncate" style={{ color: "var(--text-primary)" }}>{item.title}</p>
+              <p className="text-[10px] truncate" style={{ color: "var(--text-muted)" }}>{item.subtitle}</p>
+            </div>
+            {item.link && (
+              <a href={item.link} className="shrink-0 p-2 rounded-lg cursor-pointer hover:opacity-80" style={{ color: "var(--primary)", background: "color-mix(in srgb, var(--primary) 8%, transparent)" }}>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </a>
+            )}
+          </motion.div>
+        ))}
+      </div>
+    </SectionCard>
+  );
+}
+
+function NotificationsCard() {
+  const token = getAuthToken();
+  const { data, loading } = useCachedApi({ url: "/api/notifications", params: { limit: 6 }, key: "notif:student", ttlMs: 30 * 1000 });
+  const [local, setLocal] = useState(null);
+
+  const notifications = local || data?.notifications || [];
+
+  const markRead = async (id) => {
+    try {
+      await api.put(`/api/notifications/${id}/read`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      setLocal(notifications.map((n) => (n._id === id ? { ...n, read: true } : n)));
+    } catch { /* noop */ }
+  };
+
+  return (
+    <SectionCard title="Notifications" subtitle="Updates and reminders" icon={Bell}>
+      <div className="space-y-2">
+        {!loading && notifications.length === 0 && (
+          <p className="text-sm py-4 text-center" style={{ color: "var(--text-muted)" }}>No notifications yet.</p>
+        )}
+        {notifications.map((n) => (
+          <div
+            key={n._id}
+            className={`flex items-start gap-3 rounded-xl border p-3 cursor-pointer transition ${n.read ? "" : "hover:bg-[var(--bg-secondary)]"}`}
+            style={{ borderColor: "var(--border)", background: n.read ? "transparent" : "color-mix(in srgb, var(--primary) 5%, transparent)" }}
+            onClick={() => { if (!n.read) markRead(n._id); }}
+          >
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+              style={{
+                color: n.type === "warning" ? "var(--error)" : n.type === "success" ? "var(--success)" : "var(--primary)",
+                background: "color-mix(in srgb, " + (n.type === "warning" ? "var(--error)" : n.type === "success" ? "var(--success)" : "var(--primary)") + " 8%, transparent)",
+              }}>
+              {n.type === "warning" ? <AlertTriangle className="w-4 h-4" /> : n.type === "success" ? <Trophy className="w-4 h-4" /> : <Bell className="w-4 h-4" />}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-bold truncate" style={{ color: "var(--text-primary)" }}>{n.title}</p>
+              <p className="text-[11px] truncate" style={{ color: "var(--text-muted)" }}>{n.message}</p>
+              <p className="text-[9px] mt-0.5" style={{ color: "var(--text-muted)" }}>{timeAgo(n.createdAt)}</p>
+            </div>
+            {!n.read && <span className="w-2 h-2 rounded-full shrink-0 mt-1.5" style={{ background: "var(--primary)" }} />}
+          </div>
+        ))}
+      </div>
+    </SectionCard>
+  );
+}
+
+function QuickLinks() {
+  const navigate = useNavigate();
+  const links = [
+    { label: "Leaderboard", icon: Trophy, path: "/placement/leaderboard", desc: "Compare with peers" },
+    { label: "Mock OA", icon: Timer, path: "/placement/mock-oa", desc: "Real exam experience" },
+    { label: "Performance", icon: BarChart3, path: "/placement/performance", desc: "Charts & trends" },
+    { label: "Question Analytics", icon: ListChecks, path: "/placement/question-analytics", desc: "Solve / skip / bookmark" },
+  ];
+  return (
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      {links.map((l) => {
+        const Icon = l.icon;
+        return (
+          <button
+            key={l.path}
+            onClick={() => navigate(l.path)}
+            className="group bg-[var(--card-bg)] border border-[var(--card-border)] rounded-2xl p-4 text-left cursor-pointer hover:border-[var(--primary)]/40 hover:-translate-y-0.5 transition-all duration-300"
+          >
+            <Icon className="w-5 h-5 mb-3" style={{ color: "var(--primary)" }} />
+            <p className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>{l.label}</p>
+            <p className="text-[10px] mt-0.5 flex items-center gap-1" style={{ color: "var(--text-muted)" }}>
+              {l.desc} <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+            </p>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function AchievementsGrid({ achievements }) {
+  return (
+    <SectionCard title="Achievements" subtitle={`${achievements?.unlocked?.length || 0} of ${achievements?.all?.length || 0} unlocked`} icon={Award}>
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
+        {achievements?.unlocked?.map((a, i) => (
+          <AchievementBadge key={a.key} achievement={a} unlocked delay={i * 0.04} />
+        ))}
+        {achievements?.locked?.map((a, i) => (
+          <AchievementBadge key={a.key} achievement={a} unlocked={false} delay={i * 0.02} />
+        ))}
+      </div>
+    </SectionCard>
+  );
+}
+
+function PlacementSkeleton() {
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-3xl p-6 space-y-4">
+            <div className="skeleton w-28 h-28 rounded-full mx-auto" />
+            <div className="skeleton h-4 w-2/3 mx-auto rounded" />
+            <div className="skeleton h-3 w-1/2 mx-auto rounded" />
+            <div className="space-y-2.5">
+              {[0, 1, 2, 3].map((j) => (
+                <div key={j} className="skeleton h-2.5 w-full rounded" />
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {[0, 1].map((i) => (
+          <div key={i} className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-3xl p-6 space-y-3">
+            <div className="skeleton h-5 w-40 rounded" />
+            <div className="skeleton h-3 w-56 rounded" />
+            {[0, 1, 2, 3].map((j) => (
+              <div key={j} className="skeleton h-10 w-full rounded-xl" />
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function PlacementDashboard() {
+  const { profile } = useOutletContext();
+  const navigate = useNavigate();
+  const { data, loading, error, refetch } = useCachedApi({ url: "/api/placement/overview", key: "placement:overview", ttlMs: 60 * 1000 });
+
+  useEffect(() => {
+    if (data?.achievements?.newlyUnlocked?.length > 0) {
+      const names = data.achievements.newlyUnlocked.map((a) => a.title).join(", ");
+      toast.success(`Achievement unlocked: ${names}!`);
+    }
+  }, [data?.achievements?.newlyUnlocked]);
+
+  if (loading && !data) return <PlacementSkeleton />;
+
+  if (error && !data) {
+    return (
+      <div className="max-w-lg mx-auto py-20 text-center space-y-4">
+        <AlertTriangle className="w-10 h-10 mx-auto" style={{ color: "var(--error)" }} />
+        <p className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>Could not load placement dashboard</p>
+        <button onClick={() => refetch()} className="px-4 py-2 rounded-xl text-xs font-bold text-white btn-gradient cursor-pointer">
+          Retry
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-4 sm:p-6 md:p-8 space-y-6 max-w-[1400px] mx-auto w-full">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-black" style={{ color: "var(--text-primary)" }}>
+            Placement Dashboard
+          </h1>
+          <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
+            AI-powered readiness, recommendations and progress tracking
+          </p>
+        </div>
+        <button
+          onClick={() => refetch()}
+          className="px-4 py-2 rounded-xl border text-xs font-bold cursor-pointer hover:opacity-80 transition"
+          style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
+        >
+          Refresh Data
+        </button>
+      </div>
+
+      <QuickLinks />
+
+      <ReadinessHero scores={data.scores} prediction={data.prediction} profile={profile} />
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        <DailyGoals goals={data.dailyGoals} />
+        <StreakCard streak={data.streak} />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        <RecommendationsCard recommendations={data.recommendations} />
+        <WeakTopicsCard weakTopics={data.weakTopics} />
+      </div>
+
+      <CompanyReadinessCard companies={data.companyReadiness} onViewAll={() => navigate("/placement/company-analytics")} />
+
+      <SectionCard title="Daily Practice Heatmap" subtitle="Last 6 months of practice activity" icon={Calendar}>
+        <Heatmap days={data.heatmap} />
+      </SectionCard>
+
+      <AchievementsGrid achievements={data.achievements} />
+
+      <RoadmapCard roadmap={data.roadmap} />
+
+      <NotificationsCard />
+    </div>
+  );
+}
+
+export default PlacementDashboard;

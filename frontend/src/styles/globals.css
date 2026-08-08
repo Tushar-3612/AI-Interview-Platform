@@ -17,7 +17,7 @@ html {
 
 body {
   margin: 0;
-  font-family: "Poppins", system-ui, -apple-system, sans-serif;
+  font-family: "Plus Jakarta Sans", "Poppins", system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background: var(--bg-primary);
@@ -146,6 +146,10 @@ select option, .admin-select option {
   box-shadow: var(--shadow-md);
 }
 
+.aptitude-question-anchor {
+  scroll-margin-top: 92px;
+}
+
 /* Floating animation */
 @keyframes float {
   0%, 100% { transform: translateY(0px); }
@@ -213,6 +217,230 @@ select option, .admin-select option {
 }
 .divide-admin > :not([hidden]) ~ :not([hidden]) {
   border-color: var(--admin-divider);
+}
+
+/* ── Premium hero (student dashboard) ── */
+.hero-premium {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--card-border);
+  border-radius: 1.5rem;
+  background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 55%, var(--bg-secondary) 100%);
+}
+
+.hero-premium::before,
+.hero-premium::after {
+  content: "";
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(90px);
+  pointer-events: none;
+}
+
+.hero-premium::before {
+  top: -140px;
+  right: -140px;
+  width: 440px;
+  height: 440px;
+  background: radial-gradient(circle, color-mix(in srgb, var(--primary) 30%, transparent) 0%, transparent 70%);
+}
+
+.hero-premium::after {
+  bottom: -160px;
+  left: -120px;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent) 26%, transparent) 0%, transparent 70%);
+}
+
+.hero-premium-grid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image:
+    linear-gradient(var(--text-primary) 1px, transparent 1px),
+    linear-gradient(90deg, var(--text-primary) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+.hero-stat-card {
+  padding: 1rem;
+  border-radius: 1rem;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--card-bg) 60%, transparent);
+  backdrop-filter: blur(8px);
+}
+
+[data-theme="dark"] .hero-premium {
+  border-color: color-mix(in srgb, var(--primary) 30%, #1a1a1a);
+  background:
+    radial-gradient(120% 90% at 85% -10%, color-mix(in srgb, var(--primary) 22%, transparent) 0%, transparent 55%),
+    radial-gradient(110% 90% at 0% 110%, color-mix(in srgb, var(--accent) 16%, transparent) 0%, transparent 55%),
+    linear-gradient(135deg, #0b1220 0%, #05070d 55%, #0a0f1a 100%);
+  box-shadow:
+    0 0 60px color-mix(in srgb, var(--primary) 12%, transparent),
+    inset 0 1px 0 color-mix(in srgb, #ffffff 8%, transparent);
+}
+
+[data-theme="dark"] .hero-premium::before {
+  background: radial-gradient(circle, color-mix(in srgb, var(--primary) 55%, transparent) 0%, transparent 70%);
+}
+
+[data-theme="dark"] .hero-premium::after {
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent) 40%, transparent) 0%, transparent 70%);
+}
+
+[data-theme="dark"] .hero-premium-grid {
+  opacity: 0.06;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.5) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.5) 1px, transparent 1px);
+}
+
+[data-theme="dark"] .hero-stat-card {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+}
+
+/* ── Hero mountain image theme switching ── */
+.mountain-light { display: block; }
+.mountain-dark  { display: none; }
+[data-theme="dark"] .mountain-light { display: none; }
+[data-theme="dark"] .mountain-dark  { display: block; }
+@media (max-width: 1023px) {
+  .mountain-light, .mountain-dark { display: none !important; }
+}
+
+/* ── Light theme mountain blending ── */
+.mountain-light {
+  mask-image:
+    linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%),
+    linear-gradient(to bottom, black 0%, black 85%, transparent 100%);
+  mask-composite: intersect;
+  -webkit-mask-image:
+    linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%),
+    linear-gradient(to bottom, black 0%, black 85%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  opacity: 0.88;
+  mix-blend-mode: multiply;
+}
+
+/* ── Light hero left→center text readability gradient ── */
+.hero-light-text-gradient {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 253, 251, 0.97) 0%,
+    rgba(255, 253, 251, 0.92) 18%,
+    rgba(255, 253, 251, 0.65) 35%,
+    rgba(255, 253, 251, 0.25) 50%,
+    transparent 65%
+  );
+}
+
+/* ── Light hero right-side card readability gradient ── */
+.hero-light-card-gradient {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    270deg,
+    rgba(255, 253, 251, 0.82) 0%,
+    rgba(255, 253, 251, 0.35) 20%,
+    transparent 40%
+  );
+}
+[data-theme="dark"] .hero-light-text-gradient,
+[data-theme="dark"] .hero-light-card-gradient {
+  display: none;
+}
+
+/* ── Dark theme mountain blending ── */
+[data-theme="dark"] .mountain-dark {
+  mask-image:
+    linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%),
+    linear-gradient(to bottom, black 0%, black 85%, transparent 100%);
+  mask-composite: intersect;
+  -webkit-mask-image:
+    linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%),
+    linear-gradient(to bottom, black 0%, black 85%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  opacity: 0.85;
+  mix-blend-mode: screen;
+}
+
+/* ── Dark hero left→center text readability gradient ── */
+.hero-dark-text-gradient {
+  display: none;
+}
+[data-theme="dark"] .hero-dark-text-gradient {
+  display: block;
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    rgba(11, 18, 32, 0.97) 0%,
+    rgba(11, 18, 32, 0.92) 18%,
+    rgba(11, 18, 32, 0.70) 35%,
+    rgba(11, 18, 32, 0.30) 50%,
+    transparent 65%
+  );
+}
+
+/* ── Dark hero right-side card readability gradient ── */
+.hero-dark-card-gradient {
+  display: none;
+}
+[data-theme="dark"] .hero-dark-card-gradient {
+  display: block;
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    270deg,
+    rgba(11, 18, 32, 0.85) 0%,
+    rgba(11, 18, 32, 0.40) 20%,
+    transparent 40%
+  );
+}
+
+/* ── Premium Hero background ── */
+.hero-premium-bg {
+  background:
+    radial-gradient(circle at 72% 22%, rgba(255,107,53,.08), transparent 55%),
+    linear-gradient(180deg, #FFFDFB 0%, #FFF8F3 35%, #FFF4EC 100%);
+  border: 1px solid rgba(0,0,0,.04);
+  border-radius: 28px;
+  box-shadow: 0 24px 70px rgba(0,0,0,.06);
+}
+[data-theme="dark"] .hero-premium-bg {
+  background:
+    radial-gradient(circle at 72% 22%, rgba(255,107,53,.10), transparent 55%),
+    linear-gradient(180deg, #171B23 0%, #1A1E27 45%, #151922 100%);
+  border: 1px solid rgba(255,255,255,.06);
+  box-shadow: 0 24px 70px rgba(0,0,0,.20);
+}
+
+/* ── Hero text readability overlay ── */
+.hero-text-overlay {
+  background: linear-gradient(90deg, rgba(255,253,251,.98) 0%, rgba(255,253,251,.90) 30%, rgba(255,253,251,.40) 55%, transparent 72%);
+}
+[data-theme="dark"] .hero-text-overlay {
+  background: linear-gradient(90deg, rgba(15,17,23,.98) 0%, rgba(15,17,23,.90) 30%, rgba(15,17,23,.45) 55%, transparent 72%);
+}
+
+[data-theme="dark"] .hero-pill {
+  background: color-mix(in srgb, var(--primary) 18%, transparent);
+  border-color: color-mix(in srgb, var(--primary) 45%, transparent);
 }
 
 /* Toast theme override */

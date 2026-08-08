@@ -22,6 +22,7 @@ import backupRoutes from "./backend/routes/backup.js";
 import aptitudeRoutes from "./backend/routes/aptitude.js";
 import codingQuestionRoutes from "./backend/routes/codingQuestions.js";
 import practiceRoutes from "./backend/routes/practice.js";
+import placementRoutes from "./backend/routes/placement.js";
 import { initializeCSVExports } from "./backend/utils/csvExporter.js"; // ← Path sahi hai
 import { apiLimiter } from "./backend/middleware/rateLimiter.js";
 import { runSeeds } from "./backend/utils/seedDefaults.js";
@@ -94,6 +95,7 @@ app.use("/api/backup", backupRoutes);
 app.use("/api/aptitude", aptitudeRoutes);
 app.use("/api/coding-questions", codingQuestionRoutes);
 app.use("/api/practice", practiceRoutes);
+app.use("/api/placement", placementRoutes);
 
 // Health Check Route (Add this for testing)
 app.get("/api/health", (req, res) => {

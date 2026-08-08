@@ -139,9 +139,9 @@ function CodingQuestionManagement() {
       constraints: q.constraints || "", sampleInput: q.sampleInput || "",
       sampleOutput: q.sampleOutput || "", explanation: q.explanation || "",
       starterCode: q.starterCode || emptyForm.starterCode,
-      testCases: q.testCases?.length > 0 ? q.testCases.map((tc) => ({ input: tc.input, expected: tc.expected, isHidden: tc.isHidden || false })) : emptyForm.testCases,
-      languages: q.languages?.length > 0 ? q.languages : ["JavaScript"],
-      tags: q.tags || [], companyId: q.companyId || "", companyName: q.companyName || "",
+      testCases: Array.isArray(q.testCases) && q.testCases.length > 0 ? q.testCases.map((tc) => ({ input: tc.input, expected: tc.expected, isHidden: tc.isHidden || false })) : emptyForm.testCases,
+      languages: Array.isArray(q.languages) && q.languages.length > 0 ? q.languages : ["JavaScript"],
+      tags: Array.isArray(q.tags) ? q.tags : [], companyId: q.companyId || "", companyName: q.companyName || "",
       marks: q.marks || 10, timeLimit: q.timeLimit || 1000, memoryLimit: q.memoryLimit || 256,
     });
     setModalOpen(true);
@@ -182,16 +182,17 @@ function CodingQuestionManagement() {
     } catch { toast.error("Failed to toggle"); }
   };
 
-  const addTestCase = () => setForm((prev) => ({ ...prev, testCases: [...prev.testCases, { input: "", expected: "", isHidden: false }] }));
-  const removeTestCase = (idx) => setForm((prev) => ({ ...prev, testCases: prev.testCases.filter((_, i) => i !== idx) }));
+  const addTestCase = () => setForm((prev) => ({ ...prev, testCases: [...(Array.isArray(prev.testCases) ? prev.testCases : []), { input: "", expected: "", isHidden: false }] }));
+  const removeTestCase = (idx) => setForm((prev) => ({ ...prev, testCases: (Array.isArray(prev.testCases) ? prev.testCases : []).filter((_, i) => i !== idx) }));
   const updateTestCase = (idx, field, value) => setForm((prev) => {
-    const updated = [...prev.testCases];
+    const testCases = Array.isArray(prev.testCases) ? prev.testCases : [];
+    const updated = [...testCases];
     updated[idx] = { ...updated[idx], [field]: value };
     return { ...prev, testCases: updated };
   });
 
-  const addTag = (tag) => { if (tag && !form.tags.includes(tag)) setForm((prev) => ({ ...prev, tags: [...prev.tags, tag] })); };
-  const removeTag = (tag) => setForm((prev) => ({ ...prev, tags: prev.tags.filter((t) => t !== tag) }));
+  const addTag = (tag) => { if (tag && Array.isArray(form.tags) && !form.tags.includes(tag)) setForm((prev) => ({ ...prev, tags: [...(Array.isArray(prev.tags) ? prev.tags : []), tag] })); };
+  const removeTag = (tag) => setForm((prev) => ({ ...prev, tags: (Array.isArray(prev.tags) ? prev.tags : []).filter((t) => t !== tag) }));
   const [tagInput, setTagInput] = useState("");
 
   const filtered = questions.filter((q) => {
@@ -341,11 +342,11 @@ function CodingQuestionManagement() {
                 {isExpanded && (
                   <div className="mt-4 pt-4 border-t space-y-3" style={{ borderColor: "var(--border)" }}>
                     <p className="text-sm whitespace-pre-line" style={{ color: "var(--text-secondary)" }}>{q.problemStatement}</p>
-                    {q.testCases?.length > 0 && (
-                      <div>
-                        <p className="text-xs font-semibold mb-2" style={{ color: "var(--text-muted)" }}>Test Cases:</p>
-                        <div className="space-y-1.5">
-                          {q.testCases.map((tc, idx) => (
+                     {Array.isArray(q.testCases) && q.testCases.length > 0 && (
+                       <div>
+                         <p className="text-xs font-semibold mb-2" style={{ color: "var(--text-muted)" }}>Test Cases:</p>
+                         <div className="space-y-1.5">
+                           {q.testCases.map((tc, idx) => (
                             <div key={idx} className="text-xs font-mono p-2 rounded-lg" style={{ background: "var(--input-bg)", color: "var(--text-secondary)" }}>
                               <span className="text-neutral-400">#{idx + 1}{tc.isHidden ? " (Hidden)" : " (Sample)"}: </span>
                               Input: {tc.input} → Expected: {tc.expected}
@@ -355,8 +356,8 @@ function CodingQuestionManagement() {
                       </div>
                     )}
                     <div className="flex flex-wrap gap-1.5">
-                      {q.tags?.map((tag, idx) => <span key={idx} className="text-xs px-2 py-0.5 rounded" style={{ background: "rgba(99,102,241,0.1)", color: "#6366f1" }}>{tag}</span>)}
-                      {q.languages?.map((lang, idx) => <span key={idx} className="text-xs px-2 py-0.5 rounded" style={{ background: "rgba(34,197,94,0.1)", color: "#22c55e" }}>{lang}</span>)}
+                      {Array.isArray(q.tags) && q.tags.map((tag, idx) => <span key={idx} className="text-xs px-2 py-0.5 rounded" style={{ background: "rgba(99,102,241,0.1)", color: "#6366f1" }}>{tag}</span>)}
+                      {Array.isArray(q.languages) && q.languages.map((lang, idx) => <span key={idx} className="text-xs px-2 py-0.5 rounded" style={{ background: "rgba(34,197,94,0.1)", color: "#22c55e" }}>{lang}</span>)}
                     </div>
                     <div className="flex items-center gap-4 text-xs" style={{ color: "var(--text-muted)" }}>
                       <span>Time: {q.timeLimit || 1000}ms</span>
@@ -424,7 +425,7 @@ function CodingQuestionManagement() {
                   <div>
                     <label className="text-xs font-semibold mb-1 block" style={{ color: "var(--text-primary)" }}>Tags</label>
                     <div className="flex flex-wrap gap-1.5 mb-2">
-                      {form.tags.map((tag) => (
+                      {(Array.isArray(form.tags) ? form.tags : []).map((tag) => (
                         <span key={tag} className="flex items-center gap-1 text-xs px-2 py-0.5 rounded cursor-pointer" style={{ background: "rgba(99,102,241,0.1)", color: "#6366f1" }} onClick={() => removeTag(tag)}>
                           {tag} <X className="w-3 h-3" />
                         </span>
@@ -485,7 +486,7 @@ function CodingQuestionManagement() {
                   <button type="button" onClick={addTestCase} className="text-xs px-3 py-1.5 rounded-lg border cursor-pointer" style={{ borderColor: "var(--border)", color: "var(--primary)" }}>+ Add Test Case</button>
                 </div>
                 <div className="space-y-2">
-                  {form.testCases.map((tc, idx) => (
+                  {(Array.isArray(form.testCases) ? form.testCases : []).map((tc, idx) => (
                     <div key={idx} className="flex items-start gap-2 p-3 rounded-xl" style={{ background: "var(--input-bg)" }}>
                       <span className="text-xs font-bold mt-2.5 shrink-0" style={{ color: "var(--text-muted)" }}>#{idx + 1}</span>
                       <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-2">

@@ -6,6 +6,7 @@ import {
   loadCodingBank,
   normalizeCodingQuestion,
 } from "../services/codingQuestionBank.js";
+import { createNotification } from "../services/notificationService.js";
 
 const TRASH_RETENTION_DAYS = 30;
 
@@ -50,6 +51,13 @@ export const createCodingQuestion = async (req, res) => {
       lastEditedAt: new Date(),
     });
     await touchCompany(question.companyId);
+    await createNotification({
+      role: "all",
+      type: "success",
+      title: "New coding question added",
+      message: `"${question.title}" (${question.difficulty}) is now available for practice.`,
+      link: "/interview-practice",
+    });
     res.status(201).json(question);
   } catch (error) {
     res.status(500).json({ message: "Failed to create coding question", error: error.message });

@@ -28,6 +28,11 @@ const OLD_COMPANY_NAMES = [
   "apple",
   "netflix",
   "microsoft",
+  "persistent",
+  "oracle",
+  "ey",
+  "ibm",
+  "sanjivani",
 ];
 
 // Companies to KEEP active
@@ -101,16 +106,23 @@ async function run() {
       });
       console.log(`➕ Created company: ${comp.name}`);
       seeded++;
-    } else if (existing.isDeleted) {
-      // Restore if it was previously deleted
-      await Company.updateOne(
-        { id: comp.id },
-        { $set: { isDeleted: false, status: "active", deletedAt: null, lastUpdated: new Date() } }
-      );
-      console.log(`♻️  Restored company: ${comp.name}`);
-      seeded++;
     } else {
-      console.log(`✔️  Already exists: ${comp.name}`);
+      // Restore/activate whether or not it was previously deleted
+      const result = await Company.updateOne(
+        { id: comp.id },
+        {
+          $set: {
+            name: comp.name,
+            color: comp.color,
+            status: "active",
+            isDeleted: false,
+            deletedAt: null,
+            lastUpdated: new Date(),
+          },
+        }
+      );
+      console.log(result.modifiedCount > 0 ? `♻️  Restored/activated: ${comp.name}` : `✔️  Already active: ${comp.name}`);
+      seeded++;
     }
   }
   console.log(`\n✅ Ensured ${VALID_COMPANIES.length} valid companies (${seeded} created/restored)`);

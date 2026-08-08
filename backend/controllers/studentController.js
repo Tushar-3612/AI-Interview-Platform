@@ -33,7 +33,7 @@ export const getProfile = async (req, res) => {
  */
 export const updateProfile = async (req, res) => {
   try {
-    const { phone, portfolio, github, linkedin, skills, department, year, name } = req.body;
+    const { phone, portfolio, github, linkedin, skills, department, year, name, targetCompany } = req.body;
 
     const student = await User.findById(req.user.id);
     if (!student) {
@@ -48,6 +48,7 @@ export const updateProfile = async (req, res) => {
     if (github !== undefined) student.github = github;
     if (linkedin !== undefined) student.linkedin = linkedin;
     if (skills !== undefined) student.skills = skills;
+    if (targetCompany !== undefined) student.targetCompany = targetCompany;
 
     await student.save();
 
@@ -66,6 +67,7 @@ export const updateProfile = async (req, res) => {
         linkedin: student.linkedin,
         atsScore: student.atsScore,
         resumeFileName: student.resumeFileName,
+        targetCompany: student.targetCompany,
       },
     });
   } catch (error) {

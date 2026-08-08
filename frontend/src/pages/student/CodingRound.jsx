@@ -1,21 +1,60 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 import {
-  ArrowLeft, Play, Send, Loader2, Copy, Check, Maximize2, Minimize2,
-  Code2, Save, CheckCircle2, XCircle, Timer, AlertTriangle,
-  Bookmark, BookmarkCheck, ChevronDown, Terminal, FileText,
-  History as HistoryIcon, ClipboardList,
+  Play, Send, Loader2, Check, CheckCircle2, Maximize2, Minimize2, Copy,
+  Timer, AlertTriangle, ChevronDown,
+  Code2, Save, Split, RefreshCw, ArrowLeft,
 } from "lucide-react";
 import api from "../../utils/api";
 import { getAuthToken } from "../../hooks/useStudentProfile";
-import Button from "../../components/ui/Button";
-import { SkeletonCodingRound, ErrorState } from "../../components/ui/Skeleton";
+import { useTheme } from "../../hooks/useTheme";
+import MonacoCodeEditor from "../../components/coding/MonacoCodeEditor";
+import OutputPanel from "../../components/coding/OutputPanel";
+import ProblemDescription from "../../components/coding/ProblemDescription";
+import { explainError } from "../../utils/coding/errorExplanations";
+import useLinter from "../../utils/coding/useLinter";
 
-// ─── Language Configuration ──────────────────────────────────────────────────
+const FULLSCREEN_KEY = "codingide_fullscreen";
+
+function supportsFullscreen() {
+  return !!(
+    document.fullscreenEnabled ||
+    document.webkitFullscreenEnabled ||
+    document.mozFullScreenEnabled ||
+    document.msFullscreenEnabled
+  );
+}
+
+function requestFullscreen(el) {
+  if (el.requestFullscreen) return el.requestFullscreen();
+  if (el.webkitRequestFullscreen) return el.webkitRequestFullscreen();
+  if (el.mozRequestFullScreen) return el.mozRequestFullScreen();
+  if (el.msRequestFullscreen) return el.msRequestFullscreen();
+  return Promise.reject(new Error("Fullscreen API not supported"));
+}
+
+function exitFullscreenAPI() {
+  if (document.exitFullscreen) return document.exitFullscreen();
+  if (document.webkitExitFullscreen) return document.webkitExitFullscreen();
+  if (document.mozCancelFullScreen) return document.mozCancelFullScreen();
+  if (document.msExitFullscreen) return document.msExitFullscreen();
+  return Promise.resolve();
+}
+
+function getFullscreenElement() {
+  return (
+    document.fullscreenElement ||
+    document.webkitFullscreenElement ||
+    document.mozFullScreenElement ||
+    document.msFullscreenElement
+  );
+}
+
 const LANGUAGES = [
   { id: "javascript", label: "JavaScript", ext: "js" },
+  { id: "typescript", label: "TypeScript", ext: "ts" },
   { id: "python",     label: "Python",     ext: "py" },
   { id: "java",       label: "Java",       ext: "java" },
   { id: "c",          label: "C",          ext: "c" },
@@ -34,7 +73,11 @@ const STARTER_CODE = {
  */
 function solution(...args) {
   // Write your solution here
-  
+
+}`,
+  typescript: `function solution(...args: any[]): any {
+  // Write your solution here
+
 }`,
   python: `def solution(*args):
     """
@@ -48,7 +91,7 @@ public class Solution {
         // Write your solution here
         return null;
     }
-    
+
     public static void main(String[] args) {
         // Test your solution
         System.out.println(solve());
@@ -70,9 +113,9 @@ using namespace std;
 int main() {
     ios_base::sync_with_stdio(false);
     cin.tie(NULL);
-    
+
     // Read input and print output
-    
+
     return 0;
 }`,
   csharp: `using System;
@@ -84,7 +127,7 @@ public class Solution {
         // Write your solution here
         return null;
     }
-    
+
     public static void Main(string[] args) {
         Console.WriteLine(Solve());
     }
@@ -131,74 +174,87 @@ $result = solution();
 echo $result . PHP_EOL;`,
 };
 
-const SERVER_EXECUTABLE = "javascript"; // only language that runs server-side
-const DIFFICULTY_COLORS = { easy: "#22c55e", medium: "#eab308", hard: "#ef4444" };
-const BOTTOM_TABS = ["Test Cases", "Custom Input", "Output", "Submissions"];
 
-// ─── Component ────────────────────────────────────────────────────────────────
+
 function CodingRound() {
   const { companyId } = useParams();
   const navigate = useNavigate();
+  const { theme } = useTheme();
   const token = getAuthToken();
-  const headers = { Authorization: `Bearer ${token}` };
+  const headers = useMemo(() => token ? { Authorization: `Bearer ${token}` } : {}, [token]);
 
-  // Data state
+  // ─── Data state ─────────────────────────────────────────────────────────────
   const [questions, setQuestions]       = useState([]);
   const [activeIndex, setActiveIndex]   = useState(0);
   const [solved, setSolved]             = useState(new Set());
   const [submissions, setSubmissions]   = useState([]);
+  const [questionsLoading, setQuestionsLoading] = useState(true);
+  const [questionsError, setQuestionsError]     = useState(false);
 
-  // Editor state
-  const [code, setCode]                 = useState(STARTER_CODE.javascript);
+  // ─── Editor state ───────────────────────────────────────────────────────────
+  const [code, setCode]                 = useState("");
   const [language, setLanguage]         = useState("javascript");
-  const [input, setInput]               = useState("");
+  const [customInput, setCustomInput]   = useState("");
   const [output, setOutput]             = useState(null);
-  const [bottomTab, setBottomTab]       = useState("Test Cases");
-
-  // UI state
-  const [loading, setLoading]           = useState(true);
-  const [error, setError]               = useState(false);
-  const [running, setRunning]           = useState(false);
-  const [submitting, setSubmitting]     = useState(false);
-  const [copied, setCopied]             = useState(false);
-  const [fullscreen, setFullscreen]     = useState(false);
+  const [bottomTab, setBottomTab]       = useState("Testcase");
+  const [splitView, setSplitView]       = useState(false);
+  const [fullscreen, setFullscreen]     = useState(() => {
+    try { return localStorage.getItem(FULLSCREEN_KEY) === "true"; } catch { return false; }
+  });
   const [draftState, setDraftState]     = useState("idle");
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [langDropOpen, setLangDropOpen] = useState(false);
-  const [startTime]                     = useState(Date.now());
+  const [copied, setCopied]             = useState(false);
+  const [running, setRunning]           = useState(false);
+  const [submitting, setSubmitting]     = useState(false);
+  const [runStage, setRunStage]         = useState(null);
+  const [editorInstance, setEditorInstance] = useState({ editor: null, monaco: null });
+  const [debugMode, setDebugMode]       = useState(false);
+  const [debugLine, setDebugLine]       = useState(null);
 
   const draftTimerRef = useRef(null);
   const codeRef       = useRef(code);
   const langDropRef   = useRef(null);
+  const startTime     = useRef(Date.now());
+  const elapsedIntervalRef = useRef(null);
+  const abortControllerRef = useRef(null);
+
   codeRef.current = code;
 
-  // ─── Close lang dropdown on outside click ──────────────────────────────────
-  useEffect(() => {
-    const handler = (e) => {
-      if (langDropRef.current && !langDropRef.current.contains(e.target)) {
-        setLangDropOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
+  // ─── Linter (as-you-type diagnostics) ───────────────────────────────────────
+  const lintState = useLinter(
+    editorInstance.monaco,
+    editorInstance.editor,
+    language,
+    code,
+    editorInstance.editor !== null
+  );
+
+  const lintMarkers = lintState.markers || [];
+  const lintMarkersForEditor = lintMarkers.map((m) => ({
+    startLineNumber: m.line,
+    startColumn: m.column,
+    endLineNumber: m.endLine || m.line,
+    endColumn: m.endColumn || m.column + (m.message ? m.message.length : 1),
+    message: m.message,
+    severity: m.severity === 2 ? 2 : 1,
+  }));
+  const lintExplanation = lintMarkers.length > 0 ? lintMarkers[0].explanation : null;
+  const lintOutputText = lintState.output;
 
   // ─── Fetch questions ────────────────────────────────────────────────────────
   const fetchQuestions = useCallback(async () => {
-    setLoading(true);
-    setError(false);
+    setQuestionsLoading(true);
+    setQuestionsError(false);
     try {
       const res = await api.get("/api/coding-questions", {
         headers,
         params: { companyId: companyId || "", limit: 100 },
       });
       const list = res.data?.questions || [];
-      if (list.length === 0) { setError(true); setLoading(false); return; }
+      if (list.length === 0) { setQuestionsError(true); return; }
       setQuestions(list);
       setActiveIndex(0);
-      setCode(list[0]?.starterCode || STARTER_CODE.javascript);
-      setInput(list[0]?.sampleInput || "");
-      setOutput(null);
 
       const histRes = await api.get("/api/practice/coding/history", {
         headers,
@@ -210,56 +266,183 @@ function CodingRound() {
       );
       setSolved(acceptedIds);
     } catch {
-      setError(true);
+      setQuestionsError(true);
     } finally {
-      setLoading(false);
+      setQuestionsLoading(false);
     }
-  }, [companyId]);
+  }, [companyId, headers]);
 
   useEffect(() => { fetchQuestions(); }, [fetchQuestions]);
 
+  // ─── Close language dropdown on outside click ─────────────────────────────
+  useEffect(() => {
+    const handler = (e) => {
+      if (langDropRef.current && !langDropRef.current.contains(e.target)) {
+        setLangDropOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const fullscreenContainerRef = useRef(null);
+  const [useFallback, setUseFallback] = useState(false);
+
+  // ─── Layout editor helper ────────────────────────────────────────────────
+  const layoutEditor = useCallback(() => {
+    if (editorInstance.editor) {
+      requestAnimationFrame(() => {
+        editorInstance.editor.layout();
+      });
+    }
+  }, [editorInstance.editor]);
+
+  // ─── Enter / Exit fullscreen ────────────────────────────────────────────
+  const enterFullscreen = useCallback(async () => {
+    const el = fullscreenContainerRef.current;
+    if (!el) return;
+
+    if (supportsFullscreen()) {
+      try {
+        await requestFullscreen(el);
+        setFullscreen(true);
+        document.body.style.overflow = "hidden";
+        try { localStorage.setItem(FULLSCREEN_KEY, "true"); } catch {}
+        setTimeout(layoutEditor, 50);
+        setTimeout(layoutEditor, 200);
+        return;
+      } catch {
+        // Fall through to CSS fallback
+      }
+    }
+
+    // CSS fallback
+    setUseFallback(true);
+    setFullscreen(true);
+    document.body.style.overflow = "hidden";
+    try { localStorage.setItem(FULLSCREEN_KEY, "true"); } catch {}
+    setTimeout(layoutEditor, 50);
+    setTimeout(layoutEditor, 200);
+  }, [layoutEditor]);
+
+  const exitFullscreen = useCallback(async () => {
+    if (getFullscreenElement()) {
+      try {
+        await exitFullscreenAPI();
+      } catch {}
+    }
+    setUseFallback(false);
+    setFullscreen(false);
+    document.body.style.overflow = "";
+    try { localStorage.setItem(FULLSCREEN_KEY, "false"); } catch {}
+    setTimeout(layoutEditor, 50);
+    setTimeout(layoutEditor, 200);
+  }, [layoutEditor]);
+
+  const toggleFullscreen = useCallback(() => {
+    if (fullscreen) {
+      exitFullscreen();
+    } else {
+      enterFullscreen();
+    }
+  }, [fullscreen, enterFullscreen, exitFullscreen]);
+
+  // ─── Sync fullscreen state from browser API ─────────────────────────────
+  useEffect(() => {
+    const onFsChange = () => {
+      const isFs = !!getFullscreenElement();
+      setFullscreen(isFs);
+      try { localStorage.setItem(FULLSCREEN_KEY, String(isFs)); } catch {}
+      setTimeout(layoutEditor, 50);
+      setTimeout(layoutEditor, 200);
+    };
+    document.addEventListener("fullscreenchange", onFsChange);
+    document.addEventListener("webkitfullscreenchange", onFsChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", onFsChange);
+      document.removeEventListener("webkitfullscreenchange", onFsChange);
+    };
+  }, [layoutEditor]);
+
+  // ─── ESC key exits fullscreen ───────────────────────────────────────────
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape" && fullscreen) {
+        exitFullscreen();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [fullscreen, exitFullscreen]);
+
+  // ─── Window resize → layout editor ─────────────────────────────────────
+  useEffect(() => {
+    const onResize = () => layoutEditor();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [layoutEditor]);
+
+  // ─── Cleanup fullscreen on unmount ─────────────────────────────────────
+  useEffect(() => {
+    return () => {
+      if (getFullscreenElement()) {
+        exitFullscreenAPI().catch(() => {});
+      }
+      document.body.style.overflow = "";
+    };
+  }, []);
+
   // ─── Load draft on question change ─────────────────────────────────────────
   const loadDraft = useCallback(async (questionId, starterCode) => {
-    if (!questionId) return;
+    if (!questionId) {
+      setCode(starterCode || STARTER_CODE[language] || "");
+      return;
+    }
     try {
       const res = await api.get(`/api/practice/coding/draft/${questionId}`, { headers });
       if (res.data?.code) {
         setCode(res.data.code);
         if (res.data.language) setLanguage(res.data.language);
       } else {
-        setCode(starterCode || STARTER_CODE.javascript);
+        setCode(starterCode || STARTER_CODE[language] || "");
       }
     } catch {
-      setCode(starterCode || STARTER_CODE.javascript);
+      setCode(starterCode || STARTER_CODE[language] || "");
     }
-  }, []);
+  }, [language, headers]);
 
+  // ─── Question switch handler ────────────────────────────────────────────────
   useEffect(() => {
     if (questions.length === 0) return;
     const q = questions[activeIndex];
-    setOutput(null);
-    setBottomTab("Test Cases");
     if (q) {
-      setInput(q.sampleInput || "");
-      loadDraft(q._id, q.starterCode);
+      setOutput(null);
+      setBottomTab("Testcase");
+      setCustomInput(q.sampleInput || "");
+      setDebugMode(false);
+      setDebugLine(null);
+      setRunStage(null);
+      loadDraft(q._id, q.starterCode || STARTER_CODE[language]);
     }
-  }, [activeIndex, questions]);
+    startTime.current = Date.now();
+  }, [activeIndex, questions, language, loadDraft]);
 
   // ─── Sync bookmark state ────────────────────────────────────────────────────
   const activeQuestion = questions[activeIndex];
-  const isSolved = activeQuestion && solved.has(activeQuestion._id);
 
   useEffect(() => {
     if (!activeQuestion) return;
     try {
       const saved = JSON.parse(localStorage.getItem("coding_bookmarks") || "[]");
       setIsBookmarked(saved.some((q) => q._id === activeQuestion._id));
-    } catch { setIsBookmarked(false); }
+    } catch {
+      setIsBookmarked(false);
+    }
   }, [activeQuestion]);
 
   // ─── Auto-save draft ────────────────────────────────────────────────────────
   useEffect(() => {
-    if (draftState === "saving" || !questions[activeIndex]) return;
+    if (draftState === "saving" || !questions[activeIndex] || !code) return;
     setDraftState("dirty");
     if (draftTimerRef.current) clearTimeout(draftTimerRef.current);
     draftTimerRef.current = setTimeout(async () => {
@@ -271,87 +454,146 @@ function CodingRound() {
           { headers }
         );
         setDraftState("saved");
-      } catch { setDraftState("dirty"); }
+      } catch {
+        setDraftState("dirty");
+      }
     }, 1500);
-  }, [code, language, activeIndex]);
+  }, [code, language, activeIndex, questions, headers]);
 
-  // ─── Language change — set starter code only if code is unchanged ───────────
+  // ─── Elapsed time display (live) ───────────────────────────────────────────
+  const [elapsed, setElapsed] = useState(0);
+  useEffect(() => {
+    if (elapsedIntervalRef.current) clearInterval(elapsedIntervalRef.current);
+    elapsedIntervalRef.current = setInterval(() => {
+      setElapsed(Math.floor((Date.now() - startTime.current) / 60000));
+    }, 10000);
+    return () => clearInterval(elapsedIntervalRef.current);
+  }, []);
+
+  // ─── Language change ────────────────────────────────────────────────────────
   const handleLanguageChange = (langId) => {
     setLangDropOpen(false);
     const prevStarter = STARTER_CODE[language] || "";
-    const isDefault = code.trim() === "" || code === prevStarter || code === (questions[activeIndex]?.starterCode || "");
+    const q = questions[activeIndex];
+    const isDefault = code === "" || code === prevStarter || code === (q?.starterCode || "");
     setLanguage(langId);
     if (isDefault) {
-      setCode(STARTER_CODE[langId] || "");
+      setCode(q?.starterCode || STARTER_CODE[langId] || "");
     }
   };
 
-  // ─── Bookmark toggle ────────────────────────────────────────────────────────
-  const toggleBookmark = () => {
-    if (!activeQuestion) return;
-    try {
-      const saved = JSON.parse(localStorage.getItem("coding_bookmarks") || "[]");
-      const exists = saved.some((q) => q._id === activeQuestion._id);
-      const updated = exists
-        ? saved.filter((q) => q._id !== activeQuestion._id)
-        : [...saved, {
-            _id: activeQuestion._id,
-            title: activeQuestion.title,
-            problemStatement: activeQuestion.problemStatement,
-            difficulty: activeQuestion.difficulty || "medium",
-            companyId: companyId || "",
-            companyName: activeQuestion.companyName || "Practice",
-            tags: activeQuestion.tags || [],
-          }];
-      localStorage.setItem("coding_bookmarks", JSON.stringify(updated));
-      setIsBookmarked(!exists);
-      toast.success(exists ? "Bookmark removed" : "Question bookmarked!");
-      api.post("/api/practice/bookmark", { questionId: activeQuestion._id }, { headers }).catch(() => null);
-    } catch { toast.error("Failed to toggle bookmark"); }
-  };
+  // ─── Editor mount ───────────────────────────────────────────────────────────
+  const handleEditorReady = useCallback((editor, monacoInstance) => {
+    setEditorInstance({ editor, monaco: monacoInstance });
+  }, []);
 
-  // ─── Run code ───────────────────────────────────────────────────────────────
+  // ─── Highlight line (for compiler errors) ──────────────────────────────────
+  const handleHighlightLine = useCallback((line) => {
+    if (editorInstance.editor && line) {
+      editorInstance.editor.revealLineInCenterIfOutsideViewport(line);
+      editorInstance.editor.setPosition({ lineNumber: line, column: 1 });
+      editorInstance.editor.focus();
+    }
+  }, [editorInstance.editor]);
+
+  // ─── Run code (LeetCode-style staged experience) ───────────────────────────
   const handleRun = async () => {
+    const q = questions[activeIndex];
+    if (!code || !q) return;
+
+    // Cancel previous execution if running
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    abortControllerRef.current = new AbortController();
+
     setRunning(true);
     setOutput(null);
-    setBottomTab("Output");
+    setBottomTab("Test Result");
+
     try {
+      // Stage 1: Compiling
+      setRunStage("Compiling...");
+      await new Promise((r) => setTimeout(r, 300));
+
+      // Stage 2: Running
+      setRunStage("Running...");
+      await new Promise((r) => setTimeout(r, 200));
+
+      // Stage 3: Fetching output
+      setRunStage("Fetching output...");
+
       const res = await api.post(
         "/api/practice/coding/run",
-        { language, code, input },
-        { headers }
+        { language, code, input: customInput },
+        { headers, signal: abortControllerRef.current.signal }
       );
-      setOutput({ type: "run", data: res.data });
+      const data = res.data || {};
+
+      // Stage 4: Display result
+      setRunStage(null);
+      setOutput({ type: "run", data });
     } catch (err) {
+      if (err.name === "CanceledError" || err.code === "ERR_CANCELED") {
+        // Execution was cancelled - don't show error
+        return;
+      }
       const msg = err.response?.data?.message || "Failed to run code";
+      setRunStage(null);
       setOutput({ type: "run", data: { type: "error", output: msg, timeMs: 0 } });
-    } finally { setRunning(false); }
+    } finally {
+      setRunning(false);
+      setRunStage(null);
+    }
   };
 
   // ─── Submit code ────────────────────────────────────────────────────────────
   const handleSubmit = async () => {
-    if (!activeQuestion) return;
+    const q = questions[activeIndex];
+    if (!q || !code) return;
+
+    // Cancel previous execution if running
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    abortControllerRef.current = new AbortController();
+
     setSubmitting(true);
     setOutput(null);
-    setBottomTab("Output");
+    setBottomTab("Test Result");
+
     try {
+      setRunStage("Compiling...");
+      await new Promise((r) => setTimeout(r, 200));
+      setRunStage("Running test cases...");
+
       const res = await api.post(
         "/api/practice/coding/submit",
-        { questionId: activeQuestion._id, language, code, timeTakenMs: Date.now() - startTime },
-        { headers }
+        { questionId: q._id, language, code, timeTakenMs: Date.now() - startTime.current },
+        { headers, signal: abortControllerRef.current.signal }
       );
+
+      setRunStage("Evaluating...");
+      await new Promise((r) => setTimeout(r, 150));
+
+      setRunStage(null);
       setOutput({ type: "submit", data: res.data });
       if (res.data.status === "accepted") {
-        toast.success("✅ All test cases passed!");
-        setSolved((prev) => new Set(prev).add(activeQuestion._id));
+        toast.success("All test cases passed!");
+        setSolved((prev) => new Set(prev).add(q._id));
       } else if (res.data.status === "unsupported") {
-        toast.error("Server evaluation supports JavaScript. Switch to JavaScript to get a verdict.");
+        toast.error("This language is not supported for evaluation.");
       }
-      // refresh submissions list
-      fetchSubmissionsForQuestion(activeQuestion._id);
+      fetchSubmissionsForQuestion(q._id);
     } catch (err) {
+      if (err.name === "CanceledError" || err.code === "ERR_CANCELED") {
+        return;
+      }
       toast.error(err.response?.data?.message || "Failed to submit solution");
-    } finally { setSubmitting(false); }
+    } finally {
+      setSubmitting(false);
+      setRunStage(null);
+    }
   };
 
   // ─── Fetch question submissions ─────────────────────────────────────────────
@@ -363,112 +605,163 @@ function CodingRound() {
         params: { questionId, limit: 20 },
       });
       setSubmissions(res.data?.submissions || []);
-    } catch { setSubmissions([]); }
-  }, []);
+    } catch {
+      setSubmissions([]);
+    }
+  }, [headers]);
 
   useEffect(() => {
     if (activeQuestion?._id) fetchSubmissionsForQuestion(activeQuestion._id);
-  }, [activeQuestion]);
+  }, [activeQuestion, fetchSubmissionsForQuestion]);
 
   // ─── Copy link ──────────────────────────────────────────────────────────────
   const copyLink = () => {
     if (!activeQuestion) return;
     navigator.clipboard.writeText(
       `${window.location.origin}/interview-practice/${companyId}/coding?q=${activeQuestion._id}`
-    ).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1500); });
+    ).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    });
   };
 
-  // ─── Elapsed time display (live) ────────────────────────────────────────────
-  const [elapsed, setElapsed] = useState(0);
-  useEffect(() => {
-    const t = setInterval(() => setElapsed(Math.floor((Date.now() - startTime) / 60000)), 10000);
-    return () => clearInterval(t);
-  }, [startTime]);
+  // ─── Output data assembly ───────────────────────────────────────────────────
+  const runData = output?.type === "run" ? output.data : null;
+  const submitData = output?.type === "submit" ? output.data : null;
+  const explanationData = runData && runData.type === "error"
+    ? explainError(runData.output)
+    : lintExplanation;
 
-  // ─── Loading / error states ─────────────────────────────────────────────────
-  if (loading) return <SkeletonCodingRound />;
+  const outputData = {
+    run: runData,
+    submit: submitData,
+    lint: { errors: lintMarkers, output: lintOutputText },
+    explanation: explanationData,
+    execution: runData ? {
+      timeMs: runData.timeMs,
+      memory: undefined,
+      language,
+      exitCode: runData.type === "success" ? 0 : 1,
+    } : undefined,
+  };
 
-  if (error && questions.length === 0) {
+  const visibleTestCases = (activeQuestion?.testCases || []).filter((tc) => !tc.isHidden);
+  const sampleCases = (activeQuestion?.examples || []).length > 0
+    ? activeQuestion.examples.map((ex) => ({ input: ex.input, expected: ex.output }))
+    : visibleTestCases;
+
+  // ─── Loading state ──────────────────────────────────────────────────────────
+  if (questionsLoading) {
     return (
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <ErrorState
-          statusCode="network_failure"
-          message="No coding questions found for this company, or the server is unreachable."
-          onRetry={fetchQuestions}
-          onGoBack={() => navigate(`/interview-practice/${companyId}`)}
-        />
+      <div className="h-[calc(100vh-64px)] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin" style={{ color: "var(--primary)" }} />
       </div>
     );
   }
 
-  // ─── Active language label ──────────────────────────────────────────────────
-  const activeLang = LANGUAGES.find((l) => l.id === language) || LANGUAGES[0];
+  // ─── Error state ────────────────────────────────────────────────────────────
+  if (questionsError && questions.length === 0) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="flex flex-col items-center justify-center text-center p-12 student-card max-w-lg mx-auto my-8 bg-[var(--card-bg)]">
+          <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5" style={{ background: "rgba(239, 68, 68, 0.08)" }}>
+            <AlertTriangle className="w-8 h-8" style={{ color: "var(--error)" }} />
+          </div>
+          <h3 className="text-lg font-bold mb-2 text-[var(--text-primary)]">Could Not Load Data</h3>
+          <p className="text-sm mb-6 max-w-sm text-[var(--text-secondary)] leading-relaxed">
+            No coding questions found for this company, or the server is unreachable.
+          </p>
+          <div className="flex items-center gap-3 justify-center">
+            <button
+              type="button"
+              onClick={fetchQuestions}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white transition hover:opacity-90 cursor-pointer shadow-sm btn-gradient"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              Retry Connection
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate(`/interview-practice/${companyId}`)}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold border transition hover:bg-[var(--border)]/20 cursor-pointer"
+              style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
+            >
+              Go Back
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // ─── Render ─────────────────────────────────────────────────────────────────
+  const activeLang = LANGUAGES.find((l) => l.id === language) || LANGUAGES[0];
+
   return (
     <div
+      ref={fullscreenContainerRef}
       className={
         fullscreen
-          ? "fixed inset-0 z-50 flex flex-col overflow-hidden"
-          : "flex flex-col"
+          ? useFallback
+            ? "fixed inset-0 z-[999999] flex flex-col overflow-hidden"
+            : "flex flex-col h-screen w-screen overflow-hidden"
+          : "flex flex-col h-[calc(100vh-64px)]"
       }
       style={{
-        background: "var(--bg-color)",
-        height: fullscreen ? "100vh" : "calc(100vh - 64px)",
+        background: "var(--bg-primary)",
         minHeight: 0,
       }}
     >
-      {/* ── Top bar ── */}
-      <div
-        className="flex items-center justify-between gap-3 px-4 py-2 border-b shrink-0 flex-wrap"
-        style={{ borderColor: "var(--border)", background: "var(--card-bg)" }}
-      >
-        <button
-          type="button"
-          onClick={() => navigate(`/interview-practice/${companyId}`)}
-          className="flex items-center gap-1.5 text-sm font-medium cursor-pointer hover:opacity-80"
-          style={{ color: "var(--text-secondary)" }}
+      {/* ── Top bar (hidden in fullscreen) ── */}
+      {!fullscreen && (
+        <div
+          className="flex items-center justify-between gap-3 px-4 py-2 border-b shrink-0 flex-wrap"
+          style={{ borderColor: "var(--border)", background: "var(--card-bg)" }}
         >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Rounds
-        </button>
+          <button
+            type="button"
+            onClick={() => navigate(`/interview-practice/${companyId}`)}
+            className="flex items-center gap-1.5 text-sm font-medium cursor-pointer hover:opacity-80"
+            style={{ color: "var(--text-secondary)" }}
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Rounds
+          </button>
 
-        <div className="flex items-center gap-3 text-xs" style={{ color: "var(--text-muted)" }}>
-          <span className="flex items-center gap-1">
-            <Timer className="w-3.5 h-3.5" />
-            {elapsed} min
-          </span>
-          {draftState === "saved" && (
-            <span className="flex items-center gap-1 text-green-500 font-semibold">
-              <CheckCircle2 className="w-3.5 h-3.5" /> Saved
+          <div className="flex items-center gap-3 text-xs" style={{ color: "var(--text-muted)" }}>
+            <span className="flex items-center gap-1">
+              <Timer className="w-3.5 h-3.5" />
+              {elapsed} min
             </span>
-          )}
-          {draftState === "dirty" && (
-            <span className="flex items-center gap-1" style={{ color: "var(--text-muted)" }}>
-              <Save className="w-3.5 h-3.5" /> Saving…
-            </span>
-          )}
-          <button
-            type="button"
-            onClick={copyLink}
-            className="p-1.5 rounded-lg cursor-pointer hover:opacity-80"
-            title="Copy problem link"
-          >
-            {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" style={{ color: "var(--text-muted)" }} />}
-          </button>
-          <button
-            type="button"
-            onClick={() => setFullscreen((f) => !f)}
-            className="p-1.5 rounded-lg cursor-pointer hover:opacity-80"
-            title={fullscreen ? "Exit fullscreen" : "Fullscreen"}
-          >
-            {fullscreen
-              ? <Minimize2 className="w-4 h-4" style={{ color: "var(--text-muted)" }} />
-              : <Maximize2 className="w-4 h-4" style={{ color: "var(--text-muted)" }} />
-            }
-          </button>
+            {draftState === "saved" && (
+              <span className="flex items-center gap-1 text-green-500 font-semibold">
+                <CheckCircle2 className="w-3.5 h-3.5" /> Saved
+              </span>
+            )}
+            {draftState === "dirty" && (
+              <span className="flex items-center gap-1" style={{ color: "var(--text-muted)" }}>
+                <Save className="w-3.5 h-3.5" /> Saving…
+              </span>
+            )}
+            <button
+              type="button"
+              onClick={copyLink}
+              className="p-1.5 rounded-lg cursor-pointer hover:opacity-80"
+              title="Copy problem link"
+            >
+              {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" style={{ color: "var(--text-muted)" }} />}
+            </button>
+            <button
+              type="button"
+              onClick={toggleFullscreen}
+              className="p-1.5 rounded-lg cursor-pointer hover:opacity-80"
+              title="Fullscreen"
+            >
+              <Maximize2 className="w-4 h-4" style={{ color: "var(--text-muted)" }} />
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* ── Main split layout ── */}
       <div className="flex flex-col lg:flex-row flex-1 overflow-hidden" style={{ minHeight: 0 }}>
@@ -487,7 +780,7 @@ function CodingRound() {
                 <button
                   key={q._id || idx}
                   type="button"
-                  onClick={() => setActiveIndex(idx)}
+                  onClick={() => { setActiveIndex(idx); }}
                   className="w-8 h-8 rounded-lg text-xs font-bold cursor-pointer transition mb-2"
                   style={{
                     background: active ? "#6366f1" : done ? "rgba(34,197,94,0.12)" : "var(--input-bg)",
@@ -502,80 +795,11 @@ function CodingRound() {
             })}
           </div>
 
-          {/* Problem details */}
-          {activeQuestion && (
-            <div className="px-4 py-3 flex-1">
-              {/* Title row */}
-              <div className="flex items-start gap-2 mb-3 flex-wrap">
-                <h1 className="text-base font-bold flex-1 min-w-0" style={{ color: "var(--text-primary)" }}>
-                  {activeQuestion.title}
-                </h1>
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <span
-                    className="text-[11px] font-semibold px-2 py-0.5 rounded-lg capitalize"
-                    style={{
-                      background: `${DIFFICULTY_COLORS[(activeQuestion.difficulty || "easy").toLowerCase()]}18`,
-                      color: DIFFICULTY_COLORS[(activeQuestion.difficulty || "easy").toLowerCase()],
-                    }}
-                  >
-                    {activeQuestion.difficulty}
-                  </span>
-                  {isSolved && (
-                    <span className="text-[11px] font-semibold px-2 py-0.5 rounded-lg" style={{ background: "rgba(34,197,94,0.12)", color: "#22c55e" }}>
-                      <CheckCircle2 className="w-3 h-3 inline mr-0.5" />Solved
-                    </span>
-                  )}
-                  <button
-                    type="button"
-                    onClick={toggleBookmark}
-                    className="p-1.5 rounded-lg cursor-pointer transition hover:scale-110"
-                    aria-label="Bookmark question"
-                  >
-                    {isBookmarked
-                      ? <BookmarkCheck className="w-4 h-4" style={{ color: "var(--primary)" }} />
-                      : <Bookmark className="w-4 h-4" style={{ color: "var(--text-muted)" }} />
-                    }
-                  </button>
-                </div>
-              </div>
-
-              {/* Problem statement */}
-              <p className="text-sm mb-4 leading-relaxed whitespace-pre-wrap" style={{ color: "var(--text-primary)" }}>
-                {activeQuestion.problemStatement}
-              </p>
-
-              {/* Constraints */}
-              {activeQuestion.constraints && (
-                <div className="p-3 rounded-xl mb-4 text-xs whitespace-pre-wrap" style={{ background: "var(--input-bg)", color: "var(--text-secondary)" }}>
-                  <span className="font-semibold block mb-1" style={{ color: "var(--text-primary)" }}>Constraints</span>
-                  {activeQuestion.constraints}
-                </div>
-              )}
-
-              {/* Sample I/O */}
-              <div className="grid grid-cols-2 gap-3 mb-4">
-                <div className="p-3 rounded-xl text-xs" style={{ background: "var(--input-bg)" }}>
-                  <p className="font-semibold mb-1" style={{ color: "var(--text-primary)" }}>Sample Input</p>
-                  <pre className="overflow-x-auto" style={{ color: "var(--text-secondary)" }}>{activeQuestion.sampleInput || "—"}</pre>
-                </div>
-                <div className="p-3 rounded-xl text-xs" style={{ background: "var(--input-bg)" }}>
-                  <p className="font-semibold mb-1" style={{ color: "var(--text-primary)" }}>Sample Output</p>
-                  <pre className="overflow-x-auto" style={{ color: "var(--text-secondary)" }}>{activeQuestion.sampleOutput || "—"}</pre>
-                </div>
-              </div>
-
-              {/* Tags */}
-              {activeQuestion.tags?.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 mb-4">
-                  {activeQuestion.tags.map((tag) => (
-                    <span key={tag} className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={{ background: "var(--input-bg)", color: "var(--text-muted)" }}>
-                      #{tag}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+          <ProblemDescription
+            question={activeQuestion}
+            difficulty={activeQuestion?.difficulty}
+            tags={activeQuestion?.tags}
+          />
         </div>
 
         {/* ── RIGHT: Editor + bottom panel ── */}
@@ -613,269 +837,133 @@ function CodingRound() {
                     className="absolute left-0 top-full mt-1 z-50 rounded-xl border shadow-xl py-1 min-w-[130px]"
                     style={{ background: "var(--card-bg)", borderColor: "var(--border)" }}
                   >
-                    {LANGUAGES.map((lang) => {
-                      const isServerSupported = lang.id === SERVER_EXECUTABLE;
-                      return (
-                        <button
-                          key={lang.id}
-                          type="button"
-                          onClick={() => handleLanguageChange(lang.id)}
-                          className="w-full px-3 py-2 text-left text-xs font-medium hover:bg-[var(--border)]/30 transition flex items-center justify-between gap-2"
-                          style={{
-                            color: language === lang.id ? "var(--primary)" : "var(--text-primary)",
-                            background: language === lang.id ? "color-mix(in srgb, var(--primary) 8%, transparent)" : "transparent",
-                          }}
-                        >
-                          <span>{lang.label}</span>
-                          {isServerSupported && (
-                            <span className="text-[9px] font-bold px-1 py-0.5 rounded" style={{ background: "rgba(34,197,94,0.15)", color: "#22c55e" }}>
-                              RUN
-                            </span>
-                          )}
-                        </button>
-                      );
-                    })}
+                    {LANGUAGES.map((lang) => (
+                      <button
+                        key={lang.id}
+                        type="button"
+                        onClick={() => handleLanguageChange(lang.id)}
+                        className="w-full px-3 py-2 text-left text-xs font-medium hover:bg-[var(--border)]/30 transition flex items-center justify-between gap-2"
+                        style={{
+                          color: language === lang.id ? "var(--primary)" : "var(--text-primary)",
+                          background: language === lang.id ? "color-mix(in srgb, var(--primary) 8%, transparent)" : "transparent",
+                        }}
+                      >
+                        <span>{lang.label}</span>
+                      </button>
+                    ))}
                   </motion.div>
                 )}
               </AnimatePresence>
             </div>
 
-            {/* Run / Submit buttons */}
+            {/* Editor actions - cleaned up */}
             <div className="flex items-center gap-2">
+              {fullscreen && (
+                <button
+                  type="button"
+                  onClick={exitFullscreen}
+                  className="p-1.5 rounded-lg cursor-pointer hover:opacity-80 transition"
+                  title="Exit fullscreen (Esc)"
+                  style={{ borderColor: "var(--border)", background: "var(--input-bg)", color: "var(--text-muted)" }}
+                >
+                  <Minimize2 className="w-4 h-4" />
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setSplitView((s) => !s)}
+                className="p-1.5 rounded-lg cursor-pointer hover:opacity-80 transition"
+                title={splitView ? "Unsplit editor" : "Split editor"}
+                style={{
+                  background: splitView ? "rgba(99,102,241,0.12)" : "var(--input-bg)",
+                  color: splitView ? "#6366f1" : "var(--text-muted)",
+                  border: "1px solid var(--border)",
+                }}
+              >
+                <Split className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (editorInstance.editor) {
+                    editorInstance.editor.getAction("editor.action.formatDocument")?.run();
+                  }
+                }}
+                className="p-1.5 rounded-lg cursor-pointer hover:opacity-80 transition"
+                title="Format Document"
+                style={{ borderColor: "var(--border)", background: "var(--input-bg)", color: "var(--text-muted)" }}
+              >
+                <Code2 className="w-4 h-4" />
+              </button>
               <button
                 type="button"
                 onClick={handleRun}
-                disabled={running || !activeQuestion}
+                disabled={running || submitting || !activeQuestion}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer hover:opacity-85 transition disabled:opacity-50"
                 style={{ background: "rgba(99,102,241,0.12)", color: "#6366f1" }}
               >
-                {running ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5" />}
-                {running ? "Running…" : "Run"}
+                {running ? (
+                  <>
+                    <div className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    Running…
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-3.5 h-3.5" />
+                    Run
+                  </>
+                )}
               </button>
-              <Button
+              <button
+                type="button"
                 onClick={handleSubmit}
                 disabled={submitting || running || !activeQuestion}
-                className="px-3 py-1.5 text-xs"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer hover:opacity-85 transition disabled:opacity-50"
+                style={{ background: "var(--primary)", color: "#fff" }}
               >
-                {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1 inline" /> : <Send className="w-3.5 h-3.5 mr-1 inline" />}
-                {submitting ? "Submitting…" : "Submit"}
-              </Button>
+                {submitting ? (
+                  <>
+                    <div className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    Submitting…
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-3.5 h-3.5" />
+                    Submit
+                  </>
+                )}
+              </button>
             </div>
           </div>
 
           {/* Code editor area */}
           <div className="flex-1 overflow-hidden" style={{ minHeight: 0 }}>
-            <textarea
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              spellCheck={false}
-              className="w-full h-full resize-none outline-none p-4 font-mono text-[13px] leading-6"
-              style={{
-                background: "var(--code-bg, #0d0d0d)",
-                color: "#e2e8f0",
-                minHeight: 0,
-                display: "block",
-              }}
-              placeholder="// Write your solution here"
+            <MonacoCodeEditor
+              code={code}
+              language={language}
+              onChange={setCode}
+              onEditorReady={handleEditorReady}
+              theme={theme}
+              wordWrap={false}
+              markers={lintMarkersForEditor}
+              debugLine={debugMode ? debugLine : null}
+              debugMode={debugMode}
+              split={splitView}
             />
           </div>
 
-          {/* ── Bottom tabbed panel ── */}
-          <div
-            className="shrink-0 border-t flex flex-col"
-            style={{ borderColor: "var(--border)", background: "var(--card-bg)", height: 200 }}
-          >
-            {/* Tab bar */}
-            <div className="flex items-center border-b shrink-0" style={{ borderColor: "var(--border)" }}>
-              {BOTTOM_TABS.map((tab) => {
-                const icons = {
-                  "Test Cases":   <ClipboardList className="w-3.5 h-3.5" />,
-                  "Custom Input": <FileText       className="w-3.5 h-3.5" />,
-                  "Output":       <Terminal       className="w-3.5 h-3.5" />,
-                  "Submissions":  <HistoryIcon    className="w-3.5 h-3.5" />,
-                };
-                const active = bottomTab === tab;
-                return (
-                  <button
-                    key={tab}
-                    type="button"
-                    onClick={() => setBottomTab(tab)}
-                    className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium cursor-pointer transition border-b-2"
-                    style={{
-                      borderBottomColor: active ? "var(--primary)" : "transparent",
-                      color: active ? "var(--primary)" : "var(--text-muted)",
-                    }}
-                  >
-                    {icons[tab]} {tab}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Tab content */}
-            <div className="flex-1 overflow-y-auto p-3" style={{ minHeight: 0 }}>
-              {/* ── Test Cases ── */}
-              {bottomTab === "Test Cases" && (
-                <div className="space-y-1.5">
-                  {(activeQuestion?.testCases || []).filter((tc) => !tc.isHidden).length === 0 ? (
-                    <p className="text-xs" style={{ color: "var(--text-muted)" }}>No visible test cases for this question.</p>
-                  ) : (
-                    (activeQuestion?.testCases || []).filter((tc) => !tc.isHidden).map((tc, idx) => (
-                      <div key={idx} className="flex items-center gap-2 text-xs px-3 py-1.5 rounded-lg" style={{ background: "var(--input-bg)", color: "var(--text-secondary)" }}>
-                        <Code2 className="w-3.5 h-3.5 shrink-0" style={{ color: "var(--text-muted)" }} />
-                        <span className="font-mono truncate">In: {tc.input}</span>
-                        <span className="mx-1">→</span>
-                        <span className="font-mono truncate">Out: {tc.expected}</span>
-                      </div>
-                    ))
-                  )}
-                  {(activeQuestion?.testCases || []).some((tc) => tc.isHidden) && (
-                    <p className="text-[11px] mt-1" style={{ color: "var(--text-muted)" }}>
-                      + Hidden test cases are evaluated on submit.
-                    </p>
-                  )}
-                </div>
-              )}
-
-              {/* ── Custom Input ── */}
-              {bottomTab === "Custom Input" && (
-                <div className="space-y-2">
-                  <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
-                    {language === SERVER_EXECUTABLE
-                      ? "Pass args as JSON array, e.g. [12, 35, 1]"
-                      : `Custom input is for JavaScript only. Switch to JavaScript to run.`}
-                  </p>
-                  <input
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    spellCheck={false}
-                    className="w-full px-3 py-2 rounded-lg text-xs font-mono outline-none"
-                    style={{ background: "var(--input-bg)", border: "1px solid var(--border)", color: "var(--text-primary)" }}
-                    placeholder='[12, 35, 1, 10, 34, 1]'
-                  />
-                  <button
-                    type="button"
-                    onClick={handleRun}
-                    disabled={running || !activeQuestion}
-                    className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-semibold cursor-pointer hover:opacity-85 transition disabled:opacity-50"
-                    style={{ background: "rgba(99,102,241,0.12)", color: "#6366f1" }}
-                  >
-                    {running ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5" />}
-                    {running ? "Running…" : "Run with Input"}
-                  </button>
-                </div>
-              )}
-
-              {/* ── Output ── */}
-              {bottomTab === "Output" && (
-                output === null ? (
-                  <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-                    Run your code to see output here. Submit to evaluate against all test cases.
-                  </p>
-                ) : output.type === "run" ? (
-                  <div className="space-y-1.5">
-                    <p className="text-xs font-semibold flex items-center gap-1.5" style={{ color: "var(--text-primary)" }}>
-                      <Play className="w-3.5 h-3.5" style={{ color: "#6366f1" }} />
-                      Run Result
-                      {output.data.timeMs > 0 && (
-                        <span className="font-normal" style={{ color: "var(--text-muted)" }}>({output.data.timeMs}ms)</span>
-                      )}
-                    </p>
-                    {output.data.type === "info" ? (
-                      <pre className="text-xs font-mono whitespace-pre-wrap rounded-lg p-3" style={{ background: "rgba(234,179,8,0.08)", color: "#eab308" }}>
-                        {output.data.output}
-                      </pre>
-                    ) : output.data.type === "success" ? (
-                      <pre className="text-xs font-mono whitespace-pre-wrap rounded-lg p-3" style={{ background: "rgba(34,197,94,0.08)", color: "#22c55e" }}>
-                        {output.data.output || "(empty output)"}
-                      </pre>
-                    ) : (
-                      <pre className="text-xs font-mono whitespace-pre-wrap rounded-lg p-3" style={{ background: "rgba(239,68,68,0.08)", color: "#ef4444" }}>
-                        {output.data.output || "Error"}
-                      </pre>
-                    )}
-                  </div>
-                ) : (
-                  <div className="space-y-1.5">
-                    <p
-                      className="text-xs font-semibold flex items-center gap-1.5"
-                      style={{ color: output.data.status === "accepted" ? "#22c55e" : "var(--text-primary)" }}
-                    >
-                      {output.data.status === "accepted"
-                        ? <CheckCircle2 className="w-4 h-4 text-green-500" />
-                        : <XCircle className="w-4 h-4 text-red-500" />}
-                      {output.data.status === "accepted" ? "Accepted" : "Wrong Answer"}
-                      {" · "}{output.data.passedCount}/{output.data.totalCount} passed
-                    </p>
-                    {(output.data.results || []).map((tc, idx) => (
-                      <div
-                        key={idx}
-                        className="text-xs rounded-lg p-2.5"
-                        style={{
-                          background: tc.passed ? "rgba(34,197,94,0.07)" : "rgba(239,68,68,0.07)",
-                          color: tc.passed ? "#22c55e" : "#ef4444",
-                        }}
-                      >
-                        <span className="font-semibold">
-                          Test {idx + 1} {tc.isHidden ? "(Hidden)" : ""} · {tc.passed ? "Passed" : "Failed"}
-                          {tc.timeMs > 0 && <span className="font-normal opacity-80"> · {tc.timeMs}ms</span>}
-                        </span>
-                        {!tc.passed && (
-                          <div className="mt-1 font-mono whitespace-pre-wrap opacity-90 text-[11px]">
-                            {tc.error ? <span>{tc.error}</span> : (
-                              <>
-                                <div>Input: {tc.input}</div>
-                                <div>Expected: {tc.expected}</div>
-                                <div>Got: {tc.actual}</div>
-                              </>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                    {output.data.status === "unsupported" && (
-                      <p className="text-xs flex items-center gap-1.5 mt-2" style={{ color: "#eab308" }}>
-                        <AlertTriangle className="w-3.5 h-3.5" />
-                        Server evaluation supports JavaScript only. Switch to JavaScript for full verdict.
-                      </p>
-                    )}
-                  </div>
-                )
-              )}
-
-              {/* ── Submissions ── */}
-              {bottomTab === "Submissions" && (
-                submissions.length === 0 ? (
-                  <p className="text-xs" style={{ color: "var(--text-muted)" }}>No submissions for this question yet.</p>
-                ) : (
-                  <div className="space-y-1.5">
-                    {submissions.map((sub, idx) => (
-                      <div
-                        key={sub._id || idx}
-                        className="flex items-center gap-3 text-xs px-3 py-2 rounded-lg"
-                        style={{ background: "var(--input-bg)" }}
-                      >
-                        {sub.status === "accepted"
-                          ? <CheckCircle2 className="w-3.5 h-3.5 text-green-500 shrink-0" />
-                          : <XCircle className="w-3.5 h-3.5 text-red-400 shrink-0" />}
-                        <span
-                          className="font-semibold capitalize"
-                          style={{ color: sub.status === "accepted" ? "#22c55e" : "#ef4444" }}
-                        >
-                          {sub.status}
-                        </span>
-                        <span style={{ color: "var(--text-muted)" }}>{sub.language}</span>
-                        <span style={{ color: "var(--text-muted)" }}>{sub.passedCount}/{sub.totalCount}</span>
-                        <span className="ml-auto" style={{ color: "var(--text-muted)" }}>
-                          {new Date(sub.createdAt).toLocaleDateString()}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )
-              )}
-            </div>
-          </div>
+          {/* ── Bottom tabbed panel (resizable) ── */}
+          <OutputPanel
+            activeTab={bottomTab}
+            setActiveTab={setBottomTab}
+            data={outputData}
+            running={running}
+            submitting={submitting}
+            testCases={sampleCases}
+            submissions={submissions}
+            runStage={runStage}
+            onResize={layoutEditor}
+          />
         </div>
       </div>
     </div>

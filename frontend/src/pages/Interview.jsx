@@ -107,28 +107,35 @@ function Interview() {
         }
       );
 
-      const data = await response.json();
+      const {
+        message = "Resume analysis failed",
+        resumeQuestions = [],
+        technicalQuestions = [],
+        codingQuestions = [],
+      } = await response.json();
 
       if (!response.ok) {
-        throw new Error(
-          data.message || "Resume analysis failed"
-        );
+        throw new Error(message);
       }
 
-      console.log("Backend Response:", data);
+      console.log("Backend Response:", {
+        resumeQuestions,
+        technicalQuestions,
+        codingQuestions,
+      });
 
       const allQuestions = [
-        ...data.resumeQuestions.map((question) => ({
+        ...resumeQuestions.map((question) => ({
           ...question,
           section: "Resume / Project",
         })),
 
-        ...data.technicalQuestions.map((question) => ({
+        ...technicalQuestions.map((question) => ({
           ...question,
           section: "Technical",
         })),
 
-        ...data.codingQuestions.map((question) => ({
+        ...codingQuestions.map((question) => ({
           ...question,
           section: "Coding",
         })),

@@ -76,6 +76,11 @@ const userSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    targetCompany: {
+      type: String,
+      default: "",
+      trim: true,
+    },
   },
   {
     timestamps: true,

@@ -402,7 +402,7 @@ function InterviewPractice() {
               const companyId = company.id || company._id;
               const hasCompanyAttempted = attemptedCompanyIds.has(companyId);
               return (
-                <motion.button
+                <motion.div
                   key={companyId}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -482,7 +482,7 @@ function InterviewPractice() {
                     </div>
                     <ArrowRight className="w-4 h-4 text-[var(--text-muted)] group-hover:text-[var(--primary)] group-hover:translate-x-0.5 transition-all" />
                   </div>
-                </motion.button>
+                </motion.div>
               );
             })}
           </div>

@@ -40,6 +40,13 @@ import Bookmarks from "../pages/student/Bookmarks";
 import AvailableTests from "../pages/student/AvailableTests";
 import TestEngine from "../pages/student/TestEngine";
 import TestResult from "../pages/student/TestResult";
+import PlacementDashboard from "../pages/student/PlacementDashboard";
+import Leaderboard from "../pages/student/Leaderboard";
+import MockOA from "../pages/student/MockOA";
+import CompanyAnalytics from "../pages/student/CompanyAnalytics";
+import PerformanceGraphs from "../pages/student/PerformanceGraphs";
+import QuestionAnalytics from "../pages/student/QuestionAnalytics";
+import AdminPlacementAnalytics from "../pages/admin/PlacementAnalytics";
 
 function AppRoutes() {
   return (
@@ -68,6 +75,12 @@ function AppRoutes() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/interview-history" element={<InterviewHistory />} />
         <Route path="/results" element={<Results />} />
+        <Route path="/placement-dashboard" element={<PlacementDashboard />} />
+        <Route path="/placement/leaderboard" element={<Leaderboard />} />
+        <Route path="/placement/mock-oa" element={<MockOA />} />
+        <Route path="/placement/company-analytics" element={<CompanyAnalytics />} />
+        <Route path="/placement/performance" element={<PerformanceGraphs />} />
+        <Route path="/placement/question-analytics" element={<QuestionAnalytics />} />
       </Route>
 
       <Route element={<AdminLayout />}>
@@ -85,6 +98,7 @@ function AppRoutes() {
         <Route path="/admin/audit-logs" element={<AuditLogs />} />
         <Route path="/admin/config" element={<SystemConfig />} />
         <Route path="/admin/backup" element={<BackupDashboard />} />
+        <Route path="/admin/placement-analytics" element={<AdminPlacementAnalytics />} />
       </Route>
     </Routes>
   );

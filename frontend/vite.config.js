@@ -13,4 +13,12 @@ export default defineConfig({
       },
     },
   },
+  optimizeDeps: {
+    include: ["@monaco-editor/react"],
+    // Monaco ships its own worker entry-points that must not be pre-bundled.
+    exclude: ["monaco-editor"],
+  },
+  ssr: {
+    noExternal: ["@monaco-editor/react"],
+  },
 });

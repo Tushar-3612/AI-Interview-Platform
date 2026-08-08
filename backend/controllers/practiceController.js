@@ -12,12 +12,28 @@ import {
   getQuestionById,
   getBankMap,
 } from "../services/questionBank.js";
+import {
+  executeSingle,
+  executeBatch,
+  normalizeLanguage,
+  isStdinLanguage,
+  getSupportedLanguages,
+} from "../services/codeExecutionService.js";
+import { invalidateStudentPlacement } from "../services/placementEngine.js";
 
 const VALID_DIFFICULTIES = ["easy", "medium", "hard"];
 const VALID_COUNTS = [15, 20, 30];
-// All UI-visible languages; server-side execution only supports JavaScript
-const SUPPORTED_LANGUAGES = ["JavaScript", "Python", "Java", "C", "C++", "C#", "Go", "Rust", "Kotlin", "PHP"];
-const SERVER_EXECUTABLE = ["JavaScript"]; // languages that can actually run on the server
+const RECENT_ATTEMPTS_LIMIT = 50;
+
+function defaultDifficultyDistribution(count) {
+  const base = Math.floor(count / 3);
+  const remainder = count - base * 3;
+  return {
+    easy: base + (remainder > 0 ? 1 : 0),
+    medium: base + (remainder > 1 ? 1 : 0),
+    hard: base,
+  };
+}
 
 function cleanPaperQuestion(q) {
   return {
@@ -96,21 +112,45 @@ export const getPracticeHome = async (req, res) => {
 
 export const startAptitudePaper = async (req, res) => {
   try {
-    const { companyId = "", count = 15, difficulty = "" } = req.query;
+    const userId = req.user.id;
+    const { companyId = "", count = 15, easy, medium, hard } = req.query;
     const questionCount = VALID_COUNTS.includes(Number(count)) ? Number(count) : 15;
+
+    // Step 1: difficulty distribution — explicit easy/medium/hard params override defaults
+    const hasDistribution = [easy, medium, hard].some((v) => v !== undefined && v !== null && v !== "");
+    const distribution = hasDistribution
+      ? {
+          easy: Math.max(0, parseInt(easy, 10) || 0),
+          medium: Math.max(0, parseInt(medium, 10) || 0),
+          hard: Math.max(0, parseInt(hard, 10) || 0),
+        }
+      : defaultDifficultyDistribution(questionCount);
+
+    // Step 4: avoid recently attempted questions (lower priority), never repeat while unused pool exists
+    const recentAttempts = await PracticeAttempt.find({ userId })
+      .sort({ createdAt: -1 })
+      .limit(RECENT_ATTEMPTS_LIMIT)
+      .select("questions")
+      .lean();
+    const recentlyUsed = new Set(
+      recentAttempts.flatMap((a) => (a.questions || []).map((q) => String(q.questionId)))
+    );
+
     const selected = selectRandomQuestions({
       count: questionCount,
-      difficulty: VALID_DIFFICULTIES.includes(String(difficulty).toLowerCase()) ? String(difficulty).toLowerCase() : "",
+      distribution,
       companyId,
+      excludeIds: [...recentlyUsed],
     });
     if (selected.length === 0) {
       return res.status(404).json({ message: "No questions available for this selection" });
     }
+    // Step 2 + 5: shuffle question order and MCQ options (answer text mapping is preserved)
     const paper = shuffleArray(selected.map(cleanPaperQuestion)).map((q) => ({
       ...q,
       options: shuffleArray(q.options),
     }));
-    res.json({ questions: paper, total: paper.length });
+    res.json({ questions: paper, total: paper.length, distribution });
   } catch (error) {
     console.error("Start Aptitude Paper Error:", error.message);
     res.status(500).json({ message: "Failed to generate paper" });
@@ -160,13 +200,16 @@ export const submitAptitude = async (req, res) => {
     const total = details.length;
     const score = correct;
     const percentage = total > 0 ? Math.round((correct / total) * 100) : 0;
+    const storedDifficulty = VALID_DIFFICULTIES.includes(String(difficulty).toLowerCase())
+      ? String(difficulty).toLowerCase()
+      : "mixed";
 
     const attempt = await PracticeAttempt.create({
       userId,
       companyId,
       companyName,
       questionCount: total,
-      difficulty: VALID_DIFFICULTIES.includes(String(difficulty).toLowerCase()) ? String(difficulty).toLowerCase() : "",
+      difficulty: storedDifficulty,
       questions: details,
       score,
       correct,
@@ -175,6 +218,8 @@ export const submitAptitude = async (req, res) => {
       percentage,
       timeTaken: Number(timeTaken) || 0,
     });
+
+    invalidateStudentPlacement(userId);
 
     res.status(201).json({
       _id: attempt._id,
@@ -349,19 +394,26 @@ export const runCodingCode = async (req, res) => {
   try {
     const { language = "JavaScript", code = "", input = "" } = req.body;
     if (!code) return res.status(400).json({ message: "Code is required" });
-    if (!SERVER_EXECUTABLE.includes(language)) {
-      // Return a friendly non-error response for non-JS languages
+    const langId = normalizeLanguage(language);
+    if (langId === "javascript") {
+      const args = parseTestArgs(input, code);
+      const { output, error, timeMs } = executeJavaScript(code, args, 1000);
+      if (error) return res.json({ type: "error", output: error });
+      return res.json({ type: "success", output, timeMs });
+    }
+    if (!langId) {
       return res.json({
         type: "info",
-        output: `Language "${language}" noted. Server-side execution currently supports JavaScript only.\nYour code has been saved. Switch to JavaScript to run against test cases.`,
+        output: `Language "${language}" is not supported. Supported languages: ${getSupportedLanguages().join(", ")}.`,
         timeMs: 0,
         language,
       });
     }
-    const args = parseTestArgs(input, code);
-    const { output, error, timeMs } = executeJavaScript(code, args, 1000);
-    if (error) return res.json({ type: "error", output: error });
-    res.json({ type: "success", output, timeMs });
+    const result = isStdinLanguage(langId)
+      ? await executeSingle(langId, code, [], { timeLimitMs: 1000, stdin: String(input ?? "") })
+      : await executeSingle(langId, code, parseTestArgs(input, code), { timeLimitMs: 1000 });
+    if (result.type !== "success") return res.json({ type: "error", output: String(result.output || "") });
+    res.json({ type: "success", output: String(result.output ?? "").trim(), timeMs: result.timeMs });
   } catch (error) {
     console.error("Run Code Error:", error.message);
     res.status(500).json({ message: "Failed to run code" });
@@ -378,7 +430,8 @@ export const submitCoding = async (req, res) => {
     }
     const question = await CodingQuestion.findOne({ _id: questionId, isDeleted: { $ne: true } }).lean();
     if (!question) return res.status(404).json({ message: "Question not found" });
-    if (!SUPPORTED_LANGUAGES.includes(language)) {
+    const langId = normalizeLanguage(language);
+    if (!langId) {
       await CodingSubmission.create({
         userId,
         questionId,
@@ -389,46 +442,143 @@ export const submitCoding = async (req, res) => {
         code,
         status: "unsupported",
         passedCount: 0,
-        totalCount: question.testCases.length,
+        totalCount: (question.testCases || []).length,
         results: [],
         timeTakenMs: Number(timeTakenMs) || 0,
       });
-      return res.status(400).json({ message: `Server-side evaluation supports JavaScript only. Choose JavaScript to submit.` });
+      invalidateStudentPlacement(userId);
+      return res.status(400).json({ message: `Language "${language}" is not supported. Supported languages: ${getSupportedLanguages().join(", ")}.` });
     }
     const testCases = question.testCases || [];
-    const results = [];
-    let passedCount = 0;
-    for (const tc of testCases) {
-      try {
-        const args = parseTestArgs(tc.input, code);
-        const { output, error, timeMs } = executeJavaScript(code, args, question.timeLimit || 1000);
-        if (error) throw new Error(error);
-        const passed = normalizeOutput(output) === normalizeOutput(tc.expected);
-        if (passed) passedCount++;
-        results.push({
-          index: results.length + 1,
-          passed,
-          isHidden: Boolean(tc.isHidden),
-          input: tc.isHidden ? "" : String(tc.input),
-          expected: tc.isHidden ? "" : String(tc.expected),
-          actual: passed ? "" : String(output ?? "No output"),
-          error: "",
-          timeMs,
-        });
-      } catch (err) {
-        results.push({
-          index: results.length + 1,
-          passed: false,
-          isHidden: Boolean(tc.isHidden),
-          input: tc.isHidden ? "" : String(tc.input),
-          expected: tc.isHidden ? "" : String(tc.expected),
-          actual: "",
-          error: String(err.message || "Execution error"),
-          timeMs: 0,
-        });
+    const timeLimit = question.timeLimit || 1000;
+    if (langId === "javascript") {
+      const results = [];
+      let passedCount = 0;
+      for (const tc of testCases) {
+        try {
+          const args = parseTestArgs(tc.input, code);
+          const { output, error, timeMs } = executeJavaScript(code, args, timeLimit);
+          if (error) throw new Error(error);
+          const passed = normalizeOutput(output) === normalizeOutput(tc.expected);
+          if (passed) passedCount++;
+          results.push({
+            index: results.length + 1,
+            passed,
+            isHidden: Boolean(tc.isHidden),
+            input: tc.isHidden ? "" : String(tc.input),
+            expected: tc.isHidden ? "" : String(tc.expected),
+            actual: passed ? "" : String(output ?? "No output"),
+            error: "",
+            timeMs,
+          });
+        } catch (err) {
+          results.push({
+            index: results.length + 1,
+            passed: false,
+            isHidden: Boolean(tc.isHidden),
+            input: tc.isHidden ? "" : String(tc.input),
+            expected: tc.isHidden ? "" : String(tc.expected),
+            actual: "",
+            error: String(err.message || "Execution error"),
+            timeMs: 0,
+          });
+        }
       }
+      const status = passedCount === testCases.length && testCases.length > 0 ? "accepted" : testCases.length === 0 ? "error" : "failed";
+      const submission = await CodingSubmission.create({
+        userId,
+        questionId,
+        title: question.title,
+        companyId: question.companyId,
+        companyName: question.companyName,
+        language,
+        code,
+        status,
+        passedCount,
+        totalCount: testCases.length,
+        results,
+        timeTakenMs: Number(timeTakenMs) || 0,
+      });
+      invalidateStudentPlacement(userId);
+      return res.status(201).json({
+        _id: submission._id,
+        status,
+        passedCount,
+        totalCount: testCases.length,
+        results,
+      });
     }
-    const status = passedCount === testCases.length && testCases.length > 0 ? "accepted" : testCases.length === 0 ? "error" : "failed";
+
+    // Non-JavaScript: compile once, run once per test case via the execution service
+    const casePayloads = isStdinLanguage(langId)
+      ? testCases.map((tc) => String(tc.input ?? ""))
+      : testCases.map((tc) => parseTestArgs(tc.input, code));
+    const batch = await executeBatch(langId, code, casePayloads, { timeLimitMs: timeLimit });
+
+    if (batch.type !== "success" || !batch.outputs || batch.outputs.length !== testCases.length) {
+      const errorMsg = batch.type === "time_limit"
+        ? `Time limit exceeded (${timeLimit}ms)`
+        : String(batch.output || batch.type || "Execution failed").trim();
+      const results = testCases.map((tc, index) => ({
+        index: index + 1,
+        passed: false,
+        isHidden: Boolean(tc.isHidden),
+        input: tc.isHidden ? "" : String(tc.input),
+        expected: tc.isHidden ? "" : String(tc.expected),
+        actual: "",
+        error: errorMsg,
+        timeMs: 0,
+      }));
+      const submission = await CodingSubmission.create({
+        userId,
+        questionId,
+        title: question.title,
+        companyId: question.companyId,
+        companyName: question.companyName,
+        language,
+        code,
+        status: "error",
+        passedCount: 0,
+        totalCount: testCases.length,
+        results,
+        timeTakenMs: Number(timeTakenMs) || 0,
+      });
+      invalidateStudentPlacement(userId);
+      return res.status(201).json({
+        _id: submission._id,
+        status: "error",
+        passedCount: 0,
+        totalCount: testCases.length,
+        results,
+      });
+    }
+
+    let passedCount = 0;
+    const results = testCases.map((tc, index) => {
+      const raw = String(batch.outputs[index] ?? "");
+      let error = "";
+      let actual = raw;
+      if (raw.startsWith("__time_limit__:")) {
+        error = `Time limit exceeded (${timeLimit}ms)`;
+        actual = "";
+      } else if (raw.startsWith("__runtime_error__:")) {
+        error = raw.slice("__runtime_error__:".length);
+        actual = "";
+      }
+      const passed = !error && normalizeOutput(raw) === normalizeOutput(tc.expected);
+      if (passed) passedCount++;
+      return {
+        index: index + 1,
+        passed,
+        isHidden: Boolean(tc.isHidden),
+        input: tc.isHidden ? "" : String(tc.input),
+        expected: tc.isHidden ? "" : String(tc.expected),
+        actual: passed ? "" : actual,
+        error,
+        timeMs: 0,
+      };
+    });
+    const status = passedCount === testCases.length && testCases.length > 0 ? "accepted" : "failed";
     const submission = await CodingSubmission.create({
       userId,
       questionId,
@@ -443,6 +593,7 @@ export const submitCoding = async (req, res) => {
       results,
       timeTakenMs: Number(timeTakenMs) || 0,
     });
+    invalidateStudentPlacement(userId);
     res.status(201).json({
       _id: submission._id,
       status,

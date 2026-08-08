@@ -24,6 +24,7 @@ import {
   getStudentResults,
   getStudentResultByAttempt,
 } from "../controllers/resultController.js";
+import { getDashboardStats } from "../controllers/dashboardStatsController.js";
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -46,6 +47,9 @@ router.post("/interviews/:interviewId/complete", completeInterview);
 // Fetching history
 router.get("/interviews", getInterviews);
 router.get("/results", getResults);
+
+// Dashboard statistics
+router.get("/dashboard-stats", getDashboardStats);
 
 // ─── Test Engine ───
 router.get("/tests", getAssignedTests);

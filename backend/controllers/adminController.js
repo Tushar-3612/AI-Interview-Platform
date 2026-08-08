@@ -8,6 +8,7 @@ import TestAssignment from "../models/TestAssignment.js";
 import { generateStudentReportBuffer } from "../utils/pdfGenerator.js";
 import { sendReportEmail } from "../utils/emailSender.js";
 import { exportSingleStudentCSV, exportAllStudentsCSV } from "../utils/reportExporter.js";
+import { createNotification } from "../services/notificationService.js";
 
 /**
  * Get dashboard overview metrics and charts.
@@ -619,6 +620,14 @@ export const addCompany = async (req, res) => {
       coding: Number(coding) || 0,
       hr: Number(hr) || 0,
       difficulty: difficulty || "Medium",
+    });
+
+    await createNotification({
+      role: "all",
+      type: "success",
+      title: "New company added",
+      message: `${company.name} is now available for aptitude and coding practice.`,
+      link: "/interview-practice",
     });
 
     res.status(201).json({ message: "Company added successfully", company });

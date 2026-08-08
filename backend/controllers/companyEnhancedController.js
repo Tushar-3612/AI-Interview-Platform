@@ -5,6 +5,7 @@ import TestResult from "../models/TestResult.js";
 import AptitudeQuestion from "../models/AptitudeQuestion.js";
 import CodingQuestion from "../models/CodingQuestion.js";
 import { createAuditLog } from "../middleware/auditMiddleware.js";
+import { createNotification } from "../services/notificationService.js";
 
 const TRASH_RETENTION_DAYS = 30;
 
@@ -107,6 +108,13 @@ export const addCompany = async (req, res) => {
     if (existing && !existing.isDeleted) return res.status(400).json({ message: "Company already exists" });
     const company = await Company.create({ ...req.body, id, color: req.body.color || "#2563EB", lastUpdated: new Date() });
     await createAuditLog({ userId: req.user.id, role: "admin", action: "create_company", resource: "Company", resourceId: company._id.toString(), details: { name }, ip: req.ip, userAgent: req.headers["user-agent"] });
+    await createNotification({
+      role: "all",
+      type: "success",
+      title: "New company added",
+      message: `${company.name} is now available for aptitude and coding practice.`,
+      link: "/interview-practice",
+    });
     res.status(201).json(company);
   } catch (error) {
     console.error("Add Company Error:", error.message);

@@ -10,12 +10,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@monaco-editor/react": "^4.7.0",
     "@tailwindcss/vite": "^4.3.2",
     "axios": "^1.18.1",
     "cors": "^2.8.6",
     "express": "^5.2.1",
     "framer-motion": "^12.42.2",
     "lucide-react": "^1.24.0",
+    "monaco-editor": "^0.56.0",
+    "monaco-languages": "^2.11.1",
     "multer": "^2.2.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",

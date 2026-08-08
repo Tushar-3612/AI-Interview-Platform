@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
-import { ArrowLeft, Clock, ChevronLeft, ChevronRight, CheckCircle, XCircle, HelpCircle, BarChart3, Timer, BrainCircuit, Bookmark, BookmarkCheck, Percent, History } from "lucide-react";
+import { ArrowLeft, Clock, ChevronLeft, CheckCircle, XCircle, HelpCircle, BarChart3, Timer, BrainCircuit, Bookmark, BookmarkCheck, Percent, History } from "lucide-react";
 import api from "../../utils/api";
 import { getAuthToken } from "../../hooks/useStudentProfile";
 import Button from "../../components/ui/Button";
@@ -17,6 +17,12 @@ const DIFFICULTIES = [
 const DIFFICULTY_LABELS = { easy: "Easy", medium: "Medium", hard: "Hard" };
 const DIFFICULTY_COLORS = { easy: "#22c55e", medium: "#eab308", hard: "#ef4444" };
 const COUNT_OPTIONS = [15, 20, 30];
+const AUTO_ADVANCE_DELAY_MS = 450;
+const DISTRIBUTIONS = {
+  15: { easy: 5, medium: 5, hard: 5 },
+  20: { easy: 7, medium: 7, hard: 6 },
+  30: { easy: 10, medium: 10, hard: 10 },
+};
 
 function AptitudeRound() {
   const { companyId } = useParams();
@@ -24,6 +30,8 @@ function AptitudeRound() {
   const token = getAuthToken();
   const headers = { Authorization: `Bearer ${token}` };
   const timerRef = useRef(null);
+  const advanceTimerRef = useRef(null);
+  const questionCardRef = useRef(null);
 
   const [phase, setPhase] = useState("config");
   const [questions, setQuestions] = useState([]);
@@ -35,7 +43,6 @@ function AptitudeRound() {
   const [error, setError] = useState(null);
   const [startTime, setStartTime] = useState(null);
   const [totalCount, setTotalCount] = useState(15);
-  const [difficulty, setDifficulty] = useState("easy");
   const [result, setResult] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [company, setCompany] = useState(null);
@@ -59,10 +66,10 @@ function AptitudeRound() {
     try {
       const res = await api.get("/api/practice/aptitude/paper", {
         headers,
-        params: { count: totalCount, difficulty, companyId: companyId || "" },
+        params: { count: totalCount, companyId: companyId || "" },
       });
       if (!res.data.questions || res.data.questions.length === 0) {
-        toast.error("No questions available for this selection. Try a different difficulty.");
+        toast.error("No questions available for this selection. Try again later.");
         setLoading(false);
         return;
       }
@@ -96,8 +103,47 @@ function AptitudeRound() {
     return () => clearInterval(timerRef.current);
   }, [phase, timeLeft]);
 
+  const cancelAutoAdvance = useCallback(() => {
+    if (advanceTimerRef.current) {
+      clearTimeout(advanceTimerRef.current);
+      advanceTimerRef.current = null;
+    }
+  }, []);
+
+  const goToQuestion = useCallback(
+    (index) => {
+      cancelAutoAdvance();
+      if (index < 0 || index >= questions.length || index === currentIndex) return;
+      setCurrentIndex(index);
+    },
+    [cancelAutoAdvance, currentIndex, questions.length]
+  );
+
+  useEffect(() => {
+    cancelAutoAdvance();
+    return () => cancelAutoAdvance();
+  }, [currentIndex, cancelAutoAdvance]);
+
+  useEffect(() => () => cancelAutoAdvance(), [cancelAutoAdvance]);
+
+  // Smooth-scroll the question card into view whenever the question changes.
+  useEffect(() => {
+    if (phase !== "quiz") return;
+    requestAnimationFrame(() => {
+      questionCardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }, [currentIndex, phase]);
+
   const handleSelectOption = (qId, option) => {
     setAnswers((prev) => ({ ...prev, [qId]: option }));
+    const isCurrentQuestion = qId === currentQuestion?.questionId;
+    if (!isCurrentQuestion) return;
+    if (currentIndex < questions.length - 1) {
+      cancelAutoAdvance();
+      advanceTimerRef.current = setTimeout(() => {
+        setCurrentIndex((prev) => Math.min(prev + 1, questions.length - 1));
+      }, AUTO_ADVANCE_DELAY_MS);
+    }
   };
 
   const toggleBookmark = async (qId) => {
@@ -124,7 +170,7 @@ function AptitudeRound() {
           answers,
           timeTaken: startTime ? Math.floor((Date.now() - startTime) / 1000) : 0,
           questions,
-          difficulty,
+          difficulty: "mixed",
         },
         { headers }
       );
@@ -213,24 +259,25 @@ function AptitudeRound() {
           </div>
 
           <div className="mb-8">
-            <label className="text-sm font-semibold mb-2 block" style={{ color: "var(--text-primary)" }}>Difficulty</label>
+            <label className="text-sm font-semibold mb-2 block" style={{ color: "var(--text-primary)" }}>Difficulty Distribution</label>
             <div className="grid grid-cols-3 gap-4">
-              {DIFFICULTIES.map((d) => (
-                <button
-                  key={d.id}
-                  type="button"
-                  onClick={() => setDifficulty(d.id)}
-                  className={`p-4 rounded-xl border text-center cursor-pointer transition`}
-                  style={{
-                    background: difficulty === d.id ? `${d.color}12` : "var(--input-bg)",
-                    borderColor: difficulty === d.id ? d.color : "var(--border)",
-                  }}
-                >
-                  <div className="w-3 h-3 rounded-full mx-auto mb-2" style={{ background: d.color }} />
-                  <p className="text-sm font-bold" style={{ color: d.color }}>{d.label}</p>
-                  <p className="text-[11px] mt-1 leading-snug" style={{ color: "var(--text-muted)" }}>{d.desc}</p>
-                </button>
-              ))}
+              {DIFFICULTIES.map((d) => {
+                const count = DISTRIBUTIONS[totalCount]?.[d.id] || 0;
+                return (
+                  <div
+                    key={d.id}
+                    className={`p-4 rounded-xl border text-center`}
+                    style={{
+                      background: "var(--input-bg)",
+                      borderColor: d.color,
+                    }}
+                  >
+                    <div className="w-3 h-3 rounded-full mx-auto mb-2" style={{ background: d.color }} />
+                    <p className="text-sm font-bold" style={{ color: d.color }}>{count} {d.label}</p>
+                    <p className="text-[11px] mt-1 leading-snug" style={{ color: "var(--text-muted)" }}>{d.desc}</p>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
@@ -278,9 +325,9 @@ function AptitudeRound() {
               )}
             </div>
             <h1 className="text-2xl font-bold mb-1" style={{ color: "var(--text-primary)" }}>Test Complete!</h1>
-            <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-              {company ? `${company.name} aptitude practice` : "Aptitude practice"} · {DIFFICULTY_LABELS[difficulty]} · {result.total} questions
-            </p>
+              <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+                {company ? `${company.name} aptitude practice` : "Aptitude practice"} · Mixed Difficulty · {result.total} questions
+              </p>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-8">
@@ -396,9 +443,13 @@ function AptitudeRound() {
   const currentQuestion = questions[currentIndex];
   const progress = ((currentIndex + 1) / questions.length) * 100;
   const isBookmarked = bookmarked.has(currentQuestion.questionId);
+  const isLastQuestion = currentIndex === questions.length - 1;
+  const currentAnswer = answers[currentQuestion.questionId];
+
+  const navigatorProps = { questions, answers, currentIndex, onSelect: goToQuestion };
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
       <div className="flex items-center justify-between gap-4 mb-6">
         <button
           type="button"
@@ -435,93 +486,162 @@ function AptitudeRound() {
         </div>
       </div>
 
-      <motion.div
-        key={currentIndex}
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        className="student-card p-6 sm:p-8 mb-6"
-      >
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs font-semibold px-2.5 py-1 rounded-lg" style={{ background: `${DIFFICULTY_COLORS[currentQuestion.difficulty]}15`, color: DIFFICULTY_COLORS[currentQuestion.difficulty] }}>
-              {DIFFICULTY_LABELS[currentQuestion.difficulty]}
-            </span>
-            <span className="text-xs font-semibold px-2.5 py-1 rounded-lg" style={{ background: "rgba(99,102,241,0.1)", color: "#6366f1" }}>
-              {currentQuestion.category}
-            </span>
-            <span className="text-xs px-2.5 py-1 rounded-lg" style={{ background: "rgba(234,179,8,0.1)", color: "#eab308" }}>
-              {currentQuestion.marks || 1} mark
-            </span>
+      <div className="flex flex-col lg:flex-row gap-6">
+        <aside className="order-first lg:order-last lg:w-64 shrink-0">
+          <div className="student-card p-4 lg:sticky lg:top-24">
+            <QuestionNavigator {...navigatorProps} />
+            <div className="mt-4 pt-4 border-t" style={{ borderColor: "var(--border)" }}>
+              <Button onClick={() => handleSubmit("manual")} disabled={submitting} className="w-full py-2 text-xs">
+                {submitting ? "Submitting..." : "Submit Test"}
+              </Button>
+            </div>
           </div>
-          <button
-            type="button"
-            onClick={() => toggleBookmark(currentQuestion.questionId)}
-            className="p-1.5 rounded-lg cursor-pointer hover:opacity-80 transition"
-            aria-label="Bookmark question"
+        </aside>
+
+        <div className="order-last lg:order-first flex-1 min-w-0">
+          <div className="lg:hidden mb-4">
+            <div className="student-card p-4">
+              <QuestionNavigator {...navigatorProps} horizontal />
+            </div>
+          </div>
+
+          <motion.div
+            key={currentIndex}
+            ref={questionCardRef}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.25 }}
+            className="student-card p-6 sm:p-8 aptitude-question-anchor"
           >
-            {isBookmarked ? (
-              <BookmarkCheck className="w-4 h-4" style={{ color: "#6366f1" }} />
-            ) : (
-              <Bookmark className="w-4 h-4" style={{ color: "var(--text-muted)" }} />
-            )}
-          </button>
-        </div>
-
-        <h2 className="text-base sm:text-lg font-semibold mb-6 leading-relaxed" style={{ color: "var(--text-primary)" }}>
-          {currentQuestion.question}
-        </h2>
-
-        <div className="space-y-3 mb-6">
-          {currentQuestion.options.map((option, idx) => {
-            const isSelected = answers[currentQuestion.questionId] === option;
-            return (
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs font-semibold px-2.5 py-1 rounded-lg" style={{ background: `${DIFFICULTY_COLORS[currentQuestion.difficulty]}15`, color: DIFFICULTY_COLORS[currentQuestion.difficulty] }}>
+                  {DIFFICULTY_LABELS[currentQuestion.difficulty]}
+                </span>
+                <span className="text-xs font-semibold px-2.5 py-1 rounded-lg" style={{ background: "rgba(99,102,241,0.1)", color: "#6366f1" }}>
+                  {currentQuestion.category}
+                </span>
+                <span className="text-xs px-2.5 py-1 rounded-lg" style={{ background: "rgba(234,179,8,0.1)", color: "#eab308" }}>
+                  {currentQuestion.marks || 1} mark
+                </span>
+              </div>
               <button
-                key={idx}
                 type="button"
-                onClick={() => handleSelectOption(currentQuestion.questionId, option)}
-                className="w-full p-4 rounded-xl border text-left text-sm transition-all flex items-center justify-between cursor-pointer"
-                style={{
-                  borderColor: isSelected ? "#6366f1" : "var(--border)",
-                  background: isSelected ? "rgba(99,102,241,0.08)" : "var(--input-bg)",
-                  color: isSelected ? "#6366f1" : "var(--text-primary)",
-                }}
+                onClick={() => toggleBookmark(currentQuestion.questionId)}
+                className="p-1.5 rounded-lg cursor-pointer hover:opacity-80 transition"
+                aria-label="Bookmark question"
               >
-                <span>{option}</span>
-                {isSelected && <div className="w-2 h-2 rounded-full" style={{ background: "#6366f1" }} />}
+                {isBookmarked ? (
+                  <BookmarkCheck className="w-4 h-4" style={{ color: "#6366f1" }} />
+                ) : (
+                  <Bookmark className="w-4 h-4" style={{ color: "var(--text-muted)" }} />
+                )}
               </button>
-            );
-          })}
+            </div>
+
+            <h2 className="text-base sm:text-lg font-semibold mb-6 leading-relaxed" style={{ color: "var(--text-primary)" }}>
+              {currentQuestion.question}
+            </h2>
+
+            <div className="space-y-3 mb-4">
+              {currentQuestion.options.map((option, idx) => {
+                const isSelected = answers[currentQuestion.questionId] === option;
+                return (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => handleSelectOption(currentQuestion.questionId, option)}
+                    className="w-full p-4 rounded-xl border text-left text-sm transition-all flex items-center justify-between cursor-pointer"
+                    style={{
+                      borderColor: isSelected ? "#6366f1" : "var(--border)",
+                      background: isSelected ? "rgba(99,102,241,0.08)" : "var(--input-bg)",
+                      color: isSelected ? "#6366f1" : "var(--text-primary)",
+                    }}
+                  >
+                    <span>{option}</span>
+                    {isSelected && <div className="w-2 h-2 rounded-full" style={{ background: "#6366f1" }} />}
+                  </button>
+                );
+              })}
+            </div>
+
+            {currentAnswer && !isLastQuestion && (
+              <p className="text-[11px] mb-4 flex items-center gap-1.5" style={{ color: "var(--text-muted)" }}>
+                <CheckCircle className="w-3.5 h-3.5" style={{ color: "#22c55e" }} />
+                Answer saved — moving to the next question automatically.
+              </p>
+            )}
+            {isLastQuestion && (
+              <p className="text-[11px] mb-4" style={{ color: "var(--text-muted)" }}>
+                Last question — review your answers in the navigator, then submit.
+              </p>
+            )}
+
+            <div className="flex items-center justify-between gap-4 pt-6 border-t" style={{ borderColor: "var(--border)" }}>
+              <button
+                type="button"
+                disabled={currentIndex === 0}
+                onClick={() => goToQuestion(currentIndex - 1)}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold border cursor-pointer hover:opacity-80 transition disabled:opacity-40"
+                style={{ borderColor: "var(--border)", color: "var(--text-primary)" }}
+              >
+                <ChevronLeft className="w-4 h-4" />
+                Previous
+              </button>
+
+              {isLastQuestion ? (
+                <Button onClick={() => handleSubmit("manual")} disabled={submitting} className="px-5 py-2 text-xs">
+                  {submitting ? "Submitting..." : "Submit Test"}
+                </Button>
+              ) : (
+                <span className="text-xs" style={{ color: "var(--text-muted)" }}>
+                  Answer auto-saved · moves to the next question automatically
+                </span>
+              )}
+            </div>
+          </motion.div>
         </div>
+      </div>
+    </div>
+  );
+}
 
-        <div className="flex items-center justify-between gap-4 pt-6 border-t" style={{ borderColor: "var(--border)" }}>
-          <button
-            type="button"
-            disabled={currentIndex === 0}
-            onClick={() => setCurrentIndex((prev) => prev - 1)}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold border cursor-pointer hover:opacity-80 transition disabled:opacity-40"
-            style={{ borderColor: "var(--border)", color: "var(--text-primary)" }}
-          >
-            <ChevronLeft className="w-4 h-4" />
-            Previous
-          </button>
-
-          {currentIndex < questions.length - 1 ? (
+function QuestionNavigator({ questions, answers, currentIndex, onSelect, horizontal = false }) {
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-xs font-semibold" style={{ color: "var(--text-primary)" }}>Question Navigator</p>
+        <span className="text-xs" style={{ color: "var(--text-muted)" }}>
+          {Object.keys(answers).length}/{questions.length} answered
+        </span>
+      </div>
+      <div
+        className={horizontal ? "flex gap-2 overflow-x-auto pb-1" : "grid grid-cols-5 gap-2"}
+        style={{ scrollbarWidth: "thin" }}
+      >
+        {questions.map((q, idx) => {
+          const isAnswered = answers[q.questionId] != null;
+          const isCurrent = idx === currentIndex;
+          return (
             <button
+              key={q.questionId || idx}
               type="button"
-              onClick={() => setCurrentIndex((prev) => prev + 1)}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold border cursor-pointer hover:opacity-80 transition"
-              style={{ borderColor: "var(--border)", color: "var(--text-primary)" }}
+              onClick={() => onSelect(idx)}
+              aria-label={`Go to question ${idx + 1}`}
+              className="aspect-square rounded-lg text-xs font-semibold flex items-center justify-center cursor-pointer transition hover:opacity-80 shrink-0"
+              style={
+                isCurrent
+                  ? { background: "#6366f1", color: "#ffffff", border: "1px solid #6366f1" }
+                  : isAnswered
+                    ? { background: "rgba(99,102,241,0.15)", color: "#6366f1", border: "1px solid rgba(99,102,241,0.35)" }
+                    : { background: "var(--input-bg)", color: "var(--text-muted)", border: "1px solid var(--border)" }
+              }
             >
-              Next
-              <ChevronRight className="w-4 h-4" />
+              {idx + 1}
             </button>
-          ) : (
-            <Button onClick={() => handleSubmit("manual")} disabled={submitting} className="px-5 py-2 text-xs">
-              {submitting ? "Submitting..." : "Submit Test"}
-            </Button>
-          )}
-        </div>
-      </motion.div>
+          );
+        })}
+      </div>
     </div>
   );
 }

@@ -59,7 +59,7 @@ export async function seedAptitudeQuestionsFromBank() {
     if (existing) {
       let changed = false;
       for (const [key, value] of Object.entries(doc)) {
-        if (existing[key] !== value && (key === "question" || key === "options" || key === "correctAnswer")) {
+        if (existing[key] !== value && (key === "question" || key === "options" || key === "correctAnswer" || key === "difficulty")) {
           changed = true;
           break;
         }
@@ -76,6 +76,14 @@ export async function seedAptitudeQuestionsFromBank() {
   }
   if (inserted + updated > 0) console.log(`🧠 Aptitude bank synced to DB: ${inserted} inserted, ${updated} updated`);
   return inserted;
+}
+
+export async function purgeLegacyAptitudeRows() {
+  const result = await AptitudeQuestion.deleteMany({ questionId: { $regex: /^apt-/ } });
+  if (result.deletedCount > 0) {
+    console.log(`🧹 Purged ${result.deletedCount} legacy aptitude seed rows (old question bank)`);
+  }
+  return result.deletedCount;
 }
 
 export async function seedCodingQuestionsFromJson() {
@@ -102,6 +110,7 @@ export async function syncAptitudeQuestionToBank(doc) {
 export async function runSeeds() {
   loadAptitudeBank();
   await seedDefaultCompanies();
+  await purgeLegacyAptitudeRows();
   await seedAptitudeQuestionsFromBank();
   await seedCodingQuestionsFromJson();
 }
