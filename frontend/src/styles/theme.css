@@ -32,12 +32,13 @@
   --feature-bg: #FFFFFF;
   --illustration-glow: rgba(255, 107, 53, 0.04);
 
-  /* Placement heatmap levels */
-  --heatmap-0: #F3F4F6;
-  --heatmap-1: #FFEDD5;
-  --heatmap-2: #FDBA74;
-  --heatmap-3: #FF8A3D;
-  --heatmap-4: #FF6B35;
+  /* Placement heatmap levels (green - activity intensity) */
+  --heatmap-empty: #EBEDF0;
+  --heatmap-low: #DCFCE7;
+  --heatmap-med-low: #86EFAC;
+  --heatmap-med: #4ADE80;
+  --heatmap-high: #22C55E;
+  --heatmap-max: #16A34A;
 
   /* Admin-specific surfaces */
   --admin-accent: #FF6B35;
@@ -89,12 +90,13 @@
   --feature-bg: #171A21;
   --illustration-glow: rgba(255, 107, 53, 0.05);
 
-  /* Placement heatmap levels */
-  --heatmap-0: #1C212C;
-  --heatmap-1: #451A03;
-  --heatmap-2: #7C2D12;
-  --heatmap-3: #C2410C;
-  --heatmap-4: #FF6B35;
+  /* Placement heatmap levels (green - activity intensity) */
+  --heatmap-empty: #161B22;
+  --heatmap-low: #0E4429;
+  --heatmap-med-low: #006D32;
+  --heatmap-med: #26A641;
+  --heatmap-high: #39D353;
+  --heatmap-max: #2EA043;
 
   /* Admin-specific surfaces */
   --admin-accent: #FF6B35;

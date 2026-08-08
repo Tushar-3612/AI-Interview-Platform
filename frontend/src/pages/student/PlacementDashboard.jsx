@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useOutletContext } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 import {
   Flame,
@@ -9,32 +9,22 @@ import {
   Lightbulb,
   Calendar,
   Medal,
-  Map,
   TrendingUp,
-  ArrowRight,
   ArrowUpRight,
+  ChevronRight,
   CheckCircle2,
   AlertTriangle,
-  Clock,
   Code2,
   BrainCircuit,
   Sparkles,
-  Bell,
-  BarChart3,
   ListChecks,
   Timer,
-  Bookmark,
-  Building2,
   Award,
 } from "lucide-react";
 import useCachedApi from "../../hooks/useCachedApi";
 import { ProgressBar, scoreColor } from "../../components/placement/ProgressRing";
 import Heatmap from "../../components/placement/Heatmap";
-import AchievementBadge from "../../components/placement/AchievementBadge";
-import { DonutChart, BarChart, LineChart } from "../../components/placement/Charts";
-import api from "../../utils/api";
-import { getAuthToken } from "../../hooks/useStudentProfile";
-import { timeAgo } from "../../utils/dateUtils";
+import { DonutChart, LineChart } from "../../components/placement/Charts";
 
 const TYPE_META = {
   aptitude: { icon: BrainCircuit, color: "var(--primary)" },
@@ -195,11 +185,19 @@ function DailyGoals({ goals }) {
 }
 
 function StreakCard({ streak }) {
+  const getIntensityColor = (count) => {
+    if (count === 0) return "var(--border)";
+    if (count === 1) return "#86EFAC";
+    if (count === 2) return "#4ADE80";
+    if (count === 3) return "#22C55E";
+    return "#16A34A";
+  };
+
   return (
     <SectionCard title="Practice Streak" subtitle="Daily consistency tracking" icon={Flame}>
       <div className="grid grid-cols-3 gap-3 mb-5">
-        <div className="rounded-2xl p-4 text-center" style={{ background: "color-mix(in srgb, #f59e0b 10%, transparent)" }}>
-          <p className="text-2xl font-black" style={{ color: "#f59e0b" }}>🔥 {streak.current}</p>
+        <div className="rounded-2xl p-4 text-center" style={{ background: "rgba(34, 197, 94, 0.1)" }}>
+          <p className="text-2xl font-black" style={{ color: "#22C55E" }}>🔥 {streak.current}</p>
           <p className="text-[10px] font-semibold mt-1" style={{ color: "var(--text-secondary)" }}>Day Streak</p>
         </div>
         <div className="rounded-2xl p-4 text-center" style={{ background: "color-mix(in srgb, var(--primary) 8%, transparent)" }}>
@@ -216,8 +214,8 @@ function StreakCard({ streak }) {
       <div className="flex items-end gap-2 h-16 mb-5">
         {streak.weekly?.map((d) => (
           <div key={d.date} className="flex-1 flex flex-col items-center gap-1">
-            <span className="text-[9px] font-bold" style={{ color: d.count > 0 ? "var(--primary)" : "var(--text-muted)" }}>{d.count}</span>
-            <div className="w-full rounded-t-md" style={{ height: `${Math.max(d.count * 20, 4)}px`, background: d.count > 0 ? "var(--primary)" : "var(--border)" }} />
+            <span className="text-[9px] font-bold" style={{ color: d.count > 0 ? "#22C55E" : "var(--text-muted)" }}>{d.count}</span>
+            <div className="w-full rounded-t-md" style={{ height: `${Math.max(d.count * 20, 4)}px`, background: d.count > 0 ? getIntensityColor(d.count) : "var(--border)" }} />
             <span className="text-[8px]" style={{ color: "var(--text-muted)" }}>{d.label}</span>
           </div>
         ))}
@@ -227,207 +225,138 @@ function StreakCard({ streak }) {
       <LineChart
         data={streak.monthly?.map((m) => ({ label: new Date(`${m.date}T00:00:00`).getDate(), value: m.count })) || []}
         height={90}
-        color="var(--primary)"
+        color="#22C55E"
         showDots={false}
       />
     </SectionCard>
   );
 }
 
-function RecommendationsCard({ recommendations }) {
-  return (
-    <SectionCard title="AI Recommendations" subtitle="Generated from your performance" icon={Lightbulb}>
-      <div className="space-y-3">
-        {recommendations?.length === 0 && (
-          <p className="text-sm py-4 text-center" style={{ color: "var(--text-muted)" }}>Complete a practice attempt to get personalized recommendations.</p>
-        )}
-        {recommendations?.map((rec, i) => {
-          const meta = TYPE_META[rec.type] || TYPE_META.onboarding;
-          const Icon = meta.icon;
-          return (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, x: -8 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.06 }}
-              className="flex items-center gap-3 rounded-2xl border p-4 hover:bg-[var(--bg-secondary)] transition-colors"
-              style={{ borderColor: "var(--border)" }}
-            >
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: `color-mix(in srgb, ${meta.color} 10%, transparent)`, color: meta.color }}>
-                <Icon className="w-5 h-5" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold truncate" style={{ color: "var(--text-primary)" }}>{rec.title}</p>
-                <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>{rec.detail}</p>
-              </div>
-              {rec.link && (
-                <a href={rec.link} className="shrink-0 text-[11px] font-bold px-3 py-1.5 rounded-lg cursor-pointer hover:opacity-80" style={{ color: meta.color, background: `color-mix(in srgb, ${meta.color} 10%, transparent)` }}>
-                  {rec.action || "Go"}
-                </a>
-              )}
-            </motion.div>
-          );
-        })}
-      </div>
-    </SectionCard>
-  );
-}
+function AIRecommendationsCard({ recommendations, weakTopics }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const hasData = (recommendations && recommendations.length > 0) || (weakTopics && weakTopics.length > 0);
 
-function CompanyReadinessCard({ companies, onViewAll }) {
-  const navigate = useNavigate();
+  if (!hasData && !isOpen) return null;
+
   return (
-    <SectionCard title="Company Readiness" subtitle="Estimated readiness per company" icon={Building2}
-      action={
-        <button onClick={onViewAll} className="text-xs font-bold flex items-center gap-1 cursor-pointer hover:underline" style={{ color: "var(--primary)" }}>
-          Full Analytics <ArrowUpRight className="w-3 h-3" />
-        </button>
-      }>
-      <div className="space-y-3">
-        {companies?.length === 0 && (
-          <p className="text-sm py-4 text-center" style={{ color: "var(--text-muted)" }}>
-            Practice with any company to see your readiness here.
-          </p>
-        )}
-        {companies?.map((c) => (
-          <div key={c.companyId} className="rounded-2xl border p-4 transition hover:bg-[var(--bg-secondary)]" style={{ borderColor: "var(--border)" }}>
-            <div className="flex items-center justify-between gap-3 mb-2">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-9 h-9 rounded-xl flex items-center justify-center text-xs font-black text-white shrink-0" style={{ background: c.color || "var(--primary)" }}>
-                  {c.companyName?.slice(0, 2).toUpperCase()}
-                </div>
-                <div className="min-w-0">
-                  <p className="text-sm font-bold truncate" style={{ color: "var(--text-primary)" }}>{c.companyName}</p>
-                  <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>{c.questionsSolved} questions · {c.breakdown?.aptitude}% aptitude · {c.breakdown?.coding}% coding</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <span className="text-[10px] font-bold px-2.5 py-1 rounded-full" style={{ color: scoreColor(c.readiness), background: `color-mix(in srgb, ${scoreColor(c.readiness)} 10%, transparent)` }}>
-                  {c.label}
-                </span>
-                <span className="text-lg font-black" style={{ color: scoreColor(c.readiness) }}>{c.readiness}%</span>
-              </div>
+    <section className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-3xl shadow-[var(--shadow-sm)] overflow-hidden">
+      {/* Collapsed state - clickable header */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full p-5 sm:p-6 text-left cursor-pointer hover:bg-[var(--bg-secondary)] transition-colors"
+      >
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: "color-mix(in srgb, var(--primary) 8%, transparent)", color: "var(--primary)" }}>
+              <Lightbulb className="w-5 h-5" />
             </div>
-            <ProgressBar value={c.readiness} showLabel={false} height={7} color={scoreColor(c.readiness)} />
-            <div className="flex flex-wrap gap-2 mt-3">
-              <button
-                onClick={() => navigate(`/placement/mock-oa?company=${c.companyId}`)}
-                className="text-[10px] font-bold px-2.5 py-1.5 rounded-lg cursor-pointer transition hover:opacity-80"
-                style={{ color: "var(--primary)", background: "color-mix(in srgb, var(--primary) 8%, transparent)" }}
-              >
-                Mock OA
-              </button>
-              <button
-                onClick={() => navigate(`/interview-practice/${c.companyId}`)}
-                className="text-[10px] font-bold px-2.5 py-1.5 rounded-lg cursor-pointer transition hover:opacity-80"
-                style={{ color: "var(--text-secondary)", background: "color-mix(in srgb, var(--border) 40%, transparent)" }}
-              >
-                Practice
-              </button>
+            <div className="min-w-0">
+              <h3 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>AI Recommendations</h3>
+              <p className="text-xs" style={{ color: "var(--text-muted)" }}>Personalized suggestions based on your performance</p>
             </div>
           </div>
-        ))}
-      </div>
-    </SectionCard>
-  );
-}
-
-function WeakTopicsCard({ weakTopics }) {
-  return (
-    <SectionCard title="Weak Areas" subtitle="Topics below 70% accuracy" icon={AlertTriangle}>
-      <div className="flex flex-wrap gap-2">
-        {weakTopics?.length === 0 && (
-          <p className="text-sm py-2" style={{ color: "var(--text-muted)" }}>No weak topics detected — great consistency!</p>
-        )}
-        {weakTopics?.map((t) => (
-          <div key={t.kind + t.topic} className="flex items-center gap-2 px-3 py-2 rounded-xl border" style={{ borderColor: "color-mix(in srgb, var(--error) 25%, var(--border))", background: "color-mix(in srgb, var(--error) 6%, transparent)" }}>
-            <span className="text-xs font-bold" style={{ color: "var(--error)" }}>{t.topic}</span>
-            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded" style={{ background: "color-mix(in srgb, var(--error) 12%, transparent)", color: "var(--error)" }}>{t.accuracy}%</span>
-          </div>
-        ))}
-      </div>
-    </SectionCard>
-  );
-}
-
-function RoadmapCard({ roadmap }) {
-  const kindColor = { aptitude: "var(--primary)", coding: "var(--accent)", mock: "var(--success)", interview: "#f59e0b" };
-  return (
-    <SectionCard title="Study Roadmap" subtitle="Your 7-day placement plan" icon={Map}>
-      <div className="space-y-2">
-        {roadmap?.map((item, i) => (
           <motion.div
-            key={i}
-            initial={{ opacity: 0, x: -8 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: i * 0.05 }}
-            className="flex items-center gap-3 rounded-2xl border p-3.5"
-            style={{ borderColor: "var(--border)" }}
+            animate={{ rotate: isOpen ? 90 : 0 }}
+            transition={{ duration: 0.2 }}
           >
-            <div className="w-16 shrink-0 text-center">
-              <p className="text-[10px] font-black uppercase" style={{ color: kindColor[item.kind] || "var(--text-muted)" }}>{item.day}</p>
-              <p className="text-[9px]" style={{ color: "var(--text-muted)" }}>{item.date}</p>
-            </div>
-            <div className="w-px h-8 shrink-0" style={{ background: "var(--border)" }} />
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold truncate" style={{ color: "var(--text-primary)" }}>{item.title}</p>
-              <p className="text-[10px] truncate" style={{ color: "var(--text-muted)" }}>{item.subtitle}</p>
-            </div>
-            {item.link && (
-              <a href={item.link} className="shrink-0 p-2 rounded-lg cursor-pointer hover:opacity-80" style={{ color: "var(--primary)", background: "color-mix(in srgb, var(--primary) 8%, transparent)" }}>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </a>
-            )}
+            <ChevronRight className="w-5 h-5" style={{ color: "var(--text-muted)" }} />
           </motion.div>
-        ))}
-      </div>
-    </SectionCard>
-  );
-}
+        </div>
+      </button>
 
-function NotificationsCard() {
-  const token = getAuthToken();
-  const { data, loading } = useCachedApi({ url: "/api/notifications", params: { limit: 6 }, key: "notif:student", ttlMs: 30 * 1000 });
-  const [local, setLocal] = useState(null);
-
-  const notifications = local || data?.notifications || [];
-
-  const markRead = async (id) => {
-    try {
-      await api.put(`/api/notifications/${id}/read`, {}, { headers: { Authorization: `Bearer ${token}` } });
-      setLocal(notifications.map((n) => (n._id === id ? { ...n, read: true } : n)));
-    } catch { /* noop */ }
-  };
-
-  return (
-    <SectionCard title="Notifications" subtitle="Updates and reminders" icon={Bell}>
-      <div className="space-y-2">
-        {!loading && notifications.length === 0 && (
-          <p className="text-sm py-4 text-center" style={{ color: "var(--text-muted)" }}>No notifications yet.</p>
-        )}
-        {notifications.map((n) => (
-          <div
-            key={n._id}
-            className={`flex items-start gap-3 rounded-xl border p-3 cursor-pointer transition ${n.read ? "" : "hover:bg-[var(--bg-secondary)]"}`}
-            style={{ borderColor: "var(--border)", background: n.read ? "transparent" : "color-mix(in srgb, var(--primary) 5%, transparent)" }}
-            onClick={() => { if (!n.read) markRead(n._id); }}
+      {/* Expanded detail panel */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
           >
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-              style={{
-                color: n.type === "warning" ? "var(--error)" : n.type === "success" ? "var(--success)" : "var(--primary)",
-                background: "color-mix(in srgb, " + (n.type === "warning" ? "var(--error)" : n.type === "success" ? "var(--success)" : "var(--primary)") + " 8%, transparent)",
-              }}>
-              {n.type === "warning" ? <AlertTriangle className="w-4 h-4" /> : n.type === "success" ? <Trophy className="w-4 h-4" /> : <Bell className="w-4 h-4" />}
+            <div className="px-5 sm:px-6 pb-5 sm:pb-6 border-t" style={{ borderColor: "var(--border)" }}>
+              <div className="pt-4">
+                <p className="text-xs font-semibold mb-4" style={{ color: "var(--text-secondary)" }}>
+                  Based on your recent performance
+                </p>
+
+                {/* Weak Topics */}
+                {weakTopics && weakTopics.length > 0 && (
+                  <div className="mb-5">
+                    <div className="flex items-center gap-2 mb-3">
+                      <AlertTriangle className="w-4 h-4" style={{ color: "var(--error)" }} />
+                      <p className="text-xs font-bold" style={{ color: "var(--text-primary)" }}>Weak Areas</p>
+                    </div>
+                    <div className="space-y-2">
+                      {weakTopics.map((t) => (
+                        <div key={t.kind + t.topic} className="flex items-center justify-between p-3 rounded-xl border" style={{ borderColor: "color-mix(in srgb, var(--error) 25%, var(--border))", background: "color-mix(in srgb, var(--error) 5%, transparent)" }}>
+                          <div className="flex items-center gap-3">
+                            <div className="w-2 h-2 rounded-full shrink-0" style={{ background: "var(--error)" }} />
+                            <div>
+                              <p className="text-xs font-bold" style={{ color: "var(--text-primary)" }}>{t.topic}</p>
+                              <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>{t.kind === "aptitude" ? "Aptitude" : "Coding"}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded" style={{ background: "color-mix(in srgb, var(--error) 12%, transparent)", color: "var(--error)" }}>
+                              {t.accuracy}%
+                            </span>
+                            <span className="text-[10px] font-semibold" style={{ color: "var(--text-muted)" }}>accuracy</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Recommendations */}
+                {recommendations && recommendations.length > 0 && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-3">
+                      <Lightbulb className="w-4 h-4" style={{ color: "#EF6905" }} />
+                      <p className="text-xs font-bold" style={{ color: "var(--text-primary)" }}>Recommendations</p>
+                    </div>
+                    <div className="space-y-2">
+                      {recommendations.map((rec, i) => {
+                        const meta = TYPE_META[rec.type] || TYPE_META.onboarding;
+                        const Icon = meta.icon;
+                        return (
+                          <motion.div
+                            key={i}
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: i * 0.05 }}
+                            className="flex items-start gap-3 p-3 rounded-xl border" style={{ borderColor: "var(--border)" }}
+                          >
+                            <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: `color-mix(in srgb, ${meta.color} 10%, transparent)`, color: meta.color }}>
+                              <Icon className="w-4 h-4" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-bold" style={{ color: "var(--text-primary)" }}>{rec.title}</p>
+                              <p className="text-[11px] mt-0.5" style={{ color: "var(--text-muted)" }}>{rec.detail}</p>
+                            </div>
+                            {rec.link && (
+                              <a href={rec.link} className="shrink-0 text-[10px] font-bold px-2.5 py-1.5 rounded-lg cursor-pointer hover:opacity-80" style={{ color: meta.color, background: `color-mix(in srgb, ${meta.color} 10%, transparent)` }}>
+                                {rec.action || "Go"}
+                              </a>
+                            )}
+                          </motion.div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {(!recommendations || recommendations.length === 0) && (!weakTopics || weakTopics.length === 0) && (
+                  <p className="text-sm py-4 text-center" style={{ color: "var(--text-muted)" }}>
+                    Complete a practice attempt to get personalized recommendations.
+                  </p>
+                )}
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold truncate" style={{ color: "var(--text-primary)" }}>{n.title}</p>
-              <p className="text-[11px] truncate" style={{ color: "var(--text-muted)" }}>{n.message}</p>
-              <p className="text-[9px] mt-0.5" style={{ color: "var(--text-muted)" }}>{timeAgo(n.createdAt)}</p>
-            </div>
-            {!n.read && <span className="w-2 h-2 rounded-full shrink-0 mt-1.5" style={{ background: "var(--primary)" }} />}
-          </div>
-        ))}
-      </div>
-    </SectionCard>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </section>
   );
 }
 
@@ -436,7 +365,7 @@ function QuickLinks() {
   const links = [
     { label: "Leaderboard", icon: Trophy, path: "/placement/leaderboard", desc: "Compare with peers" },
     { label: "Mock OA", icon: Timer, path: "/placement/mock-oa", desc: "Real exam experience" },
-    { label: "Performance", icon: BarChart3, path: "/placement/performance", desc: "Charts & trends" },
+    { label: "Achievements", icon: Award, path: "/placement/achievements", desc: "Track milestones" },
     { label: "Question Analytics", icon: ListChecks, path: "/placement/question-analytics", desc: "Solve / skip / bookmark" },
   ];
   return (
@@ -458,21 +387,6 @@ function QuickLinks() {
         );
       })}
     </div>
-  );
-}
-
-function AchievementsGrid({ achievements }) {
-  return (
-    <SectionCard title="Achievements" subtitle={`${achievements?.unlocked?.length || 0} of ${achievements?.all?.length || 0} unlocked`} icon={Award}>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
-        {achievements?.unlocked?.map((a, i) => (
-          <AchievementBadge key={a.key} achievement={a} unlocked delay={i * 0.04} />
-        ))}
-        {achievements?.locked?.map((a, i) => (
-          <AchievementBadge key={a.key} achievement={a} unlocked={false} delay={i * 0.02} />
-        ))}
-      </div>
-    </SectionCard>
   );
 }
 
@@ -510,7 +424,6 @@ function PlacementSkeleton() {
 
 function PlacementDashboard() {
   const { profile } = useOutletContext();
-  const navigate = useNavigate();
   const { data, loading, error, refetch } = useCachedApi({ url: "/api/placement/overview", key: "placement:overview", ttlMs: 60 * 1000 });
 
   useEffect(() => {
@@ -564,22 +477,11 @@ function PlacementDashboard() {
         <StreakCard streak={data.streak} />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-        <RecommendationsCard recommendations={data.recommendations} />
-        <WeakTopicsCard weakTopics={data.weakTopics} />
-      </div>
-
-      <CompanyReadinessCard companies={data.companyReadiness} onViewAll={() => navigate("/placement/company-analytics")} />
+      <AIRecommendationsCard recommendations={data.recommendations} weakTopics={data.weakTopics} />
 
       <SectionCard title="Daily Practice Heatmap" subtitle="Last 6 months of practice activity" icon={Calendar}>
         <Heatmap days={data.heatmap} />
       </SectionCard>
-
-      <AchievementsGrid achievements={data.achievements} />
-
-      <RoadmapCard roadmap={data.roadmap} />
-
-      <NotificationsCard />
     </div>
   );
 }

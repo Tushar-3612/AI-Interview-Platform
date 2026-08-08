@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { useOutletContext } from "react-router-dom";
+import { useNavigate, useOutletContext } from "react-router-dom";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import {
@@ -17,11 +17,52 @@ import {
   Plus,
   X,
   Camera,
+  Award,
 } from "lucide-react";
 import InputField from "../../components/ui/InputField";
 import Button from "../../components/ui/Button";
 import api from "../../utils/api";
 import { getAuthToken } from "../../hooks/useStudentProfile";
+import useCachedApi from "../../hooks/useCachedApi";
+
+const ProfileLink = ({ label, name, icon: Icon, profile, updateProfile }) => (
+  <div className="student-card p-4">
+    <div className="flex items-center justify-between gap-3">
+      <div className="flex items-center gap-3 min-w-0">
+        <Icon className="w-4 h-4 shrink-0" style={{ color: "var(--primary)" }} />
+        <div className="min-w-0">
+          <p className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>{label}</p>
+          {profile[name] ? (
+            <a
+              href={profile[name].startsWith("http") ? profile[name] : `https://${profile[name]}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-medium truncate block hover:underline"
+              style={{ color: "var(--primary)" }}
+            >
+              {profile[name]}
+            </a>
+          ) : (
+            <p className="text-sm" style={{ color: "var(--text-muted)" }}>Not Added</p>
+          )}
+        </div>
+      </div>
+      {!profile[name] && (
+        <button
+          type="button"
+          onClick={() => {
+            const val = prompt(`Enter ${label}:`);
+            if (val) updateProfile({ [name]: val });
+          }}
+          className="text-xs font-semibold px-3 py-1.5 rounded-lg cursor-pointer"
+          style={{ color: "var(--primary)", background: "color-mix(in srgb, var(--primary) 10%, transparent)" }}
+        >
+          Add
+        </button>
+      )}
+    </div>
+  </div>
+);
 
 /**
  * Candidate Profile — comprehensive student profile management.
@@ -29,17 +70,28 @@ import { getAuthToken } from "../../hooks/useStudentProfile";
 function Profile() {
   const { profile, updateProfile, saveProfile, addSkill, removeSkill, completionPercent } =
     useOutletContext();
+  const navigate = useNavigate();
   const avatarInputRef = useRef(null);
   const resumeInputRef = useRef(null);
   const [skillInput, setSkillInput] = useState("");
   const [saving, setSaving] = useState(false);
+
+  const { data: placementData } = useCachedApi({
+    url: "/api/placement/overview",
+    key: "placement:overview",
+    ttlMs: 60 * 1000,
+  });
+
+  const achievements = placementData?.achievements;
+  const unlockedCount = achievements?.unlocked?.length || 0;
+  const totalCount = unlockedCount + (achievements?.locked?.length || 0);
 
   const handleSave = async () => {
     setSaving(true);
     try {
       await saveProfile();
       toast.success("Profile saved successfully");
-    } catch (err) {
+    } catch {
       toast.error("Failed to sync profile changes to database");
     } finally {
       setSaving(false);
@@ -89,45 +141,6 @@ function Profile() {
       setSaving(false);
     }
   };
-
-  const ProfileLink = ({ label, name, icon: Icon }) => (
-    <div className="student-card p-4">
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3 min-w-0">
-          <Icon className="w-4 h-4 shrink-0" style={{ color: "var(--primary)" }} />
-          <div className="min-w-0">
-            <p className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>{label}</p>
-            {profile[name] ? (
-              <a
-                href={profile[name].startsWith("http") ? profile[name] : `https://${profile[name]}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm font-medium truncate block hover:underline"
-                style={{ color: "var(--primary)" }}
-              >
-                {profile[name]}
-              </a>
-            ) : (
-              <p className="text-sm" style={{ color: "var(--text-muted)" }}>Not Added</p>
-            )}
-          </div>
-        </div>
-        {!profile[name] && (
-          <button
-            type="button"
-            onClick={() => {
-              const val = prompt(`Enter ${label}:`);
-              if (val) updateProfile({ [name]: val });
-            }}
-            className="text-xs font-semibold px-3 py-1.5 rounded-lg cursor-pointer"
-            style={{ color: "var(--primary)", background: "color-mix(in srgb, var(--primary) 10%, transparent)" }}
-          >
-            Add
-          </button>
-        )}
-      </div>
-    </div>
-  );
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
@@ -217,9 +230,9 @@ function Profile() {
             Professional Profiles
           </h2>
           <div className="space-y-3">
-            <ProfileLink label="Portfolio Website" name="portfolio" icon={LinkIcon} />
-            <ProfileLink label="GitHub Profile" name="github" icon={LinkIcon} />
-            <ProfileLink label="LinkedIn Profile" name="linkedin" icon={LinkIcon} />
+            <ProfileLink label="Portfolio Website" name="portfolio" icon={LinkIcon} profile={profile} updateProfile={updateProfile} />
+            <ProfileLink label="GitHub Profile" name="github" icon={LinkIcon} profile={profile} updateProfile={updateProfile} />
+            <ProfileLink label="LinkedIn Profile" name="linkedin" icon={LinkIcon} profile={profile} updateProfile={updateProfile} />
           </div>
         </section>
 
@@ -238,26 +251,42 @@ function Profile() {
             </span>
           </div>
           <div className="flex flex-wrap gap-2">
-            {[
-              { label: "Upload Resume", icon: Upload, action: () => resumeInputRef.current?.click() },
-              { label: "Replace Resume", icon: Upload, action: () => resumeInputRef.current?.click() },
-              { label: "Download Resume", icon: Download, action: () => toast("Download available after backend integration") },
-              { label: "View Resume", icon: Eye, action: () => toast("View available after backend integration") },
-            ].map((btn) => {
-              const Icon = btn.icon;
-              return (
-                <button
-                  key={btn.label}
-                  type="button"
-                  onClick={btn.action}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium border cursor-pointer hover:opacity-80"
-                  style={{ borderColor: "var(--border)", color: "var(--text-primary)" }}
-                >
-                  <Icon className="w-3.5 h-3.5" />
-                  {btn.label}
-                </button>
-              );
-            })}
+            <button
+              type="button"
+              onClick={() => resumeInputRef.current?.click()}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium border cursor-pointer hover:opacity-80"
+              style={{ borderColor: "var(--border)", color: "var(--text-primary)" }}
+            >
+              <Upload className="w-3.5 h-3.5" />
+              Upload Resume
+            </button>
+            <button
+              type="button"
+              onClick={() => resumeInputRef.current?.click()}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium border cursor-pointer hover:opacity-80"
+              style={{ borderColor: "var(--border)", color: "var(--text-primary)" }}
+            >
+              <Upload className="w-3.5 h-3.5" />
+              Replace Resume
+            </button>
+            <button
+              type="button"
+              onClick={() => toast("Download available after backend integration")}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium border cursor-pointer hover:opacity-80"
+              style={{ borderColor: "var(--border)", color: "var(--text-primary)" }}
+            >
+              <Download className="w-3.5 h-3.5" />
+              Download Resume
+            </button>
+            <button
+              type="button"
+              onClick={() => toast("View available after backend integration")}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium border cursor-pointer hover:opacity-80"
+              style={{ borderColor: "var(--border)", color: "var(--text-primary)" }}
+            >
+              <Eye className="w-3.5 h-3.5" />
+              View Resume
+            </button>
             <input ref={resumeInputRef} type="file" accept=".pdf" className="hidden" onChange={handleResumeUpload} />
           </div>
         </section>
@@ -316,6 +345,92 @@ function Profile() {
             ))}
           </div>
         </section>
+
+        {/* Achievements */}
+        {totalCount > 0 && (
+          <section className="student-card p-6 mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
+                Achievements
+              </h2>
+              <button
+                type="button"
+                onClick={() => navigate("/placement/achievements")}
+                className="text-xs font-bold cursor-pointer hover:underline"
+                style={{ color: "#EF6905" }}
+              >
+                View All
+              </button>
+            </div>
+            <div className="flex items-center gap-4 mb-4">
+              <div className="relative w-14 h-14 shrink-0">
+                <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
+                  <circle cx="18" cy="18" r="16" fill="none" stroke="var(--border)" strokeWidth="3" />
+                  <circle
+                    cx="18" cy="18" r="16" fill="none"
+                    stroke="#EF6905"
+                    strokeWidth="3"
+                    strokeDasharray={`${totalCount > 0 ? (unlockedCount / totalCount) * 100 : 0} 100`}
+                    strokeLinecap="round"
+                  />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-xs font-black" style={{ color: "#EF6905" }}>
+                    {unlockedCount}
+                  </span>
+                </div>
+              </div>
+              <div>
+                <p className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>
+                  {unlockedCount} of {totalCount} unlocked
+                </p>
+                <p className="text-[10px] mt-0.5" style={{ color: "var(--text-muted)" }}>
+                  Complete more practice to unlock badges.
+                </p>
+              </div>
+            </div>
+            {achievements?.unlocked?.length > 0 && (
+              <div className="flex gap-2 overflow-x-auto pb-1">
+                {achievements.unlocked.slice(0, 5).map((a) => (
+                  <div
+                    key={a.key}
+                    className="flex items-center gap-2 px-3 py-2 rounded-xl border shrink-0"
+                    style={{
+                      borderColor: "rgba(239, 105, 5, 0.2)",
+                      background: "rgba(239, 105, 5, 0.04)",
+                    }}
+                  >
+                    <span className="text-base">{a.icon}</span>
+                    <span className="text-[10px] font-bold" style={{ color: "var(--text-primary)" }}>
+                      {a.title}
+                    </span>
+                  </div>
+                ))}
+                {achievements.unlocked.length > 5 && (
+                  <div
+                    className="flex items-center px-3 py-2 rounded-xl border shrink-0"
+                    style={{ borderColor: "var(--border)", background: "var(--card-bg)" }}
+                  >
+                    <span className="text-[10px] font-bold" style={{ color: "var(--text-muted)" }}>
+                      +{achievements.unlocked.length - 5} more
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+            {unlockedCount === 0 && (
+              <div
+                className="text-center py-3 rounded-xl border"
+                style={{ borderColor: "var(--border)", background: "var(--input-bg)" }}
+              >
+                <Award className="w-5 h-5 mx-auto mb-1" style={{ color: "var(--text-muted)" }} />
+                <p className="text-[10px] font-semibold" style={{ color: "var(--text-muted)" }}>
+                  Complete practice attempts to unlock achievements.
+                </p>
+              </div>
+            )}
+          </section>
+        )}
 
         <div className="flex flex-col sm:flex-row gap-3">
           <Button onClick={handleSave} loading={saving}>

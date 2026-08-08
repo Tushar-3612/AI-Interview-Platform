@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import Login from "../pages/Login";
 import Signup from "../pages/Signup";
 import RegistrationSuccess from "../pages/RegistrationSuccess";
@@ -6,7 +6,6 @@ import TermsAndConditions from "../pages/legal/TermsAndConditions";
 import PrivacyPolicy from "../pages/legal/PrivacyPolicy";
 import StudentLayout from "../layouts/StudentLayout";
 import StudentDashboard from "../pages/StudentDashboard";
-import Home from "../pages/student/Home";
 import Profile from "../pages/student/Profile";
 import InterviewPractice from "../pages/student/InterviewPractice";
 import RoundSelection from "../pages/student/RoundSelection";
@@ -46,6 +45,7 @@ import MockOA from "../pages/student/MockOA";
 import CompanyAnalytics from "../pages/student/CompanyAnalytics";
 import PerformanceGraphs from "../pages/student/PerformanceGraphs";
 import QuestionAnalytics from "../pages/student/QuestionAnalytics";
+import Achievements from "../pages/student/Achievements";
 import AdminPlacementAnalytics from "../pages/admin/PlacementAnalytics";
 
 function AppRoutes() {
@@ -81,6 +81,7 @@ function AppRoutes() {
         <Route path="/placement/company-analytics" element={<CompanyAnalytics />} />
         <Route path="/placement/performance" element={<PerformanceGraphs />} />
         <Route path="/placement/question-analytics" element={<QuestionAnalytics />} />
+        <Route path="/placement/achievements" element={<Achievements />} />
       </Route>
 
       <Route element={<AdminLayout />}>
