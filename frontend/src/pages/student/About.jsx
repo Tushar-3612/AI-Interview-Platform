@@ -1,17 +1,15 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import {
-  Target,
-  Eye,
-  Layers,
-  Code2,
-  Users,
   Building2,
-  Info,
-  Sparkles,
-  GraduationCap,
-  ShieldCheck,
-  Cpu,
   Globe,
+  GraduationCap,
+  ClipboardList,
+  Briefcase,
+  Code2,
+  BookOpen,
+  Mic,
+  BarChart3,
 } from "lucide-react";
 
 const TEAM = [
@@ -20,159 +18,269 @@ const TEAM = [
     role: "Full Stack Lead",
     tag: "Lead Developer",
     initials: "TN",
-    color: "from-blue-500 to-indigo-600",
+    photo: "/images/team/profile.png",
   },
   {
     name: "Roshan Langhi",
     role: "Frontend Developer",
     tag: "UI/UX & React",
     initials: "RL",
-    color: "from-purple-500 to-pink-600",
+    photo: "/images/team/roshan-langhi.jpg",
   },
   {
     name: "Amol Lende",
     role: "Backend & Systems",
     tag: "Node & MongoDB",
     initials: "AL",
-    color: "from-emerald-500 to-teal-600",
+    photo: "/images/team/amol-lende.jpg",
   },
 ];
 
 const TECH_STACK = [
-  "React",
+  "React.js",
+  "Vite",
+  "JavaScript",
   "Node.js",
   "Express.js",
   "MongoDB Atlas",
-  "Tailwind CSS",
-  "Framer Motion",
-  "JWT Auth",
-  "REST API",
+  "Google Gemini API",
+  "JWT",
+  "Multer",
+  "REST APIs",
 ];
 
-const OVERVIEW_CARDS = [
+const FEATURES = [
   {
-    icon: Target,
-    title: "Our Mission",
-    text: "Empower every student with structured interview preparation, resume-based mock interviews, and company-specific practice — making placement readiness accessible to all.",
-    accent: "var(--primary)",
+    icon: ClipboardList,
+    title: "Resume-Based Questions",
+    text: "Upload your resume and practice questions based on your skills, projects and technologies.",
   },
   {
-    icon: Eye,
-    title: "Our Vision",
-    text: "Become the trusted placement preparation platform adopted across departments at Sanjivani College, helping students transition seamlessly from campus to career.",
-    accent: "var(--accent)",
-  },
-  {
-    icon: Layers,
-    title: "Platform Features",
-    text: "Comprehensive resume AI analysis, real-time mock interview simulations, company-wise aptitude prep, automated scoring analytics, and skill evaluation.",
-    accent: "var(--primary)",
+    icon: Briefcase,
+    title: "Company Practice",
+    text: "Practice company-specific placement assessments and interview questions.",
   },
   {
     icon: Code2,
-    title: "Architecture",
-    text: "Built on modern MERN stack architecture with optimized database querying, modular API design, dynamic response evaluation, and responsive design systems.",
-    accent: "var(--accent)",
+    title: "Coding Practice",
+    text: "Solve coding problems and track completed and remaining problems.",
+  },
+  {
+    icon: BookOpen,
+    title: "Aptitude Practice",
+    text: "Practice Quantitative, Logical and Verbal aptitude with objective evaluation.",
+  },
+  {
+    icon: Mic,
+    title: "Voice & Text Answers",
+    text: "Answer interview questions using typing or browser-based voice-to-text.",
+  },
+  {
+    icon: BarChart3,
+    title: "Performance Analysis",
+    text: "View scores, strengths, weaknesses and areas that need improvement.",
   },
 ];
 
-/**
- * Redesigned About Page — platform overview for Sanjivani College students.
- */
+const STEPS = [
+  { num: "01", label: "Profile" },
+  { num: "02", label: "Resume" },
+  { num: "03", label: "Practice" },
+  { num: "04", label: "Interview" },
+  { num: "05", label: "Results" },
+];
+
+function TeamPhoto({ member }) {
+  const [imgError, setImgError] = useState(false);
+  const showPhoto = member.photo && !imgError;
+
+  return (
+    <div
+      className="w-[90px] h-[90px] sm:w-[100px] sm:h-[100px] lg:w-[110px] lg:h-[110px] rounded-full overflow-hidden shrink-0 border-2 flex items-center justify-center mx-auto"
+      style={{ borderColor: "#EF6905" }}
+    >
+      {showPhoto ? (
+        <img
+          src={member.photo}
+          alt={member.name}
+          className="w-full h-full object-cover object-center"
+          onError={() => setImgError(true)}
+        />
+      ) : (
+        <div
+          className="w-full h-full flex items-center justify-center font-bold text-lg"
+          style={{ background: "var(--input-bg)", color: "var(--text-muted)" }}
+        >
+          {member.initials}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function About() {
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-10">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 space-y-14">
 
-      {/* ── Hero Banner ── */}
+      {/* ── Hero ── */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="relative overflow-hidden rounded-3xl border border-[var(--border)] p-8 sm:p-12 text-center"
-        style={{
-          background:
-            "radial-gradient(circle at top right, color-mix(in srgb, var(--primary) 12%, transparent), transparent 70%), color-mix(in srgb, var(--card-bg) 80%, var(--bg-primary))",
-        }}
+        className="text-center"
       >
-        {/* Top subtle border glow */}
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[var(--primary)] via-[var(--accent)] to-[var(--primary)]" />
-
-        <div
-          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[var(--primary)]/30 text-xs font-bold uppercase tracking-wider mb-4"
-          style={{ background: "color-mix(in srgb, var(--primary) 10%, transparent)", color: "var(--primary)" }}
+        <h1
+          className="text-3xl sm:text-4xl font-black tracking-tight mb-3"
+          style={{ color: "var(--text-primary)" }}
         >
-          <Sparkles className="w-3.5 h-3.5" /> Placement Preparation Ecosystem
-        </div>
-
-        <h1 className="text-3xl sm:text-5xl font-black tracking-tight mb-4" style={{ color: "var(--text-primary)" }}>
-          About{" "}
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-[var(--primary)] to-[var(--accent)]">
-            Interview Platform
-          </span>
+          About <span style={{ color: "#EF6905" }}>PrepHire</span>
         </h1>
-
-        <p className="max-w-2xl mx-auto text-sm sm:text-base font-medium leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-          An all-in-one AI-driven preparation hub tailored specifically for students of Sanjivani College of Engineering to boost confidence, master placement rounds, and secure placements.
+        <p
+          className="text-sm font-semibold uppercase tracking-widest mb-4"
+          style={{ color: "#FF9800" }}
+        >
+          AI-Powered Mock Interview Preparation Platform
+        </p>
+        <p
+          className="max-w-xl mx-auto text-sm leading-relaxed"
+          style={{ color: "var(--text-secondary)" }}
+        >
+          A placement-focused platform designed to help students prepare
+          through personalized interviews, aptitude, coding and performance
+          analysis.
         </p>
       </motion.div>
 
-      {/* ── Core Values & Overview Grid ── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {OVERVIEW_CARDS.map((item, i) => {
-          const Icon = item.icon;
-          return (
-            <motion.div
-              key={item.title}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.08, duration: 0.4 }}
-              className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-2xl p-6 sm:p-7 shadow-[var(--shadow-sm)] hover:border-[var(--primary)]/40 transition-all duration-300 flex flex-col justify-between"
-            >
-              <div>
-                <div className="flex items-center gap-3.5 mb-4">
-                  <div
-                    className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0"
-                    style={{ background: `color-mix(in srgb, ${item.accent} 12%, transparent)` }}
-                  >
-                    <Icon className="w-6 h-6" style={{ color: item.accent }} />
-                  </div>
-                  <h2 className="text-xl font-bold" style={{ color: "var(--text-primary)" }}>
-                    {item.title}
-                  </h2>
-                </div>
-                <p className="text-sm leading-relaxed font-medium" style={{ color: "var(--text-secondary)" }}>
-                  {item.text}
-                </p>
-              </div>
-            </motion.div>
-          );
-        })}
-      </div>
+      {/* ── What You Can Do ── */}
+      <section>
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="text-center mb-8"
+        >
+          <h2
+            className="text-2xl sm:text-3xl font-bold"
+            style={{ color: "var(--text-primary)" }}
+          >
+            What You Can Do
+          </h2>
+        </motion.div>
 
-      {/* ── Tech Stack Badges ── */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {FEATURES.map((card, i) => {
+            const Icon = card.icon;
+            return (
+              <motion.div
+                key={card.title}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15 + i * 0.06 }}
+                className="p-5 rounded-2xl border transition-all duration-300 hover:border-[#EF6905]/25"
+                style={{
+                  background: "var(--card-bg)",
+                  borderColor: "var(--border)",
+                  boxShadow: "var(--shadow-sm)",
+                }}
+              >
+                <div
+                  className="w-9 h-9 rounded-xl flex items-center justify-center mb-3"
+                  style={{ background: "rgba(239, 105, 5, 0.08)" }}
+                >
+                  <Icon className="w-4.5 h-4.5" style={{ color: "#EF6905" }} />
+                </div>
+                <h3
+                  className="font-bold text-sm mb-1"
+                  style={{ color: "var(--text-primary)" }}
+                >
+                  {card.title}
+                </h3>
+                <p
+                  className="text-xs leading-relaxed"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  {card.text}
+                </p>
+              </motion.div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ── How It Works ── */}
+      <section>
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="text-center mb-8"
+        >
+          <h2
+            className="text-2xl sm:text-3xl font-bold"
+            style={{ color: "var(--text-primary)" }}
+          >
+            How It Works
+          </h2>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35 }}
+          className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-0"
+        >
+          {STEPS.map((step, i) => (
+            <div key={step.num} className="flex items-center">
+              <div className="flex flex-col items-center text-center px-4 sm:px-6">
+                <div
+                  className="text-lg font-black mb-1"
+                  style={{ color: "#EF6905", opacity: 0.4 }}
+                >
+                  {step.num}
+                </div>
+                <div
+                  className="text-xs font-bold"
+                  style={{ color: "var(--text-primary)" }}
+                >
+                  {step.label}
+                </div>
+              </div>
+              {i < STEPS.length - 1 && (
+                <div
+                  className="hidden sm:block w-8 h-px mx-1"
+                  style={{ background: "#EF6905", opacity: 0.25 }}
+                />
+              )}
+              {i < STEPS.length - 1 && (
+                <div
+                  className="sm:hidden w-px h-6"
+                  style={{ background: "#EF6905", opacity: 0.25 }}
+                />
+              )}
+            </div>
+          ))}
+        </motion.div>
+      </section>
+
+      {/* ── Built With ── */}
       <motion.section
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.35 }}
-        className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-3xl p-6 sm:p-8 shadow-[var(--shadow-sm)]"
+        transition={{ delay: 0.4 }}
       >
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "color-mix(in srgb, var(--primary) 10%, transparent)" }}>
-            <Cpu className="w-5 h-5" style={{ color: "var(--primary)" }} />
-          </div>
-          <div>
-            <h2 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>Powered By Modern Tech</h2>
-            <p className="text-xs" style={{ color: "var(--text-secondary)" }}>Engineering stack backing the platform architecture</p>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap gap-2.5 pt-2">
+        <h2
+          className="text-2xl sm:text-3xl font-bold text-center mb-6"
+          style={{ color: "var(--text-primary)" }}
+        >
+          Built With
+        </h2>
+        <div className="flex flex-wrap justify-center gap-2.5">
           {TECH_STACK.map((tech) => (
             <span
               key={tech}
-              className="px-3.5 py-1.5 rounded-xl text-xs font-semibold border transition-all duration-200 hover:scale-105 cursor-default"
+              className="px-3.5 py-1.5 rounded-xl text-xs font-semibold border transition-all duration-200 hover:border-[#EF6905]/30 cursor-default"
               style={{
-                background: "color-mix(in srgb, var(--bg-primary) 60%, transparent)",
+                background: "var(--card-bg)",
                 borderColor: "var(--border)",
                 color: "var(--text-primary)",
               }}
@@ -183,92 +291,110 @@ function About() {
         </div>
       </motion.section>
 
-      {/* ── Development Team Section ── */}
+      {/* ── Development Team ── */}
       <motion.section
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
-        className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-3xl p-6 sm:p-8 shadow-[var(--shadow-sm)] space-y-6"
+        transition={{ delay: 0.45 }}
       >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "color-mix(in srgb, var(--primary) 10%, transparent)" }}>
-              <Users className="w-5 h-5" style={{ color: "var(--primary)" }} />
-            </div>
-            <div>
-              <h2 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>Development Team</h2>
-              <p className="text-xs" style={{ color: "var(--text-secondary)" }}>The engineering minds behind the project</p>
-            </div>
-          </div>
-          <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold" style={{ background: "color-mix(in srgb, var(--success) 10%, transparent)", color: "var(--success)" }}>
-            <ShieldCheck className="w-3.5 h-3.5" /> Active Contributors
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <h2
+          className="text-2xl sm:text-3xl font-bold text-center mb-2"
+          style={{ color: "var(--text-primary)" }}
+        >
+          Development Team
+        </h2>
+        <p
+          className="text-sm text-center mb-8"
+          style={{ color: "var(--text-secondary)" }}
+        >
+          The people behind PrepHire
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
           {TEAM.map((member) => (
             <div
               key={member.name}
-              className="p-5 rounded-2xl border border-[var(--border)] bg-[var(--bg-primary)]/30 hover:border-[var(--primary)]/40 transition-all duration-300 flex items-center gap-4 group"
+              className="py-7 px-5 rounded-2xl border flex flex-col items-center text-center transition-all duration-300 hover:border-[#EF6905]/30 group"
+              style={{
+                background: "var(--card-bg)",
+                borderColor: "var(--border)",
+                boxShadow: "var(--shadow-sm)",
+              }}
             >
-              <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${member.color} text-white font-black text-sm flex items-center justify-center shrink-0 shadow-md group-hover:scale-105 transition-transform`}>
-                {member.initials}
+              <div className="transition-transform duration-300 group-hover:scale-[1.02] mb-4">
+                <TeamPhoto member={member} />
               </div>
-              <div className="min-w-0 flex-1">
-                <p className="font-bold text-sm truncate" style={{ color: "var(--text-primary)" }}>
-                  {member.name}
-                </p>
-                <p className="text-xs font-semibold mt-0.5" style={{ color: "var(--primary)" }}>
-                  {member.role}
-                </p>
-                <span className="inline-block text-[10px] font-medium px-2 py-0.5 rounded-md mt-1.5" style={{ background: "color-mix(in srgb, var(--border) 50%, transparent)", color: "var(--text-muted)" }}>
-                  {member.tag}
-                </span>
-              </div>
+              <p
+                className="font-bold text-sm"
+                style={{ color: "var(--text-primary)" }}
+              >
+                {member.name}
+              </p>
+              <p
+                className="text-xs font-semibold mt-1"
+                style={{ color: "#EF6905" }}
+              >
+                {member.role}
+              </p>
+              <span
+                className="inline-block text-[10px] font-medium px-2 py-0.5 rounded-md mt-2"
+                style={{
+                  background: "var(--border)",
+                  color: "var(--text-muted)",
+                }}
+              >
+                {member.tag}
+              </span>
             </div>
           ))}
         </div>
       </motion.section>
 
-      {/* ── College & Institutional Info ── */}
+      {/* ── Sanjivani ── */}
       <motion.section
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.45 }}
-        className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-3xl p-6 sm:p-8 shadow-[var(--shadow-sm)]"
+        transition={{ delay: 0.5 }}
+        className="text-center py-10 rounded-2xl border"
+        style={{
+          background: "var(--card-bg)",
+          borderColor: "var(--border)",
+          boxShadow: "var(--shadow-sm)",
+        }}
       >
-        <div className="flex items-start gap-4">
-          <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 mt-1" style={{ background: "color-mix(in srgb, var(--primary) 10%, transparent)" }}>
-            <Building2 className="w-6 h-6" style={{ color: "var(--primary)" }} />
-          </div>
-          <div className="space-y-2">
-            <div className="flex flex-wrap items-center gap-2">
-              <h2 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>
-                Sanjivani College of Engineering, Kopargaon
-              </h2>
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-500/10 text-amber-500 border border-amber-500/20">
-                <GraduationCap className="w-3.5 h-3.5" /> Final Year Project
-              </span>
-            </div>
-            <p className="text-sm leading-relaxed font-medium" style={{ color: "var(--text-secondary)" }}>
-              Developed under the academic guidance of project guides for placement training, skill building, and campus placement drives.
-            </p>
-          </div>
+        <div
+          className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-4"
+          style={{ background: "rgba(239, 105, 5, 0.08)" }}
+        >
+          <Building2 className="w-6 h-6" style={{ color: "#EF6905" }} />
+        </div>
+        <h2
+          className="text-lg font-bold mb-1"
+          style={{ color: "var(--text-primary)" }}
+        >
+          Built for Sanjivani College of Engineering
+        </h2>
+        <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+          Sanjivani College of Engineering, Kopargaon
+        </p>
+        <div className="flex items-center justify-center gap-1.5 mt-3">
+          <GraduationCap className="w-3.5 h-3.5" style={{ color: "#FF9800" }} />
+          <span className="text-[11px] font-semibold" style={{ color: "#FF9800" }}>
+            Final Year Project
+          </span>
         </div>
       </motion.section>
 
-      {/* ── Footer / Meta ── */}
-      <div className="flex items-center justify-between text-xs px-2" style={{ color: "var(--text-muted)" }}>
-        <div className="flex items-center gap-2">
-          <Info className="w-4 h-4" />
-          <span>Interview Platform v1.0.0</span>
-        </div>
+      {/* ── Footer Meta ── */}
+      <div
+        className="flex items-center justify-between text-xs px-2 pb-4"
+        style={{ color: "var(--text-muted)" }}
+      >
+        <span>PrepHire v1.0.0</span>
         <div className="flex items-center gap-1.5">
           <Globe className="w-3.5 h-3.5" />
           <span>Built for Students</span>
         </div>
       </div>
-
     </div>
   );
 }
