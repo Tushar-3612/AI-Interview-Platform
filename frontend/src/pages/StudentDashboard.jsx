@@ -70,11 +70,9 @@ function StudentDashboard() {
   const navigate = useNavigate();
   const token = getAuthToken();
 
-  const [interviews, setInterviews] = useState([]);
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activity, setActivity] = useState(null);
   const [analytics, setAnalytics] = useState(null);
   const [placementData, setPlacementData] = useState(null);
   const [dashboardStats, setDashboardStats] = useState(null);
@@ -95,18 +93,14 @@ function StudentDashboard() {
   const fetchData = useCallback(async () => {
     try {
       const headers = { Authorization: `Bearer ${token}` };
-      const [interviewsRes, resultsRes, activityRes, analyticsRes, placementRes, statsRes, testsRes] = await Promise.all([
-        api.get("/api/student/interviews", { headers }).catch(() => ({ data: [] })),
+      const [resultsRes, analyticsRes, placementRes, statsRes, testsRes] = await Promise.all([
         api.get("/api/student/results", { headers }).catch(() => ({ data: [] })),
-        api.get("/api/practice/activity", { headers }).catch(() => null),
         api.get("/api/practice/analytics/student", { headers }).catch(() => null),
         api.get("/api/placement/overview", { headers }).catch(() => null),
         api.get("/api/student/dashboard-stats", { headers }).catch(() => null),
         api.get("/api/student/tests", { headers }).catch(() => ({ data: [] })),
       ]);
-      setInterviews(interviewsRes.data || []);
       setResults(resultsRes.data || []);
-      setActivity(activityRes?.data || null);
       setAnalytics(analyticsRes?.data || null);
       setPlacementData(placementRes?.data || null);
       setDashboardStats(statsRes?.data || null);
@@ -126,6 +120,7 @@ function StudentDashboard() {
   }, [fetchData]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchData();
   }, [fetchData]);
 
