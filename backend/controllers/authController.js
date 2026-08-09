@@ -1,4 +1,5 @@
 import User from "../models/User.js";
+import Admin from "../models/Admin.js";
 import generateToken from "../utils/generateToken.js";
 import { onUserRegistered } from "../utils/csvExporter.js";
 
@@ -144,21 +145,30 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: "Please enter a valid email address" });
     }
 
-    /* --- Admin Login (hardcoded, not in MongoDB) --- */
+    /* --- Admin Login (hardcoded credentials, stored Admin doc) --- */
     if (email.toLowerCase() === ADMIN_CREDENTIALS.email) {
       if (password !== ADMIN_CREDENTIALS.password) {
         return res.status(401).json({ message: "Invalid email or password" });
       }
 
-      const token = generateToken(ADMIN_CREDENTIALS.id, "admin");
+      let admin = await Admin.findOne({ email: ADMIN_CREDENTIALS.email });
+      if (!admin) {
+        admin = await Admin.create({
+          name: "Admin",
+          email: ADMIN_CREDENTIALS.email,
+          role: "admin",
+        });
+      }
+
+      const token = generateToken(admin._id.toString(), "admin");
 
       return res.json({
         message: "Admin login successful",
         token,
         user: {
-          id: ADMIN_CREDENTIALS.id,
-          name: "Admin",
-          email: ADMIN_CREDENTIALS.email,
+          id: admin._id,
+          name: admin.name,
+          email: admin.email,
           role: "admin",
         },
       });

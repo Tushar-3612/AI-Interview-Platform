@@ -10,7 +10,7 @@ import { getAuthToken } from "../../hooks/useStudentProfile";
 import toast from "react-hot-toast";
 
 const DEPARTMENTS = ["Computer Engineering", "IT Engineering", "Electronics Engineering", "Mechanical Engineering", "Civil Engineering", "ENTC Engineering", "AI & DS"];
-const YEARS = ["FE", "SE", "TE", "BE"];
+const YEARS = ["1st Year", "2nd Year", "3rd Year", "Last Year"];
 
 function StudentsList() {
   const navigate = useNavigate();

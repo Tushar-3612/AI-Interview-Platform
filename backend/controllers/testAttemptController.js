@@ -11,13 +11,6 @@ export const getAssignedTests = async (req, res) => {
     if (!user) return res.status(404).json({ message: "User not found" });
 
     const assignments = await TestAssignment.find({
-      $or: [
-        { assignType: "all" },
-        { assignType: "department", assignValue: user.department },
-        { assignType: "year", assignValue: user.year },
-        { assignType: "individual", studentIds: userId },
-        { assignType: "multiple", studentIds: userId },
-      ],
       studentIds: userId,
       status: { $nin: ["archived"] },
     })
@@ -30,20 +23,31 @@ export const getAssignedTests = async (req, res) => {
 
     const now = new Date();
     const enriched = assignments
-      .filter(a => a.testId)
+      .filter(a => {
+        if (!a.testId) return false;
+        const test = a.testId;
+        if (test.status === "draft") return false;
+        return true;
+      })
       .map(a => {
         const test = a.testId;
         const attempt = attemptMap[test._id.toString()];
         let testStatus = "available";
+
         if (attempt?.status === "completed" || attempt?.status === "auto_submitted") {
           testStatus = "completed";
         } else if (attempt?.status === "started") {
           testStatus = "started";
+        } else if (test.status === "completed" || test.closedAt) {
+          testStatus = "expired";
+        } else if (test.startAt && new Date(test.startAt) > now) {
+          testStatus = "upcoming";
+        } else if (test.endAt && new Date(test.endAt) < now) {
+          testStatus = "expired";
         } else if (test.scheduledAt && new Date(test.scheduledAt) > now) {
           testStatus = "upcoming";
-        } else if (test.status === "completed") {
-          testStatus = "expired";
         }
+
         return {
           _id: test._id,
           assignmentId: a._id,
@@ -63,6 +67,8 @@ export const getAssignedTests = async (req, res) => {
           status: test.status,
           testStatus,
           scheduledAt: test.scheduledAt,
+          startAt: test.startAt,
+          endAt: test.endAt,
           assignedAt: a.createdAt,
           assignType: a.assignType,
           assignValue: a.assignValue,

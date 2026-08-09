@@ -16,11 +16,12 @@ import * as XLSX from "xlsx";
    CONSTANTS
    ══════════════════════════════════════════════════════════════ */
 const DEPARTMENTS = ["Computer Engineering", "IT Engineering", "Electronics Engineering", "Mechanical Engineering", "Civil Engineering", "ENTC Engineering", "AI & DS"];
-const YEARS = ["FE", "SE", "TE", "BE"];
+const YEARS = ["1st Year", "2nd Year", "3rd Year", "Last Year"];
 const SECTIONS = ["A", "B", "C"];
 const TEST_TYPES = ["aptitude", "technical", "coding", "mixed"];
 const STATUS_OPTIONS = ["draft", "scheduled", "live", "completed", "cancelled"];
 const TEST_STATUS_OPTIONS = ["all", "active", "completed", "archived"];
+const TEST_LIFECYCLE = ["all", "draft", "scheduled", "live", "completed"];
 const RESCHEDULE_REASONS = ["Network Failure", "Browser Crash", "Technical Issue"];
 
 const PAGE_SIZE = 10;
@@ -340,7 +341,137 @@ function EmailReportModal({ assignment, students, onClose }) {
   );
 }
 
-function ViewTestModal({ assignment, onClose, onEdit, onDelete, onReschedule, onEmail }) {
+/* ══════════════════════════════════════════════════════════════
+   MONITORING MODAL
+   ══════════════════════════════════════════════════════════════ */
+function MonitoringModal({ assignment, data, loading, onClose }) {
+  const [searchFilter, setSearchFilter] = useState("");
+  const test = assignment?.testId || {};
+
+  const filteredStudents = (data?.students || []).filter(s => {
+    const q = searchFilter.toLowerCase();
+    return !q || s.name?.toLowerCase().includes(q) || s.email?.toLowerCase().includes(q) || s.department?.toLowerCase().includes(q);
+  });
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 pt-6 pb-6 overflow-y-auto" onClick={onClose}>
+      <div className="bg-white dark:bg-[#111] rounded-xl border border-gray-200 dark:border-zinc-800 w-full max-w-6xl mx-4"
+        onClick={e => e.stopPropagation()}>
+        <div className="sticky top-0 z-10 bg-white dark:bg-[#111] rounded-t-xl border-b border-gray-200 dark:border-zinc-800 px-5 py-4 flex items-center justify-between">
+          <div>
+            <h2 className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>{test.title || "Assignment Monitor"}</h2>
+            <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>
+              {assignment?.department && assignment?.year
+                ? `${assignment.department} \u2022 ${assignment.year}`
+                : assignment?.assignType === "all" ? "All Students" : assignment?.assignValue || ""
+              }
+            </p>
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded admin-hover cursor-pointer">
+            <X className="w-4 h-4" style={{ color: "var(--text-muted)" }} />
+          </button>
+        </div>
+
+        <div className="p-5 space-y-4 max-h-[80vh] overflow-y-auto">
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="w-8 h-8 border-2 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                {[
+                  ["Total", data?.stats?.total || 0, "var(--text-primary)"],
+                  ["Not Started", data?.stats?.notStarted || 0, "var(--text-muted)"],
+                  ["In Progress", data?.stats?.inProgress || 0, "var(--badge-warning-text)"],
+                  ["Completed", data?.stats?.completed || 0, "var(--badge-success-text)"],
+                  ["Auto Submitted", data?.stats?.autoSubmitted || 0, "var(--badge-error-text)"],
+                ].map(([label, value, color]) => (
+                  <div key={label} className="border admin-border rounded-xl p-3 text-center">
+                    <p className="text-lg font-bold" style={{ color }}>{value}</p>
+                    <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>{label}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="relative max-w-xs">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3" style={{ color: "var(--text-muted)" }} />
+                <input value={searchFilter} onChange={e => setSearchFilter(e.target.value)}
+                  className="w-full pl-7 pr-2 py-1.5 text-xs border admin-border rounded-lg bg-transparent focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                  style={{ color: "var(--text-primary)" }} placeholder="Search students..." />
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="border-b admin-table-divider text-left" style={{ color: "var(--text-muted)" }}>
+                      <th className="pb-2 pr-2 font-semibold">#</th>
+                      <th className="pb-2 pr-2 font-semibold">Student</th>
+                      <th className="pb-2 pr-2 font-semibold hidden sm:table-cell">Email</th>
+                      <th className="pb-2 pr-2 font-semibold hidden md:table-cell">Department</th>
+                      <th className="pb-2 pr-2 font-semibold hidden md:table-cell">Year</th>
+                      <th className="pb-2 pr-2 font-semibold">Status</th>
+                      <th className="pb-2 pr-2 font-semibold">Started</th>
+                      <th className="pb-2 pr-2 font-semibold">Submitted</th>
+                      <th className="pb-2 pr-2 font-semibold text-right">Score</th>
+                      <th className="pb-2 pr-2 font-semibold text-right">Tab Switches</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredStudents.map((s, idx) => (
+                      <tr key={s._id} className="border-b admin-table-divider admin-hover">
+                        <td className="py-2 pr-2" style={{ color: "var(--text-muted)" }}>{idx + 1}</td>
+                        <td className="py-2 pr-2">
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-semibold shrink-0"
+                              style={{ background: "var(--admin-surface-hover)", color: "var(--text-secondary)" }}>
+                              {s.name?.[0]?.toUpperCase()}
+                            </div>
+                            <span className="font-medium truncate max-w-[120px]" style={{ color: "var(--text-primary)" }}>{s.name}</span>
+                          </div>
+                        </td>
+                        <td className="py-2 pr-2 hidden sm:table-cell" style={{ color: "var(--text-secondary)" }}>{s.email}</td>
+                        <td className="py-2 pr-2 hidden md:table-cell" style={{ color: "var(--text-secondary)" }}>{s.department}</td>
+                        <td className="py-2 pr-2 hidden md:table-cell" style={{ color: "var(--text-secondary)" }}>{s.year}</td>
+                        <td className="py-2 pr-2">
+                          <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${studentStatusBadge(s.status)}`}>
+                            {s.status}
+                          </span>
+                        </td>
+                        <td className="py-2 pr-2" style={{ color: "var(--text-muted)" }}>
+                          {s.startedAt ? new Date(s.startedAt).toLocaleString() : "-"}
+                        </td>
+                        <td className="py-2 pr-2" style={{ color: "var(--text-muted)" }}>
+                          {s.submittedAt ? new Date(s.submittedAt).toLocaleString() : "-"}
+                        </td>
+                        <td className="py-2 pr-2 text-right font-medium" style={{ color: s.score != null ? "var(--text-primary)" : "var(--text-muted)" }}>
+                          {s.score != null ? `${s.score}/${s.totalMarks || "-"}` : "-"}
+                        </td>
+                        <td className="py-2 pr-2 text-right">
+                          {s.tabSwitchCount > 0 ? (
+                            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded"
+                              style={{ background: "var(--badge-warning-bg)", color: "var(--badge-warning-text)" }}>
+                              {s.tabSwitchCount}
+                            </span>
+                          ) : "0"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {filteredStudents.length === 0 && (
+                  <p className="text-xs py-6 text-center" style={{ color: "var(--text-muted)" }}>No students found.</p>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ViewTestModal({ assignment, onClose, onEdit, onDelete, onReschedule, onEmail, onMonitor }) {
   const test = assignment?.testId || {};
   const students = assignment?.studentIds || [];
   const questions = test?.questions || [];
@@ -370,6 +501,9 @@ function ViewTestModal({ assignment, onClose, onEdit, onDelete, onReschedule, on
             </button>
             <button onClick={() => onEmail(assignment)} className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium border admin-border rounded-lg admin-hover cursor-pointer">
               <Mail className="w-3 h-3" /> Email
+            </button>
+            <button onClick={() => onMonitor(assignment)} className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium border admin-border rounded-lg admin-hover cursor-pointer">
+              <BarChart className="w-3 h-3" /> Monitor
             </button>
             <button onClick={onClose} className="p-1.5 rounded admin-hover cursor-pointer">
               <X className="w-4 h-4" style={{ color: "var(--text-muted)" }} />
@@ -409,7 +543,7 @@ function ViewTestModal({ assignment, onClose, onEdit, onDelete, onReschedule, on
               <div className="space-y-2.5 text-xs">
                 {[
                   ["Department", assignment?.assignType === "department" ? assignment.assignValue : "All"],
-                  ["Academic Year", assignment?.assignType === "year" ? assignment.assignValue : "All"],
+                  ["Academic Year", assignment?.assignType === "year" ? assignment.assignValue : (assignment?.year || "All")],
                   ["Section", assignment?.assignType === "section" ? assignment.assignValue : "All"],
                   ["Assigned Students", students.length],
                   ["Assign Type", assignment?.assignType],
@@ -596,7 +730,11 @@ function AssignedTests() {
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [rescheduleModal, setRescheduleModal] = useState(null);
   const [emailModal, setEmailModal] = useState(null);
+  const [monitoringModal, setMonitoringModal] = useState(null);
+  const [monitoringData, setMonitoringData] = useState(null);
+  const [monitoringLoading, setMonitoringLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [lifecycleFilter, setLifecycleFilter] = useState("all");
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -629,10 +767,14 @@ function AssignedTests() {
         if (filters.company !== "all" && test.companyId !== filters.company) return false;
         if (filters.testType !== "all" && test.testType !== filters.testType) return false;
         if (filters.status !== "all" && a.status !== filters.status) return false;
+        if (lifecycleFilter !== "all" && a.testId?.status !== lifecycleFilter) return false;
         if (filters.department !== "all" && a.assignType === "department" && a.assignValue !== filters.department) return false;
         if (filters.department !== "all" && a.assignType !== "department") return false;
-        if (filters.year !== "all" && a.assignType === "year" && a.assignValue !== filters.year) return false;
-        if (filters.year !== "all" && a.assignType !== "year") return false;
+        if (filters.year !== "all") {
+          const matchesYear = (a.assignType === "year" && a.assignValue === filters.year) ||
+                              (a.assignType === "department" && a.year === filters.year);
+          if (!matchesYear) return false;
+        }
         const d = new Date(a.createdAt);
         if (filters.dateFrom && d < new Date(filters.dateFrom)) return false;
         if (filters.dateTo) {
@@ -705,6 +847,33 @@ function AssignedTests() {
     }
   };
 
+  const handleCloseAssignment = async (id) => {
+    try {
+      await api.put(`/api/tests/assignments/${id}/close`, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      toast.success("Assignment closed");
+      fetchData();
+    } catch {
+      toast.error("Failed to close assignment");
+    }
+  };
+
+  const handleOpenMonitoring = async (assignment) => {
+    setMonitoringModal(assignment);
+    setMonitoringLoading(true);
+    try {
+      const { data } = await api.get(`/api/tests/assignments/${assignment._id}/students`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setMonitoringData(data);
+    } catch {
+      toast.error("Failed to load monitoring data");
+    } finally {
+      setMonitoringLoading(false);
+    }
+  };
+
   const handleSort = (field) => {
     if (sortField === field) setSortDir(d => d === "asc" ? "desc" : "asc");
     else { setSortField(field); setSortDir("desc"); }
@@ -716,7 +885,7 @@ function AssignedTests() {
       Company: a.testId?.companyId || "N/A",
       "Test Type": a.testId?.testType || "N/A",
       Department: a.assignType === "department" ? a.assignValue : "All",
-      "Academic Year": a.assignType === "year" ? a.assignValue : "All",
+      "Academic Year": a.assignType === "year" ? a.assignValue : (a.year || "All"),
       Section: a.assignType === "section" ? a.assignValue : "All",
       "Assigned Students": a.totalStudents || 0,
       Started: a.startedCount || 0,
@@ -747,7 +916,7 @@ function AssignedTests() {
       Company: a.testId?.companyId || "N/A",
       "Test Type": a.testId?.testType || "N/A",
       Department: a.assignType === "department" ? a.assignValue : "All",
-      "Academic Year": a.assignType === "year" ? a.assignValue : "All",
+      "Academic Year": a.assignType === "year" ? a.assignValue : (a.year || "All"),
       Section: a.assignType === "section" ? a.assignValue : "All",
       "Assigned Students": a.totalStudents || 0,
       Started: a.startedCount || 0,
@@ -803,6 +972,22 @@ function AssignedTests() {
       </div>
 
       {/* Filters */}
+      <div className="border admin-border admin-card rounded-xl p-3">
+        <div className="flex gap-1 mb-3 overflow-x-auto">
+          {TEST_LIFECYCLE.map(s => (
+            <button key={s} onClick={() => { setLifecycleFilter(s); setPage(1); }}
+              className={`px-3 py-1.5 text-xs font-medium rounded-lg cursor-pointer whitespace-nowrap transition-all ${
+                lifecycleFilter === s ? "text-white" : "admin-hover"
+              }`}
+              style={{
+                background: lifecycleFilter === s ? "var(--primary)" : "transparent",
+                color: lifecycleFilter === s ? "#fff" : "var(--text-secondary)",
+              }}>
+              {s.charAt(0).toUpperCase() + s.slice(1)}
+            </button>
+          ))}
+        </div>
+      </div>
       <FilterBar filters={filters} onFilterChange={(f) => { setFilters(f); setPage(1); }} companies={companies} />
 
       {/* Stats */}
@@ -867,7 +1052,7 @@ function AssignedTests() {
                         {a.assignType === "department" ? a.assignValue : "All"}
                       </td>
                       <td className="py-2.5 pr-2" style={{ color: "var(--text-secondary)" }}>
-                        {a.assignType === "year" ? a.assignValue : "All"}
+                        {a.assignType === "year" ? a.assignValue : (a.year || "All")}
                       </td>
                       <td className="py-2.5 pr-2" style={{ color: "var(--text-secondary)" }}>
                         {a.assignType === "section" ? a.assignValue : "All"}
@@ -903,6 +1088,16 @@ function AssignedTests() {
                             className="p-1 rounded admin-hover cursor-pointer" title="Reschedule">
                             <Calendar className="w-3.5 h-3.5" style={{ color: "var(--text-secondary)" }} />
                           </button>
+                          <button onClick={() => handleOpenMonitoring(a)}
+                            className="p-1 rounded admin-hover cursor-pointer" title="Monitor">
+                            <BarChart className="w-3.5 h-3.5" style={{ color: "var(--badge-info-text)" }} />
+                          </button>
+                          {a.status !== "completed" && (
+                            <button onClick={() => handleCloseAssignment(a._id)}
+                              className="p-1 rounded admin-hover cursor-pointer" title="Close">
+                              <Ban className="w-3.5 h-3.5" style={{ color: "var(--badge-warning-text)" }} />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -954,6 +1149,7 @@ function AssignedTests() {
           onDelete={(a) => { setViewModal(null); setDeleteConfirm(a); }}
           onReschedule={(a) => { setViewModal(null); setRescheduleModal(a); }}
           onEmail={(a) => { setViewModal(null); setEmailModal(a); }}
+          onMonitor={(a) => { setViewModal(null); handleOpenMonitoring(a); }}
         />
       )}
       {deleteConfirm && (
@@ -964,6 +1160,14 @@ function AssignedTests() {
       )}
       {emailModal && (
         <EmailReportModal assignment={emailModal} students={emailModal?.studentIds || []} onClose={() => setEmailModal(null)} />
+      )}
+      {monitoringModal && (
+        <MonitoringModal
+          assignment={monitoringModal}
+          data={monitoringData}
+          loading={monitoringLoading}
+          onClose={() => { setMonitoringModal(null); setMonitoringData(null); }}
+        />
       )}
     </div>
   );

@@ -1,0 +1,13 @@
+To: tusharnagare2006@gmail.com
+Subject: Your AI Mock Interview Performance Report
+
+Body:
+Hello Tushar  Nagare,
+
+Please find attached your comprehensive AI Interview performance report, including profile metrics, resume ATS scores, and evaluations of your mock interview attempts.
+
+Best regards,
+Placement Cell
+
+Attachment saved: C:\Users\Tushar Nagare\Basic To Advance\Projects\Final_year_Project\ai-interview-engine\backend\exports\simulated_emails\1786283723412_Tushar_Nagare_Performance_Report.pdf
+Attachment saved: C:\Users\Tushar Nagare\Basic To Advance\Projects\Final_year_Project\ai-interview-engine\backend\exports\simulated_emails\1786283723417_Tushar_Nagare_Logs.csv

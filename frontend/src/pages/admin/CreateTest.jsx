@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronRight, ChevronLeft, Check, ClipboardList } from "lucide-react";
+import { ChevronRight, ChevronLeft, Check, ClipboardList, Save } from "lucide-react";
 import api from "../../utils/api";
 import { getAuthToken } from "../../hooks/useStudentProfile";
 import toast from "react-hot-toast";
@@ -24,9 +24,12 @@ const initialForm = {
   questionSource: "manual",
   status: "draft",
   scheduledAt: "",
+  startAt: "",
+  endAt: "",
   subjects: [],
   codingLanguages: [],
   questions: [],
+  evaluationMethod: "ai",
 };
 
 const steps = [
@@ -39,16 +42,75 @@ const steps = [
 
 function CreateTest() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const token = getAuthToken();
 
   const [form, setForm] = useState(initialForm);
   const [testId, setTestId] = useState(null);
   const [testCreated, setTestCreated] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [assignTargets, setAssignTargets] = useState({ assignType: "all", assignValue: "", studentIds: [] });
+  const [assignTargets, setAssignTargets] = useState({ assignType: "all", assignValue: "", studentIds: [], department: "", year: "", section: "" });
   const [currentStep, setCurrentStep] = useState(0);
 
   const questions = form.questions || [];
+
+  useEffect(() => {
+    const editId = searchParams.get("edit");
+    if (editId) {
+      loadTest(editId);
+    }
+  }, [searchParams]);
+
+  const loadTest = async (id) => {
+    try {
+      const { data } = await api.get(`/api/tests/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setForm({
+        title: data.title || "",
+        description: data.description || "",
+        companyId: data.companyId || "",
+        testType: data.testType || "aptitude",
+        difficulty: data.difficulty || "Medium",
+        duration: data.duration || 30,
+        passingMarks: data.passingMarks || 40,
+        attemptLimit: data.attemptLimit || 1,
+        questionSource: data.questionSource || "manual",
+        status: data.status || "draft",
+        scheduledAt: data.scheduledAt ? new Date(data.scheduledAt).toISOString().slice(0, 16) : "",
+        startAt: data.startAt ? new Date(data.startAt).toISOString().slice(0, 16) : "",
+        endAt: data.endAt ? new Date(data.endAt).toISOString().slice(0, 16) : "",
+        subjects: data.subjects || [],
+        codingLanguages: data.codingLanguages || [],
+        questions: (data.questions || []).map(q => ({
+          type: q.options?.length ? "MCQ" : q.testCases?.length ? "Coding" : "Descriptive",
+          question: q.question || "",
+          options: q.options || ["", "", "", ""],
+          correctAnswer: q.correctAnswer || "",
+          marks: q.marks || 1,
+          negativeMarks: q.negativeMarks || 0,
+          explanation: q.explanation || "",
+          subject: q.subject || "",
+          difficulty: q.difficulty || "medium",
+          problemTitle: q.problemTitle || "",
+          description: q.description || "",
+          constraints: q.constraints || "",
+          inputFormat: q.inputFormat || "",
+          outputFormat: q.outputFormat || "",
+          sampleInput: q.sampleInput || "",
+          sampleOutput: q.sampleOutput || "",
+          testCases: q.testCases || [],
+          languages: q.languages || [],
+        })),
+        evaluationMethod: data.evaluationMethod || "ai",
+      });
+      setTestId(id);
+      setTestCreated(true);
+      toast.success("Draft loaded");
+    } catch {
+      toast.error("Failed to load test");
+    }
+  };
 
   const saveTest = async (status) => {
     if (!form.title?.trim()) {
@@ -68,7 +130,7 @@ function CreateTest() {
           headers: { Authorization: `Bearer ${token}` },
         });
         data = res.data;
-        toast.success("Test updated");
+        toast.success(status === "draft" ? "Draft saved" : "Test updated");
       } else {
         const res = await api.post("/api/tests", payload, {
           headers: { Authorization: `Bearer ${token}` },
@@ -76,7 +138,7 @@ function CreateTest() {
         data = res.data;
         setTestId(data.test._id);
         setTestCreated(true);
-        toast.success("Test created");
+        toast.success(status === "draft" ? "Draft saved" : "Test created");
       }
       return data;
     } catch (err) {
@@ -88,11 +150,34 @@ function CreateTest() {
   };
 
   const handlePublish = async () => {
-    const data = await saveTest("live");
-    if (data) {
-      toast.success("Test published!");
-      navigate("/admin/tests/assigned");
+    if (!testId) {
+      const data = await saveTest("draft");
+      if (!data) return;
     }
+    setSaving(true);
+    try {
+      const publishPayload = {};
+      if (form.startAt) {
+        publishPayload.scheduledAt = form.startAt;
+        publishPayload.startAt = form.startAt;
+        if (form.endAt) publishPayload.endAt = form.endAt;
+      }
+      const res = await api.put(`/api/tests/${testId}/publish`, publishPayload, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setForm(prev => ({ ...prev, status: res.data.test.status }));
+      toast.success(res.data.test.status === "scheduled" ? "Test scheduled!" : "Test published!");
+      navigate("/admin/tests/assigned");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to publish");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSaveDraft = async () => {
+    const data = await saveTest("draft");
+    if (data) toast.success("Draft saved successfully");
   };
 
   const handleAssign = async () => {
@@ -107,6 +192,9 @@ function CreateTest() {
         assignType: assignTargets.assignType,
         assignValue: assignTargets.assignValue,
         studentIds: assignTargets.studentIds,
+        department: assignTargets.department,
+        year: assignTargets.year,
+        section: assignTargets.section,
       }, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -165,8 +253,9 @@ function CreateTest() {
             saving={saving}
             testCreated={testCreated}
             testId={testId}
-            onSaveDraft={() => saveTest("draft")}
+            onSaveDraft={handleSaveDraft}
             onPublish={handlePublish}
+            onChange={setForm}
           />
         );
       default:
@@ -182,20 +271,29 @@ function CreateTest() {
     <div className="space-y-5 max-w-5xl">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>Create Test</h1>
+          <h1 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>
+            {testId ? "Edit Test" : "Create Test"}
+          </h1>
           <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
             Step {currentStep + 1} of {steps.length}: {steps[currentStep]?.label}
           </p>
         </div>
-        {testCreated && (
-          <div className="flex items-center gap-2 text-xs px-3 py-1.5 rounded-lg" style={{ background: "var(--badge-success-bg)", color: "var(--badge-success-text)" }}>
-            <Check className="w-3.5 h-3.5" />
-            Test Saved
-          </div>
-        )}
+        <div className="flex items-center gap-2">
+          {testCreated && (
+            <div className="flex items-center gap-2 text-xs px-3 py-1.5 rounded-lg" style={{ background: "var(--badge-success-bg)", color: "var(--badge-success-text)" }}>
+              <Check className="w-3.5 h-3.5" />
+              Test Saved
+            </div>
+          )}
+          {currentStep < steps.length - 1 && (
+            <button onClick={handleSaveDraft} disabled={saving}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border admin-border rounded-lg admin-hover cursor-pointer disabled:opacity-50">
+              <Save className="w-3.5 h-3.5" /> Save Draft
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* ── Progress Bar ── */}
       <div className="flex gap-1 p-1 rounded-xl admin-bg-surface border admin-border overflow-x-auto">
         {steps.map((s, idx) => {
           const isActive = idx === currentStep;
@@ -222,14 +320,12 @@ function CreateTest() {
         })}
       </div>
 
-      {/* ── Step Content ── */}
       <AnimatePresence mode="wait">
         <motion.div key={currentStep} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}>
           {renderStep()}
         </motion.div>
       </AnimatePresence>
 
-      {/* ── Navigation ── */}
       {steps[currentStep]?.id !== "publish" && (
         <div className="flex items-center justify-between pt-2">
           <div>

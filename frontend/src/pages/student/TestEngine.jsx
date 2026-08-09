@@ -479,25 +479,26 @@ function TestEngine() {
             </div>
 
             <div className="border admin-border admin-card rounded-2xl p-5">
-              {!question && (
-                <p className="text-sm py-8 text-center" style={{ color: "var(--text-muted)" }}>Question not found.</p>
-              )}
-              {isCoding ? (
-                <CodingRenderer
-                  question={question}
-                  answer={q.answer}
-                  code={q.code}
-                  language={q.language}
-                  onAnswer={(v) => updateAnswer("answer", v)}
-                  onCodeChange={(v) => updateAnswer("code", v)}
-                  onLanguageChange={(v) => updateAnswer("language", v)}
-                />
+              {question ? (
+                isCoding ? (
+                  <CodingRenderer
+                    question={question}
+                    answer={q.answer}
+                    code={q.code}
+                    language={q.language}
+                    onAnswer={(v) => updateAnswer("answer", v)}
+                    onCodeChange={(v) => updateAnswer("code", v)}
+                    onLanguageChange={(v) => updateAnswer("language", v)}
+                  />
+                ) : (
+                  <MCQRenderer
+                    question={question}
+                    answer={q.answer}
+                    onAnswer={(v) => updateAnswer("answer", v)}
+                  />
+                )
               ) : (
-                <MCQRenderer
-                  question={question}
-                  answer={q.answer}
-                  onAnswer={(v) => updateAnswer("answer", v)}
-                />
+                <p className="text-sm py-8 text-center" style={{ color: "var(--text-muted)" }}>Question unavailable</p>
               )}
             </div>
 

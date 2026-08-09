@@ -7,7 +7,7 @@ import toast from "react-hot-toast";
 import { SkeletonCompanyGrid as SkeletonGrid } from "../../components/ui/Skeleton";
 
 const DEPARTMENTS = ["Computer Engineering", "IT Engineering", "Electronics Engineering", "Mechanical Engineering", "Civil Engineering", "ENTC Engineering", "AI & DS"];
-const YEARS = ["FE", "SE", "TE", "BE"];
+const YEARS = ["1st Year", "2nd Year", "3rd Year", "Last Year"];
 const DIFFICULTIES = ["Easy", "Medium", "Hard"];
 const INTERVIEW_TYPES = ["practice", "real", "both"];
 

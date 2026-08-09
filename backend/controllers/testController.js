@@ -1,11 +1,17 @@
 import multer from "multer";
 import Test from "../models/Test.js";
 import TestAssignment from "../models/TestAssignment.js";
+import TestAttempt from "../models/TestAttempt.js";
+import TestResult from "../models/TestResult.js";
 import User from "../models/User.js";
 import Result from "../models/Result.js";
 import { parseQuestions, removeDuplicates, validateQuestions } from "../utils/questionParser.js";
 
 const upload = multer({ storage: multer.memoryStorage() });
+
+/* ═══════════════════════════════════════════════════════════════
+   TEST CRUD
+   ═══════════════════════════════════════════════════════════════ */
 
 export const createTest = async (req, res) => {
   try {
@@ -13,16 +19,25 @@ export const createTest = async (req, res) => {
       title, description, testType, companyId, difficulty,
       duration, passingMarks, attemptLimit, questionSource,
       subjects, codingLanguages, questions, status, scheduledAt,
+      startAt, endAt, evaluationMethod,
     } = req.body;
+
+    const safeQuestions = (questions || []).map((q) => ({
+      ...q,
+      question: q.question || q.problemTitle || "",
+    }));
 
     const test = await Test.create({
       title, description, testType, companyId, difficulty,
       duration, passingMarks, attemptLimit, questionSource: questionSource || "manual",
       subjects: subjects || [],
       codingLanguages: codingLanguages || [],
-      questions: questions || [],
+      questions: safeQuestions,
       status: status || "draft",
-      scheduledAt,
+      scheduledAt: scheduledAt || undefined,
+      startAt: startAt || undefined,
+      endAt: endAt || undefined,
+      evaluationMethod: evaluationMethod || "ai",
       createdBy: req.user.id,
     });
 
@@ -65,12 +80,17 @@ export const updateTest = async (req, res) => {
 export const deleteTest = async (req, res) => {
   try {
     await TestAssignment.deleteMany({ testId: req.params.id });
+    await TestAttempt.deleteMany({ testId: req.params.id });
     await Test.findByIdAndDelete(req.params.id);
     res.json({ message: "Test deleted" });
   } catch (error) {
     res.status(500).json({ message: "Failed to delete test" });
   }
 };
+
+/* ═══════════════════════════════════════════════════════════════
+   QUESTION MANAGEMENT
+   ═══════════════════════════════════════════════════════════════ */
 
 export const addQuestion = async (req, res) => {
   try {
@@ -110,34 +130,155 @@ export const deleteQuestion = async (req, res) => {
   }
 };
 
+/* ═══════════════════════════════════════════════════════════════
+   PUBLISH / SCHEDULE / CLOSE TEST
+   ═══════════════════════════════════════════════════════════════ */
+
+export const publishTest = async (req, res) => {
+  try {
+    const { scheduledAt, startAt, endAt } = req.body;
+    const test = await Test.findById(req.params.id);
+    if (!test) return res.status(404).json({ message: "Test not found" });
+
+    if (!test.questions || test.questions.length === 0) {
+      return res.status(400).json({ message: "Cannot publish a test with no questions" });
+    }
+
+    if (scheduledAt) {
+      test.status = "scheduled";
+      test.scheduledAt = new Date(scheduledAt);
+      if (startAt) test.startAt = new Date(startAt);
+      if (endAt) test.endAt = new Date(endAt);
+    } else {
+      test.status = "live";
+      test.publishedAt = new Date();
+    }
+
+    await test.save();
+    res.json({ message: "Test published", test });
+  } catch (error) {
+    console.error("Publish Test Error:", error.message);
+    res.status(500).json({ message: "Failed to publish test" });
+  }
+};
+
+export const scheduleTest = async (req, res) => {
+  try {
+    const { startAt, endAt } = req.body;
+    const test = await Test.findById(req.params.id);
+    if (!test) return res.status(404).json({ message: "Test not found" });
+
+    if (!startAt) {
+      return res.status(400).json({ message: "Start date/time is required" });
+    }
+
+    test.status = "scheduled";
+    test.startAt = new Date(startAt);
+    test.endAt = endAt ? new Date(endAt) : undefined;
+    test.scheduledAt = new Date(startAt);
+    await test.save();
+
+    res.json({ message: "Test scheduled", test });
+  } catch (error) {
+    console.error("Schedule Test Error:", error.message);
+    res.status(500).json({ message: "Failed to schedule test" });
+  }
+};
+
+export const rescheduleTest = async (req, res) => {
+  try {
+    const { startAt, endAt } = req.body;
+    const test = await Test.findById(req.params.id);
+    if (!test) return res.status(404).json({ message: "Test not found" });
+
+    if (startAt) test.startAt = new Date(startAt);
+    if (endAt) test.endAt = new Date(endAt);
+    if (startAt) test.scheduledAt = new Date(startAt);
+    await test.save();
+
+    res.json({ message: "Test rescheduled", test });
+  } catch (error) {
+    console.error("Reschedule Test Error:", error.message);
+    res.status(500).json({ message: "Failed to reschedule test" });
+  }
+};
+
+export const closeTest = async (req, res) => {
+  try {
+    const test = await Test.findById(req.params.id);
+    if (!test) return res.status(404).json({ message: "Test not found" });
+
+    test.status = "completed";
+    test.closedAt = new Date();
+    await test.save();
+
+    await TestAssignment.updateMany(
+      { testId: test._id, status: "active" },
+      { status: "completed" }
+    );
+
+    res.json({ message: "Test closed", test });
+  } catch (error) {
+    console.error("Close Test Error:", error.message);
+    res.status(500).json({ message: "Failed to close test" });
+  }
+};
+
+/* ═══════════════════════════════════════════════════════════════
+   ASSIGNMENT MANAGEMENT
+   ═══════════════════════════════════════════════════════════════ */
+
 export const assignTest = async (req, res) => {
   try {
-    const { testId, assignType, assignValue, studentIds } = req.body;
+    const { testId, assignType, assignValue, studentIds, department, year, section } = req.body;
 
     const test = await Test.findById(testId);
     if (!test) return res.status(404).json({ message: "Test not found" });
 
     let targetStudents = [];
+    let resolvedAssignType = assignType;
+    let resolvedAssignValue = assignValue || "";
+    let resolvedDepartment = department || "";
+    let resolvedYear = year || "";
+    let resolvedSection = section || "";
 
-    if (assignType === "all") {
+    if (assignType === "department_year") {
+      resolvedAssignType = "department";
+      resolvedAssignValue = department || "";
+      const query = {};
+      if (department) query.department = department;
+      if (year) query.year = year;
+      targetStudents = await User.find(query).select("_id");
+    } else if (assignType === "all") {
       targetStudents = await User.find().select("_id");
     } else if (assignType === "department") {
       targetStudents = await User.find({ department: assignValue }).select("_id");
+      resolvedDepartment = assignValue || "";
     } else if (assignType === "year") {
       targetStudents = await User.find({ year: assignValue }).select("_id");
+      resolvedYear = assignValue || "";
     } else if (assignType === "section") {
       targetStudents = await User.find({ department: assignValue }).select("_id");
+      resolvedSection = assignValue || "";
     } else if (assignType === "individual" || assignType === "multiple") {
       targetStudents = (studentIds || []).map(id => ({ _id: id }));
     }
 
     const ids = targetStudents.map(s => s._id);
 
-    const existing = await TestAssignment.findOne({
-      testId,
-      assignType,
-      assignValue: ["department", "year", "section"].includes(assignType) ? assignValue : "",
-    });
+    const existingQuery = { testId };
+    if (resolvedAssignType === "department" && resolvedDepartment) {
+      existingQuery.department = resolvedDepartment;
+      if (resolvedYear) existingQuery.year = resolvedYear;
+    } else if (resolvedAssignType === "year" && resolvedYear) {
+      existingQuery.year = resolvedYear;
+    } else if (resolvedAssignType === "section" && resolvedSection) {
+      existingQuery.section = resolvedSection;
+    } else {
+      existingQuery.assignType = resolvedAssignType;
+    }
+
+    const existing = await TestAssignment.findOne(existingQuery);
 
     if (existing) {
       const merged = [...new Set([...existing.studentIds.map(s => s.toString()), ...ids.map(s => s.toString())])];
@@ -149,8 +290,11 @@ export const assignTest = async (req, res) => {
 
     const assignment = await TestAssignment.create({
       testId,
-      assignType,
-      assignValue: ["department", "year", "section"].includes(assignType) ? assignValue : "",
+      assignType: resolvedAssignType,
+      assignValue: resolvedAssignValue,
+      department: resolvedDepartment,
+      year: resolvedYear,
+      section: resolvedSection,
       studentIds: ids,
       notAttemptedCount: ids.length,
       assignedBy: req.user.id,
@@ -206,6 +350,104 @@ export const deleteAssignment = async (req, res) => {
   }
 };
 
+export const closeAssignment = async (req, res) => {
+  try {
+    const assignment = await TestAssignment.findByIdAndUpdate(
+      req.params.id,
+      { status: "completed" },
+      { new: true }
+    );
+    if (!assignment) return res.status(404).json({ message: "Assignment not found" });
+    res.json({ message: "Assignment closed", assignment });
+  } catch (error) {
+    console.error("Close Assignment Error:", error.message);
+    res.status(500).json({ message: "Failed to close assignment" });
+  }
+};
+
+/* ═══════════════════════════════════════════════════════════════
+   ASSIGNMENT MONITORING (per-student status + violations)
+   ═══════════════════════════════════════════════════════════════ */
+
+export const getAssignmentStudents = async (req, res) => {
+  try {
+    const assignment = await TestAssignment.findById(req.params.id)
+      .populate("testId", "title testType difficulty duration passingMarks questions")
+      .populate("studentIds", "name email department year")
+      .lean();
+
+    if (!assignment) return res.status(404).json({ message: "Assignment not found" });
+
+    const studentIds = (assignment.studentIds || []).map(s => s._id);
+    const testId = assignment.testId?._id;
+
+    const attempts = await TestAttempt.find({
+      testId,
+      userId: { $in: studentIds },
+    }).lean();
+
+    const attemptMap = {};
+    attempts.forEach(a => {
+      attemptMap[a.userId.toString()] = a;
+    });
+
+    const results = await TestResult.find({
+      testId,
+      userId: { $in: studentIds },
+    }).lean();
+
+    const resultMap = {};
+    results.forEach(r => {
+      resultMap[r.userId.toString()] = r;
+    });
+
+    const studentDetails = (assignment.studentIds || []).map(student => {
+      const sid = student._id.toString();
+      const attempt = attemptMap[sid];
+      const result = resultMap[sid];
+
+      let status = "Not Started";
+      if (attempt?.status === "completed") status = "Completed";
+      else if (attempt?.status === "auto_submitted") status = "Auto Submitted";
+      else if (attempt?.status === "started") status = "In Progress";
+
+      return {
+        _id: student._id,
+        name: student.name,
+        email: student.email,
+        department: student.department,
+        year: student.year,
+        status,
+        startedAt: attempt?.startTime || null,
+        submittedAt: attempt?.submittedAt || null,
+        score: result?.obtainedMarks ?? attempt?.totalScore ?? null,
+        totalMarks: result?.totalMarks ?? null,
+        percentage: result?.percentage ?? null,
+        tabSwitchCount: attempt?.tabSwitchCount || 0,
+        autoSubmitReason: attempt?.autoSubmitReason || "",
+      };
+    });
+
+    const stats = {
+      total: studentDetails.length,
+      notStarted: studentDetails.filter(s => s.status === "Not Started").length,
+      inProgress: studentDetails.filter(s => s.status === "In Progress").length,
+      completed: studentDetails.filter(s => s.status === "Completed").length,
+      autoSubmitted: studentDetails.filter(s => s.status === "Auto Submitted").length,
+      totalTabSwitches: studentDetails.reduce((sum, s) => sum + s.tabSwitchCount, 0),
+    };
+
+    res.json({ assignment, students: studentDetails, stats });
+  } catch (error) {
+    console.error("Get Assignment Students Error:", error.message);
+    res.status(500).json({ message: "Failed to fetch assignment students" });
+  }
+};
+
+/* ═══════════════════════════════════════════════════════════════
+   FILE UPLOAD
+   ═══════════════════════════════════════════════════════════════ */
+
 export const uploadQuestions = async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ message: "No file uploaded" });
@@ -221,26 +463,20 @@ export const uploadQuestions = async (req, res) => {
     const deduped = removeDuplicates(questions);
     const { errors, warnings } = validateQuestions(deduped);
     res.json({
-  success: true,
-  questions: deduped,
-  errors,
-  warnings,
-  total: deduped.length,
-  duplicates: questions.length - deduped.length,
-});
-    
+      success: true,
+      questions: deduped,
+      errors,
+      warnings,
+      total: deduped.length,
+      duplicates: questions.length - deduped.length,
+    });
   } catch (error) {
     const clientErrors = ["Unsupported file type", "CSV must have", "Excel file is empty"];
     if (clientErrors.some(msg => error.message.startsWith(msg))) {
       return res.status(400).json({ message: error.message });
     }
-    console.error("Upload Questions Error:");
-console.error(error);
-console.error(error.stack);
-    res.status(500).json({
-    success: false,
-    message: error.message,
-});
+    console.error("Upload Questions Error:", error.message);
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 

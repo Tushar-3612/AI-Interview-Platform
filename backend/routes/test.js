@@ -9,10 +9,16 @@ import {
   addQuestion,
   updateQuestion,
   deleteQuestion,
+  publishTest,
+  scheduleTest,
+  rescheduleTest,
+  closeTest,
   assignTest,
   getAssignedTests,
   getAssignmentById,
   deleteAssignment,
+  closeAssignment,
+  getAssignmentStudents,
   updateAssignmentStatus,
   uploadQuestions,
   uploadMiddleware,
@@ -42,13 +48,20 @@ router.put("/questions/:id/:questionId", updateQuestion);
 router.delete("/questions/:id/:questionId", deleteQuestion);
 
 router.post("/upload-questions", uploadMiddleware, uploadQuestions);
+
+router.put("/:id/publish", publishTest);
+router.put("/:id/schedule", scheduleTest);
+router.put("/:id/reschedule", rescheduleTest);
+router.put("/:id/close", closeTest);
+
 router.post("/assign", assignTest);
 router.get("/assignments/list", getAssignedTests);
 router.get("/assignments/:id", getAssignmentById);
+router.get("/assignments/:id/students", getAssignmentStudents);
 router.put("/assignments/:id", updateAssignmentStatus);
+router.put("/assignments/:id/close", closeAssignment);
 router.delete("/assignments/:id", deleteAssignment);
 
-// ─── Result Processing (literal paths before param paths) ───
 router.post("/results/process/:attemptId", processTestResult);
 router.get("/results/by-test/:testId", getResultsByTest);
 router.get("/results/:testId/stats", getResultStats);

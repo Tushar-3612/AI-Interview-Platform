@@ -4,7 +4,7 @@ import api from "../../../utils/api";
 import { getAuthToken } from "../../../hooks/useStudentProfile";
 
 const DEPARTMENTS = ["Computer Engineering", "IT Engineering", "Electronics Engineering", "Mechanical Engineering", "Civil Engineering", "ENTC Engineering", "AI & DS"];
-const YEARS = ["FE", "SE", "TE", "BE"];
+const YEARS = ["1st Year", "2nd Year", "3rd Year", "Last Year"];
 const SECTIONS = ["A", "B", "C"];
 
 export default function Step3AssignTest({ assignTargets, onAssignChange, testId }) {
@@ -21,7 +21,7 @@ export default function Step3AssignTest({ assignTargets, onAssignChange, testId 
   const needsSave = !testId;
 
   const handleAssignTypeChange = (val) => {
-    onAssignChange({ assignType: val, assignValue: "", studentIds: [] });
+    onAssignChange({ assignType: val, assignValue: "", studentIds: [], department: "", year: "", section: "" });
   };
 
   return (
@@ -42,30 +42,74 @@ export default function Step3AssignTest({ assignTargets, onAssignChange, testId 
             <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>Assign By</label>
             <select className={selCls} value={assignTargets.assignType} onChange={e => handleAssignTypeChange(e.target.value)} style={{ color: "var(--text-primary)" }}>
               <option value="all">All Students</option>
-              <option value="department">Department</option>
-              <option value="year">Academic Year</option>
+              <option value="department_year">Department + Year</option>
+              <option value="department">Department Only</option>
+              <option value="year">Academic Year Only</option>
               <option value="section">Section</option>
               <option value="individual">Individual</option>
               <option value="multiple">Multiple Students</option>
             </select>
           </div>
-          {["department", "year", "section"].includes(assignTargets.assignType) && (
+        </div>
+
+        {assignTargets.assignType === "department_year" && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
             <div>
-              <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>
-                {assignTargets.assignType === "department" ? "Select Department" :
-                 assignTargets.assignType === "year" ? "Select Year" : "Select Section"}
-              </label>
-              <select className={selCls} value={assignTargets.assignValue}
-                onChange={e => onAssignChange({ ...assignTargets, assignValue: e.target.value })}
+              <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>Select Department *</label>
+              <select className={selCls} value={assignTargets.department || ""}
+                onChange={e => onAssignChange({ ...assignTargets, department: e.target.value })}
                 style={{ color: "var(--text-primary)" }}>
-                <option value="">-- Choose --</option>
-                {(assignTargets.assignType === "department" || assignTargets.assignType === "section" ? DEPARTMENTS : YEARS).map(v => (
-                  <option key={v} value={v}>{v}</option>
-                ))}
+                <option value="">-- Choose Department --</option>
+                {DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
               </select>
             </div>
-          )}
-        </div>
+            <div>
+              <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>Select Year *</label>
+              <select className={selCls} value={assignTargets.year || ""}
+                onChange={e => onAssignChange({ ...assignTargets, year: e.target.value })}
+                style={{ color: "var(--text-primary)" }}>
+                <option value="">-- Choose Year --</option>
+                {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+              </select>
+            </div>
+          </div>
+        )}
+
+        {assignTargets.assignType === "department" && (
+          <div className="mt-4">
+            <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>Select Department</label>
+            <select className={selCls} value={assignTargets.assignValue}
+              onChange={e => onAssignChange({ ...assignTargets, assignValue: e.target.value })}
+              style={{ color: "var(--text-primary)" }}>
+              <option value="">-- Choose Department --</option>
+              {DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
+            </select>
+          </div>
+        )}
+
+        {assignTargets.assignType === "year" && (
+          <div className="mt-4">
+            <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>Select Year</label>
+            <select className={selCls} value={assignTargets.assignValue}
+              onChange={e => onAssignChange({ ...assignTargets, assignValue: e.target.value })}
+              style={{ color: "var(--text-primary)" }}>
+              <option value="">-- Choose Year --</option>
+              {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+            </select>
+          </div>
+        )}
+
+        {assignTargets.assignType === "section" && (
+          <div className="mt-4">
+            <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>Select Section</label>
+            <select className={selCls} value={assignTargets.assignValue}
+              onChange={e => onAssignChange({ ...assignTargets, assignValue: e.target.value })}
+              style={{ color: "var(--text-primary)" }}>
+              <option value="">-- Choose Section --</option>
+              {SECTIONS.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+        )}
 
         {(assignTargets.assignType === "individual" || assignTargets.assignType === "multiple") && (
           <div className="mt-4">
@@ -91,6 +135,12 @@ export default function Step3AssignTest({ assignTargets, onAssignChange, testId 
                 </label>
               ))}
             </div>
+          </div>
+        )}
+
+        {assignTargets.assignType === "department_year" && assignTargets.department && assignTargets.year && (
+          <div className="mt-4 p-3 rounded-lg text-xs" style={{ background: "var(--badge-info-bg)", color: "var(--badge-info-text)" }}>
+            Students matching: <strong>{assignTargets.department}</strong> + <strong>{assignTargets.year}</strong> will receive this test.
           </div>
         )}
       </div>
