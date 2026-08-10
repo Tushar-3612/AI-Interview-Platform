@@ -53,32 +53,13 @@ function getFullscreenElement() {
 }
 
 const LANGUAGES = [
-  { id: "javascript", label: "JavaScript", ext: "js" },
-  { id: "typescript", label: "TypeScript", ext: "ts" },
   { id: "python",     label: "Python",     ext: "py" },
   { id: "java",       label: "Java",       ext: "java" },
   { id: "c",          label: "C",          ext: "c" },
   { id: "cpp",        label: "C++",        ext: "cpp" },
-  { id: "csharp",     label: "C#",         ext: "cs" },
-  { id: "go",         label: "Go",         ext: "go" },
-  { id: "rust",       label: "Rust",       ext: "rs" },
-  { id: "kotlin",     label: "Kotlin",     ext: "kt" },
-  { id: "php",        label: "PHP",        ext: "php" },
 ];
 
 const STARTER_CODE = {
-  javascript: `/**
- * @param {...any} args - Input arguments
- * @return {any}
- */
-function solution(...args) {
-  // Write your solution here
-
-}`,
-  typescript: `function solution(...args: any[]): any {
-  // Write your solution here
-
-}`,
   python: `def solution(*args):
     """
     Write your solution here.
@@ -118,60 +99,6 @@ int main() {
 
     return 0;
 }`,
-  csharp: `using System;
-using System.Collections.Generic;
-using System.Linq;
-
-public class Solution {
-    public static object Solve(params object[] args) {
-        // Write your solution here
-        return null;
-    }
-
-    public static void Main(string[] args) {
-        Console.WriteLine(Solve());
-    }
-}`,
-  go: `package main
-
-import "fmt"
-
-// Write your solution here
-func solution(args ...interface{}) interface{} {
-    return nil
-}
-
-func main() {
-    result := solution()
-    fmt.Println(result)
-}`,
-  rust: `fn solution(args: Vec<i64>) -> i64 {
-    // Write your solution here
-    0
-}
-
-fn main() {
-    let result = solution(vec![]);
-    println!("{}", result);
-}`,
-  kotlin: `fun solution(vararg args: Any): Any? {
-    // Write your solution here
-    return null
-}
-
-fun main() {
-    println(solution())
-}`,
-  php: `<?php
-
-function solution(...$args) {
-    // Write your solution here
-    return null;
-}
-
-// Test
-$result = solution();
-echo $result . PHP_EOL;`,
 };
 
 
@@ -193,7 +120,7 @@ function CodingRound() {
 
   // ─── Editor state ───────────────────────────────────────────────────────────
   const [code, setCode]                 = useState("");
-  const [language, setLanguage]         = useState("javascript");
+  const [language, setLanguage]         = useState("python");
   const [customInput, setCustomInput]   = useState("");
   const [output, setOutput]             = useState(null);
   const [bottomTab, setBottomTab]       = useState("Testcase");
@@ -501,6 +428,14 @@ function CodingRound() {
     const q = questions[activeIndex];
     if (!code || !q) return;
 
+    // Validate language
+    const supportedLanguages = ["python", "java", "c", "cpp"];
+    if (!supportedLanguages.includes(language)) {
+      setOutput({ type: "run", data: { type: "error", output: `Language "${language}" is not supported. Please use Python, Java, C, or C++.`, timeMs: 0 } });
+      setBottomTab("Test Result");
+      return;
+    }
+
     // Cancel previous execution if running
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
@@ -551,6 +486,14 @@ function CodingRound() {
   const handleSubmit = async () => {
     const q = questions[activeIndex];
     if (!q || !code) return;
+
+    // Validate language
+    const supportedLanguages = ["python", "java", "c", "cpp"];
+    if (!supportedLanguages.includes(language)) {
+      setOutput({ type: "submit", data: { status: "unsupported", message: `Language "${language}" is not supported. Please use Python, Java, C, or C++.` } });
+      setBottomTab("Test Result");
+      return;
+    }
 
     // Cancel previous execution if running
     if (abortControllerRef.current) {

@@ -7,6 +7,7 @@ const testCaseSchema = new mongoose.Schema({
 }, { _id: false });
 
 const questionSchema = new mongoose.Schema({
+  type: { type: String, enum: ["MCQ", "True/False", "Descriptive", "Coding"], default: "MCQ" },
   question: { type: String, required: true },
   options: [{ type: String }],
   correctAnswer: { type: String },
@@ -25,6 +26,8 @@ const questionSchema = new mongoose.Schema({
   sampleOutput: { type: String },
   testCases: [testCaseSchema],
   languages: [{ type: String }],
+  timeLimit: { type: Number, default: 1000 },
+  memoryLimit: { type: Number, default: 256 },
 }, { _id: true });
 
 const testSchema = new mongoose.Schema(

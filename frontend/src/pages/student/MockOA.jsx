@@ -25,22 +25,15 @@ import useCachedApi from "../../hooks/useCachedApi";
 import { formatTime } from "../../utils/dateUtils";
 
 const LANGUAGES = [
-  { id: "javascript", label: "JavaScript" },
   { id: "python", label: "Python" },
   { id: "java", label: "Java" },
   { id: "c", label: "C" },
   { id: "cpp", label: "C++" },
-  { id: "csharp", label: "C#" },
-  { id: "go", label: "Go" },
-  { id: "rust", label: "Rust" },
-  { id: "kotlin", label: "Kotlin" },
-  { id: "php", label: "PHP" },
 ];
 
-const STARTER = `function solution(...args) {
-  // Write your solution here
-  
-}`;
+const STARTER = `def solution(*args):
+    """Write your solution here."""
+    pass`;
 
 function CompanyPicker({ onSelect }) {
   const { data, loading } = useCachedApi({ url: "/api/placement/companies", key: "mock:companies", ttlMs: 5 * 60 * 1000 });
@@ -212,7 +205,12 @@ function Exam({ companyId, companyName, onFinish, onCancel }) {
 
   const runCode = async (q) => {
     const code = codes[q._id] || STARTER;
-    const language = languages[q._id] || "JavaScript";
+    const language = languages[q._id] || "python";
+    const supportedLanguages = ["python", "java", "c", "cpp"];
+    if (!supportedLanguages.includes(language)) {
+      setOutputs((o) => ({ ...o, [q._id]: { type: "error", output: `Language "${language}" is not supported. Please use Python, Java, C, or C++.` } }));
+      return;
+    }
     setRunningQ(q._id);
     setOutputs((o) => ({ ...o, [q._id]: { type: "running" } }));
     try {
@@ -227,7 +225,12 @@ function Exam({ companyId, companyName, onFinish, onCancel }) {
 
   const submitCode = async (q) => {
     const code = codes[q._id] || STARTER;
-    const language = languages[q._id] || "JavaScript";
+    const language = languages[q._id] || "python";
+    const supportedLanguages = ["python", "java", "c", "cpp"];
+    if (!supportedLanguages.includes(language)) {
+      toast.error(`Language "${language}" is not supported. Please use Python, Java, C, or C++.`);
+      return;
+    }
     if (!code.trim()) return toast.error("Write some code before submitting");
     setSubmittingQ(q._id);
     try {

@@ -7,8 +7,8 @@ import {
 const TABS = ["Testcase", "Test Result", "Submissions"];
 
 const TERMINAL_HEIGHT_KEY = "codingide_terminal_height";
-const MIN_HEIGHT = 150;
-const DEFAULT_HEIGHT = 250;
+const MIN_HEIGHT = 120;
+const DEFAULT_HEIGHT = 220;
 const MAX_HEIGHT_VH = 70;
 
 function OutputPanel({
@@ -155,7 +155,7 @@ function OutputPanel({
 
       {/* Tab content */}
       <div
-        className="flex-1 overflow-y-auto"
+        className="flex-1 overflow-y-auto overflow-x-auto"
         style={{
           height: panelHeight,
           minHeight: 0,
@@ -202,7 +202,7 @@ function TestCasesContent({ testCases, run, submit }) {
   const hiddenCount = testCases.filter((tc) => tc.isHidden).length;
 
   return (
-    <div className="p-3 space-y-2 text-[13px]">
+    <div className="p-3 space-y-2 text-[13px]" style={{ minWidth: "fit-content" }}>
       {visibleCases.length === 0 && (
         <p style={{ color: "#64748b" }}>No sample test cases available.</p>
       )}
@@ -240,7 +240,7 @@ function TestCasesContent({ testCases, run, submit }) {
                   Input
                 </span>
                 <pre
-                  className="font-mono text-[12px] whitespace-pre-wrap break-all p-2 rounded-md"
+                  className="font-mono text-[12px] whitespace-pre p-2 rounded-md"
                   style={{ background: "#1e1e3a", color: "#e2e8f0" }}
                 >
                   {tc.input || "(empty)"}
@@ -254,7 +254,7 @@ function TestCasesContent({ testCases, run, submit }) {
                   Expected Output
                 </span>
                 <pre
-                  className="font-mono text-[12px] whitespace-pre-wrap break-all p-2 rounded-md"
+                  className="font-mono text-[12px] whitespace-pre p-2 rounded-md"
                   style={{ background: "#1e1e3a", color: "#e2e8f0" }}
                 >
                   {tc.expected || "(empty)"}
@@ -317,7 +317,7 @@ function RunResult({ run }) {
   const isTimeout = run.type === "timeout";
 
   return (
-    <div className="p-3 space-y-3 text-[13px]">
+    <div className="p-3 space-y-3 text-[13px]" style={{ minWidth: "fit-content" }}>
       <div
         className="flex items-center gap-2 px-3 py-2 rounded-lg font-medium"
         style={{
@@ -362,7 +362,7 @@ function RunResult({ run }) {
             Output
           </span>
           <pre
-            className="font-mono text-[12px] whitespace-pre-wrap break-all p-2.5 rounded-md"
+            className="font-mono text-[12px] whitespace-pre p-2.5 rounded-md"
             style={{
               background: "#1e1e3a",
               color: isError ? "#fca5a5" : "#e2e8f0",
@@ -444,6 +444,13 @@ function SubmitResult({ submit }) {
       label: "Unsupported Language",
       icon: <AlertTriangle className="w-5 h-5" />,
     },
+    execution_error: {
+      color: "#f97316",
+      bg: "rgba(249,115,22,0.1)",
+      border: "rgba(249,115,22,0.25)",
+      label: "Execution Error",
+      icon: <AlertTriangle className="w-5 h-5" />,
+    },
   };
 
   const cfg = statusConfig[submit.status] || statusConfig.failed;
@@ -454,7 +461,7 @@ function SubmitResult({ submit }) {
   const totalCount = submit.totalCount ?? results.length;
 
   return (
-    <div className="p-3 space-y-3 text-[13px]">
+    <div className="p-3 space-y-3 text-[13px]" style={{ minWidth: "fit-content" }}>
       {/* Status banner */}
       <div
         className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg font-semibold text-[14px]"
@@ -536,19 +543,19 @@ function SubmitResult({ submit }) {
       )}
 
       {/* Compile error output */}
-      {submit.status === "compile_error" && submit.compileError && (
+      {(submit.status === "compile_error" || submit.status === "execution_error") && (submit.compileOutput || submit.compileError) && (
         <div>
           <span
             className="block text-[11px] uppercase tracking-wider mb-1 font-medium"
             style={{ color: "#64748b" }}
           >
-            Compiler Output
+            {submit.status === "execution_error" ? "Error Output" : "Compiler Output"}
           </span>
           <pre
-            className="font-mono text-[12px] whitespace-pre-wrap break-all p-2.5 rounded-md"
+            className="font-mono text-[12px] whitespace-pre p-2.5 rounded-md"
             style={{ background: "#1e1e3a", color: "#fca5a5" }}
           >
-            {submit.compileError}
+            {submit.compileOutput || submit.compileError}
           </pre>
         </div>
       )}
@@ -593,7 +600,7 @@ function TestResultRow({ tc, index, expanded, onToggle }) {
                 Error
               </span>
               <pre
-                className="font-mono text-[12px] whitespace-pre-wrap break-all p-2.5 rounded-md"
+                className="font-mono text-[12px] whitespace-pre p-2.5 rounded-md"
                 style={{ background: "#1e1e3a", color: "#fca5a5" }}
               >
                 {tc.error}
@@ -609,7 +616,7 @@ function TestResultRow({ tc, index, expanded, onToggle }) {
                   Input
                 </span>
                 <pre
-                  className="font-mono text-[12px] whitespace-pre-wrap break-all p-2 rounded-md"
+                  className="font-mono text-[12px] whitespace-pre p-2 rounded-md"
                   style={{ background: "#1e1e3a", color: "#e2e8f0" }}
                 >
                   {tc.input || "(empty)"}
@@ -623,7 +630,7 @@ function TestResultRow({ tc, index, expanded, onToggle }) {
                   Expected
                 </span>
                 <pre
-                  className="font-mono text-[12px] whitespace-pre-wrap break-all p-2 rounded-md"
+                  className="font-mono text-[12px] whitespace-pre p-2 rounded-md"
                   style={{ background: "#1e1e3a", color: "#93c5fd" }}
                 >
                   {tc.expected || "(empty)"}
@@ -637,7 +644,7 @@ function TestResultRow({ tc, index, expanded, onToggle }) {
                   Actual
                 </span>
                 <pre
-                  className="font-mono text-[12px] whitespace-pre-wrap break-all p-2 rounded-md"
+                  className="font-mono text-[12px] whitespace-pre p-2 rounded-md"
                   style={{ background: "#1e1e3a", color: "#f87171" }}
                 >
                   {String(tc.actual ?? "(no output)")}
@@ -731,6 +738,8 @@ function SubmissionsContent({ submissions, setActiveTab }) {
                       ? "Accepted"
                       : sub.status === "wrong"
                       ? "Wrong Answer"
+                      : sub.status === "failed"
+                      ? "Wrong Answer"
                       : sub.status === "compile_error"
                       ? "Compile Error"
                       : sub.status === "runtime_error"
@@ -739,6 +748,8 @@ function SubmissionsContent({ submissions, setActiveTab }) {
                       ? "Time Limit Exceeded"
                       : sub.status === "memory_limit"
                       ? "Memory Limit Exceeded"
+                      : sub.status === "execution_error"
+                      ? "Execution Error"
                       : sub.status}
                   </span>
                 </span>
@@ -807,7 +818,7 @@ function SubmissionsContent({ submissions, setActiveTab }) {
                           </span>
                           {tc.error && (
                             <pre
-                              className="font-mono text-[11px] whitespace-pre-wrap"
+                              className="font-mono text-[11px] whitespace-pre"
                               style={{ color: "#fca5a5" }}
                             >
                               {tc.error}

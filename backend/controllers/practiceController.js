@@ -1,4 +1,3 @@
-import vm from "vm";
 import mongoose from "mongoose";
 import Company from "../models/Company.js";
 import AptitudeQuestion from "../models/AptitudeQuestion.js";
@@ -359,28 +358,6 @@ function parseTestArgs(input, code) {
   }
 }
 
-function executeJavaScript(code, args, timeoutMs) {
-  const timeout = Math.min(Number(timeoutMs) || 1000, 3000);
-  const fnName = findFunctionName(code);
-  const wrapper = `
-    ${code}
-    if (typeof ${fnName} !== 'function') throw new Error('Function "${fnName}" not found');
-    JSON.stringify(${fnName}.apply(null, args));
-  `;
-  const start = Date.now();
-  try {
-    const output = vm.runInNewContext(wrapper, { args }, { timeout });
-    return { output, timeMs: Date.now() - start, error: null };
-  } catch (err) {
-    const timedOut = /timed out|TimeoutError/i.test(String(err.message));
-    return {
-      output: null,
-      timeMs: Date.now() - start,
-      error: timedOut ? `Time limit exceeded (${timeout}ms)` : String(err.message || "Execution error"),
-    };
-  }
-}
-
 function normalizeOutput(value) {
   if (value == null) return "";
   try {
@@ -392,15 +369,9 @@ function normalizeOutput(value) {
 
 export const runCodingCode = async (req, res) => {
   try {
-    const { language = "JavaScript", code = "", input = "" } = req.body;
+    const { language = "python", code = "", input = "" } = req.body;
     if (!code) return res.status(400).json({ message: "Code is required" });
     const langId = normalizeLanguage(language);
-    if (langId === "javascript") {
-      const args = parseTestArgs(input, code);
-      const { output, error, timeMs } = executeJavaScript(code, args, 1000);
-      if (error) return res.json({ type: "error", output: error });
-      return res.json({ type: "success", output, timeMs });
-    }
     if (!langId) {
       return res.json({
         type: "info",
@@ -423,7 +394,7 @@ export const runCodingCode = async (req, res) => {
 export const submitCoding = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { questionId, language = "JavaScript", code = "", timeTakenMs = 0 } = req.body;
+    const { questionId, language = "python", code = "", timeTakenMs = 0 } = req.body;
     if (!code) return res.status(400).json({ message: "Code is required" });
     if (!mongoose.Types.ObjectId.isValid(String(questionId))) {
       return res.status(400).json({ message: "Invalid question id" });
@@ -451,65 +422,8 @@ export const submitCoding = async (req, res) => {
     }
     const testCases = question.testCases || [];
     const timeLimit = question.timeLimit || 1000;
-    if (langId === "javascript") {
-      const results = [];
-      let passedCount = 0;
-      for (const tc of testCases) {
-        try {
-          const args = parseTestArgs(tc.input, code);
-          const { output, error, timeMs } = executeJavaScript(code, args, timeLimit);
-          if (error) throw new Error(error);
-          const passed = normalizeOutput(output) === normalizeOutput(tc.expected);
-          if (passed) passedCount++;
-          results.push({
-            index: results.length + 1,
-            passed,
-            isHidden: Boolean(tc.isHidden),
-            input: tc.isHidden ? "" : String(tc.input),
-            expected: tc.isHidden ? "" : String(tc.expected),
-            actual: passed ? "" : String(output ?? "No output"),
-            error: "",
-            timeMs,
-          });
-        } catch (err) {
-          results.push({
-            index: results.length + 1,
-            passed: false,
-            isHidden: Boolean(tc.isHidden),
-            input: tc.isHidden ? "" : String(tc.input),
-            expected: tc.isHidden ? "" : String(tc.expected),
-            actual: "",
-            error: String(err.message || "Execution error"),
-            timeMs: 0,
-          });
-        }
-      }
-      const status = passedCount === testCases.length && testCases.length > 0 ? "accepted" : testCases.length === 0 ? "error" : "failed";
-      const submission = await CodingSubmission.create({
-        userId,
-        questionId,
-        title: question.title,
-        companyId: question.companyId,
-        companyName: question.companyName,
-        language,
-        code,
-        status,
-        passedCount,
-        totalCount: testCases.length,
-        results,
-        timeTakenMs: Number(timeTakenMs) || 0,
-      });
-      invalidateStudentPlacement(userId);
-      return res.status(201).json({
-        _id: submission._id,
-        status,
-        passedCount,
-        totalCount: testCases.length,
-        results,
-      });
-    }
 
-    // Non-JavaScript: compile once, run once per test case via the execution service
+    // All languages now go through Docker execution
     const casePayloads = isStdinLanguage(langId)
       ? testCases.map((tc) => String(tc.input ?? ""))
       : testCases.map((tc) => parseTestArgs(tc.input, code));
@@ -644,7 +558,7 @@ export const getCodingSubmission = async (req, res) => {
 export const saveCodingDraft = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { questionId, language = "JavaScript", code = "" } = req.body;
+    const { questionId, language = "python", code = "" } = req.body;
     if (!questionId) return res.status(400).json({ message: "questionId is required" });
     await StudentPreference.findOneAndUpdate(
       { userId, type: "codingDraft", questionId: String(questionId) },
@@ -661,7 +575,7 @@ export const getCodingDraft = async (req, res) => {
   try {
     const userId = req.user.id;
     const draft = await StudentPreference.findOne({ userId, type: "codingDraft", questionId: req.params.questionId }).lean();
-    res.json(draft || { code: "", language: "JavaScript" });
+    res.json(draft || { code: "", language: "python" });
   } catch (error) {
     res.status(500).json({ message: "Failed to load draft" });
   }

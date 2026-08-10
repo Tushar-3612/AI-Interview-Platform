@@ -1,0 +1,30 @@
+version: "3.8"
+
+# This file is for BUILDING the code runner images only.
+# It does NOT start any long-running containers.
+# Each code execution creates its own short-lived container via `docker run`.
+
+services:
+  code-runner-java:
+    build:
+      context: ./docker/java
+      dockerfile: Dockerfile
+    image: code-runner-java:latest
+
+  code-runner-cpp:
+    build:
+      context: ./docker/cpp
+      dockerfile: Dockerfile
+    image: code-runner-cpp:latest
+
+  code-runner-c:
+    build:
+      context: ./docker/c
+      dockerfile: Dockerfile
+    image: code-runner-c:latest
+
+  code-runner-python:
+    build:
+      context: ./docker/python
+      dockerfile: Dockerfile
+    image: code-runner-python:latest

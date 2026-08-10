@@ -112,7 +112,11 @@ export const startTest = async (req, res) => {
       attempt.answers = test.questions.map((q, idx) => ({
         questionIndex: idx,
         questionId: q._id?.toString() || "",
-        type: q.type === "Coding" ? "Coding" : q.options?.length ? "MCQ" : "Descriptive",
+        type: q.type === "Coding" || q.problemTitle || (q.testCases && q.testCases.length > 0)
+          ? "Coding"
+          : q.options?.length
+            ? "MCQ"
+            : "Descriptive",
         answer: "",
         code: "",
         language: "",
@@ -134,7 +138,11 @@ export const startTest = async (req, res) => {
       answers: test.questions.map((q, idx) => ({
         questionIndex: idx,
         questionId: q._id?.toString() || "",
-        type: q.type === "Coding" ? "Coding" : q.options?.length ? "MCQ" : "Descriptive",
+        type: q.type === "Coding" || q.problemTitle || (q.testCases && q.testCases.length > 0)
+          ? "Coding"
+          : q.options?.length
+            ? "MCQ"
+            : "Descriptive",
         answer: "",
         code: "",
         language: "",
@@ -249,6 +257,8 @@ export const submitTest = async (req, res) => {
       if (!question) return;
       if (ans.status === "answered") {
         if (question.type === "Coding") {
+          // Coding questions are scored during processResult via codeExecutionService
+          // Set status to "answered" so processResult knows to evaluate it
           ans.scoredMarks = 0;
         } else if (question.options?.length > 0) {
           const isCorrect = ans.answer?.toLowerCase().trim() === question.correctAnswer?.toLowerCase().trim();
@@ -281,6 +291,16 @@ export const submitTest = async (req, res) => {
     try {
       const processed = await processResult(attempt._id);
       result = processed.result;
+
+      // Recalculate totalScore from processed results (includes coding question evaluation)
+      if (result && result.questions) {
+        let recalculatedScore = 0;
+        for (const qr of result.questions) {
+          recalculatedScore += qr.obtainedMarks || 0;
+        }
+        attempt.totalScore = Math.max(0, recalculatedScore);
+        await attempt.save();
+      }
     } catch (procErr) {
       console.error("Auto-process result error (non-blocking):", procErr.message);
     }

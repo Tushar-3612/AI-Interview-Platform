@@ -1,4 +1,4 @@
-import { execFile, execFileSync } from "child_process";
+import { spawn, execFileSync } from "child_process";
 import fs from "fs";
 import fsp from "fs/promises";
 import os from "os";
@@ -6,49 +6,86 @@ import path from "path";
 import crypto from "crypto";
 
 /* ============================================================================
- * Multi-language code execution service
- * ----------------------------------------------------------------------------
- * Architecture (production-ready):
- *   - Provider "piston" (default): remote Judge0-class execution API. No API
- *     key required, enforces time + memory limits with real compilers for all
- *     10 supported languages.
- *   - Provider "local": falls back to locally installed toolchains
- *     (node/python/javac/gcc/g++/csc/mcs/go/rustc/kotlinc/php) when the remote
- *     executor is unreachable or disabled via EXECUTION_PROVIDER=local.
- *   - The student's `solution`-style function is wrapped by a per-language
- *     harness generated server-side (embedded argument literals), so every
- *     language uses the same function-call convention. C/C++ follow the
- *     stdin-based convention (raw JSON input on stdin).
+ * Docker-based multi-language code execution service
+ * ---------------------------------------------------------------------------
+ * Supported languages: Java, C++, C, Python
+ *
+ * Every execution runs inside an isolated Docker container with:
+ *  - No network access (--network none)
+ *  - Memory limit (--memory)
+ *  - CPU limit (--cpus)
+ *  - Process limit (--pids-limit)
+ *  - Read-only root filesystem (--read-only + tmpfs)
+ *  - Automatic cleanup (--rm)
+ *  - Timeout enforced from Node.js side
+ *
+ * Student code is NEVER executed directly on the Node.js host.
  * ==========================================================================*/
 
-const IS_WIN = process.platform === "win32";
+// ─── Configuration ──────────────────────────────────────────────────────────
+
 const MAX_OUTPUT_BYTES = 5 * 1024 * 1024;
+const DEFAULT_TIMEOUT_MS = parseInt(process.env.CODE_TIMEOUT_MS, 10) || 10000;
+const COMPILE_TIMEOUT_MS = 30000;
+const MEMORY_LIMIT = process.env.CODE_MEMORY_LIMIT || "256m";
+const CPU_LIMIT = process.env.CODE_CPU_LIMIT || "0.5";
+const PIDS_LIMIT = process.env.CODE_PIDS_LIMIT || "64";
 
 const LANG_ALIASES = {
-  javascript: "javascript", js: "javascript", node: "javascript", nodejs: "javascript", "node.js": "javascript",
   python: "python", py: "python", python3: "python",
   java: "java",
   c: "c",
   cpp: "cpp", "c++": "cpp", cplusplus: "cpp",
-  csharp: "csharp", "c#": "csharp", cs: "csharp", ".net": "csharp",
-  go: "go", golang: "go",
-  rust: "rust", rs: "rust",
-  kotlin: "kotlin", kt: "kotlin",
-  php: "php",
 };
 
-const LANGUAGES = {
-  javascript: { id: "javascript", label: "JavaScript", piston: "javascript", files: () => ["solution.js"], kind: "function" },
-  python: { id: "python", label: "Python", piston: "python", files: () => ["solution.py"], kind: "function" },
-  java: { id: "java", label: "Java", piston: "java", files: () => ["Solution.java", "Main.java"], kind: "function" },
-  c: { id: "c", label: "C", piston: "c", files: () => ["main.c"], kind: "stdin" },
-  cpp: { id: "cpp", label: "C++", piston: "cpp", files: () => ["main.cpp"], kind: "stdin" },
-  csharp: { id: "csharp", label: "C#", piston: "csharp", files: () => ["Solution.cs", "Program.cs"], kind: "function" },
-  go: { id: "go", label: "Go", piston: "go", files: () => ["main.go"], kind: "function" },
-  rust: { id: "rust", label: "Rust", piston: "rust", files: () => ["main.rs"], kind: "function" },
-  kotlin: { id: "kotlin", label: "Kotlin", piston: "kotlin", files: () => ["Main.kt"], kind: "function" },
-  php: { id: "php", label: "PHP", piston: "php", files: () => ["solution.php"], kind: "function" },
+/**
+ * Central language configuration — the ONLY place language-specific
+ * commands, images, and filenames are defined.
+ */
+const LANGUAGE_CONFIG = {
+  java: {
+    id: "java",
+    label: "Java",
+    image: "code-runner-java:latest",
+    sourceFile: "Solution.java",
+    wrapperFile: "Main.java",
+    compileCommand: ["javac", "Solution.java", "Main.java"],
+    runCommand: ["java", "-cp", ".", "Main"],
+    kind: "function",
+  },
+  cpp: {
+    id: "cpp",
+    label: "C++",
+    image: "code-runner-cpp:latest",
+    sourceFile: "main.cpp",
+    wrapperFile: null,
+    compileCommand: ["g++", "main.cpp", "-o", "main", "-O2", "-std=c++17", "-w", "-lm"],
+    runCommand: ["./main"],
+    kind: "stdin",
+  },
+  c: {
+    id: "c",
+    label: "C",
+    image: "code-runner-c:latest",
+    sourceFile: "main.c",
+    wrapperFile: null,
+    compileCommand: ["gcc", "main.c", "-o", "main", "-O2", "-w", "-lm"],
+    runCommand: ["./main"],
+    kind: "stdin",
+  },
+  python: {
+    id: "python",
+    label: "Python",
+    image: "code-runner-python:latest",
+    sourceFile: "solution.py",
+    wrapperFile: null,
+    compileCommand: null,
+    runCommand: ["python3", "solution.py"],
+    kind: "function",
+  },
 };
+
+// ─── Public helpers (same API as before) ────────────────────────────────────
 
 export function normalizeLanguage(language) {
   if (!language) return null;
@@ -56,11 +93,83 @@ export function normalizeLanguage(language) {
 }
 
 export function getSupportedLanguages() {
-  return Object.values(LANGUAGES).map((l) => l.label);
+  return Object.values(LANGUAGE_CONFIG).map((l) => l.label);
 }
 
 export function isStdinLanguage(languageId) {
   return languageId === "c" || languageId === "cpp";
+}
+
+export function isLanguageSupported(languageId) {
+  return LANG_ALIASES[String(languageId).trim().toLowerCase()] !== undefined;
+}
+
+/* ============================================================================
+ * Docker environment detection (lazy, cached)
+ * ==========================================================================*/
+
+const dockerState = {
+  checked: false,
+  available: false,
+  images: { java: false, cpp: false, c: false, python: false },
+};
+
+function checkDockerSync() {
+  try {
+    execFileSync("docker", ["info"], { timeout: 10000, stdio: "pipe", windowsHide: true });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function checkImageSync(imageName) {
+  try {
+    const out = execFileSync("docker", ["images", "-q", imageName], {
+      timeout: 5000, stdio: "pipe", windowsHide: true, encoding: "utf8",
+    });
+    return out.trim().length > 0;
+  } catch {
+    return false;
+  }
+}
+
+function ensureDockerChecked() {
+  if (dockerState.checked) return;
+  dockerState.checked = true;
+  dockerState.available = checkDockerSync();
+
+  console.log("");
+  console.log("========================================");
+  console.log("  CODE EXECUTION ENVIRONMENT");
+  console.log("========================================");
+  console.log(`  Docker: ${dockerState.available ? "AVAILABLE" : "NOT AVAILABLE"}`);
+  console.log("");
+
+  if (!dockerState.available) {
+    console.log("  ⚠️  Docker is NOT running!");
+    console.log("  ⚠️  Code execution will NOT work.");
+    console.log("  ⚠️  Start Docker Desktop and restart the server.");
+    console.log("========================================");
+    console.log("");
+    return;
+  }
+
+  for (const [langId, config] of Object.entries(LANGUAGE_CONFIG)) {
+    const available = checkImageSync(config.image);
+    dockerState.images[langId] = available;
+    console.log(`  ${config.label} Runner: ${available ? "AVAILABLE" : "NOT FOUND"} (${config.image})`);
+  }
+
+  const allAvailable = Object.values(dockerState.images).every(Boolean);
+  if (!allAvailable) {
+    console.log("");
+    console.log("  ⚠️  Some images are missing. Run:");
+    console.log("  docker compose build");
+  }
+
+  console.log("========================================");
+  console.log("");
 }
 
 /* ============================================================================
@@ -80,10 +189,9 @@ function pyLiteral(value) {
   return "None";
 }
 
-function escapeJavaStyleString(s, dollarEscapes) {
+function escapeJavaStyleString(s) {
   const out = String(s).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
   let escaped = out.replace(/\n/g, "\\n").replace(/\r/g, "\\r").replace(/\t/g, "\\t");
-  if (dollarEscapes) escaped = escaped.replace(/\$/g, "\\$");
   escaped = escaped.replace(/[\u0000-\u001f]/g, (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, "0")}`);
   return `"${escaped}"`;
 }
@@ -93,387 +201,180 @@ function javaValueLiteral(value) {
   if (typeof value === "boolean") return String(value);
   if (typeof value === "number") {
     if (!Number.isFinite(value)) return "0";
-    return Number.isInteger(value) ? String(value) : `${value}d`;
+    if (Number.isInteger(value)) {
+      if (value >= -2147483648 && value <= 2147483647) return String(value);
+      return `${value}L`;
+    }
+    return `${value}d`;
   }
   if (Array.isArray(value)) {
-    if (value.length === 0) return "new Object[]{}";
+    if (value.length === 0) return "new int[]{}";
     if (value.every((x) => typeof x === "number" && Number.isInteger(x) && Number.isFinite(x))) {
       const inIntRange = value.every((x) => x >= -2147483648 && x <= 2147483647);
       return inIntRange ? `new int[]{${value.join(", ")}}` : `new long[]{${value.map((x) => `${x}L`).join(", ")}}`;
     }
     if (value.every((x) => typeof x === "number")) return `new double[]{${value.join(", ")}}`;
-    if (value.every((x) => typeof x === "string")) return `new String[]{${value.map((x) => escapeJavaStyleString(x, false)).join(", ")}}`;
+    if (value.every((x) => typeof x === "string")) return `new String[]{${value.map((x) => escapeJavaStyleString(x)).join(", ")}}`;
     return `new Object[]{${value.map(javaValueLiteral).join(", ")}}`;
   }
-  return escapeJavaStyleString(value, false);
+  return escapeJavaStyleString(value);
 }
 
-function csharpValueLiteral(value) {
-  if (value === null) return "null";
-  if (typeof value === "boolean") return value ? "true" : "false";
-  if (typeof value === "number") {
-    if (!Number.isFinite(value)) return "0";
-    return Number.isInteger(value) ? String(value) : `${value}d`;
-  }
-  if (Array.isArray(value)) {
-    if (value.length === 0) return "new object[] {}";
-    if (value.every((x) => typeof x === "number" && Number.isInteger(x) && Number.isFinite(x))) {
-      const inIntRange = value.every((x) => x >= -2147483648 && x <= 2147483647);
-      return inIntRange ? `new int[] {${value.join(", ")}}` : `new long[] {${value.map((x) => `${x}L`).join(", ")}}`;
-    }
-    if (value.every((x) => typeof x === "number")) return `new double[] {${value.join(", ")}}`;
-    if (value.every((x) => typeof x === "string")) return `new string[] {${value.map((x) => escapeJavaStyleString(x, false)).join(", ")}}`;
-    return `new object[] {${value.map(csharpValueLiteral).join(", ")}}`;
-  }
-  return escapeJavaStyleString(value, false);
-}
-
-function kotlinValueLiteral(value) {
-  if (value === null) return "null";
-  if (typeof value === "boolean") return String(value);
-  if (typeof value === "number") {
-    if (!Number.isFinite(value)) return "0";
-    return Number.isInteger(value) ? String(value) : `${value}`;
-  }
-  if (Array.isArray(value)) {
-    if (value.length === 0) return "arrayOf<Any>()";
-    if (value.every((x) => typeof x === "number" && Number.isInteger(x) && Number.isFinite(x))) {
-      const inIntRange = value.every((x) => x >= -2147483648 && x <= 2147483647);
-      return inIntRange ? `intArrayOf(${value.join(", ")})` : `longArrayOf(${value.map((x) => `${x}L`).join(", ")})`;
-    }
-    if (value.every((x) => typeof x === "number")) return `doubleArrayOf(${value.join(", ")})`;
-    if (value.every((x) => typeof x === "string")) return `arrayOf(${value.map((x) => escapeJavaStyleString(x, true)).join(", ")})`;
-    return `arrayOf<Any>(${value.map(kotlinValueLiteral).join(", ")})`;
-  }
-  return escapeJavaStyleString(value, true);
-}
-
-function rustValueLiteral(value) {
-  if (Array.isArray(value)) {
-    if (value.every((x) => typeof x === "number")) return `vec![${value.join(", ")}]`;
-    if (value.every((x) => typeof x === "string")) return `vec![${value.map((x) => `String::from(${escapeJavaStyleString(x, false)})`).join(", ")}]`;
-    return `vec![${value.map((x) => (typeof x === "number" ? String(x) : `String::from(${escapeJavaStyleString(x, false)})`)).join(", ")}]`;
-  }
-  if (typeof value === "number") return `vec![${value}]`;
-  if (typeof value === "string") return `vec![String::from(${escapeJavaStyleString(value, false)})]`;
-  return "vec![]";
-}
-
-// Java/C# pass string[]/int[]-typed arrays to a `Object...`/`params object[]`
-// parameter as the varargs array itself due to array covariance. Casting to
-// Object forces them to be wrapped as a single argument.
 function javaSingleArgLiteral(value) {
-  return Array.isArray(value) ? `(Object) ${javaValueLiteral(value)}` : javaValueLiteral(value);
+  return javaValueLiteral(value);
 }
 
-function csharpSingleArgLiteral(value) {
-  return Array.isArray(value) ? `(object) ${csharpValueLiteral(value)}` : csharpValueLiteral(value);
-}
-
-// Merges the user's own Go imports with the harness imports so student code
-// that imports extra packages keeps compiling.
-function extractGoImports(source) {
-  const imports = new Set();
-  const block = String(source).match(/import\s*\(\s*([\s\S]*?)\s*\)/);
-  if (block) {
-    const re = /"([^"]+)"/g;
-    let m;
-    while ((m = re.exec(block[1]))) imports.add(m[1]);
-  } else {
-    const single = String(source).match(/import\s+"([^"]+)"/);
-    if (single) imports.add(single[1]);
+function javaTypedLiteral(type, value) {
+  if (type === "char" && typeof value === "string" && value.length === 1) {
+    const code = value.charCodeAt(0);
+    if (code === 39) return "'\\''";
+    if (code === 92) return "'\\\\'";
+    if (code === 10) return "'\\n'";
+    if (code === 13) return "'\\r'";
+    if (code === 9) return "'\\t'";
+    if (code >= 32 && code < 127) return `'${value}'`;
+    return `'\\u${code.toString(16).padStart(4, "0")}'`;
   }
-  return imports;
-}
-
-function goImportBlock(extraImports) {
-  const all = ["encoding/base64", "encoding/json", "fmt", "os", ...extraImports];
-  const unique = [...new Set(all)].sort();
-  return `import (
-${unique.map((i) => `    "${i}"`).join("\n")}
-)`;
-}
-
-function buildGoRunHarness(args, userImports) {
-  const argsJson = Buffer.from(JSON.stringify(args), "utf8").toString("base64");
-  return `package main
-
-${goImportBlock(userImports)}
-
-func init() {
-    __raw, err := base64.StdEncoding.DecodeString("${argsJson}")
-    if err != nil {
-        fmt.Println(err)
-        os.Exit(1)
-    }
-    var __args []interface{}
-    if err := json.Unmarshal(__raw, &__args); err != nil {
-        fmt.Println(err)
-        os.Exit(1)
-    }
-    __args = __cleanNumbers(__args).([]interface{})
-    __out, err := json.Marshal(solution(__args...))
-    if err != nil {
-        fmt.Println(err)
-        os.Exit(1)
-    }
-    fmt.Println(string(__out))
-    os.Exit(0)
-}
-
-func __cleanNumbers(v interface{}) interface{} {
-    switch t := v.(type) {
-    case []interface{}:
-        for i := range t {
-            t[i] = __cleanNumbers(t[i])
-        }
-        return t
-    case float64:
-        if t == float64(int64(t)) {
-            return int64(t)
-        }
-        return t
-    default:
-        return v
-    }
-}
-
-func main() {}
-`;
-}
-
-function buildGoBatchHarness(cases, userImports) {
-  const argsJson = Buffer.from(JSON.stringify(cases), "utf8").toString("base64");
-  return `package main
-
-${goImportBlock(userImports)}
-
-func init() {
-    __raw, err := base64.StdEncoding.DecodeString("${argsJson}")
-    if err != nil {
-        fmt.Println(err)
-        os.Exit(1)
-    }
-    var __cases [][]interface{}
-    if err := json.Unmarshal(__raw, &__cases); err != nil {
-        fmt.Println(err)
-        os.Exit(1)
-    }
-    for i := range __cases {
-        __cases[i] = __cleanNumbers(__cases[i]).([]interface{})
-    }
-    for _, __c := range __cases {
-        __out, err := json.Marshal(solution(__c...))
-        if err != nil {
-            fmt.Println(err)
-            os.Exit(1)
-        }
-        fmt.Println(string(__out))
-    }
-    os.Exit(0)
-}
-
-func __cleanNumbers(v interface{}) interface{} {
-    switch t := v.(type) {
-    case []interface{}:
-        for i := range t {
-            t[i] = __cleanNumbers(t[i])
-        }
-        return t
-    case float64:
-        if t == float64(int64(t)) {
-            return int64(t)
-        }
-        return t
-    default:
-        return v
-    }
-}
-
-func main() {}
-`;
+  return javaValueLiteral(value);
 }
 
 /* ============================================================================
- * Harness builders — every language receives the same function-call convention
+ * Java method signature parser and typed invocation generator
  * ==========================================================================*/
 
-function harnessForRun(langId, args) {
+function parseJavaParamTypes(code) {
+  const src = String(code || "");
+  const m = src.match(/(?:public\s+|static\s+)*\w[\w<>\[\],\s]*\bsolve\s*\(([^)]*)\)/);
+  if (!m) return null;
+  const paramStr = m[1].trim();
+  if (!paramStr) return [];
+  const params = [];
+  let depth = 0;
+  let current = "";
+  for (const ch of paramStr) {
+    if (ch === "<" || ch === "[") depth++;
+    if (ch === ">" || ch === "]") depth--;
+    if (ch === "," && depth === 0) {
+      params.push(current.trim());
+      current = "";
+      continue;
+    }
+    current += ch;
+  }
+  if (current.trim()) params.push(current.trim());
+  return params.map((p) => {
+    const varargs = p.match(/^(.+?)\.\.\.\s*\w+$/);
+    if (varargs) return varargs[1].trim() + "[]";
+    const parts = p.split(/\s+/);
+    const typeParts = [];
+    let i = 0;
+    while (i < parts.length - 1) {
+      typeParts.push(parts[i]);
+      i++;
+    }
+    let type = typeParts.join(" ");
+    const last = parts[parts.length - 1];
+    if (last && last.startsWith("[]")) {
+      type += "[]";
+    }
+    return type;
+  });
+}
+
+const JAVA_PRIMITIVE_BOXED = {
+  int: "Integer", long: "Long", double: "Double",
+  float: "Float", boolean: "Boolean", char: "Character",
+  byte: "Byte", short: "Short",
+};
+
+function isJavaPrimitive(t) {
+  return JAVA_PRIMITIVE_BOXED.hasOwnProperty(t);
+}
+
+function javaUnboxExpression(type, varAccess) {
+  if (isJavaPrimitive(type)) {
+    const boxed = JAVA_PRIMITIVE_BOXED[type];
+    return `((${boxed}) ${varAccess}).${type === "boolean" ? "booleanValue" : type === "char" ? "charValue" : type + "Value"}()`;
+  }
+  return `(${type}) ${varAccess}`;
+}
+
+function javaInvocationForParams(paramTypes, arrayVar) {
+  if (!paramTypes || paramTypes.length === 0) {
+    return arrayVar;
+  }
+  const isVarargs = paramTypes.length === 1 && paramTypes[0].endsWith("[]");
+  if (isVarargs && paramTypes[0] === "Object[]") {
+    return arrayVar;
+  }
+  if (paramTypes.length === 1) {
+    const t = paramTypes[0];
+    if (t === "char") {
+      return `((String) ${arrayVar}[0]).charAt(0)`;
+    }
+    if (isJavaPrimitive(t)) {
+      return javaUnboxExpression(t, `${arrayVar}[0]`);
+    }
+    return `(${t}) ${arrayVar}[0]`;
+  }
+  return paramTypes.map((t, i) => {
+    if (t === "char") {
+      return `((String) ${arrayVar}[${i}]).charAt(0)`;
+    }
+    if (isJavaPrimitive(t)) {
+      return javaUnboxExpression(t, `${arrayVar}[${i}]`);
+    }
+    return `(${t}) ${arrayVar}[${i}]`;
+  }).join(", ");
+}
+
+/* ============================================================================
+ * Harness builders
+ * ==========================================================================*/
+
+function harnessForRun(langId, args, code) {
   switch (langId) {
     case "python":
       return `\nimport json as __json\n__result = solution(*${pyLiteral(args)})\nprint(__json.dumps(__result, default=str))\n`;
     case "java": {
-      const literal = args.length === 1 ? javaSingleArgLiteral(args[0]) : `new Object[]{${args.map(javaValueLiteral).join(", ")}}`;
-      return `public class Main {
+      const paramTypes = code ? parseJavaParamTypes(code) : null;
+      let invocation;
+      if (args.length === 0) {
+        invocation = "";
+      } else if (args.length === 1) {
+        if (paramTypes && paramTypes.length === 1) {
+          invocation = javaTypedLiteral(paramTypes[0], args[0]);
+        } else {
+          invocation = javaSingleArgLiteral(args[0]);
+        }
+      } else {
+        if (paramTypes && paramTypes.length === args.length) {
+          invocation = args.map((a, i) => {
+            const t = paramTypes[i];
+            if (isJavaPrimitive(t)) {
+              const boxed = JAVA_PRIMITIVE_BOXED[t];
+              const lit = javaValueLiteral(a);
+              return `new ${boxed}(${lit}).${t === "boolean" ? "booleanValue" : t === "char" ? "charValue" : t + "Value"}()`;
+            }
+            return `(${t}) ${javaValueLiteral(a)}`;
+          }).join(", ");
+        } else {
+          invocation = args.map(a => javaValueLiteral(a)).join(", ");
+        }
+      }
+      const mainBlock = `public class Main {
     public static void main(String[] args) {
-        Object __result = Solution.solve(${literal});
+        Object __result = Solution.solve(${invocation});
         System.out.println(Main.toJson(__result));
+    }`;
+      return mainBlock + buildJavaToJsonSuffix();
     }
-    static String toJson(Object value) {
-        if (value == null) return "null";
-        if (value instanceof String) return toJsonString((String) value);
-        if (value instanceof Boolean || value instanceof Number) return value.toString();
-        if (value.getClass().isArray()) {
-            int length = java.lang.reflect.Array.getLength(value);
-            StringBuilder sb = new StringBuilder("[");
-            for (int i = 0; i < length; i++) {
-                if (i > 0) sb.append(",");
-                sb.append(toJson(java.lang.reflect.Array.get(value, i)));
-            }
-            return sb.append("]").toString();
-        }
-        return toJsonString(value.toString());
-    }
-    static String toJsonString(String s) {
-        StringBuilder sb = new StringBuilder("\\"");
-        for (int i = 0; i < s.length(); i++) {
-            char c = s.charAt(i);
-            switch (c) {
-                case '"': sb.append("\\\\\\""); break;
-                case '\\\\': sb.append("\\\\\\\\"); break;
-                case '\\n': sb.append("\\\\n"); break;
-                case '\\r': sb.append("\\\\r"); break;
-                case '\\t': sb.append("\\\\t"); break;
-                default:
-                    if (c < 32) sb.append(String.format("\\\\u%04x", (int) c));
-                    else sb.append(c);
-            }
-        }
-        return sb.append("\\"").toString();
-    }
-}
-`;
-    }
-    case "csharp": {
-      const literal = args.length === 1 ? csharpSingleArgLiteral(args[0]) : `new object[] {${args.map(csharpValueLiteral).join(", ")}}`;
-      return `using System;
-using System.Collections;
-using System.Globalization;
-using System.Text;
-
-public class Program {
-    public static void Main() {
-        object result = Solution.Solve(${literal});
-        Console.WriteLine(Program.ToJson(result));
-    }
-    static string ToJson(object value) {
-        if (value == null) return "null";
-        if (value is string) return ToJsonString((string) value);
-        if (value is bool) return (bool) value ? "true" : "false";
-        if (value is char) return ToJsonString(value.ToString());
-        if (value is int || value is long || value is double || value is float || value is decimal)
-            return Convert.ToString(value, CultureInfo.InvariantCulture);
-        if (value is IEnumerable) {
-            StringBuilder sb = new StringBuilder("[");
-            bool first = true;
-            foreach (object item in (IEnumerable) value) {
-                if (!first) sb.Append(",");
-                sb.Append(ToJson(item));
-                first = false;
-            }
-            return sb.Append("]").ToString();
-        }
-        return ToJsonString(value.ToString());
-    }
-    static string ToJsonString(string s) {
-        StringBuilder sb = new StringBuilder("\\"");
-        foreach (char c in s) {
-            switch (c) {
-                case '"': sb.Append("\\\\\\""); break;
-                case '\\\\': sb.Append("\\\\\\\\"); break;
-                case '\\n': sb.Append("\\\\n"); break;
-                case '\\r': sb.Append("\\\\r"); break;
-                case '\\t': sb.Append("\\\\t"); break;
-                default:
-                    if (c < 32) sb.Append("\\\\u").Append(((int) c).ToString("x4"));
-                    else sb.Append(c);
-                    break;
-            }
-        }
-        return sb.Append("\\"").ToString();
-    }
-}
-`;
-    }
-    case "go":
-      // Go harness is assembled in buildSources (needs the user's imports)
-      return "";
-    case "rust":
-      return `\nfn main() {
-    let __args = ${rustValueLiteral(args)};
-    println!("{}", __jsonish(format!("{:?}", solution(__args))));
-}
-
-fn __jsonish(s: String) -> String {
-    let mut out = String::with_capacity(s.len());
-    let mut chars = s.chars().peekable();
-    let mut in_str = false;
-    while let Some(c) = chars.next() {
-        match c {
-            '"' => { in_str = !in_str; out.push(c); }
-            ',' if !in_str => {
-                out.push(',');
-                while let Some(&n) = chars.peek() { if n == ' ' { chars.next(); } else { break; } }
-            }
-            ':' if !in_str => {
-                out.push(':');
-                if let Some(&' ') = chars.peek() { chars.next(); }
-            }
-            _ => out.push(c),
-        }
-    }
-    out
-}
-`;
-    case "kotlin":
-      return `\nfun main() {
-    val __result = solution(${args.length === 1 ? kotlinValueLiteral(args[0]) : args.map(kotlinValueLiteral).join(", ")})
-    println(__toJson(__result))
-}
-
-fun __toJson(value: Any?): String = when (value) {
-    null -> "null"
-    is String -> __toJsonString(value)
-    is Boolean -> value.toString()
-    is Int, is Long, is Short, is Byte -> value.toString()
-    is Double, is Float -> value.toString()
-    is IntArray -> value.joinToString(prefix = "[", postfix = "]") { it.toString() }
-    is LongArray -> value.joinToString(prefix = "[", postfix = "]") { it.toString() }
-    is DoubleArray -> value.joinToString(prefix = "[", postfix = "]") { it.toString() }
-    is BooleanArray -> value.joinToString(prefix = "[", postfix = "]") { it.toString() }
-    is Array<*> -> value.joinToString(prefix = "[", postfix = "]") { __toJson(it) }
-    is List<*> -> value.joinToString(prefix = "[", postfix = "]") { __toJson(it) }
-    else -> __toJsonString(value.toString())
-}
-
-fun __toJsonString(value: String): String {
-    val sb = StringBuilder("\\"")
-    for (c in value) {
-        when (c) {
-            '"' -> sb.append("\\\\\\"")
-            '\\\\' -> sb.append("\\\\\\\\")
-            '\\n' -> sb.append("\\\\n")
-            '\\r' -> sb.append("\\\\r")
-            '\\t' -> sb.append("\\\\t")
-            else -> if (c.code < 32) sb.append("\\\\u%04x".format(c.code)) else sb.append(c)
-        }
-    }
-    return sb.append("\\"").toString()
-}
-`;
-    case "php":
-      return `<?php
-$__args = json_decode(base64_decode('${Buffer.from(JSON.stringify(args), "utf8").toString("base64")}'), true);
-echo json_encode(solution(...$__args));
-exit;
-?>
-`;
     default:
       return "";
   }
 }
 
-function harnessForBatch(langId, cases) {
+function harnessForBatch(langId, cases, code) {
   switch (langId) {
     case "python": {
       const list = cases.map((c) => pyLiteral(c)).join(", ");
@@ -485,91 +386,18 @@ for __c in __cases:
     }
     case "java": {
       const caseLiterals = cases.map((c) => `new Object[]{${c.map(javaValueLiteral).join(", ")}}`).join(",\n        ");
+      const paramTypes = code ? parseJavaParamTypes(code) : null;
+      const invocation = javaInvocationForParams(paramTypes, "__c");
       const run = `public class Main {
     public static void main(String[] args) {
         Object[][] __cases = new Object[][]{
         ${caseLiterals}
         };
         for (Object[] __c : __cases) {
-            System.out.println(Main.toJson(Solution.solve(__c)));
+            System.out.println(Main.toJson(Solution.solve(${invocation})));
         }
     }`;
       return run + buildJavaToJsonSuffix();
-    }
-    case "csharp": {
-      const caseLiterals = cases.map((c) => `new object[] {${c.map(csharpValueLiteral).join(", ")}}`).join(",\n        ");
-      const run = `using System;
-using System.Collections;
-using System.Globalization;
-using System.Text;
-
-public class Program {
-    public static void Main() {
-        object[][] cases = new object[][]{
-        ${caseLiterals}
-        };
-        foreach (object[] c in cases) {
-            Console.WriteLine(Program.ToJson(Solution.Solve(c)));
-        }
-    }`;
-      return run + buildCsharpToJsonSuffix();
-    }
-    case "go":
-      // Go harness is assembled in buildSources (needs the user's imports)
-      return "";
-    case "rust": {
-      const caseLiterals = cases.map((c) => rustValueLiteral(c)).join(", ");
-      return `\nfn main() {
-    let __cases = vec![${caseLiterals}];
-    for __c in __cases {
-        println!("{}", __jsonish(format!("{:?}", solution(__c))));
-    }
-}
-
-fn __jsonish(s: String) -> String {
-    let mut out = String::with_capacity(s.len());
-    let mut chars = s.chars().peekable();
-    let mut in_str = false;
-    while let Some(c) = chars.next() {
-        match c {
-            '"' => { in_str = !in_str; out.push(c); }
-            ',' if !in_str => {
-                out.push(',');
-                while let Some(&n) = chars.peek() { if n == ' ' { chars.next(); } else { break; } }
-            }
-            ':' if !in_str => {
-                out.push(':');
-                if let Some(&' ') = chars.peek() { chars.next(); }
-            }
-            _ => out.push(c),
-        }
-    }
-    out
-}
-`;
-    }
-    case "kotlin": {
-      const caseLiterals = cases.map((c) => `arrayOf<Any>(${c.map(kotlinValueLiteral).join(", ")})`).join(",\n        ");
-      return `\nfun main() {
-    val __cases = arrayOf(
-        ${caseLiterals}
-    )
-    for (__c in __cases) {
-        println(__toJson(solution(*__c)))
-    }
-}
-` + buildKotlinToJsonSuffix();
-    }
-    case "php": {
-      const argsJson = Buffer.from(JSON.stringify(cases), "utf8").toString("base64");
-      return `<?php
-$__cases = json_decode(base64_decode('${argsJson}'), true);
-foreach ($__cases as $__c) {
-    echo json_encode(solution(...$__c)) . "\\n";
-}
-exit;
-?>
-`;
     }
     default:
       return "";
@@ -577,7 +405,7 @@ exit;
 }
 
 function buildJavaToJsonSuffix() {
-  return `
+  return String.raw`
     static String toJson(Object value) {
         if (value == null) return "null";
         if (value instanceof String) return toJsonString((String) value);
@@ -594,98 +422,22 @@ function buildJavaToJsonSuffix() {
         return toJsonString(value.toString());
     }
     static String toJsonString(String s) {
-        StringBuilder sb = new StringBuilder("\\"");
+        StringBuilder sb = new StringBuilder("\"");
         for (int i = 0; i < s.length(); i++) {
             char c = s.charAt(i);
             switch (c) {
-                case '"': sb.append("\\\\\\""); break;
-                case '\\\\': sb.append("\\\\\\\\"); break;
-                case '\\n': sb.append("\\\\n"); break;
-                case '\\r': sb.append("\\\\r"); break;
-                case '\\t': sb.append("\\\\t"); break;
+                case '"': sb.append("\\\""); break;
+                case '\\': sb.append("\\\\"); break;
+                case '\n': sb.append("\\n"); break;
+                case '\r': sb.append("\\r"); break;
+                case '\t': sb.append("\\t"); break;
                 default:
-                    if (c < 32) sb.append(String.format("\\\\u%04x", (int) c));
+                    if (c < 32) sb.append(String.format("\\u%04x", (int) c));
                     else sb.append(c);
             }
         }
-        return sb.append("\\"").toString();
+        return sb.append("\"").toString();
     }
-}
-`;
-}
-
-function buildCsharpToJsonSuffix() {
-  return `
-    static string ToJson(object value) {
-        if (value == null) return "null";
-        if (value is string) return ToJsonString((string) value);
-        if (value is bool) return (bool) value ? "true" : "false";
-        if (value is char) return ToJsonString(value.ToString());
-        if (value is int || value is long || value is double || value is float || value is decimal)
-            return Convert.ToString(value, CultureInfo.InvariantCulture);
-        if (value is IEnumerable) {
-            StringBuilder sb = new StringBuilder("[");
-            bool first = true;
-            foreach (object item in (IEnumerable) value) {
-                if (!first) sb.Append(",");
-                sb.Append(ToJson(item));
-                first = false;
-            }
-            return sb.Append("]").ToString();
-        }
-        return ToJsonString(value.ToString());
-    }
-    static string ToJsonString(string s) {
-        StringBuilder sb = new StringBuilder("\\"");
-        foreach (char c in s) {
-            switch (c) {
-                case '"': sb.Append("\\\\\\""); break;
-                case '\\\\': sb.Append("\\\\\\\\"); break;
-                case '\\n': sb.Append("\\\\n"); break;
-                case '\\r': sb.Append("\\\\r"); break;
-                case '\\t': sb.Append("\\\\t"); break;
-                default:
-                    if (c < 32) sb.Append("\\\\u").Append(((int) c).ToString("x4"));
-                    else sb.Append(c);
-                    break;
-            }
-        }
-        return sb.Append("\\"").ToString();
-    }
-}
-`;
-}
-
-function buildKotlinToJsonSuffix() {
-  return `
-fun __toJson(value: Any?): String = when (value) {
-    null -> "null"
-    is String -> __toJsonString(value)
-    is Boolean -> value.toString()
-    is Int, is Long, is Short, is Byte -> value.toString()
-    is Double, is Float -> value.toString()
-    is IntArray -> value.joinToString(prefix = "[", postfix = "]") { it.toString() }
-    is LongArray -> value.joinToString(prefix = "[", postfix = "]") { it.toString() }
-    is DoubleArray -> value.joinToString(prefix = "[", postfix = "]") { it.toString() }
-    is BooleanArray -> value.joinToString(prefix = "[", postfix = "]") { it.toString() }
-    is Array<*> -> value.joinToString(prefix = "[", postfix = "]") { __toJson(it) }
-    is List<*> -> value.joinToString(prefix = "[", postfix = "]") { __toJson(it) }
-    else -> __toJsonString(value.toString())
-}
-
-fun __toJsonString(value: String): String {
-    val sb = StringBuilder("\\"")
-    for (c in value) {
-        when (c) {
-            '"' -> sb.append("\\\\\\"")
-            '\\\\' -> sb.append("\\\\\\\\")
-            '\\n' -> sb.append("\\\\n")
-            '\\r' -> sb.append("\\\\r")
-            '\\t' -> sb.append("\\\\t")
-            else -> if (c.code < 32) sb.append("\\\\u%04x".format(c.code)) else sb.append(c)
-        }
-    }
-    return sb.append("\\"").toString()
 }
 `;
 }
@@ -694,34 +446,7 @@ fun __toJsonString(value: String): String {
  * Source assembly
  * ==========================================================================*/
 
-function stripCsharpMain(source) {
-  const idx = String(source).search(/\bMain\s*\(/);
-  if (idx === -1) return String(source);
-  const lineStart = String(source).lastIndexOf("\n", idx) + 1;
-  const open = String(source).indexOf("{", idx);
-  if (open === -1) return String(source);
-  let depth = 0;
-  let end = -1;
-  for (let i = open; i < String(source).length; i++) {
-    if (String(source)[i] === "{") depth++;
-    else if (String(source)[i] === "}") { depth--; if (depth === 0) { end = i + 1; break; } }
-  }
-  if (end === -1) return String(source);
-  return String(source).slice(0, lineStart) + String(source).slice(end);
-}
-
-function stripGoPreamble(source) {
-  return String(source)
-    .replace(/^\s*package\s+main\b.*$/m, "")
-    .replace(/^\s*import\s*\(\s*[\s\S]*?\s*\)\s*$/m, "")
-    .replace(/^\s*import\s+"[^"]*"\s*$/m, "");
-}
-
-function renameMain(source, pattern, replacement) {
-  return String(source).replace(new RegExp(pattern), replacement);
-}
-
-function buildSources(langId, code, harness, payload = null) {
+function buildSources(langId, code, harness) {
   switch (langId) {
     case "python":
       return [{ name: "solution.py", content: String(code) + harness }];
@@ -734,320 +459,400 @@ function buildSources(langId, code, harness, payload = null) {
       return [{ name: "main.c", content: String(code) }];
     case "cpp":
       return [{ name: "main.cpp", content: String(code) }];
-    case "csharp":
-      return [
-        { name: "Solution.cs", content: stripCsharpMain(code) },
-        { name: "Program.cs", content: harness },
-      ];
-    case "go": {
-      const userImports = extractGoImports(code);
-      const body = stripGoPreamble(code);
-      const goHarness = payload && payload.kind === "batch"
-        ? buildGoBatchHarness(payload.cases, userImports)
-        : buildGoRunHarness(payload ? payload.args : [], userImports);
-      return [{ name: "main.go", content: goHarness + "\n\n" + body }];
-    }
-    case "rust":
-      return [{ name: "main.rs", content: renameMain(code, "fn\\s+main\\s*\\(", "fn __user_main_ignored(") + harness }];
-    case "kotlin":
-      return [{ name: "Main.kt", content: renameMain(code, "fun\\s+main\\s*\\(", "fun __user_main_ignored(") + harness }];
-    case "php":
-      // PHP hoists top-level function declarations, so harness-first is safe;
-      // strip the user's own <?php/?> so it cannot clash with the harness opener
-      return [
-        {
-          name: "solution.php",
-          content: harness + "\n" + String(code).replace(/^\s*<\?php\s*/i, "").replace(/\s*\?>\s*$/g, ""),
-        },
-      ];
     default:
-      return [{ name: LANGUAGES[langId].files()[0], content: String(code) }];
+      return [{ name: LANGUAGE_CONFIG[langId].sourceFile, content: String(code) }];
   }
 }
 
 /* ============================================================================
- * Local toolchain detection (lazy, cached)
+ * Docker process runner
+ * ---------------------------------------------------------------------------
+ * Spawns `docker run` with full isolation flags.
+ * Uses spawn() with argument arrays — never shell interpolation.
  * ==========================================================================*/
 
-const toolchains = { detected: false };
-
-function detectBinary(bin) {
-  try {
-    execFileSync(bin, ["--version"], { timeout: 5000, stdio: "pipe", windowsHide: true });
-    return bin;
-  } catch {
-    return null;
-  }
-}
-
-function detectCsc() {
-  const inPath = detectBinary("csc");
-  if (inPath) return inPath;
-  const candidates = [
-    "C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319\\csc.exe",
-    "C:\\Windows\\Microsoft.NET\\Framework\\v4.0.30319\\csc.exe",
-  ];
-  for (const c of candidates) {
-    if (fs.existsSync(c)) return c;
-  }
-  return null;
-}
-
-function ensureToolchains() {
-  if (toolchains.detected) return;
-  toolchains.detected = true;
-  toolchains.python = detectBinary("python3") || detectBinary("python") || detectBinary("py");
-  toolchains.javac = detectBinary("javac");
-  toolchains.java = detectBinary("java");
-  toolchains.gcc = detectBinary("gcc");
-  toolchains.gpp = detectBinary("g++");
-  toolchains.csc = detectCsc();
-  toolchains.mcs = detectBinary("mcs");
-  toolchains.go = detectBinary("go");
-  toolchains.rustc = detectBinary("rustc");
-  toolchains.kotlinc = detectBinary("kotlinc");
-  toolchains.php = detectBinary("php");
-  const available = Object.entries(toolchains).filter(([k, v]) => k !== "detected" && v).map(([k]) => k);
-  console.log(`⚙️  Local code execution toolchains detected: ${available.join(", ") || "none"}`);
-}
-
-function localToolchainError(langId) {
-  ensureToolchains();
-  const requirements = {
-    python: "python3/python",
-    java: "javac + java (JDK)",
-    c: "gcc",
-    cpp: "g++",
-    csharp: "csc/mcs (.NET or Mono)",
-    go: "go",
-    rust: "rustc",
-    kotlin: "kotlinc + java",
-    php: "php",
-  };
-  return `No execution provider available for ${LANGUAGES[langId].label}: the remote code execution API is unreachable and no local toolchain (${requirements[langId]}) is installed on this server.`;
-}
-
-/* ============================================================================
- * Local process runner
- * ==========================================================================*/
-
-function runProcess(cmd, { timeoutMs = 1000, cwd, stdin } = {}) {
+function runDockerContainer(image, command, { timeoutMs = 10000, cwd, stdin, workspaceDir }) {
   return new Promise((resolve) => {
+    const execId = crypto.randomBytes(4).toString("hex");
+    const containerName = `coderun-${execId}`;
+
+    const dockerArgs = [
+      "run",
+      "--rm",                              // auto-cleanup container
+      "--name", containerName,
+      "--network", "none",                 // no network access
+      "--memory", MEMORY_LIMIT,            // memory limit
+      "--memory-swap", MEMORY_LIMIT,       // no swap (same as memory)
+      "--cpus", CPU_LIMIT,                 // CPU limit
+      "--pids-limit", PIDS_LIMIT,          // process limit
+      "--read-only",                       // read-only root filesystem
+      "--tmpfs", "/tmp:rw,noexec,nosuid,size=64m",  // writable /tmp for compilation
+      "--user", "runner",                  // non-root user
+      "--workdir", "/workspace",
+    ];
+
+    // Mount the temp directory directly as /workspace so source files are
+    // available at /workspace/<filename> without a cp step.
+    if (workspaceDir) {
+      dockerArgs.push("-v", `${workspaceDir}:/workspace:rw`);
+    }
+
+    const shellCmd = command.join(" ");
+    dockerArgs.push(image, "/bin/sh", "-c", shellCmd);
+
     const started = Date.now();
-    const child = execFile(
-      cmd[0],
-      cmd.slice(1),
-      { cwd, timeout: Math.max(200, Math.ceil(timeoutMs)), maxBuffer: MAX_OUTPUT_BYTES, windowsHide: true, env: { ...process.env } },
-      (error, stdout, stderr) => {
-        const timeMs = Date.now() - started;
-        if (error && error.killed && IS_WIN && child.pid) {
-          try { execFileSync("taskkill", ["/pid", String(child.pid), "/T", "/F"], { stdio: "ignore", windowsHide: true }); } catch { /* ignore */ }
-        }
-        resolve({
-          stdout: String(stdout || ""),
-          stderr: String(stderr || ""),
-          code: child.exitCode,
-          timedOut: Boolean(error && error.killed),
-          timeMs,
-        });
+    let stdout = "";
+    let stderr = "";
+    let killed = false;
+    let exitCode = null;
+
+    const child = spawn("docker", dockerArgs, {
+      windowsHide: true,
+      stdio: ["pipe", "pipe", "pipe"],
+    });
+
+    // Hard timeout — kill container if exceeded
+    const timer = setTimeout(() => {
+      killed = true;
+      // Force kill the container
+      try {
+        spawn("docker", ["kill", containerName], { windowsHide: true, stdio: "ignore" });
+      } catch { /* container may already be gone */ }
+      child.kill("SIGKILL");
+    }, timeoutMs + 2000); // +2s buffer for Docker overhead
+
+    child.stdout.on("data", (data) => {
+      if (stdout.length < MAX_OUTPUT_BYTES) {
+        stdout += data.toString();
       }
-    );
-    if (stdin !== undefined) child.stdin.write(stdin);
+    });
+
+    child.stderr.on("data", (data) => {
+      if (stderr.length < MAX_OUTPUT_BYTES) {
+        stderr += data.toString();
+      }
+    });
+
+    if (stdin !== undefined && stdin !== null) {
+      child.stdin.write(stdin);
+    }
     child.stdin.end();
+
+    child.on("close", (code) => {
+      clearTimeout(timer);
+      exitCode = code;
+      const timeMs = Date.now() - started;
+
+      resolve({
+        stdout: stdout.trim(),
+        stderr: stderr.trim(),
+        code: exitCode,
+        timedOut: killed,
+        timeMs,
+        execId,
+      });
+    });
+
+    child.on("error", (err) => {
+      clearTimeout(timer);
+      resolve({
+        stdout: "",
+        stderr: `Docker execution failed: ${err.message}`,
+        code: 1,
+        timedOut: false,
+        timeMs: Date.now() - started,
+        execId,
+      });
+    });
   });
 }
 
-function localCommands(langId, exeName) {
-  ensureToolchains();
-  switch (langId) {
-    case "python":
-      return { run: [toolchains.python, "solution.py"] };
-    case "java":
+/* ============================================================================
+ * Core Docker execution
+ * ==========================================================================*/
+
+async function executeViaDocker(langId, files, { timeLimitMs, stdin }) {
+  ensureDockerChecked();
+
+  const config = LANGUAGE_CONFIG[langId];
+  if (!config) {
+    return { type: "execution_error", output: `No configuration for language: ${langId}`, timeMs: 0, memoryKB: 0 };
+  }
+
+  if (!dockerState.available) {
+    return { type: "execution_error", output: "Docker is not available. Start Docker Desktop and restart the server.", timeMs: 0, memoryKB: 0 };
+  }
+
+  if (!dockerState.images[langId]) {
+    // Re-check in case image was built after startup
+    dockerState.images[langId] = checkImageSync(config.image);
+    if (!dockerState.images[langId]) {
+      return { type: "execution_error", output: `Docker image '${config.image}' not found. Run: docker compose build`, timeMs: 0, memoryKB: 0 };
+    }
+  }
+
+  // Create temporary directory for source files
+  const dir = await fsp.mkdtemp(path.join(os.tmpdir(), "codeexec-"));
+
+  try {
+    // Write source files to temp directory
+    for (const f of files) {
+      await fsp.writeFile(path.join(dir, f.name), f.content, "utf8");
+    }
+
+    // Write stdin to file if provided
+    if (stdin !== undefined && stdin !== null) {
+      await fsp.writeFile(path.join(dir, "__input.txt"), String(stdin), "utf8");
+    }
+
+    // Debug: log generated source files before compilation
+    for (const f of files) {
+      if (f.name === "Main.java" || f.name === "main.c" || f.name === "main.cpp") {
+        console.log(`\n========== Generated ${f.name} (${langId}) ==========`);
+        console.log(f.content);
+        console.log(`========== END ${f.name} ==========\n`);
+      }
+    }
+
+    // Convert Windows path to Docker-compatible path
+    const dockerDir = dir.replace(/\\/g, "/");
+
+    // Phase 1: Compile (if needed)
+    if (config.compileCommand) {
+      const compileResult = await runDockerContainer(
+        config.image,
+        config.compileCommand,
+        {
+          timeoutMs: COMPILE_TIMEOUT_MS,
+          workspaceDir: dockerDir,
+        }
+      );
+
+      console.log(`[${compileResult.execId}] Compile ${langId}: exit=${compileResult.code} time=${compileResult.timeMs}ms`);
+
+      if (compileResult.timedOut) {
+        return { type: "compile_error", output: "Compilation timed out", timeMs: compileResult.timeMs, memoryKB: 0 };
+      }
+
+      if (compileResult.code !== 0) {
+        const stderr = (compileResult.stderr || "Compilation failed").trim();
+        // Distinguish wrapper errors from student errors
+        if (langId === "java") {
+          const isWrapperError = /Main\.java:\d+/.test(stderr) && !/Solution\.java:\d+/.test(stderr);
+          return {
+            type: isWrapperError ? "execution_error" : "compile_error",
+            output: stderr,
+            timeMs: compileResult.timeMs,
+            memoryKB: 0,
+          };
+        }
+        return { type: "compile_error", output: stderr, timeMs: compileResult.timeMs, memoryKB: 0 };
+      }
+
+      // For compiled languages, we need to run the compiled binary
+      // The compiled output is in the container's /workspace tmpfs
+      // So we need a single docker run that compiles AND runs
+      // Let's restructure to do compile+run in one container
+    }
+
+    // For compiled languages, we compile and run in a single container
+    // to avoid losing the compiled binary between containers
+    if (config.compileCommand) {
+      const compileAndRun = config.compileCommand.join(" ") +
+        " && " +
+        (stdin !== undefined && stdin !== null
+          ? config.runCommand.join(" ") + " < /workspace/__input.txt"
+          : config.runCommand.join(" "));
+
+      const result = await runDockerContainer(
+        config.image,
+        [compileAndRun],  // Will be wrapped in sh -c by runDockerContainer
+        {
+          timeoutMs: COMPILE_TIMEOUT_MS + timeLimitMs,
+          workspaceDir: dockerDir,
+          stdin: undefined, // stdin via file
+        }
+      );
+
+      console.log(`[${result.execId}] CompileRun ${langId}: exit=${result.code} time=${result.timeMs}ms`);
+
+      if (result.timedOut) {
+        return { type: "time_limit", output: `Time limit exceeded (${timeLimitMs}ms)`, timeMs: timeLimitMs, memoryKB: 0 };
+      }
+
+      if (result.code !== 0) {
+        const stderr = (result.stderr || "").trim();
+        const stdout = (result.stdout || "").trim();
+
+        // Check if it's a compile error
+        if (langId === "java" && (stderr.includes("error:") || stderr.includes("cannot find symbol"))) {
+          const isWrapperError = /Main\.java:\d+/.test(stderr) && !/Solution\.java:\d+/.test(stderr);
+          return {
+            type: isWrapperError ? "execution_error" : "compile_error",
+            output: stderr,
+            timeMs: result.timeMs,
+            memoryKB: 0,
+          };
+        }
+        if ((langId === "c" || langId === "cpp") && stderr.includes("error:")) {
+          return { type: "compile_error", output: stderr, timeMs: result.timeMs, memoryKB: 0 };
+        }
+
+        // Otherwise it's a runtime error
+        return {
+          type: "runtime_error",
+          output: (stderr || stdout || `Process exited with code ${result.code}`).trim(),
+          timeMs: result.timeMs,
+          memoryKB: 0,
+        };
+      }
+
+      return { type: "success", output: result.stdout.trim(), timeMs: result.timeMs, memoryKB: 0 };
+    }
+
+    // Interpreted languages (Python) — just run
+    const runCmd = stdin !== undefined && stdin !== null
+      ? config.runCommand.join(" ") + " < /workspace/__input.txt"
+      : config.runCommand.join(" ");
+
+    const result = await runDockerContainer(
+      config.image,
+      [runCmd],
+      {
+        timeoutMs: timeLimitMs,
+        workspaceDir: dockerDir,
+        stdin: undefined,
+      }
+    );
+
+    console.log(`[${result.execId}] Run ${langId}: exit=${result.code} time=${result.timeMs}ms`);
+
+    if (result.timedOut) {
+      return { type: "time_limit", output: `Time limit exceeded (${timeLimitMs}ms)`, timeMs: timeLimitMs, memoryKB: 0 };
+    }
+
+    if (result.code !== 0) {
       return {
-        compile: [toolchains.javac, "Solution.java", "Main.java"],
-        run: [toolchains.java, "-cp", ".", "Main"],
+        type: "runtime_error",
+        output: (result.stderr || `Process exited with code ${result.code}`).trim(),
+        timeMs: result.timeMs,
+        memoryKB: 0,
       };
-    case "c":
-      return {
-        compile: [toolchains.gcc, "main.c", "-o", exeName, "-O2", "-w", "-lm"],
-        run: [IS_WIN ? exeName : `./${exeName}`],
-      };
-    case "cpp":
-      return {
-        compile: [toolchains.gpp, "main.cpp", "-o", exeName, "-O2", "-std=c++17", "-w", "-lm"],
-        run: [IS_WIN ? exeName : `./${exeName}`],
-      };
-    case "csharp":
-      return {
-        compile: toolchains.csc
-          ? [toolchains.csc, "/main:Program", "/out:app.exe", "Program.cs", "Solution.cs"]
-          : [toolchains.mcs, "-main:Program", "-out:app.exe", "Program.cs", "Solution.cs"],
-        run: IS_WIN ? ["app.exe"] : ["mono", "app.exe"],
-      };
-    case "go":
-      return {
-        compile: [toolchains.go, "build", "-o", exeName, "main.go"],
-        run: [IS_WIN ? exeName : `./${exeName}`],
-      };
-    case "rust":
-      return {
-        compile: [toolchains.rustc, "main.rs", "-o", exeName, "-O"],
-        run: [IS_WIN ? exeName : `./${exeName}`],
-      };
-    case "kotlin":
-      return {
-        compile: [toolchains.kotlinc, "Main.kt", "-include-runtime", "-d", "solution.jar"],
-        run: [toolchains.java, "-jar", "solution.jar"],
-      };
-    case "php":
-      return { run: [toolchains.php, "solution.php"] };
-    default:
-      throw new Error(`No local command configured for ${langId}`);
+    }
+
+    return { type: "success", output: result.stdout.trim(), timeMs: result.timeMs, memoryKB: 0 };
+
+  } finally {
+    // Clean up temporary directory
+    fsp.rm(dir, { recursive: true, force: true }).catch(() => {});
   }
 }
 
-async function executeViaLocal(langId, files, { timeLimitMs, stdin }) {
-  ensureToolchains();
+/* ============================================================================
+ * Batch execution for compiled languages (C/C++) — compile once, run per case
+ * ==========================================================================*/
+
+async function executeBatchStdin(langId, code, cases, timeLimitMs) {
+  ensureDockerChecked();
+
+  const config = LANGUAGE_CONFIG[langId];
+  const files = buildSources(langId, code, "");
   const dir = await fsp.mkdtemp(path.join(os.tmpdir(), "codeexec-"));
-  const exeName = IS_WIN ? "main.exe" : "main";
+
   try {
     for (const f of files) {
       await fsp.writeFile(path.join(dir, f.name), f.content, "utf8");
     }
-    const commands = localCommands(langId, exeName);
-    if (commands.compile) {
-      const compile = await runProcess(commands.compile, { timeoutMs: 20000, cwd: dir });
-      if (compile.timedOut) {
-        return { type: "compile_time_limit", output: "Compilation timed out", timeMs: compile.timeMs, memoryKB: 0 };
+
+    const dockerDir = dir.replace(/\\/g, "/");
+
+    // Build a shell script that compiles once and runs for each test case
+    const caseInputs = cases.map((c, i) => ({
+      name: `__input_${i}.txt`,
+      content: String(c || ""),
+    }));
+
+    // Write all input files
+    for (const ci of caseInputs) {
+      await fsp.writeFile(path.join(dir, ci.name), ci.content, "utf8");
+    }
+
+    // Build a script: compile, then run once per input file, separating outputs
+    const runCommands = caseInputs.map((ci) =>
+      `${config.runCommand.join(" ")} < /workspace/${ci.name} 2>&1; echo "__EXIT_CODE__:$?"`
+    ).join("; echo '---CASE_SEPARATOR---'; ");
+
+    const fullCmd = config.compileCommand
+      ? `${config.compileCommand.join(" ")} && (${runCommands})`
+      : runCommands;
+
+    const totalTimeout = COMPILE_TIMEOUT_MS + (timeLimitMs * Math.max(1, cases.length));
+
+    const result = await runDockerContainer(
+      config.image,
+      [fullCmd],
+      {
+        timeoutMs: totalTimeout,
+        workspaceDir: dockerDir,
       }
-      if (compile.code !== 0) {
-        return { type: "compile_error", output: (compile.stderr || "Compilation failed").trim(), timeMs: compile.timeMs, memoryKB: 0 };
+    );
+
+    if (result.timedOut) {
+      return { type: "time_limit", output: `Time limit exceeded`, timeMs: 0, memoryKB: 0, outputs: null };
+    }
+
+    if (result.code !== 0 && result.stderr && result.stderr.includes("error:")) {
+      return { type: "compile_error", output: result.stderr.trim(), timeMs: 0, memoryKB: 0, outputs: null };
+    }
+
+    // Parse outputs per case
+    const rawOutput = result.stdout || "";
+    const caseParts = rawOutput.split("---CASE_SEPARATOR---");
+
+    const outputs = caseParts.map((part) => {
+      const lines = part.trim().split("\n");
+      // Check for exit code marker
+      const lastLine = lines[lines.length - 1] || "";
+      const exitMatch = lastLine.match(/^__EXIT_CODE__:(\d+)$/);
+      let exitCode = 0;
+      if (exitMatch) {
+        exitCode = parseInt(exitMatch[1], 10);
+        lines.pop();
       }
-    }
-    const run = await runProcess(commands.run, { timeoutMs: timeLimitMs, cwd: dir, stdin });
-    if (run.timedOut) {
-      return { type: "time_limit", output: `Time limit exceeded (${timeLimitMs}ms)`, timeMs: timeLimitMs, memoryKB: 0 };
-    }
-    if (run.code !== 0) {
-      return { type: "runtime_error", output: (run.stderr || `Process exited with code ${run.code}`).trim(), timeMs: run.timeMs, memoryKB: 0 };
-    }
-    return { type: "success", output: run.stdout.trim(), timeMs: run.timeMs, memoryKB: 0 };
+
+      const output = lines.join("\n").trim();
+
+      if (exitCode !== 0) {
+        return `__runtime_error__:${output || `exit ${exitCode}`}`;
+      }
+      return output;
+    });
+
+    return { type: "success", output: outputs.join("\n"), timeMs: result.timeMs, memoryKB: 0, outputs };
   } finally {
     fsp.rm(dir, { recursive: true, force: true }).catch(() => {});
   }
 }
 
 /* ============================================================================
- * Piston (remote) provider
- * ==========================================================================*/
-
-function pistonBaseUrl() {
-  return String(process.env.PISTON_API_URL || "https://emkc.org/api/v2/piston").replace(/\/+$/, "");
-}
-
-function pistonHeaders() {
-  const headers = { "Content-Type": "application/json" };
-  if (process.env.PISTON_API_TOKEN) headers.Authorization = `Bearer ${process.env.PISTON_API_TOKEN}`;
-  return headers;
-}
-
-async function pistonReachable() {
-  try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 4000);
-    try {
-      const res = await fetch(`${pistonBaseUrl()}/runtimes`, { signal: controller.signal, headers: pistonHeaders() });
-      return res.ok;
-    } finally {
-      clearTimeout(timer);
-    }
-  } catch {
-    return false;
-  }
-}
-
-async function executeViaPiston(langId, files, { timeLimitMs, memoryLimitMb, stdin }) {
-  const runTimeoutSec = Math.max(1, Math.min(30, Math.ceil(Number(timeLimitMs) / 1000)));
-  const body = {
-    language: LANGUAGES[langId].piston,
-    version: "*",
-    files,
-    compile_timeout: 15000,
-    run_timeout: runTimeoutSec,
-    compile_memory_limit: Math.max(128, Math.floor(Number(memoryLimitMb) || 256)),
-    run_memory_limit: Math.max(128, Math.floor(Number(memoryLimitMb) || 256)),
-  };
-  if (isStdinLanguage(langId)) body.stdin = String(stdin || "");
-
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), (runTimeoutSec + 25) * 1000);
-  let response;
-  try {
-    response = await fetch(`${pistonBaseUrl()}/execute`, {
-      method: "POST",
-      headers: pistonHeaders(),
-      body: JSON.stringify(body),
-      signal: controller.signal,
-    });
-  } catch (error) {
-    throw new Error(`Piston execution API unreachable: ${error.message}`);
-  } finally {
-    clearTimeout(timer);
-  }
-
-  if (!response.ok) {
-    if (response.status === 401 || response.status === 403) {
-      throw new Error(
-        `Piston execution API requires authentication (HTTP ${response.status}). Set PISTON_API_URL + PISTON_API_TOKEN, or self-host Piston (docker run -p 2000:2000 ghcr.io/piston-cli/piston) and point EXECUTION_PROVIDER=local for local toolchains.`
-      );
-    }
-    throw new Error(`Piston execution API error: HTTP ${response.status}`);
-  }
-  const data = await response.json();
-  const compile = data.compile || { code: 0 };
-  const run = data.run || { stdout: "", stderr: "", code: 0, signal: null, time: 0, memory: 0 };
-
-  if (compile.code !== 0) {
-    return { type: "compile_error", output: (compile.stderr || compile.output || "Compilation failed").trim(), timeMs: 0, memoryKB: 0 };
-  }
-  const timeMs = Math.round(Number(run.time || 0) * 1000);
-  const memoryKB = Math.round(Number(run.memory || 0));
-  const overTime = run.signal === "SIGKILL" || timeMs >= Number(timeLimitMs);
-  if (overTime) {
-    return { type: "time_limit", output: `Time limit exceeded (${timeLimitMs}ms)`, timeMs, memoryKB };
-  }
-  if (run.code !== 0) {
-    return { type: "runtime_error", output: (run.stderr || `Process exited with code ${run.code}`).trim(), timeMs, memoryKB };
-  }
-  return { type: "success", output: String(run.stdout || "").trim(), timeMs, memoryKB };
-}
-
-/* ============================================================================
  * Public API
  * ==========================================================================*/
-
-function providerConfig() {
-  return String(process.env.EXECUTION_PROVIDER || "auto").toLowerCase();
-}
-
-let pistonUnreachableAt = 0;
 
 /**
  * Execute the student's code against a single set of arguments.
  * Returns { type, output, timeMs, memoryKB } where type is one of:
  * "success" | "compile_error" | "runtime_error" | "time_limit" | "memory_limit"
  */
-export async function executeSingle(languageId, code, args, { timeLimitMs = 1000, memoryLimitMb = 256, stdin = null } = {}) {
+export async function executeSingle(languageId, code, args, { timeLimitMs = DEFAULT_TIMEOUT_MS, memoryLimitMb = 256, stdin = null } = {}) {
   const langId = normalizeLanguage(languageId);
-  if (!langId) throw new Error(`Unsupported language: ${languageId}`);
-  if (langId === "javascript") {
-    throw new Error("JavaScript execution is handled by the built-in VM runner");
-  }
+  if (!langId) throw new Error(`Unsupported language: ${languageId}. Supported: ${getSupportedLanguages().join(", ")}`);
+
   const effectiveStdin = isStdinLanguage(langId) ? String(stdin ?? "") : undefined;
   const effectiveArgs = isStdinLanguage(langId) ? [] : Array.isArray(args) ? args : [];
-  const harness = harnessForRun(langId, effectiveArgs);
-  const files = buildSources(langId, code, harness, { kind: "run", args: effectiveArgs });
-  return executeWithFallback(langId, files, { timeLimitMs, memoryLimitMb, stdin: effectiveStdin });
+  const harness = harnessForRun(langId, effectiveArgs, code);
+  const files = buildSources(langId, code, harness);
+
+  return executeViaDocker(langId, files, { timeLimitMs, stdin: effectiveStdin });
 }
 
 /**
@@ -1055,56 +860,23 @@ export async function executeSingle(languageId, code, args, { timeLimitMs = 1000
  * Compiles once, runs once; output is one line per test case.
  * Returns { type, outputs: string[] | null, output, timeMs, memoryKB }.
  */
-export async function executeBatch(languageId, code, cases, { timeLimitMs = 1000, memoryLimitMb = 256 } = {}) {
+export async function executeBatch(languageId, code, cases, { timeLimitMs = DEFAULT_TIMEOUT_MS, memoryLimitMb = 256 } = {}) {
   const langId = normalizeLanguage(languageId);
-  if (!langId) throw new Error(`Unsupported language: ${languageId}`);
-  if (langId === "javascript") {
-    throw new Error("JavaScript execution is handled by the built-in VM runner");
-  }
+  if (!langId) throw new Error(`Unsupported language: ${languageId}. Supported: ${getSupportedLanguages().join(", ")}`);
+
   const caseList = Array.isArray(cases) ? cases : [];
-  const timeLimitMsNum = Math.max(300, Number(timeLimitMs) || 1000);
+  const timeLimitMsNum = Math.max(300, Number(timeLimitMs) || DEFAULT_TIMEOUT_MS);
 
   if (isStdinLanguage(langId)) {
-    // C/C++ read one input from stdin per run — compile once, run per case
-    const files = buildSources(langId, code, "");
-    const dir = await fsp.mkdtemp(path.join(os.tmpdir(), "codeexec-"));
-    const exeName = IS_WIN ? "main.exe" : "main";
-    try {
-      for (const f of files) await fsp.writeFile(path.join(dir, f.name), f.content, "utf8");
-      const commands = localCommands(langId, exeName);
-      let compileError = null;
-      if (commands.compile) {
-        const compile = await runProcess(commands.compile, { timeoutMs: 20000, cwd: dir });
-        if (compile.code !== 0) compileError = (compile.stderr || "Compilation failed").trim();
-        else if (compile.timedOut) compileError = "Compilation timed out";
-      }
-      if (compileError) {
-        return { type: "compile_error", output: compileError, timeMs: 0, memoryKB: 0, outputs: null };
-      }
-      const outputs = [];
-      for (const c of caseList) {
-        const run = await runProcess(commands.run, { timeoutMs: timeLimitMsNum, cwd: dir, stdin: String(c || "") });
-        if (run.timedOut) {
-          outputs.push(`__time_limit__:${timeLimitMsNum}`);
-          continue;
-        }
-        if (run.code !== 0) {
-          outputs.push(`__runtime_error__:${(run.stderr || `exit ${run.code}`).trim()}`);
-          continue;
-        }
-        outputs.push(run.stdout.trim());
-      }
-      return { type: "success", output: outputs.join("\n"), timeMs: 0, memoryKB: 0, outputs };
-    } finally {
-      fsp.rm(dir, { recursive: true, force: true }).catch(() => {});
-    }
+    return executeBatchStdin(langId, code, caseList, timeLimitMsNum);
   }
 
-  const harness = harnessForBatch(langId, caseList);
-  const files = buildSources(langId, code, harness, { kind: "batch", cases: caseList });
-  // total budget scales with the number of cases so a per-case limit is preserved
-  const budget = Math.min(30000, timeLimitMsNum * Math.max(1, caseList.length));
-  const result = await executeWithFallback(langId, files, { timeLimitMs: budget, memoryLimitMb, stdin: undefined });
+  const harness = harnessForBatch(langId, caseList, code);
+  const files = buildSources(langId, code, harness);
+  // total budget scales with the number of cases
+  const budget = Math.min(60000, timeLimitMsNum * Math.max(1, caseList.length));
+  const result = await executeViaDocker(langId, files, { timeLimitMs: budget, stdin: undefined });
+
   if (result.type === "success") {
     let lines = String(result.output || "")
       .split("\n")
@@ -1116,73 +888,23 @@ export async function executeBatch(languageId, code, cases, { timeLimitMs = 1000
   return { ...result, outputs: null };
 }
 
-async function executeWithFallback(langId, files, opts) {
-  const configured = providerConfig();
-  if (configured === "local") {
-    return executeLocalOrThrow(langId, files, opts);
-  }
-  if (configured === "piston") {
-    return executeViaPiston(langId, files, opts);
-  }
-  // auto: piston first, local as fallback
-  if (Date.now() - pistonUnreachableAt < 60000) {
-    return executeLocalOrThrow(langId, files, opts);
-  }
-  try {
-    return await executeViaPiston(langId, files, opts);
-  } catch (error) {
-    pistonUnreachableAt = Date.now();
-    console.warn(`⚠️  Piston execution unavailable, falling back to local toolchains: ${error.message}`);
-    return executeLocalOrThrow(langId, files, opts);
-  }
-}
-
-async function executeLocalOrThrow(langId, files, opts) {
-  ensureToolchains();
-  if (!localToolchainAvailable(langId)) {
-    throw new Error(localToolchainError(langId));
-  }
-  return executeViaLocal(langId, files, opts);
-}
-
-function localToolchainAvailable(langId) {
-  ensureToolchains();
-  switch (langId) {
-    case "python": return Boolean(toolchains.python);
-    case "java": return Boolean(toolchains.javac && toolchains.java);
-    case "c": return Boolean(toolchains.gcc);
-    case "cpp": return Boolean(toolchains.gpp);
-    case "csharp": return Boolean(toolchains.csc || toolchains.mcs);
-    case "go": return Boolean(toolchains.go);
-    case "rust": return Boolean(toolchains.rustc);
-    case "kotlin": return Boolean(toolchains.kotlinc && toolchains.java);
-    case "php": return Boolean(toolchains.php);
-    default: return false;
-  }
-}
-
 export function isExecutionConfigured() {
-  const configured = providerConfig();
-  if (configured === "local") return true;
-  if (configured === "piston") return true;
-  return true; // auto — piston reachable or local toolchains may exist
+  ensureDockerChecked();
+  return dockerState.available;
 }
 
 export function getExecutionProviderInfo() {
-  ensureToolchains();
+  ensureDockerChecked();
   return {
-    provider: providerConfig(),
-    pistonUrl: pistonBaseUrl(),
-    localToolchains: {
-      python: Boolean(toolchains.python),
-      java: Boolean(toolchains.javac && toolchains.java),
-      c: Boolean(toolchains.gcc),
-      cpp: Boolean(toolchains.gpp),
-      csharp: Boolean(toolchains.csc || toolchains.mcs),
-      go: Boolean(toolchains.go),
-      rust: Boolean(toolchains.rustc),
-      kotlin: Boolean(toolchains.kotlinc && toolchains.java),
-      php: Boolean(toolchains.php),
+    provider: "docker",
+    docker: dockerState.available,
+    images: { ...dockerState.images },
+    // Re-check images in case they were built after startup
+    refreshImages() {
+      for (const [langId, config] of Object.entries(LANGUAGE_CONFIG)) {
+        dockerState.images[langId] = checkImageSync(config.image);
+      }
+      return { ...dockerState.images };
     },
   };
 }

@@ -32,6 +32,9 @@ export function determineAnswerStatus(question, answerEntry) {
 export function computeObtainedMarks(question, answerStatus, answerEntry) {
   if (answerStatus === "correct") return question.marks || 1;
   if (answerStatus === "wrong") return -(question.negativeMarks || 0);
+  if (answerEntry.scoredMarks !== undefined && answerEntry.scoredMarks !== 0) {
+    return answerEntry.scoredMarks;
+  }
   if (answerStatus === "pending_evaluation") {
     return answerEntry.scoredMarks || 0;
   }

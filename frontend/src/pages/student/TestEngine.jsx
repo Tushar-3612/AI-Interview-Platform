@@ -8,8 +8,7 @@ import {
 import api from "../../utils/api";
 import { getAuthToken } from "../../hooks/useStudentProfile";
 import toast from "react-hot-toast";
-
-const CODING_LANGUAGES = ["Java", "Python", "C++", "JavaScript"];
+import CodingQuestionRenderer from "../../components/coding/CodingQuestionRenderer";
 
 function Timer({ endTime, onTimeUp }) {
   const [display, setDisplay] = useState("");
@@ -42,6 +41,7 @@ function Timer({ endTime, onTimeUp }) {
 
 function MCQRenderer({ question, answer, onAnswer }) {
   const letters = ["A", "B", "C", "D"];
+  if (!question) return <p className="text-sm py-8 text-center" style={{ color: "var(--text-muted)" }}>Question unavailable</p>;
 
   return (
     <div className="space-y-4">
@@ -72,78 +72,6 @@ function MCQRenderer({ question, answer, onAnswer }) {
             <span style={{ color: "var(--text-primary)" }}>{opt}</span>
           </button>
         ) : null)}
-      </div>
-    </div>
-  );
-}
-
-function CodingRenderer({ question, answer, code, language, onAnswer, onCodeChange, onLanguageChange }) {
-  return (
-    <div className="space-y-4">
-      <div>
-        <h4 className="text-sm font-semibold mb-2" style={{ color: "var(--text-primary)" }}>
-          {question.problemTitle || "Coding Problem"}
-        </h4>
-        <p className="text-xs leading-relaxed whitespace-pre-wrap" style={{ color: "var(--text-secondary)" }}>
-          {question.description || question.question}
-        </p>
-      </div>
-
-      {question.constraints && (
-        <div className="p-3 rounded-xl admin-bg-surface text-xs">
-          <span className="font-semibold" style={{ color: "var(--text-secondary)" }}>Constraints: </span>
-          <span style={{ color: "var(--text-muted)" }}>{question.constraints}</span>
-        </div>
-      )}
-
-      <div className="grid grid-cols-2 gap-3 text-xs">
-        {question.inputFormat && (
-          <div className="p-3 rounded-xl admin-bg-surface">
-            <p className="font-semibold mb-1" style={{ color: "var(--text-secondary)" }}>Input Format</p>
-            <p className="font-mono" style={{ color: "var(--text-muted)" }}>{question.inputFormat}</p>
-          </div>
-        )}
-        {question.outputFormat && (
-          <div className="p-3 rounded-xl admin-bg-surface">
-            <p className="font-semibold mb-1" style={{ color: "var(--text-secondary)" }}>Output Format</p>
-            <p className="font-mono" style={{ color: "var(--text-muted)" }}>{question.outputFormat}</p>
-          </div>
-        )}
-      </div>
-
-      {(question.sampleInput || question.sampleOutput) && (
-        <div className="grid grid-cols-2 gap-3 text-xs">
-          {question.sampleInput && (
-            <div className="p-3 rounded-xl" style={{ background: "var(--admin-bg-surface)" }}>
-              <p className="font-semibold mb-1" style={{ color: "var(--text-secondary)" }}>Sample Input</p>
-              <pre className="font-mono text-xs whitespace-pre-wrap" style={{ color: "var(--text-primary)" }}>{question.sampleInput}</pre>
-            </div>
-          )}
-          {question.sampleOutput && (
-            <div className="p-3 rounded-xl" style={{ background: "var(--admin-bg-surface)" }}>
-              <p className="font-semibold mb-1" style={{ color: "var(--text-secondary)" }}>Sample Output</p>
-              <pre className="font-mono text-xs whitespace-pre-wrap" style={{ color: "var(--text-primary)" }}>{question.sampleOutput}</pre>
-            </div>
-          )}
-        </div>
-      )}
-
-      <div>
-        <div className="flex items-center justify-between mb-2">
-          <label className="text-xs font-medium" style={{ color: "var(--text-secondary)" }}>Language</label>
-          <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>Marks: {question.marks || 10}</span>
-        </div>
-        <select value={language} onChange={e => onLanguageChange(e.target.value)}
-          className="w-full px-3 py-2 text-xs border admin-border rounded-xl bg-transparent focus:outline-none focus:ring-2 focus:ring-[var(--primary)] admin-select mb-3"
-          style={{ color: "var(--text-primary)" }}>
-          {(question.languages || CODING_LANGUAGES).map(l => (
-            <option key={l} value={l}>{l}</option>
-          ))}
-        </select>
-        <textarea value={code} onChange={e => onCodeChange(e.target.value)}
-          className="w-full min-h-[300px] p-4 text-xs font-mono leading-relaxed border admin-border rounded-xl bg-transparent focus:outline-none focus:ring-2 focus:ring-[var(--primary)] resize-y"
-          style={{ color: "var(--text-primary)", tabSize: 2 }}
-          placeholder="Write your code here..." spellCheck={false} />
       </div>
     </div>
   );
@@ -350,7 +278,8 @@ function TestEngine() {
   useEffect(() => {
     const handleKeyDown = (e) => {
       if ((e.ctrlKey || e.metaKey) && ["c", "v", "x", "a", "u"].includes(e.key.toLowerCase())) {
-        const isCoding = questions[currentIdx]?.type === "Coding";
+        const q = questions[currentIdx];
+        const isCoding = q?.type === "Coding" || q?.problemTitle || (q?.testCases && q.testCases.length > 0);
         if (!isCoding) e.preventDefault();
       }
     };
@@ -433,7 +362,7 @@ function TestEngine() {
   }
 
   const question = questions[currentIdx];
-  const isCoding = question?.type === "Coding";
+  const isCoding = question?.type === "Coding" || question?.problemTitle || (question?.testCases && question.testCases.length > 0);
   const q = answers[currentIdx] || {};
 
   return (
@@ -481,15 +410,18 @@ function TestEngine() {
             <div className="border admin-border admin-card rounded-2xl p-5">
               {question ? (
                 isCoding ? (
-                  <CodingRenderer
-                    question={question}
-                    answer={q.answer}
-                    code={q.code}
-                    language={q.language}
-                    onAnswer={(v) => updateAnswer("answer", v)}
-                    onCodeChange={(v) => updateAnswer("code", v)}
-                    onLanguageChange={(v) => updateAnswer("language", v)}
-                  />
+                  <div style={{ height: "70vh", minHeight: "500px" }}>
+                    <CodingQuestionRenderer
+                      question={question}
+                      questionSource="testQuestion"
+                      questionIndex={currentIdx}
+                      testId={test?._id}
+                      initialCode={q.code}
+                      initialLanguage={q.language || "python"}
+                      onCodeChange={(v) => updateAnswer("code", v)}
+                      onLanguageChange={(v) => updateAnswer("language", v)}
+                    />
+                  </div>
                 ) : (
                   <MCQRenderer
                     question={question}
