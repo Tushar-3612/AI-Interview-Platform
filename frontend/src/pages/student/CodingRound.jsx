@@ -145,6 +145,9 @@ function CodingRound() {
   const startTime     = useRef(Date.now());
   const elapsedIntervalRef = useRef(null);
   const abortControllerRef = useRef(null);
+  const codeByLanguageRef = useRef({});
+  const languageRef = useRef(language);
+  languageRef.current = language;
 
   codeRef.current = code;
 
@@ -174,24 +177,19 @@ function CodingRound() {
     setQuestionsLoading(true);
     setQuestionsError(false);
     try {
-      const res = await api.get("/api/coding-questions", {
-        headers,
-        params: { companyId: companyId || "", limit: 100 },
-      });
-      const list = res.data?.questions || [];
+      const [questionsRes, progressRes] = await Promise.all([
+        api.get("/api/coding-questions", {
+          headers,
+          params: { companyId: companyId || "", limit: 100 },
+        }),
+        api.get(`/api/practice/coding/progress/${companyId}`, { headers }).catch(() => ({ data: { completedQuestionIds: [] } })),
+      ]);
+      const list = questionsRes.data?.questions || [];
       if (list.length === 0) { setQuestionsError(true); return; }
       setQuestions(list);
       setActiveIndex(0);
-
-      const histRes = await api.get("/api/practice/coding/history", {
-        headers,
-        params: { limit: 200 },
-      });
-      const subs = histRes.data?.submissions || [];
-      const acceptedIds = new Set(
-        subs.filter((s) => s.status === "accepted").map((s) => s.questionId)
-      );
-      setSolved(acceptedIds);
+      const completedIds = new Set(progressRes.data?.completedQuestionIds || []);
+      setSolved(completedIds);
     } catch {
       setQuestionsError(true);
     } finally {
@@ -320,23 +318,24 @@ function CodingRound() {
   }, []);
 
   // ─── Load draft on question change ─────────────────────────────────────────
-  const loadDraft = useCallback(async (questionId, starterCode) => {
+  const loadDraft = useCallback(async (questionId, starterCode, lang) => {
     if (!questionId) {
-      setCode(starterCode || STARTER_CODE[language] || "");
+      setCode(starterCode || "");
       return;
     }
     try {
       const res = await api.get(`/api/practice/coding/draft/${questionId}`, { headers });
-      if (res.data?.code) {
-        setCode(res.data.code);
-        if (res.data.language) setLanguage(res.data.language);
-      } else {
-        setCode(starterCode || STARTER_CODE[language] || "");
+      if (res.data?.drafts) {
+        Object.assign(codeByLanguageRef.current, res.data.drafts);
+      } else if (res.data?.code && res.data?.language) {
+        codeByLanguageRef.current[res.data.language] = res.data.code;
       }
+      const currentLangCode = codeByLanguageRef.current[lang];
+      setCode(currentLangCode || starterCode || "");
     } catch {
-      setCode(starterCode || STARTER_CODE[language] || "");
+      setCode(starterCode || "");
     }
-  }, [language, headers]);
+  }, [headers]);
 
   // ─── Question switch handler ────────────────────────────────────────────────
   useEffect(() => {
@@ -349,10 +348,10 @@ function CodingRound() {
       setDebugMode(false);
       setDebugLine(null);
       setRunStage(null);
-      loadDraft(q._id, q.starterCode || STARTER_CODE[language]);
+      loadDraft(q._id, q.starterCode || STARTER_CODE[language], language);
     }
     startTime.current = Date.now();
-  }, [activeIndex, questions, language, loadDraft]);
+  }, [activeIndex, questions]);
 
   // ─── Sync bookmark state ────────────────────────────────────────────────────
   const activeQuestion = questions[activeIndex];
@@ -400,11 +399,19 @@ function CodingRound() {
   // ─── Language change ────────────────────────────────────────────────────────
   const handleLanguageChange = (langId) => {
     setLangDropOpen(false);
-    const prevStarter = STARTER_CODE[language] || "";
     const q = questions[activeIndex];
-    const isDefault = code === "" || code === prevStarter || code === (q?.starterCode || "");
+    const isDefault = code === "" || code === STARTER_CODE[language] || code === (q?.starterCode || "");
+
+    // Save current code for current language
+    codeByLanguageRef.current[language] = code;
+
     setLanguage(langId);
-    if (isDefault) {
+
+    // Load code for new language
+    const savedCode = codeByLanguageRef.current[langId];
+    if (savedCode) {
+      setCode(savedCode);
+    } else if (isDefault) {
       setCode(q?.starterCode || STARTER_CODE[langId] || "");
     }
   };

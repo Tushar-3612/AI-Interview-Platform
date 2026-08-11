@@ -5,6 +5,7 @@ import PracticeAttempt from "../models/PracticeAttempt.js";
 import MockOAAttempt from "../models/MockOAAttempt.js";
 import Result from "../models/Result.js";
 import User from "../models/User.js";
+import Company from "../models/Company.js";
 import { dateKey, startOfDay } from "../services/placementEngine.js";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -56,12 +57,15 @@ async function getActiveDays(userId) {
 /**
  * GET /api/student/dashboard-stats
  *
- * Returns all 5 dashboard statistics computed from real data:
- * - interviewsCompleted
+ * Returns all dashboard statistics computed from real data:
+ * - interviewsCompleted (actual interviews only)
+ * - mockInterviewsCompleted
+ * - mockInterviewsInProgress
  * - codingProblemsSolved
  * - currentStreak
  * - rank
  * - targetCompany
+ * - companies (for target company selection)
  */
 export const getDashboardStats = async (req, res) => {
   try {
@@ -69,7 +73,9 @@ export const getDashboardStats = async (req, res) => {
     const oid = new mongoose.Types.ObjectId(userId);
 
     const [
-      interviewsCompleted,
+      actualInterviewsCompleted,
+      mockInterviewsCompleted,
+      mockInterviewsInProgress,
       codingProblemsSolved,
       activeDays,
       user,
@@ -79,20 +85,27 @@ export const getDashboardStats = async (req, res) => {
       mockAgg,
       resultAgg,
       activityAgg,
+      companies,
     ] = await Promise.all([
-      // 1. Interviews completed
-      Interview.countDocuments({ userId: oid, status: "completed" }),
+      // 1. Actual interviews completed (interviewType = "actual" or "real" for backward compatibility)
+      Interview.countDocuments({ userId: oid, interviewType: { $in: ["actual", "real"] }, status: "completed" }),
 
-      // 2. Coding problems solved (unique questionIds with accepted status)
+      // 2. Mock interviews completed (interviewType = "mock" or "practice" for backward compatibility)
+      Interview.countDocuments({ userId: oid, interviewType: { $in: ["mock", "practice"] }, status: "completed" }),
+
+      // 3. Mock interviews in progress (interviewType = "mock" or "practice" for backward compatibility)
+      Interview.countDocuments({ userId: oid, interviewType: { $in: ["mock", "practice"] }, status: "in_progress" }),
+
+      // 4. Coding problems solved (unique questionIds with accepted status)
       CodingSubmission.distinct("questionId", { userId: oid, status: "accepted" }).then((ids) => ids.length),
 
-      // 3. Active days for streak
+      // 5. Active days for streak
       getActiveDays(userId),
 
-      // 5. Target company
+      // 6. Target company
       User.findById(userId).select("targetCompany").lean(),
 
-      // 4. Rank — need all users for leaderboard computation
+      // 7. Rank — need all users for leaderboard computation
       User.find().select("name department year").lean(),
 
       // Leaderboard aggregation components
@@ -122,12 +135,15 @@ export const getDashboardStats = async (req, res) => {
         }
         return [...map.entries()].map(([id, n]) => ({ _id: id, n }));
       })(),
+
+      // 8. Companies for target company selection
+      Company.find({ status: "active", isDeleted: false }).select("id name").lean(),
     ]);
 
-    // 3. Compute current streak
+    // 5. Compute current streak
     const currentStreak = computeCurrentStreak(activeDays);
 
-    // 4. Compute rank from leaderboard
+    // 6. Compute rank from leaderboard
     const aptMap = new Map(aptAgg.map((x) => [String(x._id), x]));
     const codMap = new Map(codAgg.map((x) => [String(x._id), x]));
     const mockMap = new Map(mockAgg.map((x) => [String(x._id), x]));
@@ -162,11 +178,14 @@ export const getDashboardStats = async (req, res) => {
     const rank = userRankIndex >= 0 ? userRankIndex + 1 : null;
 
     res.json({
-      interviewsCompleted,
+      interviewsCompleted: actualInterviewsCompleted,
+      mockInterviewsCompleted,
+      mockInterviewsInProgress,
       codingProblemsSolved,
       currentStreak,
       rank,
       targetCompany: user?.targetCompany || "",
+      companies: companies.map((c) => ({ id: c.id, name: c.name })),
     });
   } catch (error) {
     console.error("Dashboard Stats Error:", error.message);

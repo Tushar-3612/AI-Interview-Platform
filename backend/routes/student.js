@@ -10,6 +10,7 @@ import {
   completeInterview,
   getInterviews,
   getResults,
+  updateTargetCompany,
 } from "../controllers/studentController.js";
 import {
   getAssignedTests,
@@ -35,6 +36,9 @@ router.use(authMiddleware);
 // Profile
 router.get("/profile", getProfile);
 router.put("/profile", updateProfile);
+
+// Target Company
+router.put("/target-company", updateTargetCompany);
 
 // Resume upload and Gemini ATS grading
 router.post("/resume/upload", upload.single("resume"), uploadResumeAndAnalyze);

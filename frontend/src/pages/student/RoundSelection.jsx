@@ -14,6 +14,7 @@ function RoundSelection() {
   const token = getAuthToken();
   const [company, setCompany] = useState(null);
   const [attempts, setAttempts] = useState([]);
+  const [codingProgress, setCodingProgress] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -22,14 +23,16 @@ function RoundSelection() {
     setError(null);
     try {
       const headers = { Authorization: `Bearer ${token}` };
-      const [homeRes, historyRes] = await Promise.all([
+      const [homeRes, historyRes, progressRes] = await Promise.all([
         api.get("/api/practice/home", { headers }),
         api.get("/api/practice/aptitude/history", { headers, params: { limit: 20 } }),
+        api.get(`/api/practice/coding/progress/${companyId}`, { headers }).catch(() => ({ data: null })),
       ]);
       const list = homeRes.data?.companies || [];
       const found = list.find((c) => c.id === companyId || c._id === companyId);
       setCompany(found);
       setAttempts((historyRes.data?.attempts || []).filter((a) => a.companyId === companyId));
+      setCodingProgress(progressRes.data);
     } catch (err) {
       setError(err.response?.status || "network_failure");
       setCompany(null);
@@ -99,8 +102,9 @@ function RoundSelection() {
       desc: "Solve algorithmic problems in multiple languages. Tested against hidden test cases.",
       icon: Code2,
       path: `/interview-practice/${companyId}/coding`,
-      attempts: company.codingCount || 0,
-      bestScore: null,
+      completedCount: codingProgress?.completedCount || 0,
+      totalCount: codingProgress?.totalCount || company?.codingCount || 0,
+      remainingCount: codingProgress?.remainingCount ?? (codingProgress?.totalCount || company?.codingCount || 0),
       accent: "#4DA3FF",
       accentBg: "rgba(77, 163, 255, 0.08)",
       accentBorder: "rgba(77, 163, 255, 0.2)",
@@ -300,7 +304,7 @@ function RoundSelection() {
                       <h3 className="font-bold text-sm sm:text-base" style={{ color: "var(--text-primary)" }}>
                         {r.title}
                       </h3>
-                      {r.attempts > 0 && (
+                      {((r.id === "aptitude" && r.attempts > 0) || (r.id === "coding" && r.completedCount > 0)) && (
                         <span
                           className="flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded"
                           style={{ background: "rgba(34,197,94,0.1)", color: "#22C55E" }}
@@ -316,23 +320,30 @@ function RoundSelection() {
                     </p>
 
                     <div className="flex flex-wrap items-center gap-3 mt-2.5">
-                      {/* Attempt count / problems count */}
-                      <span className="flex items-center gap-1.5 text-[11px] font-medium" style={{ color: "var(--text-muted)" }}>
-                        <History className="w-3 h-3" />
-                        {r.id === "aptitude"
-                          ? `${r.attempts} attempt${r.attempts === 1 ? "" : "s"}`
-                          : `${r.attempts} problem${r.attempts === 1 ? "" : "s"}`}
-                      </span>
-
-                      {/* Best score */}
-                      {r.bestScore && (
-                        <span
-                          className="flex items-center gap-1 text-[11px] font-bold"
-                          style={{ color: r.accent }}
-                        >
-                          <Target className="w-3 h-3" />
-                          Best: {r.bestScore}
+                      {/* Progress for coding round */}
+                      {r.id === "coding" ? (
+                        <span className="flex items-center gap-1.5 text-[11px] font-medium" style={{ color: "var(--text-muted)" }}>
+                          <CheckCircle2 className="w-3 h-3" style={{ color: r.completedCount > 0 ? "#22C55E" : undefined }} />
+                          {r.completedCount} / {r.totalCount} Completed • {r.remainingCount} Remaining
                         </span>
+                      ) : (
+                        <>
+                          <span className="flex items-center gap-1.5 text-[11px] font-medium" style={{ color: "var(--text-muted)" }}>
+                            <History className="w-3 h-3" />
+                            {r.attempts} attempt{r.attempts === 1 ? "" : "s"}
+                          </span>
+
+                          {/* Best score */}
+                          {r.bestScore && (
+                            <span
+                              className="flex items-center gap-1 text-[11px] font-bold"
+                              style={{ color: r.accent }}
+                            >
+                              <Target className="w-3 h-3" />
+                              Best: {r.bestScore}
+                            </span>
+                          )}
+                        </>
                       )}
 
                       {/* Progress bar if attempts exist for aptitude */}
@@ -350,6 +361,25 @@ function RoundSelection() {
                           </div>
                           <span className="text-[10px] font-bold" style={{ color: r.accent }}>
                             {bestAttempt.percentage}%
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Progress bar for coding round */}
+                      {r.id === "coding" && r.totalCount > 0 && (
+                        <div className="flex items-center gap-2 flex-1 min-w-[120px] max-w-[200px]">
+                          <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: "var(--border)" }}>
+                            <div
+                              className="h-full rounded-full transition-all duration-700"
+                              style={{
+                                width: `${Math.round((r.completedCount / r.totalCount) * 100)}%`,
+                                background: `linear-gradient(90deg, ${r.accent}CC, ${r.accent})`,
+                                boxShadow: `0 0 6px ${r.accent}44`,
+                              }}
+                            />
+                          </div>
+                          <span className="text-[10px] font-bold" style={{ color: r.accent }}>
+                            {Math.round((r.completedCount / r.totalCount) * 100)}%
                           </span>
                         </div>
                       )}
@@ -372,7 +402,9 @@ function RoundSelection() {
                         : "0 4px 14px rgba(77, 163, 255, 0.3)",
                     }}
                   >
-                    {r.attempts > 0 ? "Practice Again" : "Start Round"}
+                    {r.id === "coding"
+                      ? (r.completedCount > 0 ? "Practice Again" : "Start Round")
+                      : (r.attempts > 0 ? "Practice Again" : "Start Round")}
                   </button>
                 </div>
               </div>

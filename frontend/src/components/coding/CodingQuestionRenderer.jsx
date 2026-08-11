@@ -74,6 +74,9 @@ function CodingQuestionRenderer({
   const abortControllerRef = useRef(null);
   const langDropRef = useRef(null);
   const codeRef = useRef(code);
+  const codeByLanguageRef = useRef({});
+  const languageRef = useRef(language);
+  languageRef.current = language;
 
   codeRef.current = code;
 
@@ -147,10 +150,18 @@ function CodingQuestionRenderer({
   // Language change
   const handleLanguageChange = (langId) => {
     setLangDropOpen(false);
-    const prevStarter = STARTER_CODE[language] || "";
-    const isDefault = code === "" || code === prevStarter;
+    const isDefault = code === "" || code === STARTER_CODE[language] || code === "";
+
+    // Save current code for current language
+    codeByLanguageRef.current[language] = code;
+
     setLanguage(langId);
-    if (isDefault) {
+
+    // Load code for new language
+    const savedCode = codeByLanguageRef.current[langId];
+    if (savedCode) {
+      setCode(savedCode);
+    } else if (isDefault) {
       setCode(STARTER_CODE[langId] || "");
     }
     onLanguageChange?.(langId);

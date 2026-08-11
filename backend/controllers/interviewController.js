@@ -63,6 +63,7 @@ Return ONLY valid JSON in exactly this structure:
     const interview = await Interview.create({
       userId,
       status: "in_progress",
+      interviewType: "mock", // This is a practice/mock interview
       startedAt: new Date(),
       resumeFileName: resumeFileName || "",
       totalQuestions: generatedQuestions.length,
@@ -135,6 +136,7 @@ Use exactly this JSON structure:
     const interview = await Interview.create({
       userId,
       status: "pending",
+      interviewType: "mock", // This is a practice/mock interview
       resumeFileName: req.file.originalname,
       totalQuestions: generatedQuestions.length,
       candidateProfile: interviewData.candidateProfile,
@@ -361,6 +363,7 @@ export const getUserInterviews = async (req, res) => {
       const result = resultMap[interview._id.toString()];
       return {
         id: interview._id,
+        interviewType: interview.interviewType || "mock",
         status: interview.status,
         resumeFileName: interview.resumeFileName || "",
         startedAt: interview.startedAt,

@@ -56,7 +56,7 @@ export const getPracticeHome = async (req, res) => {
     ]);
     const favoriteIds = new Set(favorites.map((f) => f.companyId));
     const companyIds = companies.map((c) => c.id);
-    const [aptCounts, codCounts] = await Promise.all([
+    const [aptCounts, codCounts, codCompleted] = await Promise.all([
       AptitudeQuestion.aggregate([
         { $match: { isDeleted: false, isActive: true, companyId: { $in: companyIds } } },
         { $group: { _id: "$companyId", count: { $sum: 1 } } },
@@ -65,15 +65,22 @@ export const getPracticeHome = async (req, res) => {
         { $match: { isDeleted: { $ne: true }, isActive: true, companyId: { $in: companyIds } } },
         { $group: { _id: "$companyId", count: { $sum: 1 } } },
       ]),
+      CodingSubmission.aggregate([
+        { $match: { userId: new mongoose.Types.ObjectId(userId), companyId: { $in: companyIds }, status: "accepted" } },
+        { $group: { _id: "$companyId", questionIds: { $addToSet: "$questionId" } } },
+        { $project: { _id: 1, count: { $size: "$questionIds" } } },
+      ]),
     ]);
     const aptMap = Object.fromEntries(aptCounts.map((a) => [a._id, a.count]));
     const codMap = Object.fromEntries(codCounts.map((a) => [a._id, a.count]));
+    const codCompletedMap = Object.fromEntries(codCompleted.map((a) => [a._id, a.count]));
 
     const list = companies.map((c) => ({
       ...c,
       isFavorite: favoriteIds.has(c.id),
       aptitudeCount: aptMap[c.id] || 0,
       codingCount: codMap[c.id] || 0,
+      codingCompleted: codCompletedMap[c.id] || 0,
       lastUpdated: c.lastUpdated || c.updatedAt,
     }));
 
@@ -508,12 +515,27 @@ export const submitCoding = async (req, res) => {
       timeTakenMs: Number(timeTakenMs) || 0,
     });
     invalidateStudentPlacement(userId);
+
+    let completedCount = 0;
+    let totalCompanyQuestions = 0;
+    if (status === "accepted") {
+      const [solvedIds, totalForCompany] = await Promise.all([
+        CodingSubmission.distinct("questionId", { userId, companyId: question.companyId, status: "accepted" }),
+        CodingQuestion.countDocuments({ companyId: question.companyId, isDeleted: { $ne: true }, isActive: true }),
+      ]);
+      completedCount = solvedIds.length;
+      totalCompanyQuestions = totalForCompany;
+    }
+
     res.status(201).json({
       _id: submission._id,
       status,
       passedCount,
-      totalCount: testCases.length,
+      totalTestCases: testCases.length,
       results,
+      completed: status === "accepted",
+      completedCount,
+      totalQuestions: totalCompanyQuestions || testCases.length,
     });
   } catch (error) {
     console.error("Submit Code Error:", error.message);
@@ -530,7 +552,7 @@ export const getCodingHistory = async (req, res) => {
     const skip = (parseInt(page) - 1) * parseInt(limit);
     const [submissions, total] = await Promise.all([
       CodingSubmission.find(filter)
-        .select("title companyId companyName language status passedCount totalCount timeTakenMs createdAt")
+        .select("questionId title companyId companyName language status passedCount totalCount timeTakenMs createdAt")
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(parseInt(limit))
@@ -541,6 +563,27 @@ export const getCodingHistory = async (req, res) => {
   } catch (error) {
     console.error("Get Coding History Error:", error.message);
     res.status(500).json({ message: "Failed to load submission history" });
+  }
+};
+
+export const getCodingProgress = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { companyId } = req.params;
+    if (!companyId) return res.status(400).json({ message: "companyId is required" });
+    const [completedIds, totalQuestions] = await Promise.all([
+      CodingSubmission.distinct("questionId", { userId, companyId, status: "accepted" }),
+      CodingQuestion.countDocuments({ companyId, isDeleted: { $ne: true }, isActive: true }),
+    ]);
+    res.json({
+      completedCount: completedIds.length,
+      totalCount: totalQuestions,
+      remainingCount: totalQuestions - completedIds.length,
+      completedQuestionIds: completedIds.map(String),
+    });
+  } catch (error) {
+    console.error("Get Coding Progress Error:", error.message);
+    res.status(500).json({ message: "Failed to load coding progress" });
   }
 };
 
@@ -561,8 +604,8 @@ export const saveCodingDraft = async (req, res) => {
     const { questionId, language = "python", code = "" } = req.body;
     if (!questionId) return res.status(400).json({ message: "questionId is required" });
     await StudentPreference.findOneAndUpdate(
-      { userId, type: "codingDraft", questionId: String(questionId) },
-      { language, code },
+      { userId, type: "codingDraft", questionId: String(questionId), language },
+      { code },
       { upsert: true, new: true }
     );
     res.json({ message: "Draft saved" });
@@ -574,8 +617,17 @@ export const saveCodingDraft = async (req, res) => {
 export const getCodingDraft = async (req, res) => {
   try {
     const userId = req.user.id;
-    const draft = await StudentPreference.findOne({ userId, type: "codingDraft", questionId: req.params.questionId }).lean();
-    res.json(draft || { code: "", language: "python" });
+    const { language } = req.query;
+    if (language) {
+      const draft = await StudentPreference.findOne({ userId, type: "codingDraft", questionId: req.params.questionId, language }).lean();
+      return res.json(draft || { code: "", language, questionId: req.params.questionId });
+    }
+    const drafts = await StudentPreference.find({ userId, type: "codingDraft", questionId: req.params.questionId }).lean();
+    const result = {};
+    for (const d of drafts) {
+      result[d.language] = d.code;
+    }
+    res.json({ drafts: result });
   } catch (error) {
     res.status(500).json({ message: "Failed to load draft" });
   }

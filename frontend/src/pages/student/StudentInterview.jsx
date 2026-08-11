@@ -83,7 +83,7 @@ function StudentInterview() {
       const startRes = await api.post(
         "/api/student/interviews",
         {
-          interviewType: "real",
+          interviewType: "actual",
           totalQuestions: parsedQuestions.length,
         },
         {

@@ -173,15 +173,19 @@ Return ONLY valid JSON using this structure:
 
 /**
  * Start an interview session.
+ * interviewType should be "actual" or "mock".
  */
 export const startInterview = async (req, res) => {
   try {
     const { interviewType, companyId, totalQuestions } = req.body;
 
+    // Validate interviewType
+    const validInterviewType = ["actual", "mock"].includes(interviewType) ? interviewType : "mock";
+
     const interview = await Interview.create({
       userId: req.user.id,
       status: "in_progress",
-      interviewType: interviewType || "real",
+      interviewType: validInterviewType,
       companyId: companyId || "",
       startedAt: new Date(),
       totalQuestions: totalQuestions || 5,
@@ -392,14 +396,52 @@ Return ONLY valid JSON using this structure:
 
 /**
  * Fetch all interviews for current student.
+ * Optional query param: interviewType ("actual" or "mock")
+ * For backward compatibility, "actual" also includes "real", and "mock" also includes "practice".
  */
 export const getInterviews = async (req, res) => {
   try {
-    const list = await Interview.find({ userId: req.user.id }).sort({ createdAt: -1 });
+    const { interviewType } = req.query;
+    const query = { userId: req.user.id };
+    
+    if (interviewType === "actual") {
+      // Include both "actual" and legacy "real" for backward compatibility
+      query.interviewType = { $in: ["actual", "real"] };
+    } else if (interviewType === "mock") {
+      // Include both "mock" and legacy "practice" for backward compatibility
+      query.interviewType = { $in: ["mock", "practice"] };
+    }
+    
+    const list = await Interview.find(query).sort({ createdAt: -1 });
     res.json(list);
   } catch (error) {
     console.error("Get Student Interviews Error:", error.message);
     res.status(500).json({ message: "Server error fetching interviews" });
+  }
+};
+
+/**
+ * Update target company for current student.
+ */
+export const updateTargetCompany = async (req, res) => {
+  try {
+    const { targetCompany } = req.body;
+    
+    const student = await User.findById(req.user.id);
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+    
+    student.targetCompany = targetCompany || "";
+    await student.save();
+    
+    res.json({ 
+      message: "Target company updated successfully",
+      targetCompany: student.targetCompany 
+    });
+  } catch (error) {
+    console.error("Update Target Company Error:", error.message);
+    res.status(500).json({ message: "Server error updating target company" });
   }
 };
 

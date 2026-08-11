@@ -11,6 +11,10 @@ import {
   Building2,
   Trophy,
   Clock,
+  BrainCircuit,
+  CheckCircle,
+  X,
+  Search,
 } from "lucide-react";
 import api from "../utils/api";
 import { getAuthToken } from "../hooks/useStudentProfile";
@@ -126,25 +130,45 @@ function StudentDashboard() {
 
   // Real data from dashboard stats API
   const interviewsCompleted = dashboardStats?.interviewsCompleted ?? null;
+  const mockInterviewsCompleted = dashboardStats?.mockInterviewsCompleted ?? null;
+  const mockInterviewsInProgress = dashboardStats?.mockInterviewsInProgress ?? null;
   const codingProblemsSolved = dashboardStats?.codingProblemsSolved ?? null;
   const currentStreakDays = dashboardStats?.currentStreak ?? null;
   const userRank = dashboardStats?.rank ?? null;
   const targetCompany = dashboardStats?.targetCompany || null;
+  const companies = dashboardStats?.companies || [];
+  
+  // Target company modal state
+  const [showCompanyModal, setShowCompanyModal] = useState(false);
+  const [companySearch, setCompanySearch] = useState("");
+  const [isUpdatingCompany, setIsUpdatingCompany] = useState(false);
 
   const realAverageScore =
     results.length > 0
       ? (results.reduce((acc, r) => acc + (r.overallScore || 0), 0) / results.length).toFixed(0) + "%"
       : null;
 
-  // 5 Dashboard Metric Cards
+  // 6 Dashboard Metric Cards
   const metricCards = [
     {
       id: "interviews",
       title: "Interviews Completed",
       value: interviewsCompleted !== null ? interviewsCompleted : "--",
-      subtext: interviewsCompleted !== null ? "Total mock interviews" : "No Data",
+      subtext: interviewsCompleted !== null ? "Actual interviews completed" : "No Data",
       color: "#FF6B35",
       icon: Briefcase,
+      onClick: () => navigate("/interview-history?tab=actual"),
+    },
+    {
+      id: "mock-interviews",
+      title: "Mock Interviews",
+      value: mockInterviewsCompleted !== null ? mockInterviewsCompleted : "--",
+      subtext: mockInterviewsInProgress !== null 
+        ? `${mockInterviewsCompleted || 0} completed • ${mockInterviewsInProgress} in progress`
+        : (mockInterviewsCompleted !== null ? `${mockInterviewsCompleted} completed` : "No Data"),
+      color: "#8B5CF6",
+      icon: BrainCircuit,
+      onClick: () => navigate("/interview-history?tab=mock"),
     },
     {
       id: "coding",
@@ -174,9 +198,10 @@ function StudentDashboard() {
       id: "target",
       title: "Target Company",
       value: targetCompany || "Not Set",
-      subtext: targetCompany ? "Your goal" : "Set in profile",
+      subtext: targetCompany ? "Your goal" : "Click to set",
       color: "#38BDF8",
       icon: Building2,
+      onClick: () => setShowCompanyModal(true),
     },
   ];
 
@@ -206,6 +231,26 @@ function StudentDashboard() {
     if (n >= 50) return "Needs Practice";
     return "Getting Started";
   };
+
+  const handleUpdateTargetCompany = async (companyId) => {
+    setIsUpdatingCompany(true);
+    try {
+      const headers = { Authorization: `Bearer ${token}` };
+      await api.put("/api/student/target-company", { targetCompany: companyId }, { headers });
+      // Refresh dashboard stats
+      const statsRes = await api.get("/api/student/dashboard-stats", { headers });
+      setDashboardStats(statsRes?.data || null);
+      setShowCompanyModal(false);
+    } catch (error) {
+      console.error("Update target company error:", error);
+    } finally {
+      setIsUpdatingCompany(false);
+    }
+  };
+
+  const filteredCompanies = companies.filter((c) =>
+    c.name.toLowerCase().includes(companySearch.toLowerCase())
+  );
 
   return (
     <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] transition-colors duration-300">
@@ -403,14 +448,15 @@ function StudentDashboard() {
           </div>
         </section>
 
-        {/* ── 5 DASHBOARD STAT CARDS ── */}
-        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+        {/* ── 6 DASHBOARD STAT CARDS ── */}
+        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
           {metricCards.map((card) => {
             const Icon = card.icon;
             return (
               <div
                 key={card.id}
-                className="bg-[var(--card-bg)] border border-[var(--border)] rounded-[24px] p-5 shadow-[var(--shadow-sm)] flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-md)]"
+                onClick={card.onClick}
+                className={`bg-[var(--card-bg)] border border-[var(--border)] rounded-[24px] p-5 shadow-[var(--shadow-sm)] flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-md)] ${card.onClick ? 'cursor-pointer' : ''}`}
               >
                 <div>
                   <div className="flex items-center justify-between mb-3">
@@ -697,6 +743,107 @@ function StudentDashboard() {
       <footer className="py-6 border-t border-[var(--border)] bg-[var(--card-bg)] text-center text-xs text-[var(--text-secondary)] mt-12">
         <p>&copy; 2026 AI Placement Platform. Designed for production startup excellence.</p>
       </footer>
+
+      {/* Target Company Modal */}
+      <AnimatePresence>
+        {showCompanyModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          >
+            <div
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => !isUpdatingCompany && setShowCompanyModal(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="relative w-full max-w-md bg-[var(--card-bg)] border border-[var(--border)] rounded-2xl shadow-2xl overflow-hidden"
+            >
+              <div className="flex items-center justify-between p-5 border-b border-[var(--border)]">
+                <h2 className="text-lg font-bold flex items-center gap-2" style={{ color: "var(--text-primary)" }}>
+                  <Building2 className="w-5 h-5 text-[#38BDF8]" />
+                  Set Target Company
+                </h2>
+                <button
+                  onClick={() => !isUpdatingCompany && setShowCompanyModal(false)}
+                  disabled={isUpdatingCompany}
+                  className="p-1 rounded-full hover:bg-neutral-800/10 transition-colors disabled:opacity-40 cursor-pointer"
+                >
+                  <X className="w-5 h-5" style={{ color: "var(--text-secondary)" }} />
+                </button>
+              </div>
+
+              <div className="p-5 space-y-4">
+                {/* Search */}
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "var(--text-muted)" }} />
+                  <input
+                    type="text"
+                    placeholder="Search company..."
+                    value={companySearch}
+                    onChange={(e) => setCompanySearch(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm outline-none"
+                    style={{
+                      borderColor: "var(--border)",
+                      background: "var(--input-bg)",
+                      color: "var(--text-primary)",
+                    }}
+                  />
+                </div>
+
+                {/* Company List */}
+                <div className="max-h-64 overflow-y-auto space-y-2">
+                  {filteredCompanies.length === 0 ? (
+                    <p className="text-sm text-center py-4" style={{ color: "var(--text-muted)" }}>
+                      No companies found
+                    </p>
+                  ) : (
+                    filteredCompanies.map((company) => (
+                      <button
+                        key={company.id}
+                        onClick={() => handleUpdateTargetCompany(company.id)}
+                        disabled={isUpdatingCompany}
+                        className={`w-full p-3 rounded-xl border text-left transition-all cursor-pointer disabled:opacity-50 ${
+                          targetCompany === company.id
+                            ? "border-[#38BDF8] bg-[#38BDF8]/10"
+                            : "border-[var(--border)] hover:border-[#38BDF8]/50 hover:bg-[#38BDF8]/5"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
+                            {company.name}
+                          </span>
+                          {targetCompany === company.id && (
+                            <CheckCircle className="w-4 h-4 text-[#38BDF8]" />
+                          )}
+                        </div>
+                      </button>
+                    ))
+                  )}
+                </div>
+
+                {targetCompany && (
+                  <button
+                    onClick={() => handleUpdateTargetCompany("")}
+                    disabled={isUpdatingCompany}
+                    className="w-full py-2.5 rounded-xl border text-sm font-semibold cursor-pointer transition-colors disabled:opacity-50"
+                    style={{
+                      borderColor: "var(--border)",
+                      color: "var(--text-secondary)",
+                    }}
+                  >
+                    Clear Target Company
+                  </button>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

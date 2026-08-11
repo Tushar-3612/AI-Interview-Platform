@@ -1,7 +1,12 @@
 import mongoose from "mongoose";
 
 /**
- * Interview session schema — tracks each mock interview attempt.
+ * Interview session schema — tracks each interview attempt.
+ * interviewType distinguishes between:
+ * - "actual" (real interview) - for the student-facing actual interview feature
+ * - "mock" (practice interview) - for the student-facing mock interview feature
+ * - "practice" (legacy) - for backward compatibility with admin panel
+ * - "real" (legacy) - for backward compatibility with admin panel
  */
 const interviewSchema = new mongoose.Schema(
   {
@@ -10,6 +15,12 @@ const interviewSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    interviewType: {
+      type: String,
+      enum: ["actual", "mock", "practice", "real"],
+      default: "mock",
+    },
+    companyId: { type: String, default: "" },
     status: {
       type: String,
       enum: ["pending", "in_progress", "completed"],
@@ -20,6 +31,7 @@ const interviewSchema = new mongoose.Schema(
     completedAt: { type: Date },
     totalQuestions: { type: Number, default: 0 },
     questionsAnswered: { type: Number, default: 0 },
+    overallScore: { type: Number, default: null },
   },
   { timestamps: true }
 );
