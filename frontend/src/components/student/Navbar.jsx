@@ -12,8 +12,10 @@ import {
   Play,
   Menu,
 } from "lucide-react";
+import toast from "react-hot-toast";
+import api from "../../utils/api";
 import { useTheme } from "../../hooks/useTheme";
-import { getAuthUser } from "../../hooks/useStudentProfile";
+import { getAuthUser, getAuthToken } from "../../hooks/useStudentProfile";
 
 const NAV_LINKS = [
   { label: "Home", path: "/dashboard" },
@@ -65,6 +67,28 @@ function Navbar({ onStartInterview }) {
     sessionStorage.removeItem("token");
     sessionStorage.removeItem("user");
     navigate("/");
+  };
+
+  const handleStartRealInterview = async () => {
+    const toastId = toast.loading("Creating Real Interview Session...");
+    try {
+      const token = getAuthToken();
+      const { data } = await api.post(
+        "/api/interview/start",
+        { interviewType: "actual" },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const sessionId = data.sessionId || data.interviewId;
+      if (sessionId) {
+        toast.success("Interview Session created!", { id: toastId });
+        window.open(`/interview/${sessionId}`, "_blank");
+      } else {
+        throw new Error("No session ID returned");
+      }
+    } catch (err) {
+      console.error("Start interview error:", err);
+      toast.error(err.response?.data?.message || "Failed to start interview session", { id: toastId });
+    }
   };
 
   return (
@@ -152,7 +176,7 @@ function Navbar({ onStartInterview }) {
           {/* Start Interview Button */}
           <motion.button
             type="button"
-            onClick={onStartInterview}
+            onClick={handleStartRealInterview}
             className="hidden sm:inline-flex items-center gap-2 text-sm font-semibold text-white cursor-pointer"
             style={{
               padding: "8px 18px",
@@ -409,7 +433,7 @@ function Navbar({ onStartInterview }) {
                 type="button"
                 onClick={() => {
                   setMobileOpen(false);
-                  onStartInterview?.();
+                  handleStartRealInterview();
                 }}
                 className="w-full mt-3 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-white cursor-pointer"
                 style={{

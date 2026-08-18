@@ -12,21 +12,32 @@ import AudioVisualizer from "./AudioVisualizer";
  *   currentQuestionText  {string}
  */
 function AIInterviewerCard({ aiStatus = "Listening", isGeneratingQuestion = false, currentQuestionText = "" }) {
-  const isSpeaking  = aiStatus === "Speaking";
-  const isThinking  = aiStatus === "Thinking" || isGeneratingQuestion;
-  const isListening = aiStatus === "Listening";
+  const normalizedStatus = String(aiStatus).toUpperCase();
+  const isSpeaking  = normalizedStatus === "SPEAKING";
+  const isThinking  = normalizedStatus === "THINKING" || isGeneratingQuestion;
+  const isListening = normalizedStatus === "LISTENING";
 
   /* Halo ring animation class based on AI state */
   const haloClass = isSpeaking ? "halo-speak" : isThinking ? "halo-think" : "halo-idle";
 
-  /* Status dot color */
-  const dotColor  = isSpeaking
-    ? "#10b981"   // green
+  /* Status dot color & label */
+  const dotColor = isSpeaking
+    ? "#10b981"   // emerald green
     : isThinking
     ? "#f59e0b"   // amber
-    : "#60a5fa";  // blue
+    : isListening
+    ? "#3b82f6"   // blue
+    : "#9ca3af";  // neutral slate
 
-  const statusLabel = isGeneratingQuestion ? "Thinking..." : aiStatus;
+  const statusLabel = isGeneratingQuestion
+    ? "ANALYZING RESPONSE..."
+    : isSpeaking
+    ? "SPEAKING"
+    : isThinking
+    ? "THINKING"
+    : isListening
+    ? "LISTENING..."
+    : "READY";
 
   return (
     <div className="relative w-full h-full rounded-2xl overflow-hidden flex flex-col" style={{ background: "linear-gradient(145deg, #07080f 0%, #0e1120 60%, #060b18 100%)" }}>

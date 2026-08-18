@@ -16,6 +16,7 @@ import {
   X,
   Search,
 } from "lucide-react";
+import toast from "react-hot-toast";
 import api from "../utils/api";
 import { getAuthToken } from "../hooks/useStudentProfile";
 import { SkeletonStudentDashboard, ErrorState } from "../components/ui/Skeleton";
@@ -360,7 +361,26 @@ function StudentDashboard() {
               {/* CTA Buttons — pinned to bottom of left column */}
               <div className="flex flex-wrap items-center gap-4 mt-auto">
                 <motion.button
-                  onClick={() => openInterviewModal?.() || navigate("/interview-practice")}
+                  onClick={async () => {
+                    const toastId = toast.loading("Creating Real Interview Session...");
+                    try {
+                      const { data } = await api.post(
+                        "/api/interview/start",
+                        { interviewType: "actual" },
+                        { headers: { Authorization: `Bearer ${token}` } }
+                      );
+                      const sessionId = data.sessionId || data.interviewId;
+                      if (sessionId) {
+                        toast.success("Interview Session created!", { id: toastId });
+                        window.open(`/interview/${sessionId}`, "_blank");
+                      } else {
+                        throw new Error("No session ID returned");
+                      }
+                    } catch (err) {
+                      console.error("Start interview error:", err);
+                      toast.error(err.response?.data?.message || "Failed to start interview session", { id: toastId });
+                    }
+                  }}
                   className="px-6 py-3.5 rounded-2xl text-sm font-bold text-white cursor-pointer shadow-md flex items-center gap-2"
                   style={{
                     background: "linear-gradient(135deg, #FF6B35 0%, #FF8A3D 100%)",
