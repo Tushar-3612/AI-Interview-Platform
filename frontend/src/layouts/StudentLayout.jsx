@@ -25,7 +25,8 @@ function StudentLayout() {
       interviewStatus: "in_progress",
     });
     setInterviewModalOpen(false);
-    toast.success("Interview session ready. Full interview module coming soon.");
+    toast.success("Launching Interview session in a new tab...");
+    window.open("/interview", "_blank");
   };
 
   return (

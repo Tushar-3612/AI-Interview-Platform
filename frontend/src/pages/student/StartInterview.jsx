@@ -1,139 +1,270 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
-import { Bot, Sparkles, Mic, MicOff, CheckCircle2, Keyboard, Loader2 } from "lucide-react";
+import { Bot, Sparkles, Mic, MicOff, CheckCircle2, Keyboard, Loader2, Play, Code2, AlertTriangle, UserCheck, Target, BrainCircuit, Maximize2 } from "lucide-react";
+
+import api from "../../utils/api";
+import { getAuthToken, useStudentProfile } from "../../hooks/useStudentProfile";
+import { useTextToSpeech } from "../../hooks/useTextToSpeech";
+import { getVoiceProfile, selectOptimalVoice } from "../../config/voiceProfiles";
 
 // Import reusable components
 import InterviewLayout from "../../components/interview/InterviewLayout";
 import AIInterviewerCard from "../../components/interview/AIInterviewerCard";
 import QuestionCard from "../../components/interview/QuestionCard";
-import CandidateInfo from "../../components/interview/CandidateInfo";
 import WebcamCard from "../../components/interview/WebcamCard";
 import ConversationPanel from "../../components/interview/ConversationPanel";
-import ProgressTracker from "../../components/interview/ProgressTracker";
-import Timer from "../../components/interview/Timer";
-import LiveNotes from "../../components/interview/LiveNotes";
-import CodeEditorArea from "../../components/interview/CodeEditorArea";
 import NavigationControls from "../../components/interview/NavigationControls";
 import ConfirmExitDialog from "../../components/interview/ConfirmExitDialog";
 import CompletionScreen from "../../components/interview/CompletionScreen";
+import SectionNavigationPanel from "../../components/interview/SectionNavigationPanel";
+import FullscreenExitOverlay from "../../components/interview/FullscreenExitOverlay";
 
-// Import mock data (fallback)
+// Import Monaco editor & Output panel for Coding questions
+import MonacoCodeEditor from "../../components/coding/MonacoCodeEditor";
+import OutputPanel from "../../components/coding/OutputPanel";
+
+// Import mock fallback data if session fails
 import { MOCK_QUESTIONS, MOCK_CANDIDATE } from "../../data/interviewMockData";
-import { useStudentProfile } from "../../hooks/useStudentProfile";
 
 /**
- * StartInterview Page Component
- * Main orchestrator page for the live AI Interview Room.
+ * StartInterview Page Component — Phase 2E Fullscreen + Interview Integrity
  */
 function StartInterview() {
+  const { sessionId: paramSessionId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Router state passed from StudentLayout after backend call
   const routerState = location.state || {};
+  const { profile } = useStudentProfile();
+  const token = getAuthToken();
 
-  // State management
-  const [currentIndex, setCurrentIndex] = useState(1); // 1-indexed for student layout
+  const activeInterviewId = paramSessionId || routerState.interviewId || routerState.sessionId || profile.interviewId;
+
+  // Session State
+  const [questions, setQuestions] = useState(routerState.generatedQuestions || []);
+  const [currentIndex, setCurrentIndex] = useState(1); // 1-indexed (1 to 58)
   const [isPaused, setIsPaused] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [showConfirmExit, setShowConfirmExit] = useState(false);
   const [isGeneratingQuestion, setIsGeneratingQuestion] = useState(false);
-  const [aiStatus, setAiStatus] = useState("Speaking"); // Speaking, Listening, Thinking
+  const [aiStatus, setAiStatus] = useState("SPEAKING"); // "SPEAKING" | "LISTENING" | "THINKING" | "READY"
 
-  // Question & response content state
-  const [inputMode, setInputMode] = useState("speak"); // 'speak' or 'type'
+  // Phase 2E Integrity State
+  const [isFullscreenExited, setIsFullscreenExited] = useState(false);
+
+  // Intro state
+  const hasIntroducedRef = useRef(false);
+
+  // Response content state
+  const [inputMode, setInputMode] = useState("speak"); // 'speak' | 'type'
   const [typedResponse, setTypedResponse] = useState("");
   const [savedAnswers, setSavedAnswers] = useState([]);
   const [dialogueLogs, setDialogueLogs] = useState([]);
-  const [currentCode, setCurrentCode] = useState("");
 
-  // Media controls state
+  // Coding state (Questions 51-53)
+  const [codingLanguage, setCodingLanguage] = useState("python");
+  const [currentCode, setCurrentCode] = useState("");
+  const [compilerOutput, setCompilerOutput] = useState(null);
+  const [isRunningCode, setIsRunningCode] = useState(false);
+
+  // Candidate Info State
+  const [candidateInfo, setCandidateInfo] = useState({
+    name: routerState.candidateName || profile.name || MOCK_CANDIDATE.name,
+    resumeName: routerState.resumeFileName || profile.resumeFileName || MOCK_CANDIDATE.resumeName,
+    interviewType: "Real AI Interview Room",
+    difficulty: "Adaptive",
+    totalTimeMinutes: 60,
+  });
+
+  const [isLoadingInterview, setIsLoadingInterview] = useState(true);
+
+  // Media & STT state
   const [isCameraOn, setIsCameraOn] = useState(true);
   const [isMicOn, setIsMicOn] = useState(true);
   const [isSpeakerOn, setIsSpeakerOn] = useState(true);
-  // Ref so triggerSpeech / navigation always reads latest value without stale closure
   const isSpeakerOnRef = useRef(true);
+  const [micPermissionDenied, setMicPermissionDenied] = useState(false);
+
+  // Webcam stream
+  const [webcamStream, setWebcamStream] = useState(null);
+  const webcamStreamRef = useRef(null);
+
+  // Session timer (60 minutes for 58 questions)
+  const totalSeconds = 60 * 60;
+  const [timerSeconds, setTimerSeconds] = useState(totalSeconds);
+
+  // Speech Recognition & Silence Buffer
+  const [isListeningSpeech, setIsListeningSpeech] = useState(false);
+  const recognitionRef = useRef(null);
+  const speechBaseTextRef = useRef("");
+  const silenceTimerRef = useRef(null);
+
+  // TTS Hook
+  const { speak: ttsSpeak, stop: ttsStop } = useTextToSpeech();
+
+  const currentQuestion = questions[currentIndex - 1] || {};
+  const currentSection = currentQuestion.section || "APTITUDE";
+
+  // ─── PHASE 2E: LOG INTEGRITY EVENT TO BACKEND ───
+  const logIntegrityEvent = useCallback(async (eventType, details = "") => {
+    if (!activeInterviewId) return;
+    try {
+      await api.post(`/api/interview/${activeInterviewId}/integrity-event`, {
+        eventType,
+        questionId: currentQuestion.id || currentQuestion.questionId || "",
+        questionIndex: currentIndex,
+        section: currentSection,
+        details
+      }, { headers: { Authorization: `Bearer ${token}` } });
+    } catch (err) {
+      console.warn("Failed to log integrity event:", err);
+    }
+  }, [activeInterviewId, currentQuestion, currentIndex, currentSection, token]);
+
+  // ─── PHASE 2E: FULLSCREEN ENFORCEMENT & PAUSE OVERLAY ───
+  const handleReenterFullscreen = useCallback(() => {
+    const el = document.documentElement;
+    const rfs = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen;
+    if (rfs) {
+      rfs.call(el).then(() => {
+        setIsFullscreenExited(false);
+      }).catch((err) => console.warn("Fullscreen request error:", err));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isLoadingInterview || isCompleted) return;
+
+    // Request fullscreen on startup
+    const timer = setTimeout(() => {
+      handleReenterFullscreen();
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [isLoadingInterview, isCompleted, handleReenterFullscreen]);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      const isFS = !!(
+        document.fullscreenElement ||
+        document.webkitFullscreenElement ||
+        document.mozFullScreenElement ||
+        document.msFullscreenElement
+      );
+
+      if (!isFS && !isCompleted && !isLoadingInterview) {
+        setIsFullscreenExited(true);
+        window.speechSynthesis?.cancel();
+        logIntegrityEvent("FULLSCREEN_EXIT", "Candidate exited browser fullscreen mode");
+      } else if (isFS) {
+        setIsFullscreenExited(false);
+      }
+    };
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+    document.addEventListener("mozfullscreenchange", handleFullscreenChange);
+    document.addEventListener("MSFullscreenChange", handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      document.removeEventListener("webkitfullscreenchange", handleFullscreenChange);
+      document.removeEventListener("mozfullscreenchange", handleFullscreenChange);
+      document.removeEventListener("MSFullscreenChange", handleFullscreenChange);
+    };
+  }, [isCompleted, isLoadingInterview, logIntegrityEvent]);
+
+  // ─── PHASE 2E: TAB VISIBILITY SWITCH DETECTION ───
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden && !isCompleted && !isLoadingInterview) {
+        logIntegrityEvent("TAB_SWITCH", "Candidate switched active tab or minimized browser window");
+      } else if (!document.hidden && !isCompleted && !isLoadingInterview) {
+        toast("Security Event Logged: Tab switch detected during session.", { icon: "⚠️" });
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, [isCompleted, isLoadingInterview, logIntegrityEvent]);
+
+  // ─── PHASE 2E: COPY / PASTE / RIGHT-CLICK PROTECTION (PRESERVING MONACO EDITOR) ───
+  useEffect(() => {
+    const isMonacoTarget = (target) => {
+      if (!target) return false;
+      return !!(
+        target.closest?.(".monaco-editor") ||
+        target.closest?.(".monaco-aria-container") ||
+        (target.tagName === "TEXTAREA" && target.classList?.contains("inputarea"))
+      );
+    };
+
+    const handleCopy = (e) => {
+      if (isMonacoTarget(e.target)) return; // Allow Monaco IDE copy!
+      e.preventDefault();
+      toast.error("Copy action restricted for interview security.");
+      logIntegrityEvent("COPY_ATTEMPT", "Copy attempted outside code editor");
+    };
+
+    const handlePaste = (e) => {
+      if (isMonacoTarget(e.target)) return; // Allow Monaco IDE paste!
+      e.preventDefault();
+      toast.error("Paste action restricted for interview security.");
+      logIntegrityEvent("PASTE_ATTEMPT", "Paste attempted outside code editor");
+    };
+
+    const handleContextMenu = (e) => {
+      if (isMonacoTarget(e.target)) return; // Allow Monaco IDE right-click context menu!
+      e.preventDefault();
+      toast.error("Right-click context menu restricted.");
+      logIntegrityEvent("CONTEXT_MENU_ATTEMPT", "Right-click context menu attempted outside code editor");
+    };
+
+    window.addEventListener("copy", handleCopy);
+    window.addEventListener("paste", handlePaste);
+    window.addEventListener("contextmenu", handleContextMenu);
+
+    return () => {
+      window.removeEventListener("copy", handleCopy);
+      window.removeEventListener("paste", handlePaste);
+      window.removeEventListener("contextmenu", handleContextMenu);
+    };
+  }, [logIntegrityEvent]);
+
+  // ─── Speaker Toggle ───
   const handleToggleSpeaker = useCallback(() => {
     setIsSpeakerOn((prev) => {
       const next = !prev;
       isSpeakerOnRef.current = next;
       if (!next) {
-        // Mute immediately — cancel any ongoing TTS
+        ttsStop();
         window.speechSynthesis?.cancel();
-        setAiStatus("Listening");
-        toast("Chatbot muted");
+        setAiStatus("LISTENING");
+        toast("Interviewer audio muted");
       } else {
-        toast("Chatbot unmuted");
+        toast("Interviewer audio unmuted");
       }
       return next;
     });
-  }, []);
+  }, [ttsStop]);
 
-  // Webcam stream (getUserMedia)
-  const [webcamStream, setWebcamStream] = useState(null);
-  const webcamStreamRef = useRef(null);
-
-  // Refs for PTT scroll-to-answer behavior
-  const rightScrollRef = useRef(null);
-  const answerSectionRef = useRef(null);
-  
-  // Timer state — use duration from router state if available
-  const durationMinutes = routerState.duration || MOCK_CANDIDATE.totalTimeMinutes;
-  const totalSeconds = durationMinutes * 60;
-  const [timerSeconds, setTimerSeconds] = useState(totalSeconds);
-
-  // Speech Recognition state
-  const [isListeningSpeech, setIsListeningSpeech] = useState(false);
-  const recognitionRef = useRef(null);
-  const speechBaseTextRef = useRef("");
-
-  const { profile } = useStudentProfile();
-  
-  // Real Data State — initialize from router state if provided
-  const [questions, setQuestions] = useState(routerState.generatedQuestions || []);
-  const [candidateInfo, setCandidateInfo] = useState({
-    name: routerState.candidateName || MOCK_CANDIDATE.name,
-    resumeName: routerState.resumeFileName || MOCK_CANDIDATE.resumeName,
-    interviewType: routerState.interviewType || "Technical",
-    difficulty: routerState.difficulty || "Medium",
-    totalTimeMinutes: durationMinutes,
-  });
-  // Start loading only if we don't have questions from router state
-  const [isLoadingInterview, setIsLoadingInterview] = useState(
-    !routerState.generatedQuestions || routerState.generatedQuestions.length === 0
-  );
-  const [error, setError] = useState(null);
-
-  // Active interviewId — prefer router state over profile (profile may be stale)
-  const activeInterviewId = routerState.interviewId || profile.interviewId;
-
-  // ─── Webcam stream acquisition ───
+  // ─── Webcam acquisition ───
   const startWebcam = useCallback(async () => {
     try {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        toast.error("Camera access is not supported by your browser or connection type (requires HTTPS or localhost).");
         return;
       }
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } },
-        audio: false, // audio handled separately by SpeechRecognition
+        audio: false,
       });
       webcamStreamRef.current = stream;
       setWebcamStream(stream);
       setIsCameraOn(true);
     } catch (err) {
-      console.warn("Webcam access error:", err);
-      if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError") {
-        toast.error("Camera access blocked. Please allow camera permissions in your browser address bar.");
-      } else if (err.name === "NotFoundError" || err.name === "DevicesNotFoundError") {
-        toast.error("No camera found on your device.");
-      } else if (err.name === "NotReadableError" || err.name === "TrackStartError") {
-        toast.error("Camera is already in use by another application (e.g. Zoom/Teams).");
-      } else {
-        toast.error(`Camera error: ${err.message}`);
-      }
+      console.warn("Webcam access warning:", err);
     }
   }, []);
 
@@ -145,7 +276,6 @@ function StartInterview() {
     }
   }, []);
 
-  // Toggle camera track enabled state without stopping the stream
   const handleToggleCamera = useCallback(() => {
     setIsCameraOn((prev) => {
       const next = !prev;
@@ -156,7 +286,6 @@ function StartInterview() {
     });
   }, []);
 
-  // Mute/unmute mic in speech recognition + toggle UI
   const handleToggleMic = useCallback(() => {
     setIsMicOn((prev) => {
       const next = !prev;
@@ -165,97 +294,126 @@ function StartInterview() {
     });
   }, [isListeningSpeech]);
 
-  // Push to Talk: switch to voice mode, start recording, scroll to answer box
-  const handlePushToTalk = useCallback(() => {
-    if (!isMicOn) {
-      toast.error("Microphone is muted. Unmute first.");
-      return;
-    }
-    // Switch to voice input mode
-    setInputMode("speak");
-    // Start / stop speech recognition toggle
-    if (isListeningSpeech) {
-      stopSpeechRecognition();
-    } else {
-      startSpeechRecognition();
-    }
-    // Smooth-scroll right panel to the answer input section
-    if (answerSectionRef.current && rightScrollRef.current) {
-      const container = rightScrollRef.current;
-      const target = answerSectionRef.current;
-      const offsetTop = target.offsetTop - container.offsetTop - 8;
-      container.scrollTo({ top: offsetTop, behavior: "smooth" });
-    }
-  }, [isMicOn, isListeningSpeech]);
-
-  // Acquire webcam on mount; release on unmount
   useEffect(() => {
     startWebcam();
     return () => stopWebcam();
   }, []);
 
-  // 1. Fetch Interview Data from Backend (only if not provided via router state)
+  // ─── FETCH & RECOVER SESSION DATA FROM BACKEND ───
   useEffect(() => {
-    if (!isLoadingInterview) return; // Already have questions from router state
-
-    const fetchInterview = async () => {
+    const loadSession = async () => {
+      setIsLoadingInterview(true);
       try {
-        if (!activeInterviewId) {
-          // Fallback to mock data for demonstration if no interviewId
-          console.warn("No interviewId found, falling back to mock data");
-          setQuestions(MOCK_QUESTIONS);
-          setCandidateInfo({ ...MOCK_CANDIDATE, name: profile.name || MOCK_CANDIDATE.name });
-          setIsLoadingInterview(false);
-          return;
+        let targetId = activeInterviewId;
+
+        if (!targetId) {
+          const { data: newSession } = await api.post(
+            "/api/interview/start",
+            { interviewType: "actual" },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          targetId = newSession.sessionId || newSession.interviewId;
         }
 
-        const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-        const res = await fetch(`http://localhost:5000/api/interview/${activeInterviewId}`, {
-          headers: {
-            "Authorization": `Bearer ${token}`
-          }
+        if (!targetId) {
+          throw new Error("Could not initialize interview session ID");
+        }
+
+        const { data } = await api.get(`/api/interview/${targetId}`, {
+          headers: { Authorization: `Bearer ${token}` }
         });
 
-        if (!res.ok) throw new Error("Failed to fetch interview session");
-
-        const data = await res.json();
-        
         if (data.generatedQuestions && data.generatedQuestions.length > 0) {
           setQuestions(data.generatedQuestions);
         } else {
-          setQuestions(MOCK_QUESTIONS); // fallback
+          setQuestions(MOCK_QUESTIONS);
         }
-        
+
+        if (data.answers && Array.isArray(data.answers)) {
+          setSavedAnswers(data.answers);
+        }
+
+        if (data.currentQuestionIndex) {
+          setCurrentIndex(Number(data.currentQuestionIndex) || 1);
+        }
+
         if (data.candidateProfile) {
           setCandidateInfo({
-            name: data.candidateProfile.candidateName || profile.name,
-            resumeName: data.resumeFileName || profile.resumeFileName,
-            interviewType: profile.interviewType || "Technical",
-            difficulty: profile.difficulty || "Medium",
-            totalTimeMinutes: profile.duration || 30
+            name: data.candidateProfile.candidateName || profile.name || MOCK_CANDIDATE.name,
+            resumeName: data.resumeFileName || profile.resumeFileName || "Uploaded_Resume.pdf",
+            interviewType: "Real AI Interview Room",
+            difficulty: "Adaptive",
+            totalTimeMinutes: 60,
           });
         }
-        
-        setIsLoadingInterview(false);
       } catch (err) {
-        console.error(err);
-        setError("Could not load interview session. Using fallback data.");
+        console.error("Session load error:", err);
         setQuestions(MOCK_QUESTIONS);
+      } finally {
         setIsLoadingInterview(false);
       }
     };
 
-    fetchInterview();
-  }, [activeInterviewId, isLoadingInterview]);
+    loadSession();
+  }, [paramSessionId]);
 
+  // ─── REAL SECTION PROGRESS CALCULATIONS ───
+  const getSectionProgress = useCallback(() => {
+    const counts = {
+      APTITUDE: { completed: 0, total: 25 },
+      TECHNICAL: { completed: 0, total: 25 },
+      CODING: { completed: 0, total: 3 },
+      HR: { completed: 0, total: 5 },
+      totalCompleted: 0,
+    };
 
-  const currentQuestion = questions[currentIndex - 1] || {};
+    const answeredIds = new Set(
+      savedAnswers
+        .filter((a) => a.answer && String(a.answer).trim().length > 0)
+        .map((a) => String(a.questionId))
+    );
 
-  // 1. Digital session timer countdown
+    questions.forEach((q) => {
+      const sec = q.section || "TECHNICAL";
+      const qId = String(q.id || q.questionId);
+      if (counts[sec]) {
+        if (answeredIds.has(qId)) {
+          counts[sec].completed += 1;
+          counts.totalCompleted += 1;
+        }
+      }
+    });
+
+    return counts;
+  }, [questions, savedAnswers]);
+
+  // ─── SECTION NAVIGATION HANDLER ───
+  const handleSelectSection = (targetSection) => {
+    const sectionQuestions = questions.filter((q) => q.section === targetSection);
+    if (!sectionQuestions.length) return;
+
+    const answeredIds = new Set(
+      savedAnswers
+        .filter((a) => a.answer && String(a.answer).trim().length > 0)
+        .map((a) => String(a.questionId))
+    );
+
+    const firstUnanswered = sectionQuestions.find((q) => !answeredIds.has(String(q.id || q.questionId)));
+    const targetQuestion = firstUnanswered || sectionQuestions[0];
+    const targetIdx = questions.findIndex((q) => (q.id || q.questionId) === (targetQuestion.id || targetQuestion.questionId));
+
+    if (targetIdx !== -1) {
+      stopSpeechRecognition();
+      window.speechSynthesis?.cancel();
+      handleSaveAnswer("answered");
+      setCurrentIndex(targetIdx + 1);
+      toast.success(`Switched to ${targetSection} section`);
+    }
+  };
+
+  // ─── TIMER COUNTDOWN ───
   useEffect(() => {
-    // Only start timer when data is loaded
-    if (isLoadingInterview) return;
-    
+    if (isLoadingInterview || isFullscreenExited) return;
     let interval;
     if (!isPaused && !isCompleted && !isGeneratingQuestion && timerSeconds > 0) {
       interval = setInterval(() => {
@@ -263,76 +421,122 @@ function StartInterview() {
       }, 1000);
     }
     return () => clearInterval(interval);
-  }, [isPaused, isCompleted, isGeneratingQuestion, timerSeconds]);
+  }, [isPaused, isCompleted, isGeneratingQuestion, timerSeconds, isFullscreenExited, isLoadingInterview]);
 
-  // 2. Play AI Text-to-Speech when a new question is loaded
+  // ─── AI INTERVIEWER SPEECH PLAYBACK LAYER ───
+  const speakCurrentQuestion = useCallback((text, section, topic) => {
+    if (!text || !isSpeakerOnRef.current || isFullscreenExited) {
+      setAiStatus("LISTENING");
+      return;
+    }
+
+    setAiStatus("SPEAKING");
+
+    if (section === "APTITUDE") {
+      setAiStatus("LISTENING");
+      return;
+    }
+
+    window.speechSynthesis?.cancel();
+
+    api.post("/api/interview/tts", { text, persona: section === "HR" ? "hr" : "technical" }, {
+      headers: { Authorization: `Bearer ${token}` }
+    }).catch(() => null);
+
+    const profileConfig = getVoiceProfile(section, topic);
+    const utterance = new SpeechSynthesisUtterance(text);
+
+    utterance.rate = section === "HR" ? 0.94 : 0.90;
+    utterance.pitch = section === "HR" ? 0.92 : 0.86;
+    utterance.volume = 1.0;
+
+    const voices = window.speechSynthesis?.getVoices() || [];
+    const optimalVoice = selectOptimalVoice(voices);
+    if (optimalVoice) utterance.voice = optimalVoice;
+
+    utterance.onstart = () => setAiStatus("SPEAKING");
+    utterance.onend = () => {
+      setAiStatus("LISTENING");
+      if (inputMode === "speak" && isMicOn && !micPermissionDenied) {
+        startSpeechRecognition();
+      }
+    };
+
+    utterance.onerror = (e) => {
+      console.warn("TTS Error:", e);
+      setAiStatus("LISTENING");
+    };
+
+    window.speechSynthesis?.speak(utterance);
+  }, [token, inputMode, isMicOn, micPermissionDenied, isFullscreenExited]);
+
+  // ─── INTRO & QUESTION TRANSITION HANDLER ───
   useEffect(() => {
-    if (isCompleted || isPaused) return;
+    if (isCompleted || isPaused || isLoadingInterview || isFullscreenExited) return;
 
-    // Trigger Speech Synthesis
-    triggerSpeech(currentQuestion?.aiSpeechText);
+    const section = currentQuestion.section || "APTITUDE";
+    const speechText = currentQuestion?.aiSpeechText || currentQuestion?.question || "";
 
-    // Populate dialogue log with AI query
-    const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    setDialogueLogs((prev) => [
-      ...prev,
-      { sender: "AI", text: currentQuestion.aiSpeechText, time: timeNow }
-    ]);
+    if (currentIndex === 1 && !hasIntroducedRef.current) {
+      hasIntroducedRef.current = true;
+      const introText = `Good day ${candidateInfo.name || "Candidate"}. I am Alex, your senior AI interviewer. I have reviewed your background and resume details. We will begin with Aptitude evaluations. Let's start with your first question.`;
 
-    // Pre-populate response with any previous answer if user goes back
-    const existing = savedAnswers.find((ans) => ans.questionId === currentQuestion.id);
+      const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      setDialogueLogs([{ sender: "AI", text: introText, time: timeNow }]);
+
+      setAiStatus("SPEAKING");
+      window.speechSynthesis?.cancel();
+      const introUtterance = new SpeechSynthesisUtterance(introText);
+      introUtterance.rate = 0.90;
+      introUtterance.pitch = 0.88;
+      const voices = window.speechSynthesis?.getVoices() || [];
+      const optimalVoice = selectOptimalVoice(voices);
+      if (optimalVoice) introUtterance.voice = optimalVoice;
+
+      introUtterance.onend = () => {
+        setDialogueLogs((prev) => [...prev, { sender: "AI", text: speechText, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }]);
+        speakCurrentQuestion(speechText, section, currentQuestion.topic);
+      };
+
+      introUtterance.onerror = () => {
+        speakCurrentQuestion(speechText, section, currentQuestion.topic);
+      };
+
+      window.speechSynthesis?.speak(introUtterance);
+    } else {
+      const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      setDialogueLogs((prev) => [...prev, { sender: "AI", text: speechText, time: timeNow }]);
+      speakCurrentQuestion(speechText, section, currentQuestion.topic);
+    }
+
+    const qId = currentQuestion.id || currentQuestion.questionId;
+    const existing = savedAnswers.find((ans) => ans.questionId === qId);
     if (existing) {
-      if (currentQuestion.codeQuestion) {
+      if (section === "CODING") {
         setCurrentCode(existing.answer);
       } else {
         setTypedResponse(existing.answer);
       }
     } else {
       setTypedResponse("");
-      setCurrentCode("");
+      setCurrentCode(currentQuestion.starterCode || "def solution():\n    pass");
     }
-  }, [currentIndex, isGeneratingQuestion]);
 
-  // Handle speaking the query
-  const triggerSpeech = (text) => {
-    if (!text || !isSpeakerOnRef.current) return;
+    setCompilerOutput(null);
+  }, [currentIndex, isLoadingInterview, isGeneratingQuestion, isFullscreenExited]);
 
-    // Cancel active synthesis first
-    window.speechSynthesis?.cancel();
-
-    const utterance = new SpeechSynthesisUtterance(text);
-    // Find a natural English sounding voice if possible
-    const voices = window.speechSynthesis?.getVoices();
-    const naturalVoice = voices?.find(v => v.lang.includes("en-US") || v.lang.includes("en-IN"));
-    if (naturalVoice) utterance.voice = naturalVoice;
-
-    utterance.rate = 1.0;
-
-    utterance.onstart = () => {
-      setAiStatus("Speaking");
-    };
-
-    utterance.onend = () => {
-      setAiStatus("Listening");
-    };
-
-    window.speechSynthesis?.speak(utterance);
-  };
-
-  // 3. Setup Web Speech Recognition API
+  // ─── SPEECH RECOGNITION (STT) ───
   const startSpeechRecognition = () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      toast.error("Web Speech Recognition is not supported by your current browser. Please type your response.");
+      setMicPermissionDenied(true);
+      toast.error("Speech Recognition is not supported by your browser. Text mode enabled.");
+      setInputMode("type");
       return;
     }
 
-    if (isListeningSpeech) {
-      stopSpeechRecognition();
-      return;
-    }
+    if (isListeningSpeech || isFullscreenExited) return;
 
-    // Save the text that was in the textarea before we started speaking
     speechBaseTextRef.current = typedResponse;
 
     try {
@@ -343,8 +547,8 @@ function StartInterview() {
 
       rec.onstart = () => {
         setIsListeningSpeech(true);
-        setAiStatus("Listening");
-        toast.success("Voice transcription active. Speak clearly.");
+        setAiStatus("LISTENING");
+        setMicPermissionDenied(false);
       };
 
       rec.onresult = (event) => {
@@ -352,20 +556,29 @@ function StartInterview() {
         for (let i = 0; i < event.results.length; i++) {
           sessionTranscript += event.results[i][0].transcript;
         }
-        
-        // Append current speech transcript to the base text
         const separator = speechBaseTextRef.current ? " " : "";
-        setTypedResponse((speechBaseTextRef.current + separator + sessionTranscript).trim());
+        const fullTranscript = (speechBaseTextRef.current + separator + sessionTranscript).trim();
+        setTypedResponse(fullTranscript);
+
+        if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+        silenceTimerRef.current = setTimeout(() => {
+          if (fullTranscript.length > 10) {
+            toast("Silence detected. Answer transcript buffer ready.", { icon: "🎙️" });
+          }
+        }, 3500);
       };
 
       rec.onerror = (e) => {
-        console.error("Speech Recognition Error: ", e);
+        console.warn("Speech Recognition Warning:", e.error);
+        if (e.error === "not-allowed" || e.error === "permission-denied") {
+          setMicPermissionDenied(true);
+          setInputMode("type");
+          toast.error("Microphone access denied. Switched to Text fallback.");
+        }
         setIsListeningSpeech(false);
       };
 
-      rec.onend = () => {
-        setIsListeningSpeech(false);
-      };
+      rec.onend = () => setIsListeningSpeech(false);
 
       recognitionRef.current = rec;
       rec.start();
@@ -376,88 +589,105 @@ function StartInterview() {
   };
 
   const stopSpeechRecognition = () => {
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
-    }
+    if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+    if (recognitionRef.current) recognitionRef.current.stop();
     setIsListeningSpeech(false);
   };
 
-  // Repeat AI Speech query
-  const handleRepeatQuery = () => {
-    triggerSpeech(currentQuestion?.aiSpeechText);
-  };
-
-  // Navigations & Answer Saves
-  const handleSaveAnswer = async (statusType = "answered") => {
+  // ─── SAVE ANSWER TO BACKEND ───
+  const handleSaveAnswer = async (statusType = "answered", customAns = null) => {
     stopSpeechRecognition();
-    const finalAnswerText = currentQuestion.codeQuestion ? currentCode : typedResponse;
+    const section = currentQuestion.section || "APTITUDE";
+    const finalAnswerText = customAns !== null ? customAns : (section === "CODING" ? currentCode : typedResponse);
+
+    const qId = currentQuestion.id || currentQuestion.questionId || `Q-${currentIndex}`;
 
     const answerRecord = {
-      questionId: currentQuestion.id,
+      questionId: qId,
       questionText: currentQuestion.question,
-      category: currentQuestion.category,
+      category: currentQuestion.category || section.toLowerCase(),
+      section,
       answer: finalAnswerText,
+      transcript: finalAnswerText,
+      inputMethod: inputMode === "speak" ? "VOICE" : "TEXT",
       status: statusType
     };
 
-    // Save to backend asynchronously
     if (activeInterviewId) {
       try {
-        const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-        fetch(`http://localhost:5000/api/interview/${activeInterviewId}/answer`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            questionId: currentQuestion.id,
-            question: currentQuestion.question,
-            category: currentQuestion.category,
-            answer: finalAnswerText
-          })
-        }).then(res => res.json())
-          .then(data => console.log("Answer saved to DB:", data))
-          .catch(err => console.error("Failed to save answer to DB:", err));
+        await api.post(`/api/interview/${activeInterviewId}/answer`, {
+          questionId: qId,
+          question: currentQuestion.question,
+          category: currentQuestion.category || section.toLowerCase(),
+          section,
+          answer: finalAnswerText,
+          transcript: finalAnswerText,
+          inputMethod: inputMode === "speak" ? "VOICE" : "TEXT",
+          mode: inputMode === "speak" ? "voice" : "text",
+          currentQuestionIndex: currentIndex,
+        }, { headers: { Authorization: `Bearer ${token}` } });
       } catch (err) {
-        console.error("Fetch error saving answer:", err);
+        console.error("Save answer error:", err);
       }
     }
 
-    // Update in logs
     setSavedAnswers((prev) => {
-      const filtered = prev.filter((ans) => ans.questionId !== currentQuestion.id);
+      const filtered = prev.filter((ans) => ans.questionId !== qId);
       return [...filtered, answerRecord];
     });
 
-    // Add candidate response to dialogue history
-    if (finalAnswerText.trim()) {
+    if (finalAnswerText && inputMode === "speak") {
       const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       setDialogueLogs((prev) => [
         ...prev,
-        { sender: "Candidate", text: finalAnswerText.slice(0, 100) + (finalAnswerText.length > 100 ? "..." : ""), time: timeNow }
+        { sender: "YOU", text: finalAnswerText, time: timeNow }
       ]);
     }
   };
 
+  // ─── CODING COMPILER RUN ───
+  const handleRunCoding = async () => {
+    setIsRunningCode(true);
+    const toastId = toast.loading("Executing code via compiler...");
+    try {
+      const langMap = { python: 71, java: 62, c: 50, cpp: 54, javascript: 63 };
+      const langId = langMap[codingLanguage] || 71;
+
+      const { data } = await api.post("/api/code/run", {
+        sourceCode: currentCode,
+        languageId: langId,
+        input: currentQuestion.sampleInput || ""
+      }, { headers: { Authorization: `Bearer ${token}` } });
+
+      setCompilerOutput(data);
+      toast.success("Code executed!", { id: toastId });
+    } catch (err) {
+      console.error("Compiler error:", err);
+      setCompilerOutput({
+        status: "Error",
+        stderr: err.response?.data?.message || "Execution failed."
+      });
+      toast.error("Execution error", { id: toastId });
+    } finally {
+      setIsRunningCode(false);
+    }
+  };
+
+  // ─── NAVIGATION HANDLERS ───
   const handleNextQuestion = () => {
-    // Stop mic + cancel TTS immediately so bot voice isn't recorded
     stopSpeechRecognition();
     window.speechSynthesis?.cancel();
     handleSaveAnswer("answered");
 
     if (currentIndex < questions.length) {
-      // Simulate "AI is generating next question..." Transition State
       setIsGeneratingQuestion(true);
-      setAiStatus("Thinking");
+      setAiStatus("THINKING");
 
       setTimeout(() => {
         setIsGeneratingQuestion(false);
         setCurrentIndex((prev) => prev + 1);
-        setAiStatus("Speaking");
-      }, 2000); // 2 seconds thinking transition screen
+      }, 900);
     } else {
-      // Completed!
       setIsCompleted(true);
     }
   };
@@ -469,95 +699,52 @@ function StartInterview() {
   };
 
   const handleSkipQuestion = () => {
-    // Stop mic + cancel TTS immediately
     stopSpeechRecognition();
     window.speechSynthesis?.cancel();
     handleSaveAnswer("skipped");
     if (currentIndex < questions.length) {
       setIsGeneratingQuestion(true);
-      setAiStatus("Thinking");
+      setAiStatus("THINKING");
 
       setTimeout(() => {
         setIsGeneratingQuestion(false);
         setCurrentIndex((prev) => prev + 1);
-        setAiStatus("Speaking");
-      }, 1500);
+      }, 900);
     } else {
       setIsCompleted(true);
     }
   };
 
-  const handleEmergencyExit = () => {
-    setShowConfirmExit(true);
-  };
-
-  const handleConfirmExit = () => {
-    setShowConfirmExit(false);
-    setIsCompleted(true);
-  };
-
-  const [isCompleting, setIsCompleting] = useState(false);
-
-  // Completion stats calculation
   const getCompletedStats = () => {
-    const answered = savedAnswers.filter((a) => a.status === "answered" && a.answer.trim()).length;
-    const skipped = savedAnswers.filter((a) => a.status === "skipped" || !a.answer.trim()).length + (questions.length - savedAnswers.length);
+    const answered = savedAnswers.filter((a) => a.status === "answered" && a.answer?.trim()).length;
+    const skipped = Math.max(0, questions.length - answered);
     const secsUsed = totalSeconds - timerSeconds;
     const mins = Math.floor(secsUsed / 60).toString().padStart(2, "0");
     const secs = (secsUsed % 60).toString().padStart(2, "0");
     return {
       answeredCount: answered,
-      skippedCount: Math.max(skipped, 0),
+      skippedCount: skipped,
       timeTaken: `${mins}:${secs}`
     };
   };
 
-  // Return formatted remaining time for Progress Tracker
-  const getRemainingTimeText = () => {
-    const m = Math.floor(timerSeconds / 60).toString().padStart(2, "0");
-    const s = (timerSeconds % 60).toString().padStart(2, "0");
-    return `${m}:${s}`;
-  };
+  const sectionQuestions = questions.filter((q) => q.section === currentSection);
+  const sectionTotal = sectionQuestions.length || (currentSection === "APTITUDE" ? 25 : currentSection === "TECHNICAL" ? 25 : currentSection === "CODING" ? 3 : 5);
+  const questionIdxInSection = sectionQuestions.findIndex((q) => (q.id || q.questionId) === (currentQuestion.id || currentQuestion.questionId)) + 1;
+  const formattedSectionQuestionIndex = questionIdxInSection > 0 ? String(questionIdxInSection).padStart(2, "0") : "01";
 
-  // Cleanup Synthesis on Exit
-  useEffect(() => {
-    return () => {
-      window.speechSynthesis?.cancel();
-    };
-  }, []);
-
-  // Complete Interview on backend when isCompleted becomes true
-  useEffect(() => {
-    if (isCompleted && activeInterviewId && !isCompleting) {
-      setIsCompleting(true);
-      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-      fetch(`http://localhost:5000/api/interview/${activeInterviewId}/complete`, {
-        method: "POST",
-        headers: { "Authorization": `Bearer ${token}` }
-      }).then(res => res.json())
-        .then(data => {
-          console.log("Interview completed on backend", data);
-          toast.success("Interview report generated!");
-        })
-        .catch(err => console.error("Failed to complete interview on backend", err))
-        .finally(() => setIsCompleting(false));
-    }
-  }, [isCompleted, profile.interviewId]);
-
-  // RENDER LOADING SCREEN
   if (isLoadingInterview) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-zinc-950">
+      <div className="min-h-screen flex items-center justify-center bg-slate-950 text-white">
         <div className="flex flex-col items-center gap-4">
-          <Loader2 className="w-10 h-10 animate-spin text-primary" />
-          <h2 className="text-xl font-semibold">Initializing Interview Room...</h2>
-          <p className="text-sm text-slate-500">Loading your AI-generated questions</p>
+          <Loader2 className="w-10 h-10 animate-spin text-blue-500" />
+          <h2 className="text-xl font-bold">Initializing Real 58-Question AI Session...</h2>
+          <p className="text-xs text-slate-400">Loading candidate resume & blueprint questions</p>
         </div>
       </div>
     );
   }
 
-  // RENDER COMPLETION SCREEN
   if (isCompleted) {
     const stats = getCompletedStats();
     return (
@@ -574,28 +761,49 @@ function StartInterview() {
           setDialogueLogs([]);
           setTypedResponse("");
           setCurrentCode("");
+          hasIntroducedRef.current = false;
           setIsCompleted(false);
         }}
       />
     );
   }
 
-  // RENDER INTERVIEW ROOM — Premium Video-Call Layout
   return (
-    <div className="relative">
+    <div className="relative bg-slate-950 min-h-screen text-white select-none">
+
+      {/* Phase 2E Fullscreen Exit Blocking Overlay */}
+      <FullscreenExitOverlay
+        isOpen={isFullscreenExited}
+        onReenterFullscreen={handleReenterFullscreen}
+      />
+
+      {/* Mic Permission Banner Fallback */}
+      {micPermissionDenied && (
+        <div className="bg-amber-500/20 border-b border-amber-500/30 px-4 py-2 text-xs font-semibold text-amber-300 flex items-center justify-between z-50">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+            <span>Microphone access is unavailable. Text fallback mode enabled so you can continue your interview seamlessly.</span>
+          </div>
+          <button
+            onClick={() => setInputMode("type")}
+            className="px-3 py-1 bg-amber-500/30 hover:bg-amber-500/40 rounded-lg text-[11px] font-bold text-white cursor-pointer"
+          >
+            Use Text Editor
+          </button>
+        </div>
+      )}
+
       <InterviewLayout
         isPaused={isPaused}
         onResume={() => setIsPaused(false)}
 
-        /* Header metadata */
         headerProps={{
           timerSeconds,
           totalSeconds,
-          interviewType: candidateInfo.interviewType || "Software Engineer",
+          interviewType: candidateInfo.interviewType || "Real AI Interview Room",
           networkLevel: 4,
         }}
 
-        /* Bottom action bar controls */
         controlProps={{
           isMicOn,
           isCameraOn,
@@ -604,36 +812,45 @@ function StartInterview() {
           onToggleMic: handleToggleMic,
           onToggleCamera: handleToggleCamera,
           onToggleSpeaker: handleToggleSpeaker,
-          onPushToTalk: handlePushToTalk,
-          onEndInterview: handleEmergencyExit,
-          onSettings: () => toast("Settings coming soon!"),
+          onPushToTalk: () => {
+            if (!isMicOn) return toast.error("Unmute mic first");
+            setInputMode("speak");
+            startSpeechRecognition();
+          },
+          onEndInterview: () => setShowConfirmExit(true),
+          onSettings: () => toast("Settings menu"),
         }}
 
-        /* LEFT: AI Avatar stage (full height, 70% width) */
+        /* FAR LEFT: Persistent Section Navigation Panel */
+        sectionPanel={
+          <SectionNavigationPanel
+            activeSection={currentSection}
+            onSelectSection={handleSelectSection}
+            sectionProgress={getSectionProgress()}
+          />
+        }
+
+        /* CENTER LEFT: Cinematic AI Avatar Stage with 4 States */
         leftPanel={
           <AIInterviewerCard
             aiStatus={aiStatus}
             isGeneratingQuestion={isGeneratingQuestion}
-            currentQuestionText={currentQuestion?.question || ""}
+            currentQuestionText={currentQuestion?.aiSpeechText || currentQuestion?.question || ""}
           />
         }
 
-        /* No centerPanel — question card and answer area go in right column */
         centerPanel={null}
 
-        /* RIGHT: scrollable content + pinned nav at bottom */
+        /* RIGHT: Main Question & Section Response Column */
         rightPanel={
           <div className="flex flex-col h-full min-h-0 overflow-hidden">
-
-            {/* ── Scrollable content area ── */}
             <div
-              ref={rightScrollRef}
               className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-3 pb-2"
               style={{ scrollbarWidth: "thin", scrollbarColor: "rgba(255,255,255,0.1) transparent" }}
             >
 
-              {/* 1. User Webcam PiP */}
-              <div className="shrink-0" style={{ height: "150px" }}>
+              {/* 1. Candidate PiP Preview */}
+              <div className="shrink-0" style={{ height: "135px" }}>
                 <WebcamCard
                   isCameraOn={isCameraOn}
                   stream={webcamStream}
@@ -642,56 +859,111 @@ function StartInterview() {
                 />
               </div>
 
-              {/* 2. Question Card */}
+              {/* 2. Question Section Header & Overall Progress */}
+              <div className="shrink-0 p-3 rounded-2xl bg-slate-900/90 border border-white/10 space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black tracking-wider text-amber-400 uppercase flex items-center gap-1.5">
+                    {currentSection === "APTITUDE" ? "🎯 APTITUDE" : currentSection === "TECHNICAL" ? "🧠 TECHNICAL" : currentSection === "CODING" ? "💻 CODING" : "👔 HR"} — Question {formattedSectionQuestionIndex} / {String(sectionTotal).padStart(2, "0")}
+                  </span>
+                  <span className="text-[11px] font-bold text-white/40 font-mono">
+                    Overall: {String(currentIndex).padStart(2, "0")} / {String(questions.length).padStart(2, "0")}
+                  </span>
+                </div>
+
+                <QuestionCard
+                  questionText={currentQuestion?.question}
+                  currentIndex={currentIndex}
+                  totalQuestions={questions.length}
+                  difficulty={currentQuestion?.difficulty || "Medium"}
+                  category={currentQuestion?.category || currentQuestion?.section || "Technical"}
+                  estimatedTime={currentSection === "CODING" ? "10 mins" : "2 mins"}
+                />
+              </div>
+
+              {/* 3. SECTION SPECIFIC ANSWER CONTENT AREA */}
               <div className="shrink-0">
-                {isGeneratingQuestion ? (
-                  <div
-                    className="rounded-2xl p-4 flex flex-col items-center justify-center gap-2"
-                    style={{
-                      background: "rgba(8,10,18,0.9)",
-                      border: "1px solid rgba(255,255,255,0.06)",
-                      minHeight: "80px",
-                    }}
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 rounded-full border-2 border-blue-500 border-t-transparent animate-spin" />
-                      <span className="text-xs text-white/50">Generating next question…</span>
+
+                {/* ── A. CODING SECTION (Questions 51–53) ── */}
+                {(currentSection === "CODING" || currentQuestion.type === "coding") ? (
+                  <div className="flex flex-col gap-3 p-4 rounded-2xl bg-slate-900/90 border border-white/10">
+                    <div className="flex items-center justify-between pb-2 border-b border-white/10">
+                      <div className="flex items-center gap-2">
+                        <Code2 className="w-4 h-4 text-emerald-400" />
+                        <span className="text-xs font-bold text-white">Compiler Workspace</span>
+                      </div>
+                      <select
+                        value={codingLanguage}
+                        onChange={(e) => setCodingLanguage(e.target.value)}
+                        className="bg-slate-800 border border-white/10 text-xs text-white rounded-lg px-2.5 py-1 outline-none cursor-pointer"
+                      >
+                        <option value="python">Python 3</option>
+                        <option value="java">Java 17</option>
+                        <option value="cpp">C++ 17</option>
+                        <option value="c">C Language</option>
+                      </select>
                     </div>
-                    <div className="flex gap-1">
-                      {[0,1,2].map(i => (
-                        <span key={i}
-                          className="w-1.5 h-1.5 rounded-full bg-blue-400/50 animate-bounce"
-                          style={{ animationDelay: `${i * 0.15}s` }}
-                        />
-                      ))}
+
+                    <div className="h-64 rounded-xl overflow-hidden border border-white/10">
+                      <MonacoCodeEditor
+                        value={currentCode}
+                        onChange={(val) => setCurrentCode(val || "")}
+                        language={codingLanguage}
+                        theme="vs-dark"
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <button
+                        onClick={handleRunCoding}
+                        disabled={isRunningCode}
+                        className="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white flex items-center gap-1.5 cursor-pointer transition-all disabled:opacity-50"
+                      >
+                        {isRunningCode ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5" />}
+                        Run Code
+                      </button>
+                    </div>
+
+                    {compilerOutput && (
+                      <div className="mt-2">
+                        <OutputPanel output={compilerOutput} />
+                      </div>
+                    )}
+                  </div>
+                ) : (currentSection === "APTITUDE" || (currentQuestion.options && currentQuestion.options.length > 0)) ? (
+                  
+                  /* ── B. APTITUDE MCQ SECTION (Questions 1–25) ── */
+                  <div className="p-4 rounded-2xl bg-slate-900/90 border border-white/10 space-y-3">
+                    <p className="text-xs font-bold text-amber-400 uppercase tracking-wider">Select Correct Answer:</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {(currentQuestion.options || []).map((opt, idx) => {
+                        const isSelected = typedResponse === opt;
+                        return (
+                          <button
+                            key={idx}
+                            onClick={() => {
+                              setTypedResponse(opt);
+                              handleSaveAnswer("answered", opt);
+                            }}
+                            className={`p-3.5 rounded-xl border text-left text-xs font-semibold cursor-pointer transition-all flex items-start gap-2.5 ${
+                              isSelected
+                                ? "bg-blue-600/30 border-blue-500 text-white shadow-lg"
+                                : "bg-white/5 border-white/10 text-white/80 hover:bg-white/10"
+                            }`}
+                          >
+                            <span className="w-5 h-5 rounded-full border flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5 border-white/20">
+                              {String.fromCharCode(65 + idx)}
+                            </span>
+                            <span>{opt}</span>
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                 ) : (
-                  <QuestionCard
-                    questionText={currentQuestion?.question}
-                    currentIndex={currentIndex}
-                    totalQuestions={questions.length}
-                    difficulty={currentQuestion?.difficulty}
-                    category={currentQuestion?.category}
-                    estimatedTime={currentQuestion?.estimatedTime}
-                  />
-                )}
-              </div>
 
-              {/* 3. Answer Input Area */}
-              <div ref={answerSectionRef} className="shrink-0">
-                {currentQuestion?.codeQuestion ? (
-                  <CodeEditorArea code={currentCode} onChange={setCurrentCode} />
-                ) : (
-                  <div
-                    className="rounded-2xl p-3 flex flex-col gap-2"
-                    style={{
-                      background: "rgba(8,10,18,0.9)",
-                      border: "1px solid rgba(255,255,255,0.06)",
-                    }}
-                  >
-                    {/* Mode tabs */}
-                    <div className="flex gap-1.5 pb-2" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                  /* ── C. TECHNICAL & HR VOICE/TEXT SECTION ── */
+                  <div className="rounded-2xl p-3 flex flex-col gap-2 bg-slate-900/90 border border-white/10">
+                    <div className="flex gap-1.5 pb-2 border-b border-white/10">
                       <button
                         onClick={() => { stopSpeechRecognition(); setInputMode("type"); }}
                         className="px-2.5 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1 cursor-pointer transition-all"
@@ -700,17 +972,17 @@ function StartInterview() {
                           color: inputMode === "type" ? "#fff" : "rgba(255,255,255,0.45)",
                         }}
                       >
-                        <Keyboard className="w-3 h-3" /> Type
+                        <Keyboard className="w-3 h-3" /> Type Text
                       </button>
                       <button
-                        onClick={() => setInputMode("speak")}
+                        onClick={() => { setInputMode("speak"); if (!isListeningSpeech) startSpeechRecognition(); }}
                         className="px-2.5 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1 cursor-pointer transition-all"
                         style={{
                           background: inputMode === "speak" ? "#2563eb" : "rgba(255,255,255,0.06)",
                           color: inputMode === "speak" ? "#fff" : "rgba(255,255,255,0.45)",
                         }}
                       >
-                        <Mic className="w-3 h-3" /> Voice
+                        <Mic className="w-3 h-3" /> Voice Response
                       </button>
                       <span className="ml-auto text-[9px] text-white/25 self-center">{typedResponse.length} chars</span>
                     </div>
@@ -718,58 +990,48 @@ function StartInterview() {
                     <textarea
                       value={typedResponse}
                       onChange={(e) => setTypedResponse(e.target.value)}
-                      placeholder={inputMode === "speak" ? "Speak — transcript appears here…" : "Type your answer…"}
+                      placeholder={inputMode === "speak" ? "Speak your answer — STT transcript appears here automatically…" : "Type your technical response here…"}
                       disabled={isPaused}
                       rows={3}
-                      className="w-full rounded-xl p-2.5 text-xs outline-none resize-none"
-                      style={{
-                        background: "rgba(255,255,255,0.04)",
-                        border: "1px solid rgba(255,255,255,0.07)",
-                        color: "rgba(255,255,255,0.8)",
-                        minHeight: "72px",
-                      }}
+                      className="w-full rounded-xl p-2.5 text-xs outline-none resize-none bg-white/5 border border-white/10 text-white/90 focus:border-blue-500"
                     />
 
                     {inputMode === "speak" && (
-                      <button
-                        onClick={startSpeechRecognition}
-                        disabled={isPaused || !isMicOn}
-                        className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-bold cursor-pointer transition-all disabled:opacity-40"
-                        style={{
-                          background: isListeningSpeech
-                            ? "rgba(239,68,68,0.2)"
-                            : "rgba(37,99,235,0.15)",
-                          border: `1px solid ${isListeningSpeech ? "rgba(239,68,68,0.4)" : "rgba(37,99,235,0.3)"}`,
-                          color: isListeningSpeech ? "#f87171" : "#60a5fa",
-                        }}
-                      >
-                        {isListeningSpeech ? (
-                          <><MicOff className="w-3.5 h-3.5" /> Stop Recording</>
-                        ) : (
-                          <><Mic className="w-3.5 h-3.5" /> Start Speaking</>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={startSpeechRecognition}
+                          disabled={isPaused || !isMicOn}
+                          className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-bold cursor-pointer transition-all disabled:opacity-40"
+                          style={{
+                            background: isListeningSpeech ? "rgba(239,68,68,0.2)" : "rgba(37,99,235,0.15)",
+                            border: `1px solid ${isListeningSpeech ? "rgba(239,68,68,0.4)" : "rgba(37,99,235,0.3)"}`,
+                            color: isListeningSpeech ? "#f87171" : "#60a5fa",
+                          }}
+                        >
+                          {isListeningSpeech ? <><MicOff className="w-3.5 h-3.5 animate-pulse" /> Listening (3.5s Buffer)</> : <><Mic className="w-3.5 h-3.5" /> Speak Answer</>}
+                        </button>
+                        {typedResponse.trim().length > 0 && (
+                          <button
+                            onClick={() => handleSaveAnswer("answered")}
+                            className="px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white cursor-pointer transition-all"
+                          >
+                            Save Answer
+                          </button>
                         )}
-                      </button>
+                      </div>
                     )}
                   </div>
                 )}
               </div>
 
-              {/* 4. Live Transcript */}
-              <div className="shrink-0" style={{ minHeight: "160px" }}>
+              {/* 4. Live Conversation & STT Transcript */}
+              <div className="shrink-0" style={{ minHeight: "140px" }}>
                 <ConversationPanel logs={dialogueLogs} />
               </div>
-
             </div>
 
-            {/* ── Pinned Navigation — always visible at bottom ── */}
-            <div
-              className="shrink-0 pt-2"
-              style={{
-                borderTop: "1px solid rgba(255,255,255,0.07)",
-                background: "rgba(5,6,9,0.85)",
-                backdropFilter: "blur(8px)",
-              }}
-            >
+            {/* Pinned Navigation Controls */}
+            <div className="shrink-0 pt-2 border-t border-white/10 bg-slate-950/90 backdrop-blur-md">
               <NavigationControls
                 currentIndex={currentIndex}
                 totalQuestions={questions.length}
@@ -777,22 +1039,22 @@ function StartInterview() {
                 onPrev={handlePrevQuestion}
                 onNext={handleNextQuestion}
                 onSkip={handleSkipQuestion}
-                onRepeat={handleRepeatQuery}
+                onRepeat={() => speakCurrentQuestion(currentQuestion?.aiSpeechText || currentQuestion?.question, currentQuestion?.section, currentQuestion?.topic)}
                 onTogglePause={() => setIsPaused(!isPaused)}
-                onEnd={handleEmergencyExit}
+                onEnd={() => setShowConfirmExit(true)}
               />
             </div>
-
           </div>
         }
-
       />
 
-      {/* Confirmation Exit Modal */}
       <ConfirmExitDialog
         isOpen={showConfirmExit}
         onClose={() => setShowConfirmExit(false)}
-        onConfirm={handleConfirmExit}
+        onConfirm={() => {
+          setShowConfirmExit(false);
+          setIsCompleted(true);
+        }}
       />
     </div>
   );

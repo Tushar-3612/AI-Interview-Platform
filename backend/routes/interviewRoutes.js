@@ -8,6 +8,8 @@ import {
   completeInterview,
   getUserResults,
   getUserInterviews,
+  generateTTS,
+  logIntegrityEvent,
 } from "../controllers/interviewController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 
@@ -16,6 +18,9 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 // POST /api/interview/start — create new AI interview session
 router.post("/start", authMiddleware, startInterview);
+
+// POST /api/interview/tts — provider-agnostic TTS audio generation
+router.post("/tts", authMiddleware, generateTTS);
 
 // POST /api/interview/upload-resume
 router.post("/upload-resume", authMiddleware, upload.single("resume"), uploadResumeAndGenerateQuestions);
@@ -31,6 +36,9 @@ router.get("/:id", authMiddleware, getInterviewDetails);
 
 // POST /api/interview/:id/answer
 router.post("/:id/answer", authMiddleware, saveAnswer);
+
+// POST /api/interview/:id/integrity-event — record security events
+router.post("/:id/integrity-event", authMiddleware, logIntegrityEvent);
 
 // POST /api/interview/:id/complete
 router.post("/:id/complete", authMiddleware, completeInterview);

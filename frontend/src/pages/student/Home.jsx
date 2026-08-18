@@ -146,7 +146,7 @@ function Home() {
               toast.error("No attempts remaining");
               return;
             }
-            openInterviewModal?.();
+            window.open("/interview", "_blank");
           }}
           className="py-4 text-base font-semibold"
         >

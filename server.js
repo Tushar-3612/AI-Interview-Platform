@@ -26,6 +26,7 @@ import codeExecutionRoutes from "./backend/routes/codeExecution.js";
 import placementRoutes from "./backend/routes/placement.js";
 import companyMockRoutes from "./backend/routes/companyMock.js";
 import technicalQuestionRoutes from "./backend/routes/technicalQuestions.js";
+import interviewRoutes from "./backend/routes/interviewRoutes.js";
 import { initializeCSVExports } from "./backend/utils/csvExporter.js"; // ← Path sahi hai
 import { apiLimiter } from "./backend/middleware/rateLimiter.js";
 import { runSeeds } from "./backend/utils/seedDefaults.js";
@@ -102,6 +103,7 @@ app.use("/api/code", codeExecutionRoutes);
 app.use("/api/placement", placementRoutes);
 app.use("/api/company-mock", companyMockRoutes);
 app.use("/api/technical-questions", technicalQuestionRoutes);
+app.use("/api/interview", interviewRoutes);
 
 // Health Check Route (Add this for testing)
 app.get("/api/health", (req, res) => {
@@ -113,7 +115,7 @@ app.get("/api/health", (req, res) => {
 });
 
 const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY,
+  apiKey: process.env.GEMINI_API_KEY || "AIzaSy_Mock_Key_For_Development",
 });
 
 const upload = multer({

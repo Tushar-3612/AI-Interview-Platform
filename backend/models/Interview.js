@@ -23,15 +23,28 @@ const interviewSchema = new mongoose.Schema(
     companyId: { type: String, default: "" },
     status: {
       type: String,
-      enum: ["pending", "in_progress", "completed"],
-      default: "pending",
+      default: "IN_PROGRESS",
     },
-    resumeFileName: { type: String },
-    startedAt: { type: Date },
-    completedAt: { type: Date },
-    totalQuestions: { type: Number, default: 0 },
+    resumeFileName: { type: String, default: "" },
+    resumeSnapshot: { type: mongoose.Schema.Types.Mixed, default: null },
+    startedAt: { type: Date, default: Date.now },
+    completedAt: { type: Date, default: null },
+    totalQuestions: { type: Number, default: 58 },
+    currentQuestionIndex: { type: Number, default: 1 },
     questionsAnswered: { type: Number, default: 0 },
     overallScore: { type: Number, default: null },
+    candidateProfile: { type: mongoose.Schema.Types.Mixed, default: {} },
+    generatedQuestions: { type: mongoose.Schema.Types.Mixed, default: [] },
+    integrityEvents: [
+      {
+        eventType: { type: String, required: true },
+        timestamp: { type: Date, default: Date.now },
+        questionId: { type: String, default: "" },
+        questionIndex: { type: Number, default: 1 },
+        section: { type: String, default: "TECHNICAL" },
+        details: { type: String, default: "" }
+      }
+    ],
   },
   { timestamps: true }
 );

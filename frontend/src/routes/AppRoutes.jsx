@@ -14,6 +14,7 @@ import Contact from "../pages/student/Contact";
 import InterviewHistory from "../pages/student/InterviewHistory";
 import Results from "../pages/student/Results";
 import StudentInterview from "../pages/student/StudentInterview";
+import StartInterview from "../pages/student/StartInterview";
 
 import AdminLayout from "../layouts/AdminLayout";
 import AdminDashboard from "../pages/admin/AdminDashboard";
@@ -63,7 +64,8 @@ function AppRoutes() {
       <Route element={<StudentLayout />}>
         <Route path="/dashboard" element={<StudentDashboard />} />
         <Route path="/profile" element={<Profile />} />
-        <Route path="/interview" element={<StudentInterview />} />
+        <Route path="/interview" element={<StartInterview />} />
+        <Route path="/interview/:sessionId" element={<StartInterview />} />
         <Route path="/interview-practice" element={<InterviewPractice />} />
         <Route path="/interview-practice/:companyId" element={<RoundSelection />} />
         <Route path="/interview-practice/:companyId/aptitude" element={<AptitudeRound />} />

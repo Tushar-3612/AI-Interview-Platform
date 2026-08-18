@@ -1,5 +1,13 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+import dns from "dns";
+
+try {
+  dns.setDefaultResultOrder("ipv4first");
+  dns.setServers(["8.8.8.8", "1.1.1.1"]);
+} catch (e) {
+  // Ignore DNS config errors if unsupported
+}
 
 dotenv.config();
 
@@ -33,14 +41,16 @@ const connectDB = async () => {
       console.log("✅ MongoDB reconnected");
     });
 
-    await mongoose.connect(mongoURI, MONGOOSE_OPTIONS);
+    await mongoose.connect(mongoURI, {
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+    });
 
     console.log("✅ MongoDB Connected Successfully");
     return mongoose.connection;
   } catch (error) {
-    console.error("❌ MongoDB Connection Error:", error.message);
-    console.error("Stack:", error.stack);
-    process.exit(1);
+    console.warn("⚠️ MongoDB Connection Warning:", error.message);
+    console.warn("Backend server running in standalone mode...");
   }
 };
 

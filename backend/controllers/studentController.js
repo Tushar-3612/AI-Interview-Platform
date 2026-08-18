@@ -205,7 +205,7 @@ export const startInterview = async (req, res) => {
  */
 export const submitAnswer = async (req, res) => {
   try {
-    const { interviewId, questionId, questionType, question, answer } = req.body;
+    const { interviewId, questionId, questionType, question, answer, transcript, mode = "text", duration = 0, isFollowUp = false, parentQuestionId = "" } = req.body;
 
     // Verify interview is in progress
     const interview = await Interview.findOne({ _id: interviewId, userId: req.user.id });
@@ -217,29 +217,56 @@ export const submitAnswer = async (req, res) => {
       return res.status(400).json({ message: "Interview session is not in progress" });
     }
 
-    // AI evaluate answer using Gemini
+    const officialAnswer = answer || transcript || "";
+    const officialTranscript = transcript || answer || "";
+
+    // Fetch up to 3 recent previous Q&A for conversational context
+    const previousAnswers = await Answer.find({ interviewId })
+      .sort({ createdAt: -1 })
+      .limit(3)
+      .select("question answer score");
+
+    const formattedContext = previousAnswers
+      .map((pa, idx) => `Q${idx + 1}: "${pa.question}" -> Candidate Answer: "${pa.answer}" (Score: ${pa.score}/100)`)
+      .join("\n");
+
+    // AI evaluate answer & decide contextual follow-up using Gemini 2.5
     const evaluationPrompt = `
-You are a senior technical interviewer.
-Evaluate the candidate's answer for this technical interview question.
+You are a senior technical interviewer conducting a live interview.
 
-Question: "${question}"
-Candidate Answer: "${answer || "[No answer / Skipped]"}"
+CURRENT QUESTION: "${question}"
+CANDIDATE RESPONSE: "${officialAnswer || "[No answer / Skipped]"}"
+CATEGORY: "${questionType || "technical"}"
+IS FOLLOW UP QUESTION: ${isFollowUp ? "Yes" : "No"}
 
-Provide:
-1. A numerical score between 0 and 100 based on accuracy and depth.
-2. Short constructive feedback (max 2 sentences).
+PREVIOUS INTERVIEW CONTEXT:
+${formattedContext || "None (First question in session)"}
+
+YOUR TASKS:
+1. Evaluate the candidate's response. Assign a score out of 100 for technical accuracy, depth, and clarity.
+2. Provide short constructive feedback (max 2 sentences).
+3. DECIDE if a contextual follow-up question is required:
+   - Set "needsFollowUp": true ONLY IF the candidate introduced specific technical concepts, architectural choices, or incomplete claims that warrant probing deeper.
+   - Set "needsFollowUp": false IF the answer is already complete, skipped, or if this is already a follow-up question.
+   - IF "needsFollowUp": true, generate "followUpQuestion" (a direct, natural 1-sentence technical follow-up) and a brief "reason".
 
 Return ONLY valid JSON using this structure:
 {
   "score": 85,
-  "feedback": "Your answer is accurate. Consider mentioning memory allocation."
+  "feedback": "Good explanation of database indexing.",
+  "needsFollowUp": true,
+  "followUpQuestion": "You mentioned B-Tree indexes for range queries. How does a B+ Tree handle node splitting during high-volume writes?",
+  "reason": "Probing deeper into candidate's B-Tree indexing claim."
 }
 `;
 
     let score = 0;
     let feedback = "No answer provided / Skipped.";
+    let needsFollowUp = false;
+    let followUpQuestion = "";
+    let reason = "";
 
-    if (answer && answer.trim()) {
+    if (officialAnswer && officialAnswer.trim()) {
       try {
         const response = await ai.models.generateContent({
           model: "gemini-2.5-flash",
@@ -251,30 +278,54 @@ Return ONLY valid JSON using this structure:
         const evalData = JSON.parse(response.text);
         score = evalData.score || 0;
         feedback = evalData.feedback || "Good attempt.";
+        needsFollowUp = Boolean(evalData.needsFollowUp && !isFollowUp); // Prevent nested infinite follow-ups
+        followUpQuestion = evalData.followUpQuestion || "";
+        reason = evalData.reason || "";
       } catch (aiErr) {
-        console.error("Gemini Answer Grade Error:", aiErr.message);
-        score = answer.length > 30 ? 75 : 40; // Fallback
+        console.error("Gemini Answer & Follow-up Grade Error:", aiErr.message);
+        score = officialAnswer.length > 30 ? 75 : 40;
         feedback = "Answer recorded.";
       }
     }
 
-    // Save Answer
+    const evaluationObj = {
+      score,
+      feedback,
+      needsFollowUp,
+      followUpQuestion,
+      reason
+    };
+
+    // Save Answer with persistent voice transcript & follow-up fields
     const answerDoc = await Answer.create({
       interviewId,
       userId: req.user.id,
       questionId,
       questionType: questionType || "technical",
       question,
-      answer: answer || "",
+      answer: officialAnswer,
+      transcript: officialTranscript,
+      mode: mode === "voice" ? "voice" : "text",
+      duration: Math.max(0, Number(duration) || 0),
+      evaluation: evaluationObj,
+      isFollowUp: Boolean(isFollowUp),
+      parentQuestionId: parentQuestionId || "",
       score,
       feedback,
+      timestamp: new Date(),
     });
 
     // Update questionsAnswered counter
     interview.questionsAnswered += 1;
     await interview.save();
 
-    res.status(201).json(answerDoc);
+    res.status(201).json({
+      message: "Answer evaluated successfully",
+      answer: answerDoc,
+      needsFollowUp,
+      followUpQuestion,
+      reason
+    });
   } catch (error) {
     console.error("Submit Answer Error:", error.message);
     res.status(500).json({ message: "Server error saving answer" });

@@ -21,6 +21,7 @@ import api from "../../utils/api";
 import { getAuthToken } from "../../hooks/useStudentProfile";
 import Button from "../../components/ui/Button";
 import toast from "react-hot-toast";
+import VoiceInterviewInterface from "../../components/interview/VoiceInterviewInterface";
 
 function StudentInterview() {
   const navigate = useNavigate();
@@ -38,6 +39,42 @@ function StudentInterview() {
   const [interviewId, setInterviewId] = useState(null);
   const [interviewCompleted, setInterviewCompleted] = useState(false);
   const [finalResult, setFinalResult] = useState(null);
+  const [interviewMode, setInterviewMode] = useState("voice"); // Default to Voice mode for instant interactive demo
+
+  // Auto-initialize resume-based interview on load when opened in tab
+  useEffect(() => {
+    const autoInitResumeInterview = async () => {
+      if (!token || questions.length > 0) return;
+      setIsLoading(true);
+      try {
+        const { data: profile } = await api.get("/api/student/profile", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        const { data: startRes } = await api.post(
+          "/api/interview/start",
+          {
+            interviewType: "Technical",
+            difficulty: "Medium",
+            candidateName: profile.name || "Candidate",
+            resumeFileName: profile.resumeFileName || "Uploaded_Resume.pdf"
+          },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        if (startRes.generatedQuestions && startRes.generatedQuestions.length > 0) {
+          setQuestions(startRes.generatedQuestions);
+          setInterviewId(startRes.interviewId);
+        }
+      } catch (err) {
+        console.warn("Auto-start profile interview notice:", err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    autoInitResumeInterview();
+  }, [token]);
 
   const handleResumeChange = (e) => {
     const file = e.target.files[0];
@@ -214,232 +251,297 @@ function StudentInterview() {
   const progressPct = questions.length ? ((currentQuestionIndex + 1) / questions.length) * 100 : 0;
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-      {/* 1. Upload/Start State */}
-      {questions.length === 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="student-card p-8 sm:p-10 text-center space-y-6"
-        >
-          <div className="w-14 h-14 rounded-2xl bg-[var(--primary)] text-white flex items-center justify-center mx-auto shadow-md">
-            <Cpu className="w-7 h-7" />
-          </div>
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold" style={{ color: "var(--text-primary)" }}>
-              AI Real Interview Session
-            </h1>
-            <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
-              Upload your PDF resume. Gemini will generate a custom technical mock round, score your dictation, and assess your profiles.
-            </p>
-          </div>
-
-          <div
-            className="border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center cursor-pointer transition-colors hover:bg-slate-50/50 dark:hover:bg-zinc-900/10"
-            style={{ borderColor: "var(--border)" }}
-            onClick={() => document.getElementById("pdf-upload")?.click()}
-          >
-            <input
-              id="pdf-upload"
-              type="file"
-              accept=".pdf"
-              className="hidden"
-              onChange={handleResumeChange}
-            />
-            <Upload className="w-8 h-8 text-[var(--primary)] mb-2" />
-            <p className="text-xs font-semibold" style={{ color: "var(--text-primary)" }}>
-              {resume ? resume.name : "Select Resume PDF File"}
-            </p>
-            <p className="text-[10px] mt-1" style={{ color: "var(--text-muted)" }}>
-              PDF size up to 4MB
-            </p>
-          </div>
-
-          <Button onClick={handleUploadAndStart} loading={isLoading} className="w-full py-3.5">
-            Analyze Resume & Start Interview
-          </Button>
-        </motion.div>
-      )}
-
-      {/* 2. Answering Questions State */}
-      {questions.length > 0 && !interviewCompleted && currentQuestion && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.98 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="student-card p-6 sm:p-8 space-y-6"
-        >
-          {/* Header Progress */}
-          <div className="flex justify-between items-center text-xs" style={{ color: "var(--text-muted)" }}>
-            <span className="font-semibold text-[var(--primary)]">Question {currentQuestionIndex + 1} of {questions.length}</span>
-            <span>{Math.round(progressPct)}% Completed</span>
-          </div>
-          <div className="h-1.5 rounded-full overflow-hidden w-full bg-slate-100 dark:bg-zinc-800 border" style={{ borderColor: "var(--border)" }}>
-            <div
-              className="h-full bg-[var(--primary)] transition-all duration-300"
-              style={{ width: `${progressPct}%` }}
-            />
-          </div>
-
-          {/* Question Box */}
-          <div className="space-y-2">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg text-[10px] font-semibold uppercase bg-slate-100 dark:bg-zinc-850" style={{ color: "var(--text-secondary)" }}>
-              <HelpCircle className="w-3.5 h-3.5" /> {currentQuestion.topic || "Technical"}
-            </span>
-            <h3 className="text-base sm:text-lg font-bold leading-relaxed" style={{ color: "var(--text-primary)" }}>
-              {currentQuestion.question}
-            </h3>
-          </div>
-
-          {/* Textarea Answer Input */}
-          <div className="relative">
-            <textarea
-              rows={6}
-              disabled={isLoading}
-              placeholder="Formulate your response, or toggle the mic to transcribe your voice..."
-              value={answer}
-              onChange={(e) => setAnswer(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border text-sm outline-none resize-none leading-relaxed"
-              style={{ borderColor: "var(--border)", background: "var(--input-bg)", color: "var(--text-primary)" }}
-            />
-            <button
-              type="button"
-              onClick={startListening}
-              className="absolute bottom-3 right-3 p-2.5 rounded-xl cursor-pointer shadow transition-all duration-200"
-              style={{
-                background: isListening ? "var(--error)" : "var(--primary)",
-                color: "#fff",
-              }}
-            >
-              {isListening ? <MicOff className="w-4.5 h-4.5" /> : <Mic className="w-4.5 h-4.5" />}
-            </button>
-          </div>
-
-          {/* Footer Controls */}
-          <div className="flex gap-3 border-t pt-4" style={{ borderColor: "var(--border)" }}>
-            <button
-              type="button"
-              disabled={isLoading}
-              onClick={() => handleSaveAndNext("skipped")}
-              className="flex-1 py-2.5 border rounded-xl text-xs font-semibold cursor-pointer"
-              style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
-            >
-              Skip Question
-            </button>
-            <Button
-              onClick={() => handleSaveAndNext("answered")}
-              loading={isLoading}
-              className="flex-1 py-2.5 rounded-xl text-xs font-semibold text-white cursor-pointer"
-            >
-              Submit & Next
-            </Button>
-          </div>
-        </motion.div>
-      )}
-
-      {/* 3. Completed Evaluation Result View */}
-      {interviewCompleted && finalResult && (
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="space-y-6"
-        >
-          {/* Main Card */}
-          <div className="student-card p-6 sm:p-8 text-center space-y-6">
-            <div className="w-12 h-12 bg-emerald-500 text-white rounded-full flex items-center justify-center mx-auto shadow-md">
-              <CheckCircle className="w-6 h-6" />
-            </div>
-            <div>
-              <h2 className="text-xl sm:text-2xl font-bold" style={{ color: "var(--text-primary)" }}>
-                AI Grade Compiled!
-              </h2>
-              <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
-                Your responses have been processed against standard placement hiring metrics.
-              </p>
-            </div>
-
-            {/* Score circle gauge */}
-            <div className="relative w-28 h-28 mx-auto flex items-center justify-center">
-              <svg className="w-full h-full transform -rotate-90">
-                <circle
-                  cx="56"
-                  cy="56"
-                  r="46"
-                  strokeWidth="8"
-                  stroke="var(--border)"
-                  fill="transparent"
-                />
-                <circle
-                  cx="56"
-                  cy="56"
-                  r="46"
-                  strokeWidth="8"
-                  stroke="var(--success)"
-                  fill="transparent"
-                  strokeDasharray="289"
-                  strokeDashoffset={289 - (289 * (finalResult.overallScore || 0)) / 100}
-                />
-              </svg>
-              <div className="absolute flex flex-col items-center">
-                <span className="text-3xl font-extrabold" style={{ color: "var(--text-primary)" }}>
-                  {finalResult.overallScore}%
-                </span>
-                <span className="text-[8px] uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
-                  Overall Score
-                </span>
-              </div>
-            </div>
-
-            {/* Scores breakdown */}
-            <div className="grid grid-cols-3 gap-3 border-t pt-4 text-center" style={{ borderColor: "var(--border)" }}>
-              <div>
-                <p className="text-[9px] font-semibold uppercase" style={{ color: "var(--text-muted)" }}>Resume Score</p>
-                <p className="text-sm font-bold mt-0.5" style={{ color: "var(--text-primary)" }}>{finalResult.resumeScore || 0}%</p>
-              </div>
-              <div>
-                <p className="text-[9px] font-semibold uppercase" style={{ color: "var(--text-muted)" }}>Tech Score</p>
-                <p className="text-sm font-bold mt-0.5" style={{ color: "var(--text-primary)" }}>{finalResult.technicalScore || 0}%</p>
-              </div>
-              <div>
-                <p className="text-[9px] font-semibold uppercase" style={{ color: "var(--text-muted)" }}>Coding Score</p>
-                <p className="text-sm font-bold mt-0.5" style={{ color: "var(--text-primary)" }}>{finalResult.codingScore || 0}%</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Strengths & Weaknesses Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="student-card p-5 bg-emerald-500/5 border" style={{ borderColor: "color-mix(in srgb, var(--success) 20%, var(--border))" }}>
-              <h4 className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mb-2">Key Strengths</h4>
-              <ul className="list-disc pl-4 text-xs space-y-1" style={{ color: "var(--text-secondary)" }}>
-                {finalResult.strengths?.map((s, idx) => <li key={idx}>{s}</li>)}
-              </ul>
-            </div>
-            <div className="student-card p-5 bg-red-500/5 border" style={{ borderColor: "color-mix(in srgb, var(--error) 20%, var(--border))" }}>
-              <h4 className="text-xs font-bold text-red-500 dark:text-red-400 uppercase tracking-wider mb-2">Focus Areas</h4>
-              <ul className="list-disc pl-4 text-xs space-y-1" style={{ color: "var(--text-secondary)" }}>
-                {finalResult.weaknesses?.map((w, idx) => <li key={idx}>{w}</li>)}
-              </ul>
-            </div>
-          </div>
-
-          {/* Placement Advice Recommendation */}
-          <div className="student-card p-5 space-y-1">
-            <h4 className="text-xs font-semibold uppercase text-zinc-500 tracking-wider">Hiring Feedback Advice</h4>
-            <p className="text-xs leading-relaxed" style={{ color: "var(--text-primary)" }}>
-              {finalResult.recommendation}
-            </p>
-          </div>
-
-          {/* Return button */}
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6">
+      {/* Interview Mode Selector Tabs */}
+      <div className="flex justify-center">
+        <div className="inline-flex p-1 rounded-2xl bg-slate-200 dark:bg-slate-800/80 border" style={{ borderColor: "var(--border)" }}>
           <button
             type="button"
-            onClick={() => navigate("/dashboard", { replace: true })}
-            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm text-white btn-gradient cursor-pointer"
+            onClick={() => setInterviewMode("text")}
+            className={`flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              interviewMode === "text"
+                ? "bg-[var(--primary)] text-white shadow-md"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+            }`}
           >
-            Return to Dashboard Dashboard
-            <ArrowRight className="w-4 h-4" />
+            <MessageSquare className="w-3.5 h-3.5" /> Text Interview Mode
           </button>
-        </motion.div>
+          <button
+            type="button"
+            onClick={() => setInterviewMode("voice")}
+            className={`flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              interviewMode === "voice"
+                ? "bg-blue-600 text-white shadow-md"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+            }`}
+          >
+            <Mic className="w-3.5 h-3.5 text-amber-300 animate-pulse" /> Interactive Voice Interview UI
+          </button>
+        </div>
+      </div>
+
+      {interviewMode === "voice" ? (
+        <VoiceInterviewInterface
+          interviewId={interviewId}
+          token={token}
+          questions={questions.length ? questions : undefined}
+          onSaveAnswer={async (answerData) => {
+            if (!interviewId) return null;
+            const { data } = await api.post(
+              "/api/student/interviews/answer",
+              {
+                interviewId,
+                questionId: answerData.questionId,
+                questionType: answerData.questionType,
+                question: answerData.question,
+                answer: answerData.answer,
+                transcript: answerData.transcript || answerData.answer,
+                mode: "voice",
+                duration: answerData.duration || 0,
+              },
+              { headers: { Authorization: `Bearer ${token}` } }
+            );
+            const savedDoc = data.answer || data;
+            setAnswers((prev) => [...prev, savedDoc]);
+            return savedDoc;
+          }}
+          onFinish={async () => {
+            if (interviewId) {
+              await triggerFinalGrading();
+            } else {
+              setInterviewCompleted(true);
+            }
+          }}
+        />
+      ) : (
+        <>
+          {/* 1. Upload/Start State */}
+          {questions.length === 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="student-card p-8 sm:p-10 text-center space-y-6"
+            >
+              <div className="w-14 h-14 rounded-2xl bg-[var(--primary)] text-white flex items-center justify-center mx-auto shadow-md">
+                <Cpu className="w-7 h-7" />
+              </div>
+              <div>
+                <h1 className="text-xl sm:text-2xl font-bold" style={{ color: "var(--text-primary)" }}>
+                  AI Real Interview Session
+                </h1>
+                <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
+                  Upload your PDF resume. Gemini will generate a custom technical mock round, score your dictation, and assess your profiles.
+                </p>
+              </div>
+
+              <div
+                className="border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center cursor-pointer transition-colors hover:bg-slate-50/50 dark:hover:bg-zinc-900/10"
+                style={{ borderColor: "var(--border)" }}
+                onClick={() => document.getElementById("pdf-upload")?.click()}
+              >
+                <input
+                  id="pdf-upload"
+                  type="file"
+                  accept=".pdf"
+                  className="hidden"
+                  onChange={handleResumeChange}
+                />
+                <Upload className="w-8 h-8 text-[var(--primary)] mb-2" />
+                <p className="text-xs font-semibold" style={{ color: "var(--text-primary)" }}>
+                  {resume ? resume.name : "Select Resume PDF File"}
+                </p>
+                <p className="text-[10px] mt-1" style={{ color: "var(--text-muted)" }}>
+                  PDF size up to 4MB
+                </p>
+              </div>
+
+              <Button onClick={handleUploadAndStart} loading={isLoading} className="w-full py-3.5">
+                Analyze Resume & Start Interview
+              </Button>
+            </motion.div>
+          )}
+
+          {/* 2. Answering Questions State */}
+          {questions.length > 0 && !interviewCompleted && currentQuestion && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="student-card p-6 sm:p-8 space-y-6"
+            >
+              {/* Header Progress */}
+              <div className="flex justify-between items-center text-xs" style={{ color: "var(--text-muted)" }}>
+                <span className="font-semibold text-[var(--primary)]">Question {currentQuestionIndex + 1} of {questions.length}</span>
+                <span>{Math.round(progressPct)}% Completed</span>
+              </div>
+              <div className="h-1.5 rounded-full overflow-hidden w-full bg-slate-100 dark:bg-zinc-800 border" style={{ borderColor: "var(--border)" }}>
+                <div
+                  className="h-full bg-[var(--primary)] transition-all duration-300"
+                  style={{ width: `${progressPct}%` }}
+                />
+              </div>
+
+              {/* Question Box */}
+              <div className="space-y-2">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg text-[10px] font-semibold uppercase bg-slate-100 dark:bg-zinc-850" style={{ color: "var(--text-secondary)" }}>
+                  <HelpCircle className="w-3.5 h-3.5" /> {currentQuestion.topic || "Technical"}
+                </span>
+                <h3 className="text-base sm:text-lg font-bold leading-relaxed" style={{ color: "var(--text-primary)" }}>
+                  {currentQuestion.question}
+                </h3>
+              </div>
+
+              {/* Textarea Answer Input */}
+              <div className="relative">
+                <textarea
+                  rows={6}
+                  disabled={isLoading}
+                  placeholder="Formulate your response, or toggle the mic to transcribe your voice..."
+                  value={answer}
+                  onChange={(e) => setAnswer(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border text-sm outline-none resize-none leading-relaxed"
+                  style={{ borderColor: "var(--border)", background: "var(--input-bg)", color: "var(--text-primary)" }}
+                />
+                <button
+                  type="button"
+                  onClick={startListening}
+                  className="absolute bottom-3 right-3 p-2.5 rounded-xl cursor-pointer shadow transition-all duration-200"
+                  style={{
+                    background: isListening ? "var(--error)" : "var(--primary)",
+                    color: "#fff",
+                  }}
+                >
+                  {isListening ? <MicOff className="w-4.5 h-4.5" /> : <Mic className="w-4.5 h-4.5" />}
+                </button>
+              </div>
+
+              {/* Footer Controls */}
+              <div className="flex gap-3 border-t pt-4" style={{ borderColor: "var(--border)" }}>
+                <button
+                  type="button"
+                  disabled={isLoading}
+                  onClick={() => handleSaveAndNext("skipped")}
+                  className="flex-1 py-2.5 border rounded-xl text-xs font-semibold cursor-pointer"
+                  style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
+                >
+                  Skip Question
+                </button>
+                <Button
+                  onClick={() => handleSaveAndNext("answered")}
+                  loading={isLoading}
+                  className="flex-1 py-2.5 rounded-xl text-xs font-semibold text-white cursor-pointer"
+                >
+                  Submit & Next
+                </Button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* 3. Completed Evaluation Result View */}
+          {interviewCompleted && finalResult && (
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-6"
+            >
+              {/* Main Card */}
+              <div className="student-card p-6 sm:p-8 text-center space-y-6">
+                <div className="w-12 h-12 bg-emerald-500 text-white rounded-full flex items-center justify-center mx-auto shadow-md">
+                  <CheckCircle className="w-6 h-6" />
+                </div>
+                <div>
+                  <h2 className="text-xl sm:text-2xl font-bold" style={{ color: "var(--text-primary)" }}>
+                    AI Grade Compiled!
+                  </h2>
+                  <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                    Your responses have been processed against standard placement hiring metrics.
+                  </p>
+                </div>
+
+                {/* Score circle gauge */}
+                <div className="relative w-28 h-28 mx-auto flex items-center justify-center">
+                  <svg className="w-full h-full transform -rotate-90">
+                    <circle
+                      cx="56"
+                      cy="56"
+                      r="46"
+                      strokeWidth="8"
+                      stroke="var(--border)"
+                      fill="transparent"
+                    />
+                    <circle
+                      cx="56"
+                      cy="56"
+                      r="46"
+                      strokeWidth="8"
+                      stroke="var(--success)"
+                      fill="transparent"
+                      strokeDasharray="289"
+                      strokeDashoffset={289 - (289 * (finalResult.overallScore || 0)) / 100}
+                    />
+                  </svg>
+                  <div className="absolute flex flex-col items-center">
+                    <span className="text-3xl font-extrabold" style={{ color: "var(--text-primary)" }}>
+                      {finalResult.overallScore}%
+                    </span>
+                    <span className="text-[8px] uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
+                      Overall Score
+                    </span>
+                  </div>
+                </div>
+
+                {/* Scores breakdown */}
+                <div className="grid grid-cols-3 gap-3 border-t pt-4 text-center" style={{ borderColor: "var(--border)" }}>
+                  <div>
+                    <p className="text-[9px] font-semibold uppercase" style={{ color: "var(--text-muted)" }}>Resume Score</p>
+                    <p className="text-sm font-bold mt-0.5" style={{ color: "var(--text-primary)" }}>{finalResult.resumeScore || 0}%</p>
+                  </div>
+                  <div>
+                    <p className="text-[9px] font-semibold uppercase" style={{ color: "var(--text-muted)" }}>Tech Score</p>
+                    <p className="text-sm font-bold mt-0.5" style={{ color: "var(--text-primary)" }}>{finalResult.technicalScore || 0}%</p>
+                  </div>
+                  <div>
+                    <p className="text-[9px] font-semibold uppercase" style={{ color: "var(--text-muted)" }}>Coding Score</p>
+                    <p className="text-sm font-bold mt-0.5" style={{ color: "var(--text-primary)" }}>{finalResult.codingScore || 0}%</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Strengths & Weaknesses Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="student-card p-5 bg-emerald-500/5 border" style={{ borderColor: "color-mix(in srgb, var(--success) 20%, var(--border))" }}>
+                  <h4 className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mb-2">Key Strengths</h4>
+                  <ul className="list-disc pl-4 text-xs space-y-1" style={{ color: "var(--text-secondary)" }}>
+                    {finalResult.strengths?.map((s, idx) => <li key={idx}>{s}</li>)}
+                  </ul>
+                </div>
+                <div className="student-card p-5 bg-red-500/5 border" style={{ borderColor: "color-mix(in srgb, var(--error) 20%, var(--border))" }}>
+                  <h4 className="text-xs font-bold text-red-500 dark:text-red-400 uppercase tracking-wider mb-2">Focus Areas</h4>
+                  <ul className="list-disc pl-4 text-xs space-y-1" style={{ color: "var(--text-secondary)" }}>
+                    {finalResult.weaknesses?.map((w, idx) => <li key={idx}>{w}</li>)}
+                  </ul>
+                </div>
+              </div>
+
+              {/* Placement Advice Recommendation */}
+              <div className="student-card p-5 space-y-1">
+                <h4 className="text-xs font-semibold uppercase text-zinc-500 tracking-wider">Hiring Feedback Advice</h4>
+                <p className="text-xs leading-relaxed" style={{ color: "var(--text-primary)" }}>
+                  {finalResult.recommendation}
+                </p>
+              </div>
+
+              {/* Return button */}
+              <button
+                type="button"
+                onClick={() => navigate("/dashboard", { replace: true })}
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm text-white btn-gradient cursor-pointer"
+              >
+                Return to Dashboard Dashboard
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </motion.div>
+          )}
+        </>
       )}
     </div>
   );

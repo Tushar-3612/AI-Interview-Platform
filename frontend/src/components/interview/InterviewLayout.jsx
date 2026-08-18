@@ -86,6 +86,7 @@ function InterviewLayout({
   controlProps = {},
   isPaused,
   onResume,
+  sectionPanel,
   leftPanel,
   rightPanel,
   centerPanel,
@@ -217,6 +218,13 @@ function InterviewLayout({
           MAIN STAGE
       ═══════════════════════════════════════════ */}
       <div className="flex-1 flex min-h-0 p-3 gap-3">
+
+        {/* FAR LEFT: Persistent Section Navigation Panel (hidden on small mobile, visible on desktop) */}
+        {sectionPanel && (
+          <div className="hidden lg:flex w-[240px] xl:w-[260px] shrink-0 flex-col min-h-0">
+            {sectionPanel}
+          </div>
+        )}
 
         {/* LEFT: AI Avatar + (optional) center content stacked */}
         <div className="flex flex-col flex-1 min-w-0 gap-3">
