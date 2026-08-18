@@ -214,7 +214,10 @@ function CompanyMockInterview() {
     } catch {
       // User may deny or browser may block; handled by caller via document.fullscreenElement check
     }
-    return !!document.fullscreenElement;
+    // Clear any stale "intentional exit" flag left from a previous exit so an
+    // accidental exit is detected and the blocking popup is shown.
+    allowFullscreenExitRef.current = false;
+    return !!(document.fullscreenElement || document.webkitFullscreenElement);
   };
 
   const exitFullscreen = () => {
@@ -303,7 +306,7 @@ function CompanyMockInterview() {
 
   const maybeResume = useCallback(() => {
     if (phaseRef.current !== "exam") return;
-    if (lockReasonRef.current && document.fullscreenElement && document.visibilityState === "visible") {
+    if (lockReasonRef.current && (document.fullscreenElement || document.webkitFullscreenElement) && document.visibilityState === "visible") {
       resumeAssessment();
     }
   }, [resumeAssessment]);
@@ -311,10 +314,10 @@ function CompanyMockInterview() {
   // Return-to-assessment action from the blocking security modal.
   // Only resumes after fullscreen is confirmed AND the tab is visible.
   const handleReturnToAssessment = useCallback(async () => {
-    if (!document.fullscreenElement) {
+    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
       await enterFullscreen();
     }
-    if (document.fullscreenElement && document.visibilityState === "visible") {
+    if ((document.fullscreenElement || document.webkitFullscreenElement) && document.visibilityState === "visible") {
       await resumeAssessment();
     } else {
       toast.error("Please allow fullscreen mode to continue the assessment.");
@@ -375,6 +378,12 @@ function CompanyMockInterview() {
   useEffect(() => {
     if (phase !== "exam") return;
 
+    // Some browsers (WebKit/Safari) only expose the prefixed
+    // `webkitFullscreenElement` and only fire `webkitfullscreenchange`. We must
+    // listen for both and read both, otherwise an exit event is silently missed
+    // and the blocking popup never appears.
+    const getFsElement = () => document.fullscreenElement || document.webkitFullscreenElement || null;
+
     // Unified lock trigger. If already locked by a different event, escalate to
     // a combined "both" lock so we never stack multiple modals (req 21).
     const triggerLock = (reason) => {
@@ -389,7 +398,14 @@ function CompanyMockInterview() {
     };
 
     const handleFullscreenChange = () => {
-      const fs = !!document.fullscreenElement;
+      const fs = !!getFsElement();
+      console.log("[COMPANY MOCK] fullscreenchange", {
+        fullscreen: fs,
+        mockActive: phaseRef.current === "exam",
+        allowExit: allowFullscreenExitRef.current,
+        phase: phaseRef.current,
+        status: serverStateRef.current.status,
+      });
       if (!fs) {
         if (allowFullscreenExitRef.current) return; // intentional exit (submit)
         if (phaseRef.current !== "exam") return;
@@ -429,12 +445,14 @@ function CompanyMockInterview() {
     };
 
     document.addEventListener("fullscreenchange", handleFullscreenChange);
+    document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
     document.addEventListener("visibilitychange", handleVisibilityChange);
     window.addEventListener("blur", handleBlur);
     window.addEventListener("focus", handleFocus);
 
     return () => {
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      document.removeEventListener("webkitfullscreenchange", handleFullscreenChange);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("blur", handleBlur);
       window.removeEventListener("focus", handleFocus);
@@ -606,7 +624,7 @@ function CompanyMockInterview() {
     setLoading(true);
     try {
       await enterFullscreen();
-      if (!document.fullscreenElement) {
+      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
         // Fullscreen request failed — do NOT start the timer or the test.
         setLockReason("fullscreen_required");
         lockReasonRef.current = "fullscreen_required";
@@ -749,12 +767,14 @@ function CompanyMockInterview() {
     const att = attemptRef.current;
     if (!att?._id) return;
 
+    console.log("[COMPANY MOCK] FINAL SUBMIT CLICKED");
     setShowSubmitConfirm(false);
     setSubmitting(true);
     submittingRef.current = true;
     flushSaves();
     exitFullscreen();
     try {
+      console.log("[COMPANY MOCK] submitting", { attemptId: att._id, company: selectedCompany?.name });
       const { data } = await api.post(
         "/api/company-mock/submit",
         { attemptId: att._id, codingLanguages: { selected: selectedLanguage } },
@@ -765,7 +785,10 @@ function CompanyMockInterview() {
       clearInterval(timerRef.current);
     } catch (error) {
       console.error("Submit error:", error);
-      toast.error(error.response?.data?.message || "Failed to submit");
+      toast.error(
+        error.response?.data?.message ||
+          "Unable to submit mock interview. Your progress is saved. Please try again."
+      );
     } finally {
       setSubmitting(false);
       submittingRef.current = false;
@@ -1280,11 +1303,11 @@ function CompanyMockInterview() {
                       To continue the assessment, return to fullscreen mode. If you choose to exit the mock interview, your current progress will remain saved and you can resume this attempt later.
                     </p>
                     <div className="text-left mb-5 p-3 rounded-xl border text-[11px] space-y-1" style={{ borderColor: "var(--border)", color: "var(--text-muted)" }}>
-                      <p>• Your progress is saved automatically.</p>
-                      <p>• The timer is paused while outside the assessment.</p>
-                      <p>• Your current question and section are preserved.</p>
-                      <p>• Your coding drafts are preserved separately for each language.</p>
-                      <p>• This security event has been recorded.</p>
+                      <p>✓ Answers saved</p>
+                      <p>✓ Coding drafts saved</p>
+                      <p>✓ Current question saved</p>
+                      <p>✓ Timer paused</p>
+                      <p>✓ Security event recorded</p>
                     </div>
                     <div className="flex flex-col gap-3">
                       <button
@@ -1465,7 +1488,7 @@ function CompanyMockInterview() {
                     className="flex-1 px-4 py-2.5 rounded-xl font-bold text-white cursor-pointer flex items-center justify-center gap-2"
                     style={{ background: "var(--primary)" }}
                   >
-                    {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Submit"}
+                    {submitting ? (<><Loader2 className="w-4 h-4 animate-spin" /> Submitting...</>) : "Submit Mock Interview"}
                   </button>
                 </div>
               </div>

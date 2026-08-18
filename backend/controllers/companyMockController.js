@@ -905,14 +905,28 @@ export const submitCompanyMock = async (req, res) => {
   try {
     const userId = req.user.id;
     const { attemptId, codingLanguages } = req.body;
+    console.log("[COMPANY MOCK] submit request", { attemptId, userId, status: "start" });
 
     const attempt = await CompanyMockAttempt.findOne({ _id: attemptId, userId });
+    console.log("[COMPANY MOCK] attempt found", { found: !!attempt, status: attempt?.status });
     if (!attempt) {
       return res.status(404).json({ message: "Attempt not found" });
     }
 
     if (["completed", "auto_submitted"].includes(attempt.status)) {
-      return res.status(400).json({ message: "Attempt is already submitted" });
+      // Idempotent: a duplicate final submit must NOT create a second result or
+      // re-run grading. Return the already-computed result so the client can
+      // navigate straight to the result page.
+      return res.json({
+        attemptId: attempt._id,
+        scores: attempt.scores,
+        feedback: attempt.feedback,
+        security: {
+          tabSwitchCount: attempt.security.tabSwitchCount,
+          fullscreenExitCount: attempt.security.fullscreenExitCount,
+        },
+        alreadySubmitted: true,
+      });
     }
 
     // Sync coding answers from saved drafts before grading
@@ -1126,19 +1140,34 @@ export const submitCompanyMock = async (req, res) => {
 
     await attempt.save();
 
-    // Persist aptitude as PracticeAttempt for analytics
+    // Persist aptitude as PracticeAttempt for analytics.
+    // Map the Company Mock answer format -> PracticeAttempt questionSnapshot
+    // schema, which REQUIRES `question`, `correctAnswer` and `options` (and
+    // benefits from the other snapshot fields). Pull the full question from the
+    // in-memory bank so the persisted snapshot is complete and valid.
     if (attempt.aptitudeAnswers.length > 0) {
+      const practiceQuestions = attempt.aptitudeAnswers.map((a) => {
+        const q = bankMap.get(a.questionId);
+        return {
+          questionId: a.questionId,
+          category: q?.category || "General",
+          question: q?.question || "",
+          options: q?.options || [],
+          correctAnswer: q ? String(q.correctAnswer) : "",
+          difficulty: q?.difficulty || "easy",
+          explanation: q?.explanation || "",
+          marks: q?.marks || 1,
+          userAnswer: a.selectedOption ?? null,
+          isCorrect: !!a.isCorrect,
+        };
+      });
       await PracticeAttempt.create({
         userId,
         companyId: attempt.companyId,
         companyName: attempt.companyName,
         questionCount: attempt.aptitudeAnswers.length,
         difficulty: "mixed",
-        questions: attempt.aptitudeAnswers.map((a) => ({
-          questionId: a.questionId,
-          userAnswer: a.selectedOption,
-          isCorrect: a.isCorrect,
-        })),
+        questions: practiceQuestions,
         score: aptitudeCorrect,
         correct: aptitudeCorrect,
         wrong: aptitudeWrong,
@@ -1176,6 +1205,8 @@ export const submitCompanyMock = async (req, res) => {
     };
 
     await attempt.save();
+
+    console.log("[COMPANY MOCK] submit success", { attemptId: attempt._id, score: attempt.scores.overall, status: attempt.status });
 
     res.json({
       attemptId: attempt._id,

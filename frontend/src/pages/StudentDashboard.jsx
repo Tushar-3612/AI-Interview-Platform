@@ -512,95 +512,95 @@ function StudentDashboard() {
         </section>
 
         {/* ── COMPANY MOCK INTERVIEWS ── */}
-        {companyMock && (
-          <section className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>
-                  Company Mock Interviews
-                </h2>
-                <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>
-                  Your company-specific mock interview performance
+        {/* Always rendered: shows real CompanyMockAttempt data, or 0 / — when
+            the student has not completed any mock yet (never fake data). */}
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>
+                Company Mock Interviews
+              </h2>
+              <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>
+                Your company-specific mock interview performance
+              </p>
+            </div>
+            <button
+              onClick={() => navigate("/company-mock/history")}
+              className="text-xs font-bold flex items-center gap-1 cursor-pointer hover:underline"
+              style={{ color: "#8B5CF6" }}
+            >
+              View Mock Results <ArrowUpRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+            {[
+              { label: "Completed", value: companyMock?.completed ?? 0, color: "#8B5CF6" },
+              { label: "Best Score", value: companyMock?.bestScore != null ? `${companyMock.bestScore}%` : "—", color: "#10B981" },
+              { label: "Latest Score", value: companyMock?.latestScore != null ? `${companyMock.latestScore}%` : "—", color: "#FF6B35" },
+              { label: "Problems", value: companyMock?.questionsSolved ?? 0, color: "#38BDF8" },
+              { label: "Coding Solved", value: companyMock?.codingProblemsSolved ?? 0, color: "#EC4899" },
+              { label: "Latest Company", value: companyMock?.latestCompany || "—", color: "#F59E0B" },
+            ].map((s) => (
+              <div
+                key={s.label}
+                className="bg-[var(--card-bg)] border border-[var(--border)] rounded-[24px] p-5 shadow-[var(--shadow-sm)] flex flex-col justify-between"
+              >
+                <p className="text-xs font-semibold truncate" style={{ color: "var(--text-secondary)" }}>
+                  {s.label}
+                </p>
+                <p className="text-xl font-black mt-1 tracking-tight truncate" style={{ color: "var(--text-primary)" }}>
+                  {s.value}
                 </p>
               </div>
-              <button
-                onClick={() => navigate("/company-mock/history")}
-                className="text-xs font-bold flex items-center gap-1 cursor-pointer hover:underline"
-                style={{ color: "#8B5CF6" }}
-              >
-                View Mock Results <ArrowUpRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
+            ))}
+          </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-              {[
-                { label: "Completed", value: companyMock.completed, color: "#8B5CF6" },
-                { label: "Best Score", value: companyMock.bestScore != null ? `${companyMock.bestScore}%` : "--", color: "#10B981" },
-                { label: "Latest Score", value: companyMock.latestScore != null ? `${companyMock.latestScore}%` : "--", color: "#FF6B35" },
-                { label: "Questions Solved", value: companyMock.questionsSolved, color: "#38BDF8" },
-                { label: "Coding Solved", value: companyMock.codingProblemsSolved, color: "#EC4899" },
-                { label: "Latest Company", value: companyMock.latestCompany || "--", color: "#F59E0B" },
-              ].map((s) => (
-                <div
-                  key={s.label}
-                  className="bg-[var(--card-bg)] border border-[var(--border)] rounded-[24px] p-5 shadow-[var(--shadow-sm)] flex flex-col justify-between"
-                >
-                  <p className="text-xs font-semibold truncate" style={{ color: "var(--text-secondary)" }}>
-                    {s.label}
-                  </p>
-                  <p className="text-xl font-black mt-1 tracking-tight truncate" style={{ color: "var(--text-primary)" }}>
-                    {s.value}
-                  </p>
-                </div>
-              ))}
-            </div>
-
-            {companyMock.recent?.length > 0 && (
-              <div className="bg-[var(--card-bg)] border border-[var(--border)] rounded-[24px] p-6 shadow-[var(--shadow-card)]">
-                <h3 className="text-sm font-bold mb-4" style={{ color: "var(--text-primary)" }}>
-                  Recent Mock Interviews
-                </h3>
-                <div className="space-y-3">
-                  {companyMock.recent.map((m) => (
-                    <button
-                      key={m.attemptId}
-                      onClick={() => navigate(`/company-mock?result=${m.attemptId}`)}
-                      className="w-full flex items-center justify-between p-4 rounded-2xl border text-left cursor-pointer transition-colors hover:bg-[var(--bg-primary)]"
-                      style={{ borderColor: "var(--border)" }}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div
-                          className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-white text-sm shrink-0"
-                          style={{ background: "#8B5CF6" }}
-                        >
-                          {(m.companyName || "M")[0]}
-                        </div>
-                        <div>
-                          <p className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>
-                            {m.companyName}
-                          </p>
-                          <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
-                            {new Date(m.createdAt).toLocaleDateString("en-US", {
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
-                            })}
-                          </p>
-                        </div>
+          {companyMock?.recent?.length > 0 && (
+            <div className="bg-[var(--card-bg)] border border-[var(--border)] rounded-[24px] p-6 shadow-[var(--shadow-card)]">
+              <h3 className="text-sm font-bold mb-4" style={{ color: "var(--text-primary)" }}>
+                Recent Mock Interviews
+              </h3>
+              <div className="space-y-3">
+                {companyMock.recent.map((m) => (
+                  <button
+                    key={m.attemptId}
+                    onClick={() => navigate(`/company-mock?result=${m.attemptId}`)}
+                    className="w-full flex items-center justify-between p-4 rounded-2xl border text-left cursor-pointer transition-colors hover:bg-[var(--bg-primary)]"
+                    style={{ borderColor: "var(--border)" }}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-white text-sm shrink-0"
+                        style={{ background: "#8B5CF6" }}
+                      >
+                        {(m.companyName || "M")[0]}
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg font-black" style={{ color: getScoreColor(m.overallScore) }}>
-                          {m.overallScore}%
-                        </span>
-                        <ArrowUpRight className="w-4 h-4" style={{ color: "var(--text-muted)" }} />
+                      <div>
+                        <p className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>
+                          {m.companyName}
+                        </p>
+                        <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
+                          {new Date(m.createdAt).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })}
+                        </p>
                       </div>
-                    </button>
-                  ))}
-                </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg font-black" style={{ color: getScoreColor(m.overallScore) }}>
+                        {m.overallScore}%
+                      </span>
+                      <ArrowUpRight className="w-4 h-4" style={{ color: "var(--text-muted)" }} />
+                    </div>
+                  </button>
+                ))}
               </div>
-            )}
-          </section>
-        )}
+            </div>
+          )}
+        </section>
 
         {loading ? (
           <SkeletonStudentDashboard />
