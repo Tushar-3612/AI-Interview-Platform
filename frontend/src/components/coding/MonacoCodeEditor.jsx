@@ -215,17 +215,8 @@ function MonacoCodeEditor({
         // Disable lightbulb
         lightbulb: { enabled: false },
       });
-
-
-      // React to content changes so the parent stays in sync
-      editor.onDidChangeModelContent((e) => {
-        const val = editor.getValue();
-        if (val !== code) {
-          onChange && onChange(val);
-        }
-      });
     },
-    [onEditorReady, wordWrap, readOnly, split, setEditorMarkers, applyDebugDecoration, onChange, code, showMinimap, theme]
+    [onEditorReady, wordWrap, readOnly, split, setEditorMarkers, applyDebugDecoration, showMinimap, theme]
   );
 
   useEffect(() => {

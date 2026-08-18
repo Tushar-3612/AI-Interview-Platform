@@ -42,11 +42,14 @@ import TestResult from "../pages/student/TestResult";
 import PlacementDashboard from "../pages/student/PlacementDashboard";
 import Leaderboard from "../pages/student/Leaderboard";
 import MockOA from "../pages/student/MockOA";
+import CompanyMockInterview from "../pages/student/CompanyMockInterview";
+import CompanyMockHistory from "../pages/student/CompanyMockHistory";
 import CompanyAnalytics from "../pages/student/CompanyAnalytics";
 import PerformanceGraphs from "../pages/student/PerformanceGraphs";
 import QuestionAnalytics from "../pages/student/QuestionAnalytics";
 import Achievements from "../pages/student/Achievements";
 import AdminPlacementAnalytics from "../pages/admin/PlacementAnalytics";
+import AdminTechnicalManagement from "../pages/admin/AdminTechnicalManagement";
 
 function AppRoutes() {
   return (
@@ -78,6 +81,8 @@ function AppRoutes() {
         <Route path="/placement-dashboard" element={<PlacementDashboard />} />
         <Route path="/placement/leaderboard" element={<Leaderboard />} />
         <Route path="/placement/mock-oa" element={<MockOA />} />
+        <Route path="/company-mock" element={<CompanyMockInterview />} />
+        <Route path="/company-mock/history" element={<CompanyMockHistory />} />
         <Route path="/placement/company-analytics" element={<CompanyAnalytics />} />
         <Route path="/placement/performance" element={<PerformanceGraphs />} />
         <Route path="/placement/question-analytics" element={<QuestionAnalytics />} />
@@ -100,6 +105,7 @@ function AppRoutes() {
         <Route path="/admin/config" element={<SystemConfig />} />
         <Route path="/admin/backup" element={<BackupDashboard />} />
         <Route path="/admin/placement-analytics" element={<AdminPlacementAnalytics />} />
+        <Route path="/admin/technical-questions" element={<AdminTechnicalManagement />} />
       </Route>
     </Routes>
   );

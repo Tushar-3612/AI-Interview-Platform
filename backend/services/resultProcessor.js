@@ -114,7 +114,7 @@ function normalizeOutput(value) {
  * Execute a coding question's code against its test cases.
  * Returns { passedCount, totalCount, results, status, executionTime }
  */
-async function evaluateCodingQuestion(code, language, testCases, timeLimit = 2000) {
+export async function evaluateCodingQuestion(code, language, testCases, timeLimit = 2000) {
   if (!code || !language || !testCases || testCases.length === 0) {
     return { passedCount: 0, totalCount: testCases?.length || 0, results: [], status: "skipped", executionTime: 0 };
   }

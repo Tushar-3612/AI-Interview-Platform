@@ -19,6 +19,7 @@ const NAV_LINKS = [
   { label: "Home", path: "/dashboard" },
   { label: "My Tests", path: "/tests" },
   { label: "Interview Practice", path: "/interview-practice" },
+  { label: "Mock Interview", path: "/company-mock" },
   { label: "Placement", path: "/placement-dashboard" },
   { label: "About", path: "/about" },
   { label: "Contact", path: "/contact" },
@@ -68,6 +69,7 @@ function Navbar({ onStartInterview }) {
 
   return (
     <header
+      id="student-navbar"
       className="sticky top-0 z-50 transition-all duration-300 select-none"
       style={{
         height: "76px",
@@ -102,7 +104,8 @@ function Navbar({ onStartInterview }) {
           {NAV_LINKS.map((link) => {
             const active =
               location.pathname === link.path ||
-              (link.path === "/dashboard" && location.pathname === "/");
+              (link.path === "/dashboard" && location.pathname === "/") ||
+              (link.path === "/company-mock" && location.pathname.startsWith("/company-mock"));
             return (
               <Link
                 key={link.path}
@@ -385,7 +388,8 @@ function Navbar({ onStartInterview }) {
           >
             <nav className="px-6 py-4 space-y-1">
               {NAV_LINKS.map((link) => {
-                const active = location.pathname === link.path;
+                const active = location.pathname === link.path ||
+                  (link.path === "/company-mock" && location.pathname.startsWith("/company-mock"));
                 return (
                   <Link
                     key={link.path}

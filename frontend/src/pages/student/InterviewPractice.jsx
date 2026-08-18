@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import { 
-  Building2, Search, ArrowRight, BookOpen, Code2, Heart, History, Clock, X
+  Building2, Search, ArrowRight, BookOpen, Code2, Heart, History, Clock, X, BrainCircuit
 } from "lucide-react";
 import api from "../../utils/api";
 import { getAuthToken } from "../../hooks/useStudentProfile";
@@ -182,6 +182,34 @@ function InterviewPractice() {
         <p className="text-sm mb-6" style={{ color: "var(--text-secondary)" }}>
           Select a company to begin your placement preparation assessments
         </p>
+
+        {/* Company Mock Interview CTA */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="p-5 mb-8 rounded-[14px] border flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+          style={{ background: "var(--card-bg)", borderColor: "rgba(139, 92, 246, 0.35)", boxShadow: "var(--shadow-card)" }}
+        >
+          <div className="flex items-start gap-4">
+            <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{ background: "rgba(139, 92, 246, 0.12)" }}>
+              <BrainCircuit className="w-5 h-5" style={{ color: "#8B5CF6" }} />
+            </div>
+            <div>
+              <h2 className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>Company Mock Interview</h2>
+              <p className="text-xs mt-1 max-w-xl" style={{ color: "var(--text-secondary)" }}>
+                Full company-style mock: Aptitude, Technical, and Coding sections with curated questions, security monitoring, and scored results.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => navigate("/company-mock")}
+            className="shrink-0 flex items-center gap-1.5 text-xs font-bold px-4 py-2.5 rounded-[10px] text-white cursor-pointer transition hover:opacity-90"
+            style={{ background: "#8B5CF6", boxShadow: "0 4px 14px rgba(139, 92, 246, 0.3)" }}
+          >
+            Start Mock Interview <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </motion.div>
 
         {/* Recent Activity bar */}
         {hasActivity && !loading && (

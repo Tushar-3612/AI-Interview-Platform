@@ -59,6 +59,7 @@ function AdminLayout() {
     { label: "Companies", icon: Building2, path: "/admin/companies" },
     { label: "Aptitude Questions", icon: BrainCircuit, path: "/admin/aptitude-questions" },
     { label: "Coding Questions", icon: Code2, path: "/admin/coding-questions" },
+    { label: "Technical Questions", icon: BrainCircuit, path: "/admin/technical-questions" },
     { label: "Email", icon: Mail, path: "/admin/email" },
     { label: "Notifications", icon: Bell, path: "/admin/notifications" },
     { label: "Audit Logs", icon: Activity, path: "/admin/audit-logs" },

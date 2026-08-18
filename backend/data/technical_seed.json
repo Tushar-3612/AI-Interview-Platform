@@ -1,0 +1,172 @@
+[
+  {
+    "topic": "Programming & OOP",
+    "subtopic": "Inheritance",
+    "difficulty": "Easy",
+    "questionType": "Conceptual",
+    "question": "What is the difference between method overloading and method overriding in OOP?",
+    "expectedAnswer": "Method overloading is compile-time polymorphism where multiple methods share the same name but differ in parameters within the same class. Method overriding is runtime polymorphism where a subclass provides a specific implementation of a method already defined in its parent class, with the same signature.",
+    "explanation": "Overloading = same name, different params, same class. Overriding = same signature, subclass redefines parent behavior.",
+    "marks": 1
+  },
+  {
+    "topic": "Programming & OOP",
+    "subtopic": "Abstraction",
+    "difficulty": "Easy",
+    "questionType": "Conceptual",
+    "question": "Explain abstraction and encapsulation with a simple example.",
+    "expectedAnswer": "Abstraction hides implementation details and shows only essentials (e.g., a car's steering wheel hides the mechanics). Encapsulation bundles data and methods and restricts access via access modifiers (e.g., private fields with public getters/setters).",
+    "explanation": "Abstraction = what to show; Encapsulation = how to protect/hide data.",
+    "marks": 1
+  },
+  {
+    "topic": "Data Structures & Algorithms",
+    "subtopic": "Arrays",
+    "difficulty": "Easy",
+    "questionType": "Code-tracing",
+    "question": "What is the time complexity of searching an element in an unsorted array of size n?",
+    "expectedAnswer": "O(n) in the worst case, because each element may need to be examined sequentially.",
+    "explanation": "Linear search over an unsorted array requires scanning all n elements.",
+    "marks": 1
+  },
+  {
+    "topic": "Data Structures & Algorithms",
+    "subtopic": "Trees",
+    "difficulty": "Medium",
+    "questionType": "Conceptual",
+    "question": "What is the difference between a binary tree and a binary search tree (BST)?",
+    "expectedAnswer": "A binary tree is any tree where each node has at most two children. A BST is an ordered binary tree where the left subtree contains only nodes with values less than the parent and the right subtree contains only nodes with values greater, enabling O(log n) search on average.",
+    "explanation": "BST imposes ordering (left < root < right); a plain binary tree does not.",
+    "marks": 1
+  },
+  {
+    "topic": "Data Structures & Algorithms",
+    "subtopic": "Sorting",
+    "difficulty": "Medium",
+    "questionType": "Scenario",
+    "question": "Which sorting algorithm would you choose for a nearly sorted array and why?",
+    "expectedAnswer": "Insertion sort is efficient for nearly sorted arrays with O(n) best-case time. Alternatively, Timsort (used in Python/Java) is optimized for partially sorted data.",
+    "explanation": "Nearly sorted data minimizes swaps; adaptive algorithms like insertion sort or Timsort excel.",
+    "marks": 1
+  },
+  {
+    "topic": "DBMS & SQL",
+    "subtopic": "Joins",
+    "difficulty": "Medium",
+    "questionType": "Scenario",
+    "question": "Explain the difference between INNER JOIN and LEFT JOIN with an example use case.",
+    "expectedAnswer": "INNER JOIN returns only rows with matching keys in both tables. LEFT JOIN returns all rows from the left table and matched rows from the right; unmatched right columns are NULL. Use LEFT JOIN to list all customers even if they have no orders.",
+    "explanation": "INNER = intersection; LEFT = all left + matches (NULLs for missing).",
+    "marks": 1
+  },
+  {
+    "topic": "DBMS & SQL",
+    "subtopic": "Normalization",
+    "difficulty": "Medium",
+    "questionType": "Conceptual",
+    "question": "What is normalization and why is it used in databases?",
+    "expectedAnswer": "Normalization organizes tables to minimize redundancy and avoid update anomalies by dividing large tables into smaller related ones using keys. It improves data integrity and reduces duplication.",
+    "explanation": "Goal: reduce redundancy and dependency-related anomalies via normal forms.",
+    "marks": 1
+  },
+  {
+    "topic": "Operating Systems",
+    "subtopic": "Process vs Thread",
+    "difficulty": "Easy",
+    "questionType": "Conceptual",
+    "question": "Differentiate between a process and a thread.",
+    "expectedAnswer": "A process is an independent executing program with its own memory space. A thread is the smallest unit of execution within a process and shares the process memory; multiple threads can run concurrently in one process.",
+    "explanation": "Process = isolated unit; Thread = lightweight, shares process address space.",
+    "marks": 1
+  },
+  {
+    "topic": "Operating Systems",
+    "subtopic": "Deadlock",
+    "difficulty": "Hard",
+    "questionType": "Conceptual",
+    "question": "What are the four necessary conditions for a deadlock to occur?",
+    "expectedAnswer": "Mutual exclusion, hold and wait, no preemption, and circular wait. All four must hold simultaneously for a deadlock.",
+    "explanation": "Coffman conditions: mutual exclusion, hold-and-wait, no preemption, circular wait.",
+    "marks": 1
+  },
+  {
+    "topic": "Computer Networks",
+    "subtopic": "OSI Model",
+    "difficulty": "Medium",
+    "questionType": "Conceptual",
+    "question": "Name the seven layers of the OSI model in order.",
+    "expectedAnswer": "Physical, Data Link, Network, Transport, Session, Presentation, Application.",
+    "explanation": "Bottom-up: Physical, Data Link, Network, Transport, Session, Presentation, Application.",
+    "marks": 1
+  },
+  {
+    "topic": "Computer Networks",
+    "subtopic": "TCP vs UDP",
+    "difficulty": "Medium",
+    "questionType": "Scenario",
+    "question": "When would you prefer UDP over TCP?",
+    "expectedAnswer": "UDP is preferred for latency-sensitive, loss-tolerant traffic such as video streaming, VoIP, and gaming, where speed matters more than guaranteed delivery. TCP is used when reliability and ordered delivery are required.",
+    "explanation": "UDP = fast, connectionless, no guarantee; TCP = reliable, ordered, slower.",
+    "marks": 1
+  },
+  {
+    "topic": "Software Engineering",
+    "subtopic": "SDLC",
+    "difficulty": "Easy",
+    "questionType": "Conceptual",
+    "question": "What is the difference between waterfall and agile development models?",
+    "expectedAnswer": "Waterfall is a linear, sequential model with distinct phases and little flexibility for change. Agile is iterative and incremental, delivering small working slices with continuous feedback and adaptability.",
+    "explanation": "Waterfall = rigid phases; Agile = iterative, adaptive, customer-focused.",
+    "marks": 1
+  },
+  {
+    "topic": "Web Development",
+    "subtopic": "HTTP",
+    "difficulty": "Easy",
+    "questionType": "Conceptual",
+    "question": "What is the difference between HTTP GET and POST methods?",
+    "expectedAnswer": "GET sends data in the URL and is used for retrieving data (idempotent, cacheable). POST sends data in the request body and is used for creating/submitting data (not cached, not idempotent).",
+    "explanation": "GET = read/params in URL; POST = write/params in body.",
+    "marks": 1
+  },
+  {
+    "topic": "Cloud Computing",
+    "subtopic": "Services",
+    "difficulty": "Medium",
+    "questionType": "Conceptual",
+    "question": "Differentiate between IaaS, PaaS, and SaaS.",
+    "expectedAnswer": "IaaS provides virtualized compute/storage/network (e.g., AWS EC2). PaaS provides a platform to build/deploy apps without managing infra (e.g., Heroku). SaaS delivers ready-to-use software over the internet (e.g., Gmail).",
+    "explanation": "IaaS=infra, PaaS=platform, SaaS=software — increasing abstraction.",
+    "marks": 1
+  },
+  {
+    "topic": "Cyber Security",
+    "subtopic": "Attacks",
+    "difficulty": "Medium",
+    "questionType": "Conceptual",
+    "question": "What is SQL injection and how can it be prevented?",
+    "expectedAnswer": "SQL injection is an attack where malicious SQL is inserted into a query via unsanitized input. Prevent it using parameterized queries/prepared statements, input validation, ORMs, and least-privilege DB accounts.",
+    "explanation": "Cause: string-concatenated queries. Fix: parameterized statements + validation.",
+    "marks": 1
+  },
+  {
+    "topic": "Git & Version Control",
+    "subtopic": "Basics",
+    "difficulty": "Easy",
+    "questionType": "Conceptual",
+    "question": "Explain the difference between git merge and git rebase.",
+    "expectedAnswer": "git merge creates a new commit combining histories, preserving the branch structure. git rebase rewrites commits onto the target branch, producing a linear history but altering commit hashes.",
+    "explanation": "Merge = non-destructive join; Rebase = linear rewrite (avoid on shared branches).",
+    "marks": 1
+  },
+  {
+    "topic": "Company-specific Technologies",
+    "subtopic": "Best Practices",
+    "difficulty": "Hard",
+    "questionType": "Project",
+    "question": "Describe how you would design a scalable REST API for a high-traffic application.",
+    "expectedAnswer": "Use stateless services behind a load balancer, cache with Redis/CDN, paginate responses, implement rate limiting and auth (JWT/OAuth), index databases, use async queues for heavy work, and monitor with logging/metrics.",
+    "explanation": "Key themes: statelessness, caching, pagination, indexing, async processing, observability.",
+    "marks": 1
+  }
+]

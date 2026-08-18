@@ -3,8 +3,10 @@ import path from "path";
 import { fileURLToPath } from "url";
 import Company from "../models/Company.js";
 import AptitudeQuestion from "../models/AptitudeQuestion.js";
+import TechnicalQuestion from "../models/TechnicalQuestion.js";
 import { loadAptitudeBank, getBank, upsertBankQuestion } from "../services/questionBank.js";
 import { syncCodingQuestionsFromJson } from "../services/codingQuestionBank.js";
+import { TECHNICAL_QUESTIONS, ALL_COMPANIES } from "../data/technicalBank.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -91,6 +93,90 @@ export async function seedCodingQuestionsFromJson() {
   return result.inserted;
 }
 
+/**
+ * Seed the curated local technical MCQ bank (backend/data/technicalBank.mjs)
+ * into MongoDB. This is the single source of truth for Company Mock Interview
+ * technical questions. Each question is eligible for every company listed in
+ * its `companyIds` (broad CS fundamentals are associated with all companies).
+ *
+ * Legacy per-company free-text seed questions (TECH-<COMPANY>-NNN) are purged
+ * first so they are never shown in the MCQ technical section.
+ */
+export async function seedTechnicalQuestions() {
+  if (!Array.isArray(TECHNICAL_QUESTIONS) || TECHNICAL_QUESTIONS.length === 0) return 0;
+
+  // Purge legacy non-MCQ technical seed questions (generated per company from
+  // the old technical_seed.json which had no options/correctAnswer).
+  const legacyResult = await TechnicalQuestion.deleteMany({
+    questionId: { $regex: /^TECH-[A-Z]+-\d{3}$/ },
+  });
+  if (legacyResult.deletedCount > 0) {
+    console.log(`🧹 Purged ${legacyResult.deletedCount} legacy free-text technical questions`);
+  }
+
+  const companies = await Company.find({ status: "active", isDeleted: false }).lean();
+  const activeCompanyIds = (companies || []).map((c) => String(c.id).toLowerCase());
+
+  let inserted = 0;
+  let updated = 0;
+
+  for (const q of TECHNICAL_QUESTIONS) {
+    const questionId = String(q.questionId);
+    if (!questionId) continue;
+
+    // companyIds: use the bank's mapping if present, else all active companies.
+    let companyIds = Array.isArray(q.companyIds) && q.companyIds.length
+      ? q.companyIds.map((c) => String(c).toLowerCase())
+      : (activeCompanyIds.length ? activeCompanyIds : ALL_COMPANIES.map((c) => String(c).toLowerCase()));
+
+    const options = Array.isArray(q.options) ? q.options.map(String) : [];
+    const correctAnswer = String(q.correctAnswer ?? "").trim();
+
+    const doc = {
+      questionId,
+      companyId: "all",
+      companyIds,
+      companyName: "All Companies",
+      topic: q.topic || "Other",
+      subtopic: q.subtopic || "",
+      difficulty: q.difficulty || "Medium",
+      questionType: q.questionType || "Conceptual",
+      question: q.question,
+      options,
+      correctAnswer,
+      expectedAnswer: correctAnswer,
+      explanation: q.explanation || "",
+      marks: q.marks || 1,
+      isActive: true,
+      isDeleted: false,
+    };
+
+    const existing = await TechnicalQuestion.findOne({ questionId });
+    if (!existing) {
+      await TechnicalQuestion.create(doc);
+      inserted++;
+    } else if (!existing.isDeleted) {
+      let changed = false;
+      for (const key of ["question", "options", "correctAnswer", "topic", "difficulty", "companyIds", "explanation", "subtopic"]) {
+        if (JSON.stringify(existing[key]) !== JSON.stringify(doc[key])) {
+          changed = true;
+          break;
+        }
+      }
+      if (changed) {
+        existing.set(doc);
+        await existing.save();
+        updated++;
+      }
+    }
+  }
+
+  if (inserted + updated > 0) {
+    console.log(`🧩 Technical MCQ bank seeded: ${inserted} inserted, ${updated} updated (source: technicalBank.mjs)`);
+  }
+  return inserted;
+}
+
 export async function syncAptitudeQuestionToBank(doc) {
   upsertBankQuestion({
     questionId: doc.questionId,
@@ -113,4 +199,5 @@ export async function runSeeds() {
   await purgeLegacyAptitudeRows();
   await seedAptitudeQuestionsFromBank();
   await seedCodingQuestionsFromJson();
+  await seedTechnicalQuestions();
 }

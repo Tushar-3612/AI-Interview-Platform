@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import Interview from "../models/Interview.js";
 import CodingSubmission from "../models/CodingSubmission.js";
 import PracticeAttempt from "../models/PracticeAttempt.js";
+import CompanyMockAttempt from "../models/CompanyMockAttempt.js";
 import MockOAAttempt from "../models/MockOAAttempt.js";
 import Result from "../models/Result.js";
 import User from "../models/User.js";
@@ -86,15 +87,16 @@ export const getDashboardStats = async (req, res) => {
       resultAgg,
       activityAgg,
       companies,
+      companyMockAttempts,
     ] = await Promise.all([
       // 1. Actual interviews completed (interviewType = "actual" or "real" for backward compatibility)
       Interview.countDocuments({ userId: oid, interviewType: { $in: ["actual", "real"] }, status: "completed" }),
 
-      // 2. Mock interviews completed (interviewType = "mock" or "practice" for backward compatibility)
-      Interview.countDocuments({ userId: oid, interviewType: { $in: ["mock", "practice"] }, status: "completed" }),
+      // 2. Company mock interviews completed
+      CompanyMockAttempt.countDocuments({ userId: oid, status: { $in: ["completed", "auto_submitted"] } }),
 
-      // 3. Mock interviews in progress (interviewType = "mock" or "practice" for backward compatibility)
-      Interview.countDocuments({ userId: oid, interviewType: { $in: ["mock", "practice"] }, status: "in_progress" }),
+      // 3. Company mock interviews in progress
+      CompanyMockAttempt.countDocuments({ userId: oid, status: "in_progress" }),
 
       // 4. Coding problems solved (unique questionIds with accepted status)
       CodingSubmission.distinct("questionId", { userId: oid, status: "accepted" }).then((ids) => ids.length),
@@ -138,6 +140,12 @@ export const getDashboardStats = async (req, res) => {
 
       // 8. Companies for target company selection
       Company.find({ status: "active", isDeleted: false }).select("id name").lean(),
+
+      // 9. Company Mock Interview attempts (completed) for dashboard statistics
+      CompanyMockAttempt.find({ userId: oid, status: { $in: ["completed", "auto_submitted"] } })
+        .select("companyName scores.overall scores.aptitude.total scores.technical.total scores.coding.accepted scores.coding.total createdAt")
+        .sort({ createdAt: -1 })
+        .lean(),
     ]);
 
     // 5. Compute current streak
@@ -177,6 +185,43 @@ export const getDashboardStats = async (req, res) => {
     const userRankIndex = rows.findIndex((r) => r.userId === String(userId));
     const rank = userRankIndex >= 0 ? userRankIndex + 1 : null;
 
+    // Company Mock Interview dashboard statistics.
+    let companyMock = null;
+    if (companyMockAttempts && companyMockAttempts.length > 0) {
+      const overallScores = companyMockAttempts.map((a) => a.scores?.overall ?? 0);
+      const bestScore = Math.max(...overallScores);
+      const latestScore = overallScores[0];
+      const latestCompany = companyMockAttempts[0].companyName;
+      const questionsSolved = companyMockAttempts.reduce(
+        (sum, a) =>
+          sum +
+          (a.scores?.aptitude?.total || 0) +
+          (a.scores?.technical?.total || 0) +
+          (a.scores?.coding?.total || 0),
+        0
+      );
+      const codingProblemsSolved = companyMockAttempts.reduce(
+        (sum, a) => sum + (a.scores?.coding?.accepted || 0),
+        0
+      );
+      const recent = companyMockAttempts.slice(0, 5).map((a) => ({
+        companyName: a.companyName,
+        companyId: a.companyId,
+        overallScore: a.scores?.overall ?? 0,
+        createdAt: a.createdAt,
+        attemptId: a._id,
+      }));
+      companyMock = {
+        completed: companyMockAttempts.length,
+        bestScore,
+        latestScore,
+        latestCompany,
+        questionsSolved,
+        codingProblemsSolved,
+        recent,
+      };
+    }
+
     res.json({
       interviewsCompleted: actualInterviewsCompleted,
       mockInterviewsCompleted,
@@ -186,6 +231,7 @@ export const getDashboardStats = async (req, res) => {
       rank,
       targetCompany: user?.targetCompany || "",
       companies: companies.map((c) => ({ id: c.id, name: c.name })),
+      companyMock,
     });
   } catch (error) {
     console.error("Dashboard Stats Error:", error.message);

@@ -130,6 +130,14 @@ export const runCode = async (req, res) => {
       ? await executeSingle(langId, code, [], { timeLimitMs: 1000, stdin: String(input ?? "") })
       : await executeSingle(langId, code, parseTestArgs(input, code), { timeLimitMs: 1000 });
 
+    // Sanitized execution log (PART 19): never logs source code, stdout payload,
+    // secrets, tokens or headers — only metadata useful for diagnostics.
+    const logTail = (s) => (s ? String(s).replace(/\s+/g, " ").slice(0, 200) : "");
+    console.log(
+      `[Code Run] lang=${langId} status=${result.type} exit=${result.code} timeMs=${result.timeMs}` +
+        (result.type !== "success" ? ` stderr="${logTail(result.output)}"` : "")
+    );
+
     if (result.type !== "success") return res.json({ type: "error", output: String(result.output || ""), timeMs: result.timeMs, errorType: result.type });
     res.json({ type: "success", output: String(result.output ?? "").trim(), timeMs: result.timeMs });
   } catch (error) {

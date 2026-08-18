@@ -31,6 +31,17 @@ export function shuffleArray(arr) {
   return result;
 }
 
+export function cleanPaperQuestion(q) {
+  return {
+    questionId: q.questionId,
+    category: q.category,
+    question: q.question,
+    options: q.options,
+    difficulty: q.difficulty,
+    marks: q.marks,
+  };
+}
+
 function resolveAptitudeDir() {
   for (const candidate of APTITUDE_DIR_CANDIDATES) {
     if (fs.existsSync(candidate)) return candidate;
