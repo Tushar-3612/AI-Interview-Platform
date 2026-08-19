@@ -1,0 +1,6 @@
+To: amollende02@gmail.com
+Subject: Password Reset OTP - AI Interview Platform
+
+Body:
+Your password reset OTP is 335080. It is valid for 10 minutes.
+
