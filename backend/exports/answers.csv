@@ -262,3 +262,13 @@ Overall, my goal is to become a Full Stack Software Engineer who can design inte
 6a85fc3e94df39d2f3c13232,6a85fc2b94df39d2f3c13060,6a566f322f681d770359254e,APT-02,aptitude,What does 'spill the beans' mean?,Reveal confidential information,85,Response recorded successfully.,2026-08-19T18:55:58.052Z
 6a85fc4294df39d2f3c132a8,6a85fc2b94df39d2f3c13060,6a566f322f681d770359254e,APT-03,aptitude,"In a group of 100 people, 75 like tea and 60 like coffee. What is the minimum number of people who like both?",35,85,Response recorded successfully.,2026-08-19T18:56:02.258Z
 6a85fc4894df39d2f3c1346c,6a85fc2b94df39d2f3c13060,6a566f322f681d770359254e,APT-04,aptitude,200 mL of 30% acid is mixed with 300 mL of 20% acid. What is the concentration of the mixture?,26%,85,Response recorded successfully.,2026-08-19T18:56:08.819Z
+6a85ff2be565a8e5436ed4d0,6a85fedae565a8e5436ed4b6,6a566fbc2f681d770359254f,APT-01,aptitude,"A man walks 3 km north, 4 km east, then 3 km south. How far is he from the start?",5 km,85,Response recorded successfully.,2026-08-19T19:08:27.350Z
+6a85ff2fe565a8e5436ed4df,6a85fedae565a8e5436ed4b6,6a566fbc2f681d770359254f,APT-02,aptitude,"If A = 1, B = 2 ... Z = 26, then what is the value of CAT?",24,85,Response recorded successfully.,2026-08-19T19:08:31.933Z
+6a85ff32e565a8e5436ed4ee,6a85fedae565a8e5436ed4b6,6a566fbc2f681d770359254f,APT-03,aptitude,The sum of the ages of a father and son is 40 and their ages are in the ratio 3 : 1. What is the father's age?,35 years,85,Response recorded successfully.,2026-08-19T19:08:34.967Z
+6a85ff3fe565a8e5436ed50b,6a85fedae565a8e5436ed4b6,6a566fbc2f681d770359254f,CODE-01,coding,"Given an array `arr` and a target sum `k`, write a function `longestSubarray(arr, k)` that returns the length of the longest subarray whose elements sum up to `k`.","function longestSubarray(arr, k) {
+  // Write your code here
+  
+}",85,Response recorded successfully.,2026-08-19T19:08:47.571Z
+6a85ff5f829ee39d4399cf2b,6a85ff53829ee39d4399cf1d,6a566f322f681d770359254e,APT-01,aptitude,"Students in five classes: A 60, B 75, C 90, D 55, E 80. What percentage of all students are in class C?",22.5%,85,Response recorded successfully.,2026-08-19T19:09:19.511Z
+6a85ff64829ee39d4399cf36,6a85ff53829ee39d4399cf1d,6a566f322f681d770359254e,APT-02,aptitude,Choose the antonym of 'Loquacious'.,Reticent,85,Response recorded successfully.,2026-08-19T19:09:24.389Z
+6a85ff6f829ee39d4399cf46,6a85ff53829ee39d4399cf1d,6a566f322f681d770359254e,APT-03,aptitude,A snail climbs 3 m up a wall during the day and slides 2 m down at night. The wall is 10 m high. On which day does it first reach the top?,,0,Question skipped or answer empty.,2026-08-19T19:09:35.906Z
