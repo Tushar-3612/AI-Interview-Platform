@@ -206,3 +206,177 @@ export const login = async (req, res) => {
     res.status(500).json({ message: "Login failed. Please try again." });
   }
 };
+
+/* ================================
+   FORGOT PASSWORD (OTP Generation)
+   ================================ */
+import { sendReportEmail } from "../utils/emailSender.js";
+import { getForgotPasswordOtpEmail } from "../services/emailTemplates.js";
+
+export const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    if (!validateEmail(email)) {
+      return res.status(400).json({ message: "Please enter a valid email address" });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      return res.status(404).json({ message: "No account found with this email" });
+    }
+
+    // Generate a secure 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
+
+    user.resetPasswordOtp = otp;
+    user.resetPasswordOtpExpires = otpExpires;
+    user.resetPasswordOtpAttempts = 0;
+    await user.save();
+
+    // Prepare and send email
+    const emailData = getForgotPasswordOtpEmail(user.name, otp);
+    await sendReportEmail(
+      user.email,
+      emailData.subject,
+      `Your password reset OTP is ${otp}. It is valid for 10 minutes.`,
+      emailData.html
+    );
+
+    res.status(200).json({ message: "OTP sent to your registered email" });
+  } catch (error) {
+    console.error("Forgot Password Error:", error.message);
+    res.status(500).json({ message: "Failed to send OTP. Please try again." });
+  }
+};
+
+/* ================================
+   VERIFY OTP
+   ================================ */
+import jwt from "jsonwebtoken";
+
+export const verifyOtp = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      return res.status(400).json({ message: "Email and OTP are required" });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      return res.status(404).json({ message: "No account found with this email" });
+    }
+
+    // Check if OTP was generated
+    if (!user.resetPasswordOtp || !user.resetPasswordOtpExpires) {
+      return res.status(400).json({ message: "No active OTP request found for this account" });
+    }
+
+    // Check OTP expiry
+    if (new Date() > user.resetPasswordOtpExpires) {
+      user.resetPasswordOtp = null;
+      user.resetPasswordOtpExpires = null;
+      user.resetPasswordOtpAttempts = 0;
+      await user.save();
+      return res.status(400).json({ message: "OTP has expired. Please request a new one." });
+    }
+
+    // Check max attempts
+    if (user.resetPasswordOtpAttempts >= 3) {
+      user.resetPasswordOtp = null;
+      user.resetPasswordOtpExpires = null;
+      user.resetPasswordOtpAttempts = 0;
+      await user.save();
+      return res.status(400).json({ message: "Too many incorrect attempts. Please request a new OTP." });
+    }
+
+    // Validate OTP
+    if (user.resetPasswordOtp !== otp) {
+      user.resetPasswordOtpAttempts += 1;
+      await user.save();
+      const remaining = 3 - user.resetPasswordOtpAttempts;
+      if (remaining <= 0) {
+        user.resetPasswordOtp = null;
+        user.resetPasswordOtpExpires = null;
+        user.resetPasswordOtpAttempts = 0;
+        await user.save();
+        return res.status(400).json({ message: "Incorrect OTP. Too many incorrect attempts. Please request a new OTP." });
+      }
+      return res.status(400).json({ message: `Incorrect OTP. You have ${remaining} attempts remaining.` });
+    }
+
+    // Verification successful - clear OTP fields
+    user.resetPasswordOtp = null;
+    user.resetPasswordOtpExpires = null;
+    user.resetPasswordOtpAttempts = 0;
+    await user.save();
+
+    // Create a short-lived password reset token
+    const resetToken = jwt.sign(
+      { id: user._id, purpose: "password-reset" },
+      process.env.JWT_SECRET,
+      { expiresIn: "15m" }
+    );
+
+    res.status(200).json({
+      message: "OTP verified successfully",
+      resetToken,
+    });
+  } catch (error) {
+    console.error("Verify OTP Error:", error.message);
+    res.status(500).json({ message: "Failed to verify OTP. Please try again." });
+  }
+};
+
+/* ================================
+   RESET PASSWORD (Final update)
+   ================================ */
+export const resetPassword = async (req, res) => {
+  try {
+    const { resetToken, newPassword } = req.body;
+
+    if (!resetToken || !newPassword) {
+      return res.status(400).json({ message: "Reset token and new password are required" });
+    }
+
+    // Verify token
+    let decoded;
+    try {
+      decoded = jwt.verify(resetToken, process.env.JWT_SECRET);
+    } catch (err) {
+      return res.status(400).json({ message: "Invalid or expired reset token" });
+    }
+
+    if (decoded.purpose !== "password-reset") {
+      return res.status(400).json({ message: "Invalid reset token purpose" });
+    }
+
+    // Validate strong password
+    if (!validatePassword(newPassword)) {
+      return res.status(400).json({
+        message:
+          "Password must be at least 8 characters with uppercase, lowercase, number, and special character",
+      });
+    }
+
+    const user = await User.findById(decoded.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Update password
+    user.password = newPassword;
+    await user.save();
+
+    res.status(200).json({ message: "Password reset successful. You can now login with your new password." });
+  } catch (error) {
+    console.error("Reset Password Error:", error.message);
+    res.status(500).json({ message: "Failed to reset password. Please try again." });
+  }
+};

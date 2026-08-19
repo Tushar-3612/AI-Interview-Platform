@@ -81,3 +81,19 @@ export function getPasswordResetEmail(studentName, resetLink) {
     `,
   };
 }
+
+export function getForgotPasswordOtpEmail(studentName, otp) {
+  return {
+    subject: "Password Reset OTP - AI Interview Platform",
+    html: `
+      <h2>Password Reset Request</h2>
+      <p>Hello ${studentName},</p>
+      <p>You requested to reset your password. Use the following One-Time Password (OTP) to proceed. This OTP is valid for 10 minutes:</p>
+      <div style="background:#f1f5f9;padding:16px;border-radius:8px;font-size:24px;font-weight:bold;text-align:center;letter-spacing:4px;color:#2563eb;margin:16px 0;">
+        ${otp}
+      </div>
+      <p style="color:#666;font-size:12px;">If you did not request this, please ignore this email.</p>
+      <p style="color:#666;font-size:12px;">AI Interview Platform</p>
+    `,
+  };
+}
