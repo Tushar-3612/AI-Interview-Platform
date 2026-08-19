@@ -33,6 +33,28 @@ function NetworkStrength({ level = 4 }) {
 }
 
 /**
+ * StatusPill — compact live status indicator for the interview header
+ */
+function StatusPill({ label, on }) {
+  return (
+    <div
+      className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-bold uppercase tracking-wide"
+      style={{
+        borderColor: on ? "rgba(16,185,129,0.35)" : "rgba(239,68,68,0.35)",
+        background: on ? "rgba(16,185,129,0.12)" : "rgba(239,68,68,0.12)",
+        color: on ? "#34d399" : "#f87171",
+      }}
+    >
+      <span
+        className="w-1.5 h-1.5 rounded-full"
+        style={{ background: on ? "#34d399" : "#f87171", boxShadow: on ? "0 0 6px rgba(52,211,153,0.8)" : "none" }}
+      />
+      {label}
+    </div>
+  );
+}
+
+/**
  * ControlButton — Bottom action bar icon button
  */
 function ControlButton({ icon: Icon, label, onClick, active = true, danger = false, disabled = false, pulse = false, id }) {
@@ -112,10 +134,11 @@ function InterviewLayout({
     onToggleSpeaker,
   } = controlProps;
 
-  const m = Math.floor(timerSeconds / 60).toString().padStart(2, "0");
+  const h = Math.floor(timerSeconds / 3600).toString().padStart(2, "0");
+  const m = Math.floor((timerSeconds % 3600) / 60).toString().padStart(2, "0");
   const s = (timerSeconds % 60).toString().padStart(2, "0");
   const isTimerLow = timerSeconds < 300;
-  const timerPct = (timerSeconds / totalSeconds) * 100;
+  const timerPct = totalSeconds > 0 ? (timerSeconds / totalSeconds) * 100 : 0;
 
   return (
     <div
@@ -144,7 +167,7 @@ function InterviewLayout({
           </div>
           <div className="hidden sm:flex flex-col min-w-0">
             <span className="text-[10px] font-semibold text-white/35 uppercase tracking-widest leading-tight">
-              Interview in Progress
+              PrepHire
             </span>
             <span className="text-[13px] font-bold text-white truncate leading-tight">
               {interviewType}
@@ -154,15 +177,15 @@ function InterviewLayout({
 
         {/* Center — countdown timer */}
         <div className="flex-1 flex flex-col items-center gap-1">
-          <div
-            className="font-mono text-2xl font-bold tabular-nums"
-            style={{
-              color: isTimerLow ? "#ef4444" : "#f1f5f9",
-              animation: isTimerLow ? "statusDot 1s ease-in-out infinite" : "none",
-            }}
-          >
-            {m}:{s}
-          </div>
+            <div
+              className="font-mono text-2xl font-bold tabular-nums"
+              style={{
+                color: isTimerLow ? "#ef4444" : "#f1f5f9",
+                animation: isTimerLow ? "statusDot 1s ease-in-out infinite" : "none",
+              }}
+            >
+              {h}:{m}:{s}
+            </div>
           {/* Thin timer progress bar */}
           <div className="w-32 h-0.5 rounded-full bg-white/10 overflow-hidden">
             <div
@@ -195,6 +218,13 @@ function InterviewLayout({
               <Wifi className="w-3.5 h-3.5 text-white/30" />
               <NetworkStrength level={networkLevel} />
             </div>
+          </div>
+
+          {/* Live status chips */}
+          <div className="hidden lg:flex items-center gap-2">
+            <StatusPill label="Mic" on={isMicOn} />
+            <StatusPill label="Camera" on={isCameraOn} />
+            <StatusPill label={isPaused ? "Paused" : "Live"} on={!isPaused} />
           </div>
 
           {/* End Interview */}

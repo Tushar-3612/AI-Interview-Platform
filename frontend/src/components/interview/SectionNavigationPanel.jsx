@@ -16,7 +16,6 @@ function SectionNavigationPanel({
       id: "APTITUDE",
       name: "Aptitude",
       icon: Target,
-      emoji: "🎯",
       color: "amber",
       total: 25,
       description: "Quantitative & Logical MCQs",
@@ -28,7 +27,6 @@ function SectionNavigationPanel({
       id: "TECHNICAL",
       name: "Technical",
       icon: BrainCircuit,
-      emoji: "🧠",
       color: "blue",
       total: 25,
       description: "Resume & Project Engineering",
@@ -40,7 +38,6 @@ function SectionNavigationPanel({
       id: "CODING",
       name: "Coding",
       icon: Code2,
-      emoji: "💻",
       color: "emerald",
       total: 3,
       description: "Algorithmic Code IDE",
@@ -52,7 +49,6 @@ function SectionNavigationPanel({
       id: "HR",
       name: "HR",
       icon: UserCheck,
-      emoji: "👔",
       color: "purple",
       total: 5,
       description: "Behavioral & Career Alignment",
@@ -63,7 +59,10 @@ function SectionNavigationPanel({
   ];
 
   const totalCompleted = sectionProgress.totalCompleted || 0;
-  const totalQuestions = 58;
+  const totalQuestions = SECTIONS.reduce(
+    (sum, sec) => sum + (sectionProgress[sec.id]?.total || sec.total),
+    0
+  );
 
   return (
     <div
@@ -83,7 +82,7 @@ function SectionNavigationPanel({
           </h3>
         </div>
         <span className="text-[10px] font-bold text-white/40 uppercase tracking-wider">
-          4 Rounds
+          {SECTIONS.length} Rounds
         </span>
       </div>
 
@@ -124,12 +123,12 @@ function SectionNavigationPanel({
             >
               {/* Top Row: Icon + Name + Status Badge */}
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <span className="text-base">{sec.emoji}</span>
-                  <span className="text-xs font-bold text-white group-hover:text-white">
-                    {sec.name}
-                  </span>
-                </div>
+               <div className="flex items-center gap-2.5">
+                   <Icon className="w-4 h-4 text-white/80" />
+                   <span className="text-xs font-bold text-white group-hover:text-white">
+                     {sec.name}
+                   </span>
+                 </div>
                 <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-wider border ${statusBadgeClass}`}>
                   {statusBadgeText}
                 </span>

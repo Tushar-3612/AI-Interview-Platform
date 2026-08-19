@@ -29,6 +29,27 @@ import OutputPanel from "../../components/coding/OutputPanel";
 import { MOCK_QUESTIONS, MOCK_CANDIDATE } from "../../data/interviewMockData";
 
 /**
+ * SignalRow — compact live signal indicator (used in the right-side context).
+ */
+function SignalRow({ label, on }) {
+  return (
+    <div className="flex items-center justify-between">
+      <span className="text-white/50">{label}</span>
+      <span
+        className="flex items-center gap-1.5 text-[11px] font-bold"
+        style={{ color: on ? "#34d399" : "#f87171" }}
+      >
+        <span
+          className="w-1.5 h-1.5 rounded-full"
+          style={{ background: on ? "#34d399" : "#f87171", boxShadow: on ? "0 0 6px rgba(52,211,153,0.8)" : "none" }}
+        />
+        {on ? "Active" : "Off"}
+      </span>
+    </div>
+  );
+}
+
+/**
  * StartInterview Page Component — Phase 2E Fullscreen + Interview Integrity
  */
 function StartInterview() {
@@ -53,6 +74,10 @@ function StartInterview() {
 
   // Phase 2E Integrity State
   const [isFullscreenExited, setIsFullscreenExited] = useState(false);
+  const [isInFullscreen, setIsInFullscreen] = useState(false);
+  const [fullscreenRequested, setFullscreenRequested] = useState(false);
+  const everEnteredFsRef = useRef(false);
+  const sessionEndTimeRef = useRef(null);
 
   // Intro state
   const hasIntroducedRef = useRef(false);
@@ -62,6 +87,7 @@ function StartInterview() {
   const [typedResponse, setTypedResponse] = useState("");
   const [savedAnswers, setSavedAnswers] = useState([]);
   const [dialogueLogs, setDialogueLogs] = useState([]);
+  const [showTranscript, setShowTranscript] = useState(false);
 
   // Coding state (Questions 51-53)
   const [codingLanguage, setCodingLanguage] = useState("python");
@@ -75,7 +101,7 @@ function StartInterview() {
     resumeName: routerState.resumeFileName || profile.resumeFileName || MOCK_CANDIDATE.resumeName,
     interviewType: "Real AI Interview Room",
     difficulty: "Adaptive",
-    totalTimeMinutes: 60,
+    totalTimeMinutes: 150,
   });
 
   const [isLoadingInterview, setIsLoadingInterview] = useState(true);
@@ -91,8 +117,9 @@ function StartInterview() {
   const [webcamStream, setWebcamStream] = useState(null);
   const webcamStreamRef = useRef(null);
 
-  // Session timer (60 minutes for 58 questions)
-  const totalSeconds = 60 * 60;
+  // Session timer (150 minutes = 2h30m for 58 questions; derived from backend startedAt)
+  const INTERVIEW_DURATION_MIN = 150;
+  const totalSeconds = INTERVIEW_DURATION_MIN * 60;
   const [timerSeconds, setTimerSeconds] = useState(totalSeconds);
 
   // Speech Recognition & Silence Buffer
@@ -137,10 +164,11 @@ function StartInterview() {
   useEffect(() => {
     if (isLoadingInterview || isCompleted) return;
 
-    // Request fullscreen on startup
+    // Request fullscreen on startup (user-initiated Start Interview gesture)
     const timer = setTimeout(() => {
       handleReenterFullscreen();
-    }, 500);
+      setFullscreenRequested(true);
+    }, 400);
 
     return () => clearTimeout(timer);
   }, [isLoadingInterview, isCompleted, handleReenterFullscreen]);
@@ -154,12 +182,16 @@ function StartInterview() {
         document.msFullscreenElement
       );
 
-      if (!isFS && !isCompleted && !isLoadingInterview) {
-        setIsFullscreenExited(true);
-        window.speechSynthesis?.cancel();
-        logIntegrityEvent("FULLSCREEN_EXIT", "Candidate exited browser fullscreen mode");
-      } else if (isFS) {
+      setIsInFullscreen(isFS);
+      if (isFS) {
+        everEnteredFsRef.current = true;
         setIsFullscreenExited(false);
+      } else if (everEnteredFsRef.current && !isCompleted && !isLoadingInterview) {
+        // Only treat as an integrity "exit" pause once the candidate has been
+        // in fullscreen at least once (otherwise it's the initial requirement).
+        setIsFullscreenExited(true);
+        window.self?.speechSynthesis?.cancel();
+        logIntegrityEvent("FULLSCREEN_EXIT", "Candidate exited browser fullscreen mode");
       }
     };
 
@@ -176,13 +208,24 @@ function StartInterview() {
     };
   }, [isCompleted, isLoadingInterview, logIntegrityEvent]);
 
+  // ─── Hide the website navbar while inside the dedicated interview room ───
+  useEffect(() => {
+    document.body.classList.add("interview-active");
+    return () => document.body.classList.remove("interview-active");
+  }, []);
+
+  // Blocking fullscreen-required gate: shown only before the candidate has
+  // entered fullscreen and the browser refused the automatic request.
+  const showFullscreenGate =
+    fullscreenRequested && !isInFullscreen && !isFullscreenExited && !isCompleted && !isLoadingInterview;
+
   // ─── PHASE 2E: TAB VISIBILITY SWITCH DETECTION ───
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden && !isCompleted && !isLoadingInterview) {
         logIntegrityEvent("TAB_SWITCH", "Candidate switched active tab or minimized browser window");
       } else if (!document.hidden && !isCompleted && !isLoadingInterview) {
-        toast("Security Event Logged: Tab switch detected during session.", { icon: "⚠️" });
+        toast("Security Event Logged: Tab switch detected during session.");
       }
     };
 
@@ -263,10 +306,18 @@ function StartInterview() {
       webcamStreamRef.current = stream;
       setWebcamStream(stream);
       setIsCameraOn(true);
+
+      const vTrack = stream.getVideoTracks?.()[0];
+      if (vTrack) {
+        vTrack.onended = () => {
+          setIsCameraOn(false);
+          logIntegrityEvent("CAMERA_DISCONNECTED", "Candidate camera track ended unexpectedly");
+        };
+      }
     } catch (err) {
       console.warn("Webcam access warning:", err);
     }
-  }, []);
+  }, [logIntegrityEvent]);
 
   const stopWebcam = useCallback(() => {
     if (webcamStreamRef.current) {
@@ -343,8 +394,17 @@ function StartInterview() {
             resumeName: data.resumeFileName || profile.resumeFileName || "Uploaded_Resume.pdf",
             interviewType: "Real AI Interview Room",
             difficulty: "Adaptive",
-            totalTimeMinutes: 60,
+            totalTimeMinutes: 150,
           });
+        }
+
+        // Session-based timer: derive remaining time from the backend session
+        // start so a page refresh does NOT reset the countdown.
+        if (data.startedAt) {
+          const startTs = new Date(data.startedAt).getTime();
+          sessionEndTimeRef.current = startTs + INTERVIEW_DURATION_MIN * 60000;
+          const remaining = Math.max(0, Math.round((sessionEndTimeRef.current - Date.now()) / 1000));
+          setTimerSeconds(remaining);
         }
       } catch (err) {
         console.error("Session load error:", err);
@@ -411,17 +471,25 @@ function StartInterview() {
     }
   };
 
-  // ─── TIMER COUNTDOWN ───
+  // ─── TIMER COUNTDOWN (session-based, pauses outside fullscreen) ───
   useEffect(() => {
-    if (isLoadingInterview || isFullscreenExited) return;
+    if (isLoadingInterview || isFullscreenExited || !isInFullscreen) return;
     let interval;
     if (!isPaused && !isCompleted && !isGeneratingQuestion && timerSeconds > 0) {
       interval = setInterval(() => {
-        setTimerSeconds((prev) => prev - 1);
+        setTimerSeconds((prev) => (prev > 0 ? prev - 1 : 0));
       }, 1000);
     }
     return () => clearInterval(interval);
-  }, [isPaused, isCompleted, isGeneratingQuestion, timerSeconds, isFullscreenExited, isLoadingInterview]);
+  }, [isPaused, isCompleted, isGeneratingQuestion, timerSeconds, isFullscreenExited, isLoadingInterview, isInFullscreen]);
+
+  // ─── AUTO-SUBMIT WHEN TIME EXPIRES ───
+  useEffect(() => {
+    if (timerSeconds === 0 && !isCompleted && !isLoadingInterview) {
+      logIntegrityEvent("TIME_UP", "Interview duration elapsed — auto-submitting");
+      setIsCompleted(true);
+    }
+  }, [timerSeconds, isCompleted, isLoadingInterview, logIntegrityEvent]);
 
   // ─── AI INTERVIEWER SPEECH PLAYBACK LAYER ───
   const speakCurrentQuestion = useCallback((text, section, topic) => {
@@ -563,7 +631,7 @@ function StartInterview() {
         if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
         silenceTimerRef.current = setTimeout(() => {
           if (fullTranscript.length > 10) {
-            toast("Silence detected. Answer transcript buffer ready.", { icon: "🎙️" });
+            toast("Silence detected. Answer transcript buffer ready.");
           }
         }, 3500);
       };
@@ -673,6 +741,12 @@ function StartInterview() {
     }
   };
 
+  // ─── CODING SUBMIT (persist code for evaluation) ───
+  const handleSubmitCoding = () => {
+    handleSaveAnswer("answered");
+    toast.success("Coding solution submitted for evaluation");
+  };
+
   // ─── NAVIGATION HANDLERS ───
   const handleNextQuestion = () => {
     stopSpeechRecognition();
@@ -733,6 +807,272 @@ function StartInterview() {
   const questionIdxInSection = sectionQuestions.findIndex((q) => (q.id || q.questionId) === (currentQuestion.id || currentQuestion.questionId)) + 1;
   const formattedSectionQuestionIndex = questionIdxInSection > 0 ? String(questionIdxInSection).padStart(2, "0") : "01";
 
+  // ─── Render mode helpers (master spec: 3-zone layout) ───
+  const showAI = currentSection === "TECHNICAL" || currentSection === "HR";
+  const isCoding = currentSection === "CODING" || currentQuestion.type === "coding";
+  const isAptitude = currentSection === "APTITUDE" || (currentQuestion.options && currentQuestion.options.length > 0 && !isCoding);
+  const tH = String(Math.floor(timerSeconds / 3600)).padStart(2, "0");
+  const tM = String(Math.floor((timerSeconds % 3600) / 60)).padStart(2, "0");
+  const tS = String(timerSeconds % 60).padStart(2, "0");
+
+  // CENTER WORKSPACE: AI interviewer (tech/hr) + question / answer / transcript / controls
+  const centerWorkspace = (
+    <div className="flex flex-col h-full min-h-0 gap-3">
+      {showAI && (
+        <div className="h-[42%] min-h-0 shrink-0 rounded-2xl overflow-hidden border border-white/10">
+          <AIInterviewerCard
+            aiStatus={aiStatus}
+            isGeneratingQuestion={isGeneratingQuestion}
+            currentQuestionText={currentQuestion?.aiSpeechText || currentQuestion?.question || ""}
+          />
+        </div>
+      )}
+
+      <div
+        className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-3 pr-1"
+        style={{ scrollbarWidth: "thin", scrollbarColor: "rgba(255,255,255,0.1) transparent" }}
+      >
+        {/* Question header */}
+        <div className="shrink-0 p-3 rounded-2xl bg-slate-900/90 border border-white/10 space-y-1">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-black tracking-wider text-amber-400 uppercase flex items-center gap-1.5">
+              {currentSection} — Question {formattedSectionQuestionIndex} / {String(sectionTotal).padStart(2, "0")}
+            </span>
+            <span className="text-[11px] font-bold text-white/40 font-mono">
+              Overall: {String(currentIndex).padStart(2, "0")} / {String(questions.length).padStart(2, "0")}
+            </span>
+          </div>
+          <QuestionCard
+            questionText={currentQuestion?.question}
+            currentIndex={currentIndex}
+            totalQuestions={questions.length}
+            difficulty={currentQuestion?.difficulty || "Medium"}
+            category={currentQuestion?.category || currentQuestion?.section || "Technical"}
+            estimatedTime={currentSection === "CODING" ? "10 mins" : "2 mins"}
+          />
+        </div>
+
+        {/* Answer area */}
+        {isCoding ? (
+          <div className="shrink-0 flex flex-col gap-3">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+              <div className="overflow-y-auto max-h-80 p-4 rounded-2xl bg-slate-900/90 border border-white/10 space-y-2">
+                <h3 className="text-sm font-bold text-white">{currentQuestion.title || "Coding Problem"}</h3>
+                <p className="text-xs text-white/75 leading-relaxed">{currentQuestion.problemStatement || currentQuestion.question}</p>
+                {currentQuestion.inputFormat && <span className="text-[11px] text-white/60"><span className="text-white/40 uppercase">Input: </span>{currentQuestion.inputFormat}</span>}
+                {currentQuestion.outputFormat && <p className="text-[11px] text-white/60"><span className="text-white/40 uppercase">Output: </span>{currentQuestion.outputFormat}</p>}
+                {currentQuestion.constraints && <p className="text-[11px] text-white/60"><span className="text-white/40 uppercase">Constraints: </span>{currentQuestion.constraints}</p>}
+                {currentQuestion.sampleInput && <p className="text-[11px] text-white/60 font-mono"><span className="text-white/40 uppercase">Example: </span>{currentQuestion.sampleInput} → {currentQuestion.sampleOutput}</p>}
+              </div>
+              <div className="flex flex-col rounded-2xl bg-slate-900/90 border border-white/10 overflow-hidden">
+                <div className="flex items-center justify-between p-2 border-b border-white/10">
+                  <span className="text-xs font-bold text-white flex items-center gap-2">
+                    <Code2 className="w-4 h-4 text-emerald-400" /> Compiler Workspace
+                  </span>
+                  <select
+                    value={codingLanguage}
+                    onChange={(e) => setCodingLanguage(e.target.value)}
+                    className="bg-slate-800 border border-white/10 text-xs text-white rounded-lg px-2.5 py-1 outline-none cursor-pointer"
+                  >
+                    <option value="python">Python 3</option>
+                    <option value="java">Java 17</option>
+                    <option value="cpp">C++ 17</option>
+                    <option value="c">C Language</option>
+                  </select>
+                </div>
+                <div className="h-80">
+                  <MonacoCodeEditor
+                    value={currentCode}
+                    onChange={(val) => setCurrentCode(val || "")}
+                    language={codingLanguage}
+                    theme="vs-dark"
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleRunCoding}
+                disabled={isRunningCode}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-white flex items-center gap-1.5 cursor-pointer transition-all disabled:opacity-50"
+                style={{ background: "#059669" }}
+              >
+                {isRunningCode ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5" />}
+                Run Code
+              </button>
+              <button
+                onClick={handleSubmitCoding}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-white cursor-pointer transition-all"
+                style={{ background: "#2563eb" }}
+              >
+                Submit
+              </button>
+            </div>
+            {compilerOutput && (
+              <div className="mt-1">
+                <OutputPanel output={compilerOutput} />
+              </div>
+            )}
+          </div>
+        ) : isAptitude ? (
+          <div className="p-4 rounded-2xl bg-slate-900/90 border border-white/10 space-y-3">
+            <p className="text-xs font-bold text-amber-400 uppercase tracking-wider">Select Correct Answer:</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {(currentQuestion.options || []).map((opt, idx) => {
+                const isSelected = typedResponse === opt;
+                return (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setTypedResponse(opt);
+                      handleSaveAnswer("answered", opt);
+                    }}
+                    className={`p-3.5 rounded-xl border text-left text-xs font-semibold cursor-pointer transition-all flex items-start gap-2.5 ${
+                      isSelected
+                        ? "bg-blue-600/30 border-blue-500 text-white shadow-lg"
+                        : "bg-white/5 border-white/10 text-white/80 hover:bg-white/10"
+                    }`}
+                  >
+                    <span className="w-5 h-5 rounded-full border flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5 border-white/20">
+                      {String.fromCharCode(65 + idx)}
+                    </span>
+                    <span>{opt}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ) : (
+          <div className="rounded-2xl p-3 flex flex-col gap-2 bg-slate-900/90 border border-white/10">
+            <div className="flex gap-1.5 pb-2 border-b border-white/10">
+              <button
+                onClick={() => { stopSpeechRecognition(); setInputMode("type"); }}
+                className="px-2.5 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1 cursor-pointer transition-all"
+                style={{ background: inputMode === "type" ? "#2563eb" : "rgba(255,255,255,0.06)", color: inputMode === "type" ? "#fff" : "rgba(255,255,255,0.45)" }}
+              >
+                <Keyboard className="w-3 h-3" /> Type Text
+              </button>
+              <button
+                onClick={() => { setInputMode("speak"); if (!isListeningSpeech) startSpeechRecognition(); }}
+                className="px-2.5 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1 cursor-pointer transition-all"
+                style={{ background: inputMode === "speak" ? "#2563eb" : "rgba(255,255,255,0.06)", color: inputMode === "speak" ? "#fff" : "rgba(255,255,255,0.45)" }}
+              >
+                <Mic className="w-3 h-3" /> Voice Response
+              </button>
+              <span className="ml-auto text-[9px] text-white/25 self-center">{typedResponse.length} chars</span>
+            </div>
+
+            <textarea
+              value={typedResponse}
+              onChange={(e) => setTypedResponse(e.target.value)}
+              placeholder={inputMode === "speak" ? "Speak your answer — STT transcript appears here automatically…" : "Type your technical response here…"}
+              disabled={isPaused}
+              rows={3}
+              className="w-full rounded-xl p-2.5 text-xs outline-none resize-none bg-white/5 border border-white/10 text-white/90 focus:border-blue-500"
+            />
+
+            {inputMode === "speak" && (
+              <div className="flex gap-2">
+                <button
+                  onClick={startSpeechRecognition}
+                  disabled={isPaused || !isMicOn}
+                  className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-bold cursor-pointer transition-all disabled:opacity-40"
+                  style={{ background: isListeningSpeech ? "rgba(239,68,68,0.2)" : "rgba(37,99,235,0.15)", border: `1px solid ${isListeningSpeech ? "rgba(239,68,68,0.4)" : "rgba(37,99,235,0.3)"}`, color: isListeningSpeech ? "#f87171" : "#60a5fa" }}
+                >
+                  {isListeningSpeech ? <><MicOff className="w-3.5 h-3.5 animate-pulse" /> Listening (3.5s Buffer)</> : <><Mic className="w-3.5 h-3.5" /> Speak Answer</>}
+                </button>
+                {typedResponse.trim().length > 0 && (
+                  <button
+                    onClick={() => handleSaveAnswer("answered")}
+                    className="px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white cursor-pointer transition-all"
+                  >
+                    Save Answer
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Transcript (secondary / collapsible) */}
+        <div className="shrink-0">
+          <button
+            onClick={() => setShowTranscript((v) => !v)}
+            className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-[11px] font-bold uppercase tracking-wider text-white/50 cursor-pointer hover:bg-white/10 transition-all"
+          >
+            <span>Conversation Transcript</span>
+            <span>{showTranscript ? "Hide" : "Show"}</span>
+          </button>
+          {showTranscript && (
+            <div className="mt-2" style={{ minHeight: "120px" }}>
+              <ConversationPanel logs={dialogueLogs} />
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Pinned navigation controls */}
+      <div className="shrink-0 pt-2 border-t border-white/10 bg-slate-950/80 rounded-b-2xl">
+        <NavigationControls
+          currentIndex={currentIndex}
+          totalQuestions={questions.length}
+          isPaused={isPaused}
+          onPrev={handlePrevQuestion}
+          onNext={handleNextQuestion}
+          onSkip={handleSkipQuestion}
+          onRepeat={() => speakCurrentQuestion(currentQuestion?.aiSpeechText || currentQuestion?.question, currentQuestion?.section, currentQuestion?.topic)}
+          onTogglePause={() => setIsPaused(!isPaused)}
+          onEnd={() => setShowConfirmExit(true)}
+        />
+      </div>
+    </div>
+  );
+
+  // RIGHT CONTEXT: camera (tech/hr) + interview status + live signals
+  const rightContext = (
+    <div
+      className="flex flex-col h-full min-h-0 gap-3 overflow-y-auto pr-1"
+      style={{ scrollbarWidth: "thin", scrollbarColor: "rgba(255,255,255,0.1) transparent" }}
+    >
+      {showAI && (
+        <div className="h-[180px] shrink-0 rounded-2xl overflow-hidden border border-white/10">
+          <WebcamCard
+            isCameraOn={isCameraOn}
+            stream={webcamStream}
+            userName={candidateInfo.name}
+            onRetryCamera={startWebcam}
+          />
+        </div>
+      )}
+
+      <div className="shrink-0 p-3 rounded-2xl bg-slate-900/90 border border-white/10 space-y-2">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-white/40">Interview Status</p>
+        <div className="space-y-1.5 text-xs">
+          <div className="flex justify-between">
+            <span className="text-white/50">Question</span>
+            <span className="font-bold text-white">{formattedSectionQuestionIndex} / {String(sectionTotal).padStart(2, "0")}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-white/50">Section</span>
+            <span className="font-bold text-white">{currentSection}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-white/50">Time Left</span>
+            <span className="font-bold font-mono" style={{ color: timerSeconds < 300 ? "#f87171" : "#e5e7eb" }}>{tH}:{tM}:{tS}</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="shrink-0 p-3 rounded-2xl bg-slate-900/90 border border-white/10 space-y-2">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-white/40">Live Signals</p>
+        <SignalRow label="MIC" on={isMicOn} />
+        <SignalRow label="CAMERA" on={isCameraOn} />
+        <SignalRow label="FACE" on={isCameraOn && !!webcamStream} />
+        <SignalRow label="AI" on={!showAI ? true : (aiStatus === "LISTENING" || aiStatus === "SPEAKING")} />
+      </div>
+    </div>
+  );
+
   if (isLoadingInterview) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-950 text-white">
@@ -774,6 +1114,14 @@ function StartInterview() {
       {/* Phase 2E Fullscreen Exit Blocking Overlay */}
       <FullscreenExitOverlay
         isOpen={isFullscreenExited}
+        onReenterFullscreen={handleReenterFullscreen}
+      />
+
+      {/* Fullscreen Required Gate — shown if the browser blocked the automatic
+          fullscreen request at the start of the interview. */}
+      <FullscreenExitOverlay
+        isOpen={showFullscreenGate}
+        mode="required"
         onReenterFullscreen={handleReenterFullscreen}
       />
 
@@ -830,222 +1178,13 @@ function StartInterview() {
           />
         }
 
-        /* CENTER LEFT: Cinematic AI Avatar Stage with 4 States */
-        leftPanel={
-          <AIInterviewerCard
-            aiStatus={aiStatus}
-            isGeneratingQuestion={isGeneratingQuestion}
-            currentQuestionText={currentQuestion?.aiSpeechText || currentQuestion?.question || ""}
-          />
-        }
+        /* CENTER: AI workspace + question / voice / transcript / controls */
+        leftPanel={centerWorkspace}
 
         centerPanel={null}
 
-        /* RIGHT: Main Question & Section Response Column */
-        rightPanel={
-          <div className="flex flex-col h-full min-h-0 overflow-hidden">
-            <div
-              className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-3 pb-2"
-              style={{ scrollbarWidth: "thin", scrollbarColor: "rgba(255,255,255,0.1) transparent" }}
-            >
-
-              {/* 1. Candidate PiP Preview */}
-              <div className="shrink-0" style={{ height: "135px" }}>
-                <WebcamCard
-                  isCameraOn={isCameraOn}
-                  stream={webcamStream}
-                  userName={candidateInfo.name}
-                  onRetryCamera={startWebcam}
-                />
-              </div>
-
-              {/* 2. Question Section Header & Overall Progress */}
-              <div className="shrink-0 p-3 rounded-2xl bg-slate-900/90 border border-white/10 space-y-1">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-black tracking-wider text-amber-400 uppercase flex items-center gap-1.5">
-                    {currentSection === "APTITUDE" ? "🎯 APTITUDE" : currentSection === "TECHNICAL" ? "🧠 TECHNICAL" : currentSection === "CODING" ? "💻 CODING" : "👔 HR"} — Question {formattedSectionQuestionIndex} / {String(sectionTotal).padStart(2, "0")}
-                  </span>
-                  <span className="text-[11px] font-bold text-white/40 font-mono">
-                    Overall: {String(currentIndex).padStart(2, "0")} / {String(questions.length).padStart(2, "0")}
-                  </span>
-                </div>
-
-                <QuestionCard
-                  questionText={currentQuestion?.question}
-                  currentIndex={currentIndex}
-                  totalQuestions={questions.length}
-                  difficulty={currentQuestion?.difficulty || "Medium"}
-                  category={currentQuestion?.category || currentQuestion?.section || "Technical"}
-                  estimatedTime={currentSection === "CODING" ? "10 mins" : "2 mins"}
-                />
-              </div>
-
-              {/* 3. SECTION SPECIFIC ANSWER CONTENT AREA */}
-              <div className="shrink-0">
-
-                {/* ── A. CODING SECTION (Questions 51–53) ── */}
-                {(currentSection === "CODING" || currentQuestion.type === "coding") ? (
-                  <div className="flex flex-col gap-3 p-4 rounded-2xl bg-slate-900/90 border border-white/10">
-                    <div className="flex items-center justify-between pb-2 border-b border-white/10">
-                      <div className="flex items-center gap-2">
-                        <Code2 className="w-4 h-4 text-emerald-400" />
-                        <span className="text-xs font-bold text-white">Compiler Workspace</span>
-                      </div>
-                      <select
-                        value={codingLanguage}
-                        onChange={(e) => setCodingLanguage(e.target.value)}
-                        className="bg-slate-800 border border-white/10 text-xs text-white rounded-lg px-2.5 py-1 outline-none cursor-pointer"
-                      >
-                        <option value="python">Python 3</option>
-                        <option value="java">Java 17</option>
-                        <option value="cpp">C++ 17</option>
-                        <option value="c">C Language</option>
-                      </select>
-                    </div>
-
-                    <div className="h-64 rounded-xl overflow-hidden border border-white/10">
-                      <MonacoCodeEditor
-                        value={currentCode}
-                        onChange={(val) => setCurrentCode(val || "")}
-                        language={codingLanguage}
-                        theme="vs-dark"
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <button
-                        onClick={handleRunCoding}
-                        disabled={isRunningCode}
-                        className="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white flex items-center gap-1.5 cursor-pointer transition-all disabled:opacity-50"
-                      >
-                        {isRunningCode ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5" />}
-                        Run Code
-                      </button>
-                    </div>
-
-                    {compilerOutput && (
-                      <div className="mt-2">
-                        <OutputPanel output={compilerOutput} />
-                      </div>
-                    )}
-                  </div>
-                ) : (currentSection === "APTITUDE" || (currentQuestion.options && currentQuestion.options.length > 0)) ? (
-                  
-                  /* ── B. APTITUDE MCQ SECTION (Questions 1–25) ── */
-                  <div className="p-4 rounded-2xl bg-slate-900/90 border border-white/10 space-y-3">
-                    <p className="text-xs font-bold text-amber-400 uppercase tracking-wider">Select Correct Answer:</p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {(currentQuestion.options || []).map((opt, idx) => {
-                        const isSelected = typedResponse === opt;
-                        return (
-                          <button
-                            key={idx}
-                            onClick={() => {
-                              setTypedResponse(opt);
-                              handleSaveAnswer("answered", opt);
-                            }}
-                            className={`p-3.5 rounded-xl border text-left text-xs font-semibold cursor-pointer transition-all flex items-start gap-2.5 ${
-                              isSelected
-                                ? "bg-blue-600/30 border-blue-500 text-white shadow-lg"
-                                : "bg-white/5 border-white/10 text-white/80 hover:bg-white/10"
-                            }`}
-                          >
-                            <span className="w-5 h-5 rounded-full border flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5 border-white/20">
-                              {String.fromCharCode(65 + idx)}
-                            </span>
-                            <span>{opt}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ) : (
-
-                  /* ── C. TECHNICAL & HR VOICE/TEXT SECTION ── */
-                  <div className="rounded-2xl p-3 flex flex-col gap-2 bg-slate-900/90 border border-white/10">
-                    <div className="flex gap-1.5 pb-2 border-b border-white/10">
-                      <button
-                        onClick={() => { stopSpeechRecognition(); setInputMode("type"); }}
-                        className="px-2.5 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1 cursor-pointer transition-all"
-                        style={{
-                          background: inputMode === "type" ? "#2563eb" : "rgba(255,255,255,0.06)",
-                          color: inputMode === "type" ? "#fff" : "rgba(255,255,255,0.45)",
-                        }}
-                      >
-                        <Keyboard className="w-3 h-3" /> Type Text
-                      </button>
-                      <button
-                        onClick={() => { setInputMode("speak"); if (!isListeningSpeech) startSpeechRecognition(); }}
-                        className="px-2.5 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1 cursor-pointer transition-all"
-                        style={{
-                          background: inputMode === "speak" ? "#2563eb" : "rgba(255,255,255,0.06)",
-                          color: inputMode === "speak" ? "#fff" : "rgba(255,255,255,0.45)",
-                        }}
-                      >
-                        <Mic className="w-3 h-3" /> Voice Response
-                      </button>
-                      <span className="ml-auto text-[9px] text-white/25 self-center">{typedResponse.length} chars</span>
-                    </div>
-
-                    <textarea
-                      value={typedResponse}
-                      onChange={(e) => setTypedResponse(e.target.value)}
-                      placeholder={inputMode === "speak" ? "Speak your answer — STT transcript appears here automatically…" : "Type your technical response here…"}
-                      disabled={isPaused}
-                      rows={3}
-                      className="w-full rounded-xl p-2.5 text-xs outline-none resize-none bg-white/5 border border-white/10 text-white/90 focus:border-blue-500"
-                    />
-
-                    {inputMode === "speak" && (
-                      <div className="flex gap-2">
-                        <button
-                          onClick={startSpeechRecognition}
-                          disabled={isPaused || !isMicOn}
-                          className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-bold cursor-pointer transition-all disabled:opacity-40"
-                          style={{
-                            background: isListeningSpeech ? "rgba(239,68,68,0.2)" : "rgba(37,99,235,0.15)",
-                            border: `1px solid ${isListeningSpeech ? "rgba(239,68,68,0.4)" : "rgba(37,99,235,0.3)"}`,
-                            color: isListeningSpeech ? "#f87171" : "#60a5fa",
-                          }}
-                        >
-                          {isListeningSpeech ? <><MicOff className="w-3.5 h-3.5 animate-pulse" /> Listening (3.5s Buffer)</> : <><Mic className="w-3.5 h-3.5" /> Speak Answer</>}
-                        </button>
-                        {typedResponse.trim().length > 0 && (
-                          <button
-                            onClick={() => handleSaveAnswer("answered")}
-                            className="px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white cursor-pointer transition-all"
-                          >
-                            Save Answer
-                          </button>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* 4. Live Conversation & STT Transcript */}
-              <div className="shrink-0" style={{ minHeight: "140px" }}>
-                <ConversationPanel logs={dialogueLogs} />
-              </div>
-            </div>
-
-            {/* Pinned Navigation Controls */}
-            <div className="shrink-0 pt-2 border-t border-white/10 bg-slate-950/90 backdrop-blur-md">
-              <NavigationControls
-                currentIndex={currentIndex}
-                totalQuestions={questions.length}
-                isPaused={isPaused}
-                onPrev={handlePrevQuestion}
-                onNext={handleNextQuestion}
-                onSkip={handleSkipQuestion}
-                onRepeat={() => speakCurrentQuestion(currentQuestion?.aiSpeechText || currentQuestion?.question, currentQuestion?.section, currentQuestion?.topic)}
-                onTogglePause={() => setIsPaused(!isPaused)}
-                onEnd={() => setShowConfirmExit(true)}
-              />
-            </div>
-          </div>
-        }
+        /* RIGHT: Live Interview Context (camera + status + signals) */
+        rightPanel={isCoding ? null : rightContext}
       />
 
       <ConfirmExitDialog

@@ -3,6 +3,10 @@ body.assessment-active #student-navbar {
   display: none !important;
 }
 
+body.interview-active #student-navbar {
+  display: none !important;
+}
+
 .assessment-lock-overlay {
   position: fixed;
   inset: 0;
