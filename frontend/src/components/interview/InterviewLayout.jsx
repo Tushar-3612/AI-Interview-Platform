@@ -161,85 +161,88 @@ function InterviewLayout({
         <div className="flex items-center gap-3 min-w-0">
           <div
             className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
-            style={{ background: "linear-gradient(135deg, #2563eb, #14b8a6)" }}
+            style={{ background: "linear-gradient(135deg, #2563eb, #06b6d4)" }}
           >
             <Bot className="w-4 h-4 text-white" />
           </div>
-          <div className="hidden sm:flex flex-col min-w-0">
-            <span className="text-[10px] font-semibold text-white/35 uppercase tracking-widest leading-tight">
-              PrepHire
-            </span>
-            <span className="text-[13px] font-bold text-white truncate leading-tight">
+          <div className="flex flex-col min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-extrabold text-white tracking-wider uppercase">
+                REAL AI INTERVIEW
+              </span>
+              <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[9px] font-extrabold uppercase tracking-widest flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                LIVE SESSION
+              </span>
+            </div>
+            <span className="text-[11px] font-medium text-white/40 truncate">
               {interviewType}
             </span>
           </div>
         </div>
 
-        {/* Center — countdown timer */}
-        <div className="flex-1 flex flex-col items-center gap-1">
-            <div
-              className="font-mono text-2xl font-bold tabular-nums"
-              style={{
-                color: isTimerLow ? "#ef4444" : "#f1f5f9",
-                animation: isTimerLow ? "statusDot 1s ease-in-out infinite" : "none",
-              }}
-            >
-              {h}:{m}:{s}
-            </div>
-          {/* Thin timer progress bar */}
-          <div className="w-32 h-0.5 rounded-full bg-white/10 overflow-hidden">
+        {/* Center — prominent countdown timer */}
+        <div className="flex-1 flex flex-col items-center justify-center">
+          <div
+            className="font-mono text-2xl sm:text-3xl font-black tabular-nums tracking-wider"
+            style={{
+              color: isTimerLow ? "#ef4444" : "#f8fafc",
+              textShadow: isTimerLow ? "0 0 12px rgba(239,68,68,0.5)" : "0 0 12px rgba(37,99,235,0.2)",
+            }}
+          >
+            {h}:{m}:{s}
+          </div>
+          <div className="w-36 h-1 rounded-full bg-white/10 overflow-hidden mt-1">
             <div
               className="h-full rounded-full transition-all duration-1000"
               style={{
                 width: `${timerPct}%`,
                 background: isTimerLow
                   ? "linear-gradient(90deg, #ef4444, #f87171)"
-                  : "linear-gradient(90deg, #2563eb, #14b8a6)",
+                  : "linear-gradient(90deg, #2563eb, #06b6d4)",
               }}
             />
           </div>
         </div>
 
-        {/* Right — Network + Paused banner + End button */}
-        <div className="flex items-center gap-4">
+        {/* Right — Network + Signals + End button */}
+        <div className="flex items-center gap-3">
           {isPaused && (
             <button
               onClick={onResume}
-              className="px-3 py-1.5 rounded-lg text-[11px] font-bold text-amber-300 cursor-pointer"
+              className="px-3 py-1.5 rounded-xl text-xs font-bold text-amber-300 cursor-pointer"
               style={{ background: "rgba(245,158,11,0.15)", border: "1px solid rgba(245,158,11,0.3)" }}
             >
-              ▶ Resume
+              Resume Session
             </button>
           )}
 
-          {/* REC + Network */}
-          <div className="hidden md:flex items-center gap-3">
-            <div className="flex items-center gap-1.5">
-              <Wifi className="w-3.5 h-3.5 text-white/30" />
-              <NetworkStrength level={networkLevel} />
-            </div>
+          {/* Network Connection level */}
+          <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-white/5 border border-white/10">
+            <Wifi className="w-3.5 h-3.5 text-white/40" />
+            <NetworkStrength level={networkLevel} />
           </div>
 
-          {/* Live status chips */}
+          {/* Live signal chips */}
           <div className="hidden lg:flex items-center gap-2">
-            <StatusPill label="Mic" on={isMicOn} />
-            <StatusPill label="Camera" on={isCameraOn} />
-            <StatusPill label={isPaused ? "Paused" : "Live"} on={!isPaused} />
+            <StatusPill label="MIC" on={isMicOn} />
+            <StatusPill label="CAMERA" on={isCameraOn} />
+            <StatusPill label={isPaused ? "PAUSED" : "LIVE"} on={!isPaused} />
           </div>
 
-          {/* End Interview */}
+          {/* End Interview button */}
           <button
             id="btn-end-interview"
             onClick={onEndInterview}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-white cursor-pointer transition-all hover:scale-105 active:scale-95"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white cursor-pointer transition-all hover:scale-105 active:scale-95"
             style={{
               background: "linear-gradient(135deg, #dc2626, #b91c1c)",
-              boxShadow: "0 0 20px rgba(220,38,38,0.35)",
-              border: "1px solid rgba(239,68,68,0.3)",
+              boxShadow: "0 0 16px rgba(220,38,38,0.35)",
+              border: "1px solid rgba(239,68,68,0.4)",
             }}
           >
-            <PhoneOff className="w-4 h-4" />
-            <span className="hidden sm:inline">End Interview</span>
+            <PhoneOff className="w-3.5 h-3.5" />
+            <span>END INTERVIEW</span>
           </button>
         </div>
       </header>

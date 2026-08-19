@@ -5,7 +5,7 @@ import { BrainCircuit } from "lucide-react";
  * QuestionCard — Compact header card showing Question number, Category, and Difficulty badge.
  * The question text itself is displayed prominently on the main AI stage.
  */
-function QuestionCard({ currentIndex, totalQuestions, difficulty, category, showQuestionText = false, questionText, estimatedTime }) {
+function QuestionCard({ currentIndex, totalQuestions, difficulty, category, showQuestionText = true, questionText, estimatedTime }) {
   return (
     <div
       className="rounded-2xl overflow-hidden shadow-sm flex flex-col"
@@ -44,9 +44,11 @@ function QuestionCard({ currentIndex, totalQuestions, difficulty, category, show
         </div>
       </div>
 
-      {showQuestionText && (
-        <div className="p-4 border-t border-white/5">
-          <p className="text-xs text-white/80 leading-relaxed">{questionText}</p>
+      {showQuestionText && questionText && (
+        <div className="p-4 border-t border-white/10 bg-slate-950/60">
+          <p className="text-sm sm:text-base text-white/95 font-medium leading-relaxed">
+            {questionText}
+          </p>
         </div>
       )}
     </div>
@@ -54,4 +56,5 @@ function QuestionCard({ currentIndex, totalQuestions, difficulty, category, show
 }
 
 export default QuestionCard;
+
 

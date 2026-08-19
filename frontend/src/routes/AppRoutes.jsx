@@ -61,11 +61,13 @@ function AppRoutes() {
       <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
 
+      {/* Dedicated Real AI Interview Control Room (Standalone without website navbar) */}
+      <Route path="/interview" element={<StartInterview />} />
+      <Route path="/interview/:sessionId" element={<StartInterview />} />
+
       <Route element={<StudentLayout />}>
         <Route path="/dashboard" element={<StudentDashboard />} />
         <Route path="/profile" element={<Profile />} />
-        <Route path="/interview" element={<StartInterview />} />
-        <Route path="/interview/:sessionId" element={<StartInterview />} />
         <Route path="/interview-practice" element={<InterviewPractice />} />
         <Route path="/interview-practice/:companyId" element={<RoundSelection />} />
         <Route path="/interview-practice/:companyId/aptitude" element={<AptitudeRound />} />

@@ -35,6 +35,16 @@ const interviewSchema = new mongoose.Schema(
     overallScore: { type: Number, default: null },
     candidateProfile: { type: mongoose.Schema.Types.Mixed, default: {} },
     generatedQuestions: { type: mongoose.Schema.Types.Mixed, default: [] },
+    aptitudeQuestions: { type: mongoose.Schema.Types.Mixed, default: [] },
+    technicalQuestions: { type: mongoose.Schema.Types.Mixed, default: [] },
+    codingQuestions: { type: mongoose.Schema.Types.Mixed, default: [] },
+    hrQuestions: { type: mongoose.Schema.Types.Mixed, default: [] },
+    roundsProgress: {
+      aptitude: { type: String, default: "NOT_STARTED" },
+      technical: { type: String, default: "NOT_STARTED" },
+      coding: { type: String, default: "NOT_STARTED" },
+      hr: { type: String, default: "NOT_STARTED" },
+    },
     integrityEvents: [
       {
         eventType: { type: String, required: true },

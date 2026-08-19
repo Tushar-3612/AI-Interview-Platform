@@ -3,8 +3,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { AlertTriangle } from "lucide-react";
 import Button from "../ui/Button";
 
-function ConfirmExitDialog({ open, onClose, onConfirm }) {
-  if (!open) return null;
+function ConfirmExitDialog({ isOpen, open, onClose, onConfirm }) {
+  const isVisible = isOpen !== undefined ? isOpen : open;
+  if (!isVisible) return null;
 
   return (
     <AnimatePresence>
