@@ -448,7 +448,20 @@ function PlacementDashboard() {
   }
 
   return (
-    <div className="p-4 sm:p-6 md:p-8 space-y-6 max-w-[1400px] mx-auto w-full">
+    <div className="min-h-screen relative" style={{ background: "var(--bg-primary)" }}>
+      <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
+        <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] rounded-full blur-[180px] opacity-30" style={{ background: "radial-gradient(circle, color-mix(in srgb, var(--primary) 18%, transparent) 0%, transparent 70%)" }} />
+        <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] rounded-full blur-[180px] opacity-25" style={{ background: "radial-gradient(circle, color-mix(in srgb, var(--accent) 15%, transparent) 0%, transparent 70%)" }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full blur-[200px] opacity-15" style={{ background: "radial-gradient(circle, color-mix(in srgb, var(--primary) 10%, transparent) 0%, transparent 70%)" }} />
+        <div className="absolute inset-0 opacity-[0.02]" style={{
+          backgroundImage: `
+            linear-gradient(var(--text-primary) 1px, transparent 1px),
+            linear-gradient(90deg, var(--text-primary) 1px, transparent 1px)
+          `,
+          backgroundSize: '64px 64px'
+        }} />
+      </div>
+      <div className="relative z-10 p-4 sm:p-6 md:p-8 space-y-6 max-w-[1400px] mx-auto w-full">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
@@ -482,6 +495,7 @@ function PlacementDashboard() {
       <SectionCard title="Daily Practice Heatmap" subtitle="Last 6 months of practice activity" icon={Calendar}>
         <Heatmap days={data.heatmap} />
       </SectionCard>
+    </div>
     </div>
   );
 }

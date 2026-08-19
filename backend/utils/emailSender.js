@@ -57,7 +57,7 @@ export const sendReportEmail = async (to, subject, text, html, attachments = [])
     secure: Number(SMTP_PORT) === 465, // true for 465, false for other ports
     auth: {
       user: SMTP_USER,
-      password: SMTP_PASS,
+      pass: SMTP_PASS,
     },
   });
 

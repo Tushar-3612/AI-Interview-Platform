@@ -6,6 +6,8 @@ import mongoSanitize from "express-mongo-sanitize";
 import multer from "multer";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
 import connectDB from "./backend/config/db.js";
 import authRoutes from "./backend/routes/auth.js";
 import adminRoutes from "./backend/routes/admin.js";
@@ -34,13 +36,16 @@ import { cleanupExpiredTrash } from "./backend/controllers/aptitudeController.js
 import { cleanupExpiredCodingTrash } from "./backend/controllers/codingQuestionController.js";
 import { cleanupExpiredCompanyTrash } from "./backend/controllers/companyEnhancedController.js";
 
-// Load .env from root
-dotenv.config(); // ← Ye root mein .env file dhoondhega
+// Load .env from root using absolute path (works regardless of cwd)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.join(__dirname, ".env") });
 
 // Debug - Check if .env loaded
 console.log('📁 Current directory:', process.cwd());
 console.log('🔑 MONGO_URI:', process.env.MONGO_URI ? '✅ Loaded' : '❌ Not Loaded');
 console.log('🔑 GEMINI_API_KEY:', process.env.GEMINI_API_KEY ? '✅ Loaded' : '❌ Not Loaded');
+console.log('📧 SMTP_USER:', process.env.SMTP_USER ? '✅ Loaded' : '❌ Not Loaded');
 
 /* ================================
    DATABASE CONNECTION + SEED
