@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
@@ -399,11 +399,14 @@ function StartInterview() {
         }
 
         // Session-based timer: derive remaining time from the backend session
-        // start so a page refresh does NOT reset the countdown.
-        if (data.startedAt) {
-          const startTs = new Date(data.startedAt).getTime();
-          sessionEndTimeRef.current = startTs + INTERVIEW_DURATION_MIN * 60000;
-          const remaining = Math.max(0, Math.round((sessionEndTimeRef.current - Date.now()) / 1000));
+        // deadline (expiresAt preferred, else startedAt + duration) so a page
+        // refresh does NOT reset the countdown to 02:30:00.
+        if (data.expiresAt || data.startedAt) {
+          const endTs = data.expiresAt
+            ? new Date(data.expiresAt).getTime()
+            : new Date(data.startedAt).getTime() + INTERVIEW_DURATION_MIN * 60000;
+          sessionEndTimeRef.current = endTs;
+          const remaining = Math.max(0, Math.round((endTs - Date.now()) / 1000));
           setTimerSeconds(remaining);
         }
       } catch (err) {
@@ -417,14 +420,19 @@ function StartInterview() {
     loadSession();
   }, [paramSessionId]);
 
-  // ─── REAL SECTION PROGRESS CALCULATIONS ───
-  const getSectionProgress = useCallback(() => {
+  // ─── SINGLE SOURCE OF TRUTH: SESSION PROGRESS ───
+  // Every progress readout (sidebar, overall, section headers, completion
+  // stats) is derived from this one memoized object so no UI shows a
+  // different number. Progress = actually-submitted (non-empty) answers only.
+  const SECTION_TOTALS = { APTITUDE: 25, TECHNICAL: 25, CODING: 3, HR: 5 };
+  const sessionProgress = useMemo(() => {
     const counts = {
-      APTITUDE: { completed: 0, total: 25 },
-      TECHNICAL: { completed: 0, total: 25 },
-      CODING: { completed: 0, total: 3 },
-      HR: { completed: 0, total: 5 },
+      APTITUDE: { completed: 0, total: SECTION_TOTALS.APTITUDE },
+      TECHNICAL: { completed: 0, total: SECTION_TOTALS.TECHNICAL },
+      CODING: { completed: 0, total: SECTION_TOTALS.CODING },
+      HR: { completed: 0, total: SECTION_TOTALS.HR },
       totalCompleted: 0,
+      totalQuestions: 58,
     };
 
     const answeredIds = new Set(
@@ -465,7 +473,22 @@ function StartInterview() {
     if (targetIdx !== -1) {
       stopSpeechRecognition();
       window.speechSynthesis?.cancel();
-      handleSaveAnswer("answered");
+
+      // Persist only a genuinely-provided answer for the CURRENT question.
+      // Navigation alone must NOT increment progress (no blank/starter-code
+      // submissions), so we guard against empty and unmodified starter code.
+      const isCurrentCoding = currentSection === "CODING";
+      const currentAnswerText = isCurrentCoding ? currentCode : typedResponse;
+      const starter = currentQuestion.starterCode || "def solution():\n    pass";
+      const hasRealAnswer =
+        currentAnswerText &&
+        currentAnswerText.trim().length > 0 &&
+        (!isCurrentCoding || currentAnswerText.trim() !== starter.trim());
+
+      if (hasRealAnswer) {
+        handleSaveAnswer("answered");
+      }
+
       setCurrentIndex(targetIdx + 1);
       toast.success(`Switched to ${targetSection} section`);
     }
@@ -790,8 +813,8 @@ function StartInterview() {
   };
 
   const getCompletedStats = () => {
-    const answered = savedAnswers.filter((a) => a.status === "answered" && a.answer?.trim()).length;
-    const skipped = Math.max(0, questions.length - answered);
+    const answered = sessionProgress.totalCompleted;
+    const skipped = Math.max(0, sessionProgress.totalQuestions - answered);
     const secsUsed = totalSeconds - timerSeconds;
     const mins = Math.floor(secsUsed / 60).toString().padStart(2, "0");
     const secs = (secsUsed % 60).toString().padStart(2, "0");
@@ -803,7 +826,7 @@ function StartInterview() {
   };
 
   const sectionQuestions = questions.filter((q) => q.section === currentSection);
-  const sectionTotal = sectionQuestions.length || (currentSection === "APTITUDE" ? 25 : currentSection === "TECHNICAL" ? 25 : currentSection === "CODING" ? 3 : 5);
+  const sectionTotal = sessionProgress[currentSection]?.total ?? (currentSection === "APTITUDE" ? 25 : currentSection === "TECHNICAL" ? 25 : currentSection === "CODING" ? 3 : 5);
   const questionIdxInSection = sectionQuestions.findIndex((q) => (q.id || q.questionId) === (currentQuestion.id || currentQuestion.questionId)) + 1;
   const formattedSectionQuestionIndex = questionIdxInSection > 0 ? String(questionIdxInSection).padStart(2, "0") : "01";
 
@@ -838,9 +861,9 @@ function StartInterview() {
             <span className="text-xs font-black tracking-wider text-amber-400 uppercase flex items-center gap-1.5">
               {currentSection} — Question {formattedSectionQuestionIndex} / {String(sectionTotal).padStart(2, "0")}
             </span>
-            <span className="text-[11px] font-bold text-white/40 font-mono">
-              Overall: {String(currentIndex).padStart(2, "0")} / {String(questions.length).padStart(2, "0")}
-            </span>
+              <span className="text-[11px] font-bold text-white/40 font-mono">
+                Overall: {String(sessionProgress.totalCompleted).padStart(2, "0")} / {String(sessionProgress.totalQuestions).padStart(2, "0")}
+              </span>
           </div>
           <QuestionCard
             questionText={currentQuestion?.question}
@@ -1016,6 +1039,7 @@ function StartInterview() {
         <NavigationControls
           currentIndex={currentIndex}
           totalQuestions={questions.length}
+          answeredCount={sessionProgress.totalCompleted}
           isPaused={isPaused}
           onPrev={handlePrevQuestion}
           onNext={handleNextQuestion}
@@ -1174,7 +1198,7 @@ function StartInterview() {
           <SectionNavigationPanel
             activeSection={currentSection}
             onSelectSection={handleSelectSection}
-            sectionProgress={getSectionProgress()}
+            sectionProgress={sessionProgress}
           />
         }
 

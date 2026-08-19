@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Outlet, Navigate, useNavigate } from "react-router-dom";
+import { Outlet, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import Navbar from "../components/student/Navbar";
@@ -19,6 +19,11 @@ function StudentLayout() {
     return <Navigate to="/" replace />;
   }
 
+  // The dedicated interview room renders its own full-screen environment and
+  // must NOT show the website navbar. Detect the interview route.
+  const isInterviewRoute =
+    location.pathname === "/interview" || location.pathname.startsWith("/interview/");
+
   const handleStartInterview = (formData) => {
     updateProfile({
       ...formData,
@@ -31,7 +36,7 @@ function StudentLayout() {
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "var(--bg-primary)" }}>
-      <Navbar onStartInterview={() => setInterviewModalOpen(true)} />
+      {!isInterviewRoute && <Navbar onStartInterview={() => setInterviewModalOpen(true)} />}
 
       <motion.main
         className="flex-1"

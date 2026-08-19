@@ -10,6 +10,7 @@ import { ChevronLeft, ChevronRight, SkipForward, Volume2, Loader2 } from "lucide
 function NavigationControls({
   currentIndex,
   totalQuestions,
+  answeredCount = 0,
   isPaused,
   onPrev,
   onNext,
@@ -76,13 +77,13 @@ function NavigationControls({
         )}
       </button>
 
-      {/* ── Progress label ── */}
+      {/* ── Progress label (completed / total, single source of truth) ── */}
       <div className="flex items-center justify-between px-0.5">
         <span className="text-[11px] font-semibold text-white/35 uppercase tracking-widest">
           Progress
         </span>
         <span className="text-[11px] font-bold text-white/60">
-          {currentIndex} <span className="text-white/25">/ {totalQuestions}</span>
+          {answeredCount} <span className="text-white/25">/ {totalQuestions}</span>
         </span>
       </div>
 
