@@ -445,7 +445,7 @@ export const submitCoding = async (req, res) => {
         passed: false,
         isHidden: Boolean(tc.isHidden),
         input: tc.isHidden ? "" : String(tc.input),
-        expected: tc.isHidden ? "" : String(tc.expected),
+        expected: tc.isHidden ? "" : String(tc.expected ?? tc.output ?? tc.expectedOutput ?? ""),
         actual: "",
         error: errorMsg,
         timeMs: 0,
@@ -486,14 +486,14 @@ export const submitCoding = async (req, res) => {
         error = raw.slice("__runtime_error__:".length);
         actual = "";
       }
-      const passed = !error && normalizeOutput(raw) === normalizeOutput(tc.expected);
+      const passed = !error && normalizeOutput(raw) === normalizeOutput(tc.expected ?? tc.output ?? tc.expectedOutput ?? "");
       if (passed) passedCount++;
       return {
         index: index + 1,
         passed,
         isHidden: Boolean(tc.isHidden),
         input: tc.isHidden ? "" : String(tc.input),
-        expected: tc.isHidden ? "" : String(tc.expected),
+        expected: tc.isHidden ? "" : String(tc.expected ?? tc.output ?? tc.expectedOutput ?? ""),
         actual: passed ? "" : actual,
         error,
         timeMs: 0,

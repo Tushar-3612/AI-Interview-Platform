@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   History,
@@ -13,51 +13,82 @@ import {
   CheckCircle,
   Clock,
   AlertCircle,
+  Mail,
+  Filter,
+  ArrowUpDown,
+  ExternalLink,
+  Target,
+  Code2,
+  UserCheck,
 } from "lucide-react";
 import api from "../../utils/api";
 import { getAuthToken } from "../../hooks/useStudentProfile";
 
 function InterviewHistory() {
   const token = getAuthToken();
-  const [searchParams, setSearchParams] = useSearchParams();
-  
-  const [interviews, setInterviews] = useState([]);
-  const [results, setResults] = useState([]);
+  const navigate = useNavigate();
+
+  const [historyList, setHistoryList] = useState([]);
   const [expandedId, setExpandedId] = useState(null);
   const [loading, setLoading] = useState(true);
-  
-  // Tab state - default to "actual" or read from URL
-  const activeTab = searchParams.get("tab") || "actual";
+
+  // Filters & Sorting state
+  const [statusFilter, setStatusFilter] = useState("ALL"); // ALL | COMPLETED | IN_PROGRESS
+  const [sortBy, setSortBy] = useState("NEWEST"); // NEWEST | OLDEST | HIGHEST | LOWEST
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchHistory = async () => {
       try {
         const headers = { Authorization: `Bearer ${token}` };
-        const [interviewsRes, resultsRes] = await Promise.all([
-          api.get("/api/student/interviews", { headers }),
-          api.get("/api/student/results", { headers }),
-        ]);
-        setInterviews(interviewsRes.data || []);
-        setResults(resultsRes.data || []);
-      } catch {
-        // data stays empty
+        const { data } = await api.get("/api/interview/history", { headers });
+        setHistoryList(data.history || []);
+      } catch (err) {
+        console.warn("Fetch history notice:", err.message);
+        // Fallback to legacy endpoint if history endpoint is buffering
+        try {
+          const headers = { Authorization: `Bearer ${token}` };
+          const { data: legacyInterviews } = await api.get("/api/student/interviews", { headers });
+          const { data: legacyResults } = await api.get("/api/student/results", { headers });
+          
+          const resultMap = {};
+          (legacyResults || []).forEach((r) => { resultMap[r.interviewId] = r; });
+
+          const fallbackList = (legacyInterviews || []).map((item, idx) => ({
+            id: item._id,
+            interviewId: item._id,
+            attemptNumber: legacyInterviews.length - idx,
+            startedAt: item.createdAt,
+            completedAt: item.completedAt,
+            status: item.status,
+            isEndedEarly: false,
+            overallScore: resultMap[item._id]?.overallScore || 0,
+            scores: {
+              aptitude: resultMap[item._id]?.aptitudeScore || 0,
+              technical: resultMap[item._id]?.technicalScore || 0,
+              coding: resultMap[item._id]?.codingScore || 0,
+              hr: resultMap[item._id]?.hrScore || 0,
+            },
+            emailStatus: resultMap[item._id]?.email?.status || "SIMULATED",
+            result: resultMap[item._id] || null,
+          }));
+
+          setHistoryList(fallbackList);
+        } catch (fallbackErr) {
+          console.error("Fallback history error:", fallbackErr);
+        }
       } finally {
         setLoading(false);
       }
     };
-    fetchData();
+    fetchHistory();
   }, [token]);
 
   const toggleExpand = (id) => {
     setExpandedId((prev) => (prev === id ? null : id));
   };
 
-  const getResultForInterview = (interviewId) => {
-    return results.find((r) => r.interviewId === interviewId);
-  };
-
   const formatDate = (d) => {
-    if (!d) return "";
+    if (!d) return "N/A";
     return new Date(d).toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
@@ -65,432 +96,234 @@ function InterviewHistory() {
     });
   };
 
-  // Filter interviews based on tab
-  const actualInterviews = interviews.filter(
-    (i) => i.interviewType === "actual" && i.status === "completed"
-  );
-  const mockInterviews = interviews.filter(
-    (i) => i.interviewType === "mock"
-  );
-  
-  const completedMockInterviews = mockInterviews.filter((i) => i.status === "completed");
-  const inProgressMockInterviews = mockInterviews.filter((i) => i.status === "in_progress");
+  // Filter items
+  const filteredList = historyList.filter((item) => {
+    if (statusFilter === "COMPLETED") return item.status === "completed";
+    if (statusFilter === "IN_PROGRESS") return item.status === "in_progress" || item.status === "IN_PROGRESS";
+    return true;
+  });
 
-  const handleTabChange = (tab) => {
-    setSearchParams({ tab });
-  };
-
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case "completed":
-        return <CheckCircle className="w-4 h-4 text-emerald-500" />;
-      case "in_progress":
-        return <Clock className="w-4 h-4 text-amber-500" />;
-      default:
-        return <AlertCircle className="w-4 h-4 text-neutral-400" />;
-    }
-  };
+  // Sort items
+  const sortedList = [...filteredList].sort((a, b) => {
+    if (sortBy === "NEWEST") return new Date(b.startedAt) - new Date(a.startedAt);
+    if (sortBy === "OLDEST") return new Date(a.startedAt) - new Date(b.startedAt);
+    if (sortBy === "HIGHEST") return (b.overallScore || 0) - (a.overallScore || 0);
+    if (sortBy === "LOWEST") return (a.overallScore || 0) - (b.overallScore || 0);
+    return 0;
+  });
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+        
+        {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold mb-2" style={{ color: "var(--text-primary)" }}>
+            <h1 className="text-2xl sm:text-3xl font-black mb-1 text-white">
               Interview History
             </h1>
-            <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-              Your past interview sessions and evaluations.
+            <p className="text-xs text-white/50">
+              Persistent attempt records and evaluation scorecards.
             </p>
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="flex gap-2 mb-6 p-1 bg-[var(--bg-primary)] rounded-xl border border-[var(--border)]">
-          <button
-            onClick={() => handleTabChange("actual")}
-            className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold transition-all cursor-pointer ${
-              activeTab === "actual"
-                ? "bg-[var(--card-bg)] shadow-sm text-[var(--text-primary)]"
-                : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
-            }`}
-          >
-            <span className="flex items-center justify-center gap-2">
-              <Briefcase className="w-4 h-4" />
-              Actual Interviews
-              {actualInterviews.length > 0 && (
-                <span className="text-xs px-1.5 py-0.5 rounded-full bg-[var(--primary)] text-white">
-                  {actualInterviews.length}
-                </span>
-              )}
-            </span>
-          </button>
-          <button
-            onClick={() => handleTabChange("mock")}
-            className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold transition-all cursor-pointer ${
-              activeTab === "mock"
-                ? "bg-[var(--card-bg)] shadow-sm text-[var(--text-primary)]"
-                : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
-            }`}
-          >
-            <span className="flex items-center justify-center gap-2">
-              <BrainCircuit className="w-4 h-4" />
-              Mock Interviews
-              {mockInterviews.length > 0 && (
-                <span className="text-xs px-1.5 py-0.5 rounded-full bg-[var(--primary)] text-white">
-                  {mockInterviews.length}
-                </span>
-              )}
-            </span>
-          </button>
+        {/* Filters & Sorting Bar */}
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-6 p-3 rounded-2xl bg-slate-900/80 border border-white/10">
+          <div className="flex items-center gap-2">
+            <Filter className="w-4 h-4 text-blue-400" />
+            <span className="text-xs font-extrabold uppercase text-white/50">Status:</span>
+            <div className="flex gap-1 bg-white/5 p-1 rounded-xl border border-white/10">
+              {["ALL", "COMPLETED", "IN_PROGRESS"].map((f) => (
+                <button
+                  key={f}
+                  onClick={() => setStatusFilter(f)}
+                  className={`px-3 py-1 rounded-lg text-[11px] font-extrabold cursor-pointer transition-all ${
+                    statusFilter === f
+                      ? "bg-blue-600 text-white shadow-md"
+                      : "text-white/50 hover:text-white"
+                  }`}
+                >
+                  {f === "ALL" ? "All Attempts" : f === "COMPLETED" ? "Completed" : "In Progress"}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <ArrowUpDown className="w-4 h-4 text-amber-400" />
+            <span className="text-xs font-extrabold uppercase text-white/50">Sort:</span>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-950 border border-white/10 text-white/90 outline-none cursor-pointer"
+            >
+              <option value="NEWEST">Newest First</option>
+              <option value="OLDEST">Oldest First</option>
+              <option value="HIGHEST">Highest Score</option>
+              <option value="LOWEST">Lowest Score</option>
+            </select>
+          </div>
         </div>
 
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-6 h-6 animate-spin" style={{ color: "var(--primary)" }} />
+            <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
+          </div>
+        ) : sortedList.length === 0 ? (
+          <div className="p-12 text-center rounded-3xl bg-slate-900/60 border border-white/10">
+            <History className="w-10 h-10 mx-auto mb-3 text-white/30" />
+            <p className="text-white/70 font-bold text-sm">No interview attempts found.</p>
+            <p className="text-xs text-white/40 mt-1">
+              Start an interview session to build your persistent interview history.
+            </p>
           </div>
         ) : (
-          <>
-            {/* Actual Interviews Tab */}
-            {activeTab === "actual" && (
-              <div className="space-y-4">
-                {actualInterviews.length === 0 ? (
-                  <div className="student-card p-12 text-center">
-                    <History className="w-10 h-10 mx-auto mb-3" style={{ color: "var(--text-muted)" }} />
-                    <p style={{ color: "var(--text-secondary)" }}>No actual interviews yet. Complete a real interview to see it here.</p>
-                  </div>
-                ) : (
-                  actualInterviews.map((item, i) => {
-                    const isExpanded = expandedId === item._id;
-                    const result = getResultForInterview(item._id);
-                    const hasPassed = result && (result.overallScore || 0) >= 70;
+          <div className="space-y-4">
+            {sortedList.map((item, i) => {
+              const isExpanded = expandedId === item.id;
+              const isCompleted = item.status === "completed";
+              const overallPct = item.overallScore || 0;
 
-                    return (
-                      <motion.div
-                        key={item._id}
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.05 }}
-                        className="student-card overflow-hidden"
+              return (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.04 }}
+                  className="rounded-2xl bg-slate-900/90 border border-white/10 overflow-hidden transition-all hover:border-white/20"
+                >
+                  <div className="p-4 sm:p-5 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3.5 min-w-0">
+                      <div
+                        className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border"
+                        style={{
+                          backgroundColor: isCompleted ? "rgba(16,185,129,0.12)" : "rgba(245,158,11,0.12)",
+                          borderColor: isCompleted ? "rgba(16,185,129,0.3)" : "rgba(245,158,11,0.3)",
+                        }}
                       >
+                        {isCompleted ? <CheckCircle className="w-5 h-5 text-emerald-400" /> : <Clock className="w-5 h-5 text-amber-400" />}
+                      </div>
+
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="font-extrabold text-sm text-white">
+                            INTERVIEW #{String(item.attemptNumber).padStart(2, "0")}
+                          </span>
+                          {item.isEndedEarly && (
+                            <span className="px-2 py-0.5 rounded-md text-[9px] font-black uppercase bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                              ENDED EARLY
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[11px] font-medium text-white/40 flex items-center gap-1 mt-0.5">
+                          <Calendar className="w-3 h-3" />
+                          {formatDate(item.startedAt)}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Scores & Actions */}
+                    <div className="flex items-center gap-3 shrink-0">
+                      <div className="text-right">
+                        {isCompleted ? (
+                          <>
+                            <p className="text-base font-black font-mono" style={{ color: overallPct >= 70 ? "#34d399" : "#f59e0b" }}>
+                              {overallPct}%
+                            </p>
+                            <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-white/5 text-white/50">
+                              COMPLETED
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <p className="text-sm font-bold text-amber-400">IN PROGRESS</p>
+                            <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-white/5 text-white/50">
+                              ACTIVE
+                            </span>
+                          </>
+                        )}
+                      </div>
+
+                      {/* View Result button */}
+                      {isCompleted && (
                         <button
-                          type="button"
-                          onClick={() => toggleExpand(item._id)}
-                          className="w-full p-5 text-left flex items-center justify-between gap-4 cursor-pointer hover:bg-neutral-800/10 transition"
+                          onClick={() => navigate(`/interview-history/${item.id}/result`)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white cursor-pointer transition-all shadow-md"
                         >
-                          <div className="flex items-center gap-4 min-w-0">
-                            <div
-                              className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                              style={{
-                                background: result
-                                  ? "color-mix(in srgb, var(--success) 10%, transparent)"
-                                  : "color-mix(in srgb, var(--text-muted) 10%, transparent)",
-                              }}
-                            >
-                              <Briefcase
-                                className="w-5 h-5"
-                                style={{
-                                  color: result ? "var(--success)" : "var(--text-muted)",
-                                }}
-                              />
-                            </div>
-                            <div className="min-w-0">
-                              <p className="font-semibold text-sm truncate" style={{ color: "var(--text-primary)" }}>
-                                Interview #{i + 1}
-                              </p>
-                              <p className="text-xs flex items-center gap-1 mt-0.5" style={{ color: "var(--text-muted)" }}>
-                                <Calendar className="w-3.5 h-3.5" /> {item.completedAt ? formatDate(item.completedAt) : (item.createdAt ? formatDate(item.createdAt) : "Unknown date")}
-                              </p>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-3 shrink-0">
-                            <div className="text-right">
-                              <p className="text-sm font-bold" style={{ color: result ? (hasPassed ? "var(--success)" : "var(--error)") : "var(--text-muted)" }}>
-                                {result ? `${result.overallScore || 0}%` : "No result"}
-                              </p>
-                              <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
-                                {result ? (hasPassed ? "PASSED" : "FAILED") : "PENDING"}
-                              </p>
-                            </div>
-                            {isExpanded ? <ChevronUp className="w-4 h-4 text-neutral-400" /> : <ChevronDown className="w-4 h-4 text-neutral-400" />}
-                          </div>
+                          <span>View Result</span>
+                          <ExternalLink className="w-3 h-3" />
                         </button>
+                      )}
 
-                        <AnimatePresence>
-                          {isExpanded && result && (
-                            <motion.div
-                              initial={{ height: 0, opacity: 0 }}
-                              animate={{ height: "auto", opacity: 1 }}
-                              exit={{ height: 0, opacity: 0 }}
-                              className="border-t px-6 py-5 space-y-4"
-                              style={{ borderColor: "var(--border)", background: "var(--input-bg)" }}
-                            >
-                              <div className="grid grid-cols-3 gap-2 text-center border-b pb-4" style={{ borderColor: "var(--border)" }}>
-                                <div>
-                                  <p className="text-[10px] uppercase font-bold text-neutral-400">Technical</p>
-                                  <p className="text-sm font-semibold text-neutral-200 mt-0.5">{result.technicalScore ?? "--"}</p>
-                                </div>
-                                <div>
-                                  <p className="text-[10px] uppercase font-bold text-neutral-400">Resume</p>
-                                  <p className="text-sm font-semibold text-neutral-200 mt-0.5">{result.resumeScore ?? "--"}</p>
-                                </div>
-                                <div>
-                                  <p className="text-[10px] uppercase font-bold text-neutral-400">Coding</p>
-                                  <p className="text-sm font-semibold text-neutral-200 mt-0.5">{result.codingScore ?? "--"}</p>
-                                </div>
-                              </div>
-
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                                <div className="space-y-1.5">
-                                  <h4 className="text-xs font-bold text-neutral-400 flex items-center gap-1.5">
-                                    <Award className="w-3.5 h-3.5 text-green-500" />
-                                    Strengths
-                                  </h4>
-                                  <ul className="text-xs space-y-1 list-disc pl-4 text-neutral-300">
-                                    {(result.strengths || []).length > 0
-                                      ? result.strengths.map((s, idx) => <li key={idx}>{s}</li>)
-                                      : <li>No strengths recorded</li>}
-                                  </ul>
-                                </div>
-
-                                <div className="space-y-1.5">
-                                  <h4 className="text-xs font-bold text-neutral-400 flex items-center gap-1.5">
-                                    <BrainCircuit className="w-3.5 h-3.5 text-red-400" />
-                                    Areas to Improve
-                                  </h4>
-                                  <ul className="text-xs space-y-1 list-disc pl-4 text-neutral-300">
-                                    {(result.weaknesses || []).length > 0
-                                      ? result.weaknesses.map((w, idx) => <li key={idx}>{w}</li>)
-                                      : <li>No improvement areas recorded</li>}
-                                  </ul>
-                                </div>
-                              </div>
-
-                              {result.recommendation && (
-                                <div className="pt-2 border-t" style={{ borderColor: "var(--border)" }}>
-                                  <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-1">Recommendation</p>
-                                  <p className="text-xs text-neutral-300 italic">{result.recommendation}</p>
-                                </div>
-                              )}
-                            </motion.div>
-                          )}
-
-                          {isExpanded && !result && (
-                            <motion.div
-                              initial={{ height: 0, opacity: 0 }}
-                              animate={{ height: "auto", opacity: 1 }}
-                              exit={{ height: 0, opacity: 0 }}
-                              className="border-t px-6 py-5"
-                              style={{ borderColor: "var(--border)", background: "var(--input-bg)" }}
-                            >
-                              <p className="text-xs text-center" style={{ color: "var(--text-muted)" }}>
-                                No evaluation result available for this session yet.
-                              </p>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </motion.div>
-                    );
-                  })
-                )}
-              </div>
-            )}
-
-            {/* Mock Interviews Tab */}
-            {activeTab === "mock" && (
-              <div className="space-y-6">
-                {/* Summary */}
-                {(completedMockInterviews.length > 0 || inProgressMockInterviews.length > 0) && (
-                  <div className="flex gap-4 text-sm">
-                    {completedMockInterviews.length > 0 && (
-                      <span className="flex items-center gap-1.5 text-emerald-600">
-                        <CheckCircle className="w-4 h-4" />
-                        {completedMockInterviews.length} Completed
-                      </span>
-                    )}
-                    {inProgressMockInterviews.length > 0 && (
-                      <span className="flex items-center gap-1.5 text-amber-600">
-                        <Clock className="w-4 h-4" />
-                        {inProgressMockInterviews.length} In Progress
-                      </span>
-                    )}
-                  </div>
-                )}
-
-                {mockInterviews.length === 0 ? (
-                  <div className="student-card p-12 text-center">
-                    <History className="w-10 h-10 mx-auto mb-3" style={{ color: "var(--text-muted)" }} />
-                    <p style={{ color: "var(--text-secondary)" }}>No mock interviews yet. Start a practice interview to see it here.</p>
-                  </div>
-                ) : (
-                  mockInterviews.map((item, i) => {
-                    const isExpanded = expandedId === item._id;
-                    const result = getResultForInterview(item._id);
-                    const isCompleted = item.status === "completed";
-                    const isInProgress = item.status === "in_progress";
-
-                    return (
-                      <motion.div
-                        key={item._id}
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.05 }}
-                        className="student-card overflow-hidden"
+                      <button
+                        onClick={() => toggleExpand(item.id)}
+                        className="p-1.5 rounded-lg text-white/40 hover:text-white cursor-pointer hover:bg-white/5 transition"
                       >
-                        <button
-                          type="button"
-                          onClick={() => toggleExpand(item._id)}
-                          className="w-full p-5 text-left flex items-center justify-between gap-4 cursor-pointer hover:bg-neutral-800/10 transition"
-                        >
-                          <div className="flex items-center gap-4 min-w-0">
-                            <div
-                              className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                              style={{
-                                background: isCompleted
-                                  ? "color-mix(in srgb, var(--success) 10%, transparent)"
-                                  : isInProgress
-                                  ? "color-mix(in srgb, var(--warning) 10%, transparent)"
-                                  : "color-mix(in srgb, var(--text-muted) 10%, transparent)",
-                              }}
-                            >
-                              {getStatusIcon(item.status)}
+                        {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Expanded Breakdown */}
+                  <AnimatePresence>
+                    {isExpanded && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="border-t border-white/10 p-5 bg-slate-950/60 space-y-4"
+                      >
+                        {/* 4-Round Scores */}
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+                          <div className="p-2.5 rounded-xl bg-white/5 border border-white/5">
+                            <div className="flex items-center justify-center gap-1 text-[10px] font-extrabold uppercase text-white/40">
+                              <Target className="w-3 h-3 text-amber-400" /> Aptitude
                             </div>
-                            <div className="min-w-0">
-                              <p className="font-semibold text-sm truncate" style={{ color: "var(--text-primary)" }}>
-                                Mock Interview #{i + 1}
-                              </p>
-                              <p className="text-xs flex items-center gap-1 mt-0.5" style={{ color: "var(--text-muted)" }}>
-                                <Calendar className="w-3.5 h-3.5" /> {item.createdAt ? formatDate(item.createdAt) : "Unknown date"}
-                              </p>
-                            </div>
+                            <p className="font-mono text-sm font-bold text-white mt-1">{item.scores?.aptitude || 0}%</p>
                           </div>
-
-                          <div className="flex items-center gap-3 shrink-0">
-                            <div className="text-right">
-                              {isCompleted && result ? (
-                                <>
-                                  <p className="text-sm font-bold" style={{ color: (result.overallScore || 0) >= 70 ? "var(--success)" : "var(--error)" }}>
-                                    {result.overallScore || 0}%
-                                  </p>
-                                  <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>Completed</p>
-                                </>
-                              ) : isInProgress ? (
-                                <>
-                                  <p className="text-sm font-bold text-amber-500">In Progress</p>
-                                  <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>No Result Yet</p>
-                                </>
-                              ) : (
-                                <>
-                                  <p className="text-sm font-bold" style={{ color: "var(--text-muted)" }}>--</p>
-                                  <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>Not Started</p>
-                                </>
-                              )}
+                          <div className="p-2.5 rounded-xl bg-white/5 border border-white/5">
+                            <div className="flex items-center justify-center gap-1 text-[10px] font-extrabold uppercase text-white/40">
+                              <BrainCircuit className="w-3 h-3 text-blue-400" /> Technical
                             </div>
-                            {isExpanded ? <ChevronUp className="w-4 h-4 text-neutral-400" /> : <ChevronDown className="w-4 h-4 text-neutral-400" />}
+                            <p className="font-mono text-sm font-bold text-white mt-1">{item.scores?.technical || 0}%</p>
                           </div>
-                        </button>
+                          <div className="p-2.5 rounded-xl bg-white/5 border border-white/5">
+                            <div className="flex items-center justify-center gap-1 text-[10px] font-extrabold uppercase text-white/40">
+                              <Code2 className="w-3 h-3 text-emerald-400" /> Coding
+                            </div>
+                            <p className="font-mono text-sm font-bold text-white mt-1">{item.scores?.coding || 0}%</p>
+                          </div>
+                          <div className="p-2.5 rounded-xl bg-white/5 border border-white/5">
+                            <div className="flex items-center justify-center gap-1 text-[10px] font-extrabold uppercase text-white/40">
+                              <UserCheck className="w-3 h-3 text-purple-400" /> HR
+                            </div>
+                            <p className="font-mono text-sm font-bold text-white mt-1">{item.scores?.hr || 0}%</p>
+                          </div>
+                        </div>
 
-                        <AnimatePresence>
-                          {isExpanded && isCompleted && result && (
-                            <motion.div
-                              initial={{ height: 0, opacity: 0 }}
-                              animate={{ height: "auto", opacity: 1 }}
-                              exit={{ height: 0, opacity: 0 }}
-                              className="border-t px-6 py-5 space-y-4"
-                              style={{ borderColor: "var(--border)", background: "var(--input-bg)" }}
+                        {/* Email status banner */}
+                        <div className="flex items-center justify-between pt-2 border-t border-white/5 text-xs text-white/60">
+                          <span className="flex items-center gap-1.5">
+                            <Mail className="w-3.5 h-3.5 text-blue-400" />
+                            Email Delivery Status: <strong className="text-emerald-400 uppercase">{item.emailStatus || "SIMULATED"}</strong>
+                          </span>
+                          {isCompleted && (
+                            <button
+                              onClick={() => navigate(`/interview-history/${item.id}/result`)}
+                              className="text-xs font-bold text-blue-400 hover:underline cursor-pointer"
                             >
-                              <div className="grid grid-cols-3 gap-2 text-center border-b pb-4" style={{ borderColor: "var(--border)" }}>
-                                <div>
-                                  <p className="text-[10px] uppercase font-bold text-neutral-400">Technical</p>
-                                  <p className="text-sm font-semibold text-neutral-200 mt-0.5">{result.technicalScore ?? "--"}</p>
-                                </div>
-                                <div>
-                                  <p className="text-[10px] uppercase font-bold text-neutral-400">Resume</p>
-                                  <p className="text-sm font-semibold text-neutral-200 mt-0.5">{result.resumeScore ?? "--"}</p>
-                                </div>
-                                <div>
-                                  <p className="text-[10px] uppercase font-bold text-neutral-400">Coding</p>
-                                  <p className="text-sm font-semibold text-neutral-200 mt-0.5">{result.codingScore ?? "--"}</p>
-                                </div>
-                              </div>
-
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                                <div className="space-y-1.5">
-                                  <h4 className="text-xs font-bold text-neutral-400 flex items-center gap-1.5">
-                                    <Award className="w-3.5 h-3.5 text-green-500" />
-                                    Strengths
-                                  </h4>
-                                  <ul className="text-xs space-y-1 list-disc pl-4 text-neutral-300">
-                                    {(result.strengths || []).length > 0
-                                      ? result.strengths.map((s, idx) => <li key={idx}>{s}</li>)
-                                      : <li>No strengths recorded</li>}
-                                  </ul>
-                                </div>
-
-                                <div className="space-y-1.5">
-                                  <h4 className="text-xs font-bold text-neutral-400 flex items-center gap-1.5">
-                                    <BrainCircuit className="w-3.5 h-3.5 text-red-400" />
-                                    Areas to Improve
-                                  </h4>
-                                  <ul className="text-xs space-y-1 list-disc pl-4 text-neutral-300">
-                                    {(result.weaknesses || []).length > 0
-                                      ? result.weaknesses.map((w, idx) => <li key={idx}>{w}</li>)
-                                      : <li>No improvement areas recorded</li>}
-                                  </ul>
-                                </div>
-                              </div>
-
-                              {result.recommendation && (
-                                <div className="pt-2 border-t" style={{ borderColor: "var(--border)" }}>
-                                  <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-1">Recommendation</p>
-                                  <p className="text-xs text-neutral-300 italic">{result.recommendation}</p>
-                                </div>
-                              )}
-                            </motion.div>
+                              Open Full Scorecard Dashboard →
+                            </button>
                           )}
-
-                          {isExpanded && isInProgress && (
-                            <motion.div
-                              initial={{ height: 0, opacity: 0 }}
-                              animate={{ height: "auto", opacity: 1 }}
-                              exit={{ height: 0, opacity: 0 }}
-                              className="border-t px-6 py-5"
-                              style={{ borderColor: "var(--border)", background: "var(--input-bg)" }}
-                            >
-                              <div className="text-center space-y-3">
-                                <Clock className="w-8 h-8 mx-auto text-amber-500" />
-                                <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-                                  This mock interview is in progress
-                                </p>
-                                <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-                                  Complete the interview to see your results.
-                                </p>
-                              </div>
-                            </motion.div>
-                          )}
-
-                          {isExpanded && !isCompleted && !isInProgress && (
-                            <motion.div
-                              initial={{ height: 0, opacity: 0 }}
-                              animate={{ height: "auto", opacity: 1 }}
-                              exit={{ height: 0, opacity: 0 }}
-                              className="border-t px-6 py-5"
-                              style={{ borderColor: "var(--border)", background: "var(--input-bg)" }}
-                            >
-                              <p className="text-xs text-center" style={{ color: "var(--text-muted)" }}>
-                                This interview has not been started yet.
-                              </p>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
+                        </div>
                       </motion.div>
-                    );
-                  })
-                )}
-              </div>
-            )}
-          </>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              );
+            })}
+          </div>
         )}
       </motion.div>
     </div>

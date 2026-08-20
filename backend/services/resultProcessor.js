@@ -13,6 +13,8 @@ import {
   executeBatch,
   normalizeLanguage,
   isStdinLanguage,
+  compareOutputs,
+  COMPARISON_MODES,
 } from "../services/codeExecutionService.js";
 
 function findFunctionName(code) {
@@ -110,6 +112,23 @@ function normalizeOutput(value) {
   }
 }
 
+function parseCaseMarker(raw) {
+  const markers = [
+    ["__compile_error__:", "compile_error"],
+    ["__execution_error__:", "execution_error"],
+    ["__memory_limit__:", "memory_limit"],
+    ["__time_limit__:", "time_limit"],
+    ["__runtime_error__:", "runtime_error"],
+    ["__error__:skipped:", "skipped"],
+  ];
+  for (const [prefix, type] of markers) {
+    if (raw.startsWith(prefix)) {
+      return { errorType: type, message: raw.slice(prefix.length), actual: "" };
+    }
+  }
+  return { errorType: null, message: "", actual: raw };
+}
+
 /**
  * Execute a coding question's code against its test cases.
  * Returns { passedCount, totalCount, results, status, executionTime }
@@ -163,19 +182,26 @@ export async function evaluateCodingQuestion(code, language, testCases, timeLimi
     }
 
     let passedCount = 0;
+    let overallError = null;
     const results = testCases.map((tc, index) => {
       const raw = String(batch.outputs[index] ?? "");
-      let error = "";
-      if (raw.startsWith("__time_limit__:")) {
-        error = "Time limit exceeded";
-      } else if (raw.startsWith("__runtime_error__:")) {
-        error = raw.slice("__runtime_error__:".length);
+      const { errorType, message, actual } = parseCaseMarker(raw);
+      const expected = String(tc.expected ?? tc.output ?? tc.expectedOutput ?? "");
+      const passed = !errorType && compareOutputs(actual, expected, COMPARISON_MODES.TOKEN);
+      if (errorType === "compile_error" || errorType === "execution_error") {
+        if (!overallError) overallError = { type: errorType, message };
       }
-      const passed = !error && normalizeOutput(raw) === normalizeOutput(tc.expected);
       if (passed) passedCount++;
-      return { index: index + 1, passed, isHidden: Boolean(tc.isHidden), error };
+      let displayError = "";
+      if (errorType === "time_limit") displayError = "Time limit exceeded";
+      else if (errorType) displayError = message;
+      return { index: index + 1, passed, isHidden: Boolean(tc.isHidden), error: displayError };
     });
-    const status = passedCount === testCases.length ? "accepted" : "failed";
+    const status = overallError
+      ? (overallError.type === "compile_error" ? "compile_error" : "failed")
+      : passedCount === testCases.length
+        ? "accepted"
+        : "failed";
     return { passedCount, totalCount: testCases.length, results, status, executionTime: Date.now() - startTime };
   } catch (err) {
     return {

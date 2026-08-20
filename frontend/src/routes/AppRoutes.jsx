@@ -81,6 +81,7 @@ function AppRoutes() {
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/interview-history" element={<InterviewHistory />} />
+        <Route path="/interview-history/:interviewId/result" element={<Results />} />
         <Route path="/results" element={<Results />} />
         <Route path="/placement-dashboard" element={<PlacementDashboard />} />
         <Route path="/placement/leaderboard" element={<Leaderboard />} />

@@ -7,6 +7,8 @@ import {
   getOrGenerateRoundQuestions,
   saveAnswer,
   completeInterview,
+  getInterviewResult,
+  getInterviewHistory,
   getUserResults,
   getUserInterviews,
   generateTTS,
@@ -26,7 +28,10 @@ router.post("/tts", authMiddleware, generateTTS);
 // POST /api/interview/upload-resume
 router.post("/upload-resume", authMiddleware, upload.single("resume"), uploadResumeAndGenerateQuestions);
 
-// GET /api/interview/user/results (NOTE: Must come BEFORE /:id to avoid matching :id)
+// GET /api/interview/history — persistent student interview attempts list
+router.get("/history", authMiddleware, getInterviewHistory);
+
+// GET /api/interview/user/results
 router.get("/user/results", authMiddleware, getUserResults);
 
 // GET /api/interview/user/history — real past sessions for the logged-in user
@@ -34,6 +39,9 @@ router.get("/user/history", authMiddleware, getUserInterviews);
 
 // GET /api/interview/:id/round/:roundName — lazy load / DB cache per round
 router.get("/:id/round/:roundName", authMiddleware, getOrGenerateRoundQuestions);
+
+// GET /api/interview/:id/result — single source of truth persistent result fetch
+router.get("/:id/result", authMiddleware, getInterviewResult);
 
 // GET /api/interview/:id
 router.get("/:id", authMiddleware, getInterviewDetails);

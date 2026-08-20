@@ -473,7 +473,13 @@ export const completeInterview = async (req, res) => {
 
     const interview = await Interview.findById(interviewId);
     if (!interview || interview.userId.toString() !== userId.toString()) {
-      return res.status(404).json({ message: "Interview not found or not authorized" });
+      return res.status(403).json({ message: "Interview session not found or not authorized" });
+    }
+
+    // 1. SINGLE SOURCE OF TRUTH: If result already exists, return it immediately (0 recalculation)
+    let existingResult = await Result.findOne({ interviewId });
+    if (existingResult) {
+      return res.json({ message: "Interview already completed", result: existingResult });
     }
 
     interview.status = "completed";
@@ -482,52 +488,101 @@ export const completeInterview = async (req, res) => {
 
     const answers = await Answer.find({ interviewId });
 
-    let resumeScoreTotal = 0;
-    let techScoreTotal = 0;
-    let codeScoreTotal = 0;
-    let resumeCount = 0;
-    let techCount = 0;
-    let codeCount = 0;
+    let aptitudeScoreTotal = 0, aptitudeCount = 0;
+    let techScoreTotal = 0, techCount = 0;
+    let codeScoreTotal = 0, codeCount = 0;
+    let hrScoreTotal = 0, hrCount = 0;
 
-    answers.forEach(a => {
-      if (a.questionType === "resume") {
-        resumeScoreTotal += a.score;
-        resumeCount++;
-      } else if (a.questionType === "technical") {
+    answers.forEach((a) => {
+      const sec = (a.section || a.questionType || "").toUpperCase();
+      if (sec === "APTITUDE") {
+        aptitudeScoreTotal += a.score;
+        aptitudeCount++;
+      } else if (sec === "TECHNICAL" || a.questionType === "resume" || a.questionType === "technical") {
         techScoreTotal += a.score;
         techCount++;
-      } else if (a.questionType === "coding") {
+      } else if (sec === "CODING" || a.questionType === "coding") {
         codeScoreTotal += a.score;
         codeCount++;
+      } else if (sec === "HR" || a.questionType === "hr") {
+        hrScoreTotal += a.score;
+        hrCount++;
       }
     });
 
-    const resumeScore = resumeCount > 0 ? Math.round(resumeScoreTotal / resumeCount) : 0;
+    const aptitudeScore = aptitudeCount > 0 ? Math.round(aptitudeScoreTotal / aptitudeCount) : 0;
     const technicalScore = techCount > 0 ? Math.round(techScoreTotal / techCount) : 0;
     const codingScore = codeCount > 0 ? Math.round(codeScoreTotal / codeCount) : 0;
+    const hrScore = hrCount > 0 ? Math.round(hrScoreTotal / hrCount) : 0;
 
-    const overallScore = Math.round((resumeScore * 0.2) + (technicalScore * 0.4) + (codingScore * 0.4));
+    const overallScore = Math.round(
+      (aptitudeScore * 0.2) + (technicalScore * 0.35) + (codingScore * 0.3) + (hrScore * 0.15)
+    );
 
-    const strengths = ["Good understanding of concepts"];
+    const completedRounds = [];
+    const incompleteRounds = [];
+    if (aptitudeCount > 0) completedRounds.push("APTITUDE"); else incompleteRounds.push("APTITUDE");
+    if (techCount > 0) completedRounds.push("TECHNICAL"); else incompleteRounds.push("TECHNICAL");
+    if (codeCount > 0) completedRounds.push("CODING"); else incompleteRounds.push("CODING");
+    if (hrCount > 0) completedRounds.push("HR"); else incompleteRounds.push("HR");
+
+    const isEndedEarly = incompleteRounds.length > 0;
+
+    const strengths = ["Solid conceptual understanding"];
     if (technicalScore > 75) strengths.push("Strong technical knowledge");
-    if (codingScore > 75) strengths.push("Excellent problem-solving skills");
-    if (resumeScore > 75) strengths.push("Clear communication of past projects");
+    if (codingScore > 75) strengths.push("Excellent algorithmic problem-solving");
+    if (aptitudeScore > 75) strengths.push("High logical reasoning skills");
+    if (hrScore > 75) strengths.push("Professional communication");
 
     const weaknesses = [];
     if (technicalScore < 50) weaknesses.push("Needs improvement in technical depth");
-    if (codingScore < 50) weaknesses.push("Needs to practice coding problems");
-    if (resumeScore < 50) weaknesses.push("Need better explanation of resume projects");
+    if (codingScore < 50) weaknesses.push("Needs to practice IDE coding problems");
+    if (aptitudeScore < 50) weaknesses.push("Practice speed and accuracy in Aptitude");
+    if (hrScore < 50) weaknesses.push("Structure answers with the STAR method in HR");
+
+    const user = await User.findById(userId);
+    const recipientEmail = user?.email || "";
 
     const result = await Result.create({
       interviewId,
       userId,
       overallScore,
-      resumeScore,
+      resumeScore: technicalScore,
       technicalScore,
       codingScore,
+      hrScore,
+      aptitudeScore,
+
+      overall: {
+        obtainedMarks: answers.length,
+        maximumMarks: 58,
+        percentage: overallScore,
+      },
+
+      sections: {
+        aptitude: { score: aptitudeScore, percentage: aptitudeScore, completed: aptitudeCount, total: 25 },
+        technical: { score: technicalScore, percentage: technicalScore, completed: techCount, total: 25 },
+        coding: { score: codingScore, percentage: codingScore, completed: codeCount, total: 3 },
+        hr: { score: hrScore, percentage: hrScore, completed: hrCount, total: 5 },
+      },
+
       strengths,
       weaknesses: weaknesses.length > 0 ? weaknesses : ["No major weaknesses identified"],
-      recommendation: overallScore > 70 ? "Highly Recommended" : "Needs Practice"
+      recommendation: overallScore > 70 ? "Highly Recommended" : "Needs Practice",
+
+      isEndedEarly,
+      completedRounds,
+      incompleteRounds,
+      attemptedQuestions: answers.length,
+      skippedQuestions: Math.max(0, 58 - answers.length),
+      duration: Math.round(((new Date() - new Date(interview.startedAt || interview.createdAt)) / 1000) || 0),
+
+      email: {
+        recipient: recipientEmail,
+        status: "PENDING",
+        sentAt: null,
+        error: null,
+      },
     });
 
     onInterviewCompleted().catch((err) =>
@@ -537,13 +592,14 @@ export const completeInterview = async (req, res) => {
       console.error("CSV export error (results):", err.message)
     );
 
-    // Automatically send performance report email to candidate
-    try {
-      const user = await User.findById(userId);
-      if (user && user.email) {
+    // 2. NON-BLOCKING EMAIL DISPATCH WITH DUPLICATE PROTECTION
+    if (recipientEmail) {
+      try {
         const userName = user.name || user.candidateName || "Candidate";
         const emailSubject = `Your AI Interview Performance Results - Overall Score: ${overallScore}%`;
-        const emailText = `Hello ${userName},\n\nYour AI Interview session is completed.\nOverall Score: ${overallScore}%\nRecommendation: ${result.recommendation}\nResume Score: ${resumeScore}%\nTechnical Score: ${technicalScore}%\nCoding Score: ${codingScore}%\n\nThank you for using PrepHire AI Interview Platform.`;
+        const resultLink = `${process.env.CLIENT_URL || "http://localhost:5173"}/interview-history/${interviewId}/result`;
+        
+        const emailText = `Hello ${userName},\n\nYour AI Interview session is completed.\nOverall Score: ${overallScore}%\nRecommendation: ${result.recommendation}\n\nView Full Result: ${resultLink}\n\nThank you for using PrepHire AI Interview Platform.`;
 
         const emailHtml = `
           <div style="font-family: Arial, sans-serif; background-color: #080a12; color: #f8fafc; padding: 30px; border-radius: 16px; max-width: 600px; margin: 0 auto; border: 1px solid #1e293b;">
@@ -554,7 +610,7 @@ export const completeInterview = async (req, res) => {
             <div style="padding: 20px 0;">
               <p style="font-size: 16px; color: #e2e8f0;">Hello <strong>${userName}</strong>,</p>
               <p style="font-size: 14px; color: #cbd5e1; line-height: 1.6;">
-                Congratulations on completing your AI Mock Interview! Below is your official evaluation summary generated by our AI Interviewer.
+                ${isEndedEarly ? "Your AI Mock Interview session was completed (ended early)." : "Congratulations on completing your AI Mock Interview!"} Below is your official evaluation summary.
               </p>
               <div style="background-color: #0f172a; padding: 20px; border-radius: 12px; margin: 20px 0; border: 1px solid #1e293b; text-align: center;">
                 <span style="font-size: 12px; font-weight: bold; color: #94a3b8; letter-spacing: 1px; text-transform: uppercase;">Overall Placement Score</span>
@@ -567,47 +623,161 @@ export const completeInterview = async (req, res) => {
               </div>
               <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
                 <tr style="border-bottom: 1px solid #1e293b;">
-                  <td style="padding: 10px 0; color: #94a3b8; font-size: 13px;">Resume & Project Round</td>
-                  <td style="padding: 10px 0; text-align: right; font-weight: bold; color: #e2e8f0; font-size: 14px;">${resumeScore}%</td>
+                  <td style="padding: 10px 0; color: #94a3b8; font-size: 13px;">Aptitude Round (25 Qs)</td>
+                  <td style="padding: 10px 0; text-align: right; font-weight: bold; color: #e2e8f0; font-size: 14px;">${aptitudeScore}%</td>
                 </tr>
                 <tr style="border-bottom: 1px solid #1e293b;">
-                  <td style="padding: 10px 0; color: #94a3b8; font-size: 13px;">Technical Stack Round</td>
+                  <td style="padding: 10px 0; color: #94a3b8; font-size: 13px;">Technical Stack Round (25 Qs)</td>
                   <td style="padding: 10px 0; text-align: right; font-weight: bold; color: #e2e8f0; font-size: 14px;">${technicalScore}%</td>
                 </tr>
                 <tr style="border-bottom: 1px solid #1e293b;">
-                  <td style="padding: 10px 0; color: #94a3b8; font-size: 13px;">Coding & Algorithmic IDE</td>
+                  <td style="padding: 10px 0; color: #94a3b8; font-size: 13px;">Coding IDE Round (3 Qs)</td>
                   <td style="padding: 10px 0; text-align: right; font-weight: bold; color: #e2e8f0; font-size: 14px;">${codingScore}%</td>
                 </tr>
+                <tr style="border-bottom: 1px solid #1e293b;">
+                  <td style="padding: 10px 0; color: #94a3b8; font-size: 13px;">HR Behavioral Round (5 Qs)</td>
+                  <td style="padding: 10px 0; text-align: right; font-weight: bold; color: #e2e8f0; font-size: 14px;">${hrScore}%</td>
+                </tr>
               </table>
+
+              <div style="text-align: center; margin: 25px 0;">
+                <a href="${resultLink}" style="display: inline-block; padding: 12px 28px; border-radius: 12px; font-size: 14px; font-weight: bold; background-color: #2563eb; color: #ffffff; text-decoration: none;">
+                  View Full Result
+                </a>
+              </div>
+
               <div style="margin-bottom: 16px;">
                 <h3 style="font-size: 14px; color: #34d399; margin-bottom: 8px;">Key Strengths Identified</h3>
                 <ul style="margin: 0; padding-left: 20px; color: #cbd5e1; font-size: 13px;">
-                  ${strengths.map(s => `<li>${s}</li>`).join('')}
+                  ${strengths.map((s) => `<li>${s}</li>`).join("")}
                 </ul>
               </div>
               <div style="margin-bottom: 20px;">
                 <h3 style="font-size: 14px; color: #f87171; margin-bottom: 8px;">Recommended Focus Areas</h3>
                 <ul style="margin: 0; padding-left: 20px; color: #cbd5e1; font-size: 13px;">
-                  ${(weaknesses.length > 0 ? weaknesses : ["No major weaknesses identified"]).map(w => `<li>${w}</li>`).join('')}
+                  ${(weaknesses.length > 0 ? weaknesses : ["No major weaknesses identified"]).map((w) => `<li>${w}</li>`).join("")}
                 </ul>
               </div>
             </div>
             <div style="text-align: center; padding-top: 16px; border-top: 1px solid #334155; font-size: 12px; color: #64748b;">
-              <p>PrepHire AI Interview Platform • Automated Performance System</p>
+              <p>PrepHire AI Interview Platform • Automated Evaluation System</p>
             </div>
           </div>
         `;
 
-        await sendReportEmail(user.email, emailSubject, emailText, emailHtml);
+        const emailRes = await sendReportEmail(recipientEmail, emailSubject, emailText, emailHtml);
+        const finalEmailStatus = emailRes?.simulated ? "SIMULATED" : emailRes?.success ? "SENT" : "FAILED";
+        
+        result.email = {
+          recipient: recipientEmail,
+          status: finalEmailStatus,
+          sentAt: new Date(),
+          error: null,
+        };
+        await result.save();
+      } catch (emailErr) {
+        console.warn("Interview completion email dispatch notice:", emailErr.message);
+        result.email = {
+          recipient: recipientEmail,
+          status: "FAILED",
+          sentAt: new Date(),
+          error: emailErr.message,
+        };
+        await result.save();
       }
-    } catch (emailErr) {
-      console.warn("Interview completion email dispatch notice:", emailErr.message);
     }
 
     res.json({ message: "Interview completed successfully", result });
   } catch (error) {
     console.error("Complete Interview Error:", error.message);
     res.status(500).json({ message: "Failed to complete interview" });
+  }
+};
+
+/**
+ * GET /api/interview/:id/result
+ * Single source of truth fetch endpoint for an interview result document.
+ */
+export const getInterviewResult = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    const interview = await Interview.findById(id);
+    if (!interview) {
+      return res.status(404).json({ message: "Interview session not found" });
+    }
+
+    // User Isolation check
+    if (interview.userId.toString() !== userId.toString()) {
+      return res.status(403).json({ message: "Unauthorized access to interview result" });
+    }
+
+    const result = await Result.findOne({ interviewId: id });
+    if (!result) {
+      return res.status(404).json({ message: "Result document not found for this interview session" });
+    }
+
+    res.json(result);
+  } catch (error) {
+    console.error("Get Interview Result Error:", error.message);
+    res.status(500).json({ message: "Failed to fetch interview result" });
+  }
+};
+
+/**
+ * GET /api/interview/history
+ * Returns student's historical interview attempts with scores, statuses, and email delivery state.
+ */
+export const getInterviewHistory = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const interviews = await Interview.find({ userId })
+      .sort({ createdAt: -1 })
+      .select("-generatedQuestions");
+
+    const interviewIds = interviews.map((i) => i._id);
+    const results = await Result.find({ interviewId: { $in: interviewIds } });
+
+    const resultMap = {};
+    results.forEach((r) => {
+      resultMap[r.interviewId.toString()] = r;
+    });
+
+    const history = interviews.map((interview, index) => {
+      const result = resultMap[interview._id.toString()] || null;
+      const attemptNumber = interviews.length - index;
+
+      return {
+        id: interview._id,
+        interviewId: interview._id,
+        attemptNumber,
+        interviewType: interview.interviewType || "Mock Interview",
+        startedAt: interview.startedAt || interview.createdAt,
+        completedAt: interview.completedAt,
+        status: interview.status,
+        resumeFileName: interview.resumeFileName || "",
+        isEndedEarly: result?.isEndedEarly || false,
+
+        overallScore: result?.overallScore || 0,
+        overallPercentage: result?.overall?.percentage || result?.overallScore || 0,
+
+        scores: {
+          aptitude: result?.sections?.aptitude?.percentage || result?.aptitudeScore || 0,
+          technical: result?.sections?.technical?.percentage || result?.technicalScore || 0,
+          coding: result?.sections?.coding?.percentage || result?.codingScore || 0,
+          hr: result?.sections?.hr?.percentage || result?.hrScore || 0,
+        },
+
+        emailStatus: result?.email?.status || "PENDING",
+        result: result,
+      };
+    });
+
+    res.json({ history });
+  } catch (error) {
+    console.error("Get Interview History Error:", error.message);
+    res.status(500).json({ message: "Failed to fetch interview history" });
   }
 };
 

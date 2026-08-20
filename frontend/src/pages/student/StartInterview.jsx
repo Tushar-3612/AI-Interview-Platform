@@ -1212,6 +1212,7 @@ function StartInterview() {
     const stats = getCompletedStats();
     return (
       <CompletionScreen
+        interviewId={activeInterviewId}
         candidateName={candidateInfo.name}
         answeredCount={stats.answeredCount}
         skippedCount={stats.skippedCount}

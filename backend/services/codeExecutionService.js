@@ -27,6 +27,14 @@ import crypto from "crypto";
 const MAX_OUTPUT_BYTES = 5 * 1024 * 1024;
 const DEFAULT_TIMEOUT_MS = parseInt(process.env.CODE_TIMEOUT_MS, 10) || 10000;
 const COMPILE_TIMEOUT_MS = 30000;
+// Extra wall-clock head-room added ON TOP OF the student time limit for the
+// in-container EXECUTION step only (covers JVM/process start-up). Compilation
+// is covered separately by COMPILE_TIMEOUT_MS so a slow javac can never be
+// mis-reported as a student time-limit violation.
+const RUN_EXEC_BUFFER_MS = 2000;
+// Absolute ceiling for any single docker run, independent of the requested
+// time limit, so a misconfigured/huge limit can never hang the suite.
+const MAX_TIMEOUT_MS = 60000;
 const MEMORY_LIMIT = process.env.CODE_MEMORY_LIMIT || "256m";
 const CPU_LIMIT = process.env.CODE_CPU_LIMIT || "0.5";
 const PIDS_LIMIT = process.env.CODE_PIDS_LIMIT || "64";
@@ -242,9 +250,11 @@ function javaTypedLiteral(type, value) {
  * Java method signature parser and typed invocation generator
  * ==========================================================================*/
 
-function parseJavaParamTypes(code) {
+function parseJavaParamTypes(code, methodName = "solve") {
   const src = String(code || "");
-  const m = src.match(/(?:public\s+|static\s+)*\w[\w<>\[\],\s]*\bsolve\s*\(([^)]*)\)/);
+  const safeName = (methodName || "solve").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const re = new RegExp(`(?:public\\s+|static\\s+)*\\w[\\w<>[\\],\\s]*\\b${safeName}\\s*\\(([^)]*)\\)`);
+  const m = src.match(re);
   if (!m) return null;
   const paramStr = m[1].trim();
   if (!paramStr) return [];
@@ -332,40 +342,317 @@ function javaInvocationForParams(paramTypes, arrayVar) {
  * Harness builders
  * ==========================================================================*/
 
-function harnessForRun(langId, args, code) {
-  switch (langId) {
-    case "python":
-      return `\nimport json as __json\n__result = solution(*${pyLiteral(args)})\nprint(__json.dumps(__result, default=str))\n`;
-    case "java": {
-      const paramTypes = code ? parseJavaParamTypes(code) : null;
-      let invocation;
-      if (args.length === 0) {
-        invocation = "";
-      } else if (args.length === 1) {
-        if (paramTypes && paramTypes.length === 1) {
-          invocation = javaTypedLiteral(paramTypes[0], args[0]);
-        } else {
-          invocation = javaSingleArgLiteral(args[0]);
-        }
-      } else {
-        if (paramTypes && paramTypes.length === args.length) {
-          invocation = args.map((a, i) => {
-            const t = paramTypes[i];
-            if (isJavaPrimitive(t)) {
-              const boxed = JAVA_PRIMITIVE_BOXED[t];
-              const lit = javaValueLiteral(a);
-              return `new ${boxed}(${lit}).${t === "boolean" ? "booleanValue" : t === "char" ? "charValue" : t + "Value"}()`;
-            }
-            return `(${t}) ${javaValueLiteral(a)}`;
-          }).join(", ");
-        } else {
-          invocation = args.map(a => javaValueLiteral(a)).join(", ");
+/* ============================================================================
+ * Isolation, parallelism and output comparison helpers
+ * ==========================================================================*/
+
+const EXECUTION_BASE_DIR = path.join(os.tmpdir(), "coding-execution");
+const MAX_CONCURRENT_TESTS = Math.max(1, parseInt(process.env.MAX_CONCURRENT_TESTS, 10) || 8);
+
+/**
+ * Detect the public class name declared by the student.
+ * Java requires a public class to live in a file named <ClassName>.java,
+ * so we name the student source file after whatever they declared. Falls
+ * back to "Solution" so existing submissions keep working.
+ */
+function detectJavaClassName(code) {
+  if (!code) return "Solution";
+  // public class Foo { ... }
+  const publicMatch = code.match(/public\s+class\s+([A-Za-z_][A-Za-z0-9_]*)/);
+  if (publicMatch) return publicMatch[1];
+  // any class Foo { ... }
+  const anyMatch = code.match(/\bclass\s+([A-Za-z_][A-Za-z0-9_]*)/);
+  if (anyMatch) return anyMatch[1];
+  return "Solution";
+}
+
+function detectPythonFunction(code) {
+  if (!code) return "solution";
+  const m = code.match(/def\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(/);
+  return m ? m[1] : "solution";
+}
+
+/** Per-execution / per-test-case isolated workspace directory. */
+function makeWorkspace(executionId, testCaseId) {
+  const exec = executionId || crypto.randomBytes(6).toString("hex");
+  const tc = testCaseId != null ? String(testCaseId) : crypto.randomBytes(4).toString("hex");
+  return path.join(EXECUTION_BASE_DIR, exec, tc);
+}
+
+/** Run async tasks with a bounded concurrency, preserving input order. */
+async function runPool(items, worker, limit = MAX_CONCURRENT_TESTS) {
+  const concurrency = Math.min(Math.max(1, limit), items.length || 1);
+  const results = new Array(items.length);
+  let cursor = 0;
+
+  async function runNext() {
+    while (cursor < items.length) {
+      const index = cursor++;
+      try {
+        results[index] = await worker(items[index], index);
+      } catch (err) {
+        results[index] = { error: err };
+      }
+    }
+  }
+
+  const runners = Array.from({ length: concurrency }, () => runNext());
+  await Promise.all(runners);
+  return results;
+}
+
+/** Normalize a single value/string for loose comparison. */
+function normalizeValue(value) {
+  if (value === null || value === undefined) return "";
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  if (typeof value === "object") {
+    try {
+      return JSON.stringify(value, (k, v) => (v === undefined ? null : v))
+        .replace(/":\s*/g, ":")
+        .replace(/,\s*/g, ",");
+    } catch {
+      return String(value);
+    }
+  }
+  return String(value).replace(/\s+/g, " ").trim();
+}
+
+const COMPARISON_MODES = {
+  EXACT: "exact",
+  TOKEN: "token",
+  NUMERIC: "numeric",
+  CASE_INSENSITIVE: "case_insensitive",
+  CUSTOM: "custom",
+};
+
+/**
+ * Compare actual vs expected outputs using a configurable mode.
+ * - exact:            strict string equality after whitespace trim
+ * - token (default):  whitespace-split token equality + JSON value fallback
+ * - numeric:          parse as numbers, compare with 1e-6 tolerance
+ * - case_insensitive: lowercase trimmed equality
+ * - custom:           exact (consumers may supply their own comparer)
+ * Returns true when outputs are considered equal.
+ */
+function compareOutputs(actual, expected, mode = COMPARISON_MODES.TOKEN) {
+  const a = normalizeValue(actual);
+  const e = normalizeValue(expected);
+
+  switch (mode) {
+    case COMPARISON_MODES.EXACT:
+      return a === e;
+    case COMPARISON_MODES.CASE_INSENSITIVE:
+      return a.toLowerCase() === e.toLowerCase();
+    case COMPARISON_MODES.NUMERIC: {
+      const na = parseFloat(a);
+      const ne = parseFloat(e);
+      if (Number.isNaN(na) || Number.isNaN(ne)) return a === e;
+      return Math.abs(na - ne) < 1e-6;
+    }
+    case COMPARISON_MODES.CUSTOM:
+    case COMPARISON_MODES.TOKEN:
+    default: {
+      const at = a.split(/\s+/).filter(Boolean);
+      const et = e.split(/\s+/).filter(Boolean);
+      if (at.length !== et.length) {
+        // fall back to trimmed JSON compare (arrays/objects w/ spacing diffs)
+        try {
+          return JSON.stringify(JSON.parse(a)) === JSON.stringify(JSON.parse(e));
+        } catch {
+          return a === e;
         }
       }
-      const mainBlock = `public class Main {
+      return at.every((tok, i) => tok === et[i]);
+    }
+  }
+}
+
+function escapeRegExp(str) {
+  return String(str).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/* ============================================================================
+ * Raw test-input parsing for Java
+ * ---------------------------------------------------------------------------
+ * Some problems supply the test case as a raw, whitespace/comma separated
+ * string (e.g. "6 10 5 8 10 3 7" where 6 is N and the rest are elements)
+ * rather than a JSON-encoded value. The Runner must tokenise that string and
+ * build the exact typed arguments the student's solve() expects — it must
+ * NEVER pass the raw string straight through to a typed parameter.
+ *
+ * The mapping is driven entirely by the parsed method signature, so it is
+ * generic across int/long/double/float/boolean/String and their array forms,
+ * as well as multiple parameters.
+ * ==========================================================================*/
+
+function javaArrayBaseType(type) {
+  return type.endsWith("[]") ? type.slice(0, -2) : type;
+}
+
+function javaScalarType(type) {
+  switch (type) {
+    case "int": return "int";
+    case "long": return "long";
+    case "double": return "double";
+    case "float": return "float";
+    case "boolean": return "boolean";
+    case "String": return "String";
+    case "char": return "char";
+    default: return "Object";
+  }
+}
+
+/** Java expression that parses a single token into the given scalar type. */
+function javaScalarParseExpr(type, tokenExpr) {
+  switch (type) {
+    case "int": return `Integer.parseInt(${tokenExpr})`;
+    case "long": return `Long.parseLong(${tokenExpr})`;
+    case "double": return `Double.parseDouble(${tokenExpr})`;
+    case "float": return `Float.parseFloat(${tokenExpr})`;
+    case "boolean": return `Boolean.parseBoolean(${tokenExpr})`;
+    case "String": return tokenExpr;
+    case "char": return `(${tokenExpr}).charAt(0)`;
+    default: return tokenExpr;
+  }
+}
+
+/**
+ * Decide whether `args` is a single raw input string that must be tokenised by
+ * the Runner. Returns the raw string, or null when the literal-arg path should
+ * be used instead. A lone String parameter receives its string verbatim (it is
+ * the value, not raw, tokenisable input).
+ */
+function detectRawJavaInput(args, paramTypes) {
+  if (!paramTypes || paramTypes.length === 0) return null;
+  if (!Array.isArray(args) || args.length !== 1) return null;
+  if (typeof args[0] !== "string") return null;
+  if (paramTypes.length === 1 && paramTypes[0] === "String") return null;
+  return args[0];
+}
+
+/**
+ * Build a Runner that tokenises the raw input string and constructs the typed
+ * parameters declared by the student's solve() method.
+ *
+ * Conventions (derived from the signature, no hard-coding):
+ *  - Tokens are whitespace/comma/bracket separated.
+ *  - A scalar parameter consumes exactly one token.
+ *  - An array parameter (usually the last, or the only parameter) consumes the
+ *    remaining tokens. When the array is the ONLY parameter, the leading token
+ *    is treated as a count N (and dropped) ONLY when it equals the number of
+ *    remaining tokens — the standard "N elements" format. This avoids blindly
+ *    assuming every first number is N.
+ */
+function buildJavaRawRunner(className, methodName, rawInput, paramTypes, opts) {
+  const runnerClass = opts.runnerClassName || "Runner";
+  const rawLiteral = escapeJavaStyleString(rawInput);
+
+  const lines = [];
+  lines.push(`    String __raw = ${rawLiteral};`);
+  lines.push(`    String __clean = __raw.replace('[',' ').replace(']',' ').replace('{',' ').replace('}',' ').replace(',',' ').trim();`);
+  lines.push(`    String[] __toks = __clean.split("\\\\s+");`);
+  lines.push(`    int __i = 0;`);
+
+  const varNames = [];
+  paramTypes.forEach((type, k) => {
+    const vname = `__p${k}`;
+    varNames.push(vname);
+
+    if (type.endsWith("[]")) {
+      const base = javaArrayBaseType(type);
+      const elem = javaScalarType(base);
+      const isOnly = paramTypes.length === 1;
+      lines.push(`    int __start${k} = ${isOnly ? "0" : "__i"};`);
+      lines.push(`    int __n${k} = __toks.length;`);
+      if (isOnly) {
+        // Drop a leading count N only when it matches the remaining element count.
+        lines.push(`    if (__n${k} >= 2) {`);
+        lines.push(`      try { int __maybeN${k} = Integer.parseInt(__toks[0]); if (__maybeN${k} == __n${k} - 1) __start${k} = 1; } catch (Exception __e${k}) {}`);
+        lines.push(`    }`);
+      }
+      lines.push(`    ${elem}[] ${vname} = new ${elem}[__n${k} - __start${k}];`);
+      lines.push(`    for (int __j = __start${k}; __j < __n${k}; __j++) ${vname}[__j - __start${k}] = ${javaScalarParseExpr(base, `__toks[__j]`)};`);
+      if (!isOnly) lines.push(`    __i = __n${k};`);
+    } else {
+      lines.push(`    ${javaScalarType(type)} ${vname} = ${javaScalarParseExpr(type, `__toks[__i++]`)};`);
+    }
+  });
+
+  const invocation = varNames.join(", ");
+  const mainBlock = `public class ${runnerClass} {
     public static void main(String[] args) {
-        Object __result = Solution.solve(${invocation});
-        System.out.println(Main.toJson(__result));
+${lines.join("\n")}
+        Object __result = ${className}.${methodName}(${invocation});
+        System.out.println(${runnerClass}.toJson(__result));
+    }`;
+  return mainBlock + buildJavaToJsonSuffix();
+}
+
+/**
+ * Build the runner harness for a SINGLE test case.
+ * The harness calls the exact method/class detected (or supplied via
+ * executionConfig), preserving the student's source unmodified.
+ * The runner class name is configurable so it never collides with the
+ * student's own classes (eliminates "duplicate class: Main" / wrong-file
+ * public-class compile errors).
+ */
+function harnessForRun(langId, args, code, opts = {}) {
+  const className = opts.className || "Solution";
+  const methodName = opts.methodName || "solve";
+
+  switch (langId) {
+    case "python": {
+      const fn = opts.functionName || "solution";
+      return `\nimport json as __json\n__result = ${fn}(*${pyLiteral(args)})\nprint(__json.dumps(__result, default=str))\n`;
+    }
+    case "java": {
+      const paramTypes = code ? parseJavaParamTypes(code, methodName) : null;
+
+      // A single raw, whitespace/comma separated input string (e.g. a stdin-style
+      // "6 10 5 8 10 3 7") must be tokenised by the Runner into the typed
+      // parameters — it is never passed verbatim to a typed argument.
+      const rawInput = detectRawJavaInput(args, paramTypes);
+      if (rawInput !== null) {
+        return buildJavaRawRunner(className, methodName, rawInput, paramTypes, opts);
+      }
+
+      let invocation;
+
+      if (paramTypes && paramTypes.length === 0) {
+        // Zero-parameter function — nothing to pass.
+        invocation = "";
+      } else if (paramTypes && paramTypes.length === 1) {
+        // Single-parameter function: the WHOLE of `args` is that one argument.
+        // This intentionally tolerates both well-structured callers that wrap
+        // the value (args=[<value>]) and raw inputs that arrive as a flat list
+        // (e.g. a JSON array fed to solve(int[] arr) becomes one int[] arg), so
+        // the Runner always invokes the exact student signature.
+        const singleArg = args.length === 1 ? args[0] : args;
+        invocation = javaTypedLiteral(paramTypes[0], singleArg);
+      } else if (paramTypes && paramTypes.length > 1) {
+        // Multi-parameter: align argument-by-argument when the counts match;
+        // otherwise fall back to a best-effort positional mapping.
+        if (args.length === paramTypes.length) {
+          invocation = paramTypes.map((t, i) => javaTypedLiteral(t, args[i])).join(", ");
+        } else {
+          invocation = args.map((a) => javaValueLiteral(a)).join(", ");
+        }
+      } else {
+        // Signature could not be parsed — preserve the legacy arg-count
+        // heuristic so previously-working edge cases keep behaving.
+        if (args.length === 0) {
+          invocation = "";
+        } else if (args.length === 1) {
+          invocation = javaValueLiteral(args[0]);
+        } else {
+          invocation = args.map((a) => javaValueLiteral(a)).join(", ");
+        }
+      }
+      const runnerClass = opts.runnerClassName || "Runner";
+      const mainBlock = `public class ${runnerClass} {
+    public static void main(String[] args) {
+        Object __result = ${className}.${methodName}(${invocation});
+        System.out.println(${runnerClass}.toJson(__result));
     }`;
       return mainBlock + buildJavaToJsonSuffix();
     }
@@ -446,21 +733,30 @@ function buildJavaToJsonSuffix() {
  * Source assembly
  * ==========================================================================*/
 
-function buildSources(langId, code, harness) {
+function buildSources(langId, code, harness, opts = {}) {
+  const config = LANGUAGE_CONFIG[langId];
   switch (langId) {
-    case "python":
-      return [{ name: "solution.py", content: String(code) + harness }];
-    case "java":
+    case "python": {
+      const userSource = String(code);
+      const harnessCode = harness || "";
+      return [{ name: config.sourceFile, content: userSource + harnessCode }];
+    }
+    case "java": {
+      // User file is named after the detected public class so a public class
+      // declaration no longer triggers "should be declared in Main.java".
+      const userFile = opts.userFile || config.sourceFile;
+      const runnerFile = opts.runnerFile || config.wrapperFile;
       return [
-        { name: "Solution.java", content: String(code) },
-        { name: "Main.java", content: harness },
+        { name: userFile, content: String(code) },
+        { name: runnerFile, content: harness },
       ];
+    }
     case "c":
       return [{ name: "main.c", content: String(code) }];
     case "cpp":
       return [{ name: "main.cpp", content: String(code) }];
     default:
-      return [{ name: LANGUAGE_CONFIG[langId].sourceFile, content: String(code) }];
+      return [{ name: config.sourceFile, content: String(code) }];
   }
 }
 
@@ -504,21 +800,40 @@ function runDockerContainer(image, command, { timeoutMs = 10000, cwd, stdin, wor
     let stdout = "";
     let stderr = "";
     let killed = false;
-    let exitCode = null;
+    let settled = false;
 
     const child = spawn("docker", dockerArgs, {
       windowsHide: true,
       stdio: ["pipe", "pipe", "pipe"],
     });
 
-    // Hard timeout — kill container if exceeded
+    // Guarantee the Promise resolves exactly once, even if the child process
+    // neither emits "close" nor "error" (e.g. a wedged Docker CLI on a dead
+    // daemon). Without this guard an unresolved Promise would hang the whole
+    // suite.
+    const settle = (payload) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      resolve(payload);
+    };
+
+    // Hard timeout — kill container if exceeded. The kill itself is best-effort;
+    // `settle` above ensures resolution regardless of whether "close" fires.
     const timer = setTimeout(() => {
       killed = true;
-      // Force kill the container
       try {
         spawn("docker", ["kill", containerName], { windowsHide: true, stdio: "ignore" });
       } catch { /* container may already be gone */ }
-      child.kill("SIGKILL");
+      try { child.kill("SIGKILL"); } catch { /* already gone */ }
+      settle({
+        stdout: stdout.trim(),
+        stderr: (stderr || "Time limit exceeded").trim(),
+        code: 137,
+        timedOut: true,
+        timeMs: Date.now() - started,
+        execId,
+      });
     }, timeoutMs + 2000); // +2s buffer for Docker overhead
 
     child.stdout.on("data", (data) => {
@@ -539,23 +854,18 @@ function runDockerContainer(image, command, { timeoutMs = 10000, cwd, stdin, wor
     child.stdin.end();
 
     child.on("close", (code) => {
-      clearTimeout(timer);
-      exitCode = code;
-      const timeMs = Date.now() - started;
-
-      resolve({
+      settle({
         stdout: stdout.trim(),
         stderr: stderr.trim(),
-        code: exitCode,
+        code,
         timedOut: killed,
-        timeMs,
+        timeMs: Date.now() - started,
         execId,
       });
     });
 
     child.on("error", (err) => {
-      clearTimeout(timer);
-      resolve({
+      settle({
         stdout: "",
         stderr: `Docker execution failed: ${err.message}`,
         code: 1,
@@ -571,13 +881,29 @@ function runDockerContainer(image, command, { timeoutMs = 10000, cwd, stdin, wor
  * Core Docker execution
  * ==========================================================================*/
 
-async function executeViaDocker(langId, files, { timeLimitMs, stdin }) {
+async function executeViaDocker(
+  langId,
+  files,
+  {
+    timeLimitMs,
+    stdin,
+    compileCommand: customCompileCommand,
+    runCommand: customRunCommand,
+    workspaceDir,
+    executionId,
+    testCaseId,
+  } = {}
+) {
   ensureDockerChecked();
 
   const config = LANGUAGE_CONFIG[langId];
   if (!config) {
     return { type: "execution_error", output: `No configuration for language: ${langId}`, timeMs: 0, memoryKB: 0 };
   }
+
+  // Honour caller overrides (used for Java dynamic class/file naming).
+  const compileCommand = customCompileCommand || config.compileCommand;
+  const runCommand = customRunCommand || config.runCommand;
 
   if (!dockerState.available) {
     return { type: "execution_error", output: "Docker is not available. Start Docker Desktop and restart the server.", timeMs: 0, memoryKB: 0 };
@@ -591,8 +917,17 @@ async function executeViaDocker(langId, files, { timeLimitMs, stdin }) {
     }
   }
 
-  // Create temporary directory for source files
-  const dir = await fsp.mkdtemp(path.join(os.tmpdir(), "codeexec-"));
+  // Use an isolated workspace when provided (per-case isolation); otherwise
+  // create a throwaway temp directory.
+  const providedDir = workspaceDir || (executionId ? makeWorkspace(executionId, testCaseId) : null);
+  let dir;
+  try {
+    dir = providedDir || (await fsp.mkdtemp(path.join(os.tmpdir(), "codeexec-")));
+    // Ensure the (possibly nested, per-case) workspace exists before writing.
+    await fsp.mkdir(dir, { recursive: true });
+  } catch (err) {
+    return { type: "execution_error", output: `Failed to create workspace: ${err.message}`, timeMs: 0, memoryKB: 0 };
+  }
 
   try {
     // Write source files to temp directory
@@ -607,7 +942,7 @@ async function executeViaDocker(langId, files, { timeLimitMs, stdin }) {
 
     // Debug: log generated source files before compilation
     for (const f of files) {
-      if (f.name === "Main.java" || f.name === "main.c" || f.name === "main.cpp") {
+      if (f.name.endsWith(".java") || f.name === "main.c" || f.name === "main.cpp") {
         console.log(`\n========== Generated ${f.name} (${langId}) ==========`);
         console.log(f.content);
         console.log(`========== END ${f.name} ==========\n`);
@@ -617,76 +952,54 @@ async function executeViaDocker(langId, files, { timeLimitMs, stdin }) {
     // Convert Windows path to Docker-compatible path
     const dockerDir = dir.replace(/\\/g, "/");
 
-    // Phase 1: Compile (if needed)
-    if (config.compileCommand) {
-      const compileResult = await runDockerContainer(
-        config.image,
-        config.compileCommand,
-        {
-          timeoutMs: COMPILE_TIMEOUT_MS,
-          workspaceDir: dockerDir,
-        }
-      );
-
-      console.log(`[${compileResult.execId}] Compile ${langId}: exit=${compileResult.code} time=${compileResult.timeMs}ms`);
-
-      if (compileResult.timedOut) {
-        return { type: "compile_error", output: "Compilation timed out", timeMs: compileResult.timeMs, memoryKB: 0 };
-      }
-
-      if (compileResult.code !== 0) {
-        const stderr = (compileResult.stderr || "Compilation failed").trim();
-        // Distinguish wrapper errors from student errors
-        if (langId === "java") {
-          const isWrapperError = /Main\.java:\d+/.test(stderr) && !/Solution\.java:\d+/.test(stderr);
-          return {
-            type: isWrapperError ? "execution_error" : "compile_error",
-            output: stderr,
-            timeMs: compileResult.timeMs,
-            memoryKB: 0,
-          };
-        }
-        return { type: "compile_error", output: stderr, timeMs: compileResult.timeMs, memoryKB: 0 };
-      }
-
-      // For compiled languages, we need to run the compiled binary
-      // The compiled output is in the container's /workspace tmpfs
-      // So we need a single docker run that compiles AND runs
-      // Let's restructure to do compile+run in one container
+    // Determine per-file names for Java so we can classify compile errors.
+    let studentFile = config.sourceFile;
+    let runnerFile = config.wrapperFile;
+    if (langId === "java" && customCompileCommand && customCompileCommand.length >= 3) {
+      studentFile = customCompileCommand[1];
+      runnerFile = customCompileCommand[2];
     }
 
-    // For compiled languages, we compile and run in a single container
-    // to avoid losing the compiled binary between containers
-    if (config.compileCommand) {
-      const compileAndRun = config.compileCommand.join(" ") +
-        " && " +
-        (stdin !== undefined && stdin !== null
-          ? config.runCommand.join(" ") + " < /workspace/__input.txt"
-          : config.runCommand.join(" "));
+    // Compiled languages (Java/C/C++): compile AND run in a SINGLE isolated
+    // container so the compiled binary is never lost between runs. We enforce
+    // the student's time limit with an INNER `timeout` around just the
+    // execution step (so a 1s limit actually kills the program near 1s), while
+    // the OUTER Docker wall-clock cap covers the full compile+run and is large
+    // enough that a slow javac can always finish. Compilation therefore never
+    // counts against the student time limit, and a compilation failure is
+    // always classified as a compile (or execution) error — never as a
+    // time-limit violation. runDockerContainer also enforces a hard kill so
+    // the Promise can never hang.
+    if (compileCommand) {
+      const runPart = stdin !== undefined && stdin !== null
+        ? runCommand.join(" ") + " < /workspace/__input.txt"
+        : runCommand.join(" ");
+      const runSec = Math.max(1, Math.ceil((timeLimitMs + RUN_EXEC_BUFFER_MS) / 1000));
+      // `timeout -s KILL` guarantees the student process is hard-killed if it
+      // exceeds its budget; exit 137 (128+SIGKILL) is detected below.
+      const compileAndRun = `${compileCommand.join(" ")} && timeout -s KILL ${runSec} ${runPart}`;
 
       const result = await runDockerContainer(
         config.image,
-        [compileAndRun],  // Will be wrapped in sh -c by runDockerContainer
+        [compileAndRun],  // Wrapped in sh -c by runDockerContainer
         {
-          timeoutMs: COMPILE_TIMEOUT_MS + timeLimitMs,
+          timeoutMs: Math.min(MAX_TIMEOUT_MS, COMPILE_TIMEOUT_MS + timeLimitMs),
           workspaceDir: dockerDir,
-          stdin: undefined, // stdin via file
+          stdin: undefined, // stdin is fed via file when needed
         }
       );
 
-      console.log(`[${result.execId}] CompileRun ${langId}: exit=${result.code} time=${result.timeMs}ms`);
-
-      if (result.timedOut) {
-        return { type: "time_limit", output: `Time limit exceeded (${timeLimitMs}ms)`, timeMs: timeLimitMs, memoryKB: 0 };
-      }
+      console.log(`[${result.execId}] Run ${langId}: exit=${result.code} time=${result.timeMs}ms`);
 
       if (result.code !== 0) {
         const stderr = (result.stderr || "").trim();
         const stdout = (result.stdout || "").trim();
 
-        // Check if it's a compile error
+        // A compilation failure takes precedence over everything else (including
+        // a timeout): a slow/interrupted compile, or a container killed mid-build,
+        // must never be reported as a student "Time Limit Exceeded".
         if (langId === "java" && (stderr.includes("error:") || stderr.includes("cannot find symbol"))) {
-          const isWrapperError = /Main\.java:\d+/.test(stderr) && !/Solution\.java:\d+/.test(stderr);
+          const isWrapperError = new RegExp(`${escapeRegExp(runnerFile)}:\\d+`).test(stderr) && !new RegExp(`${escapeRegExp(studentFile)}:\\d+`).test(stderr);
           return {
             type: isWrapperError ? "execution_error" : "compile_error",
             output: stderr,
@@ -698,7 +1011,13 @@ async function executeViaDocker(langId, files, { timeLimitMs, stdin }) {
           return { type: "compile_error", output: stderr, timeMs: result.timeMs, memoryKB: 0 };
         }
 
-        // Otherwise it's a runtime error
+        // Execution exceeded the student time limit — killed by the inner
+        // `timeout` (exit 137) or by the outer Docker safety timeout.
+        if (result.timedOut || result.code === 124 || result.code === 137) {
+          return { type: "time_limit", output: `Time limit exceeded (${timeLimitMs}ms)`, timeMs: timeLimitMs, memoryKB: 0 };
+        }
+
+        // Otherwise it's a runtime error.
         return {
           type: "runtime_error",
           output: (stderr || stdout || `Process exited with code ${result.code}`).trim(),
@@ -709,7 +1028,6 @@ async function executeViaDocker(langId, files, { timeLimitMs, stdin }) {
 
       return { type: "success", output: result.stdout.trim(), timeMs: result.timeMs, memoryKB: 0 };
     }
-
     // Interpreted languages (Python) — just run
     const runCmd = stdin !== undefined && stdin !== null
       ? config.runCommand.join(" ") + " < /workspace/__input.txt"
@@ -743,8 +1061,8 @@ async function executeViaDocker(langId, files, { timeLimitMs, stdin }) {
     return { type: "success", output: result.stdout.trim(), timeMs: result.timeMs, memoryKB: 0 };
 
   } finally {
-    // Clean up temporary directory
-    fsp.rm(dir, { recursive: true, force: true }).catch(() => {});
+    // Clean up temporary directory unless the caller owns it (workspaceDir).
+    if (!workspaceDir) fsp.rm(dir, { recursive: true, force: true }).catch(() => {});
   }
 }
 
@@ -843,55 +1161,195 @@ async function executeBatchStdin(langId, code, cases, timeLimitMs) {
  * Returns { type, output, timeMs, memoryKB } where type is one of:
  * "success" | "compile_error" | "runtime_error" | "time_limit" | "memory_limit"
  */
-export async function executeSingle(languageId, code, args, { timeLimitMs = DEFAULT_TIMEOUT_MS, memoryLimitMb = 256, stdin = null } = {}) {
+/**
+ * Execute the student's code against a SINGLE set of arguments.
+ * Each call runs in its own isolated Docker workspace/process, so concurrent
+ * calls never share static state. For Java the student source file is named
+ * after their declared public class and invoked by a non-colliding runner.
+ *
+ * Options: timeLimitMs, memoryLimitMb, stdin,
+ *          className, methodName, functionName, runnerClassName,
+ *          executionId, testCaseId (for deterministic isolated workspaces).
+ * Returns { type, output, timeMs, memoryKB } where type is one of:
+ * "success" | "compile_error" | "runtime_error" | "time_limit" | "memory_limit"
+ */
+export async function executeSingle(
+  languageId,
+  code,
+  args,
+  {
+    timeLimitMs = DEFAULT_TIMEOUT_MS,
+    memoryLimitMb = 256,
+    stdin = null,
+    className,
+    methodName,
+    functionName,
+    runnerClassName,
+    executionId,
+    testCaseId,
+  } = {}
+) {
   const langId = normalizeLanguage(languageId);
   if (!langId) throw new Error(`Unsupported language: ${languageId}. Supported: ${getSupportedLanguages().join(", ")}`);
 
   const effectiveStdin = isStdinLanguage(langId) ? String(stdin ?? "") : undefined;
   const effectiveArgs = isStdinLanguage(langId) ? [] : Array.isArray(args) ? args : [];
-  const harness = harnessForRun(langId, effectiveArgs, code);
-  const files = buildSources(langId, code, harness);
 
-  return executeViaDocker(langId, files, { timeLimitMs, stdin: effectiveStdin });
+  const execId = executionId || crypto.randomBytes(6).toString("hex");
+
+  let files;
+  let compileCommand;
+  let runCommand;
+
+  if (langId === "java") {
+    const detectedClass = className || detectJavaClassName(code);
+    const runnerClass = runnerClassName || "Runner";
+    const userFile = `${detectedClass}.java`;
+    const runnerFile = `${runnerClass}.java`;
+    const harness = harnessForRun("java", effectiveArgs, code, {
+      className: detectedClass,
+      methodName: methodName || "solve",
+      runnerClassName: runnerClass,
+    });
+    files = buildSources("java", code, harness, { userFile, runnerFile });
+    compileCommand = ["javac", userFile, runnerFile];
+    runCommand = ["java", "-cp", ".", runnerClass];
+  } else {
+    const fn = langId === "python" ? (functionName || detectPythonFunction(code)) : undefined;
+    const harness = harnessForRun(langId, effectiveArgs, code, { functionName: fn });
+    files = buildSources(langId, code, harness);
+  }
+
+  return executeViaDocker(langId, files, {
+    timeLimitMs,
+    stdin: effectiveStdin,
+    compileCommand,
+    runCommand,
+    executionId: execId,
+    testCaseId,
+  });
 }
 
 /**
- * Execute the student's code against multiple argument sets (batch submit mode).
- * Compiles once, runs once; output is one line per test case.
- * Returns { type, outputs: string[] | null, output, timeMs, memoryKB }.
+ * Execute the student's code against multiple test cases (batch submit mode).
+ *
+ * IMPORTANT: every test case runs in its OWN isolated process + sandbox
+ * (fanned out through executeSingle), so shared static state / cross-case
+ * interference can never happen and one failing case does NOT abort the rest.
+ * A bounded worker pool (MAX_CONCURRENT_TESTS) keeps resource usage sane.
+ *
+ * Returns {
+ *   type: "success",               // always "success" — see per-case markers
+ *   outputs: string[],             // one entry per case
+ *   output: string,                // joined outputs (for logging)
+ *   timeMs, memoryKB,
+ *   executionId,
+ * }
+ *
+ * Output protocol per case (markers preserved for consumers):
+ *   success        -> normalized return/output string
+ *   compile_error  -> "__compile_error__:<message>"
+ *   runtime_error  -> "__runtime_error__:<message>"
+ *   time_limit     -> "__time_limit__:<message>"
+ *   memory_limit   -> "__memory_limit__:<message>"
+ *   execution_error-> "__execution_error__:<message>"
+ *   skipped        -> "__error__:skipped:<message>"
  */
-export async function executeBatch(languageId, code, cases, { timeLimitMs = DEFAULT_TIMEOUT_MS, memoryLimitMb = 256 } = {}) {
+export async function executeBatch(
+  languageId,
+  code,
+  cases,
+  {
+    timeLimitMs = DEFAULT_TIMEOUT_MS,
+    memoryLimitMb = 256,
+    failFast = false,
+    executionId,
+    executionConfig = {},
+  } = {}
+) {
   const langId = normalizeLanguage(languageId);
   if (!langId) throw new Error(`Unsupported language: ${languageId}. Supported: ${getSupportedLanguages().join(", ")}`);
 
   const caseList = Array.isArray(cases) ? cases : [];
   const timeLimitMsNum = Math.max(300, Number(timeLimitMs) || DEFAULT_TIMEOUT_MS);
+  const execId = executionId || crypto.randomBytes(8).toString("hex");
 
-  if (isStdinLanguage(langId)) {
-    return executeBatchStdin(langId, code, caseList, timeLimitMsNum);
+  const runCase = async (c, index) => {
+    const caseInputs = Array.isArray(c) ? c : (Array.isArray(c?.input) ? c.input : []);
+    const args = isStdinLanguage(langId)
+      ? []
+      : caseInputs;
+    const stdin = isStdinLanguage(langId)
+      ? (c && c.input != null ? String(c.input) : "")
+      : null;
+
+    try {
+      const res = await executeSingle(langId, code, args, {
+        timeLimitMs: timeLimitMsNum,
+        memoryLimitMb,
+        stdin,
+        className: executionConfig.className,
+        methodName: executionConfig.methodName,
+        functionName: executionConfig.functionName,
+        runnerClassName: executionConfig.runnerClassName,
+        executionId: execId,
+        testCaseId: index,
+      });
+
+      switch (res.type) {
+        case "success":
+          return String(res.output ?? "");
+        case "compile_error":
+          return `__compile_error__:${res.output || "Compilation failed"}`;
+        case "runtime_error":
+          return `__runtime_error__:${res.output || "Runtime error"}`;
+        case "time_limit":
+          return `__time_limit__:${res.output || "Time limit exceeded"}`;
+        case "memory_limit":
+          return `__memory_limit__:${res.output || "Memory limit exceeded"}`;
+        default:
+          return `__execution_error__:${res.output || "Execution error"}`;
+      }
+    } catch (err) {
+      return `__execution_error__:${err && err.message ? err.message : String(err)}`;
+    }
+  };
+
+  const results = await runPool(caseList, runCase, MAX_CONCURRENT_TESTS);
+
+  if (failFast) {
+    const failedIndex = results.findIndex((r) => typeof r === "string" && r.startsWith("__"));
+    if (failedIndex !== -1) {
+      const out = results.map((r, i) => (i === failedIndex ? r : (i < failedIndex ? r : `__error__:skipped:failFast`)));
+      return { type: "success", outputs: out, output: out.join("\n"), timeMs: 0, memoryKB: 0, executionId: execId };
+    }
   }
 
-  const harness = harnessForBatch(langId, caseList, code);
-  const files = buildSources(langId, code, harness);
-  // total budget scales with the number of cases
-  const budget = Math.min(60000, timeLimitMsNum * Math.max(1, caseList.length));
-  const result = await executeViaDocker(langId, files, { timeLimitMs: budget, stdin: undefined });
-
-  if (result.type === "success") {
-    let lines = String(result.output || "")
-      .split("\n")
-      .map((line) => line.replace(/\r$/, ""));
-    // harnesses print exactly one line per case plus a trailing newline
-    if (lines.length === caseList.length + 1 && lines[lines.length - 1] === "") lines.pop();
-    return { ...result, outputs: lines };
-  }
-  return { ...result, outputs: null };
+  return {
+    type: "success",
+    outputs: results.map((r) => (typeof r === "string" ? r : `__execution_error__:${r.error ? r.error.message : "unknown"}`)),
+    output: results.join("\n"),
+    timeMs: 0,
+    memoryKB: 0,
+    executionId: execId,
+  };
 }
 
 export function isExecutionConfigured() {
   ensureDockerChecked();
   return dockerState.available;
 }
+
+// Output comparison utilities (shared with controllers / result processor).
+export {
+  compareOutputs,
+  normalizeValue,
+  COMPARISON_MODES,
+  makeWorkspace,
+  runPool,
+  detectJavaClassName,
+  detectPythonFunction,
+};
 
 export function getExecutionProviderInfo() {
   ensureDockerChecked();

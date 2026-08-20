@@ -272,6 +272,7 @@ Overall, my goal is to become a Full Stack Software Engineer who can design inte
 6a85ff5f829ee39d4399cf2b,6a85ff53829ee39d4399cf1d,6a566f322f681d770359254e,APT-01,aptitude,"Students in five classes: A 60, B 75, C 90, D 55, E 80. What percentage of all students are in class C?",22.5%,85,Response recorded successfully.,2026-08-19T19:09:19.511Z
 6a85ff64829ee39d4399cf36,6a85ff53829ee39d4399cf1d,6a566f322f681d770359254e,APT-02,aptitude,Choose the antonym of 'Loquacious'.,Reticent,85,Response recorded successfully.,2026-08-19T19:09:24.389Z
 6a85ff6f829ee39d4399cf46,6a85ff53829ee39d4399cf1d,6a566f322f681d770359254e,APT-03,aptitude,A snail climbs 3 m up a wall during the day and slides 2 m down at night. The wall is 10 m high. On which day does it first reach the top?,,0,Question skipped or answer empty.,2026-08-19T19:09:35.906Z
+<<<<<<< HEAD
 6a86039e124939471280ce84,6a860393124939471280ce76,6a566fbc2f681d770359254f,APT-01,aptitude,A man faces east. He turns 135° clockwise. Which direction does he now face?,,0,Question skipped or answer empty.,2026-08-19T19:27:26.230Z
 6a8603a0124939471280ce8a,6a860393124939471280ce76,6a566fbc2f681d770359254f,APT-02,aptitude,"If 11 × 11 = 121 and 22 × 22 = 484, then 33 × 33 = ?",999,85,Response recorded successfully.,2026-08-19T19:27:28.015Z
 6a8603bb124939471280ce97,6a860393124939471280ce76,6a566fbc2f681d770359254f,TECH-01,resume,"Regarding Programming & OOP in your work with Java, how did you design and implement your solution?",,0,Question skipped or answer empty.,2026-08-19T19:27:55.416Z
@@ -279,3 +280,5 @@ Overall, my goal is to become a Full Stack Software Engineer who can design inte
 6a8603d1124939471280cea3,6a860393124939471280ce76,6a566fbc2f681d770359254f,TECH-03,resume,"Regarding Database & SQL in your work with Java, how did you design and implement your solution?",,0,Question skipped or answer empty.,2026-08-19T19:28:17.478Z
 6a8603e0124939471280ceae,6a860393124939471280ce76,6a566fbc2f681d770359254f,HR-01,hr,"Tell me about yourself, your academic background, and why you are pursuing a career in software engineering.",,0,Question skipped or answer empty.,2026-08-19T19:28:32.354Z
 6a867ead53d5271628111814,6a867e9b53d52716281117cc,6a78069d194ee078e4ccca2f,APT-01,aptitude,"Cricket scores in five matches: 245, 187, 312, 198, 233. What is the difference between the highest and lowest scores?",125,85,Response recorded successfully.,2026-08-20T04:12:29.744Z
+=======
+>>>>>>> ae75443ade46d8602b112960c3fc3de682699961

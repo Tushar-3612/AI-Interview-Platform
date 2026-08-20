@@ -66,10 +66,10 @@ async function runTests() {
   // Check environment
   const info = getExecutionProviderInfo();
   console.log("Execution Provider:", info.provider);
-  console.log("Java available:", info.localToolchains.java);
+  console.log("Java available:", info.images.java);
   console.log("");
 
-  if (!info.localToolchains.java) {
+  if (!info.images.java) {
     console.log(`${FAIL}: Java toolchain not available. Cannot run tests.`);
     process.exit(1);
   }

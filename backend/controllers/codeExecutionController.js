@@ -9,6 +9,8 @@ import {
   getSupportedLanguages,
   isLanguageSupported,
   getExecutionProviderInfo,
+  compareOutputs,
+  COMPARISON_MODES,
 } from "../services/codeExecutionService.js";
 
 function findFunctionName(code) {
@@ -104,6 +106,27 @@ function normalizeOutput(value) {
   } catch {
     return String(value).trim();
   }
+}
+
+/**
+ * Parse a single per-case output produced by executeBatch.
+ * Returns the error type (or null when the case succeeded) and the message.
+ */
+function parseCaseMarker(raw) {
+  const markers = [
+    ["__compile_error__:", "compile_error"],
+    ["__execution_error__:", "execution_error"],
+    ["__memory_limit__:", "memory_limit"],
+    ["__time_limit__:", "time_limit"],
+    ["__runtime_error__:", "runtime_error"],
+    ["__error__:skipped:", "skipped"],
+  ];
+  for (const [prefix, type] of markers) {
+    if (raw.startsWith(prefix)) {
+      return { errorType: type, message: raw.slice(prefix.length), actual: "" };
+    }
+  }
+  return { errorType: null, message: "", actual: raw };
 }
 
 /**
@@ -219,7 +242,7 @@ export const submitCode = async (req, res) => {
         passed: false,
         isHidden: Boolean(tc.isHidden),
         input: tc.isHidden ? "" : String(tc.input),
-        expected: tc.isHidden ? "" : String(tc.expected),
+        expected: tc.isHidden ? "" : String(tc.expected ?? tc.output ?? tc.expectedOutput ?? ""),
         actual: "",
         error: errorMsg,
         timeMs: 0,
@@ -236,27 +259,30 @@ export const submitCode = async (req, res) => {
     }
 
     let passedCount = 0;
+    let compileOutput = "";
     const results = testCases.map((tc, index) => {
       const raw = String(batch.outputs[index] ?? "");
-      let error = "";
-      let actual = raw;
-      if (raw.startsWith("__time_limit__:")) {
-        error = `Time limit exceeded (${timeLimit}ms)`;
-        actual = "";
-      } else if (raw.startsWith("__runtime_error__:")) {
-        error = raw.slice("__runtime_error__:".length);
-        actual = "";
+      const { errorType, message, actual } = parseCaseMarker(raw);
+      const expected = String(tc.expected ?? tc.output ?? tc.expectedOutput ?? "");
+      const passed = !errorType && compareOutputs(actual, expected, COMPARISON_MODES.TOKEN);
+
+      if (errorType === "compile_error" || errorType === "execution_error") {
+        if (!compileOutput) compileOutput = message;
       }
-      const passed = !error && normalizeOutput(raw) === normalizeOutput(tc.expected);
       if (passed) passedCount++;
+
+      let displayError = "";
+      if (errorType === "time_limit") displayError = `Time limit exceeded (${timeLimit}ms)`;
+      else if (errorType) displayError = message;
+
       return {
         index: index + 1,
         passed,
         isHidden: Boolean(tc.isHidden),
         input: tc.isHidden ? "" : String(tc.input),
-        expected: tc.isHidden ? "" : String(tc.expected),
-        actual: passed ? "" : actual,
-        error,
+        expected: tc.isHidden ? "" : expected,
+        actual: passed || errorType ? "" : actual,
+        error: displayError,
         timeMs: 0,
       };
     });
@@ -266,7 +292,7 @@ export const submitCode = async (req, res) => {
       passedCount,
       totalCount: testCases.length,
       results,
-      compileOutput: "",
+      compileOutput,
       timeMs: batch.timeMs || 0,
     });
   } catch (error) {
