@@ -2,7 +2,7 @@ import TestAttempt from "../models/TestAttempt.js";
 import TestAssignment from "../models/TestAssignment.js";
 import User from "../models/User.js";
 import TestResult from "../models/TestResult.js";
-import { calculateGrade, calculatePassFail } from "../utils/gradeCalculator.js";
+import { calculateGrade, calculatePassFail, computePassingMarks } from "../utils/gradeCalculator.js";
 import {
   buildQuestionResult,
   computeSectionSummary,
@@ -297,8 +297,10 @@ export async function processResult(attemptId) {
     computeSectionSummary(sectionName, qResults)
   );
 
+  const passingPercentage = Number(test.passingMarks) || 0;
+  const passingMarks = computePassingMarks(overall.totalMarks, passingPercentage);
+  const passed = calculatePassFail(overall.obtainedMarks, passingMarks);
   const grade = calculateGrade(overall.percentage);
-  const passed = calculatePassFail(overall.percentage, test.passingMarks);
 
   const timeTaken = attempt.startTime && attempt.submittedAt
     ? Math.round((new Date(attempt.submittedAt) - new Date(attempt.startTime)) / 1000)
@@ -333,6 +335,8 @@ export async function processResult(attemptId) {
     obtainedMarks: overall.obtainedMarks,
     percentage: overall.percentage,
     passed,
+    passingMarks,
+    passingPercentage,
     grade,
 
     questions: questionResults,

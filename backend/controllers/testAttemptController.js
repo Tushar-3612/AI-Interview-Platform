@@ -3,6 +3,7 @@ import TestAssignment from "../models/TestAssignment.js";
 import TestAttempt from "../models/TestAttempt.js";
 import User from "../models/User.js";
 import { processResult } from "../services/resultProcessor.js";
+import { computePassingMarks, calculatePassFail } from "../utils/gradeCalculator.js";
 
 export const getAssignedTests = async (req, res) => {
   try {
@@ -100,6 +101,26 @@ export const startTest = async (req, res) => {
     }).lean();
     if (!assignment) return res.status(403).json({ message: "Test not assigned to you" });
 
+    const now = new Date();
+    if (test.startAt && now < new Date(test.startAt)) {
+      return res.status(403).json({
+        message: `This test has not started yet. It will be available from ${new Date(test.startAt).toLocaleString()}.`,
+        status: "UPCOMING",
+      });
+    }
+    if (test.endAt && now >= new Date(test.endAt)) {
+      return res.status(403).json({
+        message: `This test has ended. The test window closed on ${new Date(test.endAt).toLocaleString()}.`,
+        status: "EXPIRED",
+      });
+    }
+
+    const computeEndTime = () => {
+      const base = new Date(now.getTime() + test.duration * 60000);
+      if (test.endAt && new Date(test.endAt) < base) return new Date(test.endAt);
+      return base;
+    };
+
     let attempt = await TestAttempt.findOne({ testId, userId });
     if (attempt) {
       if (attempt.status === "completed" || attempt.status === "auto_submitted") {
@@ -108,7 +129,7 @@ export const startTest = async (req, res) => {
       attempt.currentQuestionIndex = 0;
       attempt.status = "started";
       attempt.startTime = new Date();
-      attempt.endTime = new Date(Date.now() + test.duration * 60000);
+      attempt.endTime = computeEndTime();
       attempt.answers = test.questions.map((q, idx) => ({
         questionIndex: idx,
         questionId: q._id?.toString() || "",
@@ -134,7 +155,7 @@ export const startTest = async (req, res) => {
       userId,
       status: "started",
       startTime: new Date(),
-      endTime: new Date(Date.now() + test.duration * 60000),
+      endTime: computeEndTime(),
       answers: test.questions.map((q, idx) => ({
         questionIndex: idx,
         questionId: q._id?.toString() || "",
@@ -339,7 +360,9 @@ export const getTestResult = async (req, res) => {
     const marked = attempt.answers.filter(a => a.status === "marked").length;
     const notVisited = attempt.answers.filter(a => a.status === "not_visited").length;
     const percentage = totalMarks > 0 ? Math.round((attempt.totalScore / totalMarks) * 100) : 0;
-    const passed = percentage >= (test.passingMarks || 40);
+    const passingPercentage = Number(test.passingMarks) || 0;
+    const passingMarks = computePassingMarks(totalMarks, passingPercentage);
+    const passed = calculatePassFail(attempt.totalScore, passingMarks);
 
     res.json({
       attempt: {
@@ -348,6 +371,8 @@ export const getTestResult = async (req, res) => {
         totalScore: attempt.totalScore,
         totalMarks,
         percentage,
+        passingMarks,
+        passingPercentage,
         passed,
         answered,
         skipped,

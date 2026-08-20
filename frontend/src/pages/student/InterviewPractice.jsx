@@ -394,13 +394,13 @@ function InterviewPractice() {
                 style={{ borderColor: "var(--border)", background: "var(--input-bg)", color: "var(--text-secondary)" }}
               >
                 <option value="">All Departments</option>
-                <option value="computer">Computer Engineering</option>
-                <option value="it">IT Engineering</option>
-                <option value="electronics">Electronics</option>
-                <option value="mechanical">Mechanical</option>
-                <option value="civil">Civil Engineering</option>
-                <option value="entc">ENTC Engineering</option>
-                <option value="ai">AI & DS</option>
+                <option value="Computer Engineering">Computer Engineering</option>
+                <option value="IT Engineering">IT Engineering</option>
+                <option value="Electronics Engineering">Electronics Engineering</option>
+                <option value="Mechanical Engineering">Mechanical Engineering</option>
+                <option value="Civil Engineering">Civil Engineering</option>
+                <option value="ENTC Engineering">ENTC Engineering</option>
+                <option value="AI & DS">AI & DS</option>
               </select>
             </div>
 

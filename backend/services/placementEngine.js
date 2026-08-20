@@ -18,6 +18,7 @@ import Result from "../models/Result.js";
 import StudentPreference from "../models/StudentPreference.js";
 import MockOAAttempt from "../models/MockOAAttempt.js";
 import AchievementUnlock from "../models/AchievementUnlock.js";
+import { yearQuery } from "../utils/academicConfig.js";
 import Notification from "../models/Notification.js";
 import { getCache, setCache, deleteCacheByPrefix } from "./cacheService.js";
 import { createNotification } from "./notificationService.js";
@@ -833,7 +834,7 @@ async function computeLeaderboard({ type = "overall", period = "overall", depart
 
   const match = {};
   if (department) match.department = department;
-  if (year) match.year = year;
+  if (year) match.year = yearQuery(year);
 
   const users = await User.find(match).select("name department year").lean();
   if (users.length === 0) return { leaderboard: [], filters: { type, period, department, year } };

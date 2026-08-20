@@ -5,6 +5,7 @@ export default function Step4PreviewTest({ form, questions }) {
   const coding = questions.filter(q => q.type === "Coding");
 
   const totalMarks = questions.reduce((s, q) => s + (q.marks || 0), 0);
+  const requiredMarks = Math.ceil(totalMarks * (form.passingMarks || 0) / 100);
 
   return (
     <div className="space-y-5 max-w-4xl">
@@ -25,8 +26,8 @@ export default function Step4PreviewTest({ form, questions }) {
             <p style={{ color: "var(--text-muted)" }}>Duration (min)</p>
           </div>
           <div className="p-3 rounded-lg admin-bg-surface text-center">
-            <p className="text-lg font-bold" style={{ color: "var(--primary)" }}>{form.passingMarks}%</p>
-            <p style={{ color: "var(--text-muted)" }}>Passing Marks</p>
+            <p className="text-lg font-bold" style={{ color: "var(--primary)" }}>{requiredMarks} / {totalMarks}</p>
+            <p style={{ color: "var(--text-muted)" }}>Passing ({form.passingMarks}%)</p>
           </div>
         </div>
 

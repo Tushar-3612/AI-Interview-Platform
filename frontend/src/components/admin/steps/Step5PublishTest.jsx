@@ -3,8 +3,16 @@ import { useNavigate } from "react-router-dom";
 
 export default function Step5PublishTest({ form, questions, saving, testCreated, testId, onSaveDraft, onPublish, onChange }) {
   const navigate = useNavigate();
-  const isValid = form.title?.trim() && questions.length > 0;
-  const isScheduled = form.startAt && new Date(form.startAt) > new Date();
+  const baseValid = form.title?.trim() && questions.length > 0;
+  const startMissing = !form.startAt;
+  const endMissing = !form.endAt;
+  const endBeforeStart = !!(form.startAt && form.endAt && new Date(form.endAt) <= new Date(form.startAt));
+  const scheduleInvalid = startMissing || endMissing || endBeforeStart;
+  const isValid = baseValid && !scheduleInvalid;
+  const isScheduled = true;
+
+  const totalMarks = (questions || []).reduce((s, q) => s + (q.marks || 0), 0);
+  const requiredMarks = Math.ceil(totalMarks * (form.passingMarks || 0) / 100);
 
   return (
     <div className="border admin-border admin-card rounded-xl p-6 text-center max-w-xl mx-auto">
@@ -41,6 +49,18 @@ export default function Step5PublishTest({ form, questions, saving, testCreated,
           <span className="font-medium capitalize" style={{ color: "var(--text-primary)" }}>{form.testType}</span>
         </div>
         <div className="flex justify-between text-xs px-4 py-2 rounded-lg admin-bg-surface">
+          <span style={{ color: "var(--text-muted)" }}>Passing</span>
+          <span className="font-medium" style={{ color: "var(--text-primary)" }}>{requiredMarks} / {totalMarks} ({form.passingMarks}%)</span>
+        </div>
+        <div className="flex justify-between text-xs px-4 py-2 rounded-lg admin-bg-surface">
+          <span style={{ color: "var(--text-muted)" }}>Window</span>
+          <span className="font-medium" style={{ color: "var(--text-primary)" }}>
+            {form.startAt ? new Date(form.startAt).toLocaleString() : "—"}
+            <span style={{ color: "var(--text-muted)" }}> → </span>
+            {form.endAt ? new Date(form.endAt).toLocaleString() : "—"}
+          </span>
+        </div>
+        <div className="flex justify-between text-xs px-4 py-2 rounded-lg admin-bg-surface">
           <span style={{ color: "var(--text-muted)" }}>Duration</span>
           <span className="font-medium" style={{ color: "var(--text-primary)" }}>{form.duration} min</span>
         </div>
@@ -71,8 +91,16 @@ export default function Step5PublishTest({ form, questions, saving, testCreated,
         </div>
       </div>
 
+      {scheduleInvalid && (
+        <p className="text-xs mb-3" style={{ color: "var(--badge-error-text)" }}>
+          {startMissing ? "Start date and time are required."
+            : endMissing ? "End date and time are required."
+              : "End date and time must be after the start date and time."}
+        </p>
+      )}
+
       <div className="flex flex-col sm:flex-row gap-3 justify-center">
-        <button onClick={onSaveDraft} disabled={!isValid || saving}
+        <button onClick={onSaveDraft} disabled={!baseValid || saving}
           className="flex items-center justify-center gap-1.5 px-5 py-2.5 text-xs font-medium border admin-border rounded-lg admin-hover cursor-pointer disabled:opacity-50">
           <Save className="w-3.5 h-3.5" /> {saving ? "Saving..." : "Save Draft"}
         </button>

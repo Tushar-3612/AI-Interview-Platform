@@ -64,19 +64,16 @@ export default function Step1GeneralInfo({ form, onChange }) {
               <input type="number" min="1" className={inputCls} value={form.duration} onChange={e => update("duration", parseInt(e.target.value) || 30)} style={{ color: "var(--text-primary)" }} />
             </div>
             <div>
-              <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>Passing Marks (%)</label>
-              <input type="number" min="0" max="100" className={inputCls} value={form.passingMarks} onChange={e => update("passingMarks", parseInt(e.target.value) || 40)} style={{ color: "var(--text-primary)" }} />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
               <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>Attempt Limit</label>
               <input type="number" min="1" className={inputCls} value={form.attemptLimit} onChange={e => update("attemptLimit", parseInt(e.target.value) || 1)} style={{ color: "var(--text-primary)" }} />
             </div>
-            <div>
-              <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>Schedule (optional)</label>
-              <input type="datetime-local" className={inputCls} value={form.scheduledAt} onChange={e => update("scheduledAt", e.target.value)} style={{ color: "var(--text-primary)" }} />
-            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>Passing Criteria (%) *</label>
+            <input type="number" min="0" max="100" className={inputCls} value={form.passingMarks} onChange={e => update("passingMarks", parseInt(e.target.value) || 0)} style={{ color: "var(--text-primary)" }} />
+            <p className="text-[10px] mt-1" style={{ color: "var(--text-muted)" }}>
+              Passing marks are calculated automatically from total marks (Passing % × Total Marks, rounded up).
+            </p>
           </div>
         </div>
       </div>

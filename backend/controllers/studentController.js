@@ -5,6 +5,7 @@ import Result from "../models/Result.js";
 import Company from "../models/Company.js";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
+import { normalizeYear, normalizeDepartment } from "../utils/academicConfig.js";
 
 dotenv.config();
 
@@ -41,8 +42,8 @@ export const updateProfile = async (req, res) => {
     }
 
     if (name) student.name = name;
-    if (department) student.department = department;
-    if (year) student.year = year;
+    if (department) student.department = normalizeDepartment(department);
+    if (year) student.year = normalizeYear(year);
     if (phone !== undefined) student.phone = phone;
     if (portfolio !== undefined) student.portfolio = portfolio;
     if (github !== undefined) student.github = github;

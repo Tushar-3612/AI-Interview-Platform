@@ -14,8 +14,12 @@ export function calculateGrade(percentage) {
   return "Fail";
 }
 
-export function calculatePassFail(percentage, passingMarks) {
-  return percentage >= (passingMarks || 40);
+export function computePassingMarks(totalMarks, passingPercentage) {
+  return Math.ceil((Number(totalMarks) || 0) * (Number(passingPercentage) || 0) / 100);
+}
+
+export function calculatePassFail(obtainedMarks, passingMarks) {
+  return (Number(obtainedMarks) || 0) >= (Number(passingMarks) || 0);
 }
 
 export { GRADE_THRESHOLDS };

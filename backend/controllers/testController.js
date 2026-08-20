@@ -18,6 +18,7 @@ import {
   generateDocxTemplate,
   generatePdfTemplate,
 } from "../utils/templateGenerator.js";
+import { normalizeYear, normalizeDepartment, yearQuery } from "../utils/academicConfig.js";
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -148,23 +149,41 @@ export const deleteQuestion = async (req, res) => {
 
 export const publishTest = async (req, res) => {
   try {
-    const { scheduledAt, startAt, endAt } = req.body;
+    const { startAt, endAt } = req.body;
     const test = await Test.findById(req.params.id);
     if (!test) return res.status(404).json({ message: "Test not found" });
+
+    if (test.status === "completed") {
+      return res.status(400).json({ message: "Cannot publish a completed test" });
+    }
 
     if (!test.questions || test.questions.length === 0) {
       return res.status(400).json({ message: "Cannot publish a test with no questions" });
     }
 
-    if (scheduledAt) {
-      test.status = "scheduled";
-      test.scheduledAt = new Date(scheduledAt);
-      if (startAt) test.startAt = new Date(startAt);
-      if (endAt) test.endAt = new Date(endAt);
-    } else {
-      test.status = "live";
-      test.publishedAt = new Date();
+    const existingAssignment = await TestAssignment.findOne({ testId: test._id, status: { $ne: "archived" } });
+    if (!existingAssignment) {
+      return res.status(400).json({ message: "Assign at least one student before publishing the test." });
     }
+
+    if (!startAt) {
+      return res.status(400).json({ message: "Start date and time are required." });
+    }
+    if (!endAt) {
+      return res.status(400).json({ message: "End date and time are required." });
+    }
+
+    const s = new Date(startAt);
+    const e = new Date(endAt);
+    if (isNaN(s.getTime()) || isNaN(e.getTime()) || e.getTime() <= s.getTime()) {
+      return res.status(400).json({ message: "End date and time must be after the start date and time." });
+    }
+
+    test.status = "scheduled";
+    test.scheduledAt = s;
+    test.startAt = s;
+    test.endAt = e;
+    test.publishedAt = new Date();
 
     await test.save();
     res.json({ message: "Test published", test });
@@ -244,39 +263,82 @@ export const assignTest = async (req, res) => {
   try {
     const { testId, assignType, assignValue, studentIds, department, year, section } = req.body;
 
+    if (!testId) {
+      return res.status(400).json({ message: "Test identifier is required." });
+    }
+
     const test = await Test.findById(testId);
-    if (!test) return res.status(404).json({ message: "Test not found" });
+    if (!test) return res.status(404).json({ message: "Test does not exist." });
+
+    const normalizedDepartment = department ? normalizeDepartment(department) : "";
+    const normalizedYear = year ? normalizeYear(year) : "";
 
     let targetStudents = [];
     let resolvedAssignType = assignType;
     let resolvedAssignValue = assignValue || "";
-    let resolvedDepartment = department || "";
-    let resolvedYear = year || "";
+    let resolvedDepartment = normalizedDepartment;
+    let resolvedYear = normalizedYear;
     let resolvedSection = section || "";
 
     if (assignType === "department_year") {
       resolvedAssignType = "department";
-      resolvedAssignValue = department || "";
+      resolvedAssignValue = normalizedDepartment;
       const query = {};
-      if (department) query.department = department;
-      if (year) query.year = year;
+      if (department) query.department = normalizedDepartment;
+      if (year) query.year = yearQuery(year);
       targetStudents = await User.find(query).select("_id");
     } else if (assignType === "all") {
       targetStudents = await User.find().select("_id");
     } else if (assignType === "department") {
-      targetStudents = await User.find({ department: assignValue }).select("_id");
-      resolvedDepartment = assignValue || "";
+      if (!assignValue) {
+        return res.status(400).json({ message: "Please select a department." });
+      }
+      targetStudents = await User.find({ department: normalizeDepartment(assignValue) }).select("_id");
+      resolvedDepartment = normalizeDepartment(assignValue);
     } else if (assignType === "year") {
-      targetStudents = await User.find({ year: assignValue }).select("_id");
-      resolvedYear = assignValue || "";
+      if (!assignValue) {
+        return res.status(400).json({ message: "Please select an academic year." });
+      }
+      targetStudents = await User.find({ year: yearQuery(assignValue) }).select("_id");
+      resolvedYear = normalizeYear(assignValue);
     } else if (assignType === "section") {
-      targetStudents = await User.find({ department: assignValue }).select("_id");
-      resolvedSection = assignValue || "";
+      if (!assignValue) {
+        return res.status(400).json({ message: "Please select a section." });
+      }
+      targetStudents = await User.find({ section: assignValue }).select("_id");
+      resolvedSection = assignValue;
     } else if (assignType === "individual" || assignType === "multiple") {
-      targetStudents = (studentIds || []).map(id => ({ _id: id }));
+      const providedIds = Array.isArray(studentIds) ? studentIds : [];
+      if (providedIds.length === 0) {
+        return res.status(400).json({ message: "No students were selected." });
+      }
+      const valid = await User.find({ _id: { $in: providedIds } }).select("_id");
+      const validIds = valid.map((u) => u._id.toString());
+      const invalidCount = providedIds.length - validIds.length;
+      if (validIds.length === 0) {
+        return res.status(400).json({ message: "One or more selected students are invalid." });
+      }
+      if (invalidCount > 0) {
+        return res.status(400).json({
+          message: "One or more selected students are invalid.",
+          validStudentIds: validIds,
+        });
+      }
+      targetStudents = valid;
+    } else {
+      return res.status(400).json({ message: "Invalid assignment type." });
     }
 
-    const ids = targetStudents.map(s => s._id);
+    const ids = targetStudents.map((s) => s._id);
+
+    if (ids.length === 0) {
+      if (assignType === "individual" || assignType === "multiple") {
+        return res.status(400).json({ message: "No students were selected." });
+      }
+      return res.status(400).json({
+        message: "No students match the selected criteria. Try a different Department / Year combination.",
+      });
+    }
 
     const existingQuery = { testId };
     if (resolvedAssignType === "department" && resolvedDepartment) {
@@ -293,11 +355,18 @@ export const assignTest = async (req, res) => {
     const existing = await TestAssignment.findOne(existingQuery);
 
     if (existing) {
-      const merged = [...new Set([...existing.studentIds.map(s => s.toString()), ...ids.map(s => s.toString())])];
+      const merged = [...new Set([...existing.studentIds.map((s) => s.toString()), ...ids.map((s) => s.toString())])];
+      // Do not create duplicate assignments for students already assigned.
+      const alreadyAssigned = existing.studentIds.map((s) => s.toString()).length;
       existing.studentIds = merged;
       existing.notAttemptedCount = merged.length - existing.completedCount - existing.autoSubmittedCount;
       await existing.save();
-      return res.json({ message: "Assignment updated", assignment: existing });
+      const newlyAdded = merged.length - alreadyAssigned;
+      return res.json({
+        message: newlyAdded > 0 ? "Assignment updated" : "These students are already assigned to this test.",
+        assignment: existing,
+        alreadyAssigned: newlyAdded === 0,
+      });
     }
 
     const assignment = await TestAssignment.create({
@@ -309,13 +378,13 @@ export const assignTest = async (req, res) => {
       section: resolvedSection,
       studentIds: ids,
       notAttemptedCount: ids.length,
-      assignedBy: req.user.id,
+      assignedBy: req.user?.id,
     });
 
     res.status(201).json({ message: "Test assigned", assignment });
   } catch (error) {
     console.error("Assign Test Error:", error.message);
-    res.status(500).json({ message: "Failed to assign test" });
+    res.status(500).json({ message: error.message || "Unable to create assignment." });
   }
 };
 

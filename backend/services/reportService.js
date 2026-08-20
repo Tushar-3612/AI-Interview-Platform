@@ -6,6 +6,7 @@ import Interview from "../models/Interview.js";
 import Result from "../models/Result.js";
 import Answer from "../models/Answer.js";
 import TestAssignment from "../models/TestAssignment.js";
+import { yearQuery } from "../utils/academicConfig.js";
 
 export async function getStudentReport(studentId) {
   const user = await User.findById(studentId).select("-password").lean();
@@ -216,7 +217,7 @@ function buildRealInterviewSummary(interviews, results) {
 export async function getBatchReport(department, year) {
   const filter = {};
   if (department) filter.department = department;
-  if (year) filter.year = year;
+  if (year) filter.year = yearQuery(year);
 
   const students = await User.find(filter).select("-password").sort({ name: 1 }).lean();
   if (!students.length) throw new Error("No students found");
@@ -381,7 +382,7 @@ export async function searchReports({ query, department, year, company, dateFrom
     ];
   }
   if (department) match.department = department;
-  if (year) match.year = year;
+  if (year) match.year = yearQuery(year);
 
   const students = await User.find(match)
     .select("-password")
@@ -436,7 +437,7 @@ export async function searchReports({ query, department, year, company, dateFrom
 export async function getReportExportData(filters = {}) {
   const match = {};
   if (filters.department) match.department = filters.department;
-  if (filters.year) match.year = filters.year;
+  if (filters.year) match.year = yearQuery(filters.year);
 
   const students = await User.find(match).select("-password").sort({ name: 1 }).lean();
   const studentIds = students.map(s => s._id);

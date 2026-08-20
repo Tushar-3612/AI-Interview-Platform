@@ -2,9 +2,8 @@ import { useState, useEffect } from "react";
 import { Users } from "lucide-react";
 import api from "../../../utils/api";
 import { getAuthToken } from "../../../hooks/useStudentProfile";
+import { DEPARTMENT_VALUES as DEPARTMENTS, YEAR_VALUES as YEARS } from "../../../utils/constants";
 
-const DEPARTMENTS = ["Computer Engineering", "IT Engineering", "Electronics Engineering", "Mechanical Engineering", "Civil Engineering", "ENTC Engineering", "AI & DS"];
-const YEARS = ["1st Year", "2nd Year", "3rd Year", "Last Year"];
 const SECTIONS = ["A", "B", "C"];
 
 export default function Step3AssignTest({ assignTargets, onAssignChange, testId }) {

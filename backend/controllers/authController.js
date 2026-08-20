@@ -2,6 +2,7 @@ import User from "../models/User.js";
 import Admin from "../models/Admin.js";
 import generateToken from "../utils/generateToken.js";
 import { onUserRegistered } from "../utils/csvExporter.js";
+import { normalizeYear, normalizeDepartment } from "../utils/academicConfig.js";
 
 /* ================================
    VALIDATION HELPERS
@@ -98,8 +99,8 @@ export const signup = async (req, res) => {
       name,
       email,
       password,
-      department,
-      year,
+      department: normalizeDepartment(department),
+      year: normalizeYear(year),
       portfolio: portfolio || "",
       github: github || "",
       linkedin: linkedin || "",
