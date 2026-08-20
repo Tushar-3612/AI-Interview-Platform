@@ -4,6 +4,7 @@ import {
   startInterview,
   uploadResumeAndGenerateQuestions,
   getInterviewDetails,
+  getOrGenerateRoundQuestions,
   saveAnswer,
   completeInterview,
   getUserResults,
@@ -30,6 +31,9 @@ router.get("/user/results", authMiddleware, getUserResults);
 
 // GET /api/interview/user/history — real past sessions for the logged-in user
 router.get("/user/history", authMiddleware, getUserInterviews);
+
+// GET /api/interview/:id/round/:roundName — lazy load / DB cache per round
+router.get("/:id/round/:roundName", authMiddleware, getOrGenerateRoundQuestions);
 
 // GET /api/interview/:id
 router.get("/:id", authMiddleware, getInterviewDetails);

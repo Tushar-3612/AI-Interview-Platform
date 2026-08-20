@@ -5,7 +5,19 @@ import TestAttempt from "../models/TestAttempt.js";
 import TestResult from "../models/TestResult.js";
 import User from "../models/User.js";
 import Result from "../models/Result.js";
-import { parseQuestions, removeDuplicates, validateQuestions } from "../utils/questionParser.js";
+import {
+  parseQuestions,
+  validateQuestions,
+  findDuplicates,
+  toAppQuestion,
+  detectFileKind,
+  containsPlaceholder,
+} from "../utils/questionParser.js";
+import {
+  generateCsvTemplate,
+  generateDocxTemplate,
+  generatePdfTemplate,
+} from "../utils/templateGenerator.js";
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -452,31 +464,87 @@ export const uploadQuestions = async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ message: "No file uploaded" });
 
-    const supported = ["text/csv", "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "application/pdf"];
-    const isSupported = supported.some(t => req.file.mimetype.includes(t));
-    if (!isSupported) return res.status(400).json({ message: `Unsupported file type: ${req.file.mimetype}. Please upload CSV, Excel, or PDF files.` });
+    if (req.file.size > 10 * 1024 * 1024) {
+      return res.status(400).json({
+        success: false,
+        message: "File is too large. Please upload a file smaller than 10MB.",
+      });
+    }
 
-    const questions = await parseQuestions(
-      req.file.buffer,
-      req.file.mimetype
-    );
-    const deduped = removeDuplicates(questions);
-    const { errors, warnings } = validateQuestions(deduped);
+    const kind = detectFileKind(req.file.originalname, req.file.mimetype);
+    if (!kind) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Invalid file type. Please upload a .csv, .docx or .pdf file using the official Technical Questions template.",
+      });
+    }
+
+    const parsed = await parseQuestions(req.file.buffer, kind);
+    if (!parsed || parsed.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "We couldn't find any questions in this file. Please make sure it follows the official template format.",
+      });
+    }
+
+    if (containsPlaceholder(parsed)) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Please replace the template placeholder values before uploading. Replace the bracketed [Enter ...] text with your own questions.",
+      });
+    }
+
+    const { valid, invalid } = validateQuestions(parsed);
+    const duplicates = findDuplicates(parsed);
+
     res.json({
       success: true,
-      questions: deduped,
-      errors,
-      warnings,
-      total: deduped.length,
-      duplicates: questions.length - deduped.length,
+      total: parsed.length,
+      validCount: valid.length,
+      invalidCount: invalid.length,
+      validQuestions: valid.map(toAppQuestion),
+      invalidQuestions: invalid,
+      duplicates,
     });
   } catch (error) {
-    const clientErrors = ["Unsupported file type", "CSV must have", "Excel file is empty"];
-    if (clientErrors.some(msg => error.message.startsWith(msg))) {
-      return res.status(400).json({ message: error.message });
-    }
     console.error("Upload Questions Error:", error.message);
-    res.status(500).json({ success: false, message: error.message });
+    res.status(400).json({
+      success: false,
+      message:
+        error.message ||
+        "We couldn't parse this file. Please download the official template and upload the completed version.",
+    });
+  }
+};
+
+export const downloadTemplate = async (req, res) => {
+  const format = (req.params.format || "").toLowerCase();
+  try {
+    if (format === "csv") {
+      const csv = generateCsvTemplate();
+      res.setHeader("Content-Disposition", "attachment; filename=technical_questions_template.csv");
+      res.setHeader("Content-Type", "text/csv; charset=utf-8");
+      return res.status(200).send(csv);
+    }
+    if (format === "docx") {
+      const buf = generateDocxTemplate();
+      res.setHeader("Content-Disposition", "attachment; filename=technical_questions_template.docx");
+      res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+      return res.status(200).send(buf);
+    }
+    if (format === "pdf") {
+      const buf = await generatePdfTemplate();
+      res.setHeader("Content-Disposition", "attachment; filename=technical_questions_template.pdf");
+      res.setHeader("Content-Type", "application/pdf");
+      return res.status(200).send(buf);
+    }
+    return res.status(400).json({ message: "Unknown template format" });
+  } catch (error) {
+    console.error("Download Template Error:", error.message);
+    res.status(500).json({ message: "Failed to generate template" });
   }
 };
 

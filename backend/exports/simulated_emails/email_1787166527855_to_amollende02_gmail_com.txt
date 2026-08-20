@@ -1,0 +1,15 @@
+To: amollende02@gmail.com
+Subject: Your AI Interview Performance Results - Overall Score: 34%
+
+Body:
+Hello Amol Lende,
+
+Your AI Interview session is completed.
+Overall Score: 34%
+Recommendation: Needs Practice
+Resume Score: 0%
+Technical Score: 0%
+Coding Score: 85%
+
+Thank you for using PrepHire AI Interview Platform.
+

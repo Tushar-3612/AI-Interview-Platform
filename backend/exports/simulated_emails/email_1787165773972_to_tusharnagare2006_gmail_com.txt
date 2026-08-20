@@ -1,0 +1,15 @@
+To: tusharnagare2006@gmail.com
+Subject: Your AI Interview Performance Results - Overall Score: 0%
+
+Body:
+Hello Tushar  Nagare,
+
+Your AI Interview session is completed.
+Overall Score: 0%
+Recommendation: Needs Practice
+Resume Score: 0%
+Technical Score: 0%
+Coding Score: 0%
+
+Thank you for using PrepHire AI Interview Platform.
+

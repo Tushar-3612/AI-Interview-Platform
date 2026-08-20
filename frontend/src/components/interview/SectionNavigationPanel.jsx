@@ -91,20 +91,21 @@ function SectionNavigationPanel({
         {SECTIONS.map((sec) => {
           const Icon = sec.icon;
           const isActive = activeSection === sec.id;
-          const prog = sectionProgress[sec.id] || { completed: 0, total: sec.total, status: "AVAILABLE" };
+          const prog = sectionProgress[sec.id] || { completed: 0, total: sec.total };
           const isFinished = prog.completed >= sec.total;
+          const roundPct = Math.round((prog.completed / sec.total) * 100);
           const formattedCompleted = String(prog.completed).padStart(2, "0");
           const formattedTotal = String(sec.total).padStart(2, "0");
 
           let statusBadgeText = "AVAILABLE";
-          let statusBadgeClass = "bg-white/5 text-white/40 border-white/10";
+          let statusBadgeClass = "bg-white/5 text-white/50 border-white/10";
 
           if (isFinished) {
             statusBadgeText = "COMPLETED";
             statusBadgeClass = "bg-emerald-500/20 text-emerald-400 border-emerald-500/30";
           } else if (isActive) {
             statusBadgeText = "IN PROGRESS";
-            statusBadgeClass = "bg-blue-500/20 text-blue-400 border-blue-500/30";
+            statusBadgeClass = "bg-blue-500/20 text-blue-400 border-blue-500/30 font-extrabold";
           }
 
           return (
@@ -113,7 +114,7 @@ function SectionNavigationPanel({
               onClick={() => onSelectSection && onSelectSection(sec.id)}
               className={`w-full p-3 rounded-xl border text-left transition-all duration-200 cursor-pointer relative overflow-hidden group flex flex-col gap-2 ${
                 isActive
-                  ? "shadow-lg"
+                  ? "shadow-lg scale-[1.01]"
                   : "bg-white/[0.02] border-white/5 hover:bg-white/[0.05] hover:border-white/15"
               }`}
               style={{
@@ -123,23 +124,37 @@ function SectionNavigationPanel({
             >
               {/* Top Row: Icon + Name + Status Badge */}
               <div className="flex items-center justify-between">
-               <div className="flex items-center gap-2.5">
-                   <Icon className="w-4 h-4 text-white/80" />
-                   <span className="text-xs font-bold text-white group-hover:text-white">
-                     {sec.name}
-                   </span>
-                 </div>
+                <div className="flex items-center gap-2.5">
+                  <Icon className={`w-4 h-4 ${isActive ? "text-white" : "text-white/70"}`} />
+                  <span className="text-xs font-extrabold text-white">
+                    {sec.name}
+                  </span>
+                </div>
                 <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-wider border ${statusBadgeClass}`}>
                   {statusBadgeText}
                 </span>
               </div>
 
-              {/* Bottom Row: Count Progress */}
+              {/* Middle Row: Progress details & percentage */}
               <div className="flex items-center justify-between text-[11px] font-semibold text-white/50 pt-1 border-t border-white/5">
-                <span>{sec.description}</span>
-                <span className="font-mono text-white/80 font-bold">
-                  {formattedCompleted} / {formattedTotal}
-                </span>
+                <span className="text-[10px] text-white/40">{sec.description}</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-bold text-amber-400 font-mono">{roundPct}%</span>
+                  <span className="font-mono text-white/80 font-bold">
+                    {formattedCompleted} / {formattedTotal}
+                  </span>
+                </div>
+              </div>
+
+              {/* Bottom Row: Mini Progress Bar */}
+              <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all duration-500"
+                  style={{
+                    width: `${roundPct}%`,
+                    backgroundColor: isFinished ? "#34d399" : isActive ? sec.badgeColor : "rgba(255,255,255,0.2)"
+                  }}
+                />
               </div>
             </button>
           );
@@ -149,13 +164,13 @@ function SectionNavigationPanel({
       {/* Panel Footer: Total Progress */}
       <div className="shrink-0 pt-3 mt-3 border-t border-white/10 flex items-center justify-between">
         <div>
-          <p className="text-[10px] uppercase tracking-wider font-bold text-white/40">Total Progress</p>
+          <p className="text-[10px] uppercase tracking-wider font-extrabold text-white/40">Total Progress</p>
           <p className="text-xs font-bold text-white font-mono mt-0.5">
             {String(totalCompleted).padStart(2, "0")} / {String(totalQuestions).padStart(2, "0")} Questions
           </p>
         </div>
-        <div className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center bg-white/5 font-mono text-xs font-bold text-amber-400">
-          {Math.round((totalCompleted / totalQuestions) * 100)}%
+        <div className="w-11 h-11 rounded-full border border-white/15 flex items-center justify-center bg-white/5 font-mono text-xs font-black text-amber-400">
+          {Math.round((totalCompleted / (totalQuestions || 58)) * 100)}%
         </div>
       </div>
     </div>

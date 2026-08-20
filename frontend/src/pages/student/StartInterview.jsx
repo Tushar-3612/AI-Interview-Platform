@@ -321,10 +321,24 @@ function StartInterview() {
 
   const stopWebcam = useCallback(() => {
     if (webcamStreamRef.current) {
-      webcamStreamRef.current.getTracks().forEach((t) => t.stop());
+      webcamStreamRef.current.getTracks().forEach((t) => {
+        t.stop();
+        t.enabled = false;
+      });
       webcamStreamRef.current = null;
       setWebcamStream(null);
     }
+    setIsCameraOn(false);
+  }, []);
+
+  const stopSpeechRecognition = useCallback(() => {
+    if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+    if (recognitionRef.current) {
+      try { recognitionRef.current.abort(); } catch (e) {}
+      try { recognitionRef.current.stop(); } catch (e) {}
+      recognitionRef.current = null;
+    }
+    setIsListeningSpeech(false);
   }, []);
 
   const handleToggleCamera = useCallback(() => {
@@ -343,12 +357,25 @@ function StartInterview() {
       if (!next && isListeningSpeech) stopSpeechRecognition();
       return next;
     });
-  }, [isListeningSpeech]);
+  }, [isListeningSpeech, stopSpeechRecognition]);
 
   useEffect(() => {
     startWebcam();
-    return () => stopWebcam();
-  }, []);
+    return () => {
+      stopWebcam();
+      stopSpeechRecognition();
+      window.speechSynthesis?.cancel();
+    };
+  }, [startWebcam, stopWebcam, stopSpeechRecognition]);
+
+  // Shut down camera & mic hardware immediately when interview completes
+  useEffect(() => {
+    if (isCompleted) {
+      stopWebcam();
+      stopSpeechRecognition();
+      window.speechSynthesis?.cancel();
+    }
+  }, [isCompleted, stopWebcam, stopSpeechRecognition]);
 
   // ─── FETCH & RECOVER SESSION DATA FROM BACKEND ───
   useEffect(() => {
@@ -374,8 +401,24 @@ function StartInterview() {
           headers: { Authorization: `Bearer ${token}` }
         });
 
-        if (data.generatedQuestions && data.generatedQuestions.length > 0) {
-          setQuestions(data.generatedQuestions);
+        let loadedQs = data.generatedQuestions || [];
+
+        // Lazy load Aptitude round if no questions generated yet
+        if (!loadedQs || loadedQs.length === 0) {
+          try {
+            const { data: aptData } = await api.get(`/api/interview/${targetId}/round/aptitude`, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            if (aptData.questions && aptData.questions.length > 0) {
+              loadedQs = aptData.questions;
+            }
+          } catch (aptErr) {
+            console.warn("Initial aptitude lazy load notice:", aptErr.message);
+          }
+        }
+
+        if (loadedQs && loadedQs.length > 0) {
+          setQuestions(loadedQs);
         } else {
           setQuestions(MOCK_QUESTIONS);
         }
@@ -399,14 +442,11 @@ function StartInterview() {
         }
 
         // Session-based timer: derive remaining time from the backend session
-        // deadline (expiresAt preferred, else startedAt + duration) so a page
-        // refresh does NOT reset the countdown to 02:30:00.
-        if (data.expiresAt || data.startedAt) {
-          const endTs = data.expiresAt
-            ? new Date(data.expiresAt).getTime()
-            : new Date(data.startedAt).getTime() + INTERVIEW_DURATION_MIN * 60000;
-          sessionEndTimeRef.current = endTs;
-          const remaining = Math.max(0, Math.round((endTs - Date.now()) / 1000));
+        // start so a page refresh does NOT reset the countdown.
+        if (data.startedAt) {
+          const startTs = new Date(data.startedAt).getTime();
+          sessionEndTimeRef.current = startTs + INTERVIEW_DURATION_MIN * 60000;
+          const remaining = Math.max(0, Math.round((sessionEndTimeRef.current - Date.now()) / 1000));
           setTimerSeconds(remaining);
         }
       } catch (err) {
@@ -455,9 +495,37 @@ function StartInterview() {
     return counts;
   }, [questions, savedAnswers]);
 
-  // ─── SECTION NAVIGATION HANDLER ───
-  const handleSelectSection = (targetSection) => {
-    const sectionQuestions = questions.filter((q) => q.section === targetSection);
+  // ─── SECTION NAVIGATION & ON-DEMAND LAZY LOAD HANDLER ───
+  const handleSelectSection = async (targetSection) => {
+    let currentQuestions = [...questions];
+    let sectionQuestions = currentQuestions.filter((q) => q.section === targetSection);
+
+    if (!sectionQuestions.length && activeInterviewId) {
+      const toastId = toast.loading(`Preparing ${targetSection} round questions…`);
+      try {
+        const normSec = targetSection.toLowerCase();
+        const { data } = await api.get(`/api/interview/${activeInterviewId}/round/${normSec}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const newRoundQs = data.questions || [];
+        if (newRoundQs.length > 0) {
+          const existingIds = new Set(currentQuestions.map(q => String(q.id || q.questionId)));
+          const toAdd = newRoundQs.filter(q => !existingIds.has(String(q.id || q.questionId)));
+          currentQuestions = [...currentQuestions, ...toAdd];
+          setQuestions(currentQuestions);
+          sectionQuestions = currentQuestions.filter((q) => q.section === targetSection);
+          toast.success(`${targetSection} round ready!`, { id: toastId });
+        } else {
+          toast.error(`No questions found for ${targetSection}`, { id: toastId });
+          return;
+        }
+      } catch (err) {
+        console.error(`Error loading ${targetSection} round:`, err);
+        toast.error(`Failed to load ${targetSection} round`, { id: toastId });
+        return;
+      }
+    }
+
     if (!sectionQuestions.length) return;
 
     const answeredIds = new Set(
@@ -468,7 +536,7 @@ function StartInterview() {
 
     const firstUnanswered = sectionQuestions.find((q) => !answeredIds.has(String(q.id || q.questionId)));
     const targetQuestion = firstUnanswered || sectionQuestions[0];
-    const targetIdx = questions.findIndex((q) => (q.id || q.questionId) === (targetQuestion.id || targetQuestion.questionId));
+    const targetIdx = currentQuestions.findIndex((q) => (q.id || q.questionId) === (targetQuestion.id || targetQuestion.questionId));
 
     if (targetIdx !== -1) {
       stopSpeechRecognition();
@@ -651,6 +719,12 @@ function StartInterview() {
         const fullTranscript = (speechBaseTextRef.current + separator + sessionTranscript).trim();
         setTypedResponse(fullTranscript);
 
+        // Natural AI voice command detection
+        const lower = fullTranscript.toLowerCase();
+        if (lower.includes("repeat the question") || lower.includes("say that again")) {
+          speakCurrentQuestion(currentQuestion?.aiSpeechText || currentQuestion?.question, currentQuestion?.section, currentQuestion?.topic);
+        }
+
         if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
         silenceTimerRef.current = setTimeout(() => {
           if (fullTranscript.length > 10) {
@@ -677,12 +751,6 @@ function StartInterview() {
       console.error(err);
       setIsListeningSpeech(false);
     }
-  };
-
-  const stopSpeechRecognition = () => {
-    if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
-    if (recognitionRef.current) recognitionRef.current.stop();
-    setIsListeningSpeech(false);
   };
 
   // ─── SAVE ANSWER TO BACKEND ───
@@ -866,12 +934,13 @@ function StartInterview() {
               </span>
           </div>
           <QuestionCard
-            questionText={currentQuestion?.question}
+            questionText={currentQuestion?.question || currentQuestion?.aiSpeechText || currentQuestion?.title || ""}
             currentIndex={currentIndex}
             totalQuestions={questions.length}
             difficulty={currentQuestion?.difficulty || "Medium"}
             category={currentQuestion?.category || currentQuestion?.section || "Technical"}
             estimatedTime={currentSection === "CODING" ? "10 mins" : "2 mins"}
+            showQuestionText={true}
           />
         </div>
 
@@ -1021,10 +1090,10 @@ function StartInterview() {
         <div className="shrink-0">
           <button
             onClick={() => setShowTranscript((v) => !v)}
-            className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-[11px] font-bold uppercase tracking-wider text-white/50 cursor-pointer hover:bg-white/10 transition-all"
+            className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-[11px] font-bold uppercase tracking-wider text-white/60 cursor-pointer hover:bg-white/10 transition-all"
           >
-            <span>Conversation Transcript</span>
-            <span>{showTranscript ? "Hide" : "Show"}</span>
+            <span>View Conversation</span>
+            <span className="text-[10px] font-extrabold text-blue-400">{showTranscript ? "Hide" : "Show"}</span>
           </button>
           {showTranscript && (
             <div className="mt-2" style={{ minHeight: "120px" }}>
@@ -1052,14 +1121,14 @@ function StartInterview() {
     </div>
   );
 
-  // RIGHT CONTEXT: camera (tech/hr) + interview status + live signals
+  // RIGHT CONTEXT: camera (tech/hr) + session status + live signals + AI state
   const rightContext = (
     <div
       className="flex flex-col h-full min-h-0 gap-3 overflow-y-auto pr-1"
       style={{ scrollbarWidth: "thin", scrollbarColor: "rgba(255,255,255,0.1) transparent" }}
     >
       {showAI && (
-        <div className="h-[180px] shrink-0 rounded-2xl overflow-hidden border border-white/10">
+        <div className="h-[170px] shrink-0 rounded-2xl overflow-hidden border border-white/10">
           <WebcamCard
             isCameraOn={isCameraOn}
             stream={webcamStream}
@@ -1069,30 +1138,60 @@ function StartInterview() {
         </div>
       )}
 
-      <div className="shrink-0 p-3 rounded-2xl bg-slate-900/90 border border-white/10 space-y-2">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-white/40">Interview Status</p>
-        <div className="space-y-1.5 text-xs">
-          <div className="flex justify-between">
-            <span className="text-white/50">Question</span>
-            <span className="font-bold text-white">{formattedSectionQuestionIndex} / {String(sectionTotal).padStart(2, "0")}</span>
+      {/* SESSION & CURRENT ROUND STATUS */}
+      <div className="shrink-0 p-3.5 rounded-2xl bg-slate-900/90 border border-white/10 space-y-2.5">
+        <p className="text-[10px] font-black uppercase tracking-widest text-white/40">Session Control</p>
+        
+        <div className="space-y-2 text-xs">
+          <div className="flex justify-between items-center pb-1.5 border-b border-white/5">
+            <span className="text-white/50 text-[11px]">Time Remaining</span>
+            <span className="font-mono font-extrabold text-sm" style={{ color: timerSeconds < 300 ? "#f87171" : "#38bdf8" }}>
+              {tH}:{tM}:{tS}
+            </span>
           </div>
-          <div className="flex justify-between">
-            <span className="text-white/50">Section</span>
-            <span className="font-bold text-white">{currentSection}</span>
+
+          <div className="flex justify-between items-center">
+            <span className="text-white/50 text-[11px]">Current Round</span>
+            <span className="font-extrabold text-amber-400 text-xs tracking-wider uppercase">{currentSection}</span>
           </div>
-          <div className="flex justify-between">
-            <span className="text-white/50">Time Left</span>
-            <span className="font-bold font-mono" style={{ color: timerSeconds < 300 ? "#f87171" : "#e5e7eb" }}>{tH}:{tM}:{tS}</span>
+
+          <div className="flex justify-between items-center">
+            <span className="text-white/50 text-[11px]">Round Progress</span>
+            <span className="font-bold font-mono text-white text-xs">{formattedSectionQuestionIndex} / {String(sectionTotal).padStart(2, "0")}</span>
+          </div>
+
+          <div className="flex justify-between items-center">
+            <span className="text-white/50 text-[11px]">Overall Progress</span>
+            <span className="font-bold font-mono text-white text-xs">{String(currentIndex).padStart(2, "0")} / 58</span>
           </div>
         </div>
       </div>
 
-      <div className="shrink-0 p-3 rounded-2xl bg-slate-900/90 border border-white/10 space-y-2">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-white/40">Live Signals</p>
+      {/* LIVE SIGNALS */}
+      <div className="shrink-0 p-3.5 rounded-2xl bg-slate-900/90 border border-white/10 space-y-2.5">
+        <p className="text-[10px] font-black uppercase tracking-widest text-white/40">Live Signals</p>
         <SignalRow label="MIC" on={isMicOn} />
         <SignalRow label="CAMERA" on={isCameraOn} />
-        <SignalRow label="FACE" on={isCameraOn && !!webcamStream} />
-        <SignalRow label="AI" on={!showAI ? true : (aiStatus === "LISTENING" || aiStatus === "SPEAKING")} />
+        <SignalRow label="CONNECTION" on={true} />
+      </div>
+
+      {/* AI STATE ENGINE */}
+      <div className="shrink-0 p-3.5 rounded-2xl bg-slate-900/90 border border-white/10 space-y-2">
+        <p className="text-[10px] font-black uppercase tracking-widest text-white/40">AI Engine State</p>
+        <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 border border-white/10">
+          <span
+            className="w-2.5 h-2.5 rounded-full animate-pulse shrink-0"
+            style={{
+              backgroundColor:
+                aiStatus === "SPEAKING" ? "#10b981" :
+                aiStatus === "THINKING" ? "#f59e0b" :
+                aiStatus === "LISTENING" ? "#3b82f6" : "#a855f7"
+            }}
+          />
+          <span className="text-xs font-black uppercase tracking-wider text-white">
+            {aiStatus}
+          </span>
+        </div>
       </div>
     </div>
   );
@@ -1117,7 +1216,24 @@ function StartInterview() {
         answeredCount={stats.answeredCount}
         skippedCount={stats.skippedCount}
         timeTakenText={stats.timeTaken}
-        onReturnDashboard={() => navigate("/dashboard")}
+        onReturnDashboard={() => {
+          stopWebcam();
+          stopSpeechRecognition();
+          window.speechSynthesis?.cancel();
+          if (document.fullscreenElement) {
+            document.exitFullscreen().catch(() => null);
+          }
+          if (window.opener && !window.opener.closed) {
+            try { window.opener.focus(); } catch (e) {}
+          }
+          try {
+            window.close();
+          } catch (e) {}
+          // Fallback navigation if window.close is blocked by browser policy
+          setTimeout(() => {
+            navigate("/results");
+          }, 150);
+        }}
         onRestartInterview={() => {
           setTimerSeconds(totalSeconds);
           setCurrentIndex(1);
@@ -1213,9 +1329,25 @@ function StartInterview() {
 
       <ConfirmExitDialog
         isOpen={showConfirmExit}
+        open={showConfirmExit}
         onClose={() => setShowConfirmExit(false)}
-        onConfirm={() => {
+        onConfirm={async () => {
           setShowConfirmExit(false);
+          stopSpeechRecognition();
+          window.speechSynthesis?.cancel();
+          if (document.fullscreenElement) {
+            document.exitFullscreen().catch(() => null);
+          }
+          handleSaveAnswer("answered");
+          if (activeInterviewId) {
+            try {
+              await api.post(`/api/interview/${activeInterviewId}/complete`, {}, {
+                headers: { Authorization: `Bearer ${token}` }
+              });
+            } catch (err) {
+              console.warn("Interview completion API notice:", err);
+            }
+          }
           setIsCompleted(true);
         }}
       />

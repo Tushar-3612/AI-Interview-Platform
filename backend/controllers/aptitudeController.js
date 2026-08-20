@@ -4,6 +4,8 @@ import SystemConfig from "../models/SystemConfig.js";
 import { syncAptitudeQuestionToBank } from "../utils/seedDefaults.js";
 import { deactivateBankQuestion } from "../services/questionBank.js";
 import { createNotification } from "../services/notificationService.js";
+import { parseQuestions, validateQuestions, findDuplicates, toAptitudeQuestion, detectFileKind, containsPlaceholder } from "../utils/aptitudeQuestionParser.js";
+import { generateCsvTemplate, generateDocxTemplate, generatePdfTemplate } from "../utils/aptitudeTemplateGenerator.js";
 
 const TRASH_RETENTION_DAYS = 30;
 
@@ -409,5 +411,73 @@ export const getAptitudeStats = async (req, res) => {
     res.json({ total, active: activeCount, deleted: deletedCount, byDifficulty, byCategory, byCompany });
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch stats", error: error.message });
+  }
+};
+
+export const uploadAptitudeQuestions = async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ message: "No file uploaded" });
+    const kind = detectFileKind(req.file.originalname, req.file.mimetype);
+    if (!kind) return res.status(400).json({ message: "Unsupported file type. Use CSV, DOCX or PDF." });
+
+    const parsed = await parseQuestions(req.file.buffer, kind);
+    if (!parsed || parsed.length === 0) {
+      return res.status(400).json({ message: "No questions found in the uploaded file." });
+    }
+
+    if (containsPlaceholder(parsed)) {
+      return res.status(400).json({ message: "Please replace the template placeholder values before uploading. Replace the bracketed [Enter ...] text with your own questions." });
+    }
+
+    const { valid, invalid } = validateQuestions(parsed);
+    const duplicates = findDuplicates(parsed);
+    const dupIndexes = new Set(duplicates.map((d) => d.index));
+
+    const validQuestions = valid
+      .filter((q) => !dupIndexes.has(parsed.indexOf(q)))
+      .map(toAptitudeQuestion);
+
+    const invalidQuestions = invalid.map((iv) => ({
+      ...iv,
+      duplicate: duplicates.some((d) => d.index === iv.index),
+    }));
+
+    res.json({
+      success: true,
+      total: parsed.length,
+      validCount: validQuestions.length,
+      invalidCount: invalidQuestions.length,
+      validQuestions,
+      invalidQuestions,
+      duplicates,
+    });
+  } catch (error) {
+    res.status(400).json({ message: error.message || "Failed to process file" });
+  }
+};
+
+export const downloadAptitudeTemplate = async (req, res) => {
+  try {
+    const format = (req.params.format || "csv").toLowerCase();
+    if (format === "csv") {
+      res.setHeader("Content-Type", "text/csv");
+      res.setHeader("Content-Disposition", 'attachment; filename="aptitude_questions_template.csv"');
+      return res.send(generateCsvTemplate());
+    }
+    if (format === "docx") {
+      const buf = generateDocxTemplate();
+      res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+      res.setHeader("Content-Disposition", 'attachment; filename="aptitude_questions_template.docx"');
+      return res.send(buf);
+    }
+    if (format === "pdf") {
+      const buf = await generatePdfTemplate();
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Disposition", 'attachment; filename="aptitude_questions_template.pdf"');
+      return res.send(buf);
+    }
+    return res.status(400).json({ message: "Unsupported format" });
+  } catch (error) {
+    res.status(500).json({ message: error.message || "Failed to generate template" });
   }
 };
