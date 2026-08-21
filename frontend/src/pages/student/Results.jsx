@@ -101,11 +101,17 @@ function Results() {
             {/* OVERALL SCORECARD HERO */}
             <div className="p-6 rounded-3xl bg-slate-900/90 border border-white/10 text-center mb-6 relative overflow-hidden">
               <div className="absolute top-0 right-0 px-4 py-1 bg-blue-500/10 border-b border-l border-blue-500/20 text-[10px] font-extrabold text-blue-400 uppercase tracking-widest rounded-bl-2xl">
-                {activeResult.isEndedEarly ? "ENDED EARLY" : "COMPLETED"}
+                {activeResult.targetRound && activeResult.targetRound !== "all"
+                  ? `${activeResult.targetRound.toUpperCase()} ROUND • ${activeResult.isEndedEarly ? "PARTIAL" : "COMPLETED"}`
+                  : (activeResult.isEndedEarly ? "ENDED EARLY" : "COMPLETED")}
               </div>
 
               <BarChart3 className="w-8 h-8 mx-auto mb-2 text-blue-400" />
-              <p className="text-xs font-extrabold uppercase tracking-widest text-white/40">Overall Placement Score</p>
+              <p className="text-xs font-extrabold uppercase tracking-widest text-white/40">
+                {activeResult.targetRound && activeResult.targetRound !== "all"
+                  ? `${activeResult.targetRound.toUpperCase()} Round Performance Score`
+                  : "Overall Placement Score"}
+              </p>
               
               <div className="text-5xl font-black font-mono my-2 text-white" style={{ color: (activeResult.overallScore || 0) >= 70 ? "#34d399" : "#f59e0b" }}>
                 {activeResult.overallScore || 0}%

@@ -57,6 +57,10 @@ const userSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+    categorizedSkills: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
+    },
     profilePicture: {
       type: String,
       default: "",

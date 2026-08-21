@@ -15,6 +15,12 @@ import {
   CheckCircle,
   X,
   Search,
+  Target,
+  UserCheck,
+  Sparkles,
+  Play,
+  Layers,
+  Zap
 } from "lucide-react";
 import toast from "react-hot-toast";
 import api from "../utils/api";
@@ -82,6 +88,8 @@ function StudentDashboard() {
   const [placementData, setPlacementData] = useState(null);
   const [dashboardStats, setDashboardStats] = useState(null);
   const [assignedTests, setAssignedTests] = useState([]);
+  const [showInterviewModeModal, setShowInterviewModeModal] = useState(false);
+  const [isStartingInterview, setIsStartingInterview] = useState(false);
 
   // 10-second Quote Auto-Rotator (50 messages, smooth opacity fade only)
   const [quoteIndex, setQuoteIndex] = useState(0);
@@ -250,6 +258,38 @@ function StudentDashboard() {
     }
   };
 
+  const handleStartInterviewSession = async (selectedTargetRound = "all") => {
+    setIsStartingInterview(true);
+    const roundNameMap = {
+      all: "Full 4-Round AI",
+      aptitude: "Aptitude Round",
+      technical: "Technical Stack Round",
+      coding: "Coding IDE Round",
+      hr: "HR Behavioral Round"
+    };
+    const toastId = toast.loading(`Creating ${roundNameMap[selectedTargetRound] || "Interview"} Session...`);
+    try {
+      const { data } = await api.post(
+        "/api/interview/start",
+        { interviewType: "actual", targetRound: selectedTargetRound },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const sessionId = data.sessionId || data.interviewId;
+      if (sessionId) {
+        toast.success("Interview Session created!", { id: toastId });
+        setShowInterviewModeModal(false);
+        window.open(`/interview/${sessionId}`, "_blank");
+      } else {
+        throw new Error("No session ID returned");
+      }
+    } catch (err) {
+      console.error("Start interview error:", err);
+      toast.error(err.response?.data?.message || "Failed to start interview session", { id: toastId });
+    } finally {
+      setIsStartingInterview(false);
+    }
+  };
+
   const filteredCompanies = companies.filter((c) =>
     c.name.toLowerCase().includes(companySearch.toLowerCase())
   );
@@ -361,26 +401,7 @@ function StudentDashboard() {
               {/* CTA Buttons — pinned to bottom of left column */}
               <div className="flex flex-wrap items-center gap-4 mt-auto">
                 <motion.button
-                  onClick={async () => {
-                    const toastId = toast.loading("Creating Real Interview Session...");
-                    try {
-                      const { data } = await api.post(
-                        "/api/interview/start",
-                        { interviewType: "actual" },
-                        { headers: { Authorization: `Bearer ${token}` } }
-                      );
-                      const sessionId = data.sessionId || data.interviewId;
-                      if (sessionId) {
-                        toast.success("Interview Session created!", { id: toastId });
-                        window.open(`/interview/${sessionId}`, "_blank");
-                      } else {
-                        throw new Error("No session ID returned");
-                      }
-                    } catch (err) {
-                      console.error("Start interview error:", err);
-                      toast.error(err.response?.data?.message || "Failed to start interview session", { id: toastId });
-                    }
-                  }}
+                  onClick={() => setShowInterviewModeModal(true)}
                   className="px-6 py-3.5 rounded-2xl text-sm font-bold text-white cursor-pointer shadow-md flex items-center gap-2"
                   style={{
                     background: "linear-gradient(135deg, #FF6B35 0%, #FF8A3D 100%)",
@@ -529,6 +550,124 @@ function StudentDashboard() {
               </div>
             );
           })}
+        </section>
+
+        {/* ── INDIVIDUAL ROUND AI PRACTICE SECTION ── */}
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-bold flex items-center gap-2" style={{ color: "var(--text-primary)" }}>
+                <Zap className="w-5 h-5 text-[#FF6B35]" />
+                Individual Round AI Practice
+              </h2>
+              <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>
+                Take any round individually with instant evaluation and tailored feedback
+              </p>
+            </div>
+            <button
+              onClick={() => setShowInterviewModeModal(true)}
+              className="text-xs font-bold flex items-center gap-1 cursor-pointer hover:underline text-[#FF6B35]"
+            >
+              View All Options <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              {
+                id: "aptitude",
+                title: "Aptitude Round",
+                desc: "Quantitative, Logical & Verbal MCQs",
+                qs: "25 Questions",
+                time: "30 Mins",
+                color: "#F59E0B",
+                icon: Target,
+                badge: "MCQs",
+              },
+              {
+                id: "technical",
+                title: "Technical Stack",
+                desc: "Resume & Tech Stack with AI Alex",
+                qs: "25 Questions",
+                time: "45 Mins",
+                color: "#3B82F6",
+                icon: BrainCircuit,
+                badge: "AI Voice & Text",
+              },
+              {
+                id: "coding",
+                title: "Coding IDE Round",
+                desc: "Algorithmic Challenges in Monaco IDE",
+                qs: "3 Problems",
+                time: "45 Mins",
+                color: "#10B981",
+                icon: Code2,
+                badge: "Live Compiler",
+              },
+              {
+                id: "hr",
+                title: "HR Behavioral",
+                desc: "STAR Method & Culture with AI Sarah",
+                qs: "5 Questions",
+                time: "15 Mins",
+                color: "#A855F7",
+                icon: UserCheck,
+                badge: "Behavioral",
+              },
+            ].map((round) => {
+              const RoundIcon = round.icon;
+              return (
+                <motion.div
+                  key={round.id}
+                  onClick={() => handleStartInterviewSession(round.id)}
+                  whileHover={{ y: -3, boxShadow: "0 10px 25px -5px rgba(0,0,0,0.15)" }}
+                  whileTap={{ y: 0 }}
+                  className="bg-[var(--card-bg)] border border-[var(--border)] rounded-[24px] p-5 shadow-[var(--shadow-sm)] flex flex-col justify-between cursor-pointer group transition-all"
+                  style={{ borderColor: "var(--border)" }}
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <div
+                        className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0"
+                        style={{
+                          background: `color-mix(in srgb, ${round.color} 15%, transparent)`,
+                          color: round.color,
+                        }}
+                      >
+                        <RoundIcon className="w-5 h-5" />
+                      </div>
+                      <span
+                        className="text-[10px] font-extrabold px-2.5 py-1 rounded-full border"
+                        style={{
+                          background: `color-mix(in srgb, ${round.color} 10%, transparent)`,
+                          color: round.color,
+                          borderColor: `color-mix(in srgb, ${round.color} 25%, transparent)`,
+                        }}
+                      >
+                        {round.badge}
+                      </span>
+                    </div>
+
+                    <h3 className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>
+                      {round.title}
+                    </h3>
+                    <p className="text-xs mt-1 line-clamp-2 leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+                      {round.desc}
+                    </p>
+                  </div>
+
+                  <div className="mt-4 pt-3 border-t border-[var(--border)] flex items-center justify-between">
+                    <span className="text-[11px] font-semibold font-mono" style={{ color: "var(--text-muted)" }}>
+                      {round.qs} • {round.time}
+                    </span>
+                    <span className="text-xs font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform" style={{ color: round.color }}>
+                      Start <ArrowRight className="w-3.5 h-3.5" />
+                    </span>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
         </section>
 
         {/* ── COMPANY MOCK INTERVIEWS ── */}
@@ -972,6 +1111,193 @@ function StudentDashboard() {
                     Clear Target Company
                   </button>
                 )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── SELECT INTERVIEW MODE MODAL ── */}
+      <AnimatePresence>
+        {showInterviewModeModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            onClick={() => !isStartingInterview && setShowInterviewModeModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-2xl bg-[var(--card-bg)] border border-[var(--border)] rounded-[28px] shadow-2xl overflow-hidden"
+              style={{ background: "var(--card-bg)" }}
+            >
+              {/* Modal Header */}
+              <div className="p-6 border-b border-[var(--border)] flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl flex items-center justify-center bg-[#FF6B35]/15 text-[#FF6B35]">
+                    <Sparkles className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>
+                      Choose AI Interview Mode
+                    </h2>
+                    <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                      Select complete simulation or focus on an individual round
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => !isStartingInterview && setShowInterviewModeModal(false)}
+                  disabled={isStartingInterview}
+                  className="p-2 rounded-full hover:bg-neutral-800/10 transition-colors disabled:opacity-40 cursor-pointer"
+                >
+                  <X className="w-5 h-5" style={{ color: "var(--text-secondary)" }} />
+                </button>
+              </div>
+
+              {/* Modal Content */}
+              <div className="p-6 space-y-5 max-h-[75vh] overflow-y-auto">
+                {/* Option 1: Full 4-Round AI Interview */}
+                <div
+                  onClick={() => handleStartInterviewSession("all")}
+                  className="relative p-5 rounded-2xl border-2 border-[#FF6B35]/40 bg-[#FF6B35]/5 hover:bg-[#FF6B35]/10 hover:border-[#FF6B35] cursor-pointer transition-all duration-200 group"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-[#FF6B35] text-white shadow-md">
+                        <Layers className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-base font-black text-[var(--text-primary)]">
+                            Full 4-Round AI Interview
+                          </h3>
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#FF6B35] text-white">
+                            Recommended
+                          </span>
+                        </div>
+                        <p className="text-xs mt-1 text-[var(--text-secondary)]">
+                          Aptitude (25) + Technical (25) + Coding (3) + HR (5) in a complete placement simulation
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 pt-3 border-t border-[#FF6B35]/20 flex items-center justify-between text-xs">
+                    <span className="font-mono font-bold text-[#FF6B35]">
+                      58 Questions • 150 Minutes
+                    </span>
+                    <span className="font-bold flex items-center gap-1 text-[#FF6B35] group-hover:translate-x-1 transition-transform">
+                      Start Full Session <ArrowRight className="w-4 h-4" />
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 my-2">
+                  <div className="h-px flex-1 bg-[var(--border)]" />
+                  <span className="text-[11px] font-extrabold uppercase tracking-widest text-[var(--text-muted)]">
+                    Or Practice Individual Round
+                  </span>
+                  <div className="h-px flex-1 bg-[var(--border)]" />
+                </div>
+
+                {/* Option 2: Individual Round Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {[
+                    {
+                      id: "aptitude",
+                      title: "Aptitude Round Only",
+                      desc: "10 Quantitative, Logical & Verbal MCQs",
+                      time: "20 Mins",
+                      color: "#F59E0B",
+                      icon: Target,
+                      tag: "MCQs",
+                    },
+                    {
+                      id: "technical",
+                      title: "Technical Stack Only",
+                      desc: "10 Resume & Tech Stack Questions with AI Alex",
+                      time: "30 Mins",
+                      color: "#3B82F6",
+                      icon: BrainCircuit,
+                      tag: "Voice / Text",
+                    },
+                    {
+                      id: "coding",
+                      title: "Coding IDE Only",
+                      desc: "2 Algorithmic Coding Problems with Live Compiler",
+                      time: "35 Mins",
+                      color: "#10B981",
+                      icon: Code2,
+                      tag: "Compiler",
+                    },
+                    {
+                      id: "hr",
+                      title: "HR Behavioral Only",
+                      desc: "8 Culture & STAR Method Questions with AI Sarah",
+                      time: "20 Mins",
+                      color: "#A855F7",
+                      icon: UserCheck,
+                      tag: "Behavioral",
+                    },
+                  ].map((round) => {
+                    const RIcon = round.icon;
+                    return (
+                      <div
+                        key={round.id}
+                        onClick={() => handleStartInterviewSession(round.id)}
+                        className="p-4 rounded-2xl border border-[var(--border)] hover:border-white/30 hover:bg-white/5 cursor-pointer transition-all flex flex-col justify-between group"
+                        style={{ background: "var(--card-bg)" }}
+                      >
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <div
+                              className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                              style={{
+                                background: `color-mix(in srgb, ${round.color} 15%, transparent)`,
+                                color: round.color,
+                              }}
+                            >
+                              <RIcon className="w-4.5 h-4.5" />
+                            </div>
+                            <span
+                              className="text-[9px] font-extrabold px-2 py-0.5 rounded-full border"
+                              style={{
+                                color: round.color,
+                                borderColor: `color-mix(in srgb, ${round.color} 30%, transparent)`,
+                              }}
+                            >
+                              {round.tag}
+                            </span>
+                          </div>
+
+                          <h4 className="text-xs font-bold text-[var(--text-primary)]">
+                            {round.title}
+                          </h4>
+                          <p className="text-[11px] mt-1 text-[var(--text-secondary)] line-clamp-2">
+                            {round.desc}
+                          </p>
+                        </div>
+
+                        <div className="mt-3 pt-2 border-t border-[var(--border)] flex items-center justify-between text-[11px]">
+                          <span className="font-mono text-[var(--text-muted)]">
+                            {round.time}
+                          </span>
+                          <span
+                            className="font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform"
+                            style={{ color: round.color }}
+                          >
+                            Launch <ArrowRight className="w-3 h-3" />
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </motion.div>
           </motion.div>

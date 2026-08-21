@@ -1,0 +1,122 @@
+[
+  {
+    "questionId": "TECH-PROJ-001",
+    "topic": "Software Engineering",
+    "subtopic": "System Architecture",
+    "difficulty": "Medium",
+    "questionType": "Project",
+    "question": "Explain your project architecture.",
+    "expectedAnswer": "Candidate should articulate high-level system layers: Client/Frontend (UI, state, routing), Server/Backend (API routes, controllers, business logic, middleware), Database (schema design, indexing, ORM/ODM), and External Integrations (third-party APIs, auth services), explaining how data flows end-to-end.",
+    "explanation": "Tests candidate's ability to clearly articulate end-to-end component breakdown and data flow.",
+    "aiSpeechText": "Can you walk me through the high-level architecture of your primary project, explaining how the components interact?",
+    "marks": 1
+  },
+  {
+    "questionId": "TECH-PROJ-002",
+    "topic": "Software Engineering",
+    "subtopic": "Technology Selection",
+    "difficulty": "Medium",
+    "questionType": "Project",
+    "question": "Why did you choose this technology stack?",
+    "expectedAnswer": "Candidate should justify their tech stack with specific trade-offs (e.g., choosing React for component reusability and dynamic UI, Node/Express for unified JavaScript ecosystem and fast async I/O, MongoDB for flexible JSON document modeling, or PostgreSQL for relational integrity and ACID transactions).",
+    "explanation": "Evaluates rationale and engineering decision-making behind technology selection.",
+    "aiSpeechText": "What led you to select this specific technology stack for your project, and what alternatives did you evaluate?",
+    "marks": 1
+  },
+  {
+    "questionId": "TECH-PROJ-003",
+    "topic": "Software Engineering",
+    "subtopic": "Individual Ownership",
+    "difficulty": "Easy",
+    "questionType": "Project",
+    "question": "What was your specific contribution?",
+    "expectedAnswer": "Candidate should clearly delineate their personal responsibilities (e.g., frontend component architecture, backend REST endpoint design, database schema modeling, authentication integration, or testing) versus team contributions.",
+    "explanation": "Clarifies individual ownership, hands-on coding scope, and role in project delivery.",
+    "aiSpeechText": "What was your specific role and core individual contribution in building this project?",
+    "marks": 1
+  },
+  {
+    "questionId": "TECH-PROJ-004",
+    "topic": "Software Engineering",
+    "subtopic": "Problem Solving",
+    "difficulty": "Hard",
+    "questionType": "Project",
+    "question": "What was the biggest challenge you faced?",
+    "expectedAnswer": "Candidate should describe a non-trivial technical obstacle (e.g., CORS/authentication token synchronization, database query performance bottlenecks, complex state synchronization, asynchronous race conditions, or third-party API rate limits) using the STAR approach.",
+    "explanation": "Tests resilience, deep technical problem solving, and technical maturity.",
+    "aiSpeechText": "What was the most difficult technical challenge you encountered while developing this project, and how did you resolve it?",
+    "marks": 1
+  },
+  {
+    "questionId": "TECH-PROJ-005",
+    "topic": "Software Engineering",
+    "subtopic": "Debugging Methodology",
+    "difficulty": "Medium",
+    "questionType": "Project",
+    "question": "How did you debug/fix that problem?",
+    "expectedAnswer": "Candidate should outline their structured debugging process: reproducing the bug reliably, checking server logs, using browser DevTools (Network tab, breakpoints, React Developer Tools), isolating the root cause, formulating a hypothesis, implementing the fix, and validating with tests.",
+    "explanation": "Assesses structured diagnostic reasoning and familiarity with modern debugging tools.",
+    "aiSpeechText": "Walk me through the exact debugging steps and tools you used to diagnose and fix that issue.",
+    "marks": 1
+  },
+  {
+    "questionId": "TECH-PROJ-006",
+    "topic": "Web Development",
+    "subtopic": "Client-Server Communication",
+    "difficulty": "Medium",
+    "questionType": "Project",
+    "question": "How does your frontend communicate with your backend?",
+    "expectedAnswer": "Candidate should explain HTTP/HTTPS request-response cycles: using Fetch API or Axios to dispatch asynchronous RESTful requests, setting headers (Authorization: Bearer <token>, Content-Type: application/json), handling CORS, managing loading/error states, and parsing JSON responses.",
+    "explanation": "Tests understanding of async networking, HTTP protocols, headers, and client-server integration.",
+    "aiSpeechText": "How does your frontend client communicate with the backend server, and how do you handle asynchronous responses and errors?",
+    "marks": 1
+  },
+  {
+    "questionId": "TECH-PROJ-007",
+    "topic": "DBMS & SQL",
+    "subtopic": "Database Connectivity",
+    "difficulty": "Medium",
+    "questionType": "Project",
+    "question": "How did you handle database connectivity?",
+    "expectedAnswer": "Candidate should discuss connection management: establishing connection pools (e.g., Mongoose connect or pg/mysql pool), securing connection strings with environment variables (.env), defining data models/schemas, handling connection events (disconnects, reconnects), and preventing connection leaks.",
+    "explanation": "Evaluates database driver usage, connection pooling, environment security, and schema modeling.",
+    "aiSpeechText": "How did you manage database connectivity in your backend, and how did you secure the connection credentials?",
+    "marks": 1
+  },
+  {
+    "questionId": "TECH-PROJ-008",
+    "topic": "Cloud Computing",
+    "subtopic": "Deployment & DevOps",
+    "difficulty": "Medium",
+    "questionType": "Project",
+    "question": "How did you deploy your project?",
+    "expectedAnswer": "Candidate should describe their hosting and deployment workflow (e.g., Vercel/Netlify for frontend static build, Render/AWS EC2/Heroku for backend server, MongoDB Atlas/AWS RDS for cloud database), including build commands (npm run build), environment variable configuration, and reverse proxy/CORS setup.",
+    "explanation": "Tests real-world production deployment awareness and cloud hosting experience.",
+    "aiSpeechText": "Can you explain how your project was deployed and hosted in a live production or staging environment?",
+    "marks": 1
+  },
+  {
+    "questionId": "TECH-PROJ-009",
+    "topic": "Software Engineering",
+    "subtopic": "Scalability & Performance",
+    "difficulty": "Hard",
+    "questionType": "Project",
+    "question": "How would you scale your application if 10,000 users used it?",
+    "expectedAnswer": "Candidate should outline horizontal and vertical scaling strategies: 1. Frontend: CDN caching for static assets. 2. Backend: Horizontal scaling behind a load balancer (Nginx/ALB), clustering, stateless session management via JWT/Redis. 3. Database: Read replicas, indexing, connection pooling, caching hot queries with Redis. 4. Async processing: Message queues (RabbitMQ/Kafka) for heavy tasks.",
+    "explanation": "Assesses architectural scalability concepts including load balancing, caching, and database optimization.",
+    "aiSpeechText": "If your application experienced a sudden surge to 10,000 active concurrent users, how would you scale the architecture?",
+    "marks": 1
+  },
+  {
+    "questionId": "TECH-PROJ-010",
+    "topic": "Cyber Security",
+    "subtopic": "Application Security",
+    "difficulty": "Medium",
+    "questionType": "Project",
+    "question": "What security measures did you implement?",
+    "expectedAnswer": "Candidate should highlight key defense practices: 1. Password hashing (bcrypt with salt). 2. Stateless authentication with JWT stored securely. 3. Input validation & sanitization to prevent SQL Injection and NoSQL Injection. 4. Protection against XSS and CSRF. 5. HTTP security headers with Helmet.js. 6. API Rate limiting (express-rate-limit) to thwart brute-force and DDoS attacks. 7. Environment variable isolation for secrets.",
+    "explanation": "Evaluates defensive programming practices: encryption, hashing, rate limiting, and sanitization.",
+    "aiSpeechText": "What security measures and defense mechanisms did you implement to protect your application and user data?",
+    "marks": 1
+  }
+]

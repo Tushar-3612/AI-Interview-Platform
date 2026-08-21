@@ -17,6 +17,7 @@ const resultSchema = new mongoose.Schema(
       required: true,
     },
     overallScore: { type: Number, min: 0, max: 100, default: 0 },
+    targetRound: { type: String, default: "all" },
     resumeScore: { type: Number, min: 0, max: 100, default: 0 },
     technicalScore: { type: Number, min: 0, max: 100, default: 0 },
     codingScore: { type: Number, min: 0, max: 100, default: 0 },
@@ -25,7 +26,7 @@ const resultSchema = new mongoose.Schema(
 
     overall: {
       obtainedMarks: { type: Number, default: 0 },
-      maximumMarks: { type: Number, default: 58 },
+      maximumMarks: { type: Number, default: 0 },
       percentage: { type: Number, default: 0 },
     },
 
@@ -34,25 +35,30 @@ const resultSchema = new mongoose.Schema(
         score: { type: Number, default: 0 },
         percentage: { type: Number, default: 0 },
         completed: { type: Number, default: 0 },
-        total: { type: Number, default: 25 },
+        total: { type: Number, default: 0 },
+        unanswered: { type: Number, default: 0 },
+        correct: { type: Number, default: 0 },
       },
       technical: {
         score: { type: Number, default: 0 },
         percentage: { type: Number, default: 0 },
         completed: { type: Number, default: 0 },
-        total: { type: Number, default: 25 },
+        total: { type: Number, default: 0 },
+        unanswered: { type: Number, default: 0 },
       },
       coding: {
         score: { type: Number, default: 0 },
         percentage: { type: Number, default: 0 },
         completed: { type: Number, default: 0 },
-        total: { type: Number, default: 3 },
+        total: { type: Number, default: 0 },
+        unanswered: { type: Number, default: 0 },
       },
       hr: {
         score: { type: Number, default: 0 },
         percentage: { type: Number, default: 0 },
         completed: { type: Number, default: 0 },
-        total: { type: Number, default: 5 },
+        total: { type: Number, default: 0 },
+        unanswered: { type: Number, default: 0 },
       },
     },
 

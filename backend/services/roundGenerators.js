@@ -1,59 +1,133 @@
 import { GoogleGenAI } from "@google/genai";
 import AptitudeQuestion from "../models/AptitudeQuestion.js";
 import CodingQuestion from "../models/CodingQuestion.js";
+import TechnicalQuestion from "../models/TechnicalQuestion.js";
+import { TECHNICAL_QUESTIONS } from "../data/technicalBank.mjs";
 import { selectRandomQuestions, shuffleArray } from "./questionBank.js";
+import { parseResumeComplete } from "./resumeParser.js";
 
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY,
-});
+export function getAIClient() {
+  const apiKey = process.env.GEMINI_API_KEY;
+
+  if (!apiKey || !apiKey.trim()) {
+    throw new Error("GEMINI_API_KEY is missing");
+  }
+
+  if (apiKey.startsWith("sk-or-v1-")) {
+    throw new Error("Invalid GEMINI_API_KEY: An OpenRouter key was provided instead of a Google Gemini key. Please provide a key starting with AIzaSy...");
+  }
+
+  return new GoogleGenAI({ apiKey: apiKey.trim() });
+}
+
+export const ROUND_QUESTION_COUNTS = {
+  aptitude: 25,
+  technical: 25,
+  coding: 3,
+  hr: 5,
+};
 
 const DEFAULT_HR_BANK = [
   {
+    questionNumber: 1,
     id: "HR-01",
     questionId: "HR-01",
     question: "Tell me about yourself, your academic background, and why you are pursuing a career in software engineering.",
+    skill: "Communication & Background",
     topic: "Introduction & Background",
-    difficulty: "Easy",
+    difficulty: "easy",
+    type: "behavioral",
     section: "HR",
     category: "hr",
     aiSpeechText: "Welcome to the HR round! To start off, please tell me about yourself and why you're pursuing software engineering."
   },
   {
+    questionNumber: 2,
     id: "HR-02",
     questionId: "HR-02",
     question: "What are your key technical strengths, and what is one technical area or skill you are actively working to improve?",
+    skill: "Self-Awareness",
     topic: "Strengths & Development",
-    difficulty: "Easy",
+    difficulty: "easy",
+    type: "behavioral",
     section: "HR",
     category: "hr",
     aiSpeechText: "What would you consider your key technical strengths, and what is one skill you're working to improve?"
   },
   {
+    questionNumber: 3,
     id: "HR-03",
     questionId: "HR-03",
     question: "Describe a situation where you faced a challenge or conflict during a team project and how you handled it.",
+    skill: "Conflict Resolution",
     topic: "Teamwork & Collaboration",
-    difficulty: "Medium",
+    difficulty: "medium",
+    type: "behavioral",
     section: "HR",
     category: "hr",
     aiSpeechText: "Can you describe a situation where you faced a challenge or conflict while working in a team, and how you resolved it?"
   },
   {
+    questionNumber: 4,
     id: "HR-04",
     questionId: "HR-04",
     question: "How do you manage your time and stay focused when dealing with multiple tasks or tight deadlines under pressure?",
+    skill: "Time Management",
     topic: "Time Management & Pressure",
-    difficulty: "Medium",
+    difficulty: "medium",
+    type: "behavioral",
     section: "HR",
     category: "hr",
     aiSpeechText: "How do you manage your time and handle pressure when working on multiple projects with tight deadlines?"
   },
   {
+    questionNumber: 5,
     id: "HR-05",
     questionId: "HR-05",
+    question: "Describe a project where something went wrong or didn't work as planned. What did you learn from the experience?",
+    skill: "Resilience & Learning",
+    topic: "Failure & Learning",
+    difficulty: "medium",
+    type: "behavioral",
+    section: "HR",
+    category: "hr",
+    aiSpeechText: "Describe a project where something didn't go as planned. What did you learn from that experience?"
+  },
+  {
+    questionNumber: 6,
+    id: "HR-06",
+    questionId: "HR-06",
+    question: "How do you approach learning a new technology or programming framework that you have never used before?",
+    skill: "Adaptability",
+    topic: "Continuous Learning",
+    difficulty: "medium",
+    type: "behavioral",
+    section: "HR",
+    category: "hr",
+    aiSpeechText: "How do you approach learning a new technology or framework that you have never used before?"
+  },
+  {
+    questionNumber: 7,
+    id: "HR-07",
+    questionId: "HR-07",
+    question: "Can you give an example of how you prioritized features when developing a project under constrained resources?",
+    skill: "Decision Making",
+    topic: "Project Ownership",
+    difficulty: "hard",
+    type: "scenario",
+    section: "HR",
+    category: "hr",
+    aiSpeechText: "Can you give an example of how you prioritized features when developing a project with limited time or resources?"
+  },
+  {
+    questionNumber: 8,
+    id: "HR-08",
+    questionId: "HR-08",
     question: "Where do you see yourself in 3 to 5 years, and how does your career goal align with this engineering position?",
+    skill: "Career Goals",
     topic: "Career Goals & Alignment",
-    difficulty: "Easy",
+    difficulty: "easy",
+    type: "behavioral",
     section: "HR",
     category: "hr",
     aiSpeechText: "Where do you see yourself professionally in three to five years, and how does this role fit into your long-term goals?"
@@ -62,7 +136,7 @@ const DEFAULT_HR_BANK = [
 
 /**
  * 1. Single-Pass Resume Profiler
- * Extracts structured JSON profile from candidate resume.
+ * Extracts structured JSON profile and comprehensive skills from candidate resume.
  */
 export async function parseResumeToProfile(resumeBase64, studentData = {}) {
   const fallbackProfile = {
@@ -81,73 +155,33 @@ export async function parseResumeToProfile(resumeBase64, studentData = {}) {
   if (!resumeBase64) return fallbackProfile;
 
   try {
-    const prompt = `You are an expert resume parser.
-Analyze the candidate's resume carefully.
-Extract ONLY information explicitly stated in the resume.
-Do NOT hallucinate or assume technologies not present in the document.
-
-Return ONLY valid JSON with this exact structure:
-{
-  "candidateName": "Full Name",
-  "skills": ["Skill1", "Skill2"],
-  "programmingLanguages": ["Language1"],
-  "frameworks": ["Framework1"],
-  "databases": ["Database1"],
-  "tools": ["Tool1"],
-  "projects": [
-    {
-      "name": "Project Title",
-      "description": "Brief description",
-      "technologies": ["Tech1", "Tech2"]
-    }
-  ],
-  "experience": [
-    {
-      "role": "Role Title",
-      "company": "Company Name",
-      "duration": "Duration"
-    }
-  ],
-  "education": [
-    {
-      "degree": "Degree Name",
-      "institution": "University/College"
-    }
-  ],
-  "certifications": ["Certification Name"]
-}`;
-
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: [
-        { inlineData: { mimeType: "application/pdf", data: resumeBase64 } },
-        { text: prompt }
-      ],
-      config: { responseMimeType: "application/json" }
-    });
-
-    const parsed = JSON.parse(response.text);
+    const buffer = Buffer.from(resumeBase64, "base64");
+    const parsed = await parseResumeComplete(buffer, "application/pdf", studentData);
+    
+    const cat = parsed.categorizedSkills || {};
     return {
       candidateName: parsed.candidateName || studentData.name || "Candidate",
-      skills: parsed.skills && parsed.skills.length > 0 ? parsed.skills : fallbackProfile.skills,
-      programmingLanguages: parsed.programmingLanguages || [],
-      frameworks: parsed.frameworks || [],
-      databases: parsed.databases || [],
-      tools: parsed.tools || [],
+      skills: parsed.all_skills?.length ? parsed.all_skills : fallbackProfile.skills,
+      all_skills: parsed.all_skills?.length ? parsed.all_skills : fallbackProfile.skills,
+      categorizedSkills: cat,
+      programmingLanguages: cat.programming_languages || [],
+      frameworks: cat.frameworks || [],
+      databases: cat.databases || [],
+      tools: cat.tools || [],
       projects: parsed.projects || [],
       experience: parsed.experience || [],
       education: parsed.education || [],
       certifications: parsed.certifications || []
     };
   } catch (err) {
-    console.warn("Resume parsing fallback notice:", err.message);
+    console.warn("Resume parsing notice:", err.message);
     return fallbackProfile;
   }
 }
 
 /**
- * 2. Aptitude Round Generator
- * Independent from candidate resume. Uses DB bank or batched Gemini calls.
+ * 2. Aptitude Round Generator (Default: 25 Questions)
+ * Generates MCQs with options, correctAnswer, topic, difficulty.
  */
 export async function generateAptitudeQuestions(count = 25) {
   let questions = [];
@@ -159,16 +193,19 @@ export async function generateAptitudeQuestions(count = 25) {
       questions = shuffleArray(aptDbQuestions).slice(0, count).map((aptQ, idx) => ({
         id: `APT-${String(idx + 1).padStart(2, "0")}`,
         questionId: aptQ.questionId || `APT-${String(idx + 1).padStart(2, "0")}`,
+        questionNumber: idx + 1,
         order: idx + 1,
         section: "APTITUDE",
-        type: "aptitude",
+        type: "mcq",
+        questionType: "mcq",
         category: "aptitude",
+        skill: aptQ.category || "Quantitative & Logical",
         question: aptQ.question,
         options: aptQ.options || ["A", "B", "C", "D"],
         correctAnswer: aptQ.correctAnswer || "",
         explanation: aptQ.explanation || "",
         topic: aptQ.category || "Quantitative & Logical",
-        difficulty: aptQ.difficulty || "Medium"
+        difficulty: (aptQ.difficulty || "medium").toLowerCase()
       }));
       return questions;
     }
@@ -176,244 +213,353 @@ export async function generateAptitudeQuestions(count = 25) {
     console.warn("Aptitude DB fetch warning:", err.message);
   }
 
-  // Fallback / supplement via local question bank file
+  // Fallback via static question bank
   const bankPicked = selectRandomQuestions({ count });
   if (bankPicked && bankPicked.length >= count) {
     return bankPicked.slice(0, count).map((aptQ, idx) => ({
       id: `APT-${String(idx + 1).padStart(2, "0")}`,
       questionId: aptQ.questionId || `APT-${String(idx + 1).padStart(2, "0")}`,
+      questionNumber: idx + 1,
       order: idx + 1,
       section: "APTITUDE",
-      type: "aptitude",
+      type: "mcq",
+      questionType: "mcq",
       category: "aptitude",
+      skill: aptQ.category || "General Aptitude",
       question: aptQ.question,
       options: aptQ.options || ["A", "B", "C", "D"],
       correctAnswer: aptQ.correctAnswer || "",
       explanation: aptQ.explanation || "",
       topic: aptQ.category || "General Aptitude",
-      difficulty: aptQ.difficulty || "Medium"
+      difficulty: (aptQ.difficulty || "medium").toLowerCase()
     }));
   }
 
-  // Generate missing questions via batched Gemini requests (batches of 5)
-  const BATCH_SIZE = 5;
-  while (questions.length < count) {
-    const need = Math.min(BATCH_SIZE, count - questions.length);
-    try {
-      const prompt = `Generate exactly ${need} quantitative aptitude and logical reasoning multiple-choice questions suitable for technical campus placement.
-Return ONLY valid JSON in this exact structure:
+  // Generate all questions at once via Gemini
+  try {
+    const prompt = `You are an expert aptitude and logical reasoning test generator.
+Generate exactly ${count} multiple-choice questions for technical campus placement.
+
+DIFFICULTY DISTRIBUTION:
+- 3 easy
+- 4 medium
+- 3 hard
+
+TOPICS TO COVER:
+- Quantitative Aptitude (Time & Work, Speed & Distance, Percentages, Profit & Loss)
+- Logical Reasoning (Number Series, Coding-Decoding, Blood Relations, Syllogisms)
+- Verbal Ability (Sentence Correction, Vocabulary, Reading Comprehension)
+
+RULES:
+1. Generate exactly ${count} questions.
+2. Each question MUST have 4 distinct options.
+3. Specify the exact correctAnswer matching one of the options.
+4. Difficulty should gradually increase.
+5. Return ONLY valid JSON.
+
+OUTPUT FORMAT:
 {
+  "round": "aptitude",
   "questions": [
     {
+      "questionNumber": 1,
       "question": "If a train 120m long passes a pole in 6 seconds, what is its speed in km/h?",
+      "skill": "Speed & Distance",
       "options": ["60 km/h", "72 km/h", "80 km/h", "90 km/h"],
       "correctAnswer": "72 km/h",
-      "difficulty": "Medium",
-      "topic": "Speed & Distance"
+      "difficulty": "easy",
+      "type": "mcq"
     }
   ]
 }`;
 
-      const res = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
-        contents: [{ text: prompt }],
-        config: { responseMimeType: "application/json" }
-      });
-
-      const parsed = JSON.parse(res.text);
-      (parsed.questions || []).forEach((q) => {
-        if (questions.length < count) {
-          const idx = questions.length;
-          questions.push({
-            id: `APT-${String(idx + 1).padStart(2, "0")}`,
-            questionId: `APT-${String(idx + 1).padStart(2, "0")}`,
-            order: idx + 1,
-            section: "APTITUDE",
-            type: "aptitude",
-            category: "aptitude",
-            question: q.question,
-            options: q.options || ["A", "B", "C", "D"],
-            correctAnswer: q.correctAnswer || "",
-            topic: q.topic || "Quantitative",
-            difficulty: q.difficulty || "Medium"
-          });
-        }
-      });
-    } catch (gemErr) {
-      console.warn("Aptitude Gemini batch error:", gemErr.message);
-      break;
-    }
-  }
-
-  // Final emergency top-up if still under count
-  for (let idx = questions.length; idx < count; idx++) {
-    questions.push({
-      id: `APT-${String(idx + 1).padStart(2, "0")}`,
-      questionId: `APT-${String(idx + 1).padStart(2, "0")}`,
-      order: idx + 1,
-      section: "APTITUDE",
-      type: "aptitude",
-      category: "aptitude",
-      question: `Aptitude Question ${idx + 1}: If a worker completes a task in ${idx + 2} days, what fraction of work is done in 1 day?`,
-      options: [`1/${idx + 2}`, `2/${idx + 2}`, `1/${idx + 4}`, `1/2`],
-      correctAnswer: `1/${idx + 2}`,
-      topic: "Work & Time",
-      difficulty: idx % 3 === 0 ? "Hard" : "Medium"
+    const res = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: [{ text: prompt }],
+      config: { responseMimeType: "application/json" }
     });
+
+    const parsed = JSON.parse(res.text);
+    if (parsed.questions && parsed.questions.length >= count) {
+      return parsed.questions.slice(0, count).map((q, idx) => ({
+        id: `APT-${String(idx + 1).padStart(2, "0")}`,
+        questionId: `APT-${String(idx + 1).padStart(2, "0")}`,
+        questionNumber: q.questionNumber || idx + 1,
+        order: idx + 1,
+        section: "APTITUDE",
+        type: "mcq",
+        questionType: "mcq",
+        category: "aptitude",
+        skill: q.skill || "Aptitude",
+        question: q.question,
+        options: q.options || ["A", "B", "C", "D"],
+        correctAnswer: q.correctAnswer || "",
+        topic: q.skill || "General Aptitude",
+        difficulty: (q.difficulty || "medium").toLowerCase()
+      }));
+    }
+  } catch (gemErr) {
+    console.warn("Aptitude Gemini generation error:", gemErr.message);
   }
 
-  return questions;
+  // Curated fallback
+  const curatedAptitude = [
+    { question: "If 12 men can complete a work in 8 days, how many men are needed to complete it in 6 days?", options: ["14", "16", "18", "20"], correctAnswer: "16", skill: "Time & Work", difficulty: "easy" },
+    { question: "Find the next number in the series: 2, 6, 12, 20, 30, ?", options: ["40", "42", "44", "48"], correctAnswer: "42", skill: "Number Series", difficulty: "easy" },
+    { question: "A shopkeeper sells an item for $840 making a 20% profit. What was the cost price?", options: ["$680", "$700", "$720", "$750"], correctAnswer: "$700", skill: "Profit & Loss", difficulty: "easy" },
+    { question: "If a car travels at 60 km/h for 2.5 hours, what is the distance covered?", options: ["120 km", "140 km", "150 km", "160 km"], correctAnswer: "150 km", skill: "Speed & Distance", difficulty: "medium" },
+    { question: "In a certain code, COMPUTER is written as RFUVQNPC. How is MEDICINE written in that code?", options: ["MFEDJJOE", "EOJDEJFM", "MFEJDJOE", "EOJDJEFM"], correctAnswer: "EOJDJEFM", skill: "Coding-Decoding", difficulty: "medium" },
+    { question: "A pipe can fill a tank in 4 hours and another pipe can empty it in 6 hours. If both are opened together, how long will it take to fill the tank?", options: ["10 hours", "12 hours", "14 hours", "16 hours"], correctAnswer: "12 hours", skill: "Pipes & Cisterns", difficulty: "medium" },
+    { question: "What is the probability of getting a sum of 9 when two dice are rolled?", options: ["1/6", "1/8", "1/9", "1/12"], correctAnswer: "1/9", skill: "Probability", difficulty: "medium" },
+    { question: "A and B invest in a business in the ratio 3:5. If total profit is $9600, what is A's share?", options: ["$3200", "$3600", "$4000", "$4200"], correctAnswer: "$3600", skill: "Partnership & Ratio", difficulty: "hard" },
+    { question: "Pointing to a photograph, a man said: 'She is the daughter of my grandfather's only son.' How is she related to the man?", options: ["Mother", "Aunt", "Sister", "Daughter"], correctAnswer: "Sister", skill: "Blood Relations", difficulty: "hard" },
+    { question: "Find the angle between the hour and minute hand of a clock at 3:30.", options: ["70°", "75°", "80°", "85°"], correctAnswer: "75°", skill: "Clock & Calendar", difficulty: "hard" }
+  ];
+
+  return curatedAptitude.slice(0, count).map((q, idx) => ({
+    id: `APT-${String(idx + 1).padStart(2, "0")}`,
+    questionId: `APT-${String(idx + 1).padStart(2, "0")}`,
+    questionNumber: idx + 1,
+    order: idx + 1,
+    section: "APTITUDE",
+    type: "mcq",
+    questionType: "mcq",
+    category: "aptitude",
+    skill: q.skill,
+    question: q.question,
+    options: q.options,
+    correctAnswer: q.correctAnswer,
+    topic: q.skill,
+    difficulty: q.difficulty
+  }));
 }
 
 /**
- * 3. Technical / Resume / Project Round Generator
- * Batched Gemini generation (5 batches of 5 questions = 25 questions).
- * MUST be derived strictly from candidateProfile. Never invents unmentioned tech.
+ * Helper: Query Database / Bank questions filtered strictly by candidate's resume skills
  */
-export async function generateTechnicalQuestions(candidateProfile, count = 25, existingQuestions = []) {
-  const BATCH_SIZE = 5;
-  const totalBatches = Math.ceil(count / BATCH_SIZE);
-  let allQuestions = [...existingQuestions];
+export async function getResumeMatchedDatabaseQuestions(candidateProfile = {}, count = 10) {
+  const skills = [
+    ...(candidateProfile.skills || []),
+    ...(candidateProfile.programmingLanguages || []),
+    ...(candidateProfile.frameworks || []),
+    ...(candidateProfile.databases || []),
+    ...(candidateProfile.tools || []),
+  ].map(s => String(s).trim().toLowerCase()).filter(Boolean);
 
-  const candidateSkills = [
+  let matchedQuestions = [];
+
+  // 1. Try querying MongoDB TechnicalQuestion collection first
+  try {
+    if (skills.length > 0) {
+      const regexPatterns = skills.map(s => new RegExp(`\\b${s}\\b`, 'i'));
+      const dbQuestions = await TechnicalQuestion.find({
+        isDeleted: { $ne: true },
+        $or: [
+          { subtopic: { $in: regexPatterns } },
+          { topic: { $in: regexPatterns } },
+          { question: { $in: regexPatterns } }
+        ]
+      }).lean();
+
+      if (dbQuestions && dbQuestions.length > 0) {
+        matchedQuestions = shuffleArray(dbQuestions);
+      }
+    }
+  } catch (err) {
+    console.warn("DB question query notice:", err.message);
+  }
+
+  // 2. If not enough from DB collection, search in TECHNICAL_QUESTIONS static bank
+  if (matchedQuestions.length < count && TECHNICAL_QUESTIONS && TECHNICAL_QUESTIONS.length > 0) {
+    const bankMatches = TECHNICAL_QUESTIONS.filter(q => {
+      const sub = (q.subtopic || "").toLowerCase();
+      const top = (q.topic || "").toLowerCase();
+      const text = (q.question || "").toLowerCase();
+      return skills.some(s => sub.includes(s) || top.includes(s) || text.includes(s));
+    });
+
+    const existingIds = new Set(matchedQuestions.map(q => q.questionId));
+    for (const q of shuffleArray(bankMatches)) {
+      if (!existingIds.has(q.questionId)) {
+        matchedQuestions.push(q);
+        existingIds.add(q.questionId);
+      }
+    }
+  }
+
+  // 3. Fallback to general bank questions if candidate skills are empty or unmatched
+  if (matchedQuestions.length < count && TECHNICAL_QUESTIONS && TECHNICAL_QUESTIONS.length > 0) {
+    const existingIds = new Set(matchedQuestions.map(q => q.questionId));
+    for (const q of shuffleArray(TECHNICAL_QUESTIONS)) {
+      if (!existingIds.has(q.questionId)) {
+        matchedQuestions.push(q);
+        existingIds.add(q.questionId);
+      }
+    }
+  }
+
+  return matchedQuestions.slice(0, count).map((q, idx) => ({
+    id: `TECH-DB-${String(idx + 1).padStart(2, "0")}`,
+    questionId: q.questionId || `TECH-DB-${String(idx + 1).padStart(2, "0")}`,
+    questionNumber: idx + 1,
+    order: idx + 1,
+    section: "TECHNICAL",
+    type: "technical",
+    questionType: q.questionType || q.type || "conceptual",
+    category: "technical",
+    skill: q.subtopic || q.topic || "Technical Fundamentals",
+    question: q.question,
+    options: q.options || [],
+    correctAnswer: q.correctAnswer || "",
+    topic: q.topic || "Programming & OOP",
+    subtopic: q.subtopic || "",
+    difficulty: (q.difficulty || "medium").toLowerCase(),
+    marks: q.marks || 1,
+    source: "database_resume_matched",
+    aiSpeechText: q.question
+  }));
+}
+
+/**
+ * 3. Technical Round Generator (Default: 10 Questions)
+ * Hybrid approach: Uses Gemini API for candidate resume projects & dynamic questions,
+ * blended with database questions matched strictly to the candidate's resume skills.
+ */
+export async function generateTechnicalQuestions(candidateProfile = {}, count = 25) {
+  const skillsList = [
     ...(candidateProfile.skills || []),
     ...(candidateProfile.programmingLanguages || []),
     ...(candidateProfile.frameworks || []),
     ...(candidateProfile.databases || []),
     ...(candidateProfile.tools || [])
   ];
+  const uniqueSkills = [...new Set(skillsList)].filter(Boolean);
+  const skillsText = uniqueSkills.length > 0 ? uniqueSkills.join(", ") : "Java, Spring Boot, React, MySQL, Python";
 
-  const uniqueSkills = [...new Set(candidateSkills)];
+  const projectsText = (candidateProfile.projects || []).length > 0
+    ? (candidateProfile.projects || []).map(p => `${p.name}: ${p.description || ""} (Tech: ${(p.technologies || []).join(", ")})`).join("\n")
+    : "Full Stack Web Application with Authentication, REST APIs, and Database Integration";
 
-  const projectsSummary = (candidateProfile.projects || []).map(p =>
-    `${p.name}: ${p.description || ""} (Tech: ${(p.technologies || []).join(", ")})`
-  ).join("; ");
+  const experienceText = (candidateProfile.experience || []).length > 0
+    ? (candidateProfile.experience || []).map(e => `${e.role || "Software Engineer"} at ${e.company || "Company"} (${e.duration || "Present"})`).join("\n")
+    : "Academic Engineering Projects and Internships";
 
-  for (let b = 0; b < totalBatches && allQuestions.length < count; b++) {
-    const need = Math.min(BATCH_SIZE, count - allQuestions.length);
-    const askedQuestionsText = allQuestions.map(q => q.question);
+  const prompt = `You are an expert technical interviewer.
 
-    const prompt = `You are the Technical Interview Question Generator for a professional AI-powered mock interview platform.
-Your job is to generate technical interview questions for ONE candidate based strictly on the candidate's extracted resume profile.
+Your task is to generate technical interview questions for a candidate
+based strictly on their resume.
 
-Candidate Name: ${candidateProfile.candidateName || "Candidate"}
-Verified Candidate Resume Skills & Technologies: ${uniqueSkills.length > 0 ? uniqueSkills.join(", ") : "Web Development, Data Structures, Database Design, React, Node.js"}
-Verified Candidate Projects: ${projectsSummary || "Full-Stack Web Engineering Application"}
+CANDIDATE SKILLS:
+${skillsText}
 
-CRITICAL RULES:
-1. Generate technical questions based ONLY on technologies, languages, frameworks, tools, databases, concepts, projects, and technical skills explicitly mentioned in the candidate's resume above.
-2. NEVER invent technologies, cloud services, or tools not listed in the candidate's profile (e.g. Do NOT ask about AWS, Docker, Kubernetes, GraphQL, or Redis unless explicitly present in the resume).
-3. The candidate is a student/fresher. Questions must be appropriate for a fresher placement technical interview.
-4. Difficulty distribution across the 25 questions:
-   - Easy (basic conceptual understanding)
-   - Medium (practical usage & technology knowledge)
-   - Medium+ (practical interview question requiring reasoning appropriate for a fresher)
-5. Allowed questionType values: "Conceptual", "Practical", "Scenario", "Project", "Debugging", "Code-tracing".
-6. Prioritize project-based questions if projects are listed in the resume (why tech was chosen, architecture, challenges faced, how APIs/DB worked).
-7. Do NOT repeat or ask semantically duplicate questions compared to previously asked questions:
-   PREVIOUSLY ASKED QUESTIONS: ${JSON.stringify(askedQuestionsText)}
+CANDIDATE PROJECTS:
+${projectsText}
 
-Return ONLY valid JSON matching this exact structure:
+CANDIDATE EXPERIENCE:
+${experienceText}
+
+INTERVIEW ROUND:
+Technical
+
+NUMBER OF QUESTIONS:
+${count}
+
+DIFFICULTY DISTRIBUTION:
+- 2 easy
+- 5 medium
+- 3 hard
+
+IMPORTANT RULES:
+1. Generate exactly ${count} questions.
+2. Generate only technical interview questions.
+3. Questions must be relevant to the candidate's resume.
+4. Prioritize technologies and skills explicitly mentioned in the resume.
+5. Questions should cover different skills instead of repeatedly asking about the same technology.
+6. Include conceptual, practical, debugging, and scenario-based questions.
+7. Include project-based questions where appropriate.
+8. Do not generate aptitude questions.
+9. Do not generate HR questions.
+10. Do not generate coding-programming problems.
+11. Do not repeat questions.
+12. Do not ask about technologies that are not present in the resume.
+13. Questions should sound like questions asked by a real interviewer.
+14. Difficulty should gradually increase.
+15. Avoid extremely theoretical or academic questions.
+16. Keep each question clear and concise.
+17. Return ONLY valid JSON.
+
+OUTPUT FORMAT:
 {
+  "round": "technical",
   "questions": [
     {
-      "topic": "Programming & OOP",
-      "subtopic": "Inheritance",
-      "difficulty": "Easy",
-      "questionType": "Conceptual",
-      "question": "What is the difference between method overloading and method overriding in Java?",
-      "marks": 1,
-      "aiSpeechText": "Can you explain the difference between method overloading and method overriding?"
+      "questionNumber": 1,
+      "question": "What is dependency injection in Spring Boot?",
+      "skill": "Spring Boot",
+      "difficulty": "easy",
+      "type": "conceptual"
     }
   ]
 }`;
 
-    try {
-      const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
-        contents: [{ text: prompt }],
-        config: { responseMimeType: "application/json" }
-      });
+  let aiQuestions = [];
 
-      const parsed = JSON.parse(response.text);
-      const newBatch = parsed.questions || [];
-
-      newBatch.forEach(q => {
-        if (allQuestions.length < count && q.question) {
-          // Normalize and check against existing questions to avoid duplicates
-          const normNew = q.question.toLowerCase().trim();
-          const isDuplicate = allQuestions.some(existing => {
-            const normExisting = existing.question.toLowerCase().trim();
-            return normExisting === normNew || normExisting.includes(normNew) || normNew.includes(normExisting);
-          });
-
-          if (!isDuplicate) {
-            const idx = allQuestions.length;
-            allQuestions.push({
-              id: `TECH-${String(idx + 1).padStart(2, "0")}`,
-              questionId: `TECH-${String(idx + 1).padStart(2, "0")}`,
-              order: 25 + idx + 1,
-              section: "TECHNICAL",
-              type: "technical",
-              category: q.questionType === "Project" ? "resume" : "technical",
-              source: "AI_GENERATED",
-              question: q.question,
-              topic: q.topic || "Technical Engineering",
-              subtopic: q.subtopic || "Core Concepts",
-              difficulty: q.difficulty || (idx < 8 ? "Easy" : idx < 20 ? "Medium" : "Medium+"),
-              questionType: q.questionType || "Conceptual",
-              marks: q.marks || 1,
-              aiSpeechText: q.aiSpeechText || q.question
-            });
-          }
-        }
-      });
-    } catch (err) {
-      console.warn(`Technical batch ${b + 1} generation error:`, err.message);
-    }
-  }
-
-  // Fallback top-up if Gemini returns fewer questions
-  const defaultTopics = [
-    { topic: "Programming & OOP", subtopic: "Fundamentals", questionType: "Conceptual" },
-    { topic: "Project Architecture", subtopic: "API Routing", questionType: "Project" },
-    { topic: "Database & SQL", subtopic: "Query Optimization", questionType: "Practical" },
-    { topic: "State Management", subtopic: "Data Flow", questionType: "Conceptual" },
-    { topic: "Debugging & Troubleshooting", subtopic: "Error Handling", questionType: "Debugging" },
-    { topic: "System Integration", subtopic: "Middleware", questionType: "Scenario" }
-  ];
-
-  const primaryTech = uniqueSkills[0] || "Software Engineering";
-
-  for (let idx = allQuestions.length; idx < count; idx++) {
-    const meta = defaultTopics[idx % defaultTopics.length];
-    const diff = idx < 8 ? "Easy" : idx < 20 ? "Medium" : "Medium+";
-    allQuestions.push({
-      id: `TECH-${String(idx + 1).padStart(2, "0")}`,
-      questionId: `TECH-${String(idx + 1).padStart(2, "0")}`,
-      order: 25 + idx + 1,
-      section: "TECHNICAL",
-      type: "technical",
-      category: idx < 10 ? "resume" : "technical",
-      source: "FALLBACK",
-      question: `Regarding ${meta.topic} in your work with ${primaryTech}, how did you design and implement your solution?`,
-      topic: meta.topic,
-      subtopic: meta.subtopic,
-      difficulty: diff,
-      questionType: meta.questionType,
-      marks: 1,
-      aiSpeechText: `Let me ask about ${meta.topic}. In your work with ${primaryTech}, how did you approach this?`
+  // Try API generation first
+  try {
+    const ai = getAIClient();
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: [{ text: prompt }],
+      config: { responseMimeType: "application/json" }
     });
+
+    const parsed = JSON.parse(response.text);
+    if (parsed.questions && Array.isArray(parsed.questions)) {
+      aiQuestions = parsed.questions.map((q, idx) => ({
+        id: `TECH-AI-${String(idx + 1).padStart(2, "0")}`,
+        questionId: `TECH-AI-${String(idx + 1).padStart(2, "0")}`,
+        questionNumber: q.questionNumber || idx + 1,
+        order: idx + 1,
+        section: "TECHNICAL",
+        type: "technical",
+        questionType: q.type || "conceptual",
+        category: "technical",
+        skill: q.skill || "Technical",
+        question: q.question,
+        topic: q.skill || "Technical",
+        subtopic: q.skill || "Technical",
+        difficulty: (q.difficulty || (idx < 2 ? "easy" : idx < 7 ? "medium" : "hard")).toLowerCase(),
+        marks: 1,
+        source: "gemini_ai_resume",
+        aiSpeechText: q.question
+      }));
+    }
+  } catch (err) {
+    console.warn("AI Question Generation Notice (falling back to database matched questions):", err.message);
   }
 
-  return allQuestions;
+  // If AI generated enough questions, return them
+  if (aiQuestions.length >= count) {
+    return aiQuestions.slice(0, count);
+  }
+
+  // Hybrid fallback: query Database questions strictly matching the candidate's resume skills
+  const dbMatched = await getResumeMatchedDatabaseQuestions(candidateProfile, count);
+
+  // Blend AI questions with Database resume-matched questions
+  const combined = [...aiQuestions, ...dbMatched];
+  return combined.slice(0, count).map((q, idx) => ({
+    ...q,
+    questionNumber: idx + 1,
+    order: idx + 1
+  }));
 }
 
 /**
- * 4. Coding Round Generator
- * 3 coding questions with progressive difficulty matching candidate's stack.
+ * 4. Coding Round Generator (Default: 2 Questions)
+ * Algorithmic challenges with test cases, starter code, and constraints.
  */
-export async function generateCodingQuestions(candidateProfile, count = 3) {
+export async function generateCodingQuestions(candidateProfile = {}, count = 3) {
   // Try DB coding questions first
   try {
     let codingDb = await CodingQuestion.find({ isActive: true, isDeleted: false }).lean();
@@ -421,10 +567,13 @@ export async function generateCodingQuestions(candidateProfile, count = 3) {
       return codingDb.slice(0, count).map((cq, idx) => ({
         id: `CODE-${String(idx + 1).padStart(2, "0")}`,
         questionId: cq.questionId || `CODE-${String(idx + 1).padStart(2, "0")}`,
-        order: 50 + idx + 1,
+        questionNumber: idx + 1,
+        order: idx + 1,
         section: "CODING",
         type: "coding",
+        questionType: "coding",
         category: "coding",
+        skill: cq.category || "Data Structures & Algorithms",
         title: cq.title || `Coding Challenge ${idx + 1}`,
         question: cq.problemStatement || cq.description || cq.title,
         problemStatement: cq.problemStatement || cq.description || cq.title,
@@ -433,9 +582,11 @@ export async function generateCodingQuestions(candidateProfile, count = 3) {
         constraints: cq.constraints || "1 <= N <= 10^5",
         sampleInput: cq.sampleInput || "",
         sampleOutput: cq.sampleOutput || "",
-        starterCode: cq.starterCode || "function solution() {\n  // Write your code here\n}",
+        expectedComplexity: cq.expectedComplexity || "O(n) time, O(1) space",
+        allowedLanguages: cq.allowedLanguages || ["Python", "Java", "C++", "C", "JavaScript"],
+        starterCode: cq.starterCode || "def solution():\n    pass",
         testCases: cq.testCases || [],
-        difficulty: idx === 0 ? "Easy" : idx === 1 ? "Medium" : "Hard",
+        difficulty: idx === 0 ? "easy" : idx === 1 ? "medium" : "hard",
         topic: cq.category || "Algorithms"
       }));
     }
@@ -443,54 +594,68 @@ export async function generateCodingQuestions(candidateProfile, count = 3) {
     console.warn("Coding DB fetch warning:", err.message);
   }
 
-  // Pre-configured progressive coding problems fallback
+  // Pre-configured progressive coding problems
   const defaultCodingBank = [
     {
+      questionNumber: 1,
       questionId: "CODE-01",
-      title: "Palindrome Verification",
-      problemStatement: "Write a function to check whether a given string is a palindrome ignoring non-alphanumeric characters.",
-      inputFormat: "A single string s",
-      outputFormat: "Boolean (true or false)",
-      constraints: "1 <= s.length <= 10^5",
-      sampleInput: "\"A man, a plan, a canal: Panama\"",
-      sampleOutput: "true",
-      starterCode: "function solution(s) {\n  // Return true if palindrome, false otherwise\n}",
-      difficulty: "Easy",
-      testCases: [
-        { input: "racecar", expected: "true", isHidden: false },
-        { input: "hello", expected: "false", isHidden: true }
-      ]
-    },
-    {
-      questionId: "CODE-02",
       title: "Two Sum Target Indices",
-      problemStatement: "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.",
+      problemStatement: "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target. You may assume each input has exactly one solution.",
       inputFormat: "Array of integers and target number",
       outputFormat: "Array of two indices [i, j]",
-      constraints: "2 <= nums.length <= 10^4",
-      sampleInput: "[2, 7, 11, 15], target = 9",
+      constraints: "2 <= nums.length <= 10^4, -10^9 <= nums[i] <= 10^9",
+      sampleInput: "nums = [2, 7, 11, 15], target = 9",
       sampleOutput: "[0, 1]",
-      starterCode: "function solution(nums, target) {\n  // Return [index1, index2]\n}",
-      difficulty: "Medium",
+      expectedComplexity: "O(n) time, O(n) space",
+      allowedLanguages: ["Python", "Java", "C++", "C", "JavaScript"],
+      starterCode: "def two_sum(nums, target):\n    # Write your solution here\n    pass",
+      difficulty: "easy",
+      skill: "Arrays & Hash Maps",
       testCases: [
         { input: "[2,7,11,15], 9", expected: "[0,1]", isHidden: false },
         { input: "[3,2,4], 6", expected: "[1,2]", isHidden: true }
       ]
     },
     {
-      questionId: "CODE-03",
-      title: "Longest Non-Repeating Substring",
+      questionNumber: 2,
+      questionId: "CODE-02",
+      title: "Longest Substring Without Repeating Characters",
       problemStatement: "Given a string s, find the length of the longest substring without repeating characters.",
       inputFormat: "A single string s",
       outputFormat: "Integer length",
       constraints: "0 <= s.length <= 5 * 10^4",
-      sampleInput: "\"abcabcbb\"",
+      sampleInput: "s = \"abcabcbb\"",
       sampleOutput: "3",
-      starterCode: "function solution(s) {\n  // Return max length integer\n}",
-      difficulty: "Hard",
+      expectedComplexity: "O(n) time, O(min(m,n)) space",
+      allowedLanguages: ["Python", "Java", "C++", "C", "JavaScript"],
+      starterCode: "def length_of_longest_substring(s: str) -> int:\n    # Write your solution here\n    pass",
+      difficulty: "medium",
+      skill: "Sliding Window & Strings",
       testCases: [
-        { input: "abcabcbb", expected: "3", isHidden: false },
-        { input: "bbbbb", expected: "1", isHidden: true }
+        { input: "\"abcabcbb\"", expected: "3", isHidden: false },
+        { input: "\"bbbbb\"", expected: "1", isHidden: true },
+        { input: "\"pwwkew\"", expected: "3", isHidden: true }
+      ]
+    },
+    {
+      questionNumber: 3,
+      questionId: "CODE-03",
+      title: "Valid Parentheses Stack Evaluation",
+      problemStatement: "Given a string s containing just the characters '(', ')', '{', '}', '[' and ']', determine if the input string is valid. An input string is valid if open brackets are closed by the same type of brackets in the correct order.",
+      inputFormat: "A string s of brackets",
+      outputFormat: "Boolean true or false",
+      constraints: "1 <= s.length <= 10^4",
+      sampleInput: "s = \"()[]{}\"",
+      sampleOutput: "true",
+      expectedComplexity: "O(n) time, O(n) space",
+      allowedLanguages: ["Python", "Java", "C++", "C", "JavaScript"],
+      starterCode: "def is_valid(s: str) -> bool:\n    # Write your solution here\n    pass",
+      difficulty: "medium",
+      skill: "Stacks & Data Structures",
+      testCases: [
+        { input: "\"()[]{}\"", expected: "true", isHidden: false },
+        { input: "\"(]\"", expected: "false", isHidden: true },
+        { input: "\"([)]\"", expected: "false", isHidden: true }
       ]
     }
   ];
@@ -498,10 +663,13 @@ export async function generateCodingQuestions(candidateProfile, count = 3) {
   return defaultCodingBank.slice(0, count).map((cq, idx) => ({
     id: `CODE-${String(idx + 1).padStart(2, "0")}`,
     questionId: cq.questionId || `CODE-${String(idx + 1).padStart(2, "0")}`,
-    order: 50 + idx + 1,
+    questionNumber: cq.questionNumber || idx + 1,
+    order: idx + 1,
     section: "CODING",
     type: "coding",
+    questionType: "coding",
     category: "coding",
+    skill: cq.skill,
     title: cq.title,
     question: cq.problemStatement,
     problemStatement: cq.problemStatement,
@@ -510,6 +678,8 @@ export async function generateCodingQuestions(candidateProfile, count = 3) {
     constraints: cq.constraints,
     sampleInput: cq.sampleInput,
     sampleOutput: cq.sampleOutput,
+    expectedComplexity: cq.expectedComplexity,
+    allowedLanguages: cq.allowedLanguages,
     starterCode: cq.starterCode,
     testCases: cq.testCases,
     difficulty: cq.difficulty,
@@ -518,22 +688,113 @@ export async function generateCodingQuestions(candidateProfile, count = 3) {
 }
 
 /**
- * 5. HR Round Generator
- * 5 conversational HR questions.
+ * 5. HR Round Generator (Default: 5 Questions)
+ * STAR behavioral questions contextualized by candidate profile.
  */
-export async function generateHRQuestions(candidateProfile, count = 5) {
-  return DEFAULT_HR_BANK.slice(0, count).map((hrQ, idx) => ({
-    id: `HR-${String(idx + 1).padStart(2, "0")}`,
-    questionId: `HR-${String(idx + 1).padStart(2, "0")}`,
-    order: 53 + idx + 1,
-    section: "HR",
-    type: "hr",
-    category: "hr",
-    question: hrQ.question,
-    topic: hrQ.topic,
-    difficulty: hrQ.difficulty,
-    aiSpeechText: hrQ.aiSpeechText
-  }));
+export async function generateHRQuestions(candidateProfile = {}, count = 5) {
+  const candidateProjects = candidateProfile.projects || [];
+  const candidateExperience = candidateProfile.experience || [];
+  const topProject = candidateProjects[0]?.name || "your main engineering project";
+
+  const prompt = `You are the HR & Behavioral Interview Question Generator for a professional AI-powered interview platform.
+Generate exactly ${count} candidate-specific behavioral/HR interview questions.
+
+Candidate Name: ${candidateProfile.candidateName || "Candidate"}
+Projects: ${candidateProjects.map(p => p.name).join(", ") || "Engineering Application"}
+Experience: ${candidateExperience.map(e => `${e.role} at ${e.company}`).join(", ") || "Academic Projects"}
+
+CORE RULES:
+1. Generate exactly ${count} questions.
+2. Ground questions in candidate's actual projects/background whenever possible.
+3. Focus on: Teamwork, Conflict Resolution, Overcoming Obstacles, Project Ownership, Failure & Learning, Career Goals.
+4. Structure around STAR methodology (Situation, Task, Action, Result).
+5. Difficulty should range: 2 easy, 4 medium, 2 hard.
+6. Return ONLY valid JSON.
+
+OUTPUT FORMAT:
+{
+  "round": "hr",
+  "questions": [
+    {
+      "questionNumber": 1,
+      "question": "Tell me about yourself and what inspired you to pursue a software engineering career.",
+      "skill": "Self Introduction",
+      "difficulty": "easy",
+      "type": "behavioral"
+    }
+  ]
+}`;
+
+  try {
+    const ai = getAIClient();
+    const res = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: [{ text: prompt }],
+      config: { responseMimeType: "application/json" }
+    });
+
+    const parsed = JSON.parse(res.text);
+    if (parsed.questions && parsed.questions.length >= count) {
+      return parsed.questions.slice(0, count).map((hrQ, idx) => ({
+        id: `HR-AI-${String(idx + 1).padStart(2, "0")}`,
+        questionId: `HR-AI-${String(idx + 1).padStart(2, "0")}`,
+        questionNumber: hrQ.questionNumber || idx + 1,
+        order: idx + 1,
+        section: "HR",
+        type: "hr",
+        questionType: hrQ.type || "behavioral",
+        category: "hr",
+        skill: hrQ.skill || "Behavioral",
+        question: hrQ.question,
+        topic: hrQ.skill || "Behavioral",
+        difficulty: (hrQ.difficulty || "medium").toLowerCase(),
+        source: "gemini_ai_resume",
+        aiSpeechText: hrQ.question
+      }));
+    }
+  } catch (err) {
+    console.warn("HR Dynamic AI generation notice (falling back to tailored HR bank):", err.message);
+  }
+
+  // Hybrid fallback: Structured HR bank customized for candidate profile
+  return DEFAULT_HR_BANK.slice(0, count).map((hrQ, idx) => {
+    let qText = hrQ.question;
+    if (topProject && qText.includes("your main project")) {
+      qText = qText.replace("your main project", `your project '${topProject}'`);
+    }
+    return {
+      ...hrQ,
+      id: `HR-DB-${String(idx + 1).padStart(2, "0")}`,
+      questionId: `HR-DB-${String(idx + 1).padStart(2, "0")}`,
+      questionNumber: idx + 1,
+      order: idx + 1,
+      question: qText,
+      aiSpeechText: qText,
+      source: "database_resume_matched"
+    };
+  });
+}
+
+/**
+ * Master Round Questions Generator
+ * Generates all questions for a given round name based on candidateProfile.
+ */
+export async function generateQuestionsForRound(roundName, candidateProfile = {}) {
+  const norm = String(roundName).toLowerCase();
+  const count = ROUND_QUESTION_COUNTS[norm] || 25;
+
+  switch (norm) {
+    case "aptitude":
+      return await generateAptitudeQuestions(count);
+    case "technical":
+      return await generateTechnicalQuestions(candidateProfile, count);
+    case "coding":
+      return await generateCodingQuestions(candidateProfile, count);
+    case "hr":
+      return await generateHRQuestions(candidateProfile, count);
+    default:
+      return await generateTechnicalQuestions(candidateProfile, count);
+  }
 }
 
 /**

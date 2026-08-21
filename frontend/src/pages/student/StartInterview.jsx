@@ -94,6 +94,12 @@ function StartInterview() {
   const [currentCode, setCurrentCode] = useState("");
   const [compilerOutput, setCompilerOutput] = useState(null);
   const [isRunningCode, setIsRunningCode] = useState(false);
+  const [outputTab, setOutputTab] = useState("Testcase");
+
+  // Target Round State ("all", "aptitude", "technical", "coding", "hr")
+  const queryParams = new URLSearchParams(location.search);
+  const initialTargetRound = routerState.targetRound || queryParams.get("round") || "all";
+  const [targetRound, setTargetRound] = useState(initialTargetRound);
 
   // Candidate Info State
   const [candidateInfo, setCandidateInfo] = useState({
@@ -105,6 +111,7 @@ function StartInterview() {
   });
 
   const [isLoadingInterview, setIsLoadingInterview] = useState(true);
+  const [sessionError, setSessionError] = useState(null);
 
   // Media & STT state
   const [isCameraOn, setIsCameraOn] = useState(true);
@@ -117,9 +124,9 @@ function StartInterview() {
   const [webcamStream, setWebcamStream] = useState(null);
   const webcamStreamRef = useRef(null);
 
-  // Session timer (150 minutes = 2h30m for 58 questions; derived from backend startedAt)
-  const INTERVIEW_DURATION_MIN = 150;
-  const totalSeconds = INTERVIEW_DURATION_MIN * 60;
+  // Session timer (dynamic minutes based on round: 150m for all, 30m for aptitude, 45m for technical/coding, 15m for hr)
+  const [interviewDurationMin, setInterviewDurationMin] = useState(150);
+  const totalSeconds = interviewDurationMin * 60;
   const [timerSeconds, setTimerSeconds] = useState(totalSeconds);
 
   // Speech Recognition & Silence Buffer
@@ -401,19 +408,26 @@ function StartInterview() {
           headers: { Authorization: `Bearer ${token}` }
         });
 
+        const activeTarget = data.targetRound || initialTargetRound || "all";
+        setTargetRound(activeTarget);
+
+        const durMin = data.durationMinutes || (activeTarget === "aptitude" ? 20 : activeTarget === "technical" ? 30 : activeTarget === "coding" ? 35 : activeTarget === "hr" ? 20 : 105);
+        setInterviewDurationMin(durMin);
+
         let loadedQs = data.generatedQuestions || [];
 
-        // Lazy load Aptitude round if no questions generated yet
+        // Lazy load round if no questions generated yet
         if (!loadedQs || loadedQs.length === 0) {
           try {
-            const { data: aptData } = await api.get(`/api/interview/${targetId}/round/aptitude`, {
+            const fetchRoundName = activeTarget !== "all" ? activeTarget : "aptitude";
+            const { data: roundData } = await api.get(`/api/interview/${targetId}/round/${fetchRoundName}`, {
               headers: { Authorization: `Bearer ${token}` }
             });
-            if (aptData.questions && aptData.questions.length > 0) {
-              loadedQs = aptData.questions;
+            if (roundData.questions && roundData.questions.length > 0) {
+              loadedQs = roundData.questions;
             }
-          } catch (aptErr) {
-            console.warn("Initial aptitude lazy load notice:", aptErr.message);
+          } catch (roundErr) {
+            console.warn("Initial round lazy load notice:", roundErr.message);
           }
         }
 
@@ -431,25 +445,37 @@ function StartInterview() {
           setCurrentIndex(Number(data.currentQuestionIndex) || 1);
         }
 
+        const roundTitles = {
+          all: "Real AI Interview Room (All 4 Rounds)",
+          aptitude: "Aptitude Round (MCQs)",
+          technical: "Technical Stack Round (Alex)",
+          coding: "Coding IDE Round (Compiler)",
+          hr: "HR & Behavioral Round (Sarah)"
+        };
+
         if (data.candidateProfile) {
           setCandidateInfo({
             name: data.candidateProfile.candidateName || profile.name || MOCK_CANDIDATE.name,
             resumeName: data.resumeFileName || profile.resumeFileName || "Uploaded_Resume.pdf",
-            interviewType: "Real AI Interview Room",
+            interviewType: roundTitles[activeTarget] || "Real AI Interview Room",
             difficulty: "Adaptive",
-            totalTimeMinutes: 150,
+            totalTimeMinutes: durMin,
           });
         }
 
         if (data.startedAt) {
           const startTs = new Date(data.startedAt).getTime();
-          sessionEndTimeRef.current = startTs + INTERVIEW_DURATION_MIN * 60000;
+          sessionEndTimeRef.current = startTs + durMin * 60000;
           const remaining = Math.max(0, Math.round((sessionEndTimeRef.current - Date.now()) / 1000));
           setTimerSeconds(remaining);
+        } else {
+          setTimerSeconds(durMin * 60);
         }
       } catch (err) {
         console.error("Session load error:", err);
-        setQuestions(MOCK_QUESTIONS);
+        const errMsg = err.response?.data?.message || err.message || "Failed to initialize interview questions";
+        setSessionError(errMsg);
+        toast.error(errMsg, { duration: 8000, id: "session-load-error" });
       } finally {
         setIsLoadingInterview(false);
       }
@@ -461,10 +487,10 @@ function StartInterview() {
   // ─── REAL SECTION PROGRESS CALCULATIONS ───
   const getSectionProgress = useCallback(() => {
     const counts = {
-      APTITUDE: { completed: 0, total: 25 },
-      TECHNICAL: { completed: 0, total: 25 },
-      CODING: { completed: 0, total: 3 },
-      HR: { completed: 0, total: 5 },
+      APTITUDE: { completed: 0, total: 10 },
+      TECHNICAL: { completed: 0, total: 10 },
+      CODING: { completed: 0, total: 2 },
+      HR: { completed: 0, total: 8 },
       totalCompleted: 0,
     };
 
@@ -616,7 +642,17 @@ function StartInterview() {
 
     if (currentIndex === 1 && !hasIntroducedRef.current) {
       hasIntroducedRef.current = true;
-      const introText = `Good day ${candidateInfo.name || "Candidate"}. I am Alex, your senior AI interviewer. I have reviewed your background and resume details. We will begin with Aptitude evaluations. Let's start with your first question.`;
+      let introText = `Good day ${candidateInfo.name || "Candidate"}. I am Alex, your senior AI interviewer. I have reviewed your background and resume details. We will begin with Aptitude evaluations. Let's start with your first question.`;
+
+      if (targetRound === "technical") {
+        introText = `Good day ${candidateInfo.name || "Candidate"}. I am Alex, your senior technical interviewer. I have reviewed your resume and projects. Let's begin your Technical Round.`;
+      } else if (targetRound === "coding") {
+        introText = `Good day ${candidateInfo.name || "Candidate"}. I am Alex, your senior AI evaluator. Today we will conduct your Algorithmic Coding Challenge in the live compiler workspace.`;
+      } else if (targetRound === "hr") {
+        introText = `Good day ${candidateInfo.name || "Candidate"}. I am Sarah, your senior HR interviewer. Today we will conduct your HR and Behavioral evaluation.`;
+      } else if (targetRound === "aptitude") {
+        introText = `Good day ${candidateInfo.name || "Candidate"}. Today we will evaluate your Aptitude and Logical Reasoning skills. Let's begin with your first question.`;
+      }
 
       const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       setDialogueLogs([{ sender: "AI", text: introText, time: timeNow }]);
@@ -646,9 +682,9 @@ function StartInterview() {
       speakCurrentQuestion(speechText, section, currentQuestion.topic);
     }
 
-    const qId = currentQuestion.id || currentQuestion.questionId;
-    const existing = savedAnswers.find((ans) => ans.questionId === qId);
-    if (existing) {
+    const qId = String(currentQuestion.id || currentQuestion.questionId || `Q-${currentIndex}`);
+    const existing = savedAnswers.find((ans) => String(ans.questionId) === qId || String(ans.questionId) === String(currentQuestion.id) || String(ans.questionId) === String(currentQuestion.questionId));
+    if (existing && existing.answer) {
       if (section === "CODING") {
         setCurrentCode(existing.answer);
       } else {
@@ -737,7 +773,8 @@ function StartInterview() {
     const section = currentQuestion.section || "APTITUDE";
     const finalAnswerText = customAns !== null ? customAns : (section === "CODING" ? currentCode : typedResponse);
 
-    const qId = currentQuestion.id || currentQuestion.questionId || `Q-${currentIndex}`;
+    const qId = String(currentQuestion.id || currentQuestion.questionId || `Q-${currentIndex}`);
+    const actualStatus = (finalAnswerText && String(finalAnswerText).trim().length > 0) ? "answered" : statusType;
 
     const answerRecord = {
       questionId: qId,
@@ -747,7 +784,7 @@ function StartInterview() {
       answer: finalAnswerText,
       transcript: finalAnswerText,
       inputMethod: inputMode === "speak" ? "VOICE" : "TEXT",
-      status: statusType
+      status: actualStatus
     };
 
     if (activeInterviewId) {
@@ -761,6 +798,7 @@ function StartInterview() {
           transcript: finalAnswerText,
           inputMethod: inputMode === "speak" ? "VOICE" : "TEXT",
           mode: inputMode === "speak" ? "voice" : "text",
+          status: actualStatus,
           currentQuestionIndex: currentIndex,
         }, { headers: { Authorization: `Bearer ${token}` } });
       } catch (err) {
@@ -769,7 +807,7 @@ function StartInterview() {
     }
 
     setSavedAnswers((prev) => {
-      const filtered = prev.filter((ans) => ans.questionId !== qId);
+      const filtered = prev.filter((ans) => String(ans.questionId) !== qId && String(ans.questionId) !== String(currentQuestion.id) && String(ans.questionId) !== String(currentQuestion.questionId));
       return [...filtered, answerRecord];
     });
 
@@ -784,27 +822,46 @@ function StartInterview() {
 
   // ─── CODING COMPILER RUN ───
   const handleRunCoding = async () => {
+    if (!currentCode || !currentCode.trim()) {
+      toast.error("Please write some code before running.");
+      return;
+    }
     setIsRunningCode(true);
+    setOutputTab("Test Result");
     const toastId = toast.loading("Executing code via compiler...");
     try {
-      const langMap = { python: 71, java: 62, c: 50, cpp: 54, javascript: 63 };
-      const langId = langMap[codingLanguage] || 71;
+      const { data } = await api.post(
+        "/api/code/run",
+        {
+          language: codingLanguage,
+          code: currentCode,
+          input: currentQuestion.sampleInput || "",
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-      const { data } = await api.post("/api/code/run", {
-        sourceCode: currentCode,
-        languageId: langId,
-        input: currentQuestion.sampleInput || ""
-      }, { headers: { Authorization: `Bearer ${token}` } });
+      const isErr = data.type === "error" || data.status === "Error";
+      const normalizedRun = {
+        type: isErr ? "error" : "success",
+        output: data.output ?? data.stdout ?? data.stderr ?? (typeof data === "string" ? data : "No output"),
+        timeMs: data.timeMs || 0,
+      };
 
-      setCompilerOutput(data);
-      toast.success("Code executed!", { id: toastId });
+      setCompilerOutput(normalizedRun);
+      if (isErr) {
+        toast.error(normalizedRun.output || "Execution failed", { id: toastId });
+      } else {
+        toast.success("Code executed successfully!", { id: toastId });
+      }
     } catch (err) {
       console.error("Compiler error:", err);
+      const errMsg = err.response?.data?.message || err.response?.data?.output || "Execution failed.";
       setCompilerOutput({
-        status: "Error",
-        stderr: err.response?.data?.message || "Execution failed."
+        type: "error",
+        output: errMsg,
+        timeMs: 0,
       });
-      toast.error("Execution error", { id: toastId });
+      toast.error(errMsg, { id: toastId });
     } finally {
       setIsRunningCode(false);
     }
@@ -872,7 +929,7 @@ function StartInterview() {
   };
 
   const sectionQuestions = questions.filter((q) => q.section === currentSection);
-  const sectionTotal = sectionQuestions.length || (currentSection === "APTITUDE" ? 25 : currentSection === "TECHNICAL" ? 25 : currentSection === "CODING" ? 3 : 5);
+  const sectionTotal = sectionQuestions.length || 1;
   const questionIdxInSection = sectionQuestions.findIndex((q) => (q.id || q.questionId) === (currentQuestion.id || currentQuestion.questionId)) + 1;
   const formattedSectionQuestionIndex = questionIdxInSection > 0 ? String(questionIdxInSection).padStart(2, "0") : "01";
 
@@ -897,8 +954,31 @@ function StartInterview() {
         </div>
       )}
 
-      <div
-        className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-3 pr-1"
+      {sessionError && questions.length === 0 ? (
+        <div className="flex-1 flex items-center justify-center p-6">
+          <div className="p-6 rounded-2xl bg-red-950/40 border border-red-500/30 text-center space-y-3 max-w-lg w-full">
+            <AlertTriangle className="w-10 h-10 text-red-400 mx-auto" />
+            <h3 className="text-base font-bold text-red-200">AI Question Generation Failed</h3>
+            <p className="text-xs text-red-300/80 leading-relaxed font-mono">
+              {sessionError}
+            </p>
+            <p className="text-[11px] text-white/50">
+              Please ensure you have configured a valid Google Gemini API key (<code className="text-amber-400">AIzaSy...</code>) in your backend <code className="text-amber-400">.env</code> file.
+            </p>
+            <div className="pt-2 flex items-center justify-center gap-3">
+              <button
+                onClick={() => window.location.reload()}
+                className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold cursor-pointer transition"
+              >
+                Retry
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div
+            className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-3 pr-1"
         style={{ scrollbarWidth: "thin", scrollbarColor: "rgba(255,255,255,0.1) transparent" }}
       >
         {/* Question header */}
@@ -917,6 +997,7 @@ function StartInterview() {
             totalQuestions={questions.length}
             difficulty={currentQuestion?.difficulty || "Medium"}
             category={currentQuestion?.category || currentQuestion?.section || "Technical"}
+            source={currentQuestion?.source}
             estimatedTime={currentSection === "CODING" ? "10 mins" : "2 mins"}
             showQuestionText={true}
           />
@@ -978,11 +1059,25 @@ function StartInterview() {
                 Submit
               </button>
             </div>
-            {compilerOutput && (
-              <div className="mt-1">
-                <OutputPanel output={compilerOutput} />
-              </div>
-            )}
+            {/* Test Cases & Compiler Output Terminal */}
+            <div className="mt-2 rounded-2xl overflow-hidden border border-white/10">
+              <OutputPanel
+                activeTab={outputTab}
+                setActiveTab={setOutputTab}
+                data={{
+                  run: compilerOutput,
+                  submit: null,
+                }}
+                testCases={
+                  (currentQuestion.testCases && currentQuestion.testCases.length > 0)
+                    ? currentQuestion.testCases
+                    : (currentQuestion.sampleInput || currentQuestion.sampleOutput)
+                      ? [{ input: currentQuestion.sampleInput || "", expected: currentQuestion.sampleOutput || "", isHidden: false }]
+                      : []
+                }
+                running={isRunningCode}
+              />
+            </div>
           </div>
         ) : isAptitude ? (
           <div className="p-4 rounded-2xl bg-slate-900/90 border border-white/10 space-y-3">
@@ -1095,6 +1190,8 @@ function StartInterview() {
           onEnd={() => setShowConfirmExit(true)}
         />
       </div>
+        </>
+      )}
     </div>
   );
 
@@ -1291,6 +1388,7 @@ function StartInterview() {
         sectionPanel={
           <SectionNavigationPanel
             activeSection={currentSection}
+            targetRound={targetRound}
             onSelectSection={handleSelectSection}
             sectionProgress={getSectionProgress()}
           />

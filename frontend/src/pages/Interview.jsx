@@ -310,15 +310,40 @@ function Interview() {
               {currentQuestion.question}
             </h3>
 
-            <textarea
-              rows="8"
-              cols="70"
-              placeholder="Type your answer or use microphone..."
-              value={answer}
-              onChange={(event) =>
-                setAnswer(event.target.value)
-              }
-            />
+            {currentQuestion.options && currentQuestion.options.length > 0 ? (
+              <div style={{ margin: "16px 0", display: "flex", flexDirection: "column", gap: "10px" }}>
+                <p style={{ fontWeight: "bold", fontSize: "14px" }}>Choose the correct option:</p>
+                {currentQuestion.options.map((opt, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setAnswer(opt)}
+                    style={{
+                      padding: "10px 16px",
+                      textAlign: "left",
+                      borderRadius: "8px",
+                      border: answer === opt ? "2px solid #2563eb" : "1px solid #ccc",
+                      background: answer === opt ? "#eff6ff" : "#fff",
+                      color: "#1e293b",
+                      fontWeight: answer === opt ? "600" : "400",
+                      cursor: "pointer"
+                    }}
+                  >
+                    <strong>{String.fromCharCode(65 + idx)}.</strong> {opt}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <textarea
+                rows="8"
+                cols="70"
+                placeholder="Type your answer or use microphone..."
+                value={answer}
+                onChange={(event) =>
+                  setAnswer(event.target.value)
+                }
+              />
+            )}
 
             <br />
 

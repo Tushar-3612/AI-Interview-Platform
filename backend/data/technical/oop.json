@@ -1,0 +1,122 @@
+[
+  {
+    "questionId": "TECH-OOP-001",
+    "topic": "Programming & OOP",
+    "subtopic": "OOP Fundamentals",
+    "difficulty": "Easy",
+    "questionType": "Conceptual",
+    "question": "What is Object-Oriented Programming?",
+    "expectedAnswer": "Object-Oriented Programming (OOP) is a programming paradigm based on the concept of 'objects', which contain data (attributes/fields) and code (methods/functions). It emphasizes modularity, reusability, and software maintenance through structured abstraction.",
+    "explanation": "OOP organizes software design around data/objects rather than functions and logic.",
+    "aiSpeechText": "What is Object-Oriented Programming, and what advantages does it offer over procedural programming?",
+    "marks": 1
+  },
+  {
+    "questionId": "TECH-OOP-002",
+    "topic": "Programming & OOP",
+    "subtopic": "Four Pillars",
+    "difficulty": "Easy",
+    "questionType": "Conceptual",
+    "question": "Explain the four pillars of OOP.",
+    "expectedAnswer": "The four pillars of OOP are: 1. Encapsulation: Bundling data and methods into a single unit and restricting direct access. 2. Abstraction: Hiding internal complexity and exposing only necessary interfaces. 3. Inheritance: Reusing and extending functionality from a parent class. 4. Polymorphism: Performing a single action in different ways (overloading and overriding).",
+    "explanation": "Encapsulation, Abstraction, Inheritance, and Polymorphism are the core foundations of OOP.",
+    "aiSpeechText": "Can you explain the four pillars of Object-Oriented Programming with brief real-world examples?",
+    "marks": 1
+  },
+  {
+    "questionId": "TECH-OOP-003",
+    "topic": "Programming & OOP",
+    "subtopic": "Encapsulation",
+    "difficulty": "Easy",
+    "questionType": "Conceptual",
+    "question": "What is encapsulation?",
+    "expectedAnswer": "Encapsulation is the bundling of data and the methods that operate on that data into a single unit (class), while restricting direct access to some of the object's components using access specifiers (private, protected, public) and providing getters/setters.",
+    "explanation": "Encapsulation safeguards internal object state against unauthorized direct modification.",
+    "aiSpeechText": "What is encapsulation, and how does it protect data integrity?",
+    "marks": 1
+  },
+  {
+    "questionId": "TECH-OOP-004",
+    "topic": "Programming & OOP",
+    "subtopic": "Inheritance",
+    "difficulty": "Easy",
+    "questionType": "Conceptual",
+    "question": "What is inheritance?",
+    "expectedAnswer": "Inheritance is a mechanism wherein a new class (subclass/child) derives properties and behaviors from an existing class (superclass/parent). It promotes code reusability and establishes an 'IS-A' relationship.",
+    "explanation": "Inheritance enables hierarchical classification and code reuse.",
+    "aiSpeechText": "What is inheritance, and what are the different types of inheritance supported in modern languages?",
+    "marks": 1
+  },
+  {
+    "questionId": "TECH-OOP-005",
+    "topic": "Programming & OOP",
+    "subtopic": "Polymorphism",
+    "difficulty": "Medium",
+    "questionType": "Conceptual",
+    "question": "What is polymorphism?",
+    "expectedAnswer": "Polymorphism (meaning 'many forms') allows an entity such as a variable, function, or object to have more than one form. It consists of compile-time polymorphism (method overloading) and runtime polymorphism (method overriding via dynamic method dispatch).",
+    "explanation": "Polymorphism allows uniform interfaces for different underlying data types.",
+    "aiSpeechText": "Explain polymorphism and the difference between compile-time and runtime polymorphism.",
+    "marks": 1
+  },
+  {
+    "questionId": "TECH-OOP-006",
+    "topic": "Programming & OOP",
+    "subtopic": "Abstraction",
+    "difficulty": "Easy",
+    "questionType": "Conceptual",
+    "question": "What is abstraction?",
+    "expectedAnswer": "Abstraction is the concept of hiding internal implementation details and showing only the essential features of an object to the outside world. It is achieved using abstract classes and interfaces.",
+    "explanation": "Abstraction focuses on what an object does rather than how it does it.",
+    "aiSpeechText": "What is abstraction in OOP, and how do you achieve it?",
+    "marks": 1
+  },
+  {
+    "questionId": "TECH-OOP-007",
+    "topic": "Programming & OOP",
+    "subtopic": "Overloading vs Overriding",
+    "difficulty": "Medium",
+    "questionType": "Conceptual",
+    "question": "Difference between method overloading and overriding.",
+    "expectedAnswer": "Method overloading occurs within the same class when methods share the same name but differ in parameter count or types (resolved at compile time). Method overriding occurs between parent and child classes where a subclass provides a specific implementation of a method with the exact same name and signature (resolved at runtime).",
+    "explanation": "Overloading is static/compile-time; overriding is dynamic/runtime polymorphism.",
+    "aiSpeechText": "What is the difference between method overloading and method overriding?",
+    "marks": 1
+  },
+  {
+    "questionId": "TECH-OOP-008",
+    "topic": "Programming & OOP",
+    "subtopic": "Class vs Object",
+    "difficulty": "Easy",
+    "questionType": "Conceptual",
+    "question": "Difference between class and object.",
+    "expectedAnswer": "A class is a blueprint or template that defines variables and methods common to all objects of that kind (does not occupy memory at declaration). An object is a concrete instance of a class that occupies memory and possesses state and behavior.",
+    "explanation": "Class = blueprint/type; Object = concrete instance in memory.",
+    "aiSpeechText": "Explain the difference between a class and an object.",
+    "marks": 1
+  },
+  {
+    "questionId": "TECH-OOP-009",
+    "topic": "Programming & OOP",
+    "subtopic": "Constructors",
+    "difficulty": "Easy",
+    "questionType": "Conceptual",
+    "question": "What is a constructor?",
+    "expectedAnswer": "A constructor is a special member function that is automatically invoked when an object of a class is instantiated. Its primary purpose is to initialize the object's member variables. It shares the class name and has no return type.",
+    "explanation": "Constructors initialize object state upon instantiation.",
+    "aiSpeechText": "What is a constructor, and what are default versus parameterized constructors?",
+    "marks": 1
+  },
+  {
+    "questionId": "TECH-OOP-010",
+    "topic": "Programming & OOP",
+    "subtopic": "Abstract Class vs Interface",
+    "difficulty": "Medium",
+    "questionType": "Conceptual",
+    "question": "What is the difference between an abstract class and interface?",
+    "expectedAnswer": "An abstract class can have both abstract methods (without body) and concrete methods (with body), as well as instance variables with constructors. An interface primarily defines a contract with abstract method signatures (and default/static methods in modern Java) and only static constant fields. A class can extend only one abstract class but implement multiple interfaces.",
+    "explanation": "Abstract class allows partial implementation and state; interface defines pure contracts and allows multiple inheritance.",
+    "aiSpeechText": "What is the key difference between an abstract class and an interface, and when would you choose one over the other?",
+    "marks": 1
+  }
+]

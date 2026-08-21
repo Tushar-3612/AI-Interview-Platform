@@ -392,26 +392,53 @@ function StudentInterview() {
 
               {/* Textarea Answer Input */}
               <div className="relative">
-                <textarea
-                  rows={6}
-                  disabled={isLoading}
-                  placeholder="Formulate your response, or toggle the mic to transcribe your voice..."
-                  value={answer}
-                  onChange={(e) => setAnswer(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border text-sm outline-none resize-none leading-relaxed"
-                  style={{ borderColor: "var(--border)", background: "var(--input-bg)", color: "var(--text-primary)" }}
-                />
-                <button
-                  type="button"
-                  onClick={startListening}
-                  className="absolute bottom-3 right-3 p-2.5 rounded-xl cursor-pointer shadow transition-all duration-200"
-                  style={{
-                    background: isListening ? "var(--error)" : "var(--primary)",
-                    color: "#fff",
-                  }}
-                >
-                  {isListening ? <MicOff className="w-4.5 h-4.5" /> : <Mic className="w-4.5 h-4.5" />}
-                </button>
+                {currentQuestion.options && currentQuestion.options.length > 0 ? (
+                  <div className="space-y-2.5 my-2">
+                    <p className="text-xs font-semibold text-white/70">Choose the correct option:</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      {currentQuestion.options.map((opt, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => setAnswer(opt)}
+                          className={`p-3 rounded-xl border text-left text-xs font-medium cursor-pointer transition-all flex items-start gap-2.5 ${
+                            answer === opt
+                              ? "bg-blue-600/30 border-blue-500 text-white shadow"
+                              : "bg-white/5 border-white/10 text-white/80 hover:bg-white/10"
+                          }`}
+                        >
+                          <span className="w-5 h-5 rounded-full border border-white/20 flex items-center justify-center text-[10px] font-bold shrink-0">
+                            {String.fromCharCode(65 + idx)}
+                          </span>
+                          <span>{opt}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <textarea
+                      rows={6}
+                      disabled={isLoading}
+                      placeholder="Formulate your response, or toggle the mic to transcribe your voice..."
+                      value={answer}
+                      onChange={(e) => setAnswer(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl border text-sm outline-none resize-none leading-relaxed"
+                      style={{ borderColor: "var(--border)", background: "var(--input-bg)", color: "var(--text-primary)" }}
+                    />
+                    <button
+                      type="button"
+                      onClick={startListening}
+                      className="absolute bottom-3 right-3 p-2.5 rounded-xl cursor-pointer shadow transition-all duration-200"
+                      style={{
+                        background: isListening ? "var(--error)" : "var(--primary)",
+                        color: "#fff",
+                      }}
+                    >
+                      {isListening ? <MicOff className="w-4.5 h-4.5" /> : <Mic className="w-4.5 h-4.5" />}
+                    </button>
+                  </>
+                )}
               </div>
 
               {/* Footer Controls */}

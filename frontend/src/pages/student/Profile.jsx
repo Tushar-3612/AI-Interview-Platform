@@ -127,15 +127,18 @@ function Profile() {
           Authorization: `Bearer ${token}`,
         },
       });
+      console.log("PROFILE RESUME RESPONSE:", data);
+      console.log("SKILLS:", data.skills, "ALL_SKILLS:", data.all_skills);
       updateProfile({
         resumeFileName: data.resumeFileName,
         resumeUploadedAt: data.resumeUploadedAt,
         atsScore: data.atsScore,
-        skills: data.skills,
+        skills: data.all_skills || data.skills || [],
+        categorizedSkills: data.categorizedSkills || {},
       });
       toast.success("Resume analyzed and profile skills updated!", { id: toastId });
     } catch (err) {
-      console.error(err);
+      console.error("Resume upload error:", err);
       toast.error(err.response?.data?.message || "Failed to analyze resume", { id: toastId });
     } finally {
       setSaving(false);
@@ -301,12 +304,24 @@ function Profile() {
           <InputField label="Preferred Location" name="preferredLocation" value={profile.preferredLocation || ""} onChange={handleChange} />
         </section>
 
-        {/* Skills */}
+        {/* Skills Section (Dynamic Categorized Badges) */}
         <section className="student-card p-6 mb-8">
-          <h2 className="text-sm font-semibold uppercase tracking-wide mb-4" style={{ color: "var(--text-muted)" }}>
-            Skills
-          </h2>
-          <div className="flex gap-2 mb-4">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
+                Technical & Professional Skills
+              </h2>
+              <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
+                Automatically extracted from your resume & customizable
+              </p>
+            </div>
+            <span className="text-xs font-bold px-2.5 py-1 rounded-lg border" style={{ borderColor: "var(--border)", color: "var(--primary)", background: "color-mix(in srgb, var(--primary) 10%, transparent)" }}>
+              {(profile.skills || []).length} Detected
+            </span>
+          </div>
+
+          {/* Quick Add Custom Skill */}
+          <div className="flex gap-2 mb-6">
             <input
               value={skillInput}
               onChange={(e) => setSkillInput(e.target.value)}
@@ -317,33 +332,94 @@ function Profile() {
                   setSkillInput("");
                 }
               }}
-              placeholder="Add a skill..."
+              placeholder="Add a custom skill (e.g. Docker, PyTorch, GraphQL)..."
               className="flex-1 px-4 py-2.5 rounded-xl border text-sm outline-none"
               style={{ borderColor: "var(--border)", background: "var(--input-bg)", color: "var(--text-primary)" }}
             />
             <button
               type="button"
               onClick={() => { addSkill(skillInput); setSkillInput(""); }}
-              className="px-4 py-2.5 rounded-xl cursor-pointer"
+              className="px-4 py-2.5 rounded-xl cursor-pointer flex items-center gap-1.5 text-xs font-bold"
               style={{ background: "var(--primary)", color: "#fff" }}
             >
               <Plus className="w-4 h-4" />
+              <span>Add</span>
             </button>
           </div>
-          <div className="flex flex-wrap gap-2">
-            {(profile.skills || []).map((skill) => (
-              <span
-                key={skill}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border"
-                style={{ borderColor: "var(--border)", color: "var(--text-primary)" }}
-              >
-                {skill}
-                <button type="button" onClick={() => removeSkill(skill)} className="cursor-pointer hover:opacity-70">
-                  <X className="w-3 h-3" />
-                </button>
-              </span>
-            ))}
-          </div>
+
+          {/* Categorized Display */}
+          {profile.categorizedSkills && Object.keys(profile.categorizedSkills).some(k => Array.isArray(profile.categorizedSkills[k]) && profile.categorizedSkills[k].length > 0) ? (
+            <div className="space-y-4">
+              {[
+                { key: "programming_languages", label: "Programming Languages", color: "#3b82f6" },
+                { key: "data_science", label: "Data Science & Analytics", color: "#10b981" },
+                { key: "machine_learning", label: "Machine Learning", color: "#8b5cf6" },
+                { key: "deep_learning", label: "Deep Learning & AI", color: "#ec4899" },
+                { key: "web_technologies", label: "Web Technologies", color: "#f59e0b" },
+                { key: "frameworks", label: "Frameworks", color: "#06b6d4" },
+                { key: "libraries", label: "Libraries", color: "#6366f1" },
+                { key: "databases", label: "Databases", color: "#14b8a6" },
+                { key: "cloud", label: "Cloud Platforms", color: "#38bdf8" },
+                { key: "devops", label: "DevOps & CI/CD", color: "#f97316" },
+                { key: "tools", label: "Tools & Technologies", color: "#64748b" },
+                { key: "other", label: "Other Technical Skills", color: "#a855f7" },
+              ]
+                .filter(cat => Array.isArray(profile.categorizedSkills?.[cat.key]) && profile.categorizedSkills[cat.key].length > 0)
+                .map((cat) => (
+                  <div key={cat.key} className="p-3.5 rounded-xl border" style={{ borderColor: "var(--border)", background: "var(--bg-secondary, rgba(255,255,255,0.02))" }}>
+                    <h3 className="text-xs font-bold uppercase tracking-wider mb-2.5 flex items-center gap-2" style={{ color: cat.color }}>
+                      <span className="w-2 h-2 rounded-full" style={{ background: cat.color }} />
+                      {cat.label}
+                      <span className="text-[10px] opacity-60 font-normal">({profile.categorizedSkills[cat.key].length})</span>
+                    </h3>
+                    <div className="flex flex-wrap gap-1.5">
+                      {profile.categorizedSkills[cat.key].map((skill) => (
+                        <span
+                          key={skill}
+                          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold border"
+                          style={{
+                            borderColor: `color-mix(in srgb, ${cat.color} 30%, transparent)`,
+                            background: `color-mix(in srgb, ${cat.color} 8%, transparent)`,
+                            color: "var(--text-primary)"
+                          }}
+                        >
+                          {skill}
+                          <button
+                            type="button"
+                            onClick={() => removeSkill(skill)}
+                            className="cursor-pointer hover:opacity-70 text-white/50 hover:text-red-400"
+                            title={`Remove ${skill}`}
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+            </div>
+          ) : (
+            /* Flat fallback list */
+            <div className="flex flex-wrap gap-2">
+              {(profile.skills || []).map((skill) => (
+                <span
+                  key={skill}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border"
+                  style={{ borderColor: "var(--border)", color: "var(--text-primary)" }}
+                >
+                  {skill}
+                  <button type="button" onClick={() => removeSkill(skill)} className="cursor-pointer hover:opacity-70">
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              ))}
+              {(profile.skills || []).length === 0 && (
+                <p className="text-xs italic" style={{ color: "var(--text-muted)" }}>
+                  No skills detected yet. Upload your resume above to automatically extract skills.
+                </p>
+              )}
+            </div>
+          )}
         </section>
 
         {/* Achievements */}

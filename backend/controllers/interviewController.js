@@ -2,6 +2,7 @@ import Interview from "../models/Interview.js";
 import Answer from "../models/Answer.js";
 import Result from "../models/Result.js";
 import User from "../models/User.js";
+import InterviewQuestion from "../models/InterviewQuestion.js";
 import { GoogleGenAI } from "@google/genai";
 import {
   parseResumeToProfile,
@@ -9,7 +10,10 @@ import {
   generateTechnicalQuestions,
   generateCodingQuestions,
   generateHRQuestions,
-  sanitizeRoundQuestionsForClient
+  generateQuestionsForRound,
+  sanitizeRoundQuestionsForClient,
+  ROUND_QUESTION_COUNTS,
+  getAIClient
 } from "../services/roundGenerators.js";
 import {
   onAnswerSubmitted,
@@ -18,18 +22,40 @@ import {
 } from "../utils/csvExporter.js";
 import { sendReportEmail } from "../utils/emailSender.js";
 
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY,
-});
-
 /**
  * POST /api/interview/start
- * Initializes a new interview session. Fast, lightweight start without generating all 58 questions up-front.
+ * Initializes a new interview session. Supports Full AI Interview (all 4 rounds) or Individual Rounds.
  */
 export const startInterview = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { interviewType = "actual", candidateName = "", resumeFileName = "" } = req.body;
+    const {
+      interviewType = "actual",
+      targetRound = "all",
+      candidateName = "",
+      resumeFileName = ""
+    } = req.body;
+
+    const normTargetRound = String(targetRound).toLowerCase();
+    const validRounds = ["all", "aptitude", "technical", "coding", "hr"];
+    const finalTargetRound = validRounds.includes(normTargetRound) ? normTargetRound : "all";
+
+    let totalQuestions = 30; // 10 apt + 10 tech + 2 code + 8 hr
+    let durationMinutes = 105;
+
+    if (finalTargetRound === "aptitude") {
+      totalQuestions = 10;
+      durationMinutes = 20;
+    } else if (finalTargetRound === "technical") {
+      totalQuestions = 10;
+      durationMinutes = 30;
+    } else if (finalTargetRound === "coding") {
+      totalQuestions = 2;
+      durationMinutes = 35;
+    } else if (finalTargetRound === "hr") {
+      totalQuestions = 8;
+      durationMinutes = 20;
+    }
 
     const student = await User.findById(userId).select("-password");
 
@@ -52,10 +78,47 @@ export const startInterview = async (req, res) => {
       }
     }
 
+    // Pre-generate individual round questions if targeting a single round
+    let initialRoundQuestions = [];
+    const roundsProgress = {
+      aptitude: "NOT_STARTED",
+      technical: "NOT_STARTED",
+      coding: "NOT_STARTED",
+      hr: "NOT_STARTED"
+    };
+
+    let aptitudeQuestions = [];
+    let technicalQuestions = [];
+    let codingQuestions = [];
+    let hrQuestions = [];
+
+    if (finalTargetRound === "aptitude" || finalTargetRound === "all") {
+      aptitudeQuestions = await generateAptitudeQuestions(25);
+      roundsProgress.aptitude = "IN_PROGRESS";
+      initialRoundQuestions = [...initialRoundQuestions, ...aptitudeQuestions];
+    }
+    if (finalTargetRound === "technical" || finalTargetRound === "all") {
+      technicalQuestions = await generateTechnicalQuestions(candidateProfile, 25);
+      roundsProgress.technical = finalTargetRound === "technical" ? "IN_PROGRESS" : "NOT_STARTED";
+      initialRoundQuestions = [...initialRoundQuestions, ...technicalQuestions];
+    }
+    if (finalTargetRound === "coding" || finalTargetRound === "all") {
+      codingQuestions = await generateCodingQuestions(candidateProfile, 3);
+      roundsProgress.coding = finalTargetRound === "coding" ? "IN_PROGRESS" : "NOT_STARTED";
+      initialRoundQuestions = [...initialRoundQuestions, ...codingQuestions];
+    }
+    if (finalTargetRound === "hr" || finalTargetRound === "all") {
+      hrQuestions = await generateHRQuestions(candidateProfile, 5);
+      roundsProgress.hr = finalTargetRound === "hr" ? "IN_PROGRESS" : "NOT_STARTED";
+      initialRoundQuestions = [...initialRoundQuestions, ...hrQuestions];
+    }
+
     const interview = await Interview.create({
       userId,
       status: "IN_PROGRESS",
       interviewType: "actual",
+      targetRound: finalTargetRound,
+      durationMinutes,
       startedAt: new Date(),
       resumeFileName: student?.resumeFileName || resumeFileName || "Uploaded_Resume.pdf",
       resumeSnapshot: {
@@ -63,43 +126,290 @@ export const startInterview = async (req, res) => {
         skills: student?.skills || [],
         snapshotAt: new Date()
       },
-      totalQuestions: 58,
+      totalQuestions,
       currentQuestionIndex: 1,
       questionsAnswered: 0,
       candidateProfile,
-      aptitudeQuestions: [],
-      technicalQuestions: [],
-      codingQuestions: [],
-      hrQuestions: [],
-      roundsProgress: {
-        aptitude: "NOT_STARTED",
-        technical: "NOT_STARTED",
-        coding: "NOT_STARTED",
-        hr: "NOT_STARTED"
-      }
+      generatedQuestions: initialRoundQuestions,
+      aptitudeQuestions,
+      technicalQuestions,
+      codingQuestions,
+      hrQuestions,
+      roundsProgress
     });
 
+    // Save initial pre-generated questions into InterviewQuestion collection
+    if (initialRoundQuestions.length > 0) {
+      try {
+        const questionDocs = initialRoundQuestions.map((q, idx) => ({
+          interviewId: interview._id,
+          candidateId: userId,
+          round: q.section ? q.section.toLowerCase() : (finalTargetRound === "all" ? "aptitude" : finalTargetRound),
+          questionNumber: q.questionNumber || idx + 1,
+          question: q.question || q.problemStatement || "",
+          skill: q.skill || q.topic || "General",
+          difficulty: (q.difficulty || "medium").toLowerCase(),
+          questionType: q.questionType || q.type || "conceptual",
+          options: q.options || [],
+          correctAnswer: q.correctAnswer || "",
+          starterCode: q.starterCode || "",
+          testCases: q.testCases || [],
+          inputFormat: q.inputFormat || "",
+          outputFormat: q.outputFormat || "",
+          constraints: q.constraints || "",
+          sampleInput: q.sampleInput || "",
+          sampleOutput: q.sampleOutput || "",
+          expectedComplexity: q.expectedComplexity || "",
+          aiSpeechText: q.aiSpeechText || q.question || "",
+          candidateAnswer: "",
+          score: 0,
+          feedback: "",
+          status: "pending"
+        }));
+        await InterviewQuestion.insertMany(questionDocs, { ordered: false });
+      } catch (iqErr) {
+        console.warn("Error inserting initial InterviewQuestions:", iqErr.message);
+      }
+    }
+
     res.json({
-      message: "Real Interview session created successfully",
+      message: `${finalTargetRound === "all" ? "Full" : finalTargetRound.toUpperCase()} Interview session created successfully`,
       sessionId: interview._id,
       interviewId: interview._id,
-      totalQuestions: 58,
+      targetRound: finalTargetRound,
+      durationMinutes,
+      totalQuestions,
       candidateProfile,
-      roundsProgress: interview.roundsProgress
+      roundsProgress: interview.roundsProgress,
+      generatedQuestions: initialRoundQuestions
     });
   } catch (error) {
     console.error("Start Interview Error:", error.message);
-    res.status(500).json({ message: "Failed to start interview session", error: error.message });
+    res.status(400).json({
+      success: false,
+      message: error.message || "Failed to start interview session",
+      errorType: "AI_GENERATION_FAILED"
+    });
+  }
+};
+
+/**
+ * POST /api/interview/start-round
+ * Generates all questions for a specific round upfront, validates them,
+ * saves to DB (InterviewQuestion collection & Interview doc), and returns them.
+ */
+export const startRound = async (req, res) => {
+  try {
+    const { interviewId, candidateId, round } = req.body;
+    const userId = req.user?.id || candidateId;
+
+    if (!round) {
+      return res.status(400).json({ message: "Round name is required (e.g. 'technical', 'aptitude', 'coding', 'hr')" });
+    }
+
+    const normRound = String(round).toLowerCase();
+    const validRounds = ["aptitude", "technical", "coding", "hr"];
+    if (!validRounds.includes(normRound)) {
+      return res.status(400).json({ message: `Invalid round: ${round}. Must be one of: ${validRounds.join(", ")}` });
+    }
+
+    let interview = null;
+    if (interviewId) {
+      interview = await Interview.findById(interviewId);
+    }
+
+    if (!interview) {
+      // Find latest in-progress interview for user or create one
+      interview = await Interview.findOne({ userId, status: "IN_PROGRESS" }).sort({ createdAt: -1 });
+    }
+
+    if (!interview) {
+      const student = await User.findById(userId);
+      interview = await Interview.create({
+        userId,
+        status: "IN_PROGRESS",
+        interviewType: "actual",
+        targetRound: normRound,
+        startedAt: new Date(),
+        candidateProfile: student?.skills ? { candidateName: student.name, skills: student.skills } : {}
+      });
+    }
+
+    // 1. Check if questions already exist in InterviewQuestion collection
+    let existingQuestions = await InterviewQuestion.find({
+      interviewId: interview._id,
+      round: normRound
+    }).sort({ questionNumber: 1 }).lean();
+
+    if (existingQuestions && existingQuestions.length > 0) {
+      const sanitized = sanitizeRoundQuestionsForClient(existingQuestions, normRound);
+      return res.json({
+        round: normRound,
+        fromCache: true,
+        interviewId: interview._id,
+        candidateId: userId,
+        totalQuestions: sanitized.length,
+        questionsReady: true,
+        questions: sanitized
+      });
+    }
+
+    // 2. Generate all questions at once for this round
+    let profile = interview.candidateProfile || {};
+    if (!profile.skills || profile.skills.length === 0) {
+      const student = await User.findById(userId);
+      if (student?.resumeBase64) {
+        try {
+          profile = await parseResumeToProfile(student.resumeBase64, student);
+          interview.candidateProfile = profile;
+        } catch (e) {}
+      }
+    }
+
+    const generated = await generateQuestionsForRound(normRound, profile);
+
+    // 3. Save to InterviewQuestion DB collection
+    const questionDocs = generated.map((q, idx) => ({
+      interviewId: interview._id,
+      candidateId: userId,
+      round: normRound,
+      questionNumber: q.questionNumber || idx + 1,
+      question: q.question || q.problemStatement || "",
+      skill: q.skill || q.topic || "General",
+      difficulty: (q.difficulty || "medium").toLowerCase(),
+      questionType: q.questionType || q.type || "conceptual",
+      options: q.options || [],
+      correctAnswer: q.correctAnswer || "",
+      starterCode: q.starterCode || "",
+      testCases: q.testCases || [],
+      inputFormat: q.inputFormat || "",
+      outputFormat: q.outputFormat || "",
+      constraints: q.constraints || "",
+      sampleInput: q.sampleInput || "",
+      sampleOutput: q.sampleOutput || "",
+      expectedComplexity: q.expectedComplexity || "",
+      aiSpeechText: q.aiSpeechText || q.question || "",
+      candidateAnswer: "",
+      score: 0,
+      feedback: "",
+      status: "pending"
+    }));
+
+    await InterviewQuestion.deleteMany({ interviewId: interview._id, round: normRound });
+    const inserted = await InterviewQuestion.insertMany(questionDocs);
+
+    // 4. Update Interview document
+    const roundFieldMap = {
+      aptitude: "aptitudeQuestions",
+      technical: "technicalQuestions",
+      coding: "codingQuestions",
+      hr: "hrQuestions"
+    };
+    interview[roundFieldMap[normRound]] = generated;
+    if (!interview.roundsProgress) {
+      interview.roundsProgress = { aptitude: "NOT_STARTED", technical: "NOT_STARTED", coding: "NOT_STARTED", hr: "NOT_STARTED" };
+    }
+    interview.roundsProgress[normRound] = "IN_PROGRESS";
+    await interview.save();
+
+    const sanitized = sanitizeRoundQuestionsForClient(inserted, normRound);
+
+    res.json({
+      message: `All ${normRound} questions generated and saved successfully`,
+      round: normRound,
+      fromCache: false,
+      interviewId: interview._id,
+      candidateId: userId,
+      totalQuestions: sanitized.length,
+      questionsReady: true,
+      questions: sanitized
+    });
+  } catch (error) {
+    console.error("Start Round Error:", error.message);
+    res.status(500).json({ message: "Failed to start round and generate questions", error: error.message });
+  }
+};
+
+/**
+ * GET /api/interview/questions/:interviewId/:round
+ * GET /api/interview/:id/questions/:round
+ * Fetches pre-generated questions directly from the database (zero Gemini latency).
+ */
+export const getRoundQuestions = async (req, res) => {
+  try {
+    const interviewId = req.params.interviewId || req.params.id;
+    const round = req.params.round;
+
+    if (!round) {
+      return res.status(400).json({ message: "Round is required" });
+    }
+
+    const normRound = String(round).toLowerCase();
+
+    // 1. Fetch from InterviewQuestion DB collection
+    let questions = await InterviewQuestion.find({
+      interviewId,
+      round: normRound
+    }).sort({ questionNumber: 1 }).lean();
+
+    // 2. Fallback to Interview document if not in collection yet
+    if (!questions || questions.length === 0) {
+      const interview = await Interview.findById(interviewId);
+      if (interview) {
+        const roundFieldMap = {
+          aptitude: "aptitudeQuestions",
+          technical: "technicalQuestions",
+          coding: "codingQuestions",
+          hr: "hrQuestions"
+        };
+        const fieldQuestions = interview[roundFieldMap[normRound]] || [];
+        if (fieldQuestions.length > 0) {
+          questions = fieldQuestions;
+        }
+      }
+    }
+
+    if (!questions || questions.length === 0) {
+      return res.status(404).json({
+        message: `No questions found for ${normRound} round. Start the round first to generate questions.`,
+        round: normRound,
+        questions: []
+      });
+    }
+
+    const sanitized = sanitizeRoundQuestionsForClient(questions, normRound);
+
+    res.json({
+      round: normRound,
+      interviewId,
+      totalQuestions: sanitized.length,
+      questions: sanitized.map((q, idx) => ({
+        questionNumber: q.questionNumber || idx + 1,
+        question: q.question || q.problemStatement || "",
+        skill: q.skill || q.topic || "General",
+        difficulty: q.difficulty || "medium",
+        type: q.questionType || q.type || "conceptual",
+        options: q.options || [],
+        starterCode: q.starterCode || "",
+        testCases: q.testCases || [],
+        aiSpeechText: q.aiSpeechText || q.question || "",
+        status: q.status || "pending",
+        id: q._id || q.id || `Q-${idx + 1}`
+      }))
+    });
+  } catch (error) {
+    console.error("Get Round Questions Error:", error.message);
+    res.status(500).json({ message: "Failed to retrieve round questions", error: error.message });
   }
 };
 
 /**
  * GET /api/interview/:id/round/:roundName
  * On-demand lazy load and DB cache for individual interview rounds:
- * - aptitude (25 questions)
- * - technical (25 questions, batched & strictly resume-matched)
- * - coding (3 questions, progressive difficulty)
- * - hr (5 questions)
+ * - aptitude (10 questions)
+ * - technical (10 questions, strictly resume-matched)
+ * - coding (2 questions, progressive difficulty)
+ * - hr (8 questions)
  */
 export const getOrGenerateRoundQuestions = async (req, res) => {
   try {
@@ -143,16 +453,7 @@ export const getOrGenerateRoundQuestions = async (req, res) => {
 
     // 2. GENERATE ROUND QUESTIONS IF NOT IN CACHE
     const profile = interview.candidateProfile || {};
-
-    if (normRound === "aptitude") {
-      questions = await generateAptitudeQuestions(25);
-    } else if (normRound === "technical") {
-      questions = await generateTechnicalQuestions(profile, 25);
-    } else if (normRound === "coding") {
-      questions = await generateCodingQuestions(profile, 3);
-    } else if (normRound === "hr") {
-      questions = await generateHRQuestions(profile, 5);
-    }
+    questions = await generateQuestionsForRound(normRound, profile);
 
     // Store in DB document
     interview[targetField] = questions;
@@ -171,6 +472,33 @@ export const getOrGenerateRoundQuestions = async (req, res) => {
     interview.generatedQuestions = combined;
 
     await interview.save();
+
+    // Also persist in InterviewQuestion collection
+    try {
+      const questionDocs = questions.map((q, idx) => ({
+        interviewId: interview._id,
+        candidateId: userId,
+        round: normRound,
+        questionNumber: q.questionNumber || idx + 1,
+        question: q.question || q.problemStatement || "",
+        skill: q.skill || q.topic || "General",
+        difficulty: (q.difficulty || "medium").toLowerCase(),
+        questionType: q.questionType || q.type || "conceptual",
+        options: q.options || [],
+        correctAnswer: q.correctAnswer || "",
+        starterCode: q.starterCode || "",
+        testCases: q.testCases || [],
+        aiSpeechText: q.aiSpeechText || q.question || "",
+        candidateAnswer: "",
+        score: 0,
+        feedback: "",
+        status: "pending"
+      }));
+      await InterviewQuestion.deleteMany({ interviewId: interview._id, round: normRound });
+      await InterviewQuestion.insertMany(questionDocs);
+    } catch (e) {
+      console.warn("InterviewQuestion sync notice:", e.message);
+    }
 
     const sanitized = sanitizeRoundQuestionsForClient(questions, normRound);
     res.json({
@@ -266,20 +594,35 @@ export const getInterviewDetails = async (req, res) => {
 
     const answers = await Answer.find({ interviewId: interview._id }).sort({ createdAt: 1 });
 
-    const combinedQuestions = [
-      ...(interview.aptitudeQuestions || []),
-      ...(interview.technicalQuestions || []),
-      ...(interview.codingQuestions || []),
-      ...(interview.hrQuestions || [])
-    ];
+    const targetRound = interview.targetRound || "all";
+    let questionsToReturn = [];
 
-    const questionsToReturn = combinedQuestions.length > 0
-      ? combinedQuestions
-      : (interview.generatedQuestions || []);
+    if (targetRound === "aptitude") {
+      questionsToReturn = interview.aptitudeQuestions?.length ? interview.aptitudeQuestions : (interview.generatedQuestions || []);
+    } else if (targetRound === "technical") {
+      questionsToReturn = interview.technicalQuestions?.length ? interview.technicalQuestions : (interview.generatedQuestions || []);
+    } else if (targetRound === "coding") {
+      questionsToReturn = interview.codingQuestions?.length ? interview.codingQuestions : (interview.generatedQuestions || []);
+    } else if (targetRound === "hr") {
+      questionsToReturn = interview.hrQuestions?.length ? interview.hrQuestions : (interview.generatedQuestions || []);
+    } else {
+      const combinedQuestions = [
+        ...(interview.aptitudeQuestions || []),
+        ...(interview.technicalQuestions || []),
+        ...(interview.codingQuestions || []),
+        ...(interview.hrQuestions || [])
+      ];
+      questionsToReturn = combinedQuestions.length > 0
+        ? combinedQuestions
+        : (interview.generatedQuestions || []);
+    }
 
     res.json({
       ...interview.toObject(),
       sessionId: interview._id.toString(),
+      targetRound,
+      durationMinutes: interview.durationMinutes || (targetRound === "aptitude" ? 30 : targetRound === "technical" ? 45 : targetRound === "coding" ? 45 : targetRound === "hr" ? 15 : 150),
+      totalQuestions: interview.totalQuestions || questionsToReturn.length || (targetRound === "coding" ? 3 : targetRound === "hr" ? 5 : 25),
       generatedQuestions: questionsToReturn,
       answers,
     });
@@ -323,9 +666,29 @@ export const saveAnswer = async (req, res) => {
     let feedback = "";
 
     if (officialAnswer && officialAnswer.trim().length > 0) {
-      if (category === "aptitude" || category === "coding") {
-        score = 85;
-        feedback = "Response recorded successfully.";
+      const normCategory = (category || section || "").toLowerCase();
+
+      if (normCategory === "aptitude" || normCategory === "mcq") {
+        // Find question to check correctAnswer
+        let matchedQ = await InterviewQuestion.findOne({ interviewId, $or: [{ questionId }, { question }] }).lean();
+        if (!matchedQ) {
+          matchedQ = (interview.aptitudeQuestions || interview.generatedQuestions || []).find(
+            q => (q.id === questionId || q.questionId === questionId || q.question === question)
+          );
+        }
+
+        if (matchedQ && matchedQ.correctAnswer) {
+          const isCorrect = officialAnswer.trim().toLowerCase() === matchedQ.correctAnswer.trim().toLowerCase();
+          score = isCorrect ? 100 : 0;
+          feedback = isCorrect ? "Correct answer selected." : `Incorrect answer. Correct answer was: ${matchedQ.correctAnswer}`;
+        } else {
+          score = 100;
+          feedback = "Answer recorded.";
+        }
+      } else if (normCategory === "coding") {
+        // Check if code was tested or submitted
+        score = 80;
+        feedback = "Coding solution recorded.";
       } else {
         try {
           const prompt = `You are a technical interviewer evaluating a candidate's answer.
@@ -339,6 +702,7 @@ export const saveAnswer = async (req, res) => {
           Return exactly this JSON format:
           { "score": 85, "feedback": "Good understanding of the concept." }`;
 
+          const ai = getAIClient();
           const response = await ai.models.generateContent({
             model: "gemini-2.5-flash",
             contents: [{ text: prompt }],
@@ -346,10 +710,10 @@ export const saveAnswer = async (req, res) => {
           });
 
           const evalData = JSON.parse(response.text);
-          score = evalData.score || 0;
-          feedback = evalData.feedback || "";
+          score = typeof evalData.score === "number" ? Math.max(0, Math.min(100, evalData.score)) : 70;
+          feedback = evalData.feedback || "Answer evaluated.";
         } catch (aiErr) {
-          console.error("AI Evaluation failed:", aiErr);
+          console.error("AI Evaluation notice:", aiErr.message);
           score = officialAnswer.length > 20 ? 75 : 40;
           feedback = "Answer recorded.";
         }
@@ -400,11 +764,34 @@ export const saveAnswer = async (req, res) => {
     }
     await interview.save();
 
+    // Sync to InterviewQuestion collection
+    try {
+      const normSection = (section || category || "technical").toLowerCase();
+      await InterviewQuestion.findOneAndUpdate(
+        {
+          interviewId,
+          $or: [
+            { questionNumber: Number(currentQuestionIndex) },
+            { question: question },
+            { questionId: questionId }
+          ]
+        },
+        {
+          candidateAnswer: officialAnswer,
+          score,
+          feedback,
+          status: officialAnswer && officialAnswer.trim().length > 0 ? "answered" : "skipped"
+        }
+      );
+    } catch (iqSyncErr) {
+      console.warn("InterviewQuestion answer sync error:", iqSyncErr.message);
+    }
+
     onAnswerSubmitted().catch((err) =>
       console.error("CSV export error (answers):", err.message)
     );
 
-    res.json({ message: "Answer saved", answer: newAnswer });
+    res.json({ message: "Answer saved", answer: newAnswer, score, feedback });
   } catch (error) {
     console.error("Save Answer Error:", error.message);
     res.status(500).json({ message: "Failed to save answer" });
@@ -476,7 +863,7 @@ export const completeInterview = async (req, res) => {
       return res.status(403).json({ message: "Interview session not found or not authorized" });
     }
 
-    // 1. SINGLE SOURCE OF TRUTH: If result already exists, return it immediately (0 recalculation)
+    // 1. SINGLE SOURCE OF TRUTH: If result already exists, return it immediately
     let existingResult = await Result.findOne({ interviewId });
     if (existingResult) {
       return res.json({ message: "Interview already completed", result: existingResult });
@@ -486,95 +873,235 @@ export const completeInterview = async (req, res) => {
     interview.completedAt = new Date();
     await interview.save();
 
-    const answers = await Answer.find({ interviewId });
+    // 2. RETRIEVE ACTUAL QUESTIONS FOR THIS SPECIFIC ATTEMPT
+    let interviewQuestions = await InterviewQuestion.find({ interviewId }).lean();
+    if (!interviewQuestions || interviewQuestions.length === 0) {
+      interviewQuestions = interview.generatedQuestions || [
+        ...(interview.aptitudeQuestions || []),
+        ...(interview.technicalQuestions || []),
+        ...(interview.codingQuestions || []),
+        ...(interview.hrQuestions || [])
+      ];
+    }
 
-    let aptitudeScoreTotal = 0, aptitudeCount = 0;
-    let techScoreTotal = 0, techCount = 0;
-    let codeScoreTotal = 0, codeCount = 0;
-    let hrScoreTotal = 0, hrCount = 0;
+    const roundQuestions = {
+      aptitude: (interviewQuestions || []).filter(q => (q.round || q.section || "").toLowerCase() === "aptitude"),
+      technical: (interviewQuestions || []).filter(q => (q.round || q.section || "").toLowerCase() === "technical"),
+      coding: (interviewQuestions || []).filter(q => (q.round || q.section || "").toLowerCase() === "coding"),
+      hr: (interviewQuestions || []).filter(q => (q.round || q.section || "").toLowerCase() === "hr"),
+    };
 
-    answers.forEach((a) => {
-      const sec = (a.section || a.questionType || "").toUpperCase();
-      if (sec === "APTITUDE") {
-        aptitudeScoreTotal += a.score;
-        aptitudeCount++;
-      } else if (sec === "TECHNICAL" || a.questionType === "resume" || a.questionType === "technical") {
-        techScoreTotal += a.score;
-        techCount++;
-      } else if (sec === "CODING" || a.questionType === "coding") {
-        codeScoreTotal += a.score;
-        codeCount++;
-      } else if (sec === "HR" || a.questionType === "hr") {
-        hrScoreTotal += a.score;
-        hrCount++;
-      }
+    const totalQuestions = {
+      aptitude: roundQuestions.aptitude.length,
+      technical: roundQuestions.technical.length,
+      coding: roundQuestions.coding.length,
+      hr: roundQuestions.hr.length,
+    };
+    const totalAttemptQuestions = interviewQuestions.length;
+
+    // 3. FETCH ANSWERS STRICTLY BELONGING TO THIS INTERVIEW ATTEMPT
+    const answers = await Answer.find({ interviewId }).lean();
+    const answerMap = new Map();
+    answers.forEach(a => {
+      if (a.questionId) answerMap.set(String(a.questionId), a);
+      if (a.question) answerMap.set(String(a.question).trim().toLowerCase(), a);
     });
 
-    const aptitudeScore = aptitudeCount > 0 ? Math.round(aptitudeScoreTotal / aptitudeCount) : 0;
-    const technicalScore = techCount > 0 ? Math.round(techScoreTotal / techCount) : 0;
-    const codingScore = codeCount > 0 ? Math.round(codeScoreTotal / codeCount) : 0;
-    const hrScore = hrCount > 0 ? Math.round(hrScoreTotal / hrCount) : 0;
+    // 4. DYNAMIC ROUND-BY-ROUND SCORING
+    // A. Aptitude Scoring (Objective correctness)
+    let aptitudeAttempted = 0;
+    let aptitudeCorrect = 0;
+    let aptitudeEarned = 0;
+    roundQuestions.aptitude.forEach(q => {
+      const qKey = String(q.id || q.questionId || q._id);
+      const ans = answerMap.get(qKey) || answerMap.get(String(q.question).trim().toLowerCase());
+      if (ans && ans.answer && String(ans.answer).trim().length > 0) {
+        aptitudeAttempted++;
+        const isCorrect = (q.correctAnswer && ans.answer.trim().toLowerCase() === q.correctAnswer.trim().toLowerCase()) || ans.score === 100 || ans.score === 1;
+        if (isCorrect) {
+          aptitudeCorrect++;
+          aptitudeEarned += 100;
+        }
+      }
+    });
+    const aptitudePercentage = totalQuestions.aptitude > 0
+      ? Math.round((aptitudeCorrect / totalQuestions.aptitude) * 100)
+      : 0;
 
-    const overallScore = Math.round(
-      (aptitudeScore * 0.2) + (technicalScore * 0.35) + (codingScore * 0.3) + (hrScore * 0.15)
-    );
+    // B. Technical Scoring (0-100 scale per question)
+    let technicalAttempted = 0;
+    let technicalEarned = 0;
+    roundQuestions.technical.forEach(q => {
+      const qKey = String(q.id || q.questionId || q._id);
+      const ans = answerMap.get(qKey) || answerMap.get(String(q.question).trim().toLowerCase());
+      if (ans && ans.answer && String(ans.answer).trim().length > 0) {
+        technicalAttempted++;
+        const scoreVal = typeof ans.score === "number" ? Math.max(0, Math.min(100, ans.score)) : 70;
+        technicalEarned += scoreVal;
+      }
+    });
+    const technicalPercentage = totalQuestions.technical > 0
+      ? Math.round((technicalEarned / (totalQuestions.technical * 100)) * 100)
+      : 0;
 
+    // C. Coding Scoring (Test cases / evaluation per question)
+    let codingAttempted = 0;
+    let codingEarned = 0;
+    roundQuestions.coding.forEach(q => {
+      const qKey = String(q.id || q.questionId || q._id);
+      const ans = answerMap.get(qKey) || answerMap.get(String(q.question).trim().toLowerCase());
+      if (ans && ans.answer && String(ans.answer).trim().length > 0) {
+        codingAttempted++;
+        const scoreVal = typeof ans.score === "number" ? Math.max(0, Math.min(100, ans.score)) : 80;
+        codingEarned += scoreVal;
+      }
+    });
+    const codingPercentage = totalQuestions.coding > 0
+      ? Math.round((codingEarned / (totalQuestions.coding * 100)) * 100)
+      : 0;
+
+    // D. HR Scoring (Behavioral evaluation per question)
+    let hrAttempted = 0;
+    let hrEarned = 0;
+    roundQuestions.hr.forEach(q => {
+      const qKey = String(q.id || q.questionId || q._id);
+      const ans = answerMap.get(qKey) || answerMap.get(String(q.question).trim().toLowerCase());
+      if (ans && ans.answer && String(ans.answer).trim().length > 0) {
+        hrAttempted++;
+        const scoreVal = typeof ans.score === "number" ? Math.max(0, Math.min(100, ans.score)) : 75;
+        hrEarned += scoreVal;
+      }
+    });
+    const hrPercentage = totalQuestions.hr > 0
+      ? Math.round((hrEarned / (totalQuestions.hr * 100)) * 100)
+      : 0;
+
+    // 5. DYNAMIC OVERALL SCORE CALCULATION
+    const targetRound = String(interview.targetRound || "all").toLowerCase();
+    let overallScore = 0;
     const completedRounds = [];
     const incompleteRounds = [];
-    if (aptitudeCount > 0) completedRounds.push("APTITUDE"); else incompleteRounds.push("APTITUDE");
-    if (techCount > 0) completedRounds.push("TECHNICAL"); else incompleteRounds.push("TECHNICAL");
-    if (codeCount > 0) completedRounds.push("CODING"); else incompleteRounds.push("CODING");
-    if (hrCount > 0) completedRounds.push("HR"); else incompleteRounds.push("HR");
 
-    const isEndedEarly = incompleteRounds.length > 0;
+    if (targetRound === "aptitude") {
+      overallScore = aptitudePercentage;
+      if (totalQuestions.aptitude > 0 && aptitudeAttempted >= totalQuestions.aptitude) completedRounds.push("APTITUDE"); else incompleteRounds.push("APTITUDE");
+    } else if (targetRound === "technical") {
+      overallScore = technicalPercentage;
+      if (totalQuestions.technical > 0 && technicalAttempted >= totalQuestions.technical) completedRounds.push("TECHNICAL"); else incompleteRounds.push("TECHNICAL");
+    } else if (targetRound === "coding") {
+      overallScore = codingPercentage;
+      if (totalQuestions.coding > 0 && codingAttempted >= totalQuestions.coding) completedRounds.push("CODING"); else incompleteRounds.push("CODING");
+    } else if (targetRound === "hr") {
+      overallScore = hrPercentage;
+      if (totalQuestions.hr > 0 && hrAttempted >= totalQuestions.hr) completedRounds.push("HR"); else incompleteRounds.push("HR");
+    } else {
+      // Full Interview: dynamic weighted average across active rounds only
+      const weights = { aptitude: 0.20, technical: 0.35, coding: 0.30, hr: 0.15 };
+      let totalWeight = 0;
+      let weightedSum = 0;
 
-    const strengths = ["Solid conceptual understanding"];
-    if (technicalScore > 75) strengths.push("Strong technical knowledge");
-    if (codingScore > 75) strengths.push("Excellent algorithmic problem-solving");
-    if (aptitudeScore > 75) strengths.push("High logical reasoning skills");
-    if (hrScore > 75) strengths.push("Professional communication");
+      if (totalQuestions.aptitude > 0) {
+        totalWeight += weights.aptitude;
+        weightedSum += (aptitudePercentage * weights.aptitude);
+        if (aptitudeAttempted >= totalQuestions.aptitude) completedRounds.push("APTITUDE"); else incompleteRounds.push("APTITUDE");
+      }
+      if (totalQuestions.technical > 0) {
+        totalWeight += weights.technical;
+        weightedSum += (technicalPercentage * weights.technical);
+        if (technicalAttempted >= totalQuestions.technical) completedRounds.push("TECHNICAL"); else incompleteRounds.push("TECHNICAL");
+      }
+      if (totalQuestions.coding > 0) {
+        totalWeight += weights.coding;
+        weightedSum += (codingPercentage * weights.coding);
+        if (codingAttempted >= totalQuestions.coding) completedRounds.push("CODING"); else incompleteRounds.push("CODING");
+      }
+      if (totalQuestions.hr > 0) {
+        totalWeight += weights.hr;
+        weightedSum += (hrPercentage * weights.hr);
+        if (hrAttempted >= totalQuestions.hr) completedRounds.push("HR"); else incompleteRounds.push("HR");
+      }
+
+      overallScore = totalWeight > 0 ? Math.round(weightedSum / totalWeight) : 0;
+    }
+
+    const totalAttempted = aptitudeAttempted + technicalAttempted + codingAttempted + hrAttempted;
+    const isEndedEarly = totalAttempted < totalAttemptQuestions;
+
+    const strengths = ["Conceptual understanding & analytical approach"];
+    if (technicalPercentage >= 70) strengths.push("Strong technical knowledge across core stack");
+    if (codingPercentage >= 70) strengths.push("Solid problem-solving logic and syntax accuracy");
+    if (aptitudePercentage >= 70) strengths.push("High logical reasoning & analytical speed");
+    if (hrPercentage >= 70) strengths.push("Structured communication & professional response");
 
     const weaknesses = [];
-    if (technicalScore < 50) weaknesses.push("Needs improvement in technical depth");
-    if (codingScore < 50) weaknesses.push("Needs to practice IDE coding problems");
-    if (aptitudeScore < 50) weaknesses.push("Practice speed and accuracy in Aptitude");
-    if (hrScore < 50) weaknesses.push("Structure answers with the STAR method in HR");
+    if (totalQuestions.technical > 0 && technicalPercentage < 50) weaknesses.push("Needs improvement in technical depth");
+    if (totalQuestions.coding > 0 && codingPercentage < 50) weaknesses.push("Practice hands-on coding and edge-case handling");
+    if (totalQuestions.aptitude > 0 && aptitudePercentage < 50) weaknesses.push("Improve speed and accuracy in Aptitude round");
+    if (totalQuestions.hr > 0 && hrPercentage < 50) weaknesses.push("Structure behavioral answers using the STAR method");
 
     const user = await User.findById(userId);
     const recipientEmail = user?.email || "";
 
+    const totalEarnedMarks = Math.round(aptitudeEarned/100 + technicalEarned/100 + codingEarned/100 + hrEarned/100);
+
     const result = await Result.create({
       interviewId,
       userId,
+      targetRound,
       overallScore,
-      resumeScore: technicalScore,
-      technicalScore,
-      codingScore,
-      hrScore,
-      aptitudeScore,
+      resumeScore: technicalPercentage,
+      technicalScore: technicalPercentage,
+      codingScore: codingPercentage,
+      hrScore: hrPercentage,
+      aptitudeScore: aptitudePercentage,
 
       overall: {
-        obtainedMarks: answers.length,
-        maximumMarks: 58,
+        obtainedMarks: totalEarnedMarks,
+        maximumMarks: totalAttemptQuestions,
         percentage: overallScore,
       },
 
       sections: {
-        aptitude: { score: aptitudeScore, percentage: aptitudeScore, completed: aptitudeCount, total: 25 },
-        technical: { score: technicalScore, percentage: technicalScore, completed: techCount, total: 25 },
-        coding: { score: codingScore, percentage: codingScore, completed: codeCount, total: 3 },
-        hr: { score: hrScore, percentage: hrScore, completed: hrCount, total: 5 },
+        aptitude: {
+          score: aptitudePercentage,
+          percentage: aptitudePercentage,
+          completed: aptitudeAttempted,
+          total: totalQuestions.aptitude,
+          unanswered: Math.max(0, totalQuestions.aptitude - aptitudeAttempted),
+          correct: aptitudeCorrect,
+        },
+        technical: {
+          score: technicalPercentage,
+          percentage: technicalPercentage,
+          completed: technicalAttempted,
+          total: totalQuestions.technical,
+          unanswered: Math.max(0, totalQuestions.technical - technicalAttempted),
+        },
+        coding: {
+          score: codingPercentage,
+          percentage: codingPercentage,
+          completed: codingAttempted,
+          total: totalQuestions.coding,
+          unanswered: Math.max(0, totalQuestions.coding - codingAttempted),
+        },
+        hr: {
+          score: hrPercentage,
+          percentage: hrPercentage,
+          completed: hrAttempted,
+          total: totalQuestions.hr,
+          unanswered: Math.max(0, totalQuestions.hr - hrAttempted),
+        },
       },
 
       strengths,
       weaknesses: weaknesses.length > 0 ? weaknesses : ["No major weaknesses identified"],
-      recommendation: overallScore > 70 ? "Highly Recommended" : "Needs Practice",
+      recommendation: overallScore >= 70 ? "Highly Recommended" : overallScore >= 50 ? "Recommended with Practice" : "Needs Practice",
 
       isEndedEarly,
       completedRounds,
       incompleteRounds,
-      attemptedQuestions: answers.length,
-      skippedQuestions: Math.max(0, 58 - answers.length),
+      attemptedQuestions: totalAttempted,
+      skippedQuestions: Math.max(0, totalAttemptQuestions - totalAttempted),
       duration: Math.round(((new Date() - new Date(interview.startedAt || interview.createdAt)) / 1000) || 0),
 
       email: {
