@@ -131,6 +131,44 @@ export const uploadResumeAndAnalyze = async (req, res) => {
 };
 
 /**
+ * Download uploaded resume PDF
+ */
+export const downloadResume = async (req, res) => {
+  try {
+    const student = await User.findById(req.user.id);
+    if (!student || !student.resumeBase64) {
+      return res.status(404).json({ message: "No resume found. Please upload your resume first." });
+    }
+    const pdfBuffer = Buffer.from(student.resumeBase64, "base64");
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="${student.resumeFileName || "Candidate_Resume.pdf"}"`);
+    res.send(pdfBuffer);
+  } catch (error) {
+    console.error("Download Resume Error:", error.message);
+    res.status(500).json({ message: "Failed to download resume" });
+  }
+};
+
+/**
+ * View uploaded resume PDF in browser
+ */
+export const viewResume = async (req, res) => {
+  try {
+    const student = await User.findById(req.user.id);
+    if (!student || !student.resumeBase64) {
+      return res.status(404).json({ message: "No resume found. Please upload your resume first." });
+    }
+    const pdfBuffer = Buffer.from(student.resumeBase64, "base64");
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `inline; filename="${student.resumeFileName || "Candidate_Resume.pdf"}"`);
+    res.send(pdfBuffer);
+  } catch (error) {
+    console.error("View Resume Error:", error.message);
+    res.status(500).json({ message: "Failed to view resume" });
+  }
+};
+
+/**
  * Start an interview session.
  * interviewType should be "actual" or "mock".
  */

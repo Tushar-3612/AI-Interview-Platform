@@ -376,130 +376,67 @@ function normalizeOutput(value) {
 
 export const runCodingCode = async (req, res) => {
   try {
-    const { language = "python", code = "", input = "" } = req.body;
+    const { language = "cpp", code = "", input = "" } = req.body;
     if (!code) return res.status(400).json({ message: "Code is required" });
-    const langId = normalizeLanguage(language);
-    if (!langId) {
+
+    const { executeJudge0 } = await import("../services/judge0Service.js");
+    const result = await executeJudge0({
+      sourceCode: code,
+      language,
+      stdin: input,
+    });
+
+    if (result.status !== "success") {
       return res.json({
-        type: "info",
-        output: `Language "${language}" is not supported. Supported languages: ${getSupportedLanguages().join(", ")}.`,
-        timeMs: 0,
-        language,
+        type: "error",
+        errorType: result.status,
+        output: String(result.output || result.compileOutput || result.stderr || "Execution error"),
+        timeMs: result.timeMs,
       });
     }
-    const result = isStdinLanguage(langId)
-      ? await executeSingle(langId, code, [], { timeLimitMs: 1000, stdin: String(input ?? "") })
-      : await executeSingle(langId, code, parseTestArgs(input, code), { timeLimitMs: 1000 });
-    if (result.type !== "success") return res.json({ type: "error", output: String(result.output || "") });
-    res.json({ type: "success", output: String(result.output ?? "").trim(), timeMs: result.timeMs });
+
+    res.json({
+      type: "success",
+      output: String(result.stdout || result.output || "").trim(),
+      timeMs: result.timeMs,
+    });
   } catch (error) {
     console.error("Run Code Error:", error.message);
-    res.status(500).json({ message: "Failed to run code" });
+    res.status(500).json({ message: "Failed to run code: " + error.message });
   }
 };
 
 export const submitCoding = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { questionId, language = "python", code = "", timeTakenMs = 0 } = req.body;
+    const { questionId, language = "cpp", code = "", timeTakenMs = 0 } = req.body;
     if (!code) return res.status(400).json({ message: "Code is required" });
-    if (!mongoose.Types.ObjectId.isValid(String(questionId))) {
+    if (!questionId) {
       return res.status(400).json({ message: "Invalid question id" });
     }
-    const question = await CodingQuestion.findOne({ _id: questionId, isDeleted: { $ne: true } }).lean();
+    const isObjId = mongoose.Types.ObjectId.isValid(String(questionId));
+    const question = await CodingQuestion.findOne({
+      $or: [
+        ...(isObjId ? [{ _id: questionId }] : []),
+        { questionId: String(questionId) },
+      ],
+      isDeleted: { $ne: true },
+    }).lean();
     if (!question) return res.status(404).json({ message: "Question not found" });
-    const langId = normalizeLanguage(language);
-    if (!langId) {
-      await CodingSubmission.create({
-        userId,
-        questionId,
-        title: question.title,
-        companyId: question.companyId,
-        companyName: question.companyName,
-        language,
-        code,
-        status: "unsupported",
-        passedCount: 0,
-        totalCount: (question.testCases || []).length,
-        results: [],
-        timeTakenMs: Number(timeTakenMs) || 0,
-      });
-      invalidateStudentPlacement(userId);
-      return res.status(400).json({ message: `Language "${language}" is not supported. Supported languages: ${getSupportedLanguages().join(", ")}.` });
-    }
+
     const testCases = question.testCases || [];
-    const timeLimit = question.timeLimit || 1000;
+    const timeLimit = (question.timeLimit || 1000) / 1000;
 
-    // All languages now go through Docker execution
-    const casePayloads = isStdinLanguage(langId)
-      ? testCases.map((tc) => String(tc.input ?? ""))
-      : testCases.map((tc) => parseTestArgs(tc.input, code));
-    const batch = await executeBatch(langId, code, casePayloads, { timeLimitMs: timeLimit });
-
-    if (batch.type !== "success" || !batch.outputs || batch.outputs.length !== testCases.length) {
-      const errorMsg = batch.type === "time_limit"
-        ? `Time limit exceeded (${timeLimit}ms)`
-        : String(batch.output || batch.type || "Execution failed").trim();
-      const results = testCases.map((tc, index) => ({
-        index: index + 1,
-        passed: false,
-        isHidden: Boolean(tc.isHidden),
-        input: tc.isHidden ? "" : String(tc.input),
-        expected: tc.isHidden ? "" : String(tc.expected),
-        actual: "",
-        error: errorMsg,
-        timeMs: 0,
-      }));
-      const submission = await CodingSubmission.create({
-        userId,
-        questionId,
-        title: question.title,
-        companyId: question.companyId,
-        companyName: question.companyName,
-        language,
-        code,
-        status: "error",
-        passedCount: 0,
-        totalCount: testCases.length,
-        results,
-        timeTakenMs: Number(timeTakenMs) || 0,
-      });
-      invalidateStudentPlacement(userId);
-      return res.status(201).json({
-        _id: submission._id,
-        status: "error",
-        passedCount: 0,
-        totalCount: testCases.length,
-        results,
-      });
-    }
-
-    let passedCount = 0;
-    const results = testCases.map((tc, index) => {
-      const raw = String(batch.outputs[index] ?? "");
-      let error = "";
-      let actual = raw;
-      if (raw.startsWith("__time_limit__:")) {
-        error = `Time limit exceeded (${timeLimit}ms)`;
-        actual = "";
-      } else if (raw.startsWith("__runtime_error__:")) {
-        error = raw.slice("__runtime_error__:".length);
-        actual = "";
-      }
-      const passed = !error && normalizeOutput(raw) === normalizeOutput(tc.expected);
-      if (passed) passedCount++;
-      return {
-        index: index + 1,
-        passed,
-        isHidden: Boolean(tc.isHidden),
-        input: tc.isHidden ? "" : String(tc.input),
-        expected: tc.isHidden ? "" : String(tc.expected),
-        actual: passed ? "" : actual,
-        error,
-        timeMs: 0,
-      };
+    const { executeJudge0TestSuite } = await import("../services/judge0Service.js");
+    const suiteResult = await executeJudge0TestSuite({
+      sourceCode: code,
+      language,
+      testCases,
+      cpuTimeLimit: timeLimit,
     });
-    const status = passedCount === testCases.length && testCases.length > 0 ? "accepted" : "failed";
+
+    const isAccepted = suiteResult.status === "completed" || suiteResult.passed === suiteResult.total;
+
     const submission = await CodingSubmission.create({
       userId,
       questionId,
@@ -508,17 +445,22 @@ export const submitCoding = async (req, res) => {
       companyName: question.companyName,
       language,
       code,
-      status,
-      passedCount,
-      totalCount: testCases.length,
-      results,
+      status: isAccepted ? "accepted" : "failed",
+      passedCount: suiteResult.passed,
+      totalCount: suiteResult.total,
+      score: suiteResult.score,
+      executionTime: suiteResult.executionTime,
+      memory: suiteResult.memory,
+      compileOutput: suiteResult.compileOutput || "",
+      results: suiteResult.testResults,
       timeTakenMs: Number(timeTakenMs) || 0,
     });
+
     invalidateStudentPlacement(userId);
 
     let completedCount = 0;
     let totalCompanyQuestions = 0;
-    if (status === "accepted") {
+    if (isAccepted) {
       const [solvedIds, totalForCompany] = await Promise.all([
         CodingSubmission.distinct("questionId", { userId, companyId: question.companyId, status: "accepted" }),
         CodingQuestion.countDocuments({ companyId: question.companyId, isDeleted: { $ne: true }, isActive: true }),
@@ -527,15 +469,19 @@ export const submitCoding = async (req, res) => {
       totalCompanyQuestions = totalForCompany;
     }
 
-    res.status(201).json({
+    return res.status(201).json({
       _id: submission._id,
-      status,
-      passedCount,
-      totalTestCases: testCases.length,
-      results,
-      completed: status === "accepted",
+      status: isAccepted ? "accepted" : "failed",
+      passedCount: suiteResult.passed,
+      totalCount: suiteResult.total,
+      totalTestCases: suiteResult.total,
+      score: suiteResult.score,
+      results: suiteResult.testResults,
+      completed: isAccepted,
       completedCount,
-      totalQuestions: totalCompanyQuestions || testCases.length,
+      totalQuestions: totalCompanyQuestions || suiteResult.total,
+      timeTakenMs: Number(timeTakenMs) || 0,
+      compileOutput: suiteResult.compileOutput || "",
     });
   } catch (error) {
     console.error("Submit Code Error:", error.message);

@@ -298,7 +298,7 @@ function InterviewLayout({
         <ControlButton
           id="btn-toggle-mic"
           icon={isMicOn ? Mic : MicOff}
-          label={isMicOn ? "Mute" : "Unmuted"}
+          label={isMicOn ? "Mute" : "Unmute"}
           active={isMicOn}
           onClick={onToggleMic}
         />

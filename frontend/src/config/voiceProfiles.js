@@ -53,33 +53,58 @@ export function getVoiceProfile(section = "", topic = "") {
 /**
  * Selects the optimal browser voice for senior corporate interviewer Alex.
  */
-export function selectOptimalVoice(voices = []) {
+export function selectOptimalVoice(voices = [], section = "TECHNICAL") {
   if (!voices || voices.length === 0) return null;
 
+  const isHR = String(section).toUpperCase() === "HR";
+
   // Preferred deep, corporate, natural voices in priority order
-  const preferredVoiceNames = [
+  const hrVoices = [
+    "Microsoft Jenny Online (Natural)",
+    "Microsoft Aria Online (Natural)",
+    "Microsoft Sonia Online (Natural)",
+    "Microsoft Natasha Online (Natural)",
+    "Google UK English Female",
+    "Samantha",
+    "Victoria",
+    "Microsoft Zira - English (United States)",
+    "Karen",
+    "Google US English"
+  ];
+
+  const technicalVoices = [
     "Microsoft Guy Online (Natural)",
     "Microsoft Christopher Online (Natural)",
     "Microsoft Eric Online (Natural)",
+    "Google UK English Male",
     "Google US English",
     "Daniel",
     "Alex",
     "Microsoft David - English (United States)",
-    "Microsoft Mark - English (United States)",
-    "Samantha"
+    "Microsoft Mark - English (United States)"
   ];
 
-  for (const preferred of preferredVoiceNames) {
+  const preferredList = isHR ? hrVoices : technicalVoices;
+
+  for (const preferred of preferredList) {
     const found = voices.find((v) => v.name.toLowerCase().includes(preferred.toLowerCase()));
     if (found) return found;
   }
 
-  // Fallback to male or any natural English voice
-  const maleVoice = voices.find(
-    (v) => (v.name.toLowerCase().includes("male") || v.name.toLowerCase().includes("guy") || v.name.toLowerCase().includes("david")) &&
-           (v.lang.startsWith("en-US") || v.lang.startsWith("en"))
-  );
-  if (maleVoice) return maleVoice;
+  // Fallback based on gender keywords
+  if (isHR) {
+    const femaleVoice = voices.find(
+      (v) => (v.name.toLowerCase().includes("female") || v.name.toLowerCase().includes("zira") || v.name.toLowerCase().includes("jenny") || v.name.toLowerCase().includes("aria")) &&
+             (v.lang.startsWith("en"))
+    );
+    if (femaleVoice) return femaleVoice;
+  } else {
+    const maleVoice = voices.find(
+      (v) => (v.name.toLowerCase().includes("male") || v.name.toLowerCase().includes("guy") || v.name.toLowerCase().includes("david") || v.name.toLowerCase().includes("daniel")) &&
+             (v.lang.startsWith("en"))
+    );
+    if (maleVoice) return maleVoice;
+  }
 
   const englishVoice = voices.find((v) => v.lang.startsWith("en-US") || v.lang.startsWith("en"));
   return englishVoice || voices[0];

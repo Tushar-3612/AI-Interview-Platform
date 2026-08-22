@@ -60,7 +60,7 @@ const technicalQuestionSchema = new mongoose.Schema(
     },
     questionType: {
       type: String,
-      enum: ["Conceptual", "Scenario", "Project", "Code-tracing"],
+      enum: ["Conceptual", "Scenario", "Project", "Code-tracing", "Practical"],
       default: "Conceptual",
     },
     question: {
@@ -132,7 +132,6 @@ technicalQuestionSchema.index({ companyId: 1, isActive: 1, isDeleted: 1 });
 technicalQuestionSchema.index({ companyIds: 1, isActive: 1, isDeleted: 1 });
 technicalQuestionSchema.index({ companyId: 1, topic: 1 });
 technicalQuestionSchema.index({ companyId: 1, difficulty: 1 });
-technicalQuestionSchema.index({ questionId: 1 });
 
 // Keep companyId and companyIds in sync
 technicalQuestionSchema.pre("save", function (next) {

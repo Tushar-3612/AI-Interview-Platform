@@ -666,3 +666,198 @@ Overall, my goal is to become a Full Stack Software Engineer who can design inte
 6a88a8a36967ff17b22256c0,6a88a88f6967ff17b2225687,6a870b4da877b7cdfe747f93,TECH-DB-04,technical,Which operation removes from the front of a queue?,,0,Question skipped or answer empty.,2026-08-21T19:36:03.141Z
 6a88a8a86967ff17b22256c7,6a88a88f6967ff17b2225687,6a870b4da877b7cdfe747f93,TECH-DB-05,technical,What does the AS keyword provide?,,0,Question skipped or answer empty.,2026-08-21T19:36:08.337Z
 6a88a8ae6967ff17b22256d3,6a88a88f6967ff17b2225687,6a870b4da877b7cdfe747f93,TECH-DB-06,technical,What is the time complexity of Dijkstra with a binary heap?,,0,Question skipped or answer empty.,2026-08-21T19:36:14.882Z
+6a896a2362690d694f59aa85,6a89689662690d694f59a569,6a870b4da877b7cdfe747f93,TECH-DB-01,technical,What is the load factor in a Java HashMap?,,0,Question skipped or answer empty.,2026-08-22T09:21:39.463Z
+6a896b1562690d694f59abda,6a896b0e62690d694f59ab95,6a870b4da877b7cdfe747f93,APT-01,aptitude,"A man says, 'I have no brothers or sisters, but that man's father is my father's son.' Who is the man in the photograph?",,0,Question skipped or answer empty.,2026-08-22T09:25:41.698Z
+6a896b1a62690d694f59abe1,6a896b0e62690d694f59ab95,6a870b4da877b7cdfe747f93,TECH-DB-01,technical,Which keyword declares a function that does not return a value in C?,,0,Question skipped or answer empty.,2026-08-22T09:25:46.221Z
+6a896b1c62690d694f59abe8,6a896b0e62690d694f59ab95,6a870b4da877b7cdfe747f93,CODE-01,coding,"Given an array `arr` and a target sum `k`, write a function `longestSubarray(arr, k)` that returns the length of the longest subarray whose elements sum up to `k`.","print(""4"")",80,Coding solution recorded.,2026-08-22T09:25:48.871Z
+6a89700ca5b639e39760cb51,6a896b0e62690d694f59ab95,6a870b4da877b7cdfe747f93,HR-DB-01,hr,"Tell me about yourself, your academic background, and why you are pursuing a career in software engineering.",,0,Question skipped or answer empty.,2026-08-22T09:46:52.121Z
+6a897018a5b639e39760cb76,6a896b0e62690d694f59ab95,6a870b4da877b7cdfe747f93,CODE-02,coding,"Given an array of intervals where intervals[i] = [start, end], merge all overlapping intervals, and return an array of the non-overlapping intervals that cover all the input intervals. Write function `mergeIntervals(intervals)`.","function mergeIntervals(intervals) {
+  // Write your code here
+  
+}",80,Coding solution recorded.,2026-08-22T09:47:04.669Z
+6a89720d68e27b5690c947e5,6a89719868e27b5690c93d4b,6a870b4da877b7cdfe747f93,APT-01,aptitude,Carpenter : Wood :: Tailor : ?,,0,Question skipped or answer empty.,2026-08-22T09:55:25.531Z
+6a89721368e27b5690c947ec,6a89719868e27b5690c93d4b,6a870b4da877b7cdfe747f93,TECH-DB-01,technical,What is a stored procedure?,Precompiled SQL routine stored in DB,75,Answer recorded.,2026-08-22T09:55:31.411Z
+6a89721668e27b5690c947f3,6a89719868e27b5690c93d4b,6a870b4da877b7cdfe747f93,CODE-01,coding,"Given an array `arr` and a target sum `k`, write a function `longestSubarray(arr, k)` that returns the length of the longest subarray whose elements sum up to `k`.","function longestSubarray(arr, k) {
+  // Write your code here
+  
+}",80,Coding solution recorded.,2026-08-22T09:55:34.050Z
+6a8972b168e27b5690c947fe,6a89719868e27b5690c93d4b,6a870b4da877b7cdfe747f93,HR-DB-01,hr,"Tell me about yourself, your academic background, and why you are pursuing a career in software engineering.",I am purchasing software in engineering as a career because. I am interested in a different types of development. Thank you. ,75,Answer recorded.,2026-08-22T09:58:09.448Z
+6a8972d168e27b5690c94806,6a89719868e27b5690c93d4b,6a870b4da877b7cdfe747f93,HR-DB-02,hr,"What are your key technical strengths, and what is one technical area or skill you are actively working to improve?",Goodnight. ,40,Answer recorded.,2026-08-22T09:58:41.665Z
+6a8972e868e27b5690c9480e,6a89719868e27b5690c93d4b,6a870b4da877b7cdfe747f93,HR-DB-03,hr,Describe a situation where you faced a challenge or conflict during a team project and how you handled it.,"Yes, the situation I passed during my conflict during project. ",75,Answer recorded.,2026-08-22T09:59:04.141Z
+6a8972fc68e27b5690c9481b,6a89719868e27b5690c93d4b,6a870b4da877b7cdfe747f93,HR-DB-04,hr,How do you manage your time and stay focused when dealing with multiple tasks or tight deadlines under pressure?,,0,Question skipped or answer empty.,2026-08-22T09:59:24.095Z
+6a8972fe68e27b5690c94824,6a89719868e27b5690c93d4b,6a870b4da877b7cdfe747f93,CODE-02,coding,"Given an array of intervals where intervals[i] = [start, end], merge all overlapping intervals, and return an array of the non-overlapping intervals that cover all the input intervals. Write function `mergeIntervals(intervals)`.","function mergeIntervals(intervals) {
+  // Write your code here
+  
+}",80,Coding solution recorded.,2026-08-22T09:59:26.758Z
+6a89753a3e18352654b5432f,6a8975353e18352654b542ea,6a870b4da877b7cdfe747f93,APT-01,aptitude,What is the area of a circle of radius 7 cm? (π = 22/7),,0,Question skipped or answer empty.,2026-08-22T10:08:58.114Z
+6a8976d66eaef76954edbca0,6a8975353e18352654b542ea,6a870b4da877b7cdfe747f93,CODE-01,coding,"Given an array `arr` and a target sum `k`, write a function `longestSubarray(arr, k)` that returns the length of the longest subarray whose elements sum up to `k`.","function longestSubarray(arr, k) {
+  // Write your code here
+  
+}",80,Coding solution recorded.,2026-08-22T10:15:50.677Z
+6a8976d86eaef76954edbcab,6a8975353e18352654b542ea,6a870b4da877b7cdfe747f93,TECH-DB-01,technical,Which collision resolution technique uses a secondary function on collision?,Answer is B. B Lock Theatre. ,75,Answer recorded.,2026-08-22T10:15:52.945Z
+6a89784ae0072e27158e6d73,6a897845e0072e27158e6d2e,6a870b4da877b7cdfe747f93,APT-01,aptitude,"The sum of the ages of a mother and daughter is 50. Ten years ago, the mother was 4 times the daughter's age. What is the daughter's present age?",,0,Question skipped or answer empty.,2026-08-22T10:22:02.223Z
+6a89789d19de640e3b1b909a,6a89789819de640e3b1b8ff4,6a870b4da877b7cdfe747f93,APT-01,aptitude,"If PENCIL is coded as QFODJM, how is PAPER coded?",,0,Question skipped or answer empty.,2026-08-22T10:23:25.072Z
+6a8979f91a53da1035099672,6a8979f41a53da10350995bc,6a870b4da877b7cdfe747f93,APT-01,aptitude,"If a + b = 12 and a − b = 4, what is a × b?",,0,Question skipped or answer empty.,2026-08-22T10:29:13.057Z
+6a897b191a53da103509a072,6a897a131a53da10350998d5,6a870b4da877b7cdfe747f93,CODE-01,coding,"Given an array `arr` and a target sum `k`, write a function `longestSubarray(arr, k)` that returns the length of the longest subarray whose elements sum up to `k`.","import ast
+
+def longestSubarray(arr, k):
+    prefix_sum = 0
+    max_len = 0
+    first_seen = {}
+
+    for i, num in enumerate(arr):
+        prefix_sum += num
+
+        if prefix_sum == k:
+            max_len = i + 1
+
+        if prefix_sum - k in first_seen:
+            max_len = max(max_len, i - first_seen[prefix_sum - k])
+
+        if prefix_sum not in first_seen:
+            first_seen[prefix_sum] = i
+
+    return max_len
+
+
+# Read input
+arr, k = ast.literal_eval(input().strip())
+
+# Print output
+print(longestSubarray(arr, k))",80,Coding solution recorded.,2026-08-22T10:34:01.710Z
+6a897d420858492f34376591,6a897d0dc641ce00db6d37e7,6a870b4da877b7cdfe747f93,CODE-01,coding,"Given an array `arr` and a target sum `k`, write a function `longestSubarray(arr, k)` that returns the length of the longest subarray whose elements sum up to `k`.","import ast
+
+def longestSubarray(arr, k):
+    prefix_sum = 0
+    max_len = 0
+    first_seen = {}
+
+    for i, num in enumerate(arr):
+        prefix_sum += num
+
+        if prefix_sum == k:
+            max_len = i + 1
+
+        if prefix_sum - k in first_seen:
+            max_len = max(max_len, i - first_seen[prefix_sum - k])
+
+        if prefix_sum not in first_seen:
+            first_seen[prefix_sum] = i
+
+    return max_len
+
+
+# Read input
+arr, k = ast.literal_eval(input().strip())
+
+# Print output
+print(longestSubarray(arr, k))",80,Coding solution recorded.,2026-08-22T10:43:14.247Z
+6a897db20858492f34376c9c,6a897d640858492f34376b48,6a870b4da877b7cdfe747f93,CODE-01,coding,"Given an array `arr` and a target sum `k`, write a function `longestSubarray(arr, k)` that returns the length of the longest subarray whose elements sum up to `k`.","import ast
+
+def longestSubarray(arr, k):
+    prefix_sum = 0
+    max_len = 0
+    first_seen = {}
+
+    for i, num in enumerate(arr):
+        prefix_sum += num
+
+        if prefix_sum == k:
+            max_len = i + 1
+
+        if prefix_sum - k in first_seen:
+            max_len = max(max_len, i - first_seen[prefix_sum - k])
+
+        if prefix_sum not in first_seen:
+            first_seen[prefix_sum] = i
+
+    return max_len
+
+
+# Read input
+arr, k = ast.literal_eval(input().strip())
+
+# Print output
+print(longestSubarray(arr, k))",80,Coding solution recorded.,2026-08-22T10:45:06.631Z
+6a89811e533d46b02389875e,6a8980ef17304b9568b88d3c,6a870b4da877b7cdfe747f93,CODE-01,coding,"Given an array `arr` and a target sum `k`, write a function `longestSubarray(arr, k)` that returns the length of the longest subarray whose elements sum up to `k`.","import ast
+
+def longestSubarray(arr, k):
+    prefix_sum = 0
+    max_len = 0
+    first_seen = {}
+
+    for i, num in enumerate(arr):
+        prefix_sum += num
+
+        if prefix_sum == k:
+            max_len = i + 1
+
+        if prefix_sum - k in first_seen:
+            max_len = max(max_len, i - first_seen[prefix_sum - k])
+
+        if prefix_sum not in first_seen:
+            first_seen[prefix_sum] = i
+
+    return max_len
+
+
+# Read input
+arr, k = ast.literal_eval(input().strip())
+
+# Print output
+print(longestSubarray(arr, k))",80,Coding solution recorded.,2026-08-22T10:59:42.848Z
+6a8981a8533d46b0238991cb,6a8980ef17304b9568b88d3c,6a870b4da877b7cdfe747f93,CODE-02,coding,"Given an array of intervals where intervals[i] = [start, end], merge all overlapping intervals, and return an array of the non-overlapping intervals that cover all the input intervals. Write function `mergeIntervals(intervals)`.","import java.util.*;
+
+public class Main {
+    public static List<int[]> merge(int[][] intervals) {
+        if (intervals.length <= 1) return Arrays.asList(intervals);
+        Arrays.sort(intervals, (a, b) -> Integer.compare(a[0], b[0]));
+        
+        List<int[]> result = new ArrayList<>();
+        int[] current = intervals[0];
+        result.add(current);
+        
+        for (int[] interval : intervals) {
+            if (interval[0] <= current[1]) {
+                current[1] = Math.max(current[1], interval[1]);
+            } else {
+                current = interval;
+                result.add(current);
+            }
+        }
+        return result;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        if (!sc.hasNextLine()) return;
+        
+        String input = sc.nextLine().trim();
+        // Parse input [[1,3],[2,6],[8,10],[15,18]]
+        input = input.replaceAll(""\\[\\[|\\]\\]"", """");
+        String[] pairs = input.split(""\\],\\[|\\]\\s*,\\s*\\["");
+        
+        int[][] intervals = new int[pairs.length][2];
+        for (int i = 0; i < pairs.length; i++) {
+            String[] nums = pairs[i].trim().split("","");
+            intervals[i][0] = Integer.parseInt(nums[0].trim());
+            intervals[i][1] = Integer.parseInt(nums[1].trim());
+        }
+
+        List<int[]> res = merge(intervals);
+        
+        // Print in standard array format [[1,6],[8,10],[15,18]]
+        StringBuilder sb = new StringBuilder(""["");
+        for (int i = 0; i < res.size(); i++) {
+            sb.append(""["").append(res.get(i)[0]).append("","").append(res.get(i)[1]).append(""]"");
+            if (i < res.size() - 1) sb.append("","");
+        }
+        sb.append(""]"");
+        System.out.println(sb.toString());
+    }
+}
+",80,Coding solution recorded.,2026-08-22T11:02:00.804Z
+6a89848aa5cd87419fec3600,6a8980ef17304b9568b88d3c,6a870b4da877b7cdfe747f93,CODE-03,coding,"Given a string `s` containing just the characters '(', ')', '{', '}', '[' and ']', write a function `isValid(s)` to determine if the input string is valid. An input string is valid if open brackets are closed by the same type of brackets and closed in the correct order.","function isValid(s) {
+  // Write your code here
+  
+}",80,Coding solution recorded.,2026-08-22T11:14:18.543Z
