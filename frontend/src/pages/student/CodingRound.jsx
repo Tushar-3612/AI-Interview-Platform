@@ -15,6 +15,7 @@ import OutputPanel from "../../components/coding/OutputPanel";
 import ProblemDescription from "../../components/coding/ProblemDescription";
 import { explainError } from "../../utils/coding/errorExplanations";
 import useLinter from "../../utils/coding/useLinter";
+import { getStarterCode } from "../../utils/coding/starterGenerator";
 
 const FULLSCREEN_KEY = "codingide_fullscreen";
 
@@ -318,22 +319,23 @@ function CodingRound() {
   }, []);
 
   // ─── Load draft on question change ─────────────────────────────────────────
-  const loadDraft = useCallback(async (questionId, starterCode, lang) => {
-    if (!questionId) {
-      setCode(starterCode || "");
+  const loadDraft = useCallback(async (q, lang) => {
+    const starter = getStarterCode(q, lang);
+    if (!q || !q._id) {
+      setCode(starter || "");
       return;
     }
     try {
-      const res = await api.get(`/api/practice/coding/draft/${questionId}`, { headers });
+      const res = await api.get(`/api/practice/coding/draft/${q._id}`, { headers });
       if (res.data?.drafts) {
         Object.assign(codeByLanguageRef.current, res.data.drafts);
       } else if (res.data?.code && res.data?.language) {
         codeByLanguageRef.current[res.data.language] = res.data.code;
       }
       const currentLangCode = codeByLanguageRef.current[lang];
-      setCode(currentLangCode || starterCode || "");
+      setCode(currentLangCode || starter || "");
     } catch {
-      setCode(starterCode || "");
+      setCode(starter || "");
     }
   }, [headers]);
 
@@ -400,7 +402,8 @@ function CodingRound() {
   const handleLanguageChange = (langId) => {
     setLangDropOpen(false);
     const q = questions[activeIndex];
-    const isDefault = code === "" || code === STARTER_CODE[language] || code === (q?.starterCode || "");
+    const prevStarter = getStarterCode(q, language);
+    const isDefault = code === "" || code.trim() === prevStarter.trim() || code === STARTER_CODE[language] || code === (q?.starterCode || "");
 
     // Save current code for current language
     codeByLanguageRef.current[language] = code;
@@ -412,7 +415,7 @@ function CodingRound() {
     if (savedCode) {
       setCode(savedCode);
     } else if (isDefault) {
-      setCode(q?.starterCode || STARTER_CODE[langId] || "");
+      setCode(getStarterCode(q, langId));
     }
   };
 

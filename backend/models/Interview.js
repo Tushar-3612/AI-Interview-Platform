@@ -20,6 +20,15 @@ const interviewSchema = new mongoose.Schema(
       enum: ["actual", "mock", "practice", "real"],
       default: "mock",
     },
+    targetRound: {
+      type: String,
+      enum: ["all", "aptitude", "technical", "coding", "hr"],
+      default: "all",
+    },
+    durationMinutes: {
+      type: Number,
+      default: 150,
+    },
     companyId: { type: String, default: "" },
     status: {
       type: String,
@@ -29,7 +38,7 @@ const interviewSchema = new mongoose.Schema(
     resumeSnapshot: { type: mongoose.Schema.Types.Mixed, default: null },
     startedAt: { type: Date, default: Date.now },
     completedAt: { type: Date, default: null },
-    totalQuestions: { type: Number, default: 58 },
+    totalQuestions: { type: Number, default: 0 },
     currentQuestionIndex: { type: Number, default: 1 },
     questionsAnswered: { type: Number, default: 0 },
     overallScore: { type: Number, default: null },

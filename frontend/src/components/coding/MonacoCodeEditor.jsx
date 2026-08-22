@@ -112,6 +112,7 @@ const MONACO_KEYBINDINGS = [
 
 function MonacoCodeEditor({
   code,
+  value,
   language = "javascript",
   onChange,
   onEditorReady,
@@ -125,6 +126,7 @@ function MonacoCodeEditor({
   showMinimap = true,
   className = "",
 }) {
+  const effectiveCode = code !== undefined ? code : value !== undefined ? value : "";
   const editorRef = useRef(null);
   const monacoRef = useRef(null);
   const decorationsRef = useRef([]);
@@ -267,7 +269,7 @@ function MonacoCodeEditor({
               onMount={handleEditorMount}
               theme={theme === "dark" ? "platform-dark" : "platform-light"}
               language={language}
-              value={code}
+              value={effectiveCode}
               onChange={onChange}
               options={EDITOR_OPTIONS(wordWrap)}
               loading={<div className="p-6 text-xs" style={{ color: "var(--text-muted)" }}>Loading editor…</div>}

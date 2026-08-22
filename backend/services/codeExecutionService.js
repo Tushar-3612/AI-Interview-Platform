@@ -124,7 +124,7 @@ const dockerState = {
 
 function checkDockerSync() {
   try {
-    execFileSync("docker", ["info"], { timeout: 10000, stdio: "pipe", windowsHide: true });
+    execFileSync("docker", ["info"], { timeout: 1500, stdio: "pipe", windowsHide: true });
     return true;
   } catch {
     return false;
@@ -134,7 +134,7 @@ function checkDockerSync() {
 function checkImageSync(imageName) {
   try {
     const out = execFileSync("docker", ["images", "-q", imageName], {
-      timeout: 5000, stdio: "pipe", windowsHide: true, encoding: "utf8",
+      timeout: 2000, stdio: "pipe", windowsHide: true, encoding: "utf8",
     });
     return out.trim().length > 0;
   } catch {
@@ -151,13 +151,11 @@ function ensureDockerChecked() {
   console.log("========================================");
   console.log("  CODE EXECUTION ENVIRONMENT");
   console.log("========================================");
-  console.log(`  Docker: ${dockerState.available ? "AVAILABLE" : "NOT AVAILABLE"}`);
-  console.log("");
+  console.log(`  Docker Engine: ${dockerState.available ? "ACTIVE" : "STANDBY / NOT RUNNING"}`);
+  console.log(`  Execution Mode: ${dockerState.available ? "Docker Container Sandbox" : "Native Host Process (Docker-Free)"}`);
 
   if (!dockerState.available) {
-    console.log("  ⚠️  Docker is NOT running!");
-    console.log("  ⚠️  Code execution will NOT work.");
-    console.log("  ⚠️  Start Docker Desktop and restart the server.");
+    console.log("  ✅  Code execution will run seamlessly using native host compilers (Python, Java, C, C++).");
     console.log("========================================");
     console.log("");
     return;
@@ -166,14 +164,7 @@ function ensureDockerChecked() {
   for (const [langId, config] of Object.entries(LANGUAGE_CONFIG)) {
     const available = checkImageSync(config.image);
     dockerState.images[langId] = available;
-    console.log(`  ${config.label} Runner: ${available ? "AVAILABLE" : "NOT FOUND"} (${config.image})`);
-  }
-
-  const allAvailable = Object.values(dockerState.images).every(Boolean);
-  if (!allAvailable) {
-    console.log("");
-    console.log("  ⚠️  Some images are missing. Run:");
-    console.log("  docker compose build");
+    console.log(`  ${config.label} Runner: ${available ? "AVAILABLE" : "NATIVE FALLBACK"} (${config.image})`);
   }
 
   console.log("========================================");
@@ -1153,6 +1144,288 @@ async function executeBatchStdin(langId, code, cases, timeLimitMs) {
 }
 
 /* ============================================================================
+ * Native process runner (Docker-free execution fallback)
+ * ==========================================================================*/
+
+function runNativeProcess(command, args, { timeoutMs = 10000, cwd, stdin } = {}) {
+  const started = Date.now();
+  const execId = crypto.randomBytes(4).toString("hex");
+
+  return new Promise((resolve) => {
+    let stdout = "";
+    let stderr = "";
+    let killed = false;
+
+    let child;
+    try {
+      child = spawn(command, args, {
+        cwd,
+        windowsHide: true,
+        stdio: ["pipe", "pipe", "pipe"],
+      });
+    } catch (spawnErr) {
+      return resolve({
+        stdout: "",
+        stderr: `Failed to spawn ${command}: ${spawnErr.message}`,
+        code: 1,
+        timedOut: false,
+        timeMs: Date.now() - started,
+        execId,
+      });
+    }
+
+    const timer = setTimeout(() => {
+      killed = true;
+      try {
+        if (process.platform === "win32") {
+          spawn("taskkill", ["/pid", child.pid.toString(), "/f", "/t"], { windowsHide: true, stdio: "ignore" });
+        } else {
+          child.kill("SIGKILL");
+        }
+      } catch (e) {}
+    }, timeoutMs);
+
+    if (stdin !== undefined && stdin !== null && child.stdin) {
+      try {
+        child.stdin.write(String(stdin));
+        child.stdin.end();
+      } catch (e) {}
+    } else if (child.stdin) {
+      child.stdin.end();
+    }
+
+    child.stdout.on("data", (chunk) => {
+      if (stdout.length < MAX_OUTPUT_BYTES) stdout += chunk.toString("utf8");
+    });
+
+    child.stderr.on("data", (chunk) => {
+      if (stderr.length < MAX_OUTPUT_BYTES) stderr += chunk.toString("utf8");
+    });
+
+    child.on("close", (code) => {
+      clearTimeout(timer);
+      const timeMs = Date.now() - started;
+      resolve({
+        stdout: stdout.trim(),
+        stderr: stderr.trim(),
+        code: code === null ? 1 : code,
+        timedOut: killed,
+        timeMs,
+        execId,
+      });
+    });
+
+    child.on("error", (err) => {
+      clearTimeout(timer);
+      resolve({
+        stdout: "",
+        stderr: `Process error: ${err.message}`,
+        code: 1,
+        timedOut: false,
+        timeMs: Date.now() - started,
+        execId,
+      });
+    });
+  });
+}
+
+async function executeViaNative(langId, files, { timeLimitMs = 10000, stdin }) {
+  const config = LANGUAGE_CONFIG[langId];
+  if (!config) {
+    return { type: "execution_error", output: `No configuration for language: ${langId}`, timeMs: 0, memoryKB: 0 };
+  }
+
+  const dir = await fsp.mkdtemp(path.join(os.tmpdir(), "codeexec-native-"));
+  const isWin = process.platform === "win32";
+
+  try {
+    for (const f of files) {
+      await fsp.writeFile(path.join(dir, f.name), f.content, "utf8");
+    }
+
+    if (langId === "python") {
+      const pyCmd = isWin ? "python" : "python3";
+      const result = await runNativeProcess(pyCmd, ["solution.py"], {
+        timeoutMs: timeLimitMs,
+        cwd: dir,
+        stdin,
+      });
+
+      if (result.timedOut) {
+        return { type: "time_limit", output: `Time limit exceeded (${timeLimitMs}ms)`, timeMs: timeLimitMs, memoryKB: 0 };
+      }
+      if (result.code !== 0) {
+        return {
+          type: "runtime_error",
+          output: (result.stderr || result.stdout || `Process exited with code ${result.code}`).trim(),
+          timeMs: result.timeMs,
+          memoryKB: 0,
+        };
+      }
+      return { type: "success", output: result.stdout.trim(), timeMs: result.timeMs, memoryKB: 0 };
+    }
+
+    if (langId === "java") {
+      // Compile
+      const compileResult = await runNativeProcess("javac", ["Solution.java", "Main.java"], {
+        timeoutMs: COMPILE_TIMEOUT_MS,
+        cwd: dir,
+      });
+
+      if (compileResult.timedOut) {
+        return { type: "compile_error", output: "Compilation timed out", timeMs: compileResult.timeMs, memoryKB: 0 };
+      }
+      if (compileResult.code !== 0) {
+        const stderr = (compileResult.stderr || "Compilation failed").trim();
+        const isWrapperError = /Main\.java:\d+/.test(stderr) && !/Solution\.java:\d+/.test(stderr);
+        return {
+          type: isWrapperError ? "execution_error" : "compile_error",
+          output: stderr,
+          timeMs: compileResult.timeMs,
+          memoryKB: 0,
+        };
+      }
+
+      // Run
+      const runResult = await runNativeProcess("java", ["-cp", ".", "Main"], {
+        timeoutMs: timeLimitMs,
+        cwd: dir,
+        stdin,
+      });
+
+      if (runResult.timedOut) {
+        return { type: "time_limit", output: `Time limit exceeded (${timeLimitMs}ms)`, timeMs: timeLimitMs, memoryKB: 0 };
+      }
+      if (runResult.code !== 0) {
+        return {
+          type: "runtime_error",
+          output: (runResult.stderr || runResult.stdout || `Process exited with code ${runResult.code}`).trim(),
+          timeMs: runResult.timeMs,
+          memoryKB: 0,
+        };
+      }
+      return { type: "success", output: runResult.stdout.trim(), timeMs: runResult.timeMs, memoryKB: 0 };
+    }
+
+    if (langId === "cpp" || langId === "c") {
+      const binName = isWin ? "main.exe" : "main";
+      const srcFile = langId === "cpp" ? "main.cpp" : "main.c";
+      const compiler = langId === "cpp" ? "g++" : "gcc";
+      const compilerArgs = langId === "cpp"
+        ? [srcFile, "-o", binName, "-O2", "-std=c++17", "-w", "-lm"]
+        : [srcFile, "-o", binName, "-O2", "-w", "-lm"];
+
+      const compileResult = await runNativeProcess(compiler, compilerArgs, {
+        timeoutMs: COMPILE_TIMEOUT_MS,
+        cwd: dir,
+      });
+
+      if (compileResult.timedOut) {
+        return { type: "compile_error", output: "Compilation timed out", timeMs: compileResult.timeMs, memoryKB: 0 };
+      }
+      if (compileResult.code !== 0) {
+        return {
+          type: "compile_error",
+          output: (compileResult.stderr || "Compilation failed").trim(),
+          timeMs: compileResult.timeMs,
+          memoryKB: 0,
+        };
+      }
+
+      // Run binary
+      const execPath = isWin ? path.join(dir, binName) : `./${binName}`;
+      const runResult = await runNativeProcess(execPath, [], {
+        timeoutMs: timeLimitMs,
+        cwd: dir,
+        stdin,
+      });
+
+      if (runResult.timedOut) {
+        return { type: "time_limit", output: `Time limit exceeded (${timeLimitMs}ms)`, timeMs: timeLimitMs, memoryKB: 0 };
+      }
+      if (runResult.code !== 0) {
+        return {
+          type: "runtime_error",
+          output: (runResult.stderr || runResult.stdout || `Process exited with code ${runResult.code}`).trim(),
+          timeMs: runResult.timeMs,
+          memoryKB: 0,
+        };
+      }
+      return { type: "success", output: runResult.stdout.trim(), timeMs: runResult.timeMs, memoryKB: 0 };
+    }
+
+    return { type: "execution_error", output: `Unsupported native runner for ${langId}`, timeMs: 0, memoryKB: 0 };
+  } finally {
+    fsp.rm(dir, { recursive: true, force: true }).catch(() => {});
+  }
+}
+
+async function executeBatchStdinNative(langId, code, cases, timeLimitMs) {
+  const files = buildSources(langId, code, "");
+  const dir = await fsp.mkdtemp(path.join(os.tmpdir(), "codeexec-native-"));
+  const isWin = process.platform === "win32";
+
+  try {
+    for (const f of files) {
+      await fsp.writeFile(path.join(dir, f.name), f.content, "utf8");
+    }
+
+    const binName = isWin ? "main.exe" : "main";
+    const srcFile = langId === "cpp" ? "main.cpp" : "main.c";
+    const compiler = langId === "cpp" ? "g++" : "gcc";
+    const compilerArgs = langId === "cpp"
+      ? [srcFile, "-o", binName, "-O2", "-std=c++17", "-w", "-lm"]
+      : [srcFile, "-o", binName, "-O2", "-w", "-lm"];
+
+    const compileResult = await runNativeProcess(compiler, compilerArgs, {
+      timeoutMs: COMPILE_TIMEOUT_MS,
+      cwd: dir,
+    });
+
+    if (compileResult.code !== 0) {
+      return {
+        type: "compile_error",
+        output: (compileResult.stderr || "Compilation failed").trim(),
+        timeMs: compileResult.timeMs,
+        memoryKB: 0,
+        outputs: null,
+      };
+    }
+
+    const execPath = isWin ? path.join(dir, binName) : `./${binName}`;
+    const outputs = [];
+    let totalTimeMs = 0;
+
+    for (const testInput of cases) {
+      const runResult = await runNativeProcess(execPath, [], {
+        timeoutMs: timeLimitMs,
+        cwd: dir,
+        stdin: String(testInput || ""),
+      });
+      totalTimeMs += runResult.timeMs;
+
+      if (runResult.timedOut) {
+        outputs.push("__time_limit__");
+      } else if (runResult.code !== 0) {
+        outputs.push(`__runtime_error__:${runResult.stderr || `exit ${runResult.code}`}`);
+      } else {
+        outputs.push(runResult.stdout.trim());
+      }
+    }
+
+    return {
+      type: "success",
+      output: outputs.join("\n"),
+      timeMs: totalTimeMs,
+      memoryKB: 0,
+      outputs,
+    };
+  } finally {
+    fsp.rm(dir, { recursive: true, force: true }).catch(() => {});
+  }
+}
+
+/* ============================================================================
  * Public API
  * ==========================================================================*/
 
@@ -1195,6 +1468,7 @@ export async function executeSingle(
   const effectiveStdin = isStdinLanguage(langId) ? String(stdin ?? "") : undefined;
   const effectiveArgs = isStdinLanguage(langId) ? [] : Array.isArray(args) ? args : [];
 
+<<<<<<< HEAD
   const execId = executionId || crypto.randomBytes(6).toString("hex");
 
   let files;
@@ -1228,6 +1502,15 @@ export async function executeSingle(
     executionId: execId,
     testCaseId,
   });
+=======
+  ensureDockerChecked();
+  if (dockerState.available && dockerState.images[langId]) {
+    return executeViaDocker(langId, files, { timeLimitMs, stdin: effectiveStdin });
+  }
+
+  // Native execution fallback when Docker is not running or available
+  return executeViaNative(langId, files, { timeLimitMs, stdin: effectiveStdin });
+>>>>>>> ee891a659c17f7eb242321c5addac9c3732fc708
 }
 
 /**
@@ -1274,6 +1557,7 @@ export async function executeBatch(
   const timeLimitMsNum = Math.max(300, Number(timeLimitMs) || DEFAULT_TIMEOUT_MS);
   const execId = executionId || crypto.randomBytes(8).toString("hex");
 
+<<<<<<< HEAD
   const runCase = async (c, index) => {
     const caseInputs = Array.isArray(c) ? c : (Array.isArray(c?.input) ? c.input : []);
     const args = isStdinLanguage(langId)
@@ -1333,11 +1617,51 @@ export async function executeBatch(
     memoryKB: 0,
     executionId: execId,
   };
+=======
+  ensureDockerChecked();
+  if (dockerState.available && dockerState.images[langId]) {
+    if (isStdinLanguage(langId)) {
+      return executeBatchStdin(langId, code, caseList, timeLimitMsNum);
+    }
+
+    const harness = harnessForBatch(langId, caseList, code);
+    const files = buildSources(langId, code, harness);
+    const budget = Math.min(60000, timeLimitMsNum * Math.max(1, caseList.length));
+    const result = await executeViaDocker(langId, files, { timeLimitMs: budget, stdin: undefined });
+
+    if (result.type === "success") {
+      let lines = String(result.output || "")
+        .split("\n")
+        .map((line) => line.replace(/\r$/, ""));
+      if (lines.length === caseList.length + 1 && lines[lines.length - 1] === "") lines.pop();
+      return { ...result, outputs: lines };
+    }
+    return { ...result, outputs: null };
+  }
+
+  // Native execution fallback when Docker is not running
+  if (isStdinLanguage(langId)) {
+    return executeBatchStdinNative(langId, code, caseList, timeLimitMsNum);
+  }
+
+  const harness = harnessForBatch(langId, caseList, code);
+  const files = buildSources(langId, code, harness);
+  const budget = Math.min(60000, timeLimitMsNum * Math.max(1, caseList.length));
+  const result = await executeViaNative(langId, files, { timeLimitMs: budget, stdin: undefined });
+
+  if (result.type === "success") {
+    let lines = String(result.output || "")
+      .split("\n")
+      .map((line) => line.replace(/\r$/, ""));
+    if (lines.length === caseList.length + 1 && lines[lines.length - 1] === "") lines.pop();
+    return { ...result, outputs: lines };
+  }
+  return { ...result, outputs: null };
+>>>>>>> ee891a659c17f7eb242321c5addac9c3732fc708
 }
 
 export function isExecutionConfigured() {
-  ensureDockerChecked();
-  return dockerState.available;
+  return true;
 }
 
 // Output comparison utilities (shared with controllers / result processor).
@@ -1354,10 +1678,9 @@ export {
 export function getExecutionProviderInfo() {
   ensureDockerChecked();
   return {
-    provider: "docker",
+    provider: dockerState.available ? "docker" : "native",
     docker: dockerState.available,
     images: { ...dockerState.images },
-    // Re-check images in case they were built after startup
     refreshImages() {
       for (const [langId, config] of Object.entries(LANGUAGE_CONFIG)) {
         dockerState.images[langId] = checkImageSync(config.image);

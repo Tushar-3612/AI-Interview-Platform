@@ -8,9 +8,13 @@ import { Target, BrainCircuit, Code2, UserCheck, CheckCircle2, ChevronRight, Spa
  */
 function SectionNavigationPanel({
   activeSection = "APTITUDE",
+  targetRound = "all",
   onSelectSection,
   sectionProgress = {}
 }) {
+  const isIndividualMode = targetRound && targetRound !== "all";
+  const normalizedTarget = isIndividualMode ? targetRound.toUpperCase() : null;
+
   const SECTIONS = [
     {
       id: "APTITUDE",
@@ -58,11 +62,21 @@ function SectionNavigationPanel({
     },
   ];
 
-  const totalCompleted = sectionProgress.totalCompleted || 0;
-  const totalQuestions = SECTIONS.reduce(
-    (sum, sec) => sum + (sectionProgress[sec.id]?.total || sec.total),
-    0
-  );
+  const filteredSections = isIndividualMode
+    ? SECTIONS.filter(s => s.id === normalizedTarget)
+    : SECTIONS;
+
+  const targetSecObj = SECTIONS.find(s => s.id === normalizedTarget);
+  const totalCompleted = isIndividualMode
+    ? (sectionProgress[normalizedTarget]?.completed || 0)
+    : (sectionProgress.totalCompleted || 0);
+
+  const totalQuestions = isIndividualMode
+    ? (sectionProgress[normalizedTarget]?.total || targetSecObj?.total || 25)
+    : SECTIONS.reduce(
+        (sum, sec) => sum + (sectionProgress[sec.id]?.total || sec.total),
+        0
+      );
 
   return (
     <div
@@ -78,27 +92,29 @@ function SectionNavigationPanel({
         <div className="flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-amber-400" />
           <h3 className="text-xs font-extrabold uppercase tracking-widest text-white/90">
-            Interview Sections
+            {isIndividualMode ? "Individual Round" : "Interview Sections"}
           </h3>
         </div>
-        <span className="text-[10px] font-bold text-white/40 uppercase tracking-wider">
-          {SECTIONS.length} Rounds
+        <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider">
+          {isIndividualMode ? "Single Mode" : `${SECTIONS.length} Rounds`}
         </span>
       </div>
 
       {/* Section List */}
       <div className="flex-1 min-h-0 overflow-y-auto space-y-2.5 pr-1">
-        {SECTIONS.map((sec) => {
+        {filteredSections.map((sec) => {
           const Icon = sec.icon;
           const isActive = activeSection === sec.id;
           const prog = sectionProgress[sec.id] || { completed: 0, total: sec.total };
           const isFinished = prog.completed >= sec.total;
-          const roundPct = Math.round((prog.completed / sec.total) * 100);
+          const roundPct = Math.min(100, Math.round((prog.completed / sec.total) * 100));
           const formattedCompleted = String(prog.completed).padStart(2, "0");
           const formattedTotal = String(sec.total).padStart(2, "0");
 
-          let statusBadgeText = "AVAILABLE";
-          let statusBadgeClass = "bg-white/5 text-white/50 border-white/10";
+          let statusBadgeText = isIndividualMode ? "TARGET ROUND" : "AVAILABLE";
+          let statusBadgeClass = isIndividualMode
+            ? "bg-amber-500/20 text-amber-400 border-amber-500/30 font-extrabold"
+            : "bg-white/5 text-white/50 border-white/10";
 
           if (isFinished) {
             statusBadgeText = "COMPLETED";
@@ -164,13 +180,15 @@ function SectionNavigationPanel({
       {/* Panel Footer: Total Progress */}
       <div className="shrink-0 pt-3 mt-3 border-t border-white/10 flex items-center justify-between">
         <div>
-          <p className="text-[10px] uppercase tracking-wider font-extrabold text-white/40">Total Progress</p>
+          <p className="text-[10px] uppercase tracking-wider font-extrabold text-white/40">
+            {isIndividualMode ? "Round Progress" : "Total Progress"}
+          </p>
           <p className="text-xs font-bold text-white font-mono mt-0.5">
             {String(totalCompleted).padStart(2, "0")} / {String(totalQuestions).padStart(2, "0")} Questions
           </p>
         </div>
         <div className="w-11 h-11 rounded-full border border-white/15 flex items-center justify-center bg-white/5 font-mono text-xs font-black text-amber-400">
-          {Math.round((totalCompleted / (totalQuestions || 58)) * 100)}%
+          {Math.round((totalCompleted / (totalQuestions || 1)) * 100)}%
         </div>
       </div>
     </div>

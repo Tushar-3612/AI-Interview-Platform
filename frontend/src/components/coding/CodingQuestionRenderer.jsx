@@ -10,17 +10,19 @@ import ProblemDescription from "../coding/ProblemDescription";
 import { explainError } from "../../utils/coding/errorExplanations";
 
 const CODING_LANGUAGES = [
-  { id: "python", label: "Python", ext: "py" },
-  { id: "java", label: "Java", ext: "java" },
-  { id: "c", label: "C", ext: "c" },
-  { id: "cpp", label: "C++", ext: "cpp" },
+  { id: "cpp", label: "C++ (GCC 9.2.0)", ext: "cpp" },
+  { id: "c", label: "C (GCC 9.2.0)", ext: "c" },
+  { id: "java", label: "Java (OpenJDK 13)", ext: "java" },
+  { id: "python", label: "Python (3.8.1)", ext: "py" },
+  { id: "javascript", label: "JavaScript (Node 12)", ext: "js" },
 ];
 
 const STARTER_CODE = {
-  python: `def solution(*args):\n    """Write your solution here."""\n    pass`,
-  java: `public class Solution {\n    public static Object solve(Object... args) {\n        // Write your solution here\n        return null;\n    }\n\n    public static void main(String[] args) {\n        System.out.println(solve());\n    }\n}`,
-  c: `#include <stdio.h>\n#include <stdlib.h>\n\nint main() {\n    // Read input and print output\n    return 0;\n}`,
-  cpp: `#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios_base::sync_with_stdio(false);\n    cin.tie(NULL);\n    // Read input and print output\n    return 0;\n}`,
+  cpp: `#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your solution here\n    int a, b;\n    if (cin >> a >> b) {\n        cout << a + b;\n    }\n    return 0;\n}`,
+  c: `#include <stdio.h>\n\nint main() {\n    // Write your solution here\n    int a, b;\n    if (scanf("%d %d", &a, &b) == 2) {\n        printf("%d", a + b);\n    }\n    return 0;\n}`,
+  java: `import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (sc.hasNextInt()) {\n            int a = sc.nextInt();\n            int b = sc.nextInt();\n            System.out.println(a + b);\n        }\n    }\n}`,
+  python: `import sys\n\n# Read input from stdin\nlines = sys.stdin.read().split()\nif len(lines) >= 2:\n    a, b = int(lines[0]), int(lines[1])\n    print(a + b)\n`,
+  javascript: `const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nif (input.length >= 2) {\n    const [a, b] = input.map(Number);\n    console.log(a + b);\n}\n`,
 };
 
 /**
@@ -183,9 +185,9 @@ function CodingQuestionRenderer({
     if (!code || !question) return;
 
     // Validate language
-    const supportedLanguages = ["python", "java", "c", "cpp"];
+    const supportedLanguages = ["python", "java", "c", "cpp", "javascript"];
     if (!supportedLanguages.includes(language)) {
-      setOutput({ type: "run", data: { type: "error", output: `Language "${language}" is not supported. Please use Python, Java, C, or C++.`, timeMs: 0 } });
+      setOutput({ type: "run", data: { type: "error", output: `Language "${language}" is not supported. Please use Python, Java, C, C++, or JavaScript.`, timeMs: 0 } });
       setBottomTab("Test Result");
       return;
     }
@@ -230,9 +232,9 @@ function CodingQuestionRenderer({
     if (!question || !code) return;
 
     // Validate language
-    const supportedLanguages = ["python", "java", "c", "cpp"];
+    const supportedLanguages = ["python", "java", "c", "cpp", "javascript"];
     if (!supportedLanguages.includes(language)) {
-      setOutput({ type: "submit", data: { status: "unsupported", message: `Language "${language}" is not supported. Please use Python, Java, C, or C++.` } });
+      setOutput({ type: "submit", data: { status: "unsupported", message: `Language "${language}" is not supported. Please use Python, Java, C, C++, or JavaScript.` } });
       setBottomTab("Test Result");
       return;
     }

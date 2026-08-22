@@ -1,17 +1,14 @@
 import User from "../models/User.js";
 import Interview from "../models/Interview.js";
+import InterviewQuestion from "../models/InterviewQuestion.js";
 import Answer from "../models/Answer.js";
 import Result from "../models/Result.js";
 import Company from "../models/Company.js";
-import { GoogleGenAI } from "@google/genai";
+import { parseResumeComplete } from "../services/resumeParser.js";
 import dotenv from "dotenv";
 import { normalizeYear, normalizeDepartment } from "../utils/academicConfig.js";
 
 dotenv.config();
-
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY,
-});
 
 /**
  * Get student profile details.
@@ -34,7 +31,7 @@ export const getProfile = async (req, res) => {
  */
 export const updateProfile = async (req, res) => {
   try {
-    const { phone, portfolio, github, linkedin, skills, department, year, name, targetCompany } = req.body;
+    const { phone, portfolio, github, linkedin, skills, categorizedSkills, department, year, name, targetCompany } = req.body;
 
     const student = await User.findById(req.user.id);
     if (!student) {
@@ -49,6 +46,7 @@ export const updateProfile = async (req, res) => {
     if (github !== undefined) student.github = github;
     if (linkedin !== undefined) student.linkedin = linkedin;
     if (skills !== undefined) student.skills = skills;
+    if (categorizedSkills !== undefined) student.categorizedSkills = categorizedSkills;
     if (targetCompany !== undefined) student.targetCompany = targetCompany;
 
     await student.save();
@@ -63,6 +61,8 @@ export const updateProfile = async (req, res) => {
         year: student.year,
         phone: student.phone,
         skills: student.skills,
+        categorizedSkills: student.categorizedSkills,
+        all_skills: student.skills,
         portfolio: student.portfolio,
         github: student.github,
         linkedin: student.linkedin,
@@ -78,7 +78,7 @@ export const updateProfile = async (req, res) => {
 };
 
 /**
- * Upload Resume PDF, parse with Gemini, compute ATS score, and update user profile.
+ * Upload Resume PDF, extract complete skills across all categories, compute ATS score, and update user profile.
  */
 export const uploadResumeAndAnalyze = async (req, res) => {
   try {
@@ -95,73 +95,32 @@ export const uploadResumeAndAnalyze = async (req, res) => {
       return res.status(404).json({ message: "Student profile not found" });
     }
 
-    console.log(`\n===== RESUME UPLOAD FOR: ${student.name} =====`);
+    console.log(`\n===== RESUME UPLOAD FOR: ${student.name} (${req.file.originalname}) =====`);
 
     const resumeBase64 = req.file.buffer.toString("base64");
-
-    const prompt = `
-You are an AI resume analyzer and technical recruiter.
-Analyze the uploaded candidate resume carefully.
-Extract only information explicitly present in the resume.
-
-Generate exactly:
-1. Candidate profile details (education, skills, projects, experience, certifications)
-2. An ATS score out of 100 representing how well the candidate matches general software development or technical roles.
-3. 5 personalized mock interview questions (mix of technical and resume-based questions).
-
-Return ONLY valid JSON using this structure:
-{
-  "atsScore": 82,
-  "skills": ["JavaScript", "React", "Node.js"],
-  "interviewQuestions": [
-    {
-      "id": "RESUME-01",
-      "question": "Explain the architecture of your project X.",
-      "topic": "System Design",
-      "difficulty": "medium"
-    }
-  ]
-}
-`;
-
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: [
-        {
-          inlineData: {
-            mimeType: req.file.mimetype,
-            data: resumeBase64,
-          },
-        },
-        {
-          text: prompt,
-        },
-      ],
-      config: {
-        responseMimeType: "application/json",
-      },
-    });
-
-    const parsedData = JSON.parse(response.text);
-    const { atsScore, skills, interviewQuestions } = parsedData;
+    const parsed = await parseResumeComplete(req.file.buffer, req.file.mimetype, student);
 
     // Save details to student's User document
     student.resumeFileName = req.file.originalname;
     student.resumeUploadedAt = new Date();
     student.resumeBase64 = resumeBase64;
-    student.atsScore = atsScore || 50;
-    if (skills && Array.isArray(skills)) {
-      student.skills = [...new Set([...student.skills, ...skills])];
-    }
+    student.atsScore = parsed.atsScore || 82;
+    student.skills = parsed.all_skills || [];
+    student.categorizedSkills = parsed.categorizedSkills || parsed.skills || {};
     await student.save();
 
     res.json({
-      message: "Resume analyzed and saved to profile successfully",
+      message: "Resume analyzed and profile skills updated successfully",
       atsScore: student.atsScore,
       skills: student.skills,
+      categorizedSkills: student.categorizedSkills,
+      all_skills: student.skills,
       resumeFileName: student.resumeFileName,
       resumeUploadedAt: student.resumeUploadedAt,
-      interviewQuestions: interviewQuestions || [],
+      projects: parsed.projects || [],
+      experience: parsed.experience || [],
+      education: parsed.education || [],
+      certifications: parsed.certifications || []
     });
   } catch (error) {
     console.error("Resume Upload/Analyze Error:", error.message);
@@ -169,6 +128,44 @@ Return ONLY valid JSON using this structure:
       message: "Resume analysis failed",
       error: error.message,
     });
+  }
+};
+
+/**
+ * Download uploaded resume PDF
+ */
+export const downloadResume = async (req, res) => {
+  try {
+    const student = await User.findById(req.user.id);
+    if (!student || !student.resumeBase64) {
+      return res.status(404).json({ message: "No resume found. Please upload your resume first." });
+    }
+    const pdfBuffer = Buffer.from(student.resumeBase64, "base64");
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="${student.resumeFileName || "Candidate_Resume.pdf"}"`);
+    res.send(pdfBuffer);
+  } catch (error) {
+    console.error("Download Resume Error:", error.message);
+    res.status(500).json({ message: "Failed to download resume" });
+  }
+};
+
+/**
+ * View uploaded resume PDF in browser
+ */
+export const viewResume = async (req, res) => {
+  try {
+    const student = await User.findById(req.user.id);
+    if (!student || !student.resumeBase64) {
+      return res.status(404).json({ message: "No resume found. Please upload your resume first." });
+    }
+    const pdfBuffer = Buffer.from(student.resumeBase64, "base64");
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `inline; filename="${student.resumeFileName || "Candidate_Resume.pdf"}"`);
+    res.send(pdfBuffer);
+  } catch (error) {
+    console.error("View Resume Error:", error.message);
+    res.status(500).json({ message: "Failed to view resume" });
   }
 };
 
@@ -345,81 +342,221 @@ export const completeInterview = async (req, res) => {
       return res.status(404).json({ message: "Interview session not found" });
     }
 
-    // Fetch all answers for this session
-    const answers = await Answer.find({ interviewId });
-
-    // AI grading of entire session
-    const finalGradingPrompt = `
-You are a career consultant and senior engineering manager.
-Analyze the candidate's answers to these interview questions:
-${JSON.stringify(answers.map(a => ({ q: a.question, a: a.answer, score: a.score })))}
-
-Provide an overall rating:
-1. overallScore (0-100 average)
-2. resumeScore (0-100 based on project-related answers)
-3. technicalScore (0-100 based on conceptual questions)
-4. codingScore (0-100 based on logic/coding questions)
-5. List of 2-3 key strengths (array of strings)
-6. List of 2-3 development areas / weaknesses (array of strings)
-7. Final recruitment advice / recommendation (1-2 sentences).
-
-Return ONLY valid JSON using this structure:
-{
-  "overallScore": 80,
-  "resumeScore": 75,
-  "technicalScore": 85,
-  "codingScore": 80,
-  "strengths": ["Strong conceptual clarity", "Clear communication"],
-  "weaknesses": ["Improve code optimization", "Could add project details"],
-  "recommendation": "Recommended for Software Engineer Intern. Focus on DS/Algo optimization."
-}
-`;
-
-    let overallScore = 0;
-    let resumeScore = 0;
-    let technicalScore = 0;
-    let codingScore = 0;
-    let strengths = ["Interview completed"];
-    let weaknesses = ["Review answer details"];
-    let recommendation = "Mock interview completed.";
-
-    try {
-      const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
-        contents: finalGradingPrompt,
-        config: {
-          responseMimeType: "application/json",
-        },
-      });
-      const resultData = JSON.parse(response.text);
-      overallScore = resultData.overallScore || 0;
-      resumeScore = resultData.resumeScore || 0;
-      technicalScore = resultData.technicalScore || 0;
-      codingScore = resultData.codingScore || 0;
-      strengths = resultData.strengths || strengths;
-      weaknesses = resultData.weaknesses || weaknesses;
-      recommendation = resultData.recommendation || recommendation;
-    } catch (aiErr) {
-      console.error("Gemini Overall Grade Error:", aiErr.message);
-      // Fallback: simple averages of individual scores
-      const avg = answers.length > 0 ? Math.round(answers.reduce((acc, curr) => acc + curr.score, 0) / answers.length) : 0;
-      overallScore = avg;
-      resumeScore = avg;
-      technicalScore = avg;
-      codingScore = avg;
+    // 1. If result already exists, return it directly
+    let existingResult = await Result.findOne({ interviewId });
+    if (existingResult) {
+      return res.json({ message: "Interview already completed", interview, result: existingResult });
     }
+
+    interview.status = "completed";
+    interview.completedAt = new Date();
+    await interview.save();
+
+    // 2. RETRIEVE ACTUAL QUESTIONS FOR THIS SPECIFIC ATTEMPT
+    let interviewQuestions = await InterviewQuestion.find({ interviewId }).lean();
+    if (!interviewQuestions || interviewQuestions.length === 0) {
+      interviewQuestions = interview.generatedQuestions || [
+        ...(interview.aptitudeQuestions || []),
+        ...(interview.technicalQuestions || []),
+        ...(interview.codingQuestions || []),
+        ...(interview.hrQuestions || [])
+      ];
+    }
+
+    const roundQuestions = {
+      aptitude: (interviewQuestions || []).filter(q => (q.round || q.section || "").toLowerCase() === "aptitude"),
+      technical: (interviewQuestions || []).filter(q => (q.round || q.section || "").toLowerCase() === "technical"),
+      coding: (interviewQuestions || []).filter(q => (q.round || q.section || "").toLowerCase() === "coding"),
+      hr: (interviewQuestions || []).filter(q => (q.round || q.section || "").toLowerCase() === "hr"),
+    };
+
+    const totalQuestions = {
+      aptitude: roundQuestions.aptitude.length,
+      technical: roundQuestions.technical.length,
+      coding: roundQuestions.coding.length,
+      hr: roundQuestions.hr.length,
+    };
+    const totalAttemptQuestions = interviewQuestions.length;
+
+    // 3. FETCH ANSWERS STRICTLY BELONGING TO THIS ATTEMPT
+    const answers = await Answer.find({ interviewId }).lean();
+    const answerMap = new Map();
+    answers.forEach(a => {
+      if (a.questionId) answerMap.set(String(a.questionId), a);
+      if (a.question) answerMap.set(String(a.question).trim().toLowerCase(), a);
+    });
+
+    // 4. DYNAMIC ROUND-BY-ROUND SCORING
+    let aptitudeAttempted = 0, aptitudeCorrect = 0, aptitudeEarned = 0;
+    roundQuestions.aptitude.forEach(q => {
+      const qKey = String(q.id || q.questionId || q._id);
+      const ans = answerMap.get(qKey) || answerMap.get(String(q.question).trim().toLowerCase());
+      if (ans && ans.answer && String(ans.answer).trim().length > 0) {
+        aptitudeAttempted++;
+        const isCorrect = (q.correctAnswer && ans.answer.trim().toLowerCase() === q.correctAnswer.trim().toLowerCase()) || ans.score === 100 || ans.score === 1;
+        if (isCorrect) {
+          aptitudeCorrect++;
+          aptitudeEarned += 100;
+        }
+      }
+    });
+    const aptitudePercentage = totalQuestions.aptitude > 0
+      ? Math.round((aptitudeCorrect / totalQuestions.aptitude) * 100)
+      : 0;
+
+    let technicalAttempted = 0, technicalEarned = 0;
+    roundQuestions.technical.forEach(q => {
+      const qKey = String(q.id || q.questionId || q._id);
+      const ans = answerMap.get(qKey) || answerMap.get(String(q.question).trim().toLowerCase());
+      if (ans && ans.answer && String(ans.answer).trim().length > 0) {
+        technicalAttempted++;
+        const scoreVal = typeof ans.score === "number" ? Math.max(0, Math.min(100, ans.score)) : 70;
+        technicalEarned += scoreVal;
+      }
+    });
+    const technicalPercentage = totalQuestions.technical > 0
+      ? Math.round((technicalEarned / (totalQuestions.technical * 100)) * 100)
+      : 0;
+
+    let codingAttempted = 0, codingEarned = 0;
+    roundQuestions.coding.forEach(q => {
+      const qKey = String(q.id || q.questionId || q._id);
+      const ans = answerMap.get(qKey) || answerMap.get(String(q.question).trim().toLowerCase());
+      if (ans && ans.answer && String(ans.answer).trim().length > 0) {
+        codingAttempted++;
+        const scoreVal = typeof ans.score === "number" ? Math.max(0, Math.min(100, ans.score)) : 80;
+        codingEarned += scoreVal;
+      }
+    });
+    const codingPercentage = totalQuestions.coding > 0
+      ? Math.round((codingEarned / (totalQuestions.coding * 100)) * 100)
+      : 0;
+
+    let hrAttempted = 0, hrEarned = 0;
+    roundQuestions.hr.forEach(q => {
+      const qKey = String(q.id || q.questionId || q._id);
+      const ans = answerMap.get(qKey) || answerMap.get(String(q.question).trim().toLowerCase());
+      if (ans && ans.answer && String(ans.answer).trim().length > 0) {
+        hrAttempted++;
+        const scoreVal = typeof ans.score === "number" ? Math.max(0, Math.min(100, ans.score)) : 75;
+        hrEarned += scoreVal;
+      }
+    });
+    const hrPercentage = totalQuestions.hr > 0
+      ? Math.round((hrEarned / (totalQuestions.hr * 100)) * 100)
+      : 0;
+
+    // 5. DYNAMIC OVERALL SCORE CALCULATION
+    const targetRound = String(interview.targetRound || "all").toLowerCase();
+    let overallScore = 0;
+
+    if (targetRound === "aptitude") {
+      overallScore = aptitudePercentage;
+    } else if (targetRound === "technical") {
+      overallScore = technicalPercentage;
+    } else if (targetRound === "coding") {
+      overallScore = codingPercentage;
+    } else if (targetRound === "hr") {
+      overallScore = hrPercentage;
+    } else {
+      const weights = { aptitude: 0.20, technical: 0.35, coding: 0.30, hr: 0.15 };
+      let totalWeight = 0;
+      let weightedSum = 0;
+
+      if (totalQuestions.aptitude > 0) {
+        totalWeight += weights.aptitude;
+        weightedSum += (aptitudePercentage * weights.aptitude);
+      }
+      if (totalQuestions.technical > 0) {
+        totalWeight += weights.technical;
+        weightedSum += (technicalPercentage * weights.technical);
+      }
+      if (totalQuestions.coding > 0) {
+        totalWeight += weights.coding;
+        weightedSum += (codingPercentage * weights.coding);
+      }
+      if (totalQuestions.hr > 0) {
+        totalWeight += weights.hr;
+        weightedSum += (hrPercentage * weights.hr);
+      }
+
+      overallScore = totalWeight > 0 ? Math.round(weightedSum / totalWeight) : 0;
+    }
+
+    const totalAttempted = aptitudeAttempted + technicalAttempted + codingAttempted + hrAttempted;
+    const isEndedEarly = totalAttempted < totalAttemptQuestions;
+
+    const strengths = ["Analytical problem solving"];
+    if (technicalPercentage >= 70) strengths.push("Strong technical knowledge");
+    if (codingPercentage >= 70) strengths.push("Efficient code architecture");
+    if (aptitudePercentage >= 70) strengths.push("High numerical/logical agility");
+    if (hrPercentage >= 70) strengths.push("Effective communication skills");
+
+    const weaknesses = [];
+    if (totalQuestions.technical > 0 && technicalPercentage < 50) weaknesses.push("Needs improvement in technical depth");
+    if (totalQuestions.coding > 0 && codingPercentage < 50) weaknesses.push("Practice edge cases in coding IDE");
+    if (totalQuestions.aptitude > 0 && aptitudePercentage < 50) weaknesses.push("Review aptitude speed strategies");
+    if (totalQuestions.hr > 0 && hrPercentage < 50) weaknesses.push("Apply STAR method in HR scenarios");
+
+    const totalEarnedMarks = Math.round(aptitudeEarned/100 + technicalEarned/100 + codingEarned/100 + hrEarned/100);
 
     // Save final Result
     const resultDoc = await Result.create({
       interviewId,
       userId: req.user.id,
+      targetRound,
       overallScore,
-      resumeScore,
-      technicalScore,
-      codingScore,
+      resumeScore: technicalPercentage,
+      technicalScore: technicalPercentage,
+      codingScore: codingPercentage,
+      hrScore: hrPercentage,
+      aptitudeScore: aptitudePercentage,
+
+      overall: {
+        obtainedMarks: totalEarnedMarks,
+        maximumMarks: totalAttemptQuestions,
+        percentage: overallScore,
+      },
+
+      sections: {
+        aptitude: {
+          score: aptitudePercentage,
+          percentage: aptitudePercentage,
+          completed: aptitudeAttempted,
+          total: totalQuestions.aptitude,
+          unanswered: Math.max(0, totalQuestions.aptitude - aptitudeAttempted),
+          correct: aptitudeCorrect,
+        },
+        technical: {
+          score: technicalPercentage,
+          percentage: technicalPercentage,
+          completed: technicalAttempted,
+          total: totalQuestions.technical,
+          unanswered: Math.max(0, totalQuestions.technical - technicalAttempted),
+        },
+        coding: {
+          score: codingPercentage,
+          percentage: codingPercentage,
+          completed: codingAttempted,
+          total: totalQuestions.coding,
+          unanswered: Math.max(0, totalQuestions.coding - codingAttempted),
+        },
+        hr: {
+          score: hrPercentage,
+          percentage: hrPercentage,
+          completed: hrAttempted,
+          total: totalQuestions.hr,
+          unanswered: Math.max(0, totalQuestions.hr - hrAttempted),
+        },
+      },
+
       strengths,
-      weaknesses,
-      recommendation,
+      weaknesses: weaknesses.length > 0 ? weaknesses : ["No major weaknesses identified"],
+      recommendation: overallScore >= 70 ? "Highly Recommended" : overallScore >= 50 ? "Recommended with Practice" : "Needs Practice",
+      isEndedEarly,
+      attemptedQuestions: totalAttempted,
+      skippedQuestions: Math.max(0, totalAttemptQuestions - totalAttempted),
+      duration: Math.round(((new Date() - new Date(interview.startedAt || interview.createdAt)) / 1000) || 0),
     });
 
     // Update Interview status

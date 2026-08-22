@@ -453,12 +453,24 @@ function SubmitResult({ submit }) {
     },
   };
 
-  const cfg = statusConfig[submit.status] || statusConfig.failed;
   const results = submit.results || [];
   const visibleResults = results.filter((r) => !r.isHidden);
   const hiddenResults = results.filter((r) => r.isHidden);
   const passedCount = submit.passedCount ?? results.filter((r) => r.passed).length;
   const totalCount = submit.totalCount ?? results.length;
+
+  let cfg = statusConfig[submit.status] || statusConfig.failed;
+  if (submit.status === "failed" || submit.status === "wrong") {
+    if (passedCount > 0 && totalCount > 0) {
+      cfg = {
+        color: "#f59e0b",
+        bg: "rgba(245,158,11,0.1)",
+        border: "rgba(245,158,11,0.25)",
+        label: `Partial Solution (${passedCount}/${totalCount} Passed)`,
+        icon: <AlertTriangle className="w-5 h-5" />,
+      };
+    }
+  }
 
   return (
     <div className="p-3 space-y-3 text-[13px]" style={{ minWidth: "fit-content" }}>
@@ -470,7 +482,7 @@ function SubmitResult({ submit }) {
         <span style={{ color: cfg.color }}>{cfg.icon}</span>
         <span style={{ color: cfg.color }}>{cfg.label}</span>
         <span className="ml-auto text-[12px] font-normal" style={{ color: "#94a3b8" }}>
-          {passedCount}/{totalCount} test cases passed
+          {passedCount}/{totalCount} test cases passed ({totalCount > 0 ? Math.round((passedCount / totalCount) * 100) : 0}%)
         </span>
       </div>
 
@@ -490,14 +502,14 @@ function SubmitResult({ submit }) {
         )}
       </div>
 
-      {/* Failed test case details */}
-      {visibleResults.filter((r) => !r.passed).length > 0 && (
+      {/* Test case details */}
+      {visibleResults.length > 0 && (
         <div className="space-y-1.5">
           <span
             className="block text-[11px] uppercase tracking-wider font-medium"
             style={{ color: "#64748b" }}
           >
-            Failed Test Cases
+            Test Case Results
           </span>
           {visibleResults.map((tc, i) => (
             <TestResultRow
@@ -563,12 +575,14 @@ function SubmitResult({ submit }) {
   );
 }
 
-/* ─── Test Result Row (for failed cases in submit) ─────────────────────── */
+/* ─── Test Result Row (shows both passed and failed cases) ─────────────── */
 function TestResultRow({ tc, index, expanded, onToggle }) {
+  const isPassed = Boolean(tc.passed);
+
   return (
     <div
       className="rounded-lg overflow-hidden"
-      style={{ border: "1px solid #2d2d44" }}
+      style={{ border: `1px solid ${isPassed ? "rgba(34,197,94,0.2)" : "#2d2d44"}` }}
     >
       <button
         type="button"
@@ -584,9 +598,15 @@ function TestResultRow({ tc, index, expanded, onToggle }) {
         ) : (
           <ChevronRight className="w-3.5 h-3.5 shrink-0" style={{ color: "#64748b" }} />
         )}
-        <XCircle className="w-3.5 h-3.5 shrink-0" style={{ color: "#ef4444" }} />
+        {isPassed ? (
+          <CheckCircle2 className="w-3.5 h-3.5 shrink-0" style={{ color: "#22c55e" }} />
+        ) : (
+          <XCircle className="w-3.5 h-3.5 shrink-0" style={{ color: "#ef4444" }} />
+        )}
         <span className="font-medium">Case {tc.index || index + 1}</span>
-        <span style={{ color: "#ef4444" }}>— Failed</span>
+        <span style={{ color: isPassed ? "#22c55e" : "#ef4444" }}>
+          — {isPassed ? "Passed" : "Failed"}
+        </span>
       </button>
 
       {expanded && (
@@ -645,7 +665,7 @@ function TestResultRow({ tc, index, expanded, onToggle }) {
                 </span>
                 <pre
                   className="font-mono text-[12px] whitespace-pre p-2 rounded-md"
-                  style={{ background: "#1e1e3a", color: "#f87171" }}
+                  style={{ background: "#1e1e3a", color: isPassed ? "#4ade80" : "#f87171" }}
                 >
                   {String(tc.actual ?? "(no output)")}
                 </pre>

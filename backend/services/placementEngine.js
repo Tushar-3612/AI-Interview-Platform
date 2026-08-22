@@ -79,6 +79,16 @@ function diffMultiplier(difficulty) {
   return 1;
 }
 
+export function buildMixedCodingQuestionQuery(idList) {
+  const ids = [...new Set((idList || []).map(String).filter(Boolean))];
+  if (ids.length === 0) return { _id: { $in: [] } };
+  const objIds = ids.filter((id) => mongoose.Types.ObjectId.isValid(id));
+  const or = [];
+  if (objIds.length > 0) or.push({ _id: { $in: objIds } });
+  or.push({ questionId: { $in: ids } });
+  return or.length === 1 ? or[0] : { $or: or };
+}
+
 /* ───────────────────────── streaks & heatmap ───────────────────────── */
 
 function computeStreaks(activeDays) {
@@ -195,8 +205,11 @@ async function computeScores(userId) {
   const questionDifficulty = new Map();
   const codingQuestionIds = submissions.map((s) => s.questionId).filter(Boolean);
   if (codingQuestionIds.length > 0) {
-    const qs = await CodingQuestion.find({ _id: { $in: codingQuestionIds } }).select("difficulty").lean();
-    for (const q of qs) questionDifficulty.set(String(q._id), q.difficulty);
+    const qs = await CodingQuestion.find(buildMixedCodingQuestionQuery(codingQuestionIds)).select("difficulty questionId").lean();
+    for (const q of qs) {
+      questionDifficulty.set(String(q._id), q.difficulty);
+      if (q.questionId) questionDifficulty.set(String(q.questionId), q.difficulty);
+    }
   }
   const latestByQuestion = new Map();
   for (const s of submissions) {
@@ -333,8 +346,11 @@ async function computeCompanyReadiness(userId, userMockOAs) {
   const codQIds = [...new Set(codAgg.map((s) => String(s.questionId)).filter(Boolean))];
   const codQMeta = new Map();
   if (codQIds.length > 0) {
-    const qs = await CodingQuestion.find({ _id: { $in: codQIds } }).select("difficulty tags category").lean();
-    for (const q of qs) codQMeta.set(String(q._id), q);
+    const qs = await CodingQuestion.find(buildMixedCodingQuestionQuery(codQIds)).select("difficulty tags category questionId").lean();
+    for (const q of qs) {
+      codQMeta.set(String(q._id), q);
+      if (q.questionId) codQMeta.set(String(q.questionId), q);
+    }
   }
 
   return companies.map((c) => {
@@ -467,8 +483,11 @@ async function computeWeakTopicsAndRecommendations(userId, scores, activity) {
   const subQIds = submissions.map((s) => String(s.questionId)).filter(Boolean);
   const qMeta = new Map();
   if (subQIds.length > 0) {
-    const qs = await CodingQuestion.find({ _id: { $in: subQIds } }).select("tags").lean();
-    for (const q of qs) qMeta.set(String(q._id), q.tags || []);
+    const qs = await CodingQuestion.find(buildMixedCodingQuestionQuery(subQIds)).select("tags questionId").lean();
+    for (const q of qs) {
+      qMeta.set(String(q._id), q.tags || []);
+      if (q.questionId) qMeta.set(String(q.questionId), q.tags || []);
+    }
   }
   const latestByQuestion = new Map();
   for (const s of submissions) {

@@ -50,47 +50,64 @@ function CompletionScreen({
     fetchResult();
   }, [interviewId, token]);
 
-  const overallScore = result?.overallScore || Math.round((answeredCount / (answeredCount + skippedCount || 58)) * 100);
-  const recommendation = result?.recommendation || (overallScore >= 70 ? "Highly Recommended" : "Needs Practice");
+  const targetRound = String(result?.targetRound || "all").toLowerCase();
+  const overallScore = typeof result?.overallScore === "number"
+    ? result.overallScore
+    : (answeredCount + skippedCount > 0 ? Math.round((answeredCount / (answeredCount + skippedCount)) * 100) : 0);
+  const recommendation = result?.recommendation || (overallScore >= 70 ? "Highly Recommended" : overallScore >= 50 ? "Recommended with Practice" : "Needs Practice");
 
-  const categories = [
+  const allCategories = [
     {
+      key: "aptitude",
       label: "Aptitude Round",
-      score: result?.sections?.aptitude?.percentage ?? result?.aptitudeScore ?? 75,
-      total: "25 Qs",
+      score: result?.sections?.aptitude?.percentage ?? result?.aptitudeScore ?? 0,
+      total: result?.sections?.aptitude?.total ? `${result.sections.aptitude.total} Qs` : (result?.sections?.aptitude?.completed ? `${result.sections.aptitude.completed} Qs` : "0 Qs"),
+      count: result?.sections?.aptitude?.total || result?.sections?.aptitude?.completed || 0,
       icon: Target,
       color: "#f59e0b",
     },
     {
+      key: "technical",
       label: "Technical Stack Round",
-      score: result?.sections?.technical?.percentage ?? result?.technicalScore ?? 80,
-      total: "25 Qs",
+      score: result?.sections?.technical?.percentage ?? result?.technicalScore ?? 0,
+      total: result?.sections?.technical?.total ? `${result.sections.technical.total} Qs` : (result?.sections?.technical?.completed ? `${result.sections.technical.completed} Qs` : "0 Qs"),
+      count: result?.sections?.technical?.total || result?.sections?.technical?.completed || 0,
       icon: BrainCircuit,
       color: "#3b82f6",
     },
     {
+      key: "coding",
       label: "Coding IDE Round",
-      score: result?.sections?.coding?.percentage ?? result?.codingScore ?? 70,
-      total: "3 Qs",
+      score: result?.sections?.coding?.percentage ?? result?.codingScore ?? 0,
+      total: result?.sections?.coding?.total ? `${result.sections.coding.total} Qs` : (result?.sections?.coding?.completed ? `${result.sections.coding.completed} Qs` : "0 Qs"),
+      count: result?.sections?.coding?.total || result?.sections?.coding?.completed || 0,
       icon: Code2,
       color: "#10b981",
     },
     {
+      key: "hr",
       label: "HR Behavioral Round",
-      score: result?.sections?.hr?.percentage ?? result?.hrScore ?? 85,
-      total: "5 Qs",
+      score: result?.sections?.hr?.percentage ?? result?.hrScore ?? 0,
+      total: result?.sections?.hr?.total ? `${result.sections.hr.total} Qs` : (result?.sections?.hr?.completed ? `${result.sections.hr.completed} Qs` : "0 Qs"),
+      count: result?.sections?.hr?.total || result?.sections?.hr?.completed || 0,
       icon: UserCheck,
       color: "#a855f7",
     },
   ];
 
+  const categories = targetRound === "all"
+    ? allCategories.filter(c => c.count > 0 || c.score > 0)
+    : allCategories.filter(c => c.key === targetRound);
+
+  const displayCategories = categories.length > 0 ? categories : allCategories;
+
   const strengths = result?.strengths || [
-    "Solid core understanding of tech stack",
-    "Clear communication during engineering questions",
+    "Solid conceptual understanding",
+    "Clear communication during interview questions",
   ];
 
   const weaknesses = result?.weaknesses || [
-    "Practice optimizing algorithmic code complexity",
+    "Review focus areas in question history",
   ];
 
   return (
@@ -149,7 +166,7 @@ function CompletionScreen({
 
         {/* 4 ROUND SCORE BREAKDOWN GRID */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-          {categories.map((cat) => {
+          {displayCategories.map((cat) => {
             const Icon = cat.icon;
             return (
               <div

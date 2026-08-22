@@ -2,6 +2,8 @@ import express from "express";
 import multer from "multer";
 import {
   startInterview,
+  startRound,
+  getRoundQuestions,
   uploadResumeAndGenerateQuestions,
   getInterviewDetails,
   getOrGenerateRoundQuestions,
@@ -21,6 +23,13 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 // POST /api/interview/start — create new AI interview session
 router.post("/start", authMiddleware, startInterview);
+
+// POST /api/interview/start-round — generate all round questions upfront & save to DB
+router.post("/start-round", authMiddleware, startRound);
+
+// GET /api/interview/questions/:interviewId/:round — instant DB fetch of round questions
+router.get("/questions/:interviewId/:round", authMiddleware, getRoundQuestions);
+router.get("/:id/questions/:round", authMiddleware, getRoundQuestions);
 
 // POST /api/interview/tts — provider-agnostic TTS audio generation
 router.post("/tts", authMiddleware, generateTTS);

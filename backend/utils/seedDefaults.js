@@ -171,8 +171,66 @@ export async function seedTechnicalQuestions() {
     }
   }
 
+  // Also load questions from backend/data/technical/*.json
+  const technicalDir = path.resolve(__dirname, "../data/technical");
+  if (fs.existsSync(technicalDir)) {
+    const jsonFiles = fs.readdirSync(technicalDir).filter(f => f.endsWith(".json"));
+    for (const file of jsonFiles) {
+      try {
+        const filePath = path.join(technicalDir, file);
+        const fileData = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+        if (Array.isArray(fileData)) {
+          for (const q of fileData) {
+            const questionId = String(q.questionId);
+            if (!questionId) continue;
+
+            const doc = {
+              questionId,
+              companyId: "all",
+              companyIds: activeCompanyIds.length ? activeCompanyIds : ALL_COMPANIES.map(c => String(c).toLowerCase()),
+              companyName: "All Companies",
+              topic: q.topic || "Programming & OOP",
+              subtopic: q.subtopic || "",
+              difficulty: q.difficulty || "Medium",
+              questionType: q.questionType || "Conceptual",
+              question: q.question,
+              options: Array.isArray(q.options) ? q.options.map(String) : [],
+              correctAnswer: String(q.correctAnswer || "").trim(),
+              expectedAnswer: String(q.expectedAnswer || q.explanation || "").trim(),
+              explanation: q.explanation || "",
+              marks: q.marks || 1,
+              isActive: true,
+              isDeleted: false,
+            };
+
+            const existing = await TechnicalQuestion.findOne({ questionId });
+            if (!existing) {
+              await TechnicalQuestion.create(doc);
+              inserted++;
+            } else if (!existing.isDeleted) {
+              let changed = false;
+              for (const key of ["question", "topic", "subtopic", "difficulty", "questionType", "expectedAnswer", "explanation"]) {
+                if (existing[key] !== doc[key]) {
+                  changed = true;
+                  break;
+                }
+              }
+              if (changed) {
+                existing.set(doc);
+                await existing.save();
+                updated++;
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.warn(`Error reading technical file ${file}:`, err.message);
+      }
+    }
+  }
+
   if (inserted + updated > 0) {
-    console.log(`🧩 Technical MCQ bank seeded: ${inserted} inserted, ${updated} updated (source: technicalBank.mjs)`);
+    console.log(`🧩 Technical bank seeded: ${inserted} inserted, ${updated} updated (sources: technicalBank.mjs + backend/data/technical/*.json)`);
   }
   return inserted;
 }

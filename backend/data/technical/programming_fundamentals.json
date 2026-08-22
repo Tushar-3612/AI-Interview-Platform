@@ -1,0 +1,122 @@
+[
+  {
+    "questionId": "TECH-PF-001",
+    "topic": "Programming & OOP",
+    "subtopic": "Language Paradigms",
+    "difficulty": "Medium",
+    "questionType": "Conceptual",
+    "question": "What is the difference between C, C++, Java, and Python?",
+    "expectedAnswer": "C is a procedural, low-level language without OOP. C++ is a multi-paradigm language adding OOP, classes, and manual memory management. Java is an object-oriented, platform-independent language running on the JVM with automatic garbage collection. Python is a dynamically-typed, interpreted high-level language with concise syntax and vast libraries.",
+    "explanation": "C is procedural; C++ adds OOP/templates; Java offers JVM platform independence & GC; Python provides dynamic typing and rapid development.",
+    "aiSpeechText": "Can you explain the key differences between C, C++, Java, and Python in terms of paradigms, memory management, and execution?",
+    "marks": 1
+  },
+  {
+    "questionId": "TECH-PF-002",
+    "topic": "Programming & OOP",
+    "subtopic": "Variables & Types",
+    "difficulty": "Easy",
+    "questionType": "Conceptual",
+    "question": "What are variables and data types?",
+    "expectedAnswer": "A variable is a named storage location in memory that holds a value. A data type specifies the type of data a variable can store (e.g., int, float, char, boolean) and dictates memory size and allowable operations.",
+    "explanation": "Variables are named memory slots; data types define the classification and byte footprint of the stored data.",
+    "aiSpeechText": "What are variables and data types, and why are data types important in programming?",
+    "marks": 1
+  },
+  {
+    "questionId": "TECH-PF-003",
+    "topic": "Programming & OOP",
+    "subtopic": "Error Handling",
+    "difficulty": "Easy",
+    "questionType": "Conceptual",
+    "question": "What is the difference between compile-time and runtime errors?",
+    "expectedAnswer": "Compile-time errors occur during compilation when code violates syntax or type rules (e.g., missing semicolons, type mismatch). Runtime errors occur while the program is actively executing (e.g., division by zero, NullPointerException, segmentation fault).",
+    "explanation": "Compile-time errors are caught by the compiler before execution; runtime errors happen during active execution.",
+    "aiSpeechText": "Explain the difference between compile-time errors and runtime errors with examples.",
+    "marks": 1
+  },
+  {
+    "questionId": "TECH-PF-004",
+    "topic": "Programming & OOP",
+    "subtopic": "Memory & Pointers",
+    "difficulty": "Medium",
+    "questionType": "Conceptual",
+    "question": "What is a pointer in C/C++?",
+    "expectedAnswer": "A pointer is a variable that stores the memory address of another variable. Pointers enable direct memory access, dynamic memory allocation, efficient array and string manipulation, and pass-by-reference functionality.",
+    "explanation": "Pointers hold memory addresses rather than direct values, allowing direct pointer arithmetic and heap manipulation.",
+    "aiSpeechText": "What is a pointer in C or C++, and how is it used in memory management?",
+    "marks": 1
+  },
+  {
+    "questionId": "TECH-PF-005",
+    "topic": "Programming & OOP",
+    "subtopic": "Recursion",
+    "difficulty": "Medium",
+    "questionType": "Conceptual",
+    "question": "What is recursion?",
+    "expectedAnswer": "Recursion is a programming technique where a function calls itself directly or indirectly to solve smaller instances of the same problem. A recursive function must contain a base case to terminate execution and prevent infinite loops / stack overflow.",
+    "explanation": "Recursion breaks a problem down into self-similar sub-problems, requiring a base case and recursive step.",
+    "aiSpeechText": "What is recursion, and why is a base case essential in any recursive function?",
+    "marks": 1
+  },
+  {
+    "questionId": "TECH-PF-006",
+    "topic": "Programming & OOP",
+    "subtopic": "Function Parameters",
+    "difficulty": "Medium",
+    "questionType": "Conceptual",
+    "question": "What is the difference between pass by value and pass by reference?",
+    "expectedAnswer": "In pass by value, a copy of the actual parameter's value is passed to the function, so modifications inside the function do not affect the original variable. In pass by reference, the memory address/reference of the variable is passed, meaning changes inside the function modify the caller's variable.",
+    "explanation": "Pass by value passes a copy; pass by reference passes the direct memory reference.",
+    "aiSpeechText": "What is the difference between pass by value and pass by reference?",
+    "marks": 1
+  },
+  {
+    "questionId": "TECH-PF-007",
+    "topic": "Programming & OOP",
+    "subtopic": "Exception Handling",
+    "difficulty": "Medium",
+    "questionType": "Practical",
+    "question": "What is exception handling?",
+    "expectedAnswer": "Exception handling is a mechanism to handle runtime anomalies or errors gracefully without abruptly terminating program execution. It uses constructs like try, catch, finally, and throw to separate error-handling code from regular business logic.",
+    "explanation": "Exception handling intercepts runtime errors to maintain normal application flow.",
+    "aiSpeechText": "Explain exception handling and how the try, catch, and finally blocks work together.",
+    "marks": 1
+  },
+  {
+    "questionId": "TECH-PF-008",
+    "topic": "Programming & OOP",
+    "subtopic": "Operators",
+    "difficulty": "Easy",
+    "questionType": "Conceptual",
+    "question": "What is the difference between == and =?",
+    "expectedAnswer": "The '=' operator is an assignment operator used to assign the value on the right-hand side to the variable on the left. The '==' operator is a relational/equality operator used to compare two values for equality, returning true or false.",
+    "explanation": "'=' assigns a value; '==' evaluates whether two operands are equal.",
+    "aiSpeechText": "What is the difference between the single equals operator and double equals operator?",
+    "marks": 1
+  },
+  {
+    "questionId": "TECH-PF-009",
+    "topic": "Programming & OOP",
+    "subtopic": "Static Keyword",
+    "difficulty": "Medium",
+    "questionType": "Conceptual",
+    "question": "What are static variables and methods?",
+    "expectedAnswer": "Static variables and methods belong to the class itself rather than to individual object instances. A static variable is shared among all instances of a class (single memory copy), and a static method can be invoked without instantiating an object of the class.",
+    "explanation": "Static members belong to the class level and persist across all object instances.",
+    "aiSpeechText": "What are static variables and methods, and how do they differ from instance members?",
+    "marks": 1
+  },
+  {
+    "questionId": "TECH-PF-010",
+    "topic": "Programming & OOP",
+    "subtopic": "Memory Allocation",
+    "difficulty": "Medium",
+    "questionType": "Conceptual",
+    "question": "What is memory allocation?",
+    "expectedAnswer": "Memory allocation is the process by which computer programs are assigned memory space for variables, data structures, and code execution. It includes static/compile-time allocation (stack memory, automatic lifecycle) and dynamic/runtime allocation (heap memory, allocated via malloc/new and deallocated manually or via GC).",
+    "explanation": "Memory allocation manages stack and heap space for variables and dynamic objects.",
+    "aiSpeechText": "Explain memory allocation in programming, focusing on the differences between stack and heap memory.",
+    "marks": 1
+  }
+]

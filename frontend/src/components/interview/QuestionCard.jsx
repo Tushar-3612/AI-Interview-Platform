@@ -5,7 +5,7 @@ import { BrainCircuit } from "lucide-react";
  * QuestionCard — Compact header card showing Question number, Category, and Difficulty badge.
  * The question text itself is displayed prominently on the main AI stage.
  */
-function QuestionCard({ currentIndex, totalQuestions, difficulty, category, showQuestionText = true, questionText, estimatedTime }) {
+function QuestionCard({ currentIndex, totalQuestions, difficulty, category, source, showQuestionText = true, questionText, estimatedTime }) {
   return (
     <div
       className="rounded-2xl overflow-hidden shadow-sm flex flex-col"
@@ -22,7 +22,18 @@ function QuestionCard({ currentIndex, totalQuestions, difficulty, category, show
           </span>
         </div>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {source && (
+            <span
+              className={`px-2 py-0.5 rounded-full text-[9px] font-bold border uppercase tracking-wider ${
+                source === "gemini_ai_resume"
+                  ? "bg-purple-500/15 text-purple-300 border-purple-500/25"
+                  : "bg-emerald-500/15 text-emerald-300 border-emerald-500/25"
+              }`}
+            >
+              {source === "gemini_ai_resume" ? "✨ AI Resume" : "🎯 Resume Matched"}
+            </span>
+          )}
           {category && (
             <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/15 text-blue-400 border border-blue-500/20">
               {category}
@@ -31,9 +42,9 @@ function QuestionCard({ currentIndex, totalQuestions, difficulty, category, show
           {difficulty && (
             <span
               className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
-                difficulty === "Hard"
+                difficulty.toLowerCase() === "hard"
                   ? "bg-red-500/15 text-red-400 border-red-500/20"
-                  : difficulty === "Medium"
+                  : difficulty.toLowerCase() === "medium"
                   ? "bg-amber-500/15 text-amber-400 border-amber-500/20"
                   : "bg-emerald-500/15 text-emerald-400 border-emerald-500/20"
               }`}

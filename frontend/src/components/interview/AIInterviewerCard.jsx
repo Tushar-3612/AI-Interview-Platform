@@ -11,11 +11,22 @@ import AudioVisualizer from "./AudioVisualizer";
  *   isGeneratingQuestion {boolean}
  *   currentQuestionText  {string}
  */
-function AIInterviewerCard({ aiStatus = "Listening", isGeneratingQuestion = false, currentQuestionText = "" }) {
+function AIInterviewerCard({
+  aiStatus = "Listening",
+  isGeneratingQuestion = false,
+  currentQuestionText = "",
+  section = "TECHNICAL",
+  interviewerName,
+  interviewerRole,
+}) {
   const normalizedStatus = String(aiStatus).toUpperCase();
   const isSpeaking  = normalizedStatus === "SPEAKING";
   const isThinking  = normalizedStatus === "THINKING" || isGeneratingQuestion;
   const isListening = normalizedStatus === "LISTENING";
+
+  const isHR = section === "HR";
+  const resolvedName = interviewerName || (isHR ? "Sarah — AI HR Interviewer" : "Alex — AI Interviewer");
+  const resolvedRole = interviewerRole || (isHR ? "Senior HR & Behavioral Evaluator" : "Senior Technical Evaluator");
 
   /* Halo ring animation class based on AI state */
   const haloClass = isSpeaking ? "halo-speak" : isThinking ? "halo-think" : "halo-idle";
@@ -189,8 +200,8 @@ function AIInterviewerCard({ aiStatus = "Listening", isGeneratingQuestion = fals
 
               {/* Name tag */}
               <div className="text-center">
-                <p className="text-sm font-bold text-white">Alex — AI Interviewer</p>
-                <p className="text-[11px] text-white/40 mt-0.5">Senior Technical Evaluator</p>
+                <p className="text-sm font-bold text-white">{resolvedName}</p>
+                <p className="text-[11px] text-white/40 mt-0.5">{resolvedRole}</p>
               </div>
 
               {/* Audio visualizer — only visible when speaking */}

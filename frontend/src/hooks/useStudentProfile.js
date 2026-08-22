@@ -13,6 +13,7 @@ const defaultProfile = {
   preferredCompany: "",
   preferredLocation: "",
   skills: [],
+  categorizedSkills: {},
   resumeFileName: "",
   resumeUploadedAt: null,
   interviewStatus: "not_started",

@@ -5,6 +5,8 @@ import {
   getProfile,
   updateProfile,
   uploadResumeAndAnalyze,
+  downloadResume,
+  viewResume,
   startInterview,
   submitAnswer,
   completeInterview,
@@ -40,8 +42,10 @@ router.put("/profile", updateProfile);
 // Target Company
 router.put("/target-company", updateTargetCompany);
 
-// Resume upload and Gemini ATS grading
+// Resume upload, view, download and Gemini ATS grading
 router.post("/resume/upload", upload.single("resume"), uploadResumeAndAnalyze);
+router.get("/resume/download", downloadResume);
+router.get("/resume/view", viewResume);
 
 // Interview management
 router.post("/interviews", startInterview);
