@@ -178,6 +178,8 @@ function StartInterview() {
   const isCompletedRef = useRef(false);
   const isFullscreenExitedRef = useRef(false);
   const currentSectionRef = useRef("APTITUDE");
+  // Track when TTS last finished — used to discard mic bleed within 600ms of AI speech ending
+  const ttsEndedAtRef = useRef(0);
 
   // TTS Hook
   const { speak: ttsSpeak, stop: ttsStop } = useTextToSpeech();
@@ -738,6 +740,7 @@ function StartInterview() {
     utterance.onend = () => {
       setAiStatus("LISTENING");
       aiStatusRef.current = "LISTENING";
+      ttsEndedAtRef.current = Date.now(); // Mark TTS end time for bleed guard
       speechBaseTextRef.current = typedResponseRef.current || "";
       if (inputModeRef.current === "speak" && isMicOnRef.current && !micPermissionDenied && section !== "APTITUDE" && section !== "CODING") {
         setTimeout(() => {
@@ -745,7 +748,7 @@ function StartInterview() {
             isManualStopRef.current = false;
             startSpeechRecognitionRef.current?.();
           }
-        }, 400);
+        }, 600);
       }
     };
 
@@ -899,25 +902,25 @@ function StartInterview() {
         if (aiStatusRef.current === "SPEAKING" || window.speechSynthesis?.speaking) {
           return;
         }
-
-        let interimString = "";
-        let finalString = "";
-
-        for (let i = 0; i < event.results.length; i++) {
-          const result = event.results[i];
-          const piece = result[0]?.transcript || "";
-          if (result.isFinal) {
-            finalString += piece + " ";
-          } else {
-            interimString += piece;
-          }
+        // Bleed guard: Discard results that arrive within 600ms of TTS ending
+        // (prevents speaker audio leaking into mic from overwriting candidate's answer)
+        if (Date.now() - ttsEndedAtRef.current < 600) {
+          return;
         }
 
-        const base = speechBaseTextRef.current.trim();
-        const newlyCommitted = finalString.trim();
-        const fullUnformatted = (base ? base + " " : "") + (newlyCommitted ? newlyCommitted + " " : "") + interimString;
+        let currentTranscript = "";
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const result = event.results[i];
+          const transcriptPiece = result[0]?.transcript || "";
+          currentTranscript += transcriptPiece;
+        }
 
-        // Auto formatting: Capitalize first letter of sentences
+        if (!currentTranscript.trim()) return; // Nothing meaningful, don't update
+
+        const base = speechBaseTextRef.current.trim();
+        const fullUnformatted = (base ? base + " " : "") + currentTranscript;
+
+        // Auto formatting: Clean extra whitespace & capitalize sentences
         const formatted = fullUnformatted
           .replace(/\s+/g, " ")
           .replace(/(^\s*\w|[.!?]\s+\w)/g, (c) => c.toUpperCase());

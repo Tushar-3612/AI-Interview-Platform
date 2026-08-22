@@ -903,78 +903,109 @@ export const completeInterview = async (req, res) => {
     const answers = await Answer.find({ interviewId }).lean();
     const answerMap = new Map();
     answers.forEach(a => {
-      if (a.questionId) answerMap.set(String(a.questionId), a);
-      if (a.question) answerMap.set(String(a.question).trim().toLowerCase(), a);
+      if (a.questionId) {
+        answerMap.set(String(a.questionId).trim(), a);
+        answerMap.set(String(a.questionId).toLowerCase().trim(), a);
+      }
+      if (a.question) {
+        answerMap.set(String(a.question).trim().toLowerCase(), a);
+        // Also strip punctuation for fuzzy match
+        const simplifiedQ = String(a.question).replace(/[^\w\s]/g, "").trim().toLowerCase();
+        answerMap.set(simplifiedQ, a);
+      }
     });
+
+    const findAnswerForQuestion = (q, qIdx) => {
+      const keysToTry = [
+        String(q.id || "").trim(),
+        String(q.questionId || "").trim(),
+        String(q._id || "").trim(),
+        String(q.question || q.title || "").trim().toLowerCase(),
+        String(q.question || q.title || "").replace(/[^\w\s]/g, "").trim().toLowerCase(),
+        `Q-${qIdx + 1}`,
+        String(qIdx + 1),
+      ];
+
+      for (const k of keysToTry) {
+        if (k && answerMap.has(k)) {
+          return answerMap.get(k);
+        }
+      }
+      return null;
+    };
 
     // 4. DYNAMIC ROUND-BY-ROUND SCORING
     // A. Aptitude Scoring (Objective correctness)
     let aptitudeAttempted = 0;
     let aptitudeCorrect = 0;
     let aptitudeEarned = 0;
-    roundQuestions.aptitude.forEach(q => {
-      const qKey = String(q.id || q.questionId || q._id);
-      const ans = answerMap.get(qKey) || answerMap.get(String(q.question).trim().toLowerCase());
+    roundQuestions.aptitude.forEach((q, idx) => {
+      const ans = findAnswerForQuestion(q, idx);
       if (ans && ans.answer && String(ans.answer).trim().length > 0) {
         aptitudeAttempted++;
-        const isCorrect = (q.correctAnswer && ans.answer.trim().toLowerCase() === q.correctAnswer.trim().toLowerCase()) || ans.score === 100 || ans.score === 1;
+        const ansText = String(ans.answer).trim().toLowerCase();
+        const correctText = String(q.correctAnswer || "").trim().toLowerCase();
+        const isCorrect = (correctText && (ansText === correctText || correctText.includes(ansText) || ansText.includes(correctText))) ||
+          ans.score === 100 || ans.score === 1 || (typeof ans.score === "number" && ans.score >= 70);
+
         if (isCorrect) {
           aptitudeCorrect++;
-          aptitudeEarned += 100;
+          aptitudeEarned += (ans.score && ans.score > 1 ? ans.score : 100);
         }
       }
     });
+    const effectiveAptTotal = isEndedEarly && aptitudeAttempted > 0 ? aptitudeAttempted : (totalQuestions.aptitude || 1);
     const aptitudePercentage = totalQuestions.aptitude > 0
-      ? Math.round((aptitudeCorrect / totalQuestions.aptitude) * 100)
-      : 0;
+      ? Math.round((aptitudeEarned / (effectiveAptTotal * 100)) * 100)
+      : (aptitudeAttempted > 0 ? Math.round((aptitudeCorrect / aptitudeAttempted) * 100) : 0);
 
     // B. Technical Scoring (0-100 scale per question)
     let technicalAttempted = 0;
     let technicalEarned = 0;
-    roundQuestions.technical.forEach(q => {
-      const qKey = String(q.id || q.questionId || q._id);
-      const ans = answerMap.get(qKey) || answerMap.get(String(q.question).trim().toLowerCase());
+    roundQuestions.technical.forEach((q, idx) => {
+      const ans = findAnswerForQuestion(q, idx);
       if (ans && ans.answer && String(ans.answer).trim().length > 0) {
         technicalAttempted++;
-        const scoreVal = typeof ans.score === "number" ? Math.max(0, Math.min(100, ans.score)) : 70;
+        const scoreVal = typeof ans.score === "number" ? Math.max(0, Math.min(100, ans.score)) : 75;
         technicalEarned += scoreVal;
       }
     });
+    const effectiveTechTotal = isEndedEarly && technicalAttempted > 0 ? technicalAttempted : (totalQuestions.technical || 1);
     const technicalPercentage = totalQuestions.technical > 0
-      ? Math.round((technicalEarned / (totalQuestions.technical * 100)) * 100)
-      : 0;
+      ? Math.round((technicalEarned / (effectiveTechTotal * 100)) * 100)
+      : (technicalAttempted > 0 ? Math.round((technicalEarned / (technicalAttempted * 100)) * 100) : 0);
 
     // C. Coding Scoring (Test cases / evaluation per question)
     let codingAttempted = 0;
     let codingEarned = 0;
-    roundQuestions.coding.forEach(q => {
-      const qKey = String(q.id || q.questionId || q._id);
-      const ans = answerMap.get(qKey) || answerMap.get(String(q.question).trim().toLowerCase());
+    roundQuestions.coding.forEach((q, idx) => {
+      const ans = findAnswerForQuestion(q, idx);
       if (ans && ans.answer && String(ans.answer).trim().length > 0) {
         codingAttempted++;
         const scoreVal = typeof ans.score === "number" ? Math.max(0, Math.min(100, ans.score)) : 80;
         codingEarned += scoreVal;
       }
     });
+    const effectiveCodeTotal = isEndedEarly && codingAttempted > 0 ? codingAttempted : (totalQuestions.coding || 1);
     const codingPercentage = totalQuestions.coding > 0
-      ? Math.round((codingEarned / (totalQuestions.coding * 100)) * 100)
-      : 0;
+      ? Math.round((codingEarned / (effectiveCodeTotal * 100)) * 100)
+      : (codingAttempted > 0 ? Math.round((codingEarned / (codingAttempted * 100)) * 100) : 0);
 
     // D. HR Scoring (Behavioral evaluation per question)
     let hrAttempted = 0;
     let hrEarned = 0;
-    roundQuestions.hr.forEach(q => {
-      const qKey = String(q.id || q.questionId || q._id);
-      const ans = answerMap.get(qKey) || answerMap.get(String(q.question).trim().toLowerCase());
+    roundQuestions.hr.forEach((q, idx) => {
+      const ans = findAnswerForQuestion(q, idx);
       if (ans && ans.answer && String(ans.answer).trim().length > 0) {
         hrAttempted++;
         const scoreVal = typeof ans.score === "number" ? Math.max(0, Math.min(100, ans.score)) : 75;
         hrEarned += scoreVal;
       }
     });
+    const effectiveHrTotal = isEndedEarly && hrAttempted > 0 ? hrAttempted : (totalQuestions.hr || 1);
     const hrPercentage = totalQuestions.hr > 0
-      ? Math.round((hrEarned / (totalQuestions.hr * 100)) * 100)
-      : 0;
+      ? Math.round((hrEarned / (effectiveHrTotal * 100)) * 100)
+      : (hrAttempted > 0 ? Math.round((hrEarned / (hrAttempted * 100)) * 100) : 0);
 
     // 5. DYNAMIC OVERALL SCORE CALCULATION
     const targetRound = String(interview.targetRound || "all").toLowerCase();
@@ -1245,7 +1276,117 @@ export const getInterviewResult = async (req, res) => {
       return res.status(404).json({ message: "Result document not found for this interview session" });
     }
 
-    res.json(result);
+    // Retrieve all recorded answers for this interview
+    const answers = await Answer.find({ interviewId: id }).sort({ createdAt: 1 });
+
+    // Gather all questions from interview
+    const rawQuestions = [
+      ...(interview.aptitudeQuestions || []),
+      ...(interview.technicalQuestions || []),
+      ...(interview.codingQuestions || []),
+      ...(interview.hrQuestions || []),
+      ...(interview.generatedQuestions || []),
+    ];
+
+    // Deduplicate questions by ID or question text
+    const questionMap = new Map();
+    rawQuestions.forEach((q, idx) => {
+      const qKey = String(q.id || q.questionId || q._id || `q_${idx}`);
+      if (!questionMap.has(qKey)) {
+        questionMap.set(qKey, q);
+      }
+    });
+
+    const answerMap = new Map();
+    answers.forEach((ans) => {
+      const aKey = String(ans.questionId || "");
+      answerMap.set(aKey, ans);
+    });
+
+    // Build comprehensive answer key list
+    const answerKey = [];
+    const processedQuestionKeys = new Set();
+
+    // 1. Iterate over questions
+    questionMap.forEach((q, qKey) => {
+      processedQuestionKeys.add(qKey);
+      const ans = answerMap.get(qKey) || answers.find(a => a.question === q.question || a.question === q.title) || null;
+      
+      const candidateAnswer = ans ? (ans.answer || ans.transcript || "") : "";
+      const isSkipped = !candidateAnswer || candidateAnswer.trim() === "";
+      
+      // Determine correct answer
+      let correctAnswer = q.correctAnswer || q.expectedAnswer || q.sampleOutput || q.solution || "";
+      if (!correctAnswer && Array.isArray(q.options) && typeof q.correctOptionIndex === "number") {
+        correctAnswer = q.options[q.correctOptionIndex] || "";
+      }
+      if (!correctAnswer && q.type === "coding") {
+        correctAnswer = q.solution || "Passes all required automated test cases";
+      }
+
+      const score = ans ? (ans.score != null ? ans.score : (ans.evaluation?.score ?? (candidateAnswer ? 75 : 0))) : 0;
+      
+      let status = "skipped";
+      if (!isSkipped) {
+        if (score >= 70) status = "correct";
+        else if (score >= 40) status = "partially_correct";
+        else status = "incorrect";
+      }
+
+      answerKey.push({
+        questionId: qKey,
+        questionText: q.question || q.title || "Interview Question",
+        section: q.section || q.category || ans?.section || "TECHNICAL",
+        type: q.type || (q.options?.length ? "mcq" : "text"),
+        options: q.options || [],
+        candidateAnswer: isSkipped ? "No answer provided / Skipped" : candidateAnswer,
+        correctAnswer: correctAnswer || "Valid technical explanation matching question criteria",
+        score: isSkipped ? 0 : score,
+        maxScore: 100,
+        status,
+        feedback: ans?.feedback || ans?.evaluation?.feedback || (isSkipped ? "Question was skipped." : "Answer evaluated."),
+        explanation: q.explanation || q.solutionExplanation || "",
+      });
+    });
+
+    // 2. Add any answers that weren't in questionMap (e.g. dynamic follow-ups)
+    answers.forEach((ans) => {
+      const aKey = String(ans.questionId || "");
+      if (!processedQuestionKeys.has(aKey)) {
+        const candidateAnswer = ans.answer || ans.transcript || "";
+        const isSkipped = !candidateAnswer || candidateAnswer.trim() === "";
+        const score = ans.score != null ? ans.score : (ans.evaluation?.score ?? 0);
+        
+        let status = "skipped";
+        if (!isSkipped) {
+          if (score >= 70) status = "correct";
+          else if (score >= 40) status = "partially_correct";
+          else status = "incorrect";
+        }
+
+        answerKey.push({
+          questionId: aKey,
+          questionText: ans.question || "Interview Question",
+          section: ans.section || ans.questionType || "TECHNICAL",
+          type: "text",
+          options: [],
+          candidateAnswer: isSkipped ? "No answer provided / Skipped" : candidateAnswer,
+          correctAnswer: "Contextual AI follow-up response matching question criteria",
+          score,
+          maxScore: 100,
+          status,
+          feedback: ans.feedback || ans.evaluation?.feedback || "",
+          explanation: ans.evaluation?.reason || "",
+        });
+      }
+    });
+
+    const resultObj = result.toObject ? result.toObject() : result;
+    res.json({
+      ...resultObj,
+      answerKey,
+      questions: answerKey,
+    });
   } catch (error) {
     console.error("Get Interview Result Error:", error.message);
     res.status(500).json({ message: "Failed to fetch interview result" });

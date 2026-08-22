@@ -94,7 +94,7 @@ export default function EditProfileModal({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="fixed inset-0 bg-black/70 backdrop-blur-sm"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm"
         />
 
         {/* Modal Window */}
@@ -105,14 +105,14 @@ export default function EditProfileModal({
           transition={{ duration: 0.2 }}
           className="relative w-full max-w-2xl rounded-2xl border shadow-2xl overflow-hidden z-10 my-8"
           style={{
-            background: "var(--card-bg, #0f172a)",
-            borderColor: "var(--border, rgba(255,255,255,0.1))",
+            background: "var(--card-bg)",
+            borderColor: "var(--border)",
           }}
         >
           {/* Header */}
           <div
             className="flex items-center justify-between px-6 py-4 border-b"
-            style={{ borderColor: "var(--border, rgba(255,255,255,0.1))" }}
+            style={{ borderColor: "var(--border)" }}
           >
             <div>
               <h2 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>
@@ -125,7 +125,8 @@ export default function EditProfileModal({
             <button
               type="button"
               onClick={onClose}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition cursor-pointer"
+              className="p-1.5 rounded-lg opacity-70 hover:opacity-100 hover:bg-black/5 dark:hover:bg-white/10 transition cursor-pointer"
+              style={{ color: "var(--text-primary)" }}
             >
               <X className="w-5 h-5" />
             </button>
@@ -133,8 +134,11 @@ export default function EditProfileModal({
 
           {/* Navigation Tabs */}
           <div
-            className="flex border-b px-6 gap-2 bg-slate-900/40"
-            style={{ borderColor: "var(--border, rgba(255,255,255,0.1))" }}
+            className="flex border-b px-6 gap-2"
+            style={{
+              borderColor: "var(--border)",
+              background: "color-mix(in srgb, var(--text-primary) 2%, var(--card-bg))",
+            }}
           >
             {tabs.map((tab) => {
               const Icon = tab.icon;
@@ -146,9 +150,12 @@ export default function EditProfileModal({
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex items-center gap-2 py-3 px-3.5 text-xs font-semibold border-b-2 transition cursor-pointer ${
                     active
-                      ? "border-blue-500 text-blue-400"
-                      : "border-transparent text-slate-400 hover:text-slate-200"
+                      ? "border-blue-500 text-blue-600 dark:text-blue-400"
+                      : "border-transparent opacity-70 hover:opacity-100"
                   }`}
+                  style={{
+                    color: active ? undefined : "var(--text-secondary)",
+                  }}
                 >
                   <Icon className="w-3.5 h-3.5" />
                   <span>{tab.label}</span>
@@ -168,7 +175,7 @@ export default function EditProfileModal({
                       Full Name
                     </label>
                     <div className="relative">
-                      <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 opacity-50" style={{ color: "var(--text-muted)" }} />
                       <input
                         type="text"
                         name="name"
@@ -179,7 +186,7 @@ export default function EditProfileModal({
                         className="w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm outline-none transition"
                         style={{
                           borderColor: "var(--border)",
-                          background: "var(--input-bg, rgba(255,255,255,0.03))",
+                          background: "var(--input-bg)",
                           color: "var(--text-primary)",
                         }}
                       />
@@ -191,7 +198,7 @@ export default function EditProfileModal({
                       Phone Number
                     </label>
                     <div className="relative">
-                      <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 opacity-50" style={{ color: "var(--text-muted)" }} />
                       <input
                         type="tel"
                         name="phone"
@@ -201,7 +208,7 @@ export default function EditProfileModal({
                         className="w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm outline-none transition"
                         style={{
                           borderColor: "var(--border)",
-                          background: "var(--input-bg, rgba(255,255,255,0.03))",
+                          background: "var(--input-bg)",
                           color: "var(--text-primary)",
                         }}
                       />
@@ -214,7 +221,7 @@ export default function EditProfileModal({
                         Department / Branch
                       </label>
                       <div className="relative">
-                        <Building2 className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <Building2 className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 opacity-50" style={{ color: "var(--text-muted)" }} />
                         <input
                           type="text"
                           name="department"
@@ -224,7 +231,7 @@ export default function EditProfileModal({
                           className="w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm outline-none transition"
                           style={{
                             borderColor: "var(--border)",
-                            background: "var(--input-bg, rgba(255,255,255,0.03))",
+                            background: "var(--input-bg)",
                             color: "var(--text-primary)",
                           }}
                         />
@@ -236,7 +243,7 @@ export default function EditProfileModal({
                         Academic Year
                       </label>
                       <div className="relative">
-                        <GraduationCap className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <GraduationCap className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 opacity-50" style={{ color: "var(--text-muted)" }} />
                         <input
                           type="text"
                           name="year"
@@ -246,7 +253,7 @@ export default function EditProfileModal({
                           className="w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm outline-none transition"
                           style={{
                             borderColor: "var(--border)",
-                            background: "var(--input-bg, rgba(255,255,255,0.03))",
+                            background: "var(--input-bg)",
                             color: "var(--text-primary)",
                           }}
                         />
@@ -264,7 +271,7 @@ export default function EditProfileModal({
                       LinkedIn Profile URL
                     </label>
                     <div className="relative">
-                      <LinkedinIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-400" />
+                      <LinkedinIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-500" />
                       <input
                         type="text"
                         name="linkedin"
@@ -274,7 +281,7 @@ export default function EditProfileModal({
                         className="w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm outline-none transition"
                         style={{
                           borderColor: "var(--border)",
-                          background: "var(--input-bg, rgba(255,255,255,0.03))",
+                          background: "var(--input-bg)",
                           color: "var(--text-primary)",
                         }}
                       />
@@ -286,7 +293,7 @@ export default function EditProfileModal({
                       GitHub Profile URL
                     </label>
                     <div className="relative">
-                      <GithubIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
+                      <GithubIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 opacity-70" style={{ color: "var(--text-primary)" }} />
                       <input
                         type="text"
                         name="github"
@@ -296,7 +303,7 @@ export default function EditProfileModal({
                         className="w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm outline-none transition"
                         style={{
                           borderColor: "var(--border)",
-                          background: "var(--input-bg, rgba(255,255,255,0.03))",
+                          background: "var(--input-bg)",
                           color: "var(--text-primary)",
                         }}
                       />
@@ -308,7 +315,7 @@ export default function EditProfileModal({
                       Personal Portfolio / Website
                     </label>
                     <div className="relative">
-                      <Globe className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-400" />
+                      <Globe className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-500" />
                       <input
                         type="text"
                         name="portfolio"
@@ -318,7 +325,7 @@ export default function EditProfileModal({
                         className="w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm outline-none transition"
                         style={{
                           borderColor: "var(--border)",
-                          background: "var(--input-bg, rgba(255,255,255,0.03))",
+                          background: "var(--input-bg)",
                           color: "var(--text-primary)",
                         }}
                       />
@@ -335,7 +342,7 @@ export default function EditProfileModal({
                       Preferred Job Role
                     </label>
                     <div className="relative">
-                      <Briefcase className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <Briefcase className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 opacity-50" style={{ color: "var(--text-muted)" }} />
                       <input
                         type="text"
                         name="preferredRole"
@@ -345,7 +352,7 @@ export default function EditProfileModal({
                         className="w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm outline-none transition"
                         style={{
                           borderColor: "var(--border)",
-                          background: "var(--input-bg, rgba(255,255,255,0.03))",
+                          background: "var(--input-bg)",
                           color: "var(--text-primary)",
                         }}
                       />
@@ -358,7 +365,7 @@ export default function EditProfileModal({
                         Target / Preferred Company
                       </label>
                       <div className="relative">
-                        <Building className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <Building className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 opacity-50" style={{ color: "var(--text-muted)" }} />
                         <input
                           type="text"
                           name="preferredCompany"
@@ -368,7 +375,7 @@ export default function EditProfileModal({
                           className="w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm outline-none transition"
                           style={{
                             borderColor: "var(--border)",
-                            background: "var(--input-bg, rgba(255,255,255,0.03))",
+                            background: "var(--input-bg)",
                             color: "var(--text-primary)",
                           }}
                         />
@@ -380,7 +387,7 @@ export default function EditProfileModal({
                         Preferred Location
                       </label>
                       <div className="relative">
-                        <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 opacity-50" style={{ color: "var(--text-muted)" }} />
                         <input
                           type="text"
                           name="preferredLocation"
@@ -390,7 +397,7 @@ export default function EditProfileModal({
                           className="w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm outline-none transition"
                           style={{
                             borderColor: "var(--border)",
-                            background: "var(--input-bg, rgba(255,255,255,0.03))",
+                            background: "var(--input-bg)",
                             color: "var(--text-primary)",
                           }}
                         />
@@ -410,9 +417,13 @@ export default function EditProfileModal({
                           onClick={() => setFormData((prev) => ({ ...prev, preferredWorkType: type }))}
                           className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold border transition cursor-pointer ${
                             formData.preferredWorkType === type
-                              ? "bg-blue-600/20 border-blue-500/50 text-blue-400"
-                              : "border-white/10 text-slate-400 hover:border-white/20 hover:text-white"
+                              ? "bg-blue-600/15 border-blue-500/50 text-blue-600 dark:text-blue-400"
+                              : "border-[var(--border)] hover:opacity-80"
                           }`}
+                          style={{
+                            background: formData.preferredWorkType === type ? undefined : "var(--card-bg)",
+                            color: formData.preferredWorkType === type ? undefined : "var(--text-secondary)",
+                          }}
                         >
                           {type}
                         </button>
@@ -425,13 +436,17 @@ export default function EditProfileModal({
 
             {/* Footer Actions */}
             <div
-              className="flex items-center justify-between px-6 py-4 border-t bg-slate-900/30"
-              style={{ borderColor: "var(--border, rgba(255,255,255,0.1))" }}
+              className="flex items-center justify-between px-6 py-4 border-t"
+              style={{
+                borderColor: "var(--border)",
+                background: "color-mix(in srgb, var(--text-primary) 2%, var(--card-bg))",
+              }}
             >
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white transition cursor-pointer"
+                className="px-4 py-2 rounded-xl text-xs font-semibold opacity-70 hover:opacity-100 transition cursor-pointer"
+                style={{ color: "var(--text-primary)" }}
               >
                 Cancel
               </button>

@@ -42,6 +42,23 @@ export const sendReportEmail = async (to, subject, text, html, attachments = [])
 
     fs.writeFileSync(emailLogPath, logContent);
 
+    // ─── AUTO-CLEANUP: Keep only the 50 most recent files ───
+    const MAX_FILES = 50;
+    try {
+      const allFiles = fs.readdirSync(backupDir)
+        .map((f) => ({ name: f, time: fs.statSync(path.join(backupDir, f)).mtimeMs }))
+        .sort((a, b) => b.time - a.time); // newest first
+
+      if (allFiles.length > MAX_FILES) {
+        allFiles.slice(MAX_FILES).forEach(({ name }) => {
+          fs.unlinkSync(path.join(backupDir, name));
+        });
+        console.log(`🧹 Auto-cleaned simulated_emails: kept ${MAX_FILES} most recent files.`);
+      }
+    } catch (cleanErr) {
+      console.warn("⚠️ Auto-cleanup of simulated_emails failed:", cleanErr.message);
+    }
+
     console.log(`✅ Simulated email details logged to: ${emailLogPath}`);
     return {
       success: true,
