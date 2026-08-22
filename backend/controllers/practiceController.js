@@ -427,7 +427,6 @@ export const submitCoding = async (req, res) => {
     const testCases = question.testCases || [];
     const timeLimit = (question.timeLimit || 1000) / 1000;
 
-<<<<<<< HEAD
     // All languages now go through Docker execution
     const casePayloads = isStdinLanguage(langId)
       ? testCases.map((tc) => String(tc.input ?? ""))
@@ -496,14 +495,6 @@ export const submitCoding = async (req, res) => {
         error,
         timeMs: 0,
       };
-=======
-    const { executeJudge0TestSuite } = await import("../services/judge0Service.js");
-    const suiteResult = await executeJudge0TestSuite({
-      sourceCode: code,
-      language,
-      testCases,
-      cpuTimeLimit: timeLimit,
->>>>>>> ee891a659c17f7eb242321c5addac9c3732fc708
     });
 
     const isAccepted = suiteResult.status === "completed" || suiteResult.passed === suiteResult.total;

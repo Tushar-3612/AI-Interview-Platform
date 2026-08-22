@@ -1468,7 +1468,6 @@ export async function executeSingle(
   const effectiveStdin = isStdinLanguage(langId) ? String(stdin ?? "") : undefined;
   const effectiveArgs = isStdinLanguage(langId) ? [] : Array.isArray(args) ? args : [];
 
-<<<<<<< HEAD
   const execId = executionId || crypto.randomBytes(6).toString("hex");
 
   let files;
@@ -1502,15 +1501,6 @@ export async function executeSingle(
     executionId: execId,
     testCaseId,
   });
-=======
-  ensureDockerChecked();
-  if (dockerState.available && dockerState.images[langId]) {
-    return executeViaDocker(langId, files, { timeLimitMs, stdin: effectiveStdin });
-  }
-
-  // Native execution fallback when Docker is not running or available
-  return executeViaNative(langId, files, { timeLimitMs, stdin: effectiveStdin });
->>>>>>> ee891a659c17f7eb242321c5addac9c3732fc708
 }
 
 /**
@@ -1557,7 +1547,6 @@ export async function executeBatch(
   const timeLimitMsNum = Math.max(300, Number(timeLimitMs) || DEFAULT_TIMEOUT_MS);
   const execId = executionId || crypto.randomBytes(8).toString("hex");
 
-<<<<<<< HEAD
   const runCase = async (c, index) => {
     const caseInputs = Array.isArray(c) ? c : (Array.isArray(c?.input) ? c.input : []);
     const args = isStdinLanguage(langId)
@@ -1617,47 +1606,6 @@ export async function executeBatch(
     memoryKB: 0,
     executionId: execId,
   };
-=======
-  ensureDockerChecked();
-  if (dockerState.available && dockerState.images[langId]) {
-    if (isStdinLanguage(langId)) {
-      return executeBatchStdin(langId, code, caseList, timeLimitMsNum);
-    }
-
-    const harness = harnessForBatch(langId, caseList, code);
-    const files = buildSources(langId, code, harness);
-    const budget = Math.min(60000, timeLimitMsNum * Math.max(1, caseList.length));
-    const result = await executeViaDocker(langId, files, { timeLimitMs: budget, stdin: undefined });
-
-    if (result.type === "success") {
-      let lines = String(result.output || "")
-        .split("\n")
-        .map((line) => line.replace(/\r$/, ""));
-      if (lines.length === caseList.length + 1 && lines[lines.length - 1] === "") lines.pop();
-      return { ...result, outputs: lines };
-    }
-    return { ...result, outputs: null };
-  }
-
-  // Native execution fallback when Docker is not running
-  if (isStdinLanguage(langId)) {
-    return executeBatchStdinNative(langId, code, caseList, timeLimitMsNum);
-  }
-
-  const harness = harnessForBatch(langId, caseList, code);
-  const files = buildSources(langId, code, harness);
-  const budget = Math.min(60000, timeLimitMsNum * Math.max(1, caseList.length));
-  const result = await executeViaNative(langId, files, { timeLimitMs: budget, stdin: undefined });
-
-  if (result.type === "success") {
-    let lines = String(result.output || "")
-      .split("\n")
-      .map((line) => line.replace(/\r$/, ""));
-    if (lines.length === caseList.length + 1 && lines[lines.length - 1] === "") lines.pop();
-    return { ...result, outputs: lines };
-  }
-  return { ...result, outputs: null };
->>>>>>> ee891a659c17f7eb242321c5addac9c3732fc708
 }
 
 export function isExecutionConfigured() {

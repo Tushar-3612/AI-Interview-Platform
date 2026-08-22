@@ -3,7 +3,6 @@ import Test from "../models/Test.js";
 import CodingQuestion from "../models/CodingQuestion.js";
 import CodingSubmission from "../models/CodingSubmission.js";
 import {
-<<<<<<< HEAD
   executeSingle,
   executeBatch,
   normalizeLanguage,
@@ -135,18 +134,6 @@ function parseCaseMarker(raw) {
  * Shared code execution endpoint: POST /api/code/run
  * Runs student code against custom input (visible test cases only).
  * Used by both Coding Practice and Test Coding Round.
-=======
-  executeJudge0,
-  executeJudge0TestSuite,
-  getSupportedJudge0Languages,
-  getJudge0Language,
-} from "../services/judge0Service.js";
-
-/**
- * Run Code Endpoint: POST /api/code/run
- * Runs candidate code against custom stdin input via Judge0.
- * Does NOT calculate final interview score.
->>>>>>> ee891a659c17f7eb242321c5addac9c3732fc708
  */
 export const runCode = async (req, res) => {
   try {
@@ -267,7 +254,6 @@ export const submitCode = async (req, res) => {
       ];
     }
 
-<<<<<<< HEAD
     const casePayloads = isStdinLanguage(langId)
       ? testCases.map((tc) => String(tc.input ?? ""))
       : testCases.map((tc) => parseTestArgs(tc.input, code));
@@ -326,15 +312,6 @@ export const submitCode = async (req, res) => {
         error: displayError,
         timeMs: 0,
       };
-=======
-    // 2. Execute test suite through Judge0
-    const suiteResult = await executeJudge0TestSuite({
-      sourceCode: code,
-      language,
-      testCases,
-      cpuTimeLimit,
-      memoryLimit,
->>>>>>> ee891a659c17f7eb242321c5addac9c3732fc708
     });
 
     // 3. Persist submission record in database
@@ -364,24 +341,12 @@ export const submitCode = async (req, res) => {
     }
 
     res.status(201).json({
-<<<<<<< HEAD
       status,
       passedCount,
       totalCount: testCases.length,
       results,
       compileOutput,
       timeMs: batch.timeMs || 0,
-=======
-      submissionId: savedSubmission?._id || null,
-      status: suiteResult.status,
-      passed: suiteResult.passed,
-      total: suiteResult.total,
-      score: suiteResult.score,
-      execution_time: suiteResult.executionTime,
-      memory: suiteResult.memory,
-      compileOutput: suiteResult.compileOutput,
-      test_results: suiteResult.testResults,
->>>>>>> ee891a659c17f7eb242321c5addac9c3732fc708
     });
   } catch (error) {
     console.error("Submit Code Error:", error.message);
