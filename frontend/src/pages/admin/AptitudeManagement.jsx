@@ -5,6 +5,7 @@ import api from "../../utils/api";
 import { getAuthToken } from "../../hooks/useStudentProfile";
 import toast from "react-hot-toast";
 import { SkeletonCard, ErrorState } from "../../components/ui/Skeleton";
+import AptitudeUploader from "../../components/admin/AptitudeUploader";
 
 const DIFFICULTIES = ["easy", "medium", "hard"];
 const DIFF_LABELS = { easy: "Easy", medium: "Medium", hard: "Hard" };
@@ -30,6 +31,8 @@ function AptitudeManagement() {
   const [assignOpen, setAssignOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [importText, setImportText] = useState("");
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [uploadSource, setUploadSource] = useState(null);
   const [assignForm, setAssignForm] = useState({ companyId: "", difficulty: "", category: "", marks: "", explanation: "" });
 
   const [trash, setTrash] = useState([]);
@@ -164,6 +167,14 @@ function AptitudeManagement() {
     } catch { toast.error("Invalid JSON. Provide an array of question objects."); }
   };
 
+  const handleUploaderAdd = async (questions) => {
+    try {
+      const res = await api.post("/api/aptitude/bulk-import", { questions }, { headers });
+      toast.success(res.data?.message || "Import complete");
+      setUploadSource(null); fetchData();
+    } catch (err) { toast.error(err.response?.data?.message || "Import failed"); }
+  };
+
   const toggleSelect = (id) => {
     setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   };
@@ -201,7 +212,7 @@ function AptitudeManagement() {
               <button type="button" onClick={() => setSelected([])} className="text-xs font-semibold cursor-pointer hover:opacity-80" style={{ color: "var(--text-muted)" }}>Clear</button>
             </div>
           )}
-          <button type="button" onClick={() => setImportOpen(true)} className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold cursor-pointer" style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
+          <button type="button" onClick={() => setPickerOpen(true)} className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold cursor-pointer" style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
             <Upload className="w-4 h-4" /> Import
           </button>
           <button type="button" onClick={toggleTrash} className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold cursor-pointer" style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
@@ -495,6 +506,60 @@ function AptitudeManagement() {
                 <button type="button" onClick={() => setImportOpen(false)} className="px-6 py-2.5 rounded-xl border text-sm font-semibold cursor-pointer" style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}>Cancel</button>
                 <button type="button" onClick={handleImport} className="px-6 py-2.5 rounded-xl text-sm font-semibold text-white cursor-pointer" style={{ background: "var(--primary)" }}>Import</button>
               </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Import Source Picker */}
+      <AnimatePresence>
+        {pickerOpen && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setPickerOpen(false)} className="fixed inset-0 z-[60] backdrop-blur-sm" style={{ background: "rgba(0,0,0,0.5)" }} />
+            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="fixed inset-8 sm:inset-40 z-[60] overflow-y-auto rounded-2xl border p-6 sm:p-8"
+              style={{ background: "var(--card-bg)", borderColor: "var(--border)" }}>
+              <div className="flex items-center justify-between mb-2">
+                <h2 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>Import Aptitude Questions</h2>
+                <button type="button" onClick={() => setPickerOpen(false)} className="p-2 rounded-lg border cursor-pointer" style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}><X className="w-5 h-5" /></button>
+              </div>
+              <p className="text-xs mb-4" style={{ color: "var(--text-muted)" }}>Choose how you want to add questions.</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {[
+                  { key: "manual", label: "Manual JSON", desc: "Paste a JSON array of questions", icon: Edit2 },
+                  { key: "csv", label: "CSV Upload", desc: "Upload an official CSV template", icon: Upload },
+                  { key: "word", label: "Word Upload", desc: "Upload an official Word template", icon: Upload },
+                  { key: "pdf", label: "PDF Upload", desc: "Upload an official PDF template", icon: Upload },
+                ].map((opt) => (
+                  <button key={opt.key} type="button" onClick={() => { setPickerOpen(false); if (opt.key === "manual") setImportOpen(true); else setUploadSource(opt.key); }}
+                    className="flex items-center gap-3 p-4 rounded-xl border text-left cursor-pointer admin-hover transition"
+                    style={{ borderColor: "var(--border)", background: "var(--input-bg)" }}>
+                    <opt.icon className="w-5 h-5 shrink-0" style={{ color: "var(--primary)" }} />
+                    <div>
+                      <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>{opt.label}</p>
+                      <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>{opt.desc}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* File Upload Modal (CSV / Word / PDF) */}
+      <AnimatePresence>
+        {uploadSource && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[60] backdrop-blur-sm" style={{ background: "rgba(0,0,0,0.5)" }} onClick={() => setUploadSource(null)} />
+            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="fixed inset-6 sm:inset-16 z-[60] overflow-y-auto rounded-2xl border p-6 sm:p-8"
+              style={{ background: "var(--card-bg)", borderColor: "var(--border)" }}>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>Import Aptitude Questions — {uploadSource.toUpperCase()}</h2>
+                <button type="button" onClick={() => setUploadSource(null)} className="p-2 rounded-lg border cursor-pointer" style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}><X className="w-5 h-5" /></button>
+              </div>
+              <AptitudeUploader source={uploadSource} onAdd={handleUploaderAdd} onCancel={() => setUploadSource(null)} />
             </motion.div>
           </>
         )}

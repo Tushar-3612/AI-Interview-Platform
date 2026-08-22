@@ -427,12 +427,83 @@ export const submitCoding = async (req, res) => {
     const testCases = question.testCases || [];
     const timeLimit = (question.timeLimit || 1000) / 1000;
 
+<<<<<<< HEAD
+    // All languages now go through Docker execution
+    const casePayloads = isStdinLanguage(langId)
+      ? testCases.map((tc) => String(tc.input ?? ""))
+      : testCases.map((tc) => parseTestArgs(tc.input, code));
+    const batch = await executeBatch(langId, code, casePayloads, { timeLimitMs: timeLimit });
+
+    if (batch.type !== "success" || !batch.outputs || batch.outputs.length !== testCases.length) {
+      const errorMsg = batch.type === "time_limit"
+        ? `Time limit exceeded (${timeLimit}ms)`
+        : String(batch.output || batch.type || "Execution failed").trim();
+      const results = testCases.map((tc, index) => ({
+        index: index + 1,
+        passed: false,
+        isHidden: Boolean(tc.isHidden),
+        input: tc.isHidden ? "" : String(tc.input),
+        expected: tc.isHidden ? "" : String(tc.expected ?? tc.output ?? tc.expectedOutput ?? ""),
+        actual: "",
+        error: errorMsg,
+        timeMs: 0,
+      }));
+      const submission = await CodingSubmission.create({
+        userId,
+        questionId,
+        title: question.title,
+        companyId: question.companyId,
+        companyName: question.companyName,
+        language,
+        code,
+        status: "error",
+        passedCount: 0,
+        totalCount: testCases.length,
+        results,
+        timeTakenMs: Number(timeTakenMs) || 0,
+      });
+      invalidateStudentPlacement(userId);
+      return res.status(201).json({
+        _id: submission._id,
+        status: "error",
+        passedCount: 0,
+        totalCount: testCases.length,
+        results,
+      });
+    }
+
+    let passedCount = 0;
+    const results = testCases.map((tc, index) => {
+      const raw = String(batch.outputs[index] ?? "");
+      let error = "";
+      let actual = raw;
+      if (raw.startsWith("__time_limit__:")) {
+        error = `Time limit exceeded (${timeLimit}ms)`;
+        actual = "";
+      } else if (raw.startsWith("__runtime_error__:")) {
+        error = raw.slice("__runtime_error__:".length);
+        actual = "";
+      }
+      const passed = !error && normalizeOutput(raw) === normalizeOutput(tc.expected ?? tc.output ?? tc.expectedOutput ?? "");
+      if (passed) passedCount++;
+      return {
+        index: index + 1,
+        passed,
+        isHidden: Boolean(tc.isHidden),
+        input: tc.isHidden ? "" : String(tc.input),
+        expected: tc.isHidden ? "" : String(tc.expected ?? tc.output ?? tc.expectedOutput ?? ""),
+        actual: passed ? "" : actual,
+        error,
+        timeMs: 0,
+      };
+=======
     const { executeJudge0TestSuite } = await import("../services/judge0Service.js");
     const suiteResult = await executeJudge0TestSuite({
       sourceCode: code,
       language,
       testCases,
       cpuTimeLimit: timeLimit,
+>>>>>>> ee891a659c17f7eb242321c5addac9c3732fc708
     });
 
     const isAccepted = suiteResult.status === "completed" || suiteResult.passed === suiteResult.total;

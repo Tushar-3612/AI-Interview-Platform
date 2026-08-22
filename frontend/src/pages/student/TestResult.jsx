@@ -85,9 +85,9 @@ function TestResult() {
         <div className="p-6 space-y-4">
           <div className="grid grid-cols-2 gap-3 text-xs">
             {[
-              ["Total Score", `${attempt.totalScore} / ${attempt.totalMarks}`],
+              ["Your Score", `${attempt.totalScore} / ${attempt.totalMarks}`],
               ["Percentage", `${percentage}%`],
-              ["Passing Marks", `${test?.passingMarks || 40}%`],
+              ["Required to Pass", `${attempt.passingMarks ?? 0} / ${attempt.totalMarks}`],
               ["Status", passed ? "Passed" : "Failed"],
               ["Answered", attempt.answered],
               ["Skipped", attempt.skipped],

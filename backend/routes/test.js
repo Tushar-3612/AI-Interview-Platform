@@ -22,6 +22,7 @@ import {
   updateAssignmentStatus,
   uploadQuestions,
   uploadMiddleware,
+  downloadTemplate,
 } from "../controllers/testController.js";
 import {
   processTestResult,
@@ -48,6 +49,7 @@ router.put("/questions/:id/:questionId", updateQuestion);
 router.delete("/questions/:id/:questionId", deleteQuestion);
 
 router.post("/upload-questions", uploadMiddleware, uploadQuestions);
+router.get("/question-templates/:format", downloadTemplate);
 
 router.put("/:id/publish", publishTest);
 router.put("/:id/schedule", scheduleTest);

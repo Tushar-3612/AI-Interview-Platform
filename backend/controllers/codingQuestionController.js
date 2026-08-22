@@ -7,6 +7,19 @@ import {
   normalizeCodingQuestion,
 } from "../services/codingQuestionBank.js";
 import { createNotification } from "../services/notificationService.js";
+import {
+  parseCodingQuestions,
+  normalizeCodingProblem,
+  validateCodingQuestions,
+  findDuplicateCodingProblems,
+  containsCodingPlaceholder,
+  detectFileKind,
+} from "../utils/coding/index.js";
+import {
+  generateCsvTemplate as generateCodingCsv,
+  generateDocxTemplate as generateCodingDocx,
+  generatePdfTemplate as generateCodingPdf,
+} from "../utils/coding/codingTemplateGenerator.js";
 
 const TRASH_RETENTION_DAYS = 30;
 
@@ -230,6 +243,73 @@ export const bulkImportCodingQuestions = async (req, res) => {
     res.json({ message: `Import complete: ${created} created, ${updated} updated, ${skipped} skipped`, created, updated, skipped });
   } catch (error) {
     res.status(500).json({ message: "Failed to import questions", error: error.message });
+  }
+};
+
+export const uploadCodingProblems = async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ message: "No file uploaded" });
+    const kind = detectFileKind(req.file.originalname, req.file.mimetype);
+    if (!kind) return res.status(400).json({ message: "Unsupported file type. Use CSV, DOCX or PDF." });
+
+    const parsed = await parseCodingQuestions(req.file.buffer, kind);
+    if (!parsed || parsed.length === 0) {
+      return res.status(400).json({ message: "No coding problems found in the uploaded file." });
+    }
+
+    if (containsCodingPlaceholder(parsed)) {
+      return res.status(400).json({ message: "Please replace the template placeholder values before uploading. Replace the bracketed [Enter ...] text with your own coding problems." });
+    }
+
+    const { valid, invalid } = validateCodingQuestions(parsed);
+    const duplicates = findDuplicateCodingProblems(parsed);
+    const dupIndexes = new Set(duplicates.map((d) => d.index));
+    const validProblems = valid.filter((q) => !dupIndexes.has(parsed.indexOf(q)));
+
+    const validQuestions = validProblems.map((p) => normalizeCodingProblem(p));
+
+    const invalidQuestions = invalid.map((iv) => ({
+      ...iv,
+      duplicate: duplicates.some((d) => d.index === iv.index),
+    }));
+
+    res.json({
+      success: true,
+      total: parsed.length,
+      validCount: validQuestions.length,
+      invalidCount: invalidQuestions.length,
+      validQuestions,
+      invalidQuestions,
+      duplicates,
+    });
+  } catch (error) {
+    res.status(400).json({ message: error.message || "Failed to process file" });
+  }
+};
+
+export const downloadCodingTemplate = async (req, res) => {
+  try {
+    const format = (req.params.format || "csv").toLowerCase();
+    if (format === "csv") {
+      res.setHeader("Content-Type", "text/csv");
+      res.setHeader("Content-Disposition", 'attachment; filename="coding_problems_template.csv"');
+      return res.send(generateCodingCsv());
+    }
+    if (format === "docx") {
+      const buf = generateCodingDocx();
+      res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+      res.setHeader("Content-Disposition", 'attachment; filename="coding_problems_template.docx"');
+      return res.send(buf);
+    }
+    if (format === "pdf") {
+      const buf = await generateCodingPdf();
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Disposition", 'attachment; filename="coding_problems_template.pdf"');
+      return res.send(buf);
+    }
+    return res.status(400).json({ message: "Unsupported format" });
+  } catch (error) {
+    res.status(500).json({ message: error.message || "Failed to generate template" });
   }
 };
 

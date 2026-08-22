@@ -5,7 +5,20 @@ import TestAttempt from "../models/TestAttempt.js";
 import TestResult from "../models/TestResult.js";
 import User from "../models/User.js";
 import Result from "../models/Result.js";
-import { parseQuestions, removeDuplicates, validateQuestions } from "../utils/questionParser.js";
+import {
+  parseQuestions,
+  validateQuestions,
+  findDuplicates,
+  toAppQuestion,
+  detectFileKind,
+  containsPlaceholder,
+} from "../utils/questionParser.js";
+import {
+  generateCsvTemplate,
+  generateDocxTemplate,
+  generatePdfTemplate,
+} from "../utils/templateGenerator.js";
+import { normalizeYear, normalizeDepartment, yearQuery } from "../utils/academicConfig.js";
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -136,23 +149,41 @@ export const deleteQuestion = async (req, res) => {
 
 export const publishTest = async (req, res) => {
   try {
-    const { scheduledAt, startAt, endAt } = req.body;
+    const { startAt, endAt } = req.body;
     const test = await Test.findById(req.params.id);
     if (!test) return res.status(404).json({ message: "Test not found" });
+
+    if (test.status === "completed") {
+      return res.status(400).json({ message: "Cannot publish a completed test" });
+    }
 
     if (!test.questions || test.questions.length === 0) {
       return res.status(400).json({ message: "Cannot publish a test with no questions" });
     }
 
-    if (scheduledAt) {
-      test.status = "scheduled";
-      test.scheduledAt = new Date(scheduledAt);
-      if (startAt) test.startAt = new Date(startAt);
-      if (endAt) test.endAt = new Date(endAt);
-    } else {
-      test.status = "live";
-      test.publishedAt = new Date();
+    const existingAssignment = await TestAssignment.findOne({ testId: test._id, status: { $ne: "archived" } });
+    if (!existingAssignment) {
+      return res.status(400).json({ message: "Assign at least one student before publishing the test." });
     }
+
+    if (!startAt) {
+      return res.status(400).json({ message: "Start date and time are required." });
+    }
+    if (!endAt) {
+      return res.status(400).json({ message: "End date and time are required." });
+    }
+
+    const s = new Date(startAt);
+    const e = new Date(endAt);
+    if (isNaN(s.getTime()) || isNaN(e.getTime()) || e.getTime() <= s.getTime()) {
+      return res.status(400).json({ message: "End date and time must be after the start date and time." });
+    }
+
+    test.status = "scheduled";
+    test.scheduledAt = s;
+    test.startAt = s;
+    test.endAt = e;
+    test.publishedAt = new Date();
 
     await test.save();
     res.json({ message: "Test published", test });
@@ -232,39 +263,82 @@ export const assignTest = async (req, res) => {
   try {
     const { testId, assignType, assignValue, studentIds, department, year, section } = req.body;
 
+    if (!testId) {
+      return res.status(400).json({ message: "Test identifier is required." });
+    }
+
     const test = await Test.findById(testId);
-    if (!test) return res.status(404).json({ message: "Test not found" });
+    if (!test) return res.status(404).json({ message: "Test does not exist." });
+
+    const normalizedDepartment = department ? normalizeDepartment(department) : "";
+    const normalizedYear = year ? normalizeYear(year) : "";
 
     let targetStudents = [];
     let resolvedAssignType = assignType;
     let resolvedAssignValue = assignValue || "";
-    let resolvedDepartment = department || "";
-    let resolvedYear = year || "";
+    let resolvedDepartment = normalizedDepartment;
+    let resolvedYear = normalizedYear;
     let resolvedSection = section || "";
 
     if (assignType === "department_year") {
       resolvedAssignType = "department";
-      resolvedAssignValue = department || "";
+      resolvedAssignValue = normalizedDepartment;
       const query = {};
-      if (department) query.department = department;
-      if (year) query.year = year;
+      if (department) query.department = normalizedDepartment;
+      if (year) query.year = yearQuery(year);
       targetStudents = await User.find(query).select("_id");
     } else if (assignType === "all") {
       targetStudents = await User.find().select("_id");
     } else if (assignType === "department") {
-      targetStudents = await User.find({ department: assignValue }).select("_id");
-      resolvedDepartment = assignValue || "";
+      if (!assignValue) {
+        return res.status(400).json({ message: "Please select a department." });
+      }
+      targetStudents = await User.find({ department: normalizeDepartment(assignValue) }).select("_id");
+      resolvedDepartment = normalizeDepartment(assignValue);
     } else if (assignType === "year") {
-      targetStudents = await User.find({ year: assignValue }).select("_id");
-      resolvedYear = assignValue || "";
+      if (!assignValue) {
+        return res.status(400).json({ message: "Please select an academic year." });
+      }
+      targetStudents = await User.find({ year: yearQuery(assignValue) }).select("_id");
+      resolvedYear = normalizeYear(assignValue);
     } else if (assignType === "section") {
-      targetStudents = await User.find({ department: assignValue }).select("_id");
-      resolvedSection = assignValue || "";
+      if (!assignValue) {
+        return res.status(400).json({ message: "Please select a section." });
+      }
+      targetStudents = await User.find({ section: assignValue }).select("_id");
+      resolvedSection = assignValue;
     } else if (assignType === "individual" || assignType === "multiple") {
-      targetStudents = (studentIds || []).map(id => ({ _id: id }));
+      const providedIds = Array.isArray(studentIds) ? studentIds : [];
+      if (providedIds.length === 0) {
+        return res.status(400).json({ message: "No students were selected." });
+      }
+      const valid = await User.find({ _id: { $in: providedIds } }).select("_id");
+      const validIds = valid.map((u) => u._id.toString());
+      const invalidCount = providedIds.length - validIds.length;
+      if (validIds.length === 0) {
+        return res.status(400).json({ message: "One or more selected students are invalid." });
+      }
+      if (invalidCount > 0) {
+        return res.status(400).json({
+          message: "One or more selected students are invalid.",
+          validStudentIds: validIds,
+        });
+      }
+      targetStudents = valid;
+    } else {
+      return res.status(400).json({ message: "Invalid assignment type." });
     }
 
-    const ids = targetStudents.map(s => s._id);
+    const ids = targetStudents.map((s) => s._id);
+
+    if (ids.length === 0) {
+      if (assignType === "individual" || assignType === "multiple") {
+        return res.status(400).json({ message: "No students were selected." });
+      }
+      return res.status(400).json({
+        message: "No students match the selected criteria. Try a different Department / Year combination.",
+      });
+    }
 
     const existingQuery = { testId };
     if (resolvedAssignType === "department" && resolvedDepartment) {
@@ -281,11 +355,18 @@ export const assignTest = async (req, res) => {
     const existing = await TestAssignment.findOne(existingQuery);
 
     if (existing) {
-      const merged = [...new Set([...existing.studentIds.map(s => s.toString()), ...ids.map(s => s.toString())])];
+      const merged = [...new Set([...existing.studentIds.map((s) => s.toString()), ...ids.map((s) => s.toString())])];
+      // Do not create duplicate assignments for students already assigned.
+      const alreadyAssigned = existing.studentIds.map((s) => s.toString()).length;
       existing.studentIds = merged;
       existing.notAttemptedCount = merged.length - existing.completedCount - existing.autoSubmittedCount;
       await existing.save();
-      return res.json({ message: "Assignment updated", assignment: existing });
+      const newlyAdded = merged.length - alreadyAssigned;
+      return res.json({
+        message: newlyAdded > 0 ? "Assignment updated" : "These students are already assigned to this test.",
+        assignment: existing,
+        alreadyAssigned: newlyAdded === 0,
+      });
     }
 
     const assignment = await TestAssignment.create({
@@ -297,13 +378,13 @@ export const assignTest = async (req, res) => {
       section: resolvedSection,
       studentIds: ids,
       notAttemptedCount: ids.length,
-      assignedBy: req.user.id,
+      assignedBy: req.user?.id,
     });
 
     res.status(201).json({ message: "Test assigned", assignment });
   } catch (error) {
     console.error("Assign Test Error:", error.message);
-    res.status(500).json({ message: "Failed to assign test" });
+    res.status(500).json({ message: error.message || "Unable to create assignment." });
   }
 };
 
@@ -452,31 +533,87 @@ export const uploadQuestions = async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ message: "No file uploaded" });
 
-    const supported = ["text/csv", "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "application/pdf"];
-    const isSupported = supported.some(t => req.file.mimetype.includes(t));
-    if (!isSupported) return res.status(400).json({ message: `Unsupported file type: ${req.file.mimetype}. Please upload CSV, Excel, or PDF files.` });
+    if (req.file.size > 10 * 1024 * 1024) {
+      return res.status(400).json({
+        success: false,
+        message: "File is too large. Please upload a file smaller than 10MB.",
+      });
+    }
 
-    const questions = await parseQuestions(
-      req.file.buffer,
-      req.file.mimetype
-    );
-    const deduped = removeDuplicates(questions);
-    const { errors, warnings } = validateQuestions(deduped);
+    const kind = detectFileKind(req.file.originalname, req.file.mimetype);
+    if (!kind) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Invalid file type. Please upload a .csv, .docx or .pdf file using the official Technical Questions template.",
+      });
+    }
+
+    const parsed = await parseQuestions(req.file.buffer, kind);
+    if (!parsed || parsed.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "We couldn't find any questions in this file. Please make sure it follows the official template format.",
+      });
+    }
+
+    if (containsPlaceholder(parsed)) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Please replace the template placeholder values before uploading. Replace the bracketed [Enter ...] text with your own questions.",
+      });
+    }
+
+    const { valid, invalid } = validateQuestions(parsed);
+    const duplicates = findDuplicates(parsed);
+
     res.json({
       success: true,
-      questions: deduped,
-      errors,
-      warnings,
-      total: deduped.length,
-      duplicates: questions.length - deduped.length,
+      total: parsed.length,
+      validCount: valid.length,
+      invalidCount: invalid.length,
+      validQuestions: valid.map(toAppQuestion),
+      invalidQuestions: invalid,
+      duplicates,
     });
   } catch (error) {
-    const clientErrors = ["Unsupported file type", "CSV must have", "Excel file is empty"];
-    if (clientErrors.some(msg => error.message.startsWith(msg))) {
-      return res.status(400).json({ message: error.message });
-    }
     console.error("Upload Questions Error:", error.message);
-    res.status(500).json({ success: false, message: error.message });
+    res.status(400).json({
+      success: false,
+      message:
+        error.message ||
+        "We couldn't parse this file. Please download the official template and upload the completed version.",
+    });
+  }
+};
+
+export const downloadTemplate = async (req, res) => {
+  const format = (req.params.format || "").toLowerCase();
+  try {
+    if (format === "csv") {
+      const csv = generateCsvTemplate();
+      res.setHeader("Content-Disposition", "attachment; filename=technical_questions_template.csv");
+      res.setHeader("Content-Type", "text/csv; charset=utf-8");
+      return res.status(200).send(csv);
+    }
+    if (format === "docx") {
+      const buf = generateDocxTemplate();
+      res.setHeader("Content-Disposition", "attachment; filename=technical_questions_template.docx");
+      res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+      return res.status(200).send(buf);
+    }
+    if (format === "pdf") {
+      const buf = await generatePdfTemplate();
+      res.setHeader("Content-Disposition", "attachment; filename=technical_questions_template.pdf");
+      res.setHeader("Content-Type", "application/pdf");
+      return res.status(200).send(buf);
+    }
+    return res.status(400).json({ message: "Unknown template format" });
+  } catch (error) {
+    console.error("Download Template Error:", error.message);
+    res.status(500).json({ message: "Failed to generate template" });
   }
 };
 

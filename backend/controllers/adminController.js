@@ -9,6 +9,7 @@ import { generateStudentReportBuffer } from "../utils/pdfGenerator.js";
 import { sendReportEmail } from "../utils/emailSender.js";
 import { exportSingleStudentCSV, exportAllStudentsCSV } from "../utils/reportExporter.js";
 import { createNotification } from "../services/notificationService.js";
+import { normalizeYear, normalizeDepartment, yearQuery } from "../utils/academicConfig.js";
 
 /**
  * Get dashboard overview metrics and charts.
@@ -203,7 +204,7 @@ export const getStudents = async (req, res) => {
       query.department = department;
     }
     if (year) {
-      query.year = year;
+      query.year = yearQuery(year);
     }
     if (search) {
       query.$or = [
@@ -340,8 +341,8 @@ export const updateStudent = async (req, res) => {
     }
 
     if (name) student.name = name;
-    if (department) student.department = department;
-    if (year) student.year = year;
+    if (department) student.department = normalizeDepartment(department);
+    if (year) student.year = normalizeYear(year);
     if (phone !== undefined) student.phone = phone;
     if (portfolio !== undefined) student.portfolio = portfolio;
     if (github !== undefined) student.github = github;

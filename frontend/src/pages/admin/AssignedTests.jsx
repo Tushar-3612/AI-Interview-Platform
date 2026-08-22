@@ -11,12 +11,11 @@ import api from "../../utils/api";
 import { getAuthToken } from "../../hooks/useStudentProfile";
 import toast from "react-hot-toast";
 import * as XLSX from "xlsx";
+import { DEPARTMENT_VALUES as DEPARTMENTS, YEAR_VALUES as YEARS } from "../../utils/constants";
 
 /* ══════════════════════════════════════════════════════════════
    CONSTANTS
    ══════════════════════════════════════════════════════════════ */
-const DEPARTMENTS = ["Computer Engineering", "IT Engineering", "Electronics Engineering", "Mechanical Engineering", "Civil Engineering", "ENTC Engineering", "AI & DS"];
-const YEARS = ["1st Year", "2nd Year", "3rd Year", "Last Year"];
 const SECTIONS = ["A", "B", "C"];
 const TEST_TYPES = ["aptitude", "technical", "coding", "mixed"];
 const STATUS_OPTIONS = ["draft", "scheduled", "live", "completed", "cancelled"];
@@ -35,8 +34,31 @@ const statusBadge = (s) => {
     cancelled: "bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 border-red-200 dark:border-red-800",
     active: "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800",
     archived: "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-700",
+    upcoming: "bg-purple-50 dark:bg-purple-950/20 text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-800",
+    expired: "bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 border-red-200 dark:border-red-800",
   };
   return map[s?.toLowerCase()] || map.draft;
+};
+
+const fmtDateTime = (d) => {
+  if (!d) return "—";
+  const dt = new Date(d);
+  if (isNaN(dt.getTime())) return "—";
+  return dt.toLocaleString("en-IN", {
+    day: "2-digit", month: "short", year: "numeric",
+    hour: "2-digit", minute: "2-digit", hour12: true,
+  });
+};
+
+const getEffectiveTestStatus = (test) => {
+  if (!test) return "draft";
+  const now = new Date();
+  if (test.status === "draft") return "draft";
+  if (test.status === "completed" || test.closedAt) return "completed";
+  if (test.startAt && new Date(test.startAt) > now) return "upcoming";
+  if (test.endAt && new Date(test.endAt) < now) return "expired";
+  if (test.scheduledAt && new Date(test.scheduledAt) > now) return "upcoming";
+  return "active";
 };
 
 const studentStatusBadge = (s) => {
@@ -488,6 +510,7 @@ function ViewTestModal({ assignment, onClose, onEdit, onDelete, onReschedule, on
   });
 
   const totalMarks = questions.reduce((s, q) => s + (q.marks || 0), 0);
+  const requiredMarks = Math.ceil(totalMarks * (test.passingMarks || 0) / 100);
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 pt-6 pb-6 overflow-y-auto" onClick={onClose}>
@@ -524,7 +547,7 @@ function ViewTestModal({ assignment, onClose, onEdit, onDelete, onReschedule, on
                   ["Test Type", test.testType],
                   ["Difficulty", test.difficulty],
                   ["Duration", `${test.duration} min`],
-                  ["Passing Marks", `${test.passingMarks}%`],
+                  ["Passing", `${requiredMarks} / ${totalMarks} (${test.passingMarks}%)`],
                   ["Total Questions", `${questions.length}`],
                   ["Total Marks", `${totalMarks}`],
                   ["Attempt Limit", test.attemptLimit],
@@ -1018,6 +1041,7 @@ function AssignedTests() {
                     { key: null, label: "Not Attempted" },
                     { key: null, label: "Auto Submitted" },
                     { key: "averageScore", label: "Avg Score" },
+                    { key: null, label: "Schedule" },
                     { key: "status", label: "Status" },
                     { key: null, label: "Actions" },
                   ].map(col => (
@@ -1065,9 +1089,17 @@ function AssignedTests() {
                       <td className="py-2.5 pr-2 font-medium" style={{ color: (a.averageScore || 0) >= 40 ? "var(--badge-success-text)" : "var(--badge-error-text)" }}>
                         {a.averageScore ? `${a.averageScore}%` : "0%"}
                       </td>
+                      <td className="py-2.5 pr-2" style={{ color: "var(--text-secondary)" }}>
+                        <div className="whitespace-nowrap text-[11px] leading-tight">
+                          <div>{test.startAt ? fmtDateTime(test.startAt) : "—"}</div>
+                          <div style={{ color: "var(--text-muted)" }}>
+                            → {test.endAt ? fmtDateTime(test.endAt) : (test.scheduledAt ? fmtDateTime(test.scheduledAt) : "—")}
+                          </div>
+                        </div>
+                      </td>
                       <td className="py-2.5 pr-2">
-                        <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded border ${statusBadge(a.status)}`}>
-                          {a.status || "draft"}
+                        <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded border ${statusBadge(getEffectiveTestStatus(test))}`}>
+                          {getEffectiveTestStatus(test)}
                         </span>
                       </td>
                       <td className="py-2.5 pr-2">

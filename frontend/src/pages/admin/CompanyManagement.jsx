@@ -5,9 +5,8 @@ import api from "../../utils/api";
 import { getAuthToken } from "../../hooks/useStudentProfile";
 import toast from "react-hot-toast";
 import { SkeletonCompanyGrid as SkeletonGrid } from "../../components/ui/Skeleton";
+import { DEPARTMENT_VALUES as DEPARTMENTS, YEAR_VALUES as YEARS } from "../../utils/constants";
 
-const DEPARTMENTS = ["Computer Engineering", "IT Engineering", "Electronics Engineering", "Mechanical Engineering", "Civil Engineering", "ENTC Engineering", "AI & DS"];
-const YEARS = ["1st Year", "2nd Year", "3rd Year", "Last Year"];
 const DIFFICULTIES = ["Easy", "Medium", "Hard"];
 const INTERVIEW_TYPES = ["practice", "real", "both"];
 

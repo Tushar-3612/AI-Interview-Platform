@@ -1,4 +1,5 @@
 import mammoth from "mammoth";
+import * as XLSX from "xlsx";
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
 
 pdfjsLib.GlobalWorkerOptions.standardFontDataUrl = new URL(
@@ -10,7 +11,7 @@ pdfjsLib.GlobalWorkerOptions.standardFontDataUrl = new URL(
    CONSTANTS
    ============================================================ */
 
-export const ALLOWED_TYPES = ["MCQ", "True/False", "Short Answer"];
+export const ALLOWED_TYPES = ["MCQ"];
 export const ALLOWED_DIFFICULTIES = ["Easy", "Medium", "Hard"];
 const OPTION_KEYS = ["A", "B", "C", "D"];
 
@@ -18,7 +19,6 @@ const LABELS = [
   "Question ID",
   "Question",
   "Type",
-  "Subject",
   "Marks",
   "Negative Marks",
   "Difficulty",
@@ -37,7 +37,6 @@ function regexEscape(s) {
 
 function sanitizeText(value) {
   if (!value) return "";
-  // Strip any HTML/script tags to prevent injection
   return String(value)
     .replace(/<[^>]*>/g, "")
     .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, "")
@@ -45,126 +44,62 @@ function sanitizeText(value) {
 }
 
 function normalizeType(raw) {
-  const t = sanitizeText(raw);
+  const t = sanitizeTextType(raw);
   if (!t) return "";
-  const lower = t.toLowerCase();
-  if (lower.includes("mcq") || lower.includes("multiple choice")) return "MCQ";
-  if (lower.includes("true") && lower.includes("false")) return "True/False";
-  if (lower.includes("short")) return "Short Answer";
-  if (lower.includes("descriptive")) return "Short Answer";
+  if (t.toLowerCase().includes("mcq") || t.toLowerCase().includes("multiple choice")) return "MCQ";
   return t;
 }
 
-function normalizeAnswer(raw, type) {
+function sanitizeTextType(value) {
+  if (!value) return "";
+  return String(value).replace(/<[^>]*>/g, "").trim();
+}
+
+function normalizeAnswer(raw) {
   const a = sanitizeText(raw);
   if (!a) return "";
-  if (type === "True/False") {
-    const lower = a.toLowerCase();
-    if (["a", "true", "t"].includes(lower) || lower.startsWith("true")) return "A";
-    if (["b", "false", "f"].includes(lower) || lower.startsWith("false")) return "B";
-    return a.toUpperCase();
-  }
   const m = a.match(/^([A-Da-d])\s*[.)]?\s*$/);
   return m ? m[1].toUpperCase() : a.toUpperCase();
 }
 
 /* ============================================================
-   CSV PARSER
+   CSV PARSER (uses xlsx for robust quote/comma handling)
    ============================================================ */
 
-function parseCsvRows(text) {
-  const rows = [];
-  let row = [];
-  let field = "";
-  let inQuotes = false;
-  for (let i = 0; i < text.length; i++) {
-    const c = text[i];
-    if (inQuotes) {
-      if (c === '"') {
-        if (text[i + 1] === '"') {
-          field += '"';
-          i++;
-        } else inQuotes = false;
-      } else field += c;
-    } else {
-      if (c === '"') inQuotes = true;
-      else if (c === ",") {
-        row.push(field);
-        field = "";
-      } else if (c === "\n") {
-        row.push(field);
-        rows.push(row);
-        row = [];
-        field = "";
-      } else if (c === "\r") {
-        /* ignore */
-      } else field += c;
-    }
-  }
-  if (field.length > 0 || row.length > 0) {
-    row.push(field);
-    rows.push(row);
-  }
-  return rows;
-}
-
 function parseCSV(text) {
-  const rows = parseCsvRows(text || "");
-  if (rows.length < 2) return [];
-  const header = rows[0].map((h) => sanitizeText(h).toLowerCase());
-  const col = (name) => header.indexOf(name);
-
-  const map = {
-    question: col("question"),
-    type: col("type"),
-    subject: col("subject"),
-    marks: col("marks"),
-    neg: col("negative_marks"),
-    difficulty: col("difficulty"),
-    oa: col("option_a"),
-    ob: col("option_b"),
-    oc: col("option_c"),
-    od: col("option_d"),
-    ans: col("correct_answer"),
-    exp: col("explanation"),
-  };
-
-  const required = ["question", "type", "subject", "marks", "difficulty", "ans", "oa", "ob", "oc", "od"];
-  const missing = required.filter((k) => map[k] < 0);
-  if (missing.length > 0) {
-    throw new Error(
-      "CSV is missing required columns. Please download the official template and use the exact headers."
-    );
+  let rows;
+  try {
+    const wb = XLSX.read(text, { type: "string" });
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    rows = XLSX.utils.sheet_to_json(ws, { defval: "", raw: false });
+  } catch {
+    throw new Error("Could not read the CSV file. Please use the official aptitude template.");
   }
+  if (!Array.isArray(rows) || rows.length === 0) return [];
 
-  const out = [];
-  for (let i = 1; i < rows.length; i++) {
-    const r = rows[i];
-    if (r.length === 1 && !r[0].trim()) continue;
-    const get = (idx) => (idx >= 0 && r[idx] !== undefined ? sanitizeText(r[idx]) : "");
-    const type = normalizeType(get(map.type));
-    out.push({
-      question: get(map.question),
-      type,
-      subject: get(map.subject),
-      marks: get(map.marks) || "0",
-      negativeMarks: map.neg >= 0 ? get(map.neg) || "0" : "0",
-      difficulty: get(map.difficulty),
+  return rows.map((r) => {
+    const get = (k) => (r[k] === undefined || r[k] === null ? "" : String(r[k]).trim());
+    return {
+      questionId: get("question_id"),
+      question: get("question"),
+      type: normalizeType(get("type")),
+      marks: get("marks") || "0",
+      negativeMarks: get("negative_marks") || "0",
+      difficulty: get("difficulty"),
       options: {
-        A: get(map.oa),
-        B: get(map.ob),
-        C: get(map.oc),
-        D: get(map.od),
+        A: get("option_a"),
+        B: get("option_b"),
+        C: get("option_c"),
+        D: get("option_d"),
       },
-      correctAnswer: normalizeAnswer(get(map.ans), type),
-      explanation: map.exp >= 0 ? get(map.exp) : "",
-    });
-  }
-  return out;
+      correctAnswer: normalizeAnswer(get("correct_answer")),
+      explanation: get("explanation"),
+    };
+  });
 }
 
 /* ============================================================
-   LABEL-BASED PARSER (DOCX + PDF)
+   LABEL-BASED PARSER (DOCX + PDF) — Aptitude has no Subject
    ============================================================ */
 
 function fieldValue(block, label) {
@@ -188,13 +123,7 @@ function fieldValue(block, label) {
 function parseOptions(text) {
   const opts = {};
   if (!text) return opts;
-
-  // Normalize whitespace but preserve line boundaries so both
-  // line-based and single-line option layouts are handled.
   const normalized = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
-
-  // Find every option marker A./A) B./B) C./C) D./D) whether it sits at a
-  // line start or mid-line (single-line extraction from PDF/Word).
   const markerRe = /(?:^|[\n\r\s])([A-Da-d])\s*[\.\)]\s*/g;
   const matches = [];
   let m;
@@ -205,16 +134,12 @@ function parseOptions(text) {
       markerStart: m.index,
     });
   }
-
   if (matches.length === 0) return opts;
-
   for (let i = 0; i < matches.length; i++) {
     const contentStart = matches[i].contentStart;
     const nextMarkerStart = i + 1 < matches.length ? matches[i + 1].markerStart : normalized.length;
-    const content = normalized.slice(contentStart, nextMarkerStart).trim();
-    opts[matches[i].letter] = sanitizeText(content);
+    opts[matches[i].letter] = sanitizeText(normalized.slice(contentStart, nextMarkerStart).trim());
   }
-
   return opts;
 }
 
@@ -226,20 +151,17 @@ function parseBlock(block) {
     const type = normalizeType(fieldValue(block, "Type"));
     const optionsText = fieldValue(block, "Options");
     const options = parseOptions(optionsText);
-
-    const raw = {
+    return {
       questionId,
       question,
       type,
-      subject: fieldValue(block, "Subject"),
       marks: fieldValue(block, "Marks") || "0",
       negativeMarks: fieldValue(block, "Negative Marks") || "0",
       difficulty: fieldValue(block, "Difficulty"),
       options,
-      correctAnswer: normalizeAnswer(fieldValue(block, "Correct Answer"), type),
+      correctAnswer: normalizeAnswer(fieldValue(block, "Correct Answer")),
       explanation: fieldValue(block, "Explanation"),
     };
-    return raw;
   } catch {
     return null;
   }
@@ -249,17 +171,14 @@ function splitBlocks(text) {
   const lines = (text || "").split(/\r?\n/);
   const idRegex = /^\s*question\s*id\s*:/i;
   const qRegex = /^\s*question\s*:/i;
-
   const idIndices = [];
   const qIndices = [];
   lines.forEach((line, i) => {
     if (idRegex.test(line)) idIndices.push(i);
     else if (qRegex.test(line)) qIndices.push(i);
   });
-
   const splits = idIndices.length >= 1 ? idIndices : qIndices.length >= 1 ? qIndices : [];
   if (splits.length === 0) return [];
-
   const blocks = [];
   for (let s = 0; s < splits.length; s++) {
     const startLine = splits[s];
@@ -294,6 +213,9 @@ async function extractPDFText(buffer) {
   const pdf = await pdfjsLib.getDocument({ data: uint8 }).promise;
   let text = "";
   for (let i = 1; i <= pdf.numPages; i++) {
+    await pdf.getPage(i);
+  }
+  for (let i = 1; i <= pdf.numPages; i++) {
     const page = await pdf.getPage(i);
     const content = await page.getTextContent();
     let lastY = null;
@@ -314,9 +236,7 @@ async function extractPDFText(buffer) {
    ============================================================ */
 
 export async function parseQuestions(buffer, kind) {
-  if (kind === "csv") {
-    return parseCSV(buffer.toString("utf8"));
-  }
+  if (kind === "csv") return parseCSV(buffer.toString("utf8"));
   if (kind === "docx") {
     const text = await extractDocxText(buffer);
     if (!text || !text.trim()) {
@@ -335,77 +255,45 @@ export async function parseQuestions(buffer, kind) {
 }
 
 /* ============================================================
-   VALIDATION LAYER (shared)
+   VALIDATION LAYER (Aptitude MCQ)
    ============================================================ */
 
 export function validateQuestions(questions) {
   const valid = [];
   const invalid = [];
-
   questions.forEach((q, i) => {
     const errors = [];
     const label = q.questionId || `Q${String(i + 1).padStart(3, "0")}`;
 
+    if (!q.questionId || !q.questionId.trim()) errors.push("Question ID is missing");
     if (!q.question || !q.question.trim()) errors.push("Question text is empty");
-
-    if (!q.type || !ALLOWED_TYPES.includes(q.type)) {
-      errors.push("Type must be MCQ, True/False or Short Answer");
-    }
-
-    if (!q.subject || !q.subject.trim()) errors.push("Subject is missing");
-
+    if (!q.type || !ALLOWED_TYPES.includes(q.type)) errors.push("Type must be MCQ");
     const marks = Number(q.marks);
-    if (
-      q.marks === undefined ||
-      q.marks === null ||
-      q.marks === "" ||
-      isNaN(marks) ||
-      marks < 0
-    ) {
+    if (q.marks === undefined || q.marks === null || q.marks === "" || isNaN(marks) || marks < 0) {
       errors.push("Marks must be a number greater than or equal to 0");
     }
-
+    const neg = Number(q.negativeMarks);
+    if (q.negativeMarks !== undefined && q.negativeMarks !== null && q.negativeMarks !== "" && (isNaN(neg) || neg < 0)) {
+      errors.push("Negative Marks must be a number greater than or equal to 0");
+    }
     if (!q.difficulty || !ALLOWED_DIFFICULTIES.includes(q.difficulty)) {
       errors.push("Difficulty must be Easy, Medium or Hard");
     }
-
     const ca = q.correctAnswer ? q.correctAnswer.toString().trim() : "";
     if (!ca) {
       errors.push("Correct Answer is missing");
-    } else if (q.type === "MCQ" && !["A", "B", "C", "D"].includes(ca.toUpperCase())) {
+    } else if (!["A", "B", "C", "D"].includes(ca.toUpperCase())) {
       errors.push("Correct Answer must be A, B, C or D");
     }
+    OPTION_KEYS.forEach((k) => {
+      if (!q.options?.[k] || !q.options[k].trim()) errors.push(`Option ${k} is missing`);
+    });
 
-    if (q.type === "MCQ") {
-      const opts = q.options || {};
-      OPTION_KEYS.forEach((k) => {
-        if (!opts[k] || !opts[k].trim()) errors.push(`Option ${k} is missing`);
-      });
-    }
-
-    const neg = Number(q.negativeMarks);
-    if (
-      q.negativeMarks !== undefined &&
-      q.negativeMarks !== null &&
-      q.negativeMarks !== "" &&
-      (isNaN(neg) || neg < 0)
-    ) {
-      errors.push("Negative Marks must be a number greater than or equal to 0");
-    }
-
-    if (errors.length > 0) {
-      invalid.push({ index: i, label, question: q.question || "", errors });
-    } else {
-      valid.push(q);
-    }
+    if (errors.length > 0) invalid.push({ index: i, label, question: q.question || "", errors });
+    else valid.push(q);
   });
-
   return { valid, invalid };
 }
-
-/* ============================================================
-   DUPLICATE DETECTION (within a single upload)
-   ============================================================ */
 
 export function findDuplicates(questions) {
   const seen = new Map();
@@ -423,40 +311,24 @@ export function findDuplicates(questions) {
   return duplicates;
 }
 
-/* ============================================================
-   NORMALIZE TO APP QUESTION MODEL (QuestionEditor shape)
-   ============================================================ */
-
-export function toAppQuestion(q) {
-  const type = q.type === "Short Answer" ? "Descriptive" : q.type;
-  let options = [];
-  let correctAnswer = (q.correctAnswer || "").toString().trim();
-
-  if (q.type === "MCQ") {
-    options = OPTION_KEYS.map((k) => (q.options?.[k] || "").trim());
-  } else if (q.type === "True/False") {
-    options = ["True", "False"];
-    if (correctAnswer.toUpperCase() === "A") correctAnswer = "true";
-    else if (correctAnswer.toUpperCase() === "B") correctAnswer = "false";
-  }
-
+export function toAptitudeQuestion(q) {
+  const type = "MCQ";
+  const options = OPTION_KEYS.map((k) => (q.options?.[k] || "").trim());
+  const caLetter = (q.correctAnswer || "").toString().trim().toUpperCase();
+  const correctAnswer = options[OPTION_KEYS.indexOf(caLetter)] || "";
   return {
-    type,
+    questionId: sanitizeText(q.questionId),
     question: sanitizeText(q.question),
+    type,
     options,
     correctAnswer,
-    marks: Number(q.marks) || 0,
+    difficulty: (q.difficulty || "Medium").toLowerCase(),
+    marks: Number(q.marks) || 1,
     negativeMarks: Number(q.negativeMarks) || 0,
     explanation: sanitizeText(q.explanation),
-    subject: sanitizeText(q.subject),
-    difficulty: (q.difficulty || "Medium").toLowerCase(),
-    source: "import",
+    category: "General",
   };
 }
-
-/* ============================================================
-   FILE TYPE DETECTION
-   ============================================================ */
 
 export function detectFileKind(originalname = "", mimetype = "") {
   const name = (originalname || "").toLowerCase();
@@ -475,7 +347,6 @@ export function containsPlaceholder(questions) {
     const fields = [
       q.questionId,
       q.question,
-      q.subject,
       q.options?.A,
       q.options?.B,
       q.options?.C,

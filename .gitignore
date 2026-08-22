@@ -9,4 +9,8 @@ frontend/dist/
 
 *.log
 .DS_Store
-
+simulated_emails/
+answer.csv
+interviews.csv
+result.csv
+user.csv

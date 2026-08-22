@@ -108,6 +108,8 @@ const testResultSchema = new mongoose.Schema({
   percentage: { type: Number, default: 0 },
   passed: { type: Boolean, default: false },
   grade: { type: String, default: "" },
+  passingMarks: { type: Number, default: 0 },
+  passingPercentage: { type: Number, default: 0 },
 
   questions: [questionResultSchema],
   sections: [sectionSummarySchema],

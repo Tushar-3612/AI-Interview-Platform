@@ -86,14 +86,43 @@ export function getForgotPasswordOtpEmail(studentName, otp) {
   return {
     subject: "Password Reset OTP - AI Interview Platform",
     html: `
-      <h2>Password Reset Request</h2>
-      <p>Hello ${studentName},</p>
-      <p>You requested to reset your password. Use the following One-Time Password (OTP) to proceed. This OTP is valid for 10 minutes:</p>
-      <div style="background:#f1f5f9;padding:16px;border-radius:8px;font-size:24px;font-weight:bold;text-align:center;letter-spacing:4px;color:#2563eb;margin:16px 0;">
-        ${otp}
+      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; padding: 32px 16px; color: #1e293b; line-height: 1.6; margin: 0;">
+        <div style="max-width: 550px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.02); border: 1px solid #e2e8f0;">
+          
+          <!-- Header -->
+          <div style="padding: 32px 32px 24px; border-bottom: 1px solid #f1f5f9; text-align: left;">
+            <div style="font-size: 20px; font-weight: 700; color: #FF6B35; letter-spacing: -0.5px;">AI Interview Platform</div>
+            <div style="font-size: 12px; color: #64748b; margin-top: 4px;">Practice smarter. Prepare confidently for placements.</div>
+          </div>
+          
+          <!-- Body Content -->
+          <div style="padding: 32px;">
+            <h2 style="margin-top: 0; margin-bottom: 20px; font-size: 20px; font-weight: 600; color: #0f172a;">Password Reset Verification</h2>
+            
+            <p style="margin: 0 0 24px; font-size: 15px; color: #334155;">Hello ${studentName},</p>
+            
+            <p style="margin: 0 0 24px; font-size: 15px; color: #334155;">We received a request to reset your password.</p>
+            
+            <p style="margin: 0 0 12px; font-size: 14px; font-weight: 600; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;">Your verification code:</p>
+            
+            <!-- OTP Card -->
+            <div style="background-color: #fff9f6; border: 1px dashed #ffdcd0; padding: 20px; border-radius: 12px; font-size: 32px; font-weight: 700; text-align: center; letter-spacing: 6px; color: #FF6B35; margin-bottom: 24px;">
+              ${otp}
+            </div>
+            
+            <p style="margin: 0 0 8px; font-size: 14px; color: #475569; font-weight: 500;">This code is valid for 10 minutes.</p>
+            <p style="margin: 0 0 24px; font-size: 13px; color: #ef4444; font-weight: 500;">Never share this verification code with anyone.</p>
+            
+            <p style="margin: 0; font-size: 14px; color: #64748b; border-top: 1px solid #f1f5f9; padding-top: 20px;">If you did not request this password reset, you can safely ignore this email.</p>
+          </div>
+          
+          <!-- Footer -->
+          <div style="background-color: #f8fafc; padding: 24px 32px; text-align: center; border-top: 1px solid #f1f5f9;">
+            <p style="margin: 0; font-size: 12px; color: #94a3b8;">&copy; 2026 AI Interview Platform. All rights reserved.</p>
+          </div>
+          
+        </div>
       </div>
-      <p style="color:#666;font-size:12px;">If you did not request this, please ignore this email.</p>
-      <p style="color:#666;font-size:12px;">AI Interview Platform</p>
     `,
   };
 }

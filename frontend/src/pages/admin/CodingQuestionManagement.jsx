@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Edit2, Trash2, Code, Search, X, ChevronDown, ChevronUp, ToggleLeft, ToggleRight, Archive, RotateCcw, Upload, RefreshCw } from "lucide-react";
+import { Plus, Edit2, Trash2, Code, Search, X, ChevronDown, ChevronUp, ToggleLeft, ToggleRight, Archive, RotateCcw, RefreshCw } from "lucide-react";
 import api from "../../utils/api";
 import { getAuthToken } from "../../hooks/useStudentProfile";
 import toast from "react-hot-toast";
@@ -28,8 +28,6 @@ function CodingQuestionManagement() {
   const [trash, setTrash] = useState([]);
   const [showTrash, setShowTrash] = useState(false);
   const [trashLoading, setTrashLoading] = useState(false);
-  const [importOpen, setImportOpen] = useState(false);
-  const [importText, setImportText] = useState("");
   const [sourceInfo, setSourceInfo] = useState(null);
   const [syncing, setSyncing] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState("");
@@ -112,16 +110,6 @@ function CodingQuestionManagement() {
     if (!window.confirm("Permanently delete this question? This cannot be undone.")) return;
     try { await api.delete(`/api/coding-questions/${id}/hard`, { headers }); toast.success("Question permanently deleted"); fetchTrash(); }
     catch { toast.error("Permanent delete failed"); }
-  };
-
-  const handleImport = async () => {
-    try {
-      const parsed = JSON.parse(importText);
-      if (!Array.isArray(parsed) || parsed.length === 0) { toast.error("Provide a JSON array of questions"); return; }
-      const res = await api.post("/api/coding-questions/bulk-import", { questions: parsed }, { headers });
-      toast.success(res.data?.message || "Import complete");
-      setImportOpen(false); setImportText(""); fetchData();
-    } catch { toast.error("Invalid JSON. Provide an array of question objects."); }
   };
 
   const openAdd = () => {
@@ -218,9 +206,6 @@ function CodingQuestionManagement() {
         <div className="flex items-center gap-2">
           <button type="button" onClick={handleSyncFromJson} disabled={syncing} className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold cursor-pointer" style={{ border: "1px solid var(--border)", color: "var(--text-secondary)", opacity: syncing ? 0.6 : 1 }}>
             <RefreshCw className={`w-4 h-4 ${syncing ? "animate-spin" : ""}`} /> {syncing ? "Syncing..." : "Sync from JSON"}
-          </button>
-          <button type="button" onClick={() => setImportOpen(true)} className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold cursor-pointer" style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
-            <Upload className="w-4 h-4" /> Import
           </button>
           <button type="button" onClick={toggleTrash} className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold cursor-pointer" style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
             <Archive className="w-4 h-4" /> Trash {trash.length > 0 && !showTrash ? `(${trash.length})` : ""}
@@ -510,33 +495,6 @@ function CodingQuestionManagement() {
               <div className="flex items-center justify-end gap-3 pt-4 border-t" style={{ borderColor: "var(--border)" }}>
                 <button type="button" onClick={() => setModalOpen(false)} className="px-6 py-2.5 rounded-xl border text-sm font-semibold cursor-pointer" style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}>Cancel</button>
                 <button type="button" onClick={handleSave} className="px-6 py-2.5 rounded-xl text-sm font-semibold text-white cursor-pointer" style={{ background: "var(--primary)" }}>{editing ? "Update" : "Create"}</button>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-      {/* Import Modal */}
-      <AnimatePresence>
-        {importOpen && (
-          <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setImportOpen(false)} className="fixed inset-0 z-50 backdrop-blur-sm" style={{ background: "rgba(0,0,0,0.5)" }} />
-            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="fixed inset-8 sm:inset-24 z-50 overflow-y-auto rounded-2xl border p-6 sm:p-8"
-              style={{ background: "var(--card-bg)", borderColor: "var(--border)" }}>
-              <div className="flex items-center justify-between mb-2">
-                <h2 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>Bulk Import Coding Questions</h2>
-                <button type="button" onClick={() => setImportOpen(false)} className="p-2 rounded-lg border cursor-pointer" style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}><X className="w-5 h-5" /></button>
-              </div>
-              <p className="text-xs mb-4" style={{ color: "var(--text-muted)" }}>
-                Paste a JSON array. Fields: <code>title</code>, <code>problemStatement</code>, <code>difficulty</code>, <code>company</code> (or <code>companyId</code>), <code>category</code>, <code>constraints</code>, <code>examples</code>, <code>explanation</code>, <code>starterCode</code>, <code>tags</code>, <code>marks</code>, <code>supportedLanguages</code>, <code>publicTestCases</code> (array of {"{input, expected}"}), <code>hiddenTestCases</code>, <code>timeLimit</code>, <code>memoryLimit</code>, <code>isActive</code>, <code>id</code> (optional unique ID). Existing questions are updated by <code>id</code>, otherwise by title + company.
-              </p>
-              <textarea value={importText} onChange={(e) => setImportText(e.target.value)} rows={12}
-                className="w-full px-4 py-3 rounded-xl border text-xs font-mono outline-none"
-                placeholder='[{"id": "tcs-coding-51", "title": "Two Sum", "problemStatement": "Return indices of two numbers that add to target.", "difficulty": "Easy", "company": "tcs", "category": "Arrays", "constraints": "Time: O(N)", "examples": [{"input": "[2,7,11,15], 9", "output": "[0,1]"}], "explanation": "Hash map lookup.", "starterCode": "function twoSum(nums, target) {\n  // Write your code here\n}", "tags": ["Array"], "marks": 10, "publicTestCases": [{"input": "[2,7,11,15], 9", "expected": "[0,1]"}], "hiddenTestCases": [], "supportedLanguages": ["JavaScript", "Python"], "timeLimit": 1000, "memoryLimit": 256, "isActive": true}]'
-                style={{ borderColor: "var(--border)", background: "var(--input-bg)", color: "var(--text-primary)" }} />
-              <div className="flex items-center justify-end gap-3 pt-4">
-                <button type="button" onClick={() => setImportOpen(false)} className="px-6 py-2.5 rounded-xl border text-sm font-semibold cursor-pointer" style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}>Cancel</button>
-                <button type="button" onClick={handleImport} className="px-6 py-2.5 rounded-xl text-sm font-semibold text-white cursor-pointer" style={{ background: "var(--primary)" }}>Import</button>
               </div>
             </motion.div>
           </>

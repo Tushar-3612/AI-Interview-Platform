@@ -23,7 +23,7 @@ export const sendReportEmail = async (to, subject, text, html, attachments = [])
 
   if (!hasSMTP) {
     console.warn("⚠️ SMTP Credentials missing in environment (.env). Simulating email delivery...");
-    
+
     // Save attachments to exports folder for admin visual review
     const backupDir = path.join(__dirname, "..", "exports", "simulated_emails");
     if (!fs.existsSync(backupDir)) {
@@ -31,9 +31,9 @@ export const sendReportEmail = async (to, subject, text, html, attachments = [])
     }
 
     const emailLogPath = path.join(backupDir, `email_${Date.now()}_to_${to.replace(/[@.]/g, "_")}.txt`);
-    
+
     let logContent = `To: ${to}\nSubject: ${subject}\n\nBody:\n${text}\n\n`;
-    
+
     attachments.forEach((att) => {
       const filePath = path.join(backupDir, `${Date.now()}_${att.filename}`);
       fs.writeFileSync(filePath, att.content);
@@ -41,23 +41,6 @@ export const sendReportEmail = async (to, subject, text, html, attachments = [])
     });
 
     fs.writeFileSync(emailLogPath, logContent);
-
-    // ─── AUTO-CLEANUP: Keep only the 50 most recent files ───
-    const MAX_FILES = 50;
-    try {
-      const allFiles = fs.readdirSync(backupDir)
-        .map((f) => ({ name: f, time: fs.statSync(path.join(backupDir, f)).mtimeMs }))
-        .sort((a, b) => b.time - a.time); // newest first
-
-      if (allFiles.length > MAX_FILES) {
-        allFiles.slice(MAX_FILES).forEach(({ name }) => {
-          fs.unlinkSync(path.join(backupDir, name));
-        });
-        console.log(`🧹 Auto-cleaned simulated_emails: kept ${MAX_FILES} most recent files.`);
-      }
-    } catch (cleanErr) {
-      console.warn("⚠️ Auto-cleanup of simulated_emails failed:", cleanErr.message);
-    }
 
     console.log(`✅ Simulated email details logged to: ${emailLogPath}`);
     return {

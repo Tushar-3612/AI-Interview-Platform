@@ -156,12 +156,7 @@ function CreateTest() {
     }
     setSaving(true);
     try {
-      const publishPayload = {};
-      if (form.startAt) {
-        publishPayload.scheduledAt = form.startAt;
-        publishPayload.startAt = form.startAt;
-        if (form.endAt) publishPayload.endAt = form.endAt;
-      }
+      const publishPayload = { startAt: form.startAt, endAt: form.endAt };
       const res = await api.put(`/api/tests/${testId}/publish`, publishPayload, {
         headers: { Authorization: `Bearer ${token}` },
       });

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react";
+import { Plus, Trash2, ChevronDown, ChevronUp, Upload } from "lucide-react";
 
 const CODING_LANGUAGES = ["Java", "Python", "C++", "JavaScript", "C", "Go", "Rust"];
 
@@ -27,7 +27,7 @@ const emptyTestCase = () => ({
   isHidden: false,
 });
 
-export default function CodingProblemEditor({ questions, onChange }) {
+export default function CodingProblemEditor({ questions, onChange, onImport }) {
   const [expanded, setExpanded] = useState(null);
   const codingQuestions = questions.filter(q => q.type === "Coding");
   const nonCoding = questions.filter(q => q.type !== "Coding");
@@ -76,11 +76,20 @@ export default function CodingProblemEditor({ questions, onChange }) {
         <span className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
           {codingQuestions.length} coding problem{codingQuestions.length !== 1 ? "s" : ""}
         </span>
-        <button onClick={addNew}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white rounded-lg cursor-pointer"
-          style={{ background: "var(--primary)" }}>
-          <Plus className="w-3.5 h-3.5" /> Add Problem
-        </button>
+        <div className="flex items-center gap-2">
+          {onImport && (
+            <button onClick={onImport}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border rounded-lg admin-hover cursor-pointer"
+              style={{ borderColor: "var(--primary)", color: "var(--primary)" }}>
+              <Upload className="w-3.5 h-3.5" /> Import Problems
+            </button>
+          )}
+          <button onClick={addNew}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white rounded-lg cursor-pointer"
+            style={{ background: "var(--primary)" }}>
+            <Plus className="w-3.5 h-3.5" /> Add Problem
+          </button>
+        </div>
       </div>
 
       {codingQuestions.length === 0 && (

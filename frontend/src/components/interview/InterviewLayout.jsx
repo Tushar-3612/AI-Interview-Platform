@@ -2,7 +2,7 @@ import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Mic, MicOff, Camera, CameraOff, MonitorUp,
-  Settings, PhoneOff, Wifi, Bot, Volume2, VolumeX
+  Settings, PhoneOff, Wifi, Bot, Volume2, VolumeX, Play
 } from "lucide-react";
 import AudioVisualizer from "../interview/AudioVisualizer";
 
@@ -205,15 +205,15 @@ function InterviewLayout({
           </div>
         </div>
 
-        {/* Right — Network + Signals + End button */}
-        <div className="flex items-center gap-3">
+        {/* Right — Network + Paused banner + End button */}
+        <div className="flex items-center gap-4">
           {isPaused && (
             <button
               onClick={onResume}
-              className="px-3 py-1.5 rounded-xl text-xs font-bold text-amber-300 cursor-pointer"
+              className="px-3 py-1.5 rounded-lg text-[11px] font-bold text-amber-300 cursor-pointer"
               style={{ background: "rgba(245,158,11,0.15)", border: "1px solid rgba(245,158,11,0.3)" }}
             >
-              Resume Session
+              ▶ Resume
             </button>
           )}
 

@@ -16,8 +16,20 @@ export const YEARS = [
   { value: "1st Year", label: "1st Year" },
   { value: "2nd Year", label: "2nd Year" },
   { value: "3rd Year", label: "3rd Year" },
-  { value: "Last Year", label: "Last Year" },
+  { value: "B.Tech", label: "B.Tech" },
 ];
+
+/**
+ * Canonical string values for academic year / department.
+ * Use these (not local hardcoded arrays) wherever a raw string list is required
+ * so the UI and backend stay in sync. "Last Year" / "Final Year" / "4th Year"
+ * are legacy aliases that must no longer appear as user-facing options.
+ */
+export const YEAR_VALUES = YEARS.map((y) => y.value);
+export const DEPARTMENT_VALUES = DEPARTMENTS.map((d) => d.value);
+
+/** Legacy year values that have been normalized to "B.Tech". */
+export const LEGACY_YEARS = ["Last Year", "Final Year", "4th Year", "Fourth Year", "B.Tech Final Year"];
 
 export const FEATURES = [
   { label: "Resume Based Questions", icon: "FileText" },

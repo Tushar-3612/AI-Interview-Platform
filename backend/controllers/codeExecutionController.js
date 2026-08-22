@@ -3,6 +3,139 @@ import Test from "../models/Test.js";
 import CodingQuestion from "../models/CodingQuestion.js";
 import CodingSubmission from "../models/CodingSubmission.js";
 import {
+<<<<<<< HEAD
+  executeSingle,
+  executeBatch,
+  normalizeLanguage,
+  isStdinLanguage,
+  getSupportedLanguages,
+  isLanguageSupported,
+  getExecutionProviderInfo,
+  compareOutputs,
+  COMPARISON_MODES,
+} from "../services/codeExecutionService.js";
+
+function findFunctionName(code) {
+  const match = String(code).match(/(?:function\s+|const\s+|let\s+|var\s+)([A-Za-z_$][\w$]*)/);
+  return match ? match[1] : "solution";
+}
+
+function countFunctionParams(code) {
+  const fnName = findFunctionName(code);
+  if (!fnName) return -1;
+  const name = fnName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const patterns = [
+    new RegExp("function\\s+" + name + "\\s*\\(([^)]*)\\)"),
+    new RegExp("(?:const|let|var)\\s+" + name + "\\s*=\\s*(?:async\\s*)?\\(([^)]*)\\)\\s*=>"),
+    new RegExp("(?:const|let|var)\\s+" + name + "\\s*=\\s*(?:async\\s*)?([A-Za-z_$][\\w$]*)\\s*=>"),
+    new RegExp("\\b" + name + "\\s*\\(([^)]*)\\)\\s*\\{"),
+  ];
+  for (const pattern of patterns) {
+    const match = String(code).match(pattern);
+    if (match) {
+      const params = match[1].split(",").map((p) => p.trim()).filter((p) => p && !p.startsWith("..."));
+      return params.length;
+    }
+  }
+  return -1;
+}
+
+function splitTopLevelArgs(input) {
+  const groups = [];
+  let depth = 0;
+  let current = "";
+  let inString = false;
+  let escape = false;
+  for (const ch of String(input)) {
+    if (inString) {
+      current += ch;
+      if (escape) escape = false;
+      else if (ch === "\\") escape = true;
+      else if (ch === '"') inString = false;
+      continue;
+    }
+    if (ch === '"') {
+      inString = true;
+      current += ch;
+      continue;
+    }
+    if (ch === "[" || ch === "(" || ch === "{") depth++;
+    if (ch === "]" || ch === ")" || ch === "}") depth--;
+    if (ch === "," && depth === 0) {
+      groups.push(current);
+      current = "";
+      continue;
+    }
+    current += ch;
+  }
+  if (current.trim()) groups.push(current);
+  return groups;
+}
+
+function isScalar(value) {
+  return value === null || ["number", "string", "boolean"].includes(typeof value);
+}
+
+function parseTestArgs(input, code) {
+  const cleaned = String(input || "").trim();
+  if (!cleaned) return [];
+  try {
+    const parsed = JSON.parse(cleaned);
+    if (Array.isArray(parsed)) {
+      const paramCount = code ? countFunctionParams(code) : -1;
+      if (parsed.length === 1 && isScalar(parsed[0])) return parsed;
+      if (paramCount === 1) return [parsed];
+      return parsed;
+    }
+    return [parsed];
+  } catch {
+    const groups = splitTopLevelArgs(cleaned);
+    if (groups.length === 0) return [];
+    return groups.map((group) => {
+      try {
+        return JSON.parse(group);
+      } catch {
+        return group.replace(/^["']|["']$/g, "");
+      }
+    });
+  }
+}
+
+function normalizeOutput(value) {
+  if (value == null) return "";
+  try {
+    return JSON.stringify(JSON.parse(value));
+  } catch {
+    return String(value).trim();
+  }
+}
+
+/**
+ * Parse a single per-case output produced by executeBatch.
+ * Returns the error type (or null when the case succeeded) and the message.
+ */
+function parseCaseMarker(raw) {
+  const markers = [
+    ["__compile_error__:", "compile_error"],
+    ["__execution_error__:", "execution_error"],
+    ["__memory_limit__:", "memory_limit"],
+    ["__time_limit__:", "time_limit"],
+    ["__runtime_error__:", "runtime_error"],
+    ["__error__:skipped:", "skipped"],
+  ];
+  for (const [prefix, type] of markers) {
+    if (raw.startsWith(prefix)) {
+      return { errorType: type, message: raw.slice(prefix.length), actual: "" };
+    }
+  }
+  return { errorType: null, message: "", actual: raw };
+}
+
+/**
+ * Shared code execution endpoint: POST /api/code/run
+ * Runs student code against custom input (visible test cases only).
+ * Used by both Coding Practice and Test Coding Round.
+=======
   executeJudge0,
   executeJudge0TestSuite,
   getSupportedJudge0Languages,
@@ -13,6 +146,7 @@ import {
  * Run Code Endpoint: POST /api/code/run
  * Runs candidate code against custom stdin input via Judge0.
  * Does NOT calculate final interview score.
+>>>>>>> ee891a659c17f7eb242321c5addac9c3732fc708
  */
 export const runCode = async (req, res) => {
   try {
@@ -133,6 +267,66 @@ export const submitCode = async (req, res) => {
       ];
     }
 
+<<<<<<< HEAD
+    const casePayloads = isStdinLanguage(langId)
+      ? testCases.map((tc) => String(tc.input ?? ""))
+      : testCases.map((tc) => parseTestArgs(tc.input, code));
+
+    const batch = await executeBatch(langId, code, casePayloads, { timeLimitMs: timeLimit });
+
+    if (batch.type !== "success" || !batch.outputs || batch.outputs.length !== testCases.length) {
+      const errorMsg = batch.type === "time_limit"
+        ? `Time limit exceeded (${timeLimit}ms)`
+        : String(batch.output || batch.type || "Execution failed").trim();
+      const results = testCases.map((tc, index) => ({
+        index: index + 1,
+        passed: false,
+        isHidden: Boolean(tc.isHidden),
+        input: tc.isHidden ? "" : String(tc.input),
+        expected: tc.isHidden ? "" : String(tc.expected ?? tc.output ?? tc.expectedOutput ?? ""),
+        actual: "",
+        error: errorMsg,
+        timeMs: 0,
+      }));
+      const status = batch.type === "time_limit" ? "time_limit" : batch.type === "compile_error" ? "compile_error" : batch.type === "execution_error" ? "execution_error" : "failed";
+      return res.status(201).json({
+        status,
+        passedCount: 0,
+        totalCount: testCases.length,
+        results,
+        compileOutput: batch.type === "compile_error" || batch.type === "execution_error" ? errorMsg : "",
+        timeMs: 0,
+      });
+    }
+
+    let passedCount = 0;
+    let compileOutput = "";
+    const results = testCases.map((tc, index) => {
+      const raw = String(batch.outputs[index] ?? "");
+      const { errorType, message, actual } = parseCaseMarker(raw);
+      const expected = String(tc.expected ?? tc.output ?? tc.expectedOutput ?? "");
+      const passed = !errorType && compareOutputs(actual, expected, COMPARISON_MODES.TOKEN);
+
+      if (errorType === "compile_error" || errorType === "execution_error") {
+        if (!compileOutput) compileOutput = message;
+      }
+      if (passed) passedCount++;
+
+      let displayError = "";
+      if (errorType === "time_limit") displayError = `Time limit exceeded (${timeLimit}ms)`;
+      else if (errorType) displayError = message;
+
+      return {
+        index: index + 1,
+        passed,
+        isHidden: Boolean(tc.isHidden),
+        input: tc.isHidden ? "" : String(tc.input),
+        expected: tc.isHidden ? "" : expected,
+        actual: passed || errorType ? "" : actual,
+        error: displayError,
+        timeMs: 0,
+      };
+=======
     // 2. Execute test suite through Judge0
     const suiteResult = await executeJudge0TestSuite({
       sourceCode: code,
@@ -140,6 +334,7 @@ export const submitCode = async (req, res) => {
       testCases,
       cpuTimeLimit,
       memoryLimit,
+>>>>>>> ee891a659c17f7eb242321c5addac9c3732fc708
     });
 
     // 3. Persist submission record in database
@@ -169,6 +364,14 @@ export const submitCode = async (req, res) => {
     }
 
     res.status(201).json({
+<<<<<<< HEAD
+      status,
+      passedCount,
+      totalCount: testCases.length,
+      results,
+      compileOutput,
+      timeMs: batch.timeMs || 0,
+=======
       submissionId: savedSubmission?._id || null,
       status: suiteResult.status,
       passed: suiteResult.passed,
@@ -178,6 +381,7 @@ export const submitCode = async (req, res) => {
       memory: suiteResult.memory,
       compileOutput: suiteResult.compileOutput,
       test_results: suiteResult.testResults,
+>>>>>>> ee891a659c17f7eb242321c5addac9c3732fc708
     });
   } catch (error) {
     console.error("Submit Code Error:", error.message);
