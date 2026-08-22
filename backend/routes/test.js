@@ -19,6 +19,7 @@ import {
   deleteAssignment,
   closeAssignment,
   getAssignmentStudents,
+  exportAssignmentStudents,
   updateAssignmentStatus,
   uploadQuestions,
   uploadMiddleware,
@@ -60,6 +61,7 @@ router.post("/assign", assignTest);
 router.get("/assignments/list", getAssignedTests);
 router.get("/assignments/:id", getAssignmentById);
 router.get("/assignments/:id/students", getAssignmentStudents);
+router.get("/assignments/:id/export", exportAssignmentStudents);
 router.put("/assignments/:id", updateAssignmentStatus);
 router.put("/assignments/:id/close", closeAssignment);
 router.delete("/assignments/:id", deleteAssignment);

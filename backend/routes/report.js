@@ -16,6 +16,7 @@ import {
   getReportHistory,
   getCompaniesList,
 } from "../controllers/reportController.js";
+import { getPlacementAnalytics, downloadPlacementPDF, exportPlacementExcel } from "../controllers/analyticsController.js";
 
 const router = express.Router();
 
@@ -43,5 +44,10 @@ router.get("/export/full-excel", exportFullExcel);
 router.get("/search", searchReportsHandler);
 router.get("/history", getReportHistory);
 router.get("/companies/list", getCompaniesList);
+
+// Placement performance analytics (Coding / Aptitude / Mock / Companies) - excludes assigned tests
+router.get("/analytics/placement", getPlacementAnalytics);
+router.get("/analytics/placement/pdf", downloadPlacementPDF);
+router.get("/analytics/placement/excel", exportPlacementExcel);
 
 export default router;

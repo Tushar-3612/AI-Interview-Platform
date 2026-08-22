@@ -1,4 +1,5 @@
 import multer from "multer";
+import mongoose from "mongoose";
 import Test from "../models/Test.js";
 import TestAssignment from "../models/TestAssignment.js";
 import TestAttempt from "../models/TestAttempt.js";
@@ -388,6 +389,21 @@ export const assignTest = async (req, res) => {
   }
 };
 
+const ATTEMPT_STARTED = ["started", "completed", "auto_submitted"];
+const ATTEMPT_SUBMITTED = ["completed", "auto_submitted"];
+
+function computeEffectiveStatus(test, assignment) {
+  if (!test) return "draft";
+  const now = new Date();
+  if (test.status === "draft") return "draft";
+  if (assignment?.status === "completed" || test.closedAt) return "completed";
+  const start = test.startAt ? new Date(test.startAt) : null;
+  const end = test.endAt ? new Date(test.endAt) : null;
+  if (start && start > now) return "upcoming";
+  if (end && end < now) return "expired";
+  return "active";
+}
+
 export const getAssignedTests = async (req, res) => {
   try {
     const assignments = await TestAssignment.find()
@@ -396,10 +412,80 @@ export const getAssignedTests = async (req, res) => {
       .sort({ createdAt: -1 })
       .lean();
 
-    const enriched = assignments.map(a => ({
-      ...a,
-      totalStudents: a.studentIds?.length || 0,
-      pendingCount: Math.max(0, (a.studentIds?.length || 0) - (a.completedCount || 0) - (a.autoSubmittedCount || 0)),
+    const enriched = await Promise.all(assignments.map(async (a) => {
+      const test = a.testId || {};
+      const testId = test._id;
+      const rawStudentIds = (a.studentIds || []).map(s => (s._id ? s._id.toString() : s.toString()));
+      const uniqueStudentIds = [...new Set(rawStudentIds)];
+      const assigned = uniqueStudentIds.length;
+
+      let started = 0, completed = 0, autoSubmitted = 0;
+      let passed = 0, failed = 0, pctSum = 0, pctCount = 0;
+      let highestScore = null, lowestScore = null;
+
+      if (testId && assigned > 0) {
+        const studentObjIds = uniqueStudentIds.map(id => new mongoose.Types.ObjectId(id));
+        const tId = new mongoose.Types.ObjectId(testId);
+
+        const attemptAgg = await TestAttempt.aggregate([
+          { $match: { testId: tId, userId: { $in: studentObjIds } } },
+          {
+            $group: {
+              _id: null,
+              started: { $sum: { $cond: [{ $in: ["$status", ATTEMPT_STARTED] }, 1, 0] } },
+              completed: { $sum: { $cond: [{ $in: ["$status", ATTEMPT_SUBMITTED] }, 1, 0] } },
+              autoSubmitted: { $sum: { $cond: [{ $eq: ["$status", "auto_submitted"] }, 1, 0] } },
+            },
+          },
+        ]);
+        if (attemptAgg[0]) {
+          started = attemptAgg[0].started;
+          completed = attemptAgg[0].completed;
+          autoSubmitted = attemptAgg[0].autoSubmitted;
+        }
+
+        const resultAgg = await TestResult.aggregate([
+          { $match: { testId: tId, userId: { $in: studentObjIds } } },
+          {
+            $group: {
+              _id: null,
+              passed: { $sum: { $cond: ["$passed", 1, 0] } },
+              failed: { $sum: { $cond: ["$passed", 0, 1] } },
+              pctSum: { $sum: { $ifNull: ["$percentage", 0] } },
+              pctCount: { $sum: 1 },
+              highest: { $max: "$percentage" },
+              lowest: { $min: "$percentage" },
+            },
+          },
+        ]);
+        if (resultAgg[0]) {
+          passed = resultAgg[0].passed;
+          failed = resultAgg[0].failed;
+          pctSum = resultAgg[0].pctSum;
+          pctCount = resultAgg[0].pctCount;
+          highestScore = pctCount > 0 ? Math.round(resultAgg[0].highest) : null;
+          lowestScore = pctCount > 0 ? Math.round(resultAgg[0].lowest) : null;
+        }
+      }
+
+      const notAttempted = Math.max(0, assigned - started);
+      const averageScore = pctCount > 0 ? Math.round(pctSum / pctCount) : 0;
+
+      return {
+        ...a,
+        totalStudents: assigned,
+        startedCount: started,
+        completedCount: completed,
+        autoSubmittedCount: autoSubmitted,
+        notAttemptedCount: notAttempted,
+        passedCount: passed,
+        failedCount: failed,
+        averageScore,
+        highestScore,
+        lowestScore,
+        effectiveStatus: computeEffectiveStatus(test, a),
+        pendingCount: Math.max(0, assigned - completed - autoSubmitted),
+      };
     }));
 
     res.json(enriched);
@@ -450,64 +536,65 @@ export const closeAssignment = async (req, res) => {
    ASSIGNMENT MONITORING (per-student status + violations)
    ═══════════════════════════════════════════════════════════════ */
 
+/**
+ * Shared student-row builder used by both the monitoring endpoint and the
+ * Excel export so every surface shows the exact same real data.
+ * Status is derived strictly from the actual TestAttempt for THIS test+student.
+ */
+async function buildAssignmentStudentRows(assignment) {
+  const studentIds = (assignment.studentIds || []).map(s => s._id || s);
+  const testId = assignment.testId?._id || assignment.testId;
+
+  const [attempts, results] = await Promise.all([
+    TestAttempt.find({ testId, userId: { $in: studentIds } }).lean(),
+    TestResult.find({ testId, userId: { $in: studentIds } }).lean(),
+  ]);
+
+  const attemptMap = {};
+  attempts.forEach(a => { attemptMap[a.userId.toString()] = a; });
+  const resultMap = {};
+  results.forEach(r => { resultMap[r.userId.toString()] = r; });
+
+  return (assignment.studentIds || []).map(student => {
+    const sid = (student._id || student).toString();
+    const attempt = attemptMap[sid];
+    const result = resultMap[sid];
+
+    let status = "Not Started";
+    if (attempt?.status === "completed") status = "Completed";
+    else if (attempt?.status === "auto_submitted") status = "Auto Submitted";
+    else if (attempt?.status === "started") status = "In Progress";
+
+    return {
+      _id: student._id || student,
+      name: student.name,
+      email: student.email,
+      department: student.department || "N/A",
+      year: student.year || "N/A",
+      section: student.section || assignment.section || "N/A",
+      status,
+      startedAt: attempt?.startTime || null,
+      submittedAt: attempt?.submittedAt || null,
+      score: result?.obtainedMarks ?? attempt?.totalScore ?? null,
+      totalMarks: result?.totalMarks ?? null,
+      percentage: result?.percentage ?? null,
+      resultPassed: result ? Boolean(result.passed) : null,
+      tabSwitchCount: attempt?.tabSwitchCount || 0,
+      autoSubmitReason: attempt?.autoSubmitReason || "",
+    };
+  });
+}
+
 export const getAssignmentStudents = async (req, res) => {
   try {
     const assignment = await TestAssignment.findById(req.params.id)
       .populate("testId", "title testType difficulty duration passingMarks questions")
-      .populate("studentIds", "name email department year")
+      .populate("studentIds", "name email department year section")
       .lean();
 
     if (!assignment) return res.status(404).json({ message: "Assignment not found" });
 
-    const studentIds = (assignment.studentIds || []).map(s => s._id);
-    const testId = assignment.testId?._id;
-
-    const attempts = await TestAttempt.find({
-      testId,
-      userId: { $in: studentIds },
-    }).lean();
-
-    const attemptMap = {};
-    attempts.forEach(a => {
-      attemptMap[a.userId.toString()] = a;
-    });
-
-    const results = await TestResult.find({
-      testId,
-      userId: { $in: studentIds },
-    }).lean();
-
-    const resultMap = {};
-    results.forEach(r => {
-      resultMap[r.userId.toString()] = r;
-    });
-
-    const studentDetails = (assignment.studentIds || []).map(student => {
-      const sid = student._id.toString();
-      const attempt = attemptMap[sid];
-      const result = resultMap[sid];
-
-      let status = "Not Started";
-      if (attempt?.status === "completed") status = "Completed";
-      else if (attempt?.status === "auto_submitted") status = "Auto Submitted";
-      else if (attempt?.status === "started") status = "In Progress";
-
-      return {
-        _id: student._id,
-        name: student.name,
-        email: student.email,
-        department: student.department,
-        year: student.year,
-        status,
-        startedAt: attempt?.startTime || null,
-        submittedAt: attempt?.submittedAt || null,
-        score: result?.obtainedMarks ?? attempt?.totalScore ?? null,
-        totalMarks: result?.totalMarks ?? null,
-        percentage: result?.percentage ?? null,
-        tabSwitchCount: attempt?.tabSwitchCount || 0,
-        autoSubmitReason: attempt?.autoSubmitReason || "",
-      };
-    });
+    const studentDetails = await buildAssignmentStudentRows(assignment);
 
     const stats = {
       total: studentDetails.length,
@@ -522,6 +609,124 @@ export const getAssignmentStudents = async (req, res) => {
   } catch (error) {
     console.error("Get Assignment Students Error:", error.message);
     res.status(500).json({ message: "Failed to fetch assignment students" });
+  }
+};
+
+export const exportAssignmentStudents = async (req, res) => {
+  try {
+    const XLSX = (await import("xlsx")).default;
+    const assignment = await TestAssignment.findById(req.params.id)
+      .populate("testId", "title testType companyId")
+      .populate("studentIds", "name email department year section")
+      .lean();
+
+    if (!assignment) return res.status(404).json({ message: "Assignment not found" });
+
+    const test = assignment.testId || {};
+    const students = await buildAssignmentStudentRows(assignment);
+
+    if (students.length === 0) {
+      return res.status(404).json({ message: "No students assigned to this test" });
+    }
+
+    const title = `${test.title || "Test"} — Student Results`;
+    const headers = [
+      "Student Name", "Department", "Academic Year", "Section", "Test Name",
+      "Status", "Marks", "Percentage", "Result", "Tab Switches",
+    ];
+
+    const dataRows = students.map(s => ([
+      s.name || "N/A",
+      s.department || "N/A",
+      s.year || "N/A",
+      s.section || "N/A",
+      test.title || "N/A",
+      s.status,
+      s.score != null ? `${s.score} / ${s.totalMarks != null ? s.totalMarks : "N/A"}` : "N/A",
+      s.percentage != null ? `${s.percentage}%` : "N/A",
+      s.resultPassed === null ? "N/A" : (s.resultPassed ? "PASS" : "FAIL"),
+      s.tabSwitchCount || 0,
+    ]));
+
+    // Row 0: merged title | Row 1: metadata | Row 2: spacer | Row 3: header | Row 4+: data
+    const aoa = [
+      [title],
+      ["Test Name:", test.title || "N/A", "", "Test Type:", test.testType || "N/A", "", "Total Students:", students.length],
+      [""],
+      headers,
+      ...dataRows,
+    ];
+
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    const lastRow = aoa.length; // 1-based last row number
+
+    ws["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 9 } }];
+    ws["!cols"] = [
+      { wch: 22 }, // Student Name
+      { wch: 24 }, // Department
+      { wch: 14 }, // Academic Year
+      { wch: 9 },  // Section
+      { wch: 26 }, // Test Name
+      { wch: 14 }, // Status
+      { wch: 12 }, // Marks
+      { wch: 12 }, // Percentage
+      { wch: 10 }, // Result
+      { wch: 13 }, // Tab Switches
+    ];
+    ws["!freeze"] = { xSplit: 0, ySplit: 4 };
+    ws["!autofilter"] = { ref: `A4:J${lastRow}` };
+
+    const thin = { style: "thin", color: { rgb: "FFD0D0D0" } };
+    const border = { top: thin, bottom: thin, left: thin, right: thin };
+
+    // Title styling
+    if (ws["A1"]) {
+      ws["A1"].s = {
+        font: { bold: true, sz: 14, color: { rgb: "FFFFFFFF" } },
+        alignment: { horizontal: "center", vertical: "center" },
+        fill: { fgColor: { rgb: "FF4F46E5" } },
+      };
+    }
+
+    // Header row (row index 3)
+    for (let c = 0; c < 10; c++) {
+      const addr = XLSX.utils.encode_cell({ r: 3, c });
+      if (!ws[addr]) ws[addr] = { t: "s", v: headers[c] };
+      ws[addr].s = {
+        font: { bold: true, color: { rgb: "FF1F2937" } },
+        alignment: { horizontal: "center", vertical: "center", wrapText: true },
+        fill: { fgColor: { rgb: "FFEFEFEF" } },
+        border,
+      };
+    }
+
+    // Data rows (row index 4 .. lastRow-1)
+    for (let r = 4; r < lastRow; r++) {
+      for (let c = 0; c < 10; c++) {
+        const addr = XLSX.utils.encode_cell({ r, c });
+        const cell = ws[addr];
+        if (!cell) continue;
+        const centered = c >= 6 && c <= 9; // Marks, Percentage, Result, Tab Switches
+        const wrap = c === 1 || c === 4;   // Department, Test Name
+        cell.s = {
+          alignment: { horizontal: centered ? "center" : "left", vertical: "center", wrapText: wrap },
+          border,
+        };
+      }
+    }
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Student Results");
+    const buf = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
+
+    const safeName = (test.title || "Test").replace(/[^a-zA-Z0-9_-]/g, "_");
+    const filename = `${safeName}_Student_Results.xlsx`;
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    return res.send(buf);
+  } catch (error) {
+    console.error("Export Assignment Students Error:", error.message);
+    res.status(500).json({ message: "Failed to export student results" });
   }
 };
 

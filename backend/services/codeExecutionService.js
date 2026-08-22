@@ -1468,41 +1468,6 @@ export async function executeSingle(
   const effectiveStdin = isStdinLanguage(langId) ? String(stdin ?? "") : undefined;
   const effectiveArgs = isStdinLanguage(langId) ? [] : Array.isArray(args) ? args : [];
 
-<<<<<<< HEAD
-  const execId = executionId || crypto.randomBytes(6).toString("hex");
-
-  let files;
-  let compileCommand;
-  let runCommand;
-
-  if (langId === "java") {
-    const detectedClass = className || detectJavaClassName(code);
-    const runnerClass = runnerClassName || "Runner";
-    const userFile = `${detectedClass}.java`;
-    const runnerFile = `${runnerClass}.java`;
-    const harness = harnessForRun("java", effectiveArgs, code, {
-      className: detectedClass,
-      methodName: methodName || "solve",
-      runnerClassName: runnerClass,
-    });
-    files = buildSources("java", code, harness, { userFile, runnerFile });
-    compileCommand = ["javac", userFile, runnerFile];
-    runCommand = ["java", "-cp", ".", runnerClass];
-  } else {
-    const fn = langId === "python" ? (functionName || detectPythonFunction(code)) : undefined;
-    const harness = harnessForRun(langId, effectiveArgs, code, { functionName: fn });
-    files = buildSources(langId, code, harness);
-  }
-
-  return executeViaDocker(langId, files, {
-    timeLimitMs,
-    stdin: effectiveStdin,
-    compileCommand,
-    runCommand,
-    executionId: execId,
-    testCaseId,
-  });
-=======
   ensureDockerChecked();
   if (dockerState.available && dockerState.images[langId]) {
     return executeViaDocker(langId, files, { timeLimitMs, stdin: effectiveStdin });
@@ -1510,7 +1475,6 @@ export async function executeSingle(
 
   // Native execution fallback when Docker is not running or available
   return executeViaNative(langId, files, { timeLimitMs, stdin: effectiveStdin });
->>>>>>> ee891a659c17f7eb242321c5addac9c3732fc708
 }
 
 /**
@@ -1557,67 +1521,6 @@ export async function executeBatch(
   const timeLimitMsNum = Math.max(300, Number(timeLimitMs) || DEFAULT_TIMEOUT_MS);
   const execId = executionId || crypto.randomBytes(8).toString("hex");
 
-<<<<<<< HEAD
-  const runCase = async (c, index) => {
-    const caseInputs = Array.isArray(c) ? c : (Array.isArray(c?.input) ? c.input : []);
-    const args = isStdinLanguage(langId)
-      ? []
-      : caseInputs;
-    const stdin = isStdinLanguage(langId)
-      ? (c && c.input != null ? String(c.input) : "")
-      : null;
-
-    try {
-      const res = await executeSingle(langId, code, args, {
-        timeLimitMs: timeLimitMsNum,
-        memoryLimitMb,
-        stdin,
-        className: executionConfig.className,
-        methodName: executionConfig.methodName,
-        functionName: executionConfig.functionName,
-        runnerClassName: executionConfig.runnerClassName,
-        executionId: execId,
-        testCaseId: index,
-      });
-
-      switch (res.type) {
-        case "success":
-          return String(res.output ?? "");
-        case "compile_error":
-          return `__compile_error__:${res.output || "Compilation failed"}`;
-        case "runtime_error":
-          return `__runtime_error__:${res.output || "Runtime error"}`;
-        case "time_limit":
-          return `__time_limit__:${res.output || "Time limit exceeded"}`;
-        case "memory_limit":
-          return `__memory_limit__:${res.output || "Memory limit exceeded"}`;
-        default:
-          return `__execution_error__:${res.output || "Execution error"}`;
-      }
-    } catch (err) {
-      return `__execution_error__:${err && err.message ? err.message : String(err)}`;
-    }
-  };
-
-  const results = await runPool(caseList, runCase, MAX_CONCURRENT_TESTS);
-
-  if (failFast) {
-    const failedIndex = results.findIndex((r) => typeof r === "string" && r.startsWith("__"));
-    if (failedIndex !== -1) {
-      const out = results.map((r, i) => (i === failedIndex ? r : (i < failedIndex ? r : `__error__:skipped:failFast`)));
-      return { type: "success", outputs: out, output: out.join("\n"), timeMs: 0, memoryKB: 0, executionId: execId };
-    }
-  }
-
-  return {
-    type: "success",
-    outputs: results.map((r) => (typeof r === "string" ? r : `__execution_error__:${r.error ? r.error.message : "unknown"}`)),
-    output: results.join("\n"),
-    timeMs: 0,
-    memoryKB: 0,
-    executionId: execId,
-  };
-=======
   ensureDockerChecked();
   if (dockerState.available && dockerState.images[langId]) {
     if (isStdinLanguage(langId)) {
@@ -1657,7 +1560,6 @@ export async function executeBatch(
     return { ...result, outputs: lines };
   }
   return { ...result, outputs: null };
->>>>>>> ee891a659c17f7eb242321c5addac9c3732fc708
 }
 
 export function isExecutionConfigured() {

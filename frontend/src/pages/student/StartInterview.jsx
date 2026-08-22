@@ -579,17 +579,10 @@ function StartInterview() {
   const SECTION_TOTALS = { APTITUDE: 25, TECHNICAL: 25, CODING: 3, HR: 5 };
   const sessionProgress = useMemo(() => {
     const counts = {
-<<<<<<< HEAD
-      APTITUDE: { completed: 0, total: SECTION_TOTALS.APTITUDE },
-      TECHNICAL: { completed: 0, total: SECTION_TOTALS.TECHNICAL },
-      CODING: { completed: 0, total: SECTION_TOTALS.CODING },
-      HR: { completed: 0, total: SECTION_TOTALS.HR },
-=======
       APTITUDE: { completed: 0, total: 10 },
       TECHNICAL: { completed: 0, total: 10 },
       CODING: { completed: 0, total: 2 },
       HR: { completed: 0, total: 8 },
->>>>>>> ee891a659c17f7eb242321c5addac9c3732fc708
       totalCompleted: 0,
       totalQuestions: 58,
     };
@@ -1240,11 +1233,7 @@ function StartInterview() {
   };
 
   const sectionQuestions = questions.filter((q) => q.section === currentSection);
-<<<<<<< HEAD
-  const sectionTotal = sessionProgress[currentSection]?.total ?? (currentSection === "APTITUDE" ? 25 : currentSection === "TECHNICAL" ? 25 : currentSection === "CODING" ? 3 : 5);
-=======
   const sectionTotal = sectionQuestions.length || 1;
->>>>>>> ee891a659c17f7eb242321c5addac9c3732fc708
   const questionIdxInSection = sectionQuestions.findIndex((q) => (q.id || q.questionId) === (currentQuestion.id || currentQuestion.questionId)) + 1;
   const formattedSectionQuestionIndex = questionIdxInSection > 0 ? String(questionIdxInSection).padStart(2, "0") : "01";
 

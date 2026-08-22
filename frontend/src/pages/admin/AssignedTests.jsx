@@ -16,11 +16,11 @@ import { DEPARTMENT_VALUES as DEPARTMENTS, YEAR_VALUES as YEARS } from "../../ut
 /* ══════════════════════════════════════════════════════════════
    CONSTANTS
    ══════════════════════════════════════════════════════════════ */
-const SECTIONS = ["A", "B", "C"];
+const SECTIONS = ["A", "B", "C", "D"];
 const TEST_TYPES = ["aptitude", "technical", "coding", "mixed"];
-const STATUS_OPTIONS = ["draft", "scheduled", "live", "completed", "cancelled"];
-const TEST_STATUS_OPTIONS = ["all", "active", "completed", "archived"];
-const TEST_LIFECYCLE = ["all", "draft", "scheduled", "live", "completed"];
+const STATUS_OPTIONS = ["draft", "upcoming", "active", "completed", "expired"];
+const TEST_STATUS_OPTIONS = ["all", "draft", "upcoming", "active", "completed", "expired"];
+const TEST_LIFECYCLE = ["all", "draft", "upcoming", "active", "completed", "expired"];
 const RESCHEDULE_REASONS = ["Network Failure", "Browser Crash", "Technical Issue"];
 
 const PAGE_SIZE = 10;
@@ -50,14 +50,27 @@ const fmtDateTime = (d) => {
   });
 };
 
-const getEffectiveTestStatus = (test) => {
+const fmtDateOnly = (d) => {
+  if (!d) return "—";
+  const dt = new Date(d);
+  if (isNaN(dt.getTime())) return "—";
+  return dt.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+};
+
+const fmtTimeOnly = (d) => {
+  if (!d) return "—";
+  const dt = new Date(d);
+  if (isNaN(dt.getTime())) return "—";
+  return dt.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true });
+};
+
+const getEffectiveTestStatus = (test, assignment) => {
   if (!test) return "draft";
   const now = new Date();
   if (test.status === "draft") return "draft";
-  if (test.status === "completed" || test.closedAt) return "completed";
+  if (assignment?.status === "completed" || test.closedAt) return "completed";
   if (test.startAt && new Date(test.startAt) > now) return "upcoming";
   if (test.endAt && new Date(test.endAt) < now) return "expired";
-  if (test.scheduledAt && new Date(test.scheduledAt) > now) return "upcoming";
   return "active";
 };
 
@@ -101,8 +114,8 @@ function ErrorState({ onRetry }) {
   return (
     <div className="border admin-border admin-card rounded-xl p-12 text-center">
       <AlertCircle className="w-10 h-10 mx-auto mb-3" style={{ color: "var(--badge-error-text)" }} />
-      <h3 className="text-base font-semibold mb-1" style={{ color: "var(--text-primary)" }}>Failed to Load</h3>
-      <p className="text-xs mb-4" style={{ color: "var(--text-muted)" }}>Something went wrong. Please try again.</p>
+      <h3 className="text-base font-semibold mb-1" style={{ color: "var(--text-primary)" }}>Unable to load assigned tests</h3>
+      <p className="text-xs mb-4" style={{ color: "var(--text-muted)" }}>Please try again.</p>
       <button onClick={onRetry}
         className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-medium border admin-border rounded-lg admin-hover cursor-pointer">
         <RefreshCw className="w-3.5 h-3.5" /> Retry
@@ -493,18 +506,37 @@ function MonitoringModal({ assignment, data, loading, onClose }) {
   );
 }
 
-function ViewTestModal({ assignment, onClose, onEdit, onDelete, onReschedule, onEmail, onMonitor }) {
+function ViewTestModal({ assignment, onClose, onEdit, onDelete, onReschedule, onEmail, onMonitor, onExport }) {
   const test = assignment?.testId || {};
-  const students = assignment?.studentIds || [];
+  const effStatus = assignment?.effectiveStatus || getEffectiveTestStatus(test, assignment);
+  const canExport = effStatus === "completed" || effStatus === "expired";
   const questions = test?.questions || [];
   const inpCls = "w-full px-3 py-2 text-xs border admin-border rounded-lg bg-transparent focus:outline-none focus:ring-2 focus:ring-[var(--primary)]";
   const [studentFilter, setStudentFilter] = useState("");
+  const [students, setStudents] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const id = assignment?._id;
+    if (!id) { setStudents([]); return; }
+    (async () => {
+      try {
+        const { data } = await api.get(`/api/tests/assignments/${id}/students`, {
+          headers: { Authorization: `Bearer ${getAuthToken()}` },
+        });
+        if (!cancelled) setStudents(data.students || []);
+      } catch {
+        if (!cancelled) setStudents([]);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [assignment?._id]);
 
   const aptitudeQ = questions.filter(q => q.type !== "Coding" && !q.subject);
   const technicalQ = questions.filter(q => q.type !== "Coding" && q.subject);
   const codingQ = questions.filter(q => q.type === "Coding");
 
-  const filteredStudents = students.filter(s => {
+  const filteredStudents = (students || []).filter(s => {
     const q = studentFilter.toLowerCase();
     return !q || s.name?.toLowerCase().includes(q) || s.email?.toLowerCase().includes(q) || s.department?.toLowerCase().includes(q);
   });
@@ -527,6 +559,12 @@ function ViewTestModal({ assignment, onClose, onEdit, onDelete, onReschedule, on
             </button>
             <button onClick={() => onMonitor(assignment)} className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium border admin-border rounded-lg admin-hover cursor-pointer">
               <BarChart className="w-3 h-3" /> Monitor
+            </button>
+            <button onClick={() => onExport && onExport(assignment)}
+              disabled={!canExport}
+              className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium border admin-border rounded-lg admin-hover cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+              title={canExport ? "Export Student Excel" : "Results available after the test is completed"}>
+              <Download className="w-3 h-3" /> Export
             </button>
             <button onClick={onClose} className="p-1.5 rounded admin-hover cursor-pointer">
               <X className="w-4 h-4" style={{ color: "var(--text-muted)" }} />
@@ -568,7 +606,7 @@ function ViewTestModal({ assignment, onClose, onEdit, onDelete, onReschedule, on
                   ["Department", assignment?.assignType === "department" ? assignment.assignValue : "All"],
                   ["Academic Year", assignment?.assignType === "year" ? assignment.assignValue : (assignment?.year || "All")],
                   ["Section", assignment?.assignType === "section" ? assignment.assignValue : "All"],
-                  ["Assigned Students", students.length],
+                  ["Assigned Students", students ? students.length : (assignment?.studentIds?.length || 0)],
                   ["Assign Type", assignment?.assignType],
                 ].map(([label, value]) => (
                   <div key={label} className="flex justify-between">
@@ -669,7 +707,7 @@ function ViewTestModal({ assignment, onClose, onEdit, onDelete, onReschedule, on
           <div className="border admin-border admin-card rounded-xl p-4">
             <div className="flex items-center justify-between mb-3">
               <h4 className="text-xs font-semibold flex items-center gap-2" style={{ color: "var(--text-secondary)" }}>
-                <Users className="w-3.5 h-3.5" /> Student Status ({students.length})
+                <Users className="w-3.5 h-3.5" /> Student Status ({students ? students.length : (assignment?.studentIds?.length || 0)})
               </h4>
               <div className="relative max-w-[200px]">
                 <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3" style={{ color: "var(--text-muted)" }} />
@@ -679,8 +717,12 @@ function ViewTestModal({ assignment, onClose, onEdit, onDelete, onReschedule, on
               </div>
             </div>
 
-            {students.length === 0 ? (
-              <p className="text-xs py-4 text-center" style={{ color: "var(--text-muted)" }}>No students assigned.</p>
+            {students === null ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="w-6 h-6 border-2 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : students.length === 0 ? (
+              <p className="text-xs py-4 text-center" style={{ color: "var(--text-muted)" }}>No student data available.</p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-xs">
@@ -707,13 +749,15 @@ function ViewTestModal({ assignment, onClose, onEdit, onDelete, onReschedule, on
                           </div>
                         </td>
                         <td className="py-2 pr-2 hidden sm:table-cell" style={{ color: "var(--text-secondary)" }}>{s.email}</td>
-                        <td className="py-2 pr-2 hidden md:table-cell" style={{ color: "var(--text-secondary)" }}>{s.department} - {s.year}</td>
+                        <td className="py-2 pr-2 hidden md:table-cell" style={{ color: "var(--text-secondary)" }}>{s.department} {s.year && s.year !== "N/A" ? `- ${s.year}` : ""}</td>
                         <td className="py-2 pr-2">
-                          <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${studentStatusBadge("not started")}`}>
-                            Not Started
+                          <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${studentStatusBadge(s.status)}`}>
+                            {s.status}
                           </span>
                         </td>
-                        <td className="py-2 pr-2 text-right" style={{ color: "var(--text-muted)" }}>-</td>
+                        <td className="py-2 pr-2 text-right" style={{ color: s.score != null ? "var(--text-primary)" : "var(--text-muted)" }}>
+                          {s.score != null ? `${s.score} / ${s.totalMarks != null ? s.totalMarks : "N/A"}` : "N/A"}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -785,18 +829,27 @@ function AssignedTests() {
     return assignments
       .filter(a => {
         const test = a.testId || {};
-        const q = filters.search.toLowerCase();
-        if (q && !test.title?.toLowerCase().includes(q) && !test.testType?.includes(q) && !a.assignType?.includes(q)) return false;
-        if (filters.company !== "all" && test.companyId !== filters.company) return false;
-        if (filters.testType !== "all" && test.testType !== filters.testType) return false;
-        if (filters.status !== "all" && a.status !== filters.status) return false;
-        if (lifecycleFilter !== "all" && a.testId?.status !== lifecycleFilter) return false;
-        if (filters.department !== "all" && a.assignType === "department" && a.assignValue !== filters.department) return false;
-        if (filters.department !== "all" && a.assignType !== "department") return false;
+        const q = filters.search.trim().toLowerCase();
+        const effStatus = a.effectiveStatus || getEffectiveTestStatus(test, a);
+        if (q) {
+          const hay = `${test.title || ""} ${test._id || ""} ${test.companyId || ""}`.toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        if (filters.company !== "all" && (test.companyId || "") !== filters.company) return false;
+        if (filters.testType !== "all" && (test.testType || "") !== filters.testType) return false;
+        if (filters.status !== "all" && effStatus !== filters.status) return false;
+        if (lifecycleFilter !== "all" && effStatus !== lifecycleFilter) return false;
+        if (filters.department !== "all") {
+          const dept = a.department || (a.assignType === "department" ? a.assignValue : "");
+          if (dept !== filters.department) return false;
+        }
         if (filters.year !== "all") {
-          const matchesYear = (a.assignType === "year" && a.assignValue === filters.year) ||
-                              (a.assignType === "department" && a.year === filters.year);
-          if (!matchesYear) return false;
+          const yr = a.year || (a.assignType === "year" ? a.assignValue : "");
+          if (yr !== filters.year) return false;
+        }
+        if (filters.section !== "all") {
+          const sec = a.section || (a.assignType === "section" ? a.assignValue : "");
+          if (sec !== filters.section) return false;
         }
         const d = new Date(a.createdAt);
         if (filters.dateFrom && d < new Date(filters.dateFrom)) return false;
@@ -815,13 +868,13 @@ function AssignedTests() {
           case "totalStudents": va = a.totalStudents || 0; vb = b.totalStudents || 0; break;
           case "completedCount": va = a.completedCount || 0; vb = b.completedCount || 0; break;
           case "averageScore": va = a.averageScore || 0; vb = b.averageScore || 0; break;
-          case "status": va = a.status || ""; vb = b.status || ""; break;
+          case "status": va = a.effectiveStatus || getEffectiveTestStatus(a.testId, a) || ""; vb = b.effectiveStatus || getEffectiveTestStatus(b.testId, b) || ""; break;
           default: va = new Date(a.createdAt).getTime(); vb = new Date(b.createdAt).getTime();
         }
         if (typeof va === "string") return sortDir === "asc" ? va.localeCompare(vb) : vb.localeCompare(va);
         return sortDir === "asc" ? va - vb : vb - va;
       });
-  }, [assignments, filters, sortField, sortDir]);
+  }, [assignments, filters, lifecycleFilter, sortField, sortDir]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -957,6 +1010,30 @@ function AssignedTests() {
     toast.success("Excel exported");
   };
 
+  const handleExportStudents = async (assignment) => {
+    try {
+      const res = await api.get(`/api/tests/assignments/${assignment._id}/export`, {
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: "blob",
+      });
+      const blob = new Blob([res.data], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      const name = (assignment?.testId?.title || "Test").replace(/[^a-zA-Z0-9_-]/g, "_");
+      a.download = `${name}_Student_Results.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      toast.success("Student results exported");
+    } catch {
+      toast.error("Failed to export results");
+    }
+  };
+
   const toggleSort = (field) => (
     <span className="ml-1 text-[10px]" style={{ color: sortField === field ? "var(--primary)" : "var(--text-muted)" }}>
       {sortField === field ? (sortDir === "asc" ? "▲" : "▼") : "▲▼"}
@@ -1017,8 +1094,22 @@ function AssignedTests() {
       <StatsCards data={stats} />
 
       {/* Empty state */}
-      {filtered.length === 0 && !loading && (
+      {!loading && assignments.length === 0 && (
         <EmptyState onNavigate={() => navigate("/admin/tests/create")} />
+      )}
+      {!loading && assignments.length > 0 && filtered.length === 0 && (
+        <div className="border admin-border admin-card rounded-xl p-12 text-center">
+          <Filter className="w-10 h-10 mx-auto mb-3" style={{ color: "var(--text-muted)" }} />
+          <h3 className="text-base font-semibold mb-1" style={{ color: "var(--text-primary)" }}>
+            {lifecycleFilter !== "all" ? `No ${lifecycleFilter} tests found.` : "No tests match your filters"}
+          </h3>
+          <p className="text-xs mb-4" style={{ color: "var(--text-muted)" }}>Try adjusting or clearing the filters above.</p>
+          <button onClick={() => { setFilters({ search: "", company: "all", department: "all", year: "all", section: "all", testType: "all", status: "all", dateFrom: "", dateTo: "" }); setLifecycleFilter("all"); setPage(1); }}
+            className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-white rounded-lg cursor-pointer"
+            style={{ background: "var(--primary)" }}>
+            Clear Filters
+          </button>
+        </div>
       )}
 
       {/* Table */}
@@ -1029,25 +1120,25 @@ function AssignedTests() {
               <thead>
                 <tr className="border-b admin-table-divider" style={{ color: "var(--text-muted)" }}>
                   {[
-                    { key: "title", label: "Test Name" },
-                    { key: null, label: "Company" },
-                    { key: "testType", label: "Type" },
-                    { key: null, label: "Department" },
-                    { key: null, label: "Year" },
-                    { key: null, label: "Section" },
-                    { key: "totalStudents", label: "Students" },
-                    { key: null, label: "Started" },
-                    { key: "completedCount", label: "Completed" },
-                    { key: null, label: "Not Attempted" },
-                    { key: null, label: "Auto Submitted" },
-                    { key: "averageScore", label: "Avg Score" },
-                    { key: null, label: "Schedule" },
-                    { key: "status", label: "Status" },
-                    { key: null, label: "Actions" },
+                    { key: "title", label: "Test Name", align: "text-left", minW: "170px" },
+                    { key: null, label: "Company", align: "text-left", minW: "120px" },
+                    { key: "testType", label: "Type", align: "text-left", minW: "90px" },
+                    { key: null, label: "Department", align: "text-left", minW: "130px" },
+                    { key: null, label: "Year", align: "text-center", minW: "80px" },
+                    { key: null, label: "Section", align: "text-center", minW: "70px" },
+                    { key: "totalStudents", label: "Students", align: "text-center", minW: "80px" },
+                    { key: null, label: "Started", align: "text-center", minW: "70px" },
+                    { key: "completedCount", label: "Completed", align: "text-center", minW: "90px" },
+                    { key: null, label: "Not Attempted", align: "text-center", minW: "100px" },
+                    { key: null, label: "Auto Submitted", align: "text-center", minW: "100px" },
+                    { key: "averageScore", label: "Avg Score", align: "text-center", minW: "90px" },
+                    { key: null, label: "Schedule", align: "text-left", minW: "140px" },
+                    { key: "status", label: "Status", align: "text-center", minW: "90px" },
+                    { key: null, label: "Actions", align: "text-center", minW: "160px" },
                   ].map(col => (
-                    <th key={col.label} className={`pb-2.5 pr-2 font-semibold whitespace-nowrap ${col.key ? "cursor-pointer select-none" : ""}`}
+                    <th key={col.label} className={`pb-2.5 pr-2 font-semibold whitespace-nowrap ${col.align} ${col.key ? "cursor-pointer select-none" : ""}`}
                       onClick={() => col.key && handleSort(col.key)}
-                      style={{ color: sortField === col.key ? "var(--primary)" : "var(--text-muted)" }}>
+                      style={{ color: sortField === col.key ? "var(--primary)" : "var(--text-muted)", minWidth: col.minW }}>
                       {col.label}{col.key && toggleSort(col.key)}
                     </th>
                   ))}
@@ -1059,8 +1150,8 @@ function AssignedTests() {
                   return (
                     <tr key={a._id} className="border-b admin-table-divider admin-hover">
                       <td className="py-2.5 pr-2">
-                        <button onClick={() => setViewModal(a)}
-                          className="font-medium text-left hover:underline cursor-pointer truncate max-w-[140px] block"
+                        <button onClick={() => setViewModal(a)} title={test.title || "Untitled"}
+                          className="font-medium text-left hover:underline cursor-pointer truncate max-w-[160px] block"
                           style={{ color: "var(--text-primary)" }}>
                           {test.title || "Untitled"}
                         </button>
@@ -1073,56 +1164,64 @@ function AssignedTests() {
                         </span>
                       </td>
                       <td className="py-2.5 pr-2" style={{ color: "var(--text-secondary)" }}>
-                        {a.assignType === "department" ? a.assignValue : "All"}
+                        {a.department || "All"}
                       </td>
-                      <td className="py-2.5 pr-2" style={{ color: "var(--text-secondary)" }}>
-                        {a.assignType === "year" ? a.assignValue : (a.year || "All")}
+                      <td className="py-2.5 pr-2 text-center" style={{ color: "var(--text-secondary)" }}>
+                        {a.year || "All"}
                       </td>
-                      <td className="py-2.5 pr-2" style={{ color: "var(--text-secondary)" }}>
-                        {a.assignType === "section" ? a.assignValue : "All"}
+                      <td className="py-2.5 pr-2 text-center" style={{ color: "var(--text-secondary)" }}>
+                        {a.section || "All"}
                       </td>
-                      <td className="py-2.5 pr-2 font-medium" style={{ color: "var(--text-primary)" }}>{a.totalStudents || 0}</td>
-                      <td className="py-2.5 pr-2" style={{ color: "var(--badge-warning-text)" }}>{a.startedCount || 0}</td>
-                      <td className="py-2.5 pr-2" style={{ color: "var(--badge-success-text)" }}>{a.completedCount || 0}</td>
-                      <td className="py-2.5 pr-2" style={{ color: "var(--badge-error-text)" }}>{a.notAttemptedCount || 0}</td>
-                      <td className="py-2.5 pr-2" style={{ color: "var(--badge-warning-text)" }}>{a.autoSubmittedCount || 0}</td>
-                      <td className="py-2.5 pr-2 font-medium" style={{ color: (a.averageScore || 0) >= 40 ? "var(--badge-success-text)" : "var(--badge-error-text)" }}>
+                      <td className="py-2.5 pr-2 text-center font-medium" style={{ color: "var(--text-primary)" }}>{a.totalStudents || 0}</td>
+                      <td className="py-2.5 pr-2 text-center" style={{ color: "var(--badge-warning-text)" }}>{a.startedCount || 0}</td>
+                      <td className="py-2.5 pr-2 text-center" style={{ color: "var(--badge-success-text)" }}>{a.completedCount || 0}</td>
+                      <td className="py-2.5 pr-2 text-center" style={{ color: "var(--badge-error-text)" }}>{a.notAttemptedCount || 0}</td>
+                      <td className="py-2.5 pr-2 text-center" style={{ color: "var(--badge-warning-text)" }}>{a.autoSubmittedCount || 0}</td>
+                      <td className="py-2.5 pr-2 text-center font-medium" style={{ color: (a.averageScore || 0) >= 40 ? "var(--badge-success-text)" : "var(--badge-error-text)" }}>
                         {a.averageScore ? `${a.averageScore}%` : "0%"}
                       </td>
                       <td className="py-2.5 pr-2" style={{ color: "var(--text-secondary)" }}>
                         <div className="whitespace-nowrap text-[11px] leading-tight">
-                          <div>{test.startAt ? fmtDateTime(test.startAt) : "—"}</div>
-                          <div style={{ color: "var(--text-muted)" }}>
-                            → {test.endAt ? fmtDateTime(test.endAt) : (test.scheduledAt ? fmtDateTime(test.scheduledAt) : "—")}
-                          </div>
+                          <div style={{ color: "var(--text-primary)" }}>{fmtDateOnly(test.startAt)}</div>
+                          <div>{fmtTimeOnly(test.startAt)}</div>
+                          <div style={{ color: "var(--text-muted)" }}>&#8595;</div>
+                          <div style={{ color: "var(--text-primary)" }}>{fmtDateOnly(test.endAt || test.scheduledAt)}</div>
+                          <div style={{ color: "var(--text-muted)" }}>{fmtTimeOnly(test.endAt || test.scheduledAt)}</div>
                         </div>
                       </td>
-                      <td className="py-2.5 pr-2">
-                        <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded border ${statusBadge(getEffectiveTestStatus(test))}`}>
-                          {getEffectiveTestStatus(test)}
+                      <td className="py-2.5 pr-2 text-center">
+                        <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded border ${statusBadge(getEffectiveTestStatus(test, a))}`}>
+                          {getEffectiveTestStatus(test, a)}
                         </span>
                       </td>
                       <td className="py-2.5 pr-2">
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center justify-center gap-1">
                           <button onClick={() => setViewModal(a)}
-                            className="p-1 rounded admin-hover cursor-pointer" title="View">
+                            className="p-1 rounded admin-hover cursor-pointer" title="View Details">
                             <Eye className="w-3.5 h-3.5" style={{ color: "var(--text-secondary)" }} />
                           </button>
                           <button onClick={() => navigate(`/admin/tests/create?edit=${test._id}`)}
-                            className="p-1 rounded admin-hover cursor-pointer" title="Edit">
+                            className="p-1 rounded admin-hover cursor-pointer" title="Edit Test">
                             <Edit className="w-3.5 h-3.5" style={{ color: "var(--text-secondary)" }} />
                           </button>
                           <button onClick={() => setDeleteConfirm(a)}
-                            className="p-1 rounded admin-hover cursor-pointer" title="Delete">
+                            className="p-1 rounded admin-hover cursor-pointer" title="Delete Test">
                             <Trash2 className="w-3.5 h-3.5" style={{ color: "var(--badge-error-text)" }} />
                           </button>
                           <button onClick={() => setRescheduleModal(a)}
-                            className="p-1 rounded admin-hover cursor-pointer" title="Reschedule">
+                            className="p-1 rounded admin-hover cursor-pointer" title="View Schedule">
                             <Calendar className="w-3.5 h-3.5" style={{ color: "var(--text-secondary)" }} />
                           </button>
                           <button onClick={() => handleOpenMonitoring(a)}
-                            className="p-1 rounded admin-hover cursor-pointer" title="Monitor">
+                            className="p-1 rounded admin-hover cursor-pointer" title="Monitor Performance">
                             <BarChart className="w-3.5 h-3.5" style={{ color: "var(--badge-info-text)" }} />
+                          </button>
+                          <button
+                            onClick={() => handleExportStudents(a)}
+                            disabled={!(a.effectiveStatus === "completed" || a.effectiveStatus === "expired")}
+                            className="p-1 rounded admin-hover cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+                            title={(a.effectiveStatus === "completed" || a.effectiveStatus === "expired") ? "Export Student Excel" : "Results available after the test is completed"}>
+                            <Download className="w-3.5 h-3.5" style={{ color: "var(--success)" }} />
                           </button>
                           {a.status !== "completed" && (
                             <button onClick={() => handleCloseAssignment(a._id)}
@@ -1142,7 +1241,9 @@ function AssignedTests() {
           {/* Pagination */}
           <div className="flex items-center justify-between px-4 py-3 border-t admin-table-divider">
             <span className="text-xs" style={{ color: "var(--text-muted)" }}>
-              Page {page} of {totalPages} ({filtered.length} total)
+              {filtered.length === 0
+                ? "No tests to show"
+                : `Showing ${((page - 1) * PAGE_SIZE) + 1}–${Math.min(page * PAGE_SIZE, filtered.length)} of ${filtered.length} tests`}
             </span>
             <div className="flex items-center gap-1.5">
               <button disabled={page <= 1} onClick={() => setPage(p => Math.max(1, p - 1))}
@@ -1167,6 +1268,9 @@ function AssignedTests() {
                 className="px-2 py-1 text-xs border admin-border rounded admin-hover cursor-pointer disabled:opacity-40">
                 Next
               </button>
+              <span className="text-xs ml-1.5" style={{ color: "var(--text-muted)" }}>
+                Page {page} of {totalPages}
+              </span>
             </div>
           </div>
         </div>
@@ -1182,6 +1286,7 @@ function AssignedTests() {
           onReschedule={(a) => { setViewModal(null); setRescheduleModal(a); }}
           onEmail={(a) => { setViewModal(null); setEmailModal(a); }}
           onMonitor={(a) => { setViewModal(null); handleOpenMonitoring(a); }}
+          onExport={handleExportStudents}
         />
       )}
       {deleteConfirm && (
