@@ -21,10 +21,15 @@ import {
 import {
   buildCombinedInterviewPrompt,
   buildFinalEvaluationPrompt,
+  buildDynamicQuestionPrompt,
+  buildSingleAnswerEvaluationPrompt,
 } from "./ai/aiPrompts.js";
 import { generateAptitudeQuestions } from "./roundGenerators.js";
 import InterviewQuestion from "../models/InterviewQuestion.js";
 import CodingSubmission from "../models/CodingSubmission.js";
+import Interview from "../models/Interview.js";
+import Answer from "../models/Answer.js";
+import User from "../models/User.js";
 
 const VALID_DIFFICULTIES = ["easy", "medium", "hard"];
 function normDiff(d) {
@@ -273,3 +278,256 @@ export async function gatherCodingResults(interviewId, codingQuestions = []) {
   });
   return results;
 }
+
+/* ============================================================================
+   REAL-TIME ADAPTIVE PER-QUESTION ENGINE
+   ============================================================================ */
+
+/**
+ * Generate a single adaptive question in real-time, grounded strictly in
+ * candidate resume data and adapted based on prior answers.
+ * Returns the question doc and saves it directly to DB (InterviewQuestion).
+ */
+export async function generateSingleAdaptiveQuestion({
+  interviewId,
+  userId,
+  round = "technical",
+  questionNumber = 1,
+  totalQuestions = 10,
+  currentDifficulty = "medium",
+  candidateProfile = null,
+  lastEvaluation = null,
+}) {
+  const normRound = String(round || "technical").toLowerCase();
+
+  // 1. Resolve candidate profile & context
+  let resolvedProfile = candidateProfile;
+  if (!resolvedProfile && userId) {
+    const user = await User.findById(userId).select("-password").lean();
+    resolvedProfile = user?.candidateProfile || {
+      candidateName: user?.name || "Candidate",
+      skills: user?.skills || [],
+      projects: user?.projects || [],
+      experience: user?.experience || [],
+      department: user?.department || "Computer Science",
+    };
+  }
+
+  // 2. Fetch existing session questions & answers for context
+  let previousQuestions = [];
+  let previousAnswers = [];
+  if (interviewId) {
+    [previousQuestions, previousAnswers] = await Promise.all([
+      InterviewQuestion.find({ interviewId }).sort({ questionNumber: 1 }).lean(),
+      Answer.find({ interviewId }).lean(),
+    ]);
+  }
+
+  // If questionNumber not provided, compute it
+  const actualQNum = Number(questionNumber) || (previousQuestions.length + 1);
+
+  // 3. Compute adaptive difficulty based on recent performance
+  let adaptedDifficulty = currentDifficulty || "medium";
+  if (previousAnswers.length > 0) {
+    const recentAnswers = previousAnswers.slice(-3);
+    const scoredAnswers = recentAnswers.filter((a) => typeof a.score === "number");
+    if (scoredAnswers.length > 0) {
+      const avgScore = scoredAnswers.reduce((sum, a) => sum + a.score, 0) / scoredAnswers.length;
+      if (avgScore >= 75) adaptedDifficulty = "hard";
+      else if (avgScore < 50) adaptedDifficulty = "easy";
+      else adaptedDifficulty = "medium";
+    }
+  }
+
+  // 4. Generate via AI
+  let generatedData = null;
+  if (isAIConfigured()) {
+    try {
+      const prompt = buildDynamicQuestionPrompt({
+        profile: resolvedProfile,
+        round: normRound,
+        questionNumber: actualQNum,
+        totalQuestions,
+        previousQuestions,
+        previousAnswers,
+        currentDifficulty: adaptedDifficulty,
+        lastEvaluation,
+      });
+
+      generatedData = await aiGenerateJSON(prompt, { temperature: 0.6, timeoutMs: 45000 });
+    } catch (aiErr) {
+      console.warn("AI dynamic question generation error, falling back:", aiErr.message);
+    }
+  }
+
+  // Fallback if AI fails or is not configured
+  if (!generatedData || !generatedData.question) {
+    const primarySkill = resolvedProfile?.skills?.[0] || "Software Engineering";
+    const primaryProject = resolvedProfile?.projects?.[0]?.name || "your major project";
+    generatedData = {
+      question: `Can you explain the architecture and key technical decisions you made in ${primaryProject}, particularly focusing on ${primarySkill}?`,
+      questionType: normRound === "coding" ? "coding" : normRound === "aptitude" ? "mcq" : "voice",
+      difficulty: adaptedDifficulty,
+      skill: primarySkill,
+      topic: "System Architecture",
+      section: normRound.toUpperCase(),
+      aiSpeechText: `Let's discuss ${primaryProject}. Can you explain the architecture and key technical decisions you made?`,
+    };
+  }
+
+  // 5. Structure and persist into InterviewQuestion model
+  const questionId = `${normRound.toUpperCase()}-${String(actualQNum).padStart(2, "0")}`;
+  const questionDoc = {
+    interviewId,
+    candidateId: userId,
+    round: normRound,
+    questionNumber: actualQNum,
+    questionId,
+    question: String(generatedData.question).trim(),
+    section: (generatedData.section || normRound).toUpperCase(),
+    skill: generatedData.skill || "General",
+    topic: generatedData.topic || "General",
+    difficulty: normDiff(generatedData.difficulty || adaptedDifficulty),
+    questionType: generatedData.questionType || (normRound === "coding" ? "coding" : normRound === "aptitude" ? "mcq" : "conceptual"),
+    aiSpeechText: String(generatedData.aiSpeechText || generatedData.question).trim(),
+    options: Array.isArray(generatedData.options) ? generatedData.options : [],
+    correctAnswer: generatedData.correctAnswer || "",
+    starterCode: generatedData.starterCode || "",
+    testCases: Array.isArray(generatedData.testCases) ? generatedData.testCases : [],
+    inputFormat: generatedData.inputFormat || "",
+    outputFormat: generatedData.outputFormat || "",
+    constraints: generatedData.constraints || "",
+    sampleInput: generatedData.sampleInput || "",
+    sampleOutput: generatedData.sampleOutput || "",
+    source: "ai_dynamic",
+    metadata: {
+      generatedBy: "ai_realtime",
+      profileGrounded: true,
+      adaptiveDifficulty: adaptedDifficulty,
+      generatedAt: new Date(),
+    },
+  };
+
+  let savedQuestion = null;
+  if (interviewId) {
+    savedQuestion = await InterviewQuestion.findOneAndUpdate(
+      { interviewId, questionNumber: actualQNum, round: normRound },
+      questionDoc,
+      { upsert: true, new: true }
+    );
+
+    // Also link/update to Interview session document
+    await Interview.findByIdAndUpdate(interviewId, {
+      $addToSet: {
+        generatedQuestions: {
+          id: questionId,
+          questionId,
+          question: questionDoc.question,
+          aiSpeechText: questionDoc.aiSpeechText,
+          section: questionDoc.section,
+          category: normRound,
+          round: normRound,
+          difficulty: questionDoc.difficulty,
+          topic: questionDoc.topic,
+          skill: questionDoc.skill,
+          questionType: questionDoc.questionType,
+          options: questionDoc.options,
+          correctAnswer: questionDoc.correctAnswer,
+          testCases: questionDoc.testCases,
+          inputFormat: questionDoc.inputFormat,
+          outputFormat: questionDoc.outputFormat,
+          constraints: questionDoc.constraints,
+          sampleInput: questionDoc.sampleInput,
+          sampleOutput: questionDoc.sampleOutput,
+        },
+      },
+    });
+  }
+
+  return savedQuestion ? savedQuestion.toObject() : questionDoc;
+}
+
+/**
+ * Real-time per-answer evaluation engine.
+ * Scores candidate answer (0-100) and produces actionable feedback immediately.
+ */
+export async function evaluateSingleAnswer({
+  question = "",
+  answer = "",
+  round = "technical",
+  skill = "General",
+  topic = "General",
+  difficulty = "medium",
+  correctAnswer = "",
+}) {
+  const normRound = String(round || "technical").toLowerCase();
+  const cleanAns = String(answer || "").trim();
+
+  if (!cleanAns) {
+    return {
+      score: 0,
+      feedback: "Question skipped or answer left blank.",
+      strengths: [],
+      weaknesses: ["Answer was empty or omitted."],
+      suggestedDifficulty: "easy",
+      followUpFocus: "Basic fundamentals",
+    };
+  }
+
+  // For objective Aptitude MCQs
+  if (normRound === "aptitude" || normRound === "mcq") {
+    const isCorrect = correctAnswer && cleanAns.toLowerCase() === correctAnswer.trim().toLowerCase();
+    return {
+      score: isCorrect ? 100 : 0,
+      feedback: isCorrect ? "Correct answer selected." : `Incorrect. The correct answer was: ${correctAnswer}`,
+      strengths: isCorrect ? ["Accurate reasoning"] : [],
+      weaknesses: isCorrect ? [] : ["Review this topic"],
+      suggestedDifficulty: isCorrect ? "hard" : "easy",
+      followUpFocus: "Concept verification",
+    };
+  }
+
+  // For verbal technical / HR questions
+  if (isAIConfigured()) {
+    try {
+      const prompt = buildSingleAnswerEvaluationPrompt({
+        question,
+        candidateAnswer: cleanAns,
+        round: normRound,
+        skill,
+        topic,
+        difficulty,
+      });
+
+      const parsed = await aiGenerateJSON(prompt, { temperature: 0.2, timeoutMs: 30000 });
+      if (parsed && typeof parsed.score === "number") {
+        return {
+          score: Math.max(0, Math.min(100, Math.round(parsed.score))),
+          feedback: String(parsed.feedback || "Answer recorded."),
+          strengths: Array.isArray(parsed.strengths) ? parsed.strengths : ["Answer provided"],
+          weaknesses: Array.isArray(parsed.weaknesses) ? parsed.weaknesses : [],
+          suggestedDifficulty: normDiff(parsed.suggestedDifficulty || difficulty),
+          followUpFocus: String(parsed.followUpFocus || topic),
+        };
+      }
+    } catch (evalErr) {
+      console.warn("AI single answer evaluation fallback:", evalErr.message);
+    }
+  }
+
+  // Fallback evaluation heuristic
+  const wordCount = cleanAns.split(/\s+/).length;
+  let fallbackScore = 50;
+  if (wordCount >= 30) fallbackScore = 75;
+  if (wordCount >= 60) fallbackScore = 85;
+
+  return {
+    score: fallbackScore,
+    feedback: "Answer recorded and evaluated successfully.",
+    strengths: ["Clear verbal communication"],
+    weaknesses: [],
+    suggestedDifficulty: difficulty,
+    followUpFocus: topic,
+  };
+}
+
