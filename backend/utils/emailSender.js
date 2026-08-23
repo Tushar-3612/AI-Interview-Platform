@@ -23,7 +23,7 @@ export const sendReportEmail = async (to, subject, text, html, attachments = [])
 
   if (!hasSMTP) {
     console.warn("⚠️ SMTP Credentials missing in environment (.env). Simulating email delivery...");
-    
+
     // Save attachments to exports folder for admin visual review
     const backupDir = path.join(__dirname, "..", "exports", "simulated_emails");
     if (!fs.existsSync(backupDir)) {
@@ -31,9 +31,9 @@ export const sendReportEmail = async (to, subject, text, html, attachments = [])
     }
 
     const emailLogPath = path.join(backupDir, `email_${Date.now()}_to_${to.replace(/[@.]/g, "_")}.txt`);
-    
+
     let logContent = `To: ${to}\nSubject: ${subject}\n\nBody:\n${text}\n\n`;
-    
+
     attachments.forEach((att) => {
       const filePath = path.join(backupDir, `${Date.now()}_${att.filename}`);
       fs.writeFileSync(filePath, att.content);

@@ -1,3 +1,5 @@
+<<<<<<< HEAD
+=======
 id,interviewId,userId,overallScore,resumeScore,technicalScore,codingScore,recommendation,createdAt
 6a5ba1f45d94bf900220af37,6a5ba1455d94bf900220af1f,6a566f322f681d770359254e,90,90,89,89,"The candidate demonstrates strong technical understanding, excellent problem-solving abilities, and a clear vision for integrating diverse technologies. Highly recommended for a Software Engineer role, particularly where full-stack capabilities intersecting with IoT/AI are valued.",2026-07-18T15:55:32.523Z
 6a5e6809d350c2fbc7262445,6a5e67ebd350c2fbc726242d,6a566fbc2f681d770359254f,80,85,85,75,"Based on the implied strong project experience and conceptual understanding, the candidate is recommended for a Software Engineer role. Further evaluation of problem-solving skills through a live coding session would be beneficial.",2026-07-20T18:25:13.260Z
@@ -70,3 +72,4 @@ id,interviewId,userId,overallScore,resumeScore,technicalScore,codingScore,recomm
 6a897fe324b1dd8b7a02905f,6a897d640858492f34376b48,6a870b4da877b7cdfe747f93,27,0,0,27,Needs Practice,2026-08-22T10:54:27.099Z
 6a89848aa5cd87419fec3608,6a8980ef17304b9568b88d3c,6a870b4da877b7cdfe747f93,80,0,0,80,Highly Recommended,2026-08-22T11:14:18.787Z
 >>>>>>> ee891a659c17f7eb242321c5addac9c3732fc708
+>>>>>>> bbd9d263ae496b632e0d7eff43db864b40a8d88b
