@@ -1,5 +1,4 @@
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
-import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -305,39 +304,11 @@ Return ONLY valid JSON matching this exact structure:
 
   let parsedResult = null;
 
-  try {
-    const apiKey = process.env.GEMINI_API_KEY || "";
-    if (apiKey) {
-      const ai = new GoogleGenAI({ apiKey: apiKey.trim() });
-      
-      const contents = [];
-      if (rawText && rawText.length > 20) {
-        contents.push({ text: `Full Extracted Resume Text:\n${rawText}\n\n${prompt}` });
-      }
-      if (mimeType === "application/pdf" && resumeBase64) {
-        contents.push({ inlineData: { mimeType: "application/pdf", data: resumeBase64 } });
-      }
-      if (contents.length === 0) {
-        contents.push({ text: prompt });
-      }
+  // Resume parsing is performed locally (PDF text extraction + regex skill
+  // analysis). No external AI provider is used here, keeping the only AI calls
+  // in the interview flow to the two Groq requests (generation + evaluation).
 
-      const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
-        contents,
-        config: {
-          responseMimeType: "application/json",
-        },
-      });
-
-      if (response && response.text) {
-        parsedResult = JSON.parse(response.text);
-      }
-    }
-  } catch (err) {
-    console.warn("⚠️ Gemini AI resume extraction notice (falling back to text parser):", err.message);
-  }
-
-  // Fallback regex extraction if Gemini did not return skills
+  // Fallback regex extraction if AI did not return skills
   const regexSkills = extractSkillsFromTextRegex(rawText);
 
   const rawSkillsObj = parsedResult?.skills || {};

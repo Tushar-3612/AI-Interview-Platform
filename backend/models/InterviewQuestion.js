@@ -20,7 +20,7 @@ const interviewQuestionSchema = new mongoose.Schema(
     },
     round: {
       type: String,
-      enum: ["aptitude", "technical", "coding", "hr"],
+      enum: ["aptitude", "technical", "coding", "hr", "resume_project"],
       required: true,
       index: true,
     },
@@ -28,13 +28,34 @@ const interviewQuestionSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    questionId: {
+      type: String,
+      default: "",
+      index: true,
+    },
     question: {
       type: String,
       required: true,
     },
+    section: {
+      type: String,
+      default: "",
+    },
     skill: {
       type: String,
       default: "General",
+    },
+    topic: {
+      type: String,
+      default: "General",
+    },
+    source: {
+      type: String,
+      default: "ai_generated",
+    },
+    metadata: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
     },
     difficulty: {
       type: String,

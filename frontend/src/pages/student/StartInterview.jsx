@@ -479,18 +479,18 @@ function StartInterview() {
 
         if (!targetId) {
           const { data: newSession } = await api.post(
-            "/api/interview/start",
+            "/api/student/interviews",
             { interviewType: "actual" },
             { headers: { Authorization: `Bearer ${token}` } }
           );
-          targetId = newSession.sessionId || newSession.interviewId;
+          targetId = newSession.sessionId || newSession.interviewId || newSession._id;
         }
 
         if (!targetId) {
           throw new Error("Could not initialize interview session ID");
         }
 
-        const { data } = await api.get(`/api/interview/${targetId}`, {
+        const { data } = await api.get(`/api/student/interviews/${targetId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
 
@@ -506,7 +506,7 @@ function StartInterview() {
         if (!loadedQs || loadedQs.length === 0) {
           try {
             const fetchRoundName = activeTarget !== "all" ? activeTarget : "aptitude";
-            const { data: roundData } = await api.get(`/api/interview/${targetId}/round/${fetchRoundName}`, {
+            const { data: roundData } = await api.get(`/api/student/interviews/${targetId}/round/${fetchRoundName}`, {
               headers: { Authorization: `Bearer ${token}` }
             });
             if (roundData.questions && roundData.questions.length > 0) {
@@ -532,8 +532,9 @@ function StartInterview() {
         }
 
         const roundTitles = {
-          all: "Real AI Interview Room (All 4 Rounds)",
+          all: "Real AI Interview Room (All 5 Rounds)",
           aptitude: "Aptitude Round (MCQs)",
+          resume_project: "Resume / Project Round (AI)",
           technical: "Technical Stack Round (Alex)",
           coding: "Coding IDE Round (Compiler)",
           hr: "HR & Behavioral Round (Sarah)"
@@ -561,9 +562,13 @@ function StartInterview() {
         }
       } catch (err) {
         console.error("Session load error:", err);
-        const errMsg = err.response?.data?.message || err.message || "Failed to initialize interview questions";
-        setSessionError(errMsg);
-        toast.error(errMsg, { duration: 8000, id: "session-load-error" });
+        const d = err.response?.data || {};
+        const safeMsg =
+          d.message || err.message || "Failed to initialize interview questions";
+        const errType = d.errorType || "AI_GENERATION_FAILED";
+        const provider = d.provider || "groq";
+        setSessionError(`${safeMsg}\n[Provider: ${provider}] [${errType}]`);
+        toast.error(safeMsg, { duration: 8000, id: "session-load-error" });
       } finally {
         setIsLoadingInterview(false);
       }
@@ -576,15 +581,16 @@ function StartInterview() {
   // Every progress readout (sidebar, overall, section headers, completion
   // stats) is derived from this one memoized object so no UI shows a
   // different number. Progress = actually-submitted (non-empty) answers only.
-  const SECTION_TOTALS = { APTITUDE: 25, TECHNICAL: 25, CODING: 3, HR: 5 };
+  const SECTION_TOTALS = { APTITUDE: 25, RESUME_PROJECT: 10, TECHNICAL: 20, CODING: 3, HR: 5 };
   const sessionProgress = useMemo(() => {
     const counts = {
-      APTITUDE: { completed: 0, total: 10 },
-      TECHNICAL: { completed: 0, total: 10 },
-      CODING: { completed: 0, total: 2 },
-      HR: { completed: 0, total: 8 },
+      APTITUDE: { completed: 0, total: 25 },
+      RESUME_PROJECT: { completed: 0, total: 10 },
+      TECHNICAL: { completed: 0, total: 20 },
+      CODING: { completed: 0, total: 3 },
+      HR: { completed: 0, total: 5 },
       totalCompleted: 0,
-      totalQuestions: 58,
+      totalQuestions: 63,
     };
 
     const answeredIds = new Set(
@@ -802,6 +808,8 @@ function StartInterview() {
 
       if (targetRound === "technical") {
         introText = `Good day ${candidateInfo.name || "Candidate"}. I am Alex, your senior technical interviewer. I have reviewed your resume and projects. Let's begin your Technical Round.`;
+      } else if (targetRound === "resume_project") {
+        introText = `Good day ${candidateInfo.name || "Candidate"}. I am Alex, your senior interviewer. I have reviewed your resume in detail. Let's discuss your projects and experience.`;
       } else if (targetRound === "coding") {
         introText = `Good day ${candidateInfo.name || "Candidate"}. I am Alex, your senior AI evaluator. Today we will conduct your Algorithmic Coding Challenge in the live compiler workspace.`;
       } else if (targetRound === "hr") {
@@ -1011,6 +1019,56 @@ function StartInterview() {
     startSpeechRecognitionRef.current = startSpeechRecognition;
   }, [startSpeechRecognition]);
 
+  // ─── CONTEXTUAL AI FOLLOW-UP (backend-only, no keys exposed) ───
+  const triggerFollowUp = useCallback(async (section, baseQuestion, answerText) => {
+    try {
+      const previousQuestions = (questions || [])
+        .filter((q) => q.section === section)
+        .map((q) => q.question);
+      const { data } = await api.post(
+        `/api/interview/${activeInterviewId}/follow-up`,
+        {
+          section,
+          currentQuestion: baseQuestion?.question || "",
+          answer: answerText,
+          previousQuestions,
+          topicsCovered: [],
+          interviewContext: "Live interview round",
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (data && data.shouldFollowUp && data.question && String(data.question).trim()) {
+        const followUpQ = {
+          id: `FU-${Date.now()}`,
+          questionId: `FU-${Date.now()}`,
+          questionNumber: (questions?.length || 0) + 1,
+          section,
+          topic: data.topic || section,
+          difficulty: "medium",
+          type: section.toLowerCase(),
+          questionType: section.toLowerCase(),
+          category: section.toLowerCase(),
+          question: data.question,
+          aiSpeechText: data.question,
+          source: "ai_followup",
+          _isFollowUp: true,
+        };
+        setQuestions((prev) => {
+          const idx = prev.findIndex(
+            (q) => (q.id || q.questionId) === (baseQuestion?.id || baseQuestion?.questionId)
+          );
+          const insertAt = idx === -1 ? prev.length : idx + 1;
+          const copy = [...prev];
+          copy.splice(insertAt, 0, followUpQ);
+          return copy;
+        });
+      }
+    } catch (e) {
+      // Follow-up is best-effort; never break the interview on failure.
+    }
+  }, [activeInterviewId, questions, token]);
+
   // ─── SAVE ANSWER TO BACKEND ───
   const handleSaveAnswer = async (statusType = "answered", customAns = null) => {
     stopSpeechRecognition();
@@ -1061,6 +1119,16 @@ function StartInterview() {
         ...prev,
         { sender: "YOU", text: finalAnswerText, time: timeNow }
       ]);
+    }
+
+    // Trigger a contextual AI follow-up for spoken/typed answers on AI sections.
+    if (
+      finalAnswerText &&
+      finalAnswerText.trim().length > 15 &&
+      (section === "TECHNICAL" || section === "HR" || section === "RESUME_PROJECT") &&
+      !currentQuestion._isFollowUp
+    ) {
+      triggerFollowUp(section, currentQuestion, finalAnswerText);
     }
   };
 
@@ -1238,7 +1306,7 @@ function StartInterview() {
   const formattedSectionQuestionIndex = questionIdxInSection > 0 ? String(questionIdxInSection).padStart(2, "0") : "01";
 
   // ─── Render mode helpers (master spec: 3-zone layout) ───
-  const showAI = currentSection === "TECHNICAL" || currentSection === "HR";
+  const showAI = currentSection === "TECHNICAL" || currentSection === "HR" || currentSection === "RESUME_PROJECT";
   const isCoding = currentSection === "CODING" || currentQuestion.type === "coding";
   const isAptitude = currentSection === "APTITUDE" || (currentQuestion.options && currentQuestion.options.length > 0 && !isCoding);
   const tH = String(Math.floor(timerSeconds / 3600)).padStart(2, "0");
@@ -1264,11 +1332,11 @@ function StartInterview() {
           <div className="p-6 rounded-2xl bg-red-950/40 border border-red-500/30 text-center space-y-3 max-w-lg w-full">
             <AlertTriangle className="w-10 h-10 text-red-400 mx-auto" />
             <h3 className="text-base font-bold text-red-200">AI Question Generation Failed</h3>
-            <p className="text-xs text-red-300/80 leading-relaxed font-mono">
+            <p className="text-xs text-red-300/80 leading-relaxed font-mono whitespace-pre-line">
               {sessionError}
             </p>
             <p className="text-[11px] text-white/50">
-              Please ensure you have configured a valid Google Gemini API key (<code className="text-amber-400">AIzaSy...</code>) in your backend <code className="text-amber-400">.env</code> file.
+              Provider: Groq. Please try again. If this persists, contact your administrator.
             </p>
             <div className="pt-2 flex items-center justify-center gap-3">
               <button
@@ -1912,7 +1980,7 @@ function StartInterview() {
           handleSaveAnswer("answered");
           if (activeInterviewId) {
             try {
-              await api.post(`/api/interview/${activeInterviewId}/complete`, {}, {
+              await api.post(`/api/student/interviews/${activeInterviewId}/complete`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
               });
             } catch (err) {

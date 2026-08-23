@@ -10,6 +10,8 @@ import {
   startInterview,
   submitAnswer,
   completeInterview,
+  getInterview,
+  getInterviewRound,
   getInterviews,
   getResults,
   updateTargetCompany,
@@ -42,7 +44,7 @@ router.put("/profile", updateProfile);
 // Target Company
 router.put("/target-company", updateTargetCompany);
 
-// Resume upload, view, download and Gemini ATS grading
+// Resume upload, view, download
 router.post("/resume/upload", upload.single("resume"), uploadResumeAndAnalyze);
 router.get("/resume/download", downloadResume);
 router.get("/resume/view", viewResume);
@@ -51,6 +53,8 @@ router.get("/resume/view", viewResume);
 router.post("/interviews", startInterview);
 router.post("/interviews/answer", submitAnswer);
 router.post("/interviews/:interviewId/complete", completeInterview);
+router.get("/interviews/:interviewId/round/:roundName", getInterviewRound);
+router.get("/interviews/:interviewId", getInterview);
 
 // Fetching history
 router.get("/interviews", getInterviews);

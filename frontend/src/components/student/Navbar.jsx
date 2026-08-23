@@ -69,26 +69,10 @@ function Navbar({ onStartInterview }) {
     navigate("/");
   };
 
-  const handleStartRealInterview = async () => {
-    const toastId = toast.loading("Creating Real Interview Session...");
-    try {
-      const token = getAuthToken();
-      const { data } = await api.post(
-        "/api/interview/start",
-        { interviewType: "actual" },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      const sessionId = data.sessionId || data.interviewId;
-      if (sessionId) {
-        toast.success("Interview Session created!", { id: toastId });
-        window.open(`/interview/${sessionId}`, "_blank");
-      } else {
-        throw new Error("No session ID returned");
-      }
-    } catch (err) {
-      console.error("Start interview error:", err);
-      toast.error(err.response?.data?.message || "Failed to start interview session", { id: toastId });
-    }
+  const handleStartRealInterview = () => {
+    // Navigate to the canonical Real AI Interview room. The interview session
+    // (AI CALL #1) is created when the room mounts — no direct API call here.
+    navigate("/interview");
   };
 
   return (

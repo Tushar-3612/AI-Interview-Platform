@@ -8,6 +8,8 @@
   },
   "dependencies": {
     "@google/genai": "^1.0.0",
+    "@openrouter/agent": "^0.11.0",
+    "@openrouter/sdk": "^1.2.54",
     "bcryptjs": "^2.4.3",
     "compression": "^1.8.1",
     "cors": "^2.8.5",
@@ -29,6 +31,6 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
-    "nodemon": "^2.0.22"
+    "nodemon": "^3.1.14"
   }
 }

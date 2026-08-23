@@ -14,6 +14,8 @@ import {
   getUserResults,
   getUserInterviews,
   generateTTS,
+  generateFollowUpQuestion,
+  aiHealthCheck,
   logIntegrityEvent,
 } from "../controllers/interviewController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
@@ -33,6 +35,12 @@ router.get("/:id/questions/:round", authMiddleware, getRoundQuestions);
 
 // POST /api/interview/tts — provider-agnostic TTS audio generation
 router.post("/tts", authMiddleware, generateTTS);
+
+// POST /api/interview/:id/follow-up — authenticated contextual follow-up (backend only)
+router.post("/:id/follow-up", authMiddleware, generateFollowUpQuestion);
+
+// GET /api/interview/ai-health — backend-only AI connectivity check (key never exposed)
+router.get("/ai-health", authMiddleware, aiHealthCheck);
 
 // POST /api/interview/upload-resume
 router.post("/upload-resume", authMiddleware, upload.single("resume"), uploadResumeAndGenerateQuestions);

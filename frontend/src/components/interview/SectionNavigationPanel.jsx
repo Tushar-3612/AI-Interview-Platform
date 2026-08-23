@@ -1,5 +1,5 @@
 import React from "react";
-import { Target, BrainCircuit, Code2, UserCheck, CheckCircle2, ChevronRight, Sparkles } from "lucide-react";
+import { Target, BrainCircuit, Code2, UserCheck, FileText, CheckCircle2, ChevronRight, Sparkles } from "lucide-react";
 
 /**
  * SectionNavigationPanel — Persistent section navigation side panel.
@@ -28,12 +28,23 @@ function SectionNavigationPanel({
       badgeColor: "#f59e0b",
     },
     {
+      id: "RESUME_PROJECT",
+      name: "Resume / Project",
+      icon: FileText,
+      color: "cyan",
+      total: 10,
+      description: "AI questions from your resume",
+      accentBg: "rgba(6, 182, 212, 0.15)",
+      accentBorder: "rgba(6, 182, 212, 0.4)",
+      badgeColor: "#06b6d4",
+    },
+    {
       id: "TECHNICAL",
       name: "Technical",
       icon: BrainCircuit,
       color: "blue",
-      total: 25,
-      description: "Resume & Project Engineering",
+      total: 20,
+      description: "AI questions from your profile",
       accentBg: "rgba(37, 99, 235, 0.15)",
       accentBorder: "rgba(37, 99, 235, 0.4)",
       badgeColor: "#3b82f6",

@@ -22,7 +22,7 @@ const interviewSchema = new mongoose.Schema(
     },
     targetRound: {
       type: String,
-      enum: ["all", "aptitude", "technical", "coding", "hr"],
+      enum: ["all", "aptitude", "technical", "coding", "hr", "resume_project"],
       default: "all",
     },
     durationMinutes: {
@@ -41,6 +41,13 @@ const interviewSchema = new mongoose.Schema(
     totalQuestions: { type: Number, default: 0 },
     currentQuestionIndex: { type: Number, default: 1 },
     questionsAnswered: { type: Number, default: 0 },
+    // Exact AI API call tracking (see PREPHIRE 2-call rule)
+    aiGenerationCompleted: { type: Boolean, default: false },
+    aiEvaluationCompleted: { type: Boolean, default: false },
+    aiGenerationAt: { type: Date, default: null },
+    aiEvaluationAt: { type: Date, default: null },
+    aiGenerationError: { type: String, default: "" },
+    aiEvaluationError: { type: String, default: "" },
     overallScore: { type: Number, default: null },
     candidateProfile: { type: mongoose.Schema.Types.Mixed, default: {} },
     generatedQuestions: { type: mongoose.Schema.Types.Mixed, default: [] },
@@ -48,12 +55,19 @@ const interviewSchema = new mongoose.Schema(
     technicalQuestions: { type: mongoose.Schema.Types.Mixed, default: [] },
     codingQuestions: { type: mongoose.Schema.Types.Mixed, default: [] },
     hrQuestions: { type: mongoose.Schema.Types.Mixed, default: [] },
+    resumeQuestions: { type: mongoose.Schema.Types.Mixed, default: [] },
     roundsProgress: {
       aptitude: { type: String, default: "NOT_STARTED" },
       technical: { type: String, default: "NOT_STARTED" },
       coding: { type: String, default: "NOT_STARTED" },
       hr: { type: String, default: "NOT_STARTED" },
+      resume_project: { type: String, default: "NOT_STARTED" },
     },
+    // Per-round generation / evaluation results (persisted, reused on refresh).
+    // Keyed by round: resume_project | technical | coding | hr.
+    sectionEvaluations: { type: mongoose.Schema.Types.Mixed, default: {} },
+    roundGeneratedAt: { type: mongoose.Schema.Types.Mixed, default: {} },
+    roundEvaluatedAt: { type: mongoose.Schema.Types.Mixed, default: {} },
     integrityEvents: [
       {
         eventType: { type: String, required: true },

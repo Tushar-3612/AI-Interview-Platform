@@ -270,11 +270,11 @@ function StudentDashboard() {
     const toastId = toast.loading(`Creating ${roundNameMap[selectedTargetRound] || "Interview"} Session...`);
     try {
       const { data } = await api.post(
-        "/api/interview/start",
+        "/api/student/interviews",
         { interviewType: "actual", targetRound: selectedTargetRound },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      const sessionId = data.sessionId || data.interviewId;
+      const sessionId = data.sessionId || data.interviewId || data._id;
       if (sessionId) {
         toast.success("Interview Session created!", { id: toastId });
         setShowInterviewModeModal(false);
