@@ -5,7 +5,7 @@ import Answer from "../models/Answer.js";
 import Result from "../models/Result.js";
 import Company from "../models/Company.js";
 import { parseResumeComplete } from "../services/resumeParser.js";
-import { parseResumeToProfile, sanitizeRoundQuestionsForClient } from "../services/roundGenerators.js";
+import { parseResumeToProfile, sanitizeRoundQuestionsForClient, generateAptitudeQuestions } from "../services/roundGenerators.js";
 import {
   generateInterviewQuestions,
   persistInterviewQuestions,
@@ -14,6 +14,14 @@ import {
 } from "../services/interviewGenerationService.js";
 import { finalizeInterview } from "../services/interviewCompletionService.js";
 import { isAIConfigured, getModel } from "../services/ai/aiClient.js";
+import {
+  ROUND_META,
+  TOTAL_QUESTIONS,
+  AI_ROUNDS,
+  generateRoundQuestions,
+  evaluateRound,
+  computeOverallFromSections,
+} from "../services/roundService.js";
 
 // In-flight generation lock keyed by userId. Prevents React Strict Mode (or any
 // duplicate) from launching two Groq generations for the same user concurrently;
@@ -213,16 +221,19 @@ function buildAIError(code) {
 }
 
 /**
- * Start an interview session (REAL AI INTERVIEW).
- * AI CALL #1 happens here: generate 25 Technical + 5 HR + 3 Coding (one request)
- * plus 25 Aptitude (local), persist them, and return everything to the client.
+ * Start an interview session (REAL AI INTERVIEW — NEW 4-ROUND ARCHITECTURE).
+ *
+ * IMPORTANT: NO AI call happens here. Only 25 Aptitude questions are generated
+ * locally. AI rounds (Resume/Project, Technical, Coding, HR) are generated
+ * LAZILY when the student enters each round (see generateRound). This guarantees
+ * exactly 8 AI calls total (generate + evaluate per AI round).
  */
 export const startInterview = async (req, res) => {
   try {
     const { interviewType } = req.body;
     const validInterviewType = ["actual", "mock"].includes(interviewType) ? interviewType : "mock";
     const userId = req.user.id;
-    const totalQuestions = 58; // 25 aptitude + 25 technical + 5 hr + 3 coding
+    const totalQuestions = TOTAL_QUESTIONS; // 63
 
     const student = await User.findById(userId).select("-password");
 
@@ -244,79 +255,16 @@ export const startInterview = async (req, res) => {
       }
     }
 
-    // IDEMPOTENCY: reuse an existing in-progress interview with the full AI set.
-    const existing = await Interview.findOne({ userId, status: "IN_PROGRESS", aiGenerationCompleted: true })
-      .sort({ createdAt: -1 });
+    // IDEMPOTENCY: reuse an existing in-progress interview (any rounds already
+    // generated are returned; missing rounds are generated lazily later).
+    const existing = await Interview.findOne({ userId, status: "IN_PROGRESS" }).sort({ createdAt: -1 });
     if (existing) {
-      const counts = await InterviewQuestion.aggregate([
-        { $match: { interviewId: existing._id } },
-        { $group: { _id: "$round", count: { $sum: 1 } } },
-      ]);
-      const byRound = {};
-      counts.forEach((c) => { byRound[c._id] = c.count; });
-      if (byRound.technical >= 25 && byRound.hr >= 5 && byRound.coding >= 3 && byRound.aptitude >= 25) {
-        const questions = await InterviewQuestion.find({ interviewId: existing._id }).sort({ questionNumber: 1 }).lean();
-        return res.status(200).json({
-          _id: existing._id,
-          interviewId: existing._id,
-          candidateProfile: existing.candidateProfile,
-          totalQuestions,
-          generatedQuestions: sanitizeRoundQuestionsForClient(questions, "all"),
-          aiGenerationCompleted: true,
-        });
-      }
+      const questions = await InterviewQuestion.find({ interviewId: existing._id }).sort({ questionNumber: 1 }).lean();
+      return res.status(200).json(buildStartResponse(existing, candidateProfile, questions, totalQuestions));
     }
 
-    // CONCURRENCY GUARD: if a generation for this user is already in flight
-    // (e.g. React Strict Mode fired the effect twice), wait for it and reuse
-    // the result instead of launching a second Groq generation.
-    if (generatingInFlight.has(userId)) {
-      for (let i = 0; i < 30; i++) {
-        await new Promise((r) => setTimeout(r, 500));
-        const done = await Interview.findOne({ userId, status: "IN_PROGRESS", aiGenerationCompleted: true }).sort({ createdAt: -1 });
-        if (done) {
-          const counts = await InterviewQuestion.aggregate([
-            { $match: { interviewId: done._id } },
-            { $group: { _id: "$round", count: { $sum: 1 } } },
-          ]);
-          const byRound = {};
-          counts.forEach((c) => { byRound[c._id] = c.count; });
-          if (byRound.technical >= 25 && byRound.hr >= 5 && byRound.coding >= 3 && byRound.aptitude >= 25) {
-            const questions = await InterviewQuestion.find({ interviewId: done._id }).sort({ questionNumber: 1 }).lean();
-            return res.status(200).json({
-              _id: done._id,
-              interviewId: done._id,
-              candidateProfile: done.candidateProfile,
-              totalQuestions,
-              generatedQuestions: sanitizeRoundQuestionsForClient(questions, "all"),
-              aiGenerationCompleted: true,
-            });
-          }
-        }
-      }
-    }
-
-    if (!isAIConfigured()) {
-      return res.status(400).json({
-        success: false,
-        provider: "groq",
-        errorType: "AI_NOT_CONFIGURED",
-        message: "AI provider is not configured.",
-      });
-    }
-
-    generatingInFlight.add(userId);
-    let generated;
-    try {
-      generated = await generateInterviewQuestions(candidateProfile, { technical: 25, hr: 5, coding: 3 });
-    } catch (err) {
-      const code = typeof err?.message === "string" && err.message.startsWith("AI_") ? err.message : "AI_GENERATION_FAILED";
-      console.error("[INTERVIEW START] generation failed:", code);
-      const aiErr = buildAIError(code);
-      return res.status(aiErr.status).json(aiErr.body);
-    } finally {
-      generatingInFlight.delete(userId);
-    }
+    // Generate 25 local Aptitude questions only — no AI at start.
+    const aptitude = await generateAptitudeQuestions(ROUND_META.aptitude.count);
 
     const interview = await Interview.create({
       userId,
@@ -327,26 +275,117 @@ export const startInterview = async (req, res) => {
       questionsAnswered: 0,
       resumeFileName: student?.resumeFileName || "Uploaded_Resume.pdf",
       candidateProfile,
-      aiGenerationCompleted: true,
-      aiGenerationAt: new Date(),
-      roundsProgress: { aptitude: "IN_PROGRESS", technical: "IN_PROGRESS", coding: "IN_PROGRESS", hr: "IN_PROGRESS" },
+      aiGenerationCompleted: false,
+      roundsProgress: {
+        aptitude: "READY",
+        technical: "NOT_STARTED",
+        coding: "NOT_STARTED",
+        hr: "NOT_STARTED",
+        resume_project: "NOT_STARTED",
+      },
     });
 
-    await persistInterviewQuestions({ interviewId: interview._id, userId, generated, aptitudeCount: 25 });
+    const aptDocs = aptitude.map((q, idx) => ({
+      ...q,
+      interviewId: interview._id,
+      userId,
+      round: "aptitude",
+      section: "APTITUDE",
+      category: "aptitude",
+      questionNumber: idx + 1,
+      order: idx + 1,
+    }));
+    await InterviewQuestion.insertMany(aptDocs);
 
     const questions = await InterviewQuestion.find({ interviewId: interview._id }).sort({ questionNumber: 1 }).lean();
-
-    res.status(201).json({
-      _id: interview._id,
-      interviewId: interview._id,
-      candidateProfile,
-      totalQuestions,
-      generatedQuestions: sanitizeRoundQuestionsForClient(questions, "all"),
-      aiGenerationCompleted: true,
-    });
+    res.status(201).json(buildStartResponse(interview, candidateProfile, questions, totalQuestions));
   } catch (error) {
     console.error("Start Interview Error:", error.message);
     res.status(500).json({ message: "Server error starting interview session" });
+  }
+};
+
+function groupQuestionsByRound(questions = []) {
+  const grouped = {};
+  for (const q of questions) {
+    const r = q.round || (q.section || "").toLowerCase();
+    if (!r) continue;
+    grouped[r] = grouped[r] || [];
+    grouped[r].push(q);
+  }
+  return grouped;
+}
+
+function buildStartResponse(interview, candidateProfile, questions, totalQuestions) {
+  const grouped = groupQuestionsByRound(questions);
+  const rounds = {};
+  for (const key of ["aptitude", "resume_project", "technical", "coding", "hr"]) {
+    const meta = ROUND_META[key];
+    const qs = grouped[key] || [];
+    const status = interview.roundsProgress?.[key] || (key === "aptitude" ? "READY" : "NOT_STARTED");
+    rounds[key] = {
+      count: meta.count,
+      status,
+      ready: qs.length >= meta.count,
+      questions: sanitizeRoundQuestionsForClient(qs, key),
+    };
+  }
+  return {
+    _id: interview._id,
+    interviewId: interview._id,
+    candidateProfile,
+    totalQuestions,
+    aiGenerationCompleted: false,
+    rounds,
+    aptitudeQuestions: rounds.aptitude.questions,
+    generatedQuestions: rounds.aptitude.questions,
+  };
+}
+
+/**
+ * Lazy per-round question generation (AI CALL #N for AI rounds).
+ * Idempotent — returns already-persisted questions if present.
+ */
+export const generateRound = async (req, res) => {
+  try {
+    const { interviewId, roundName } = req.params;
+    const userId = req.user.id;
+    const result = await generateRoundQuestions({ interviewId, userId, round: roundName });
+    res.status(result.generated ? 201 : 200).json({
+      message: result.generated ? `${roundName} questions generated` : `${roundName} questions reused`,
+      round: result.round,
+      count: result.count,
+      questions: result.questions,
+    });
+  } catch (error) {
+    console.error("Generate Round Error:", error.message);
+    if (error.errorType) {
+      return res.status(error.status || 502).json({ message: error.message, errorType: error.errorType, provider: "groq" });
+    }
+    res.status(error.status || 500).json({ message: error.message || "Failed to generate round questions" });
+  }
+};
+
+/**
+ * Lazy per-round evaluation (AI CALL #N for AI rounds).
+ * Idempotent — returns existing evaluation if present.
+ */
+export const evaluateRoundHandler = async (req, res) => {
+  try {
+    const { interviewId, roundName } = req.params;
+    const userId = req.user.id;
+    const result = await evaluateRound({ interviewId, userId, round: roundName });
+    res.status(result.evaluated ? 201 : 200).json({
+      message: result.evaluated ? `${roundName} evaluated` : `${roundName} evaluation reused`,
+      round: result.round,
+      evaluation: result.evaluation,
+    });
+  } catch (error) {
+    console.error("Evaluate Round Error:", error.message);
+    if (error.errorType) {
+      return res.status(error.status || 502).json({ message: error.message, errorType: error.errorType, provider: "groq" });
+    }
+    res.status(error.status || 500).json({ message: error.message || "Failed to evaluate round" });
   }
 };
 
@@ -454,22 +493,77 @@ export const completeInterview = async (req, res) => {
       return res.status(404).json({ message: "Interview session not found" });
     }
 
-    // AI CALL #2 (final evaluation) is performed inside finalizeInterview.
-    const { result, alreadyCompleted } = await finalizeInterview({ interviewId, userId });
+    if (interview.status === "completed") {
+      const existingResult = await Result.findOne({ interviewId });
+      return res.json({ message: "Interview already completed", interview, result: existingResult });
+    }
+
+    // NO final AI call. Score is computed from the per-round evaluations that
+    // were persisted when each round was evaluated (8 AI calls total, no 9th).
+    const agg = computeOverallFromSections(interview);
+
+    // Aptitude is scored locally from stored correct answers.
+    const aptQuestions = await InterviewQuestion.find({ interviewId, round: "aptitude" }).lean();
+    const aptAnswers = await Answer.find({ interviewId, questionType: "aptitude" }).lean();
+    const aptCorrect = aptAnswers.filter((a) => {
+      const q = aptQuestions.find((x) => x.questionId === a.questionId || x.question === a.question);
+      return q && q.correctAnswer && String(a.answer || "").trim().toLowerCase() === String(q.correctAnswer).trim().toLowerCase();
+    }).length;
+    const aptScore = aptQuestions.length
+      ? Math.round((aptCorrect / aptQuestions.length) * 100)
+      : 0;
+
+    const sectionScores = {
+      resume_project: interview.sectionEvaluations?.resume_project?.score || 0,
+      technical: interview.sectionEvaluations?.technical?.score || 0,
+      coding: interview.sectionEvaluations?.coding?.score || 0,
+      hr: interview.sectionEvaluations?.hr?.score || 0,
+    };
+
+    const completedRounds = AI_ROUNDS.filter((r) => interview.sectionEvaluations?.[r]?.score != null);
+
+    const resultDoc = await Result.findOneAndUpdate(
+      { interviewId },
+      {
+        userId,
+        overallScore: agg.overallScore,
+        targetRound: interview.targetRound || "all",
+        resumeScore: sectionScores.resume_project,
+        technicalScore: sectionScores.technical,
+        codingScore: sectionScores.coding,
+        hrScore: sectionScores.hr,
+        aptitudeScore: aptScore,
+        sections: {
+          aptitude: { score: aptScore, completed: aptQuestions.length, total: aptQuestions.length, correct: aptCorrect },
+          technical: { score: sectionScores.technical },
+          coding: { score: sectionScores.coding },
+          hr: { score: sectionScores.hr },
+        },
+        strengths: Object.values(interview.sectionEvaluations || {}).flatMap((e) => e.strengths || []),
+        weaknesses: Object.values(interview.sectionEvaluations || {}).flatMap((e) => e.weaknesses || []),
+        recommendation: completedRounds.length === AI_ROUNDS.length ? "Well performed across all rounds." : "Some rounds were not evaluated.",
+        completedRounds,
+        incompleteRounds: AI_ROUNDS.filter((r) => !completedRounds.includes(r)),
+        duration: interview.durationMinutes || 0,
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
+
+    interview.status = "completed";
+    interview.completedAt = new Date();
+    await interview.save();
 
     // Increment user's attemptUsed count (only on first completion)
-    if (!alreadyCompleted) {
-      const student = await User.findById(userId);
-      if (student) {
-        student.attemptUsed = (student.attemptUsed || 0) + 1;
-        await student.save();
-      }
+    const student = await User.findById(userId);
+    if (student) {
+      student.attemptUsed = (student.attemptUsed || 0) + 1;
+      await student.save();
     }
 
     res.json({
-      message: alreadyCompleted ? "Interview already completed" : "Interview completed and graded successfully",
+      message: "Interview completed and graded successfully",
       interview,
-      result,
+      result: resultDoc,
     });
   } catch (error) {
     console.error("Complete Interview Error:", error.message);
@@ -512,13 +606,23 @@ export const getInterview = async (req, res) => {
       return true;
     });
 
+    // Strip sensitive fields (technical correctAnswer) even in the bulk payload.
+    const safeQuestions = (questionsToReturn || []).map((q) => {
+      const c = { ...q };
+      if (String(q.round || "").toLowerCase() === "technical" || String(q.section || "").toUpperCase() === "TECHNICAL") {
+        delete c.correctAnswer;
+        delete c.explanation;
+      }
+      return c;
+    });
+
     res.json({
       ...interview.toObject(),
       sessionId: interview._id.toString(),
       targetRound: interview.targetRound || "all",
       durationMinutes: interview.durationMinutes || 150,
       totalQuestions: interview.totalQuestions || questionsToReturn.length,
-      generatedQuestions: sanitizeRoundQuestionsForClient(questionsToReturn, "all"),
+      generatedQuestions: safeQuestions,
       answers,
     });
   } catch (error) {
@@ -542,7 +646,7 @@ export const getInterviewRound = async (req, res) => {
     }
 
     const normRound = String(roundName).toLowerCase();
-    const validRounds = ["aptitude", "technical", "coding", "hr"];
+    const validRounds = ["aptitude", "technical", "coding", "hr", "resume_project"];
     if (!validRounds.includes(normRound)) {
       return res.status(400).json({ message: `Invalid round: ${roundName}` });
     }

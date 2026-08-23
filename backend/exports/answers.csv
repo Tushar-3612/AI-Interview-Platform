@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-=======
 id,interviewId,userId,questionId,questionType,question,answer,score,feedback,createdAt
 6a5b9f055d94bf900220af15,6a5b9efa5d94bf900220af12,6a566f322f681d770359254e,RESUME-01,technical,"In your 'Enterprise Team Task & Attendance Management System,' you mentioned it's a SaaS-style platform with multiple role-based dashboards. Can you elaborate on its overall architecture, including how the frontend and backend interact, and how you managed independent deployments on Railway?",vdfv,0,"Your response was unintelligible. Please provide a comprehensive explanation of the system's architecture, frontend/backend interaction, and deployment strategy on Railway.",2026-07-18T15:43:01.307Z
 6a5ba17c5d94bf900220af22,6a5ba1455d94bf900220af1f,6a566f322f681d770359254e,RESUME-01,technical,"Could you elaborate on the JWT-based authentication implementation in your Enterprise Team Task & Attendance Management System? Specifically, describe the flow from user login to accessing a protected resource, and how you handled token invalidation or refresh.","In my Enterprise Team Task & Attendance Management System, I implemented JWT-based authentication with bcrypt for password hashing.
@@ -863,7 +861,6 @@ public class Main {
   // Write your code here
   
 }",80,Coding solution recorded.,2026-08-22T11:14:18.543Z
-<<<<<<< HEAD
 6a898e84369ec8c82d6edffc,6a898e6d369ec8c82d6edfb7,6a870b4da877b7cdfe747f93,APT-01,aptitude,What amount will ₹5000 become at 8% compound interest after 2 years?,,0,Question skipped or answer empty.,2026-08-22T11:56:52.176Z
 6a898e89369ec8c82d6ee003,6a898e6d369ec8c82d6edfb7,6a870b4da877b7cdfe747f93,TECH-DB-01,technical,How do you start a comment in Python?,#,40,Answer recorded.,2026-08-22T11:56:57.932Z
 6a898e9a369ec8c82d6ee010,6a898e6d369ec8c82d6edfb7,6a870b4da877b7cdfe747f93,TECH-DB-02,technical,"In Java, which keyword is used to inherit a class?",extends,40,Answer recorded.,2026-08-22T11:57:14.771Z
@@ -958,7 +955,4 @@ public class Main {
 6a89fc3b408258399287b76f,6a89fc17408258399287b736,6a566f322f681d770359254e,TECH-DB-04,technical,What is DBMS vs RDBMS?,,0,Question skipped or answer empty.,2026-08-22T19:44:59.055Z
 6a89fc3f408258399287b776,6a89fc17408258399287b736,6a566f322f681d770359254e,TECH-DB-05,technical,What is referential integrity?,,0,Question skipped or answer empty.,2026-08-22T19:45:03.228Z
 6a89fc42408258399287b77d,6a89fc17408258399287b736,6a566f322f681d770359254e,TECH-DB-06,technical,What is a weighted graph?,,0,Question skipped or answer empty.,2026-08-22T19:45:06.853Z
-=======
->>>>>>> ee891a659c17f7eb242321c5addac9c3732fc708
->>>>>>> bbd9d263ae496b632e0d7eff43db864b40a8d88b
->>>>>>> aa2e52962b6f3c9c0625521a928f55f85db5d216
+6a8ab0014b6bdde3b434d976,6a8a9e12e21504cc14f74227,6a566f322f681d770359254e,VBL-107,aptitude,What does 'burn the candle at both ends' mean?,Use two candles,0,Incorrect answer. Correct answer was: Overwork yourself,2026-08-23T08:32:01.135Z

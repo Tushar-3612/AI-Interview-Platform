@@ -22,15 +22,11 @@ import StudentsList from "../pages/admin/StudentsList";
 import StudentDetails from "../pages/admin/StudentDetails";
 import CreateTest from "../pages/admin/CreateTest";
 import AssignedTests from "../pages/admin/AssignedTests";
-import ReportsModule from "../pages/admin/ReportsModule";
 import CompanyManagement from "../pages/admin/CompanyManagement";
 import CodingQuestionManagement from "../pages/admin/CodingQuestionManagement";
 import AptitudeManagement from "../pages/admin/AptitudeManagement";
-import EmailManagement from "../pages/admin/EmailManagement";
-import NotificationsPage from "../pages/admin/NotificationsPage";
 import AuditLogs from "../pages/admin/AuditLogs";
 import SystemConfig from "../pages/admin/SystemConfig";
-import BackupDashboard from "../pages/admin/BackupDashboard";
 
 import AptitudeRound from "../pages/student/AptitudeRound";
 import CodingRound from "../pages/student/CodingRound";
@@ -100,15 +96,11 @@ function AppRoutes() {
         <Route path="/admin/students/:id" element={<StudentDetails />} />
         <Route path="/admin/tests/create" element={<CreateTest />} />
         <Route path="/admin/tests/assigned" element={<AssignedTests />} />
-        <Route path="/admin/reports" element={<ReportsModule />} />
         <Route path="/admin/companies" element={<CompanyManagement />} />
         <Route path="/admin/coding-questions" element={<CodingQuestionManagement />} />
         <Route path="/admin/aptitude-questions" element={<AptitudeManagement />} />
-        <Route path="/admin/email" element={<EmailManagement />} />
-        <Route path="/admin/notifications" element={<NotificationsPage />} />
         <Route path="/admin/audit-logs" element={<AuditLogs />} />
         <Route path="/admin/config" element={<SystemConfig />} />
-        <Route path="/admin/backup" element={<BackupDashboard />} />
         <Route path="/admin/placement-analytics" element={<AdminPlacementAnalytics />} />
         <Route path="/admin/technical-questions" element={<AdminTechnicalManagement />} />
       </Route>

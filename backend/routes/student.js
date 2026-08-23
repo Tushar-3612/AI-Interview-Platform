@@ -12,6 +12,8 @@ import {
   completeInterview,
   getInterview,
   getInterviewRound,
+  generateRound,
+  evaluateRoundHandler,
   getInterviews,
   getResults,
   updateTargetCompany,
@@ -54,6 +56,8 @@ router.post("/interviews", startInterview);
 router.post("/interviews/answer", submitAnswer);
 router.post("/interviews/:interviewId/complete", completeInterview);
 router.get("/interviews/:interviewId/round/:roundName", getInterviewRound);
+router.post("/interviews/:interviewId/round/:roundName/generate", generateRound);
+router.post("/interviews/:interviewId/round/:roundName/evaluate", evaluateRoundHandler);
 router.get("/interviews/:interviewId", getInterview);
 
 // Fetching history

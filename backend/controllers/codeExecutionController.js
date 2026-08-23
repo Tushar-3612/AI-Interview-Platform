@@ -3,7 +3,6 @@ import Test from "../models/Test.js";
 import CodingQuestion from "../models/CodingQuestion.js";
 import CodingSubmission from "../models/CodingSubmission.js";
 import {
-<<<<<<< HEAD
   executeJudge0,
   executeJudge0TestSuite,
   getSupportedJudge0Languages,
@@ -14,17 +13,8 @@ import {
  * Run Code Endpoint: POST /api/code/run
  * Runs candidate code against custom stdin input via Judge0.
  * Does NOT calculate final interview score.
-=======
-  executeSingle,
-  executeBatch,
-  normalizeLanguage,
-  isStdinLanguage,
-  getSupportedLanguages,
-  isLanguageSupported,
-  getExecutionProviderInfo,
-  compareOutputs,
-  COMPARISON_MODES,
-} from "../services/codeExecutionService.js";
+ */
+
 
 function findFunctionName(code) {
   const match = String(code).match(/(?:function\s+|const\s+|let\s+|var\s+)([A-Za-z_$][\w$]*)/);
@@ -146,7 +136,6 @@ function parseCaseMarker(raw) {
  * Shared code execution endpoint: POST /api/code/run
  * Runs student code against custom input (visible test cases only).
  * Used by both Coding Practice and Test Coding Round.
->>>>>>> aa2e52962b6f3c9c0625521a928f55f85db5d216
  */
 export const runCode = async (req, res) => {
   try {
@@ -267,7 +256,6 @@ export const submitCode = async (req, res) => {
       ];
     }
 
-<<<<<<< HEAD
     // 2. Execute test suite through Judge0
     const suiteResult = await executeJudge0TestSuite({
       sourceCode: code,
@@ -275,66 +263,6 @@ export const submitCode = async (req, res) => {
       testCases,
       cpuTimeLimit,
       memoryLimit,
-=======
-    const casePayloads = isStdinLanguage(langId)
-      ? testCases.map((tc) => String(tc.input ?? ""))
-      : testCases.map((tc) => parseTestArgs(tc.input, code));
-
-    const batch = await executeBatch(langId, code, casePayloads, { timeLimitMs: timeLimit });
-
-    if (batch.type !== "success" || !batch.outputs || batch.outputs.length !== testCases.length) {
-      const errorMsg = batch.type === "time_limit"
-        ? `Time limit exceeded (${timeLimit}ms)`
-        : String(batch.output || batch.type || "Execution failed").trim();
-      const results = testCases.map((tc, index) => ({
-        index: index + 1,
-        passed: false,
-        isHidden: Boolean(tc.isHidden),
-        input: tc.isHidden ? "" : String(tc.input),
-        expected: tc.isHidden ? "" : String(tc.expected ?? tc.output ?? tc.expectedOutput ?? ""),
-        actual: "",
-        error: errorMsg,
-        timeMs: 0,
-      }));
-      const status = batch.type === "time_limit" ? "time_limit" : batch.type === "compile_error" ? "compile_error" : batch.type === "execution_error" ? "execution_error" : "failed";
-      return res.status(201).json({
-        status,
-        passedCount: 0,
-        totalCount: testCases.length,
-        results,
-        compileOutput: batch.type === "compile_error" || batch.type === "execution_error" ? errorMsg : "",
-        timeMs: 0,
-      });
-    }
-
-    let passedCount = 0;
-    let compileOutput = "";
-    const results = testCases.map((tc, index) => {
-      const raw = String(batch.outputs[index] ?? "");
-      const { errorType, message, actual } = parseCaseMarker(raw);
-      const expected = String(tc.expected ?? tc.output ?? tc.expectedOutput ?? "");
-      const passed = !errorType && compareOutputs(actual, expected, COMPARISON_MODES.TOKEN);
-
-      if (errorType === "compile_error" || errorType === "execution_error") {
-        if (!compileOutput) compileOutput = message;
-      }
-      if (passed) passedCount++;
-
-      let displayError = "";
-      if (errorType === "time_limit") displayError = `Time limit exceeded (${timeLimit}ms)`;
-      else if (errorType) displayError = message;
-
-      return {
-        index: index + 1,
-        passed,
-        isHidden: Boolean(tc.isHidden),
-        input: tc.isHidden ? "" : String(tc.input),
-        expected: tc.isHidden ? "" : expected,
-        actual: passed || errorType ? "" : actual,
-        error: displayError,
-        timeMs: 0,
-      };
->>>>>>> aa2e52962b6f3c9c0625521a928f55f85db5d216
     });
 
     // 3. Persist submission record in database
@@ -364,7 +292,6 @@ export const submitCode = async (req, res) => {
     }
 
     res.status(201).json({
-<<<<<<< HEAD
       submissionId: savedSubmission?._id || null,
       status: suiteResult.status,
       passed: suiteResult.passed,
@@ -374,14 +301,6 @@ export const submitCode = async (req, res) => {
       memory: suiteResult.memory,
       compileOutput: suiteResult.compileOutput,
       test_results: suiteResult.testResults,
-=======
-      status,
-      passedCount,
-      totalCount: testCases.length,
-      results,
-      compileOutput,
-      timeMs: batch.timeMs || 0,
->>>>>>> aa2e52962b6f3c9c0625521a928f55f85db5d216
     });
   } catch (error) {
     console.error("Submit Code Error:", error.message);

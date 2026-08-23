@@ -11,20 +11,15 @@ import {
   Moon,
   ClipboardList,
   FilePlus,
-  FileText,
   Building2,
-  Mail,
-  Bell,
   Activity,
   Settings,
-  Database,
   Code2,
   BrainCircuit,
   Target,
 } from "lucide-react";
 import { getAuthToken, getAuthUser } from "../hooks/useStudentProfile";
 import { useTheme } from "../hooks/useTheme";
-import NotificationBell from "../components/admin/NotificationBell";
 import toast from "react-hot-toast";
 
 function AdminLayout() {
@@ -54,17 +49,13 @@ function AdminLayout() {
     { label: "Students", icon: Users, path: "/admin/students" },
     { label: "Create Test", icon: FilePlus, path: "/admin/tests/create" },
     { label: "Assigned Tests", icon: ClipboardList, path: "/admin/tests/assigned" },
-    { label: "Reports", icon: FileText, path: "/admin/reports" },
     { label: "Placement Analytics", icon: Target, path: "/admin/placement-analytics" },
     { label: "Companies", icon: Building2, path: "/admin/companies" },
     { label: "Aptitude Questions", icon: BrainCircuit, path: "/admin/aptitude-questions" },
     { label: "Coding Questions", icon: Code2, path: "/admin/coding-questions" },
     { label: "Technical Questions", icon: BrainCircuit, path: "/admin/technical-questions" },
-    { label: "Email", icon: Mail, path: "/admin/email" },
-    { label: "Notifications", icon: Bell, path: "/admin/notifications" },
     { label: "Audit Logs", icon: Activity, path: "/admin/audit-logs" },
     { label: "Config", icon: Settings, path: "/admin/config" },
-    { label: "Backup", icon: Database, path: "/admin/backup" },
   ];
 
   return (
@@ -152,9 +143,6 @@ function AdminLayout() {
             <div>
               <h2 className="text-sm font-semibold tracking-wide" style={{ color: "var(--text-primary)" }}>Admin Dashboard</h2>
             </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <NotificationBell />
           </div>
         </header>
 
