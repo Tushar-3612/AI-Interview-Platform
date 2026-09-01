@@ -21,7 +21,7 @@ const NAV_LINKS = [
   { label: "Home", path: "/dashboard" },
   { label: "My Tests", path: "/tests" },
   { label: "Interview Practice", path: "/interview-practice" },
-  { label: "Mock Interview", path: "/company-mock" },
+  { label: "Mock Interview", path: "/mock-interview" },
   { label: "Placement", path: "/placement-dashboard" },
   { label: "About", path: "/about" },
   { label: "Contact", path: "/contact" },

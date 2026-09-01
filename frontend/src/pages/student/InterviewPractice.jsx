@@ -203,7 +203,7 @@ function InterviewPractice() {
           </div>
           <button
             type="button"
-            onClick={() => navigate("/company-mock")}
+            onClick={() => navigate("/mock-interview")}
             className="shrink-0 flex items-center gap-1.5 text-xs font-bold px-4 py-2.5 rounded-[10px] text-white cursor-pointer transition hover:opacity-90"
             style={{ background: "#8B5CF6", boxShadow: "0 4px 14px rgba(139, 92, 246, 0.3)" }}
           >

@@ -626,3 +626,140 @@ ${aBlock}
 Evaluate communication, confidence, self-awareness, and cultural fit. Skipped answers lower the score. Score 0-100 with per-question feedback.`;
   return jsonWrap(instructions, VERBAL_EVAL_SCHEMA);
 }
+
+/* ============================================================================
+   9. REAL-TIME ADAPTIVE INTERVIEW PROMPTS (DYNAMIC PER-QUESTION ENGINE)
+   ============================================================================ */
+
+/**
+ * Builds prompt for generating a single, real-time adaptive question directly
+ * informed by the candidate's actual resume/profile and previous answers.
+ */
+export function buildDynamicQuestionPrompt({
+  profile = {},
+  round = "technical",
+  questionNumber = 1,
+  totalQuestions = 10,
+  previousQuestions = [],
+  previousAnswers = [],
+  currentDifficulty = "medium",
+  lastEvaluation = null,
+}) {
+  const p = profileSummary(profile);
+  const normRound = String(round || "technical").toLowerCase();
+
+  const prevQBlock = (previousQuestions || [])
+    .slice(-6)
+    .map((q, i) => {
+      const qText = typeof q === "string" ? q : q.question || q.title || "";
+      const matchedAns = (previousAnswers || []).find(
+        (a) => (a.questionId && (a.questionId === q.questionId || a.questionId === q.id)) || a.question === qText
+      );
+      const ansSnippet = matchedAns?.answer ? ` | Candidate Answer: "${matchedAns.answer.slice(0, 150)}..." [Score: ${matchedAns.score ?? "N/A"}]` : "";
+      return `Q${i + 1}: ${qText}${ansSnippet}`;
+    })
+    .join("\n");
+
+  const evalContext = lastEvaluation
+    ? `Previous Performance: Last Answer Score = ${lastEvaluation.score ?? "N/A"}/100. Feedback: "${lastEvaluation.feedback || ""}".`
+    : "";
+
+  const instructions = `You are an expert, conversational AI interviewer conducting Question #${questionNumber} of ${totalQuestions} in the ${normRound.toUpperCase()} round.
+
+CANDIDATE RESUME PROFILE (STRICT GROUNDING SOURCE):
+- Name: ${p.candidateName}
+- Skills & Tech Stack: ${p.skills.join(", ") || "General Computer Science"}
+- Projects:
+${p.projects.length ? p.projects.map((pr) => `  * ${pr.name}: ${pr.description} (Technologies: ${pr.technologies.join(", ")})`).join("\n") : "  * None listed (use core CS/skills)"}
+- Experience:
+${p.experience.length ? p.experience.map((e) => `  * ${e.role} at ${e.organization}: ${e.description}`).join("\n") : "  * None listed"}
+- Education: ${p.education.map((e) => `${e.degree} at ${e.institution}`).join(", ") || "N/A"}
+
+PREVIOUS QUESTIONS ALREADY ASKED (DO NOT REPEAT THESE TOPICS):
+${prevQBlock || "(This is Question #1)"}
+
+${evalContext}
+
+ADAPTIVE INSTRUCTIONS FOR QUESTION #${questionNumber}:
+1. GROUNDING: The question MUST directly reference or test the candidate's actual projects, listed technologies, or skills (e.g. "You mentioned using [Technology X] in [Project Y]...").
+2. ADAPTATION:
+   - Target Difficulty: ${currentDifficulty.toUpperCase()}.
+   - If the candidate performed strongly previously (score >= 75), deepen technical rigor, ask about trade-offs, scalability, or edge cases.
+   - If the candidate struggled (score < 50), focus on foundational concepts or guided architectural follow-ups.
+3. CONVERSATIONAL & CLEAR: Write the question as spoken speech by an interviewer.
+4. NO JSON/CODE DUMP: Provide a clean, natural question.
+
+ROUND-SPECIFIC FORMAT:
+${
+  normRound === "coding"
+    ? "- Provide a complete algorithmic/data-structure problem with title, clear description, constraints, input/output formats, sample case, and 3 test cases."
+    : normRound === "aptitude"
+    ? "- Provide a quantitative/logical problem with 4 distinct options and the exact correctAnswer."
+    : "- Provide a verbal/conceptual question suitable for spoken or written response."
+}`;
+
+  const schema = `{
+  "question": "Clear, direct question text",
+  "questionType": "${normRound === "coding" ? "coding" : normRound === "aptitude" ? "mcq" : "voice"}",
+  "difficulty": "easy | medium | hard",
+  "skill": "Specific skill or technology tested (e.g. XGBoost, React, SQL, Algorithms)",
+  "topic": "Topic category (e.g. System Design, Database Optimization, Algorithms)",
+  "section": "${normRound.toUpperCase()}",
+  "aiSpeechText": "Exact text for the AI Avatar to speak aloud",
+  "options": [${normRound === "aptitude" ? '"Option A", "Option B", "Option C", "Option D"' : ""}],
+  "correctAnswer": "${normRound === "aptitude" ? "Option A" : ""}",
+  "inputFormat": "${normRound === "coding" ? "Format description" : ""}",
+  "outputFormat": "${normRound === "coding" ? "Format description" : ""}",
+  "constraints": "${normRound === "coding" ? "Constraints" : ""}",
+  "sampleInput": "${normRound === "coding" ? "Sample stdin" : ""}",
+  "sampleOutput": "${normRound === "coding" ? "Sample stdout" : ""}",
+  "testCases": [${
+    normRound === "coding"
+      ? '{"input": "3 5", "expected": "8", "isHidden": false}, {"input": "10 20", "expected": "30", "isHidden": false}, {"input": "100 200", "expected": "300", "isHidden": true}'
+      : ""
+  }]
+}`;
+
+  return jsonWrap(instructions, schema);
+}
+
+/**
+ * Builds prompt for real-time per-answer evaluation with scoring & feedback.
+ */
+export function buildSingleAnswerEvaluationPrompt({
+  question = "",
+  candidateAnswer = "",
+  round = "technical",
+  skill = "General",
+  topic = "General",
+  difficulty = "medium",
+}) {
+  const instructions = `You are an expert technical interviewer evaluating a candidate's answer in real-time during an interview session.
+
+QUESTION:
+"${question}"
+Round: ${round.toUpperCase()} | Skill: ${skill} | Topic: ${topic} | Difficulty: ${difficulty}
+
+CANDIDATE'S ANSWER:
+"${candidateAnswer || "(No answer provided or candidate skipped)"}"
+
+EVALUATION CRITERIA:
+1. Correctness and technical depth (0-100).
+2. If the answer is empty or skipped, score = 0.
+3. If the answer is vague or inaccurate, score 20-50 and state what was missing.
+4. If the answer is solid with relevant details, score 70-85.
+5. If the answer is exceptional with deep insights, trade-offs, and clear structure, score 90-100.
+6. Suggest whether next question should be "easy", "medium", or "hard".`;
+
+  const schema = `{
+  "score": 75,
+  "feedback": "1-2 sentences of encouraging yet honest technical feedback",
+  "strengths": ["Strength 1"],
+  "weaknesses": ["Area for improvement"],
+  "suggestedDifficulty": "easy | medium | hard",
+  "followUpFocus": "Suggested next topic or angle"
+}`;
+
+  return jsonWrap(instructions, schema);
+}
+

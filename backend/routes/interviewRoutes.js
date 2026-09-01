@@ -17,11 +17,16 @@ import {
   generateFollowUpQuestion,
   aiHealthCheck,
   logIntegrityEvent,
+  generateQuestion,
 } from "../controllers/interviewController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
+
+// POST /api/interview/generate-question — real-time adaptive question generation
+router.post("/generate-question", authMiddleware, generateQuestion);
+router.post("/:id/generate-question", authMiddleware, generateQuestion);
 
 // POST /api/interview/start — create new AI interview session
 router.post("/start", authMiddleware, startInterview);

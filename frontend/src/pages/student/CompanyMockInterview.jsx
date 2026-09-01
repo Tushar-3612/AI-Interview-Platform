@@ -1,1517 +1,1099 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import { createPortal } from "react-dom";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  Building2,
-  Play,
-  Clock,
-  ChevronRight,
-  ChevronLeft,
-  Loader2,
-  Shield,
-  Maximize,
-  Monitor,
-  Copy,
-  MousePointerClick,
-} from "lucide-react";
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import { toast } from "react-hot-toast";
 import api from "../../utils/api";
 import { getAuthToken } from "../../hooks/useStudentProfile";
-import toast from "react-hot-toast";
+import CompanyMockCodingIDE from "../../components/coding/CompanyMockCodingIDE";
+import {
+  Maximize2,
+  ShieldAlert,
+  Loader2,
+  ChevronRight,
+  ChevronLeft,
+  Clock,
+  Building2,
+  CheckCircle2,
+  Circle,
+  Hourglass,
+} from "lucide-react";
 
-// Section components
-import AptitudeSection from "./CompanyMockSections/AptitudeSection";
-import TechnicalSection from "./CompanyMockSections/TechnicalSection";
-import CodingSection from "./CompanyMockSections/CodingSection";
-import ResultSection from "./CompanyMockSections/ResultSection";
+const SECTION_ORDER = ["aptitude", "technical", "coding"];
+const SECTION_META = {
+  aptitude: { label: "Aptitude", color: "#38BDF8" },
+  technical: { label: "Technical", color: "#A78BFA" },
+  coding: { label: "Coding", color: "#34D399" },
+};
 
-const SECTIONS = ["aptitude", "technical", "coding"];
-const SECTION_LABELS = { aptitude: "Aptitude", technical: "Technical", coding: "Coding" };
+function isFullscreenActive() {
+  return !!(
+    document.fullscreenElement ||
+    document.webkitFullscreenElement ||
+    document.mozFullScreenElement ||
+    document.msFullscreenElement
+  );
+}
 
-/**
- * Server-authoritative timer model:
- *  - status: not_started | in_progress (active) | paused | completed | auto_submitted | expired
- *  - expiresAt: absolute deadline (ms epoch) of ACTIVE time; shifted forward on every resume.
- *  - pausedAt: when the current pause began (null when running).
- *  - remaining (while paused) is frozen at expiresAt - pausedAt.
- * The frontend timer is display-only; the backend is authoritative.
- */
-function CompanyMockInterview() {
+function requestFullscreen() {
+  const el = document.documentElement;
+  const rfs =
+    el.requestFullscreen ||
+    el.webkitRequestFullscreen ||
+    el.mozRequestFullScreen ||
+    el.msRequestFullscreen;
+  if (rfs) return rfs.call(el);
+  return Promise.reject(new Error("Fullscreen API not supported"));
+}
+
+function exitFullscreenAPI() {
+  if (document.exitFullscreen) return document.exitFullscreen();
+  if (document.webkitExitFullscreen) return document.webkitExitFullscreen();
+  if (document.mozCancelFullScreen) return document.mozCancelFullScreen();
+  if (document.msExitFullscreen) return document.msExitFullscreen();
+  return Promise.resolve();
+}
+
+function fmtTime(totalSeconds) {
+  const s = Math.max(0, Math.floor(totalSeconds));
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  const mm = String(m).padStart(2, "0");
+  const ss = String(sec).padStart(2, "0");
+  return h > 0 ? `${String(h).padStart(2, "0")}:${mm}:${ss}` : `${mm}:${ss}`;
+}
+
+export default function CompanyMockInterview() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const token = getAuthToken();
+  const authHeaders = useMemo(() => ({ Authorization: `Bearer ${token}` }), [token]);
+  const urlCompanyId = searchParams.get("companyId");
+  const resultParam = searchParams.get("result");
+  const resumeParam = searchParams.get("resume");
 
-  // State
-  const [phase, setPhase] = useState("select"); // select, structure, instructions, security, exam, result
+  // ── Phase: booting | gate | assessment ──
+  const [phase, setPhase] = useState("booting");
   const [companies, setCompanies] = useState([]);
-  const [selectedCompany, setSelectedCompany] = useState(null);
-  const [resumeCandidate, setResumeCandidate] = useState(null);
+  const [companyId, setCompanyId] = useState(urlCompanyId || "");
+  const [companyName, setCompanyName] = useState("");
+  const [resumeData, setResumeData] = useState(null);
+  // Resume-specific state so the attemptId + full question payload survive the
+  // fullscreen permission transition without being lost or re-created.
+  const [resumeAttemptId, setResumeAttemptId] = useState(null);
+  const resumeAttemptRef = useRef(null);
+  const resumeQuestionsRef = useRef(null);
+
+  // ── Assessment state ──
   const [attempt, setAttempt] = useState(null);
-  const [isResume, setIsResume] = useState(false);
   const [questions, setQuestions] = useState({ aptitude: [], technical: [], coding: [] });
   const [currentSection, setCurrentSection] = useState("aptitude");
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState({ aptitude: {}, technical: {}, coding: {} });
-  const [codingDrafts, setCodingDrafts] = useState({});
-  const [selectedLanguage, setSelectedLanguage] = useState("java");
-  const [result, setResult] = useState(null);
+  const [codingSubmissions, setCodingSubmissions] = useState([]);
+  const [selectedCodingLanguage, setSelectedCodingLanguage] = useState("java");
+  const [remainingSeconds, setRemainingSeconds] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+  const [confirmEnd, setConfirmEnd] = useState(false);
+  const [tabSwitchLocked, setTabSwitchLocked] = useState(false);
 
-  // Timer (display only, seconds)
-  const [timeLeft, setTimeLeft] = useState(0);
-  const [lockReason, setLockReason] = useState(null); // fullscreen_exit | tab_switch | both | fullscreen_required
-  const [showExitConfirm, setShowExitConfirm] = useState(false);
-  const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
+  // ── Anti-cheat ──
+  const securityEventsRef = useRef([]);
+  const lastTabSwitchAtRef = useRef(0);
+  const saveProgressRef = useRef(null);
 
-  // Refs (source of truth for async listeners)
-  const timerRef = useRef(null);
-  const tokenRef = useRef(token);
-  const phaseRef = useRef(phase);
-  const attemptRef = useRef(null);
-  const currentSectionRef = useRef(currentSection);
-  const currentQuestionIndexRef = useRef(currentQuestionIndex);
-  const lockReasonRef = useRef(null);
-  const allowFullscreenExitRef = useRef(false);
-  const submittingRef = useRef(false);
-  const autoSubmittingRef = useRef(false);
-  const examContainerRef = useRef(null);
-  const handleSubmitRef = useRef(null);
-  const serverStateRef = useRef({ status: "not_started", expiresAtMs: null, pausedAtMs: null, frozenRemainingMs: null });
+  // ── Fullscreen ──
+  const [fullscreenExited, setFullscreenExited] = useState(false);
+  const everEnteredFs = useRef(false);
 
-  // Debounced autosave bookkeeping (PART 23): we keep frontend state immediate
-  // but only hit the backend after the student stops typing for ~700ms. This is
-  // the single biggest fix for the rate-limiting problem — it prevents one
-  // backend request per keystroke.
-  const saveTimers = useRef({});
-  const debouncedSave = (key, fn, delay = 700) => {
-    if (saveTimers.current[key]) clearTimeout(saveTimers.current[key].timer);
-    saveTimers.current[key] = {
-      timer: setTimeout(() => {
-        delete saveTimers.current[key];
-        fn();
-      }, delay),
-      fn,
-    };
-  };
-  const flushSaves = () => {
-    Object.values(saveTimers.current).forEach((entry) => {
-      clearTimeout(entry.timer);
-      try { entry.fn(); } catch { /* ignore */ }
-    });
-    saveTimers.current = {};
-  };
-
-  useEffect(() => { tokenRef.current = token; }, [token]);
-  useEffect(() => { phaseRef.current = phase; }, [phase]);
-  useEffect(() => { attemptRef.current = attempt; }, [attempt]);
-  useEffect(() => { currentSectionRef.current = currentSection; }, [currentSection]);
-  useEffect(() => { currentQuestionIndexRef.current = currentQuestionIndex; }, [currentQuestionIndex]);
-  useEffect(() => { lockReasonRef.current = lockReason; }, [lockReason]);
-  useEffect(() => { submittingRef.current = submitting; }, [submitting]);
-
-  // Keep body class in sync (hide navbar while assessment active). The navbar is
-  // hidden for the entire active mock flow — from the structure/instructions/
-  // security gates through the live exam — and restored on select/result.
+  // Live state refs for auto-save (avoids stale closures).
+  const stateRef = useRef({ answers, currentSection, currentIndex, codingSubmissions, selectedCodingLanguage, attempt, remainingSeconds, questions });
   useEffect(() => {
-    if (["exam", "security", "instructions", "structure"].includes(phase)) {
-      document.body.classList.add("assessment-active");
-    } else {
-      document.body.classList.remove("assessment-active");
-    }
-    return () => document.body.classList.remove("assessment-active");
-  }, [phase]);
+    stateRef.current = {
+      answers,
+      currentSection,
+      currentIndex,
+      codingSubmissions,
+      selectedCodingLanguage,
+      attempt,
+      remainingSeconds,
+      questions,
+    };
+  }, [answers, currentSection, currentIndex, codingSubmissions, selectedCodingLanguage, attempt, remainingSeconds, questions]);
 
-  // ---------- Load companies ----------
+  // Redirect an incoming ?result=… link to the dedicated result page.
   useEffect(() => {
-    const loadCompanies = async () => {
-      try {
-        const headers = { Authorization: `Bearer ${token}` };
-        const [practiceRes, statsRes] = await Promise.all([
-          api.get("/api/practice/home", { headers }),
-          api.get("/api/student/dashboard-stats", { headers }).catch(() => null),
-        ]);
-        const list = (practiceRes.data?.companies || []).filter((c) => c.status !== "inactive");
-        setCompanies(list);
-        const target = statsRes?.data?.targetCompany || "";
-        if (target) {
-          const match = list.find((c) => (c.id || c._id) === target);
-          if (match) setSelectedCompany({ ...match, id: match.id || match._id });
-        }
-      } catch (error) {
-        console.error("Load companies error:", error);
-      }
-    };
-    loadCompanies();
-  }, [token]);
+    if (resultParam) {
+      setSearchParams({}, { replace: true });
+      navigate(`/company-mock/result/${resultParam}`, { replace: true });
+    }
+  }, [resultParam, navigate, setSearchParams]);
 
-  // Detect an in-progress / paused / abandoned attempt so the select screen can
-  // offer a dedicated "Continue Mock Interview" card (PART 9 / PART 32 / PART 33).
+  // Fullscreen tracking.
   useEffect(() => {
-    const checkResume = async () => {
-      try {
-        const { data } = await api.get("/api/company-mock/history", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const attempts = data.attempts || [];
-        const resumable = attempts.find((a) =>
-          ["in_progress", "paused", "abandoned", "not_started"].includes(a.status)
-        );
-        if (resumable) setResumeCandidate(resumable);
-      } catch {
-        // best effort
-      }
-    };
-    checkResume();
-  }, [token]);
-
-  // ---------- Load result view ----------
-  useEffect(() => {
-    const resultId = searchParams.get("result");
-    if (!resultId) return;
-    const loadResult = async () => {
-      try {
-        const { data } = await api.get(`/api/company-mock/attempt/${resultId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (data.attempt) {
-          setResult({
-            scores: data.attempt.scores,
-            feedback: data.attempt.feedback,
-            security: data.attempt.security,
-          });
-          setSelectedCompany({ id: data.attempt.companyId, name: data.attempt.companyName });
-          setPhase("result");
-        }
-      } catch (error) {
-        console.error("Load result error:", error);
-      }
-    };
-    loadResult();
-  }, [searchParams, token]);
-
-  // ---------- Helpers ----------
-  const authHeaders = () => ({ Authorization: `Bearer ${tokenRef.current}` });
-
-  const applyServerState = (data) => {
-    serverStateRef.current = {
-      status: data.status,
-      expiresAtMs: data.expiresAt ? new Date(data.expiresAt).getTime() : serverStateRef.current.expiresAtMs,
-      pausedAtMs: data.pausedAt ? new Date(data.pausedAt).getTime() : null,
-      frozenRemainingMs: typeof data.remainingMs === "number" ? data.remainingMs : serverStateRef.current.frozenRemainingMs,
-    };
-    setAttempt((a) => (a ? { ...a, status: data.status } : a));
-  };
-
-  const enterFullscreen = async () => {
-    const elem = examContainerRef.current || document.documentElement;
-    try {
-      if (elem.requestFullscreen) {
-        await elem.requestFullscreen();
-      } else if (elem.webkitRequestFullscreen) {
-        await elem.webkitRequestFullscreen();
-      }
-    } catch {
-      // User may deny or browser may block; handled by caller via document.fullscreenElement check
-    }
-    // Clear any stale "intentional exit" flag left from a previous exit so an
-    // accidental exit is detected and the blocking popup is shown.
-    allowFullscreenExitRef.current = false;
-    return !!(document.fullscreenElement || document.webkitFullscreenElement);
-  };
-
-  const exitFullscreen = () => {
-    allowFullscreenExitRef.current = true;
-    if (document.fullscreenElement) {
-      document.exitFullscreen().catch(() => {});
-    }
-  };
-
-  const getCurrentQuestionId = () => {
-    const sectionQuestions = questions[currentSectionRef.current] || [];
-    return sectionQuestions[currentQuestionIndexRef.current]?.questionId || null;
-  };
-
-  const saveProgressState = async (section, index) => {
-    const att = attemptRef.current;
-    if (!att?._id) return;
-    try {
-      await api.post(
-        "/api/company-mock/progress",
-        { attemptId: att._id, currentSection: section, currentQuestionIndex: index },
-        { headers: authHeaders() }
-      );
-    } catch {
-      // best effort
-    }
-  };
-
-  // ---------- Server pause / resume ----------
-  const pauseAssessment = useCallback(async (reason) => {
-    const att = attemptRef.current;
-    if (!att?._id) return;
-    if (serverStateRef.current.status !== "in_progress") return; // idempotent
-    try {
-      flushSaves();
-      await saveProgressState(currentSectionRef.current, currentQuestionIndexRef.current);
-      const { data } = await api.post(
-        "/api/company-mock/pause",
-        {
-          attemptId: att._id,
-          reason,
-          section: currentSectionRef.current,
-          questionId: getCurrentQuestionId(),
-        },
-        { headers: authHeaders() }
-      );
-      serverStateRef.current = {
-        status: data.status,
-        expiresAtMs: serverStateRef.current.expiresAtMs,
-        pausedAtMs: data.pausedAt ? new Date(data.pausedAt).getTime() : null,
-        frozenRemainingMs: data.remainingMs,
-      };
-      setAttempt((a) => (a ? { ...a, status: data.status } : a));
-    } catch (error) {
-      console.error("Pause error:", error);
-    }
-  }, []);
-
-  const resumeAssessment = useCallback(async () => {
-    const att = attemptRef.current;
-    if (!att?._id) return;
-    if (serverStateRef.current.status !== "paused") return; // idempotent
-    try {
-      const { data } = await api.post(
-        "/api/company-mock/resume",
-        {
-          attemptId: att._id,
-          section: currentSectionRef.current,
-          questionId: getCurrentQuestionId(),
-        },
-        { headers: authHeaders() }
-      );
-      serverStateRef.current = {
-        status: data.status,
-        expiresAtMs: data.expiresAt ? new Date(data.expiresAt).getTime() : serverStateRef.current.expiresAtMs,
-        pausedAtMs: null,
-        frozenRemainingMs: null,
-      };
-      setAttempt((a) => (a ? { ...a, status: data.status } : a));
-      setLockReason(null);
-      lockReasonRef.current = null;
-    } catch (error) {
-      console.error("Resume error:", error);
-    }
-  }, []);
-
-  const maybeResume = useCallback(() => {
-    if (phaseRef.current !== "exam") return;
-    if (lockReasonRef.current && (document.fullscreenElement || document.webkitFullscreenElement) && document.visibilityState === "visible") {
-      resumeAssessment();
-    }
-  }, [resumeAssessment]);
-
-  // Return-to-assessment action from the blocking security modal.
-  // Only resumes after fullscreen is confirmed AND the tab is visible.
-  const handleReturnToAssessment = useCallback(async () => {
-    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-      await enterFullscreen();
-    }
-    if ((document.fullscreenElement || document.webkitFullscreenElement) && document.visibilityState === "visible") {
-      await resumeAssessment();
-    } else {
-      toast.error("Please allow fullscreen mode to continue the assessment.");
-    }
-  }, [enterFullscreen, resumeAssessment]);
-
-  // Exit Mock Interview — show confirmation first; never destroy the attempt.
-  const handleConfirmExit = useCallback(async () => {
-    const att = attemptRef.current;
-    try {
-      flushSaves();
-      await saveProgressState(currentSectionRef.current, currentQuestionIndexRef.current);
-      if (att?._id) {
-        await api.post(
-          "/api/company-mock/exit",
-          {
-            attemptId: att._id,
-            section: currentSectionRef.current,
-            questionId: getCurrentQuestionId(),
-          },
-          { headers: authHeaders() }
-        );
-      }
-    } catch (error) {
-      console.error("Exit attempt error:", error);
-    } finally {
-      setShowExitConfirm(false);
-      exitFullscreen();
-      navigate("/company-mock/history");
-    }
-  }, [saveProgressState, getCurrentQuestionId, exitFullscreen, navigate]);
-
-  // ---------- Timer (single interval, server-authoritative) ----------
-  useEffect(() => {
-    if (phase !== "exam") return;
-
-    const tick = () => {
-      const s = serverStateRef.current;
-      const now = Date.now();
-      if (s.status === "in_progress" && s.expiresAtMs) {
-        const rem = Math.max(0, s.expiresAtMs - now);
-        setTimeLeft(Math.floor(rem / 1000));
-        if (rem <= 0 && !autoSubmittingRef.current) {
-          autoSubmittingRef.current = true;
-          handleSubmitRef.current?.();
-        }
-      } else if (s.status === "paused" && s.frozenRemainingMs != null) {
-        setTimeLeft(Math.floor(s.frozenRemainingMs / 1000));
-      }
-    };
-
-    tick();
-    timerRef.current = setInterval(tick, 250);
-    return () => clearInterval(timerRef.current);
-  }, [phase]);
-
-  // ---------- Security listeners (single set, cleaned up on unmount/phase change) ----------
-  useEffect(() => {
-    if (phase !== "exam") return;
-
-    // Some browsers (WebKit/Safari) only expose the prefixed
-    // `webkitFullscreenElement` and only fire `webkitfullscreenchange`. We must
-    // listen for both and read both, otherwise an exit event is silently missed
-    // and the blocking popup never appears.
-    const getFsElement = () => document.fullscreenElement || document.webkitFullscreenElement || null;
-
-    // Unified lock trigger. If already locked by a different event, escalate to
-    // a combined "both" lock so we never stack multiple modals (req 21).
-    const triggerLock = (reason) => {
-      const prev = lockReasonRef.current;
-      if (prev && prev !== "fullscreen_required") {
-        setLockReason("both");
-        lockReasonRef.current = "both";
-      } else if (prev !== "fullscreen_required") {
-        setLockReason(reason);
-        lockReasonRef.current = reason;
-      }
-    };
-
     const handleFullscreenChange = () => {
-      const fs = !!getFsElement();
-      console.log("[COMPANY MOCK] fullscreenchange", {
-        fullscreen: fs,
-        mockActive: phaseRef.current === "exam",
-        allowExit: allowFullscreenExitRef.current,
-        phase: phaseRef.current,
-        status: serverStateRef.current.status,
-      });
-      if (!fs) {
-        if (allowFullscreenExitRef.current) return; // intentional exit (submit)
-        if (phaseRef.current !== "exam") return;
-        if (serverStateRef.current.status === "in_progress") {
-          pauseAssessment("fullscreen_exit");
-        }
-        triggerLock("fullscreen_exit");
-      } else {
-        maybeResume();
+      const isFS = isFullscreenActive();
+      if (isFS) {
+        everEnteredFs.current = true;
+        setFullscreenExited(false);
+      } else if (everEnteredFs.current && phase === "assessment") {
+        setFullscreenExited(true);
+        saveProgress({ skipGuard: false });
       }
     };
-
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        if (allowFullscreenExitRef.current || submittingRef.current) return;
-        if (phaseRef.current !== "exam") return;
-        if (serverStateRef.current.status === "in_progress") {
-          pauseAssessment("tab_switch");
-        }
-        triggerLock("tab_switch");
-      } else {
-        maybeResume();
-      }
-    };
-
-    const handleBlur = () => {
-      if (allowFullscreenExitRef.current || submittingRef.current) return;
-      if (phaseRef.current !== "exam") return;
-      if (serverStateRef.current.status === "in_progress") {
-        pauseAssessment("tab_switch");
-      }
-      triggerLock("tab_switch");
-    };
-
-    const handleFocus = () => {
-      maybeResume();
-    };
-
     document.addEventListener("fullscreenchange", handleFullscreenChange);
     document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    window.addEventListener("blur", handleBlur);
-    window.addEventListener("focus", handleFocus);
-
+    document.addEventListener("mozfullscreenchange", handleFullscreenChange);
+    document.addEventListener("MSFullscreenChange", handleFullscreenChange);
     return () => {
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
       document.removeEventListener("webkitfullscreenchange", handleFullscreenChange);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-      window.removeEventListener("blur", handleBlur);
-      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("mozfullscreenchange", handleFullscreenChange);
+      document.removeEventListener("MSFullscreenChange", handleFullscreenChange);
     };
-  }, [phase, pauseAssessment, maybeResume]);
-
-  // ---------- Security restrictions (copy / paste / cut / right-click) ----------
-  // Active for the ENTIRE Company Mock assessment, including the coding IDE.
-  // We block clipboard operations and the context menu, but we deliberately do
-  // NOT touch Monaco's editing shortcuts (Ctrl+Z / Ctrl+Y / Ctrl+F / Ctrl+H /
-  // Ctrl+/ / Ctrl+Space / arrows / Home / End / Shift+Arrow), so the IDE stays
-  // fully usable (PART 26 / PART 28 / PART 29).
-  useEffect(() => {
-    if (phase !== "exam") return;
-
-    // Throttle security-event recording so a single browser event can never
-    // generate a burst of records (PART 37). At most one POST per eventType
-    // per 1500ms.
-    const lastSent = {};
-    const recordEvent = (eventType) => {
-      const att = attemptRef.current;
-      if (!att?._id) return;
-      const now = Date.now();
-      if (lastSent[eventType] && now - lastSent[eventType] < 1500) return;
-      lastSent[eventType] = now;
-      api
-        .post(
-          "/api/company-mock/security-event",
-          { attemptId: att._id, eventType },
-          { headers: authHeaders() }
-        )
-        .catch(() => {});
-    };
-
-    const blockClipboard = (e) => {
-      e.preventDefault();
-      const t = e.type; // copy | cut | paste
-      recordEvent(t === "copy" ? "copy_attempt" : t === "cut" ? "cut_attempt" : "paste_attempt");
-    };
-
-    const handleContextMenu = (e) => {
-      e.preventDefault();
-      recordEvent("right_click_attempt");
-    };
-
-    // Keyboard shortcuts for clipboard (Ctrl/Cmd + C/V/X and Shift+Insert).
-    const handleKeyDown = (e) => {
-      const isMod = e.ctrlKey || e.metaKey;
-      if (isMod && (e.key === "c" || e.key === "C")) {
-        e.preventDefault();
-        recordEvent("copy_attempt");
-      } else if (isMod && (e.key === "v" || e.key === "V")) {
-        e.preventDefault();
-        recordEvent("paste_attempt");
-      } else if (isMod && (e.key === "x" || e.key === "X")) {
-        e.preventDefault();
-        recordEvent("cut_attempt");
-      } else if (e.shiftKey && (e.key === "Insert" || e.key === "Ins")) {
-        e.preventDefault();
-        recordEvent("paste_attempt");
-      }
-    };
-
-    document.addEventListener("copy", blockClipboard);
-    document.addEventListener("cut", blockClipboard);
-    document.addEventListener("paste", blockClipboard);
-    document.addEventListener("contextmenu", handleContextMenu);
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      document.removeEventListener("copy", blockClipboard);
-      document.removeEventListener("cut", blockClipboard);
-      document.removeEventListener("paste", blockClipboard);
-      document.removeEventListener("contextmenu", handleContextMenu);
-      document.removeEventListener("keydown", handleKeyDown);
-    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 
-  // ---------- Flow: create / resume attempt ----------
-  const handleStartInterview = async (companyOverride) => {
-    const company = companyOverride || selectedCompany;
-    if (!company) {
-      toast.error("Please select a company");
+  // Queue an anti-cheat event to be persisted with the next save.
+  const queueSecurityEvent = useCallback((type, metadata = {}) => {
+    securityEventsRef.current.push({
+      type,
+      timestamp: new Date().toISOString(),
+      section: stateRef.current.currentSection || null,
+      questionId:
+        stateRef.current.currentSection === "coding"
+          ? String((stateRef.current.questions?.["coding"]?.[stateRef.current.currentIndex]?._id) || "")
+          : String((stateRef.current.questions?.[stateRef.current.currentSection]?.[stateRef.current.currentIndex]?._id) || ""),
+      metadata: {
+        remainingSeconds: stateRef.current.remainingSeconds ?? 0,
+        ...metadata,
+      },
+    });
+  }, []);
+
+  // ── TAB SWITCH DETECTION + COPY/CUT/CONTEXT PREVENTION ──
+  useEffect(() => {
+    if (phase !== "assessment") return;
+
+    const isEditableTarget = (target) => {
+      if (!target) return false;
+      if (typeof target.closest !== "function") return false;
+      return !!(
+        target.closest(".monaco-editor") ||
+        target.closest(".monaco-aria-container") ||
+        (target.tagName === "TEXTAREA" && target.classList?.contains("inputarea")) ||
+        target.isContentEditable
+      );
+    };
+
+    // Tab switching: lock the mock immediately, persist the event, keep
+    // locked until the student returns to this tab.
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        const now = Date.now();
+        // Debounce rapid toggles within a single switch.
+        if (now - lastTabSwitchAtRef.current < 500) return;
+        lastTabSwitchAtRef.current = now;
+        queueSecurityEvent("TAB_SWITCH");
+        setTabSwitchLocked(true);
+        saveProgressRef.current?.({ skipGuard: false });
+      } else {
+        setTabSwitchLocked(false);
+      }
+    };
+
+    const preventCopy = (e) => {
+      if (isEditableTarget(e.target)) return; // allow Monaco IDE copy
+      e.preventDefault();
+      queueSecurityEvent("COPY_ATTEMPT");
+      toast.error("Copy action restricted for interview security.", { id: "copy-toast" });
+      saveProgress({ skipGuard: true });
+    };
+
+    const preventCut = (e) => {
+      if (isEditableTarget(e.target)) return; // allow Monaco IDE cut
+      e.preventDefault();
+      queueSecurityEvent("CUT_ATTEMPT");
+      toast.error("Cut action restricted for interview security.", { id: "cut-toast" });
+      saveProgress({ skipGuard: true });
+    };
+
+    const preventContextMenu = (e) => {
+      if (isEditableTarget(e.target)) return; // allow Monaco IDE context menu
+      e.preventDefault();
+      queueSecurityEvent("CONTEXT_MENU");
+      toast.error("Right-click context menu restricted.", { id: "contextmenu-toast" });
+      saveProgress({ skipGuard: true });
+    };
+
+    const preventShortcutCopy = (e) => {
+      if (isEditableTarget(e.target)) return; // allow IDE shortcuts
+      const k = e.key?.toLowerCase?.();
+      const isCopyCut = (e.ctrlKey || e.metaKey) && (k === "c" || k === "x");
+      if (isCopyCut) {
+        e.preventDefault();
+        queueSecurityEvent(k === "c" ? "COPY_ATTEMPT" : "CUT_ATTEMPT");
+        toast.error(k === "c" ? "Copy action restricted for interview security." : "Cut action restricted for interview security.", {
+          id: k === "c" ? "copy-toast" : "cut-toast",
+        });
+        saveProgress({ skipGuard: true });
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("copy", preventCopy);
+    window.addEventListener("cut", preventCut);
+    window.addEventListener("contextmenu", preventContextMenu);
+    window.addEventListener("keydown", preventShortcutCopy);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("copy", preventCopy);
+      window.removeEventListener("cut", preventCut);
+      window.removeEventListener("contextmenu", preventContextMenu);
+      window.removeEventListener("keydown", preventShortcutCopy);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase]);
+  useEffect(() => {
+    document.body.classList.add("interview-active");
+    window.scrollTo(0, 0);
+    return () => document.body.classList.remove("interview-active");
+  }, []);
+
+  // Leave fullscreen cleanly on unmount.
+  useEffect(() => {
+    return () => {
+      if (isFullscreenActive()) exitFullscreenAPI().catch(() => {});
+    };
+  }, []);
+
+  // Auto-save on a debounce while assessment is active.
+  useEffect(() => {
+    if (phase !== "assessment") return;
+    const t = setInterval(() => {
+      saveProgress({ skipGuard: true });
+    }, 15000);
+    return () => clearInterval(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase]);
+
+  // Warn + persist on close / navigate away.
+  useEffect(() => {
+    if (phase !== "assessment") return;
+    const handleBeforeUnload = (e) => {
+      fireAndForgetSave();
+      e.preventDefault();
+      e.returnValue = "";
+      return "";
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase]);
+
+  // Timer countdown. Decrements the remaining active time every second from the
+  // current saved value, stopping at 00:00 (auto-finalization is triggered below).
+  useEffect(() => {
+    if (phase !== "assessment") return;
+    const t = setInterval(() => {
+      setRemainingSeconds((prev) => {
+        if (prev <= 1) {
+          clearInterval(t);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(t);
+  }, [phase]);
+
+  // Auto-finalize the mock the moment the timer reaches 00:00. It submits
+  // through the exact same final-scoring path ("End Mock Interview") so a
+  // timed-out result is computed by the one authoritative backend function.
+  const autoSubmittedRef = useRef(false);
+  const submitFinalRef = useRef(null);
+  useEffect(() => {
+    if (phase !== "assessment" || remainingSeconds > 0 || autoSubmittedRef.current) return;
+    autoSubmittedRef.current = true;
+    toast("Time is up! Submitting your mock interview...");
+    const t = setTimeout(() => submitFinalRef.current?.(), 800);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, remainingSeconds]);
+
+  // Fetch companies (fallback when no company preselected).
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const { data } = await api.get("/api/companies", { headers: authHeaders });
+        setCompanies(data || []);
+      } catch {
+        setCompanies([]);
+      }
+    };
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Boot: if a specific resume was requested via ?resume=attemptId, restore that
+  // exact attempt immediately. Otherwise show the gate and surface unfinished mocks.
+  useEffect(() => {
+    const boot = async () => {
+      if (resumeParam) {
+        // Resume: load the exact saved attempt up-front (for display), keep the
+        // attemptId + full payload in refs, and show the fullscreen permission
+        // screen FIRST. On "Enter Fullscreen & Start" we open the SAME attempt.
+        setLoading(true);
+        try {
+          const { data } = await api.get(
+            `/api/mock-interview/resume?attemptId=${encodeURIComponent(resumeParam)}`,
+            { headers: authHeaders }
+          );
+          if (data && data.completed && data.result) {
+            // The attempt's active time already elapsed and was auto-finalized.
+            setLoading(false);
+            navigate(`/company-mock/result/${data.result.attemptId}`, { replace: true });
+            return;
+          }
+          if (data && data.hasAttempt) {
+            setResumeAttemptId(resumeParam);
+            resumeAttemptRef.current = data.resume;
+            resumeQuestionsRef.current = {
+              aptitude: data.aptitude || [],
+              technical: data.technical || [],
+              coding: data.coding || [],
+            };
+            setResumeData(data.resume);
+            setCompanyName(data.resume.companyName);
+            setPhase("gate");
+            setLoading(false);
+            return;
+          }
+        } catch {
+          // fall through to gate with empty state
+        }
+        setLoading(false);
+        setPhase("gate");
+        return;
+      }
+
+      // Normal flow: check for an unfinished attempt to show resume options.
+      try {
+        const { data } = await api.get("/api/mock-interview/resume", { headers: authHeaders });
+        if (data && data.completed && data.result) {
+          setPhase("gate");
+          await new Promise((r) => setTimeout(r, 0));
+          navigate(`/company-mock/result/${data.result.attemptId}`, { replace: true });
+          return;
+        }
+        if (data && data.hasAttempt) {
+          setResumeData(data.resume);
+          setCompanyName(data.resume.companyName);
+        }
+      } catch {
+        // fall through to gate
+      } finally {
+        setPhase("gate");
+      }
+    };
+    if (!resultParam) boot();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const enterFullscreen = useCallback(async () => {
+    if (isFullscreenActive()) {
+      everEnteredFs.current = true;
+      return true;
+    }
+    try {
+      await requestFullscreen();
+      everEnteredFs.current = true;
+      setFullscreenExited(false);
+      return true;
+    } catch (err) {
+      console.warn("Fullscreen request error:", err);
+      toast.error("Fullscreen is required to continue.");
+      return false;
+    }
+  }, []);
+
+  const handleReenterFullscreen = () => {
+    enterFullscreen().then((ok) => {
+      if (ok) setFullscreenExited(false);
+    });
+  };
+
+  // Build + send the save payload from live state.
+  const buildSavePayload = () => {
+    const st = stateRef.current;
+    const codingPayload = {};
+    const codingSubArr = st.codingSubmissions || [];
+    Object.entries(st.answers.coding || {}).forEach(([qid, code]) => {
+      const sub = codingSubArr.find((c) => String(c.questionId) === String(qid));
+      codingPayload[qid] = {
+        code,
+        language: st.selectedCodingLanguage,
+        ...(sub ? { status: sub.status, passedCount: sub.passedCount, totalCount: sub.totalCount, score: sub.score } : {}),
+      };
+    });
+    // Drain any pending anti-cheat events so they persist with this save.
+    const pendingEvents = securityEventsRef.current;
+    securityEventsRef.current = [];
+    return {
+      attemptId: st.attempt?.attemptId,
+      currentSection: st.currentSection,
+      currentQuestionIndex: st.currentIndex,
+      aptitudeAnswers: st.answers.aptitude || {},
+      technicalAnswers: st.answers.technical || {},
+      codingAnswers: codingPayload,
+      codingSubmissions: st.codingSubmissions,
+      selectedCodingLanguage: st.selectedCodingLanguage,
+      securityEvents: pendingEvents,
+    };
+  };
+
+  const saveProgress = useCallback(({ skipGuard = false } = {}) => {
+    const st = stateRef.current;
+    if (!st.attempt || !st.attempt.attemptId) return;
+    saveProgressRef.current = saveProgress;
+    const payload = buildSavePayload();
+    api
+      .post("/api/mock-interview/save", payload, { headers: authHeaders })
+      .then(() => {})
+      .catch(() => {});
+  }, [authHeaders]);
+
+  const fireAndForgetSave = useCallback(() => {
+    const st = stateRef.current;
+    if (!st.attempt || !st.attempt.attemptId) return;
+    const payload = buildSavePayload();
+    try {
+      navigator.sendBeacon?.("/api/mock-interview/save", new Blob([JSON.stringify(payload)], { type: "application/json" }));
+    } catch {
+      api.post("/api/mock-interview/save", payload, { headers: authHeaders }).catch(() => {});
+    }
+  }, [authHeaders]);
+
+  useEffect(() => {
+    saveProgressRef.current = saveProgress;
+  }, [saveProgress]);
+
+  const startNewMock = async (withCompanyId) => {
+    const cid = withCompanyId || companyId;
+    if (!cid) {
+      toast.error("Please select a company first.");
       return;
     }
-    setSelectedCompany(company);
+    const ok = await enterFullscreen();
+    if (!ok) return;
     setLoading(true);
     try {
-      const companyId = company.id || company._id;
       const { data } = await api.post(
-        "/api/company-mock/start",
-        { companyId },
-        { headers: authHeaders() }
+        "/api/mock-interview/start",
+        { companyId: cid },
+        { headers: authHeaders }
       );
-
-      const attemptData = data.attempt || {};
-      const newAttempt = {
-        _id: data.attemptId || attemptData._id,
-        companyId: data.companyId || attemptData.companyId,
-        status: data.status || attemptData.status || "not_started",
-        expiresAt: data.expiresAt || attemptData.expiresAt,
-        startedAt: data.startedAt || attemptData.startedAt,
-        pausedAt: data.pausedAt || attemptData.pausedAt,
-        totalPausedMs: data.totalPausedMs ?? attemptData.totalPausedMs ?? 0,
-        config: data.config || attemptData.config,
-      };
-      setAttempt(newAttempt);
-      attemptRef.current = newAttempt;
-
-      setQuestions({
-        aptitude: data.aptitude || [],
-        technical: data.technical || [],
-        coding: data.coding || [],
-      });
-
-      if (data.resume) {
-        const aptAnswers = {};
-        (attemptData.aptitudeAnswers || []).forEach((a) => {
-          aptAnswers[a.questionId] = a.selectedOption;
-        });
-        const techAnswers = {};
-        (attemptData.technicalAnswers || []).forEach((a) => {
-          techAnswers[a.questionId] = a.answer;
-        });
-        setAnswers({ aptitude: aptAnswers, technical: techAnswers, coding: {} });
-        setCurrentSection(attemptData.currentSection || "aptitude");
-        setCurrentQuestionIndex(attemptData.currentQuestionIndex || 0);
-        if (attemptData.selectedCodingLanguage) setSelectedLanguage(attemptData.selectedCodingLanguage);
-        setIsResume(true);
-
-        // If the existing attempt is still "running" (e.g. after a refresh while
-        // not in fullscreen), lock it on the server immediately so the timer
-        // does not keep counting while the student is not in the assessment.
-        if (newAttempt.status === "in_progress") {
-          api.post(
-            "/api/company-mock/pause",
-            { attemptId: newAttempt._id, reason: "fullscreen_exit" },
-            { headers: authHeaders() }
-          )
-            .then(() => {
-              setAttempt((a) => (a ? { ...a, status: "paused" } : a));
-              attemptRef.current = { ...attemptRef.current, status: "paused" };
-            })
-            .catch(() => {});
-        }
-
-        setPhase("security"); // reuse security gate as resume gate
-        toast.success("Resuming your in-progress mock interview");
-      } else {
-        if (data.warnings?.length) data.warnings.forEach((w) => toast.warning(w));
-        setIsResume(false);
-        setPhase("structure");
-      }
+      setupAssessment(data, null, data.expiresAt);
+      setResumeData(null);
     } catch (error) {
-      console.error("Start interview error:", error);
-      toast.error(error.response?.data?.message || "Failed to start interview");
+      console.error(error);
+      toast.error(error.response?.data?.message || "Failed to start mock interview");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleProceedToInstructions = () => setPhase("instructions");
-  const handleBeginExam = () => setPhase("security");
+  const resumeMock = async () => {
+    // Prefer the attemptId + full payload captured at boot (from ?resume=…),
+    // so the SAME attempt opens after the fullscreen transition — never lost,
+    // never re-created, no re-selection of questions.
+    const attemptId = resumeAttemptId || resumeData?.attemptId;
+    if (!attemptId) return;
 
-  // Begin (fresh) or resume — MUST be after fullscreen is confirmed.
-  const handleStartExam = async () => {
-    const att = attemptRef.current;
-    if (!att?._id) return;
+    const ok = await enterFullscreen();
+    if (!ok) return;
+
     setLoading(true);
     try {
-      await enterFullscreen();
-      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-        // Fullscreen request failed — do NOT start the timer or the test.
-        setLockReason("fullscreen_required");
-        lockReasonRef.current = "fullscreen_required";
+      if (resumeAttemptRef.current && String(resumeAttemptRef.current.attemptId) === String(attemptId)) {
+        setupAssessment(resumeAttemptRef.current, resumeQuestionsRef.current, null);
+        setCompanyName(resumeAttemptRef.current.companyName);
+        resumeAttemptRef.current = null;
+        resumeQuestionsRef.current = null;
+        setResumeData(null);
         setLoading(false);
         return;
       }
 
-      // Fetch authoritative server status before deciding begin vs resume.
-      const statusResp = await api.get(`/api/company-mock/status/${att._id}`, { headers: authHeaders() });
-      const serverStatus = statusResp.data.status;
-
-      let resp;
-      if (serverStatus === "paused" || serverStatus === "abandoned") {
-        resp = await api.post(
-          "/api/company-mock/resume",
-          { attemptId: att._id, section: currentSectionRef.current, questionId: getCurrentQuestionId() },
-          { headers: authHeaders() }
-        );
-      } else {
-        resp = await api.post(
-          "/api/company-mock/begin",
-          { attemptId: att._id },
-          { headers: authHeaders() }
-        );
+      // Fallback (resume selected from the gate's unfinished list): fetch the
+      // EXACT saved attempt by its stored ID — restores identical questions,
+      // never regenerates or shuffles.
+      const { data } = await api.get(
+        `/api/mock-interview/resume?attemptId=${encodeURIComponent(attemptId)}`,
+        { headers: authHeaders }
+      );
+      if (!data || !data.hasAttempt) {
+        toast.error("No saved attempt to resume.");
+        setLoading(false);
+        return;
       }
-
-      applyServerState(resp.data);
-      setLockReason(null);
-      lockReasonRef.current = null;
-      setPhase("exam");
+      setupAssessment(data.resume, data, null);
+      setCompanyName(data.resume.companyName);
+      setResumeData(null);
     } catch (error) {
-      console.error("Start exam error:", error);
-      toast.error(error.response?.data?.message || "Failed to start assessment");
+      console.error(error);
+      toast.error("Failed to resume mock interview");
     } finally {
       setLoading(false);
     }
   };
 
-  // ---------- Save answer ----------
-  const handleSaveAnswer = (section, questionId, answer) => {
-    // Update local state immediately for a snappy UI.
+  // Populate the assessment from either a fresh start or a resume.
+  const setupAssessment = (attemptObj, questionData, expiresAt) => {
+    setAttempt(attemptObj);
+    if (questionData) {
+      setQuestions({
+        aptitude: questionData.aptitude || [],
+        technical: questionData.technical || [],
+        coding: questionData.coding || [],
+      });
+      setCurrentSection(attemptObj.currentSection || "aptitude");
+      setCurrentIndex(attemptObj.currentQuestionIndex || 0);
+      setAnswers({
+        aptitude: attemptObj.answers?.aptitude || {},
+        technical: attemptObj.answers?.technical || {},
+        coding: attemptObj.answers?.coding || {},
+      });
+      setCodingSubmissions(attemptObj.codingSubmissions || []);
+      setSelectedCodingLanguage(attemptObj.selectedCodingLanguage || "java");
+      setRemainingSeconds(attemptObj.remainingSeconds || 0);
+      setCompanyName(attemptObj.companyName || "");
+    } else {
+      setQuestions({
+        aptitude: attemptObj.aptitude || [],
+        technical: attemptObj.technical || [],
+        coding: attemptObj.coding || [],
+      });
+      setCurrentSection("aptitude");
+      setCurrentIndex(0);
+      setAnswers({ aptitude: {}, technical: {}, coding: {} });
+      setCodingSubmissions([]);
+      setSelectedCodingLanguage("java");
+      setCompanyName(attemptObj.companyName || "");
+      const ms = expiresAt ? new Date(expiresAt).getTime() - Date.now() : 0;
+      setRemainingSeconds(Math.max(0, Math.floor(ms / 1000)));
+    }
+    setPhase("assessment");
+  };
+
+  const sectionQuestions = questions[currentSection] || [];
+  const question = sectionQuestions[currentIndex];
+  const sectionCounts = {
+    aptitude: { answered: Object.keys(answers.aptitude).filter((k) => (answers.aptitude[k] || "").toString().trim() !== "").length, total: (questions.aptitude || []).length },
+    technical: { answered: Object.keys(answers.technical).filter((k) => (answers.technical[k] || "").toString().trim() !== "").length, total: (questions.technical || []).length },
+    coding: { answered: Object.keys(answers.coding).filter((k) => (answers.coding[k] || "").toString().trim() !== "").length, total: (questions.coding || []).length },
+  };
+  const meta = SECTION_META[currentSection];
+
+  // ── Answer handlers ──
+  const selectOption = (qid, opt) => {
+    setAnswers((prev) => {
+      const next = {
+        ...prev,
+        [currentSection]: { ...prev[currentSection], [qid]: opt },
+      };
+      return next;
+    });
+    // immediate-ish save (debounced by interval + explicit)
+    setTimeout(() => saveProgress({ skipGuard: true }), 250);
+  };
+
+  const updateCoding = (qid, code) => {
     setAnswers((prev) => ({
       ...prev,
-      [section]: { ...prev[section], [questionId]: answer },
+      coding: { ...prev.coding, [qid]: code },
     }));
-    const att = attemptRef.current;
-    if (!att) return;
-    // Debounced backend autosave (PART 23) — NOT on every selection/keystroke.
-    debouncedSave(`answer:${section}:${questionId}`, async () => {
-      try {
-        await api.post(
-          "/api/company-mock/answer",
-          { attemptId: att._id, section, questionId, answer, timeTakenMs: 0 },
-          { headers: authHeaders() }
-        );
-      } catch (error) {
-        console.error("Save answer error:", error);
+  };
+
+  // ── Navigation ──
+  const goNext = () => {
+    saveProgress({ skipGuard: true });
+    if (currentIndex < sectionQuestions.length - 1) {
+      setCurrentIndex((i) => i + 1);
+    } else if (currentSection === "aptitude") {
+      setCurrentSection("technical");
+      setCurrentIndex(0);
+    } else if (currentSection === "technical") {
+      setCurrentSection("coding");
+      setCurrentIndex(0);
+    }
+  };
+
+  const goPrev = () => {
+    saveProgress({ skipGuard: true });
+    if (currentIndex > 0) {
+      setCurrentIndex((i) => i - 1);
+    } else if (currentSection === "coding") {
+      setCurrentSection("technical");
+      setCurrentIndex((questions.technical || []).length - 1);
+    } else if (currentSection === "technical") {
+      setCurrentSection("aptitude");
+      setCurrentIndex((questions.aptitude || []).length - 1);
+    }
+  };
+
+  const switchSection = (sec) => {
+    if (sec === currentSection) return;
+    saveProgress({ skipGuard: true });
+    setCurrentSection(sec);
+    setCurrentIndex(0);
+  };
+
+  // ── Coding submission capture ──
+  const handleCodingSubmission = (qid, result) => {
+    if (!qid || !result) return;
+    setCodingSubmissions((prev) => {
+      const idx = prev.findIndex((c) => String(c.questionId) === String(qid));
+      const entry = {
+        questionId: qid,
+        status: result.status || "failed",
+        passedCount: result.passedCount ?? result.passed ?? 0,
+        totalCount: result.totalCount ?? result.total ?? 0,
+        score: result.score ?? 0,
+      };
+      if (idx >= 0) {
+        const next = [...prev];
+        next[idx] = entry;
+        return next;
       }
+      return [...prev, entry];
     });
+    setTimeout(() => saveProgress({ skipGuard: true }), 250);
   };
 
-  // ---------- Save coding draft ----------
-  const handleSaveCodingDraft = (questionId, language, code) => {
-    setCodingDrafts((prev) => ({ ...prev, [`${questionId}:${language}`]: code }));
-    const att = attemptRef.current;
-    if (!att) return;
-    // Debounced backend autosave (PART 23). Frontend state is instant so the
-    // editor never blocks; the backend write is coalesced.
-    debouncedSave(`draft:${questionId}:${language}`, async () => {
-      try {
-        await api.post(
-          "/api/company-mock/coding-draft",
-          { attemptId: att._id, questionId, language, code },
-          { headers: authHeaders() }
-        );
-      } catch (error) {
-        console.error("Save coding draft error:", error);
-      }
+  // Coding question-id set that have a recorded submission (for the tab done-state).
+  const codingSolvedSet = useMemo(() => {
+    const s = new Set();
+    (codingSubmissions || []).forEach((c) => {
+      if (c && c.questionId) s.add(String(c.questionId));
     });
-  };
+    return s;
+  }, [codingSubmissions]);
 
-  // ---------- Navigation ----------
-  const handleNext = () => {
-    flushSaves();
-    const sectionQuestions = questions[currentSection] || [];
-    let nextSection = currentSection;
-    let nextIndex = currentQuestionIndex;
-    if (currentQuestionIndex < sectionQuestions.length - 1) {
-      nextIndex = currentQuestionIndex + 1;
-    } else {
-      const idx = SECTIONS.indexOf(currentSection);
-      if (idx < SECTIONS.length - 1) {
-        nextSection = SECTIONS[idx + 1];
-        nextIndex = 0;
-      }
+  // Jump to a specific coding question (used by the coding IDE question tabs).
+  const navigateCoding = (index) => {
+    if (currentSection !== "coding") return;
+    saveProgress({ skipGuard: true });
+    if (index >= 0 && index < sectionQuestions.length) {
+      setCurrentIndex(index);
     }
-    setCurrentSection(nextSection);
-    setCurrentQuestionIndex(nextIndex);
-    saveProgressState(nextSection, nextIndex);
   };
 
-  const handlePrevious = () => {
-    flushSaves();
-    let prevSection = currentSection;
-    let prevIndex = currentQuestionIndex;
-    if (currentQuestionIndex > 0) {
-      prevIndex = currentQuestionIndex - 1;
-    } else {
-      const idx = SECTIONS.indexOf(currentSection);
-      if (idx > 0) {
-        prevSection = SECTIONS[idx - 1];
-        prevIndex = (questions[prevSection] || []).length - 1;
-      }
-    }
-    setCurrentSection(prevSection);
-    setCurrentQuestionIndex(prevIndex);
-    saveProgressState(prevSection, prevIndex);
-  };
-
-  const handleJumpToQuestion = (section, index) => {
-    flushSaves();
-    setCurrentSection(section);
-    setCurrentQuestionIndex(index);
-    saveProgressState(section, index);
-  };
-
-  // ---------- Submit ----------
-  const getCodingAttemptedCount = () => {
-    const coding = questions.coding || [];
-    let count = 0;
-    for (const q of coding) {
-      const langs = ["java", "cpp", "c", "python"];
-      if (langs.some((l) => (codingDrafts[`${q.questionId}:${l}`] || "").trim())) count++;
-    }
-    return count;
-  };
-
-  const handleSubmit = useCallback(async () => {
-    if (submittingRef.current) return;
-    const att = attemptRef.current;
-    if (!att?._id) return;
-
-    console.log("[COMPANY MOCK] FINAL SUBMIT CLICKED");
-    setShowSubmitConfirm(false);
-    setSubmitting(true);
-    submittingRef.current = true;
-    flushSaves();
-    exitFullscreen();
+  // ── End Mock Interview ──
+  const submitFinal = async () => {
+    setLoading(true);
     try {
-      console.log("[COMPANY MOCK] submitting", { attemptId: att._id, company: selectedCompany?.name });
+      setConfirmEnd(false);
+      const aptitudeAnswers = Object.entries(answers.aptitude)
+        .map(([qid, v]) => ({ questionId: qid, selectedOption: v }))
+        .filter((a) => (a.selectedOption || "").toString().trim() !== "");
+      const technicalAnswers = Object.entries(answers.technical)
+        .map(([qid, v]) => ({ questionId: qid, selectedOption: v }))
+        .filter((a) => (a.selectedOption || "").toString().trim() !== "");
+      const codingAnswers = Object.entries(answers.coding)
+        .map(([qid, code]) => {
+          const sub = codingSubmissions.find((c) => String(c.questionId) === String(qid));
+          return {
+            questionId: qid,
+            code,
+            language: sub?.language || selectedCodingLanguage,
+            ...(sub
+              ? { status: sub.status, passedCount: sub.passedCount, totalCount: sub.totalCount, score: sub.score }
+              : {}),
+          };
+        })
+        .filter((c) => (c.code || "").toString().trim() !== "");
+
       const { data } = await api.post(
-        "/api/company-mock/submit",
-        { attemptId: att._id, codingLanguages: { selected: selectedLanguage } },
-        { headers: authHeaders() }
+        "/api/mock-interview/submit",
+        { attemptId: attempt.attemptId, aptitudeAnswers, technicalAnswers, codingAnswers },
+        { headers: authHeaders }
       );
-      setResult(data);
-      setPhase("result");
-      clearInterval(timerRef.current);
+      if (isFullscreenActive()) exitFullscreenAPI().catch(() => {});
+      navigate(`/company-mock/result/${data.result?.attemptId || attempt.attemptId}`, { replace: true });
     } catch (error) {
-      console.error("Submit error:", error);
-      toast.error(
-        error.response?.data?.message ||
-          "Unable to submit mock interview. Your progress is saved. Please try again."
-      );
+      console.error(error);
+      toast.error(error.response?.data?.message || "Failed to submit mock interview");
     } finally {
-      setSubmitting(false);
-      submittingRef.current = false;
+      setLoading(false);
     }
-  }, [selectedLanguage]);
-
-  // Manual submit → show confirmation modal first (PART 21). The auto-submit
-  // timer calls handleSubmit() directly (no modal).
-  const requestSubmit = () => {
-    if (submittingRef.current) return;
-    setShowSubmitConfirm(true);
   };
 
-  // Set ref for handleSubmit (used by timer auto-submit)
   useEffect(() => {
-    handleSubmitRef.current = handleSubmit;
-  }, [handleSubmit]);
+    submitFinalRef.current = submitFinal;
+  });
 
-  // ---------- Format helpers ----------
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
-  };
-
-  const getAnsweredCount = (section) => {
-    const sectionAnswers = answers[section] || {};
-    return Object.keys(sectionAnswers).filter((k) => sectionAnswers[k] !== "" && sectionAnswers[k] != null).length;
-  };
-
-  // Per-question answered check (used by the question palette — PART 9 / PART 33).
-  const isQuestionAnswered = (section, index) => {
-    const q = questions[section]?.[index];
-    if (!q) return false;
-    if (section === "coding") {
-      const langs = ["java", "cpp", "c", "python"];
-      return langs.some((l) => (codingDrafts[`${q.questionId}:${l}`] || "").trim());
-    }
-    const ans = answers[section]?.[q.questionId];
-    return ans != null && ans !== "";
-  };
-
-  // ---------- Render ----------
-  if (phase === "select") {
+  // ════════════════════════════════════════════════════════
+  //  BOOTING
+  // ════════════════════════════════════════════════════════
+  if (phase === "booting") {
     return (
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="mb-8">
-            <h1 className="text-2xl sm:text-3xl font-bold mb-2" style={{ color: "var(--text-primary)" }}>
-              Company Mock Interview Practice
-            </h1>
-            <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-              Practice company-style mock interviews with curated questions. This is a simulation, not an official company interview.
-            </p>
+      <div className="min-h-screen flex flex-col items-center justify-center" style={{ background: "var(--bg-primary)", color: "var(--text-primary)" }}>
+        <Loader2 className="w-10 h-10 animate-spin" style={{ color: "var(--primary)" }} />
+        <p className="mt-4 text-sm" style={{ color: "var(--text-secondary)" }}>Loading Mock Interview…</p>
+      </div>
+    );
+  }
+
+  // ════════════════════════════════════════════════════════
+  //  FULLSCREEN GATE / RESUME
+  // ════════════════════════════════════════════════════════
+  if (phase === "gate") {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4" style={{ background: "var(--bg-primary)", color: "var(--text-primary)" }}>
+        <div className="w-full max-w-md space-y-4">
+          {/* Fullscreen requirement */}
+          <div className="rounded-3xl p-8 text-center flex flex-col items-center gap-4" style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)", boxShadow: "var(--shadow-card)" }}>
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ background: "var(--admin-accent-bg)", color: "var(--primary)" }}>
+              <Maximize2 className="w-8 h-8" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold">Fullscreen Required</h2>
+              <p className="text-sm mt-2" style={{ color: "var(--text-secondary)" }}>
+                Please allow fullscreen to start your mock interview.
+              </p>
+            </div>
+
+            {!resumeData && (
+              <div className="w-full">
+                {!companyId && (
+                  <select
+                    className="w-full p-2.5 border rounded-lg mb-4"
+                    style={{ background: "var(--input-bg)", color: "var(--text-primary)", borderColor: "var(--border)" }}
+                    value={companyId || ""}
+                    onChange={(e) => setCompanyId(e.target.value)}
+                  >
+                    <option value="" disabled>-- Select Company --</option>
+                    {companies.map((c) => (
+                      <option key={c.id || c._id} value={c.id || c._id}>{c.name}</option>
+                    ))}
+                  </select>
+                )}
+                <button
+                  onClick={() => startNewMock()}
+                  disabled={loading || !companyId}
+                  className="w-full py-3.5 px-6 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2 transition-all hover:opacity-90 disabled:opacity-50"
+                  style={{ background: "linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)", boxShadow: "0 4px 20px rgba(255,107,53,0.35)" }}
+                >
+                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Maximize2 className="w-4 h-4" />}
+                  Enter Fullscreen &amp; Start
+                </button>
+              </div>
+            )}
           </div>
 
-          {/* Continue existing mock (PART 32) — shown before starting a new one */}
-          {resumeCandidate && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="student-card p-6 mb-8 border-2"
-              style={{ borderColor: "var(--primary)" }}
-            >
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                  <div>
-                    <p className="text-[11px] font-bold uppercase tracking-wide" style={{ color: "var(--primary)" }}>
-                      Continue Existing Mock
-                    </p>
-                    <h3 className="text-lg font-bold mt-1" style={{ color: "var(--text-primary)" }}>
-                      {resumeCandidate.companyName}
-                    </h3>
-                    <div className="text-xs mt-1 space-y-0.5" style={{ color: "var(--text-muted)" }}>
-                      <p>
-                        Aptitude: {resumeCandidate.aptitudeAnswers?.length || 0}/{resumeCandidate.config?.aptitudeCount || resumeCandidate.aptitudeAnswers?.length || 0}
-                        {"  ·  "}Technical: {resumeCandidate.technicalAnswers?.length || 0}/{resumeCandidate.config?.technicalCount || resumeCandidate.technicalAnswers?.length || 0}
-                        {"  ·  "}Coding: {(resumeCandidate.codingAnswers || []).length}/{resumeCandidate.config?.codingCount || (resumeCandidate.codingAnswers || []).length || 0}
-                      </p>
-                      <p>
-                        Last position: {SECTION_LABELS[resumeCandidate.currentSection || "aptitude"]} — Question{" "}
-                        ((resumeCandidate.currentQuestionIndex || 0) + 1)
-                      </p>
-                      <p>Status: {resumeCandidate.status === "completed" ? "Completed" : "In Progress"} · Last saved:{" "}
-                        {new Date(resumeCandidate.updatedAt || resumeCandidate.createdAt).toLocaleString()}
-                      </p>
-                    </div>
-                  </div>
+          {/* Resume card if an unfinished attempt exists */}
+          {resumeData && (
+            <div className="rounded-3xl p-6 flex flex-col gap-4" style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)", boxShadow: "var(--shadow-card)" }}>
+              <div className="flex items-center gap-2">
+                <Hourglass className="w-5 h-5" style={{ color: "var(--primary)" }} />
+                <h3 className="text-lg font-bold">Resume Mock Interview</h3>
+              </div>
+              <p className="text-sm font-bold flex items-center gap-1.5">
+                <Building2 className="w-4 h-4" style={{ color: "var(--primary)" }} />
+                Company: {resumeData.companyName || "—"}
+              </p>
+              <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                saved progress detected
+              </p>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <ResumeRow label="Aptitude" value={`${resumeData.progress.aptitude.answered}/${resumeData.progress.aptitude.total}`} />
+                <ResumeRow label="Technical" value={`${resumeData.progress.technical.answered}/${resumeData.progress.technical.total}`} />
+                <ResumeRow label="Coding" value={`${resumeData.progress.coding.answered}/${resumeData.progress.coding.total}`} />
+                <ResumeRow label="Remaining Time" value={fmtTime(resumeData.remainingSeconds || 0)} />
+              </div>
+              <div className="flex flex-col gap-2">
                 <button
-                  onClick={() =>
-                    handleStartInterview({
-                      id: resumeCandidate.companyId,
-                      name: resumeCandidate.companyName,
-                    })
-                  }
+                  onClick={resumeMock}
                   disabled={loading}
-                  className="px-6 py-3 rounded-xl font-bold text-white cursor-pointer flex items-center gap-2"
-                  style={{ background: "var(--primary)" }}
+                  className="w-full py-3 px-6 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2 hover:opacity-90 disabled:opacity-50"
+                  style={{ background: "linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)", boxShadow: "0 4px 20px rgba(255,107,53,0.35)" }}
                 >
-                  {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Play className="w-5 h-5" />}
-                  Continue Mock Interview
+                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Maximize2 className="w-4 h-4" />}
+                  {resumeAttemptId ? "Enter Fullscreen & Start" : "Resume Interview"}
                 </button>
-              </div>
-            </motion.div>
-          )}
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {companies.map((company) => (
-              <motion.button
-                key={company.id}
-                onClick={() => setSelectedCompany(company)}
-                className={`p-5 rounded-2xl border text-left transition-all cursor-pointer ${
-                  selectedCompany?.id === company.id
-                    ? "border-[var(--primary)] bg-[var(--primary)]/5"
-                    : "border-[var(--border)] hover:border-[var(--primary)]/50"
-                }`}
-                whileHover={{ y: -2 }}
-              >
-                <div className="flex items-center gap-3">
-                  <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center"
-                    style={{ background: company.color || "var(--primary)", color: "#fff" }}
+                {!resumeAttemptId && (
+                  <button
+                    onClick={() => startNewMock()}
+                    disabled={loading || !companyId}
+                    className="w-full py-3 px-6 rounded-xl text-sm font-semibold hover:opacity-80 disabled:opacity-50"
+                    style={{ border: "1px solid var(--border)", color: "var(--text-primary)", background: "transparent" }}
                   >
-                    <Building2 className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <p className="font-semibold" style={{ color: "var(--text-primary)" }}>
-                      {company.name}
-                    </p>
-                    <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-                      {company.package || "Placement Drive"}
-                    </p>
-                  </div>
-                </div>
-              </motion.button>
-            ))}
-          </div>
-
-          {selectedCompany && (
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-8">
-              <button
-                onClick={handleStartInterview}
-                disabled={loading}
-                className="px-8 py-3 rounded-xl font-bold text-white cursor-pointer flex items-center gap-2"
-                style={{ background: "var(--primary)" }}
-              >
-                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Play className="w-5 h-5" />}
-                Start {selectedCompany.name} Mock Interview
-              </button>
-            </motion.div>
+                    Start New Mock
+                  </button>
+                )}
+              </div>
+            </div>
           )}
-        </motion.div>
+        </div>
       </div>
     );
   }
 
-  if (phase === "structure") {
-    return (
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="student-card p-8">
-          <h2 className="text-xl font-bold mb-4" style={{ color: "var(--text-primary)" }}>
-            {selectedCompany?.name} Mock Interview
-          </h2>
-          <div className="grid grid-cols-3 gap-4 text-center">
-            <div className="p-4 rounded-xl border border-[var(--border)]">
-              <p className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>{questions.aptitude.length}</p>
-              <p className="text-xs" style={{ color: "var(--text-muted)" }}>Aptitude Questions</p>
-            </div>
-            <div className="p-4 rounded-xl border border-[var(--border)]">
-              <p className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>{questions.technical.length}</p>
-              <p className="text-xs" style={{ color: "var(--text-muted)" }}>Technical Questions</p>
-            </div>
-            <div className="p-4 rounded-xl border border-[var(--border)]">
-              <p className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>{questions.coding.length}</p>
-              <p className="text-xs" style={{ color: "var(--text-muted)" }}>Coding Problems</p>
-            </div>
+  // ════════════════════════════════════════════════════════
+  //  ASSESSMENT
+  // ════════════════════════════════════════════════════════
+  const isLastQuestion = currentSection === "coding" && currentIndex === sectionQuestions.length - 1;
+
+  return (
+    <div
+      className={currentSection === "coding"
+        ? "h-screen overflow-hidden flex flex-col"
+        : "min-h-screen flex flex-col"}
+      style={{ background: "var(--bg-primary)", color: "var(--text-primary)" }}
+    >
+      {/* Header bar */}
+      <header className="sticky top-0 z-40 px-4 md:px-6 py-3 border-b" style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2 min-w-0">
+            <Building2 className="w-5 h-5 shrink-0" style={{ color: "var(--primary)" }} />
+            <span className="font-bold truncate">{companyName || "Company"} Mock Interview</span>
           </div>
-          <div className="flex gap-4 mt-8">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-mono text-sm font-semibold" style={{ background: "color-mix(in srgb, var(--error) 12%, transparent)", color: remainingSeconds <= 300 ? "var(--error)" : "var(--text-primary)" }}>
+              <Clock className="w-4 h-4" />
+              {fmtTime(remainingSeconds)}
+            </div>
             <button
-              onClick={() => { setPhase("select"); setSelectedCompany(null); setIsResume(false); }}
-              className="px-6 py-2.5 rounded-xl border font-semibold cursor-pointer"
-              style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
+              onClick={() => setConfirmEnd(true)}
+              className="px-4 py-1.5 rounded-lg text-xs font-bold text-white hover:opacity-90"
+              style={{ background: "linear-gradient(135deg, #EF4444 0%, #DC2626 100%)" }}
             >
-              Back
-            </button>
-            <button
-              onClick={handleProceedToInstructions}
-              className="px-6 py-2.5 rounded-xl font-bold text-white cursor-pointer flex items-center gap-2"
-              style={{ background: "var(--primary)" }}
-            >
-              Continue <ChevronRight className="w-4 h-4" />
+              End Mock Interview
             </button>
           </div>
-        </motion.div>
-      </div>
-    );
-  }
+        </div>
 
-  if (phase === "instructions") {
-    return (
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="student-card p-8">
-          <h2 className="text-xl font-bold mb-4" style={{ color: "var(--text-primary)" }}>
-            {selectedCompany?.name} Mock Interview Instructions
-          </h2>
+        {/* Section tabs */}
+        <div className="flex flex-wrap gap-2 mt-3">
+          {SECTION_ORDER.map((sec) => {
+            const m = SECTION_META[sec];
+            const isActive = sec === currentSection;
+            const { answered, total } = sectionCounts[sec];
+            return (
+              <button
+                key={sec}
+                onClick={() => switchSection(sec)}
+                className="px-3 py-1.5 rounded-full text-xs md:text-sm font-semibold border transition-all"
+                style={{
+                  color: isActive ? "#fff" : "var(--text-secondary)",
+                  background: isActive ? `linear-gradient(135deg, ${m.color} 0%, ${m.color}dd 100%)` : "var(--card-bg)",
+                  borderColor: isActive ? m.color : "var(--border)",
+                  boxShadow: isActive ? `0 0 14px ${m.color}55` : "none",
+                }}
+              >
+                {m.label} <span className="opacity-90">({answered}/{total})</span>
+              </button>
+            );
+          })}
+        </div>
+      </header>
 
-          <div className="space-y-4 mb-8">
-            <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50">
-              <p className="text-sm text-amber-800 dark:text-amber-300">
-                <strong>Disclaimer:</strong> This is a practice simulation. Questions are curated for practice purposes and are NOT official company questions.
-              </p>
-            </div>
+      {/* Body */}
+      <div className={currentSection === "coding" ? "flex-1 w-full flex flex-col min-h-0" : "flex-1 w-full max-w-4xl mx-auto p-4 md:p-6"}>
+        {/* Progress line */}
+        <div className={["flex items-center justify-between mb-4", currentSection === "coding" ? "px-4 md:px-6 pt-4" : ""].join(" ")}>
+          <div className="flex items-center gap-2 text-sm font-semibold">
+            <span className="w-2 h-2 rounded-full" style={{ background: meta.color, boxShadow: `0 0 8px ${meta.color}` }} />
+            <span className="capitalize">{meta.label}</span>
+          </div>
+          <div className="text-sm font-medium px-3 py-1 rounded-full" style={{ background: `color-mix(in srgb, ${meta.color} 16%, transparent)`, color: meta.color }}>
+            Question {currentIndex + 1} of {sectionQuestions.length}
+          </div>
+        </div>
+        <div className={["h-1.5 w-full rounded-full overflow-hidden", currentSection === "coding" ? "px-4 md:px-6 mb-2" : "mb-6"].join(" ")}>
+          <div
+            className="h-full rounded-full transition-all duration-300"
+            style={{
+              width: `${sectionQuestions.length ? ((currentIndex + 1) / sectionQuestions.length) * 100 : 0}%`,
+              background: `linear-gradient(90deg, ${meta.color}, ${meta.color}aa)`,
+            }}
+          />
+        </div>
 
-            <div className="grid grid-cols-3 gap-4 text-center">
-              <div className="p-4 rounded-xl border border-[var(--border)]">
-                <p className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>{questions.aptitude.length}</p>
-                <p className="text-xs" style={{ color: "var(--text-muted)" }}>Aptitude Questions</p>
-              </div>
-              <div className="p-4 rounded-xl border border-[var(--border)]">
-                <p className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>{questions.technical.length}</p>
-                <p className="text-xs" style={{ color: "var(--text-muted)" }}>Technical Questions</p>
-              </div>
-              <div className="p-4 rounded-xl border border-[var(--border)]">
-                <p className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>{questions.coding.length}</p>
-                <p className="text-xs" style={{ color: "var(--text-muted)" }}>Coding Problems</p>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>Rules:</p>
-              <ul className="text-sm space-y-1" style={{ color: "var(--text-secondary)" }}>
-                <li>• The assessment must be taken in <strong>fullscreen</strong> mode.</li>
-                <li>• The timer starts only after fullscreen is entered and pauses if you exit fullscreen or switch tabs.</li>
-                <li>• Paused time does NOT count toward your assessment duration.</li>
-                <li>• Tab switching and fullscreen exits are monitored and recorded.</li>
-                <li>• Copy/paste is restricted (except in the coding section).</li>
-                <li>• Auto-save is enabled. You can resume if interrupted.</li>
-                <li>• All sections must be completed: Aptitude → Technical → Coding.</li>
-              </ul>
+        {!question ? (
+          <div className="text-center py-16">
+            <p className="text-lg" style={{ color: "var(--text-secondary)" }}>No questions available in this section.</p>
+          </div>
+        ) : currentSection === "coding" ? (
+          <div className="flex-1 min-h-0">
+            <CompanyMockCodingIDE
+              key={question._id}
+              question={question}
+              questions={questions.coding || []}
+              activeIndex={currentIndex}
+              solvedSet={codingSolvedSet}
+              onNavigate={navigateCoding}
+              initialCode={answers.coding[question._id] || question.starterCode || ""}
+              initialLanguage={selectedCodingLanguage}
+              onCodeChange={(code) => updateCoding(question._id, code)}
+              onLanguageChange={(lang) => {
+                setSelectedCodingLanguage(lang);
+                const sub = codingSubmissions.find((c) => String(c.questionId) === String(question._id));
+                setCodingSubmissions((prev) => {
+                  if (!sub) return prev;
+                  return prev.map((c) => (String(c.questionId) === String(question._id) ? { ...c, language: lang } : c));
+                });
+              }}
+              onSubmissionResult={(result) => handleCodingSubmission(question._id, result)}
+            />
+          </div>
+        ) : (
+          <div className="rounded-xl border p-6 md:p-8 mb-6" style={{ background: "var(--card-bg)", borderColor: "var(--card-border)" }}>
+            <h2 className="text-xl font-semibold mb-6">{question.text || question.question || question.title}</h2>
+            <div className="space-y-3">
+              {question.options.map((opt, i) => {
+                const isSelected = answers[currentSection][question._id] === opt;
+                return (
+                  <label
+                    key={i}
+                    className="flex items-start gap-3 p-4 border rounded-lg cursor-pointer transition-colors"
+                    style={{
+                      background: isSelected ? `color-mix(in srgb, ${meta.color} 14%, transparent)` : "transparent",
+                      borderColor: isSelected ? meta.color : "var(--card-border)",
+                      color: "var(--text-primary)",
+                    }}
+                  >
+                    <input type="radio" name={`q-${question._id}`} value={opt} checked={isSelected} onChange={() => selectOption(question._id, opt)} className="hidden" />
+                    {isSelected ? (
+                      <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5" style={{ color: meta.color }} />
+                    ) : (
+                      <Circle className="w-5 h-5 shrink-0 mt-0.5" style={{ color: "var(--text-muted)" }} />
+                    )}
+                    <span>{opt}</span>
+                  </label>
+                );
+              })}
             </div>
           </div>
+        )}
 
-          <div className="flex gap-4">
-            <button
-              onClick={() => setPhase("structure")}
-              className="px-6 py-2.5 rounded-xl border font-semibold cursor-pointer"
-              style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
-            >
-              Back
-            </button>
-            <button
-              onClick={handleBeginExam}
-              className="px-6 py-2.5 rounded-xl font-bold text-white cursor-pointer flex items-center gap-2"
-              style={{ background: "var(--primary)" }}
-            >
-              Begin Exam <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
-        </motion.div>
-      </div>
-    );
-  }
-
-  if (phase === "security") {
-    return (
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="student-card p-8 text-center">
-          <Shield className="w-12 h-12 mx-auto mb-4 text-[var(--primary)]" />
-          <h2 className="text-xl font-bold mb-4" style={{ color: "var(--text-primary)" }}>
-            {isResume ? "Assessment Security Check — Resume" : "Assessment Security Check"}
-          </h2>
-
-          <div className="grid grid-cols-2 gap-4 mb-8 text-left">
-            <div className="flex items-center gap-3 p-3 rounded-xl border border-[var(--border)]">
-              <Maximize className="w-5 h-5 text-green-500" />
-              <span className="text-sm" style={{ color: "var(--text-primary)" }}>Fullscreen required to start</span>
-            </div>
-            <div className="flex items-center gap-3 p-3 rounded-xl border border-[var(--border)]">
-              <Monitor className="w-5 h-5 text-amber-500" />
-              <span className="text-sm" style={{ color: "var(--text-primary)" }}>Tab switching monitored</span>
-            </div>
-            <div className="flex items-center gap-3 p-3 rounded-xl border border-[var(--border)]">
-              <Copy className="w-5 h-5 text-red-500" />
-              <span className="text-sm" style={{ color: "var(--text-primary)" }}>Copy/paste restricted</span>
-            </div>
-            <div className="flex items-center gap-3 p-3 rounded-xl border border-[var(--border)]">
-              <MousePointerClick className="w-5 h-5 text-red-500" />
-              <span className="text-sm" style={{ color: "var(--text-primary)" }}>Right-click restricted</span>
-            </div>
-          </div>
-
+        {/* Navigation */}
+        <div className={["flex justify-between items-center", currentSection === "coding" ? "px-4 md:px-6 py-4 border-t mt-2" : ""].join(" ")}>
           <button
-            onClick={handleStartExam}
-            disabled={loading}
-            className="px-8 py-3 rounded-xl font-bold text-white cursor-pointer flex items-center gap-2 mx-auto"
-            style={{ background: "var(--primary)" }}
+            onClick={goPrev}
+            disabled={currentSection === "aptitude" && currentIndex === 0}
+            className="flex items-center gap-2 px-6 py-2 border rounded-lg hover:opacity-80 disabled:opacity-40 transition-opacity"
+            style={{ borderColor: "var(--border)", color: "var(--text-primary)", background: "var(--card-bg)" }}
           >
-            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Maximize className="w-5 h-5" />}
-            {isResume ? "Enter Fullscreen & Resume" : "Enter Fullscreen & Start"}
+            <ChevronLeft className="w-4 h-4" /> Previous
           </button>
+          {isLastQuestion ? (
+            <button
+              onClick={() => setConfirmEnd(true)}
+              className="flex items-center gap-2 px-8 py-2 text-white rounded-lg font-semibold hover:opacity-90"
+              style={{ background: "linear-gradient(135deg, #10B981 0%, #059669 100%)" }}
+            >
+              End &amp; Submit Mock Interview
+            </button>
+          ) : (
+            <button
+              onClick={goNext}
+              className="flex items-center gap-2 px-6 py-2 text-white rounded-lg hover:opacity-90"
+              style={{ background: "linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)" }}
+            >
+              Next <ChevronRight className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+      </div>
 
-          {lockReason === "fullscreen_required" && (
-            <div className="mt-6 p-4 rounded-xl bg-red-500/10 border border-red-500/30 flex flex-col items-center gap-3">
-              <p className="text-sm text-red-400 font-semibold">
-                Fullscreen is required to start the assessment.
+      {/* Tab switch detection overlay — locks the mock until the student returns */}
+      {tabSwitchLocked && phase === "assessment" && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 select-none" style={{ background: "rgba(5,6,9,0.96)", backdropFilter: "blur(16px)" }}>
+          <div className="max-w-md w-full p-6 rounded-3xl text-center flex flex-col items-center gap-4" style={{ background: "linear-gradient(145deg,#0e1222 0%,#070913 100%)", border: "1px solid rgba(245,158,11,0.3)", boxShadow: "0 0 50px rgba(245,158,11,0.2)" }}>
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ background: "rgba(245,158,11,0.12)", border: "1px solid rgba(245,158,11,0.3)", color: "#FBBF24" }}>
+              <ShieldAlert className="w-8 h-8 animate-pulse" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-white tracking-wide">Tab switching detected</h2>
+              <p className="text-xs text-white/70 mt-2 leading-relaxed">
+                Please return to the mock interview tab to continue.
               </p>
+              <p className="text-[10px] text-white/40 mt-3 font-mono">This event has been logged for security.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Fullscreen exit overlay */}
+      {fullscreenExited && phase === "assessment" && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 select-none" style={{ background: "rgba(5,6,9,0.96)", backdropFilter: "blur(16px)" }}>
+          <div className="max-w-md w-full p-6 rounded-3xl text-center flex flex-col items-center gap-4" style={{ background: "linear-gradient(145deg,#0e1222 0%,#070913 100%)", border: "1px solid rgba(239,68,68,0.3)", boxShadow: "0 0 50px rgba(239,68,68,0.2)" }}>
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", color: "#F87171" }}>
+              <ShieldAlert className="w-8 h-8 animate-pulse" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-white tracking-wide">Fullscreen exited</h2>
+              <p className="text-xs text-white/70 mt-2 leading-relaxed">
+                Please return to fullscreen to continue your mock interview.
+              </p>
+            </div>
+            <button
+              onClick={handleReenterFullscreen}
+              className="w-full py-3.5 px-6 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2 cursor-pointer transition-all hover:scale-[1.02]"
+              style={{ background: "linear-gradient(135deg,#2563eb 0%,#1d4ed8 100%)", boxShadow: "0 4px 20px rgba(37,99,235,0.4)" }}
+            >
+              <Maximize2 className="w-4 h-4" /> Return to Fullscreen
+            </button>
+            <p className="text-[10px] text-white/30 font-mono">Progress is saved automatically</p>
+          </div>
+        </div>
+      )}
+
+      {/* End confirmation */}
+      {confirmEnd && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 select-none" style={{ background: "rgba(8,11,20,0.88)", backdropFilter: "blur(4px)" }}>
+          <div className="max-w-md w-full p-6 rounded-3xl text-center flex flex-col items-center gap-4" style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)", boxShadow: "var(--shadow-card)" }}>
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: "rgba(239,68,68,0.12)", color: "var(--error)" }}>
+              <ShieldAlert className="w-7 h-7" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold">End Mock Interview?</h3>
+              <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>
+                This will submit and permanently grade your mock interview. This action cannot be undone.
+              </p>
+            </div>
+            <div className="w-full flex gap-2">
               <button
-                onClick={handleStartExam}
-                className="px-4 py-2 rounded-xl font-bold text-white text-sm cursor-pointer"
-                style={{ background: "var(--primary)" }}
+                onClick={() => setConfirmEnd(false)}
+                disabled={loading}
+                className="flex-1 py-3 px-4 rounded-xl text-sm font-semibold hover:opacity-80 disabled:opacity-50"
+                style={{ border: "1px solid var(--border)", color: "var(--text-primary)" }}
               >
-                Try Again
+                Cancel
               </button>
-            </div>
-          )}
-        </motion.div>
-      </div>
-    );
-  }
-
-  if (phase === "exam") {
-    return (
-      <div id="company-mock-assessment" ref={examContainerRef} className="min-h-screen bg-[var(--bg-primary)]">
-        {/* Header */}
-        <div className="sticky top-0 z-50 bg-[var(--card-bg)] border-b border-[var(--border)] px-4 py-3">
-          <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <img
-                src="/images/metadata.png"
-                alt="PrepHire"
-                draggable={false}
-                className="h-7 w-auto object-contain select-none"
-                style={{ maxHeight: "30px" }}
-              />
-              <h1 className="font-bold" style={{ color: "var(--text-primary)" }}>
-                {selectedCompany?.name} Mock Interview
-              </h1>
-              <div className="flex gap-2">
-                {SECTIONS.map((section) => (
-                  <button
-                    key={section}
-                    onClick={() => handleJumpToQuestion(section, 0)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer ${
-                      currentSection === section
-                        ? "bg-[var(--primary)] text-white"
-                        : "bg-[var(--bg-primary)] text-[var(--text-secondary)]"
-                    }`}
-                  >
-                    {SECTION_LABELS[section]}
-                    <span className="ml-1 text-[10px]">
-                      ({getAnsweredCount(section)}/{questions[section]?.length || 0})
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg ${timeLeft < 300 ? "bg-red-500/10 text-red-500" : "bg-[var(--bg-primary)]"}`}>
-                <Clock className="w-4 h-4" />
-                <span className="font-mono font-bold">{formatTime(timeLeft)}</span>
-                {attempt?.status === "paused" && (
-                  <span className="text-[10px] ml-1 px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-500 font-semibold">
-                    PAUSED
-                  </span>
-                )}
-              </div>
               <button
-                onClick={requestSubmit}
-                disabled={submitting}
-                className="px-4 py-2 rounded-xl font-bold text-white text-sm cursor-pointer"
-                style={{ background: "var(--primary)" }}
+                onClick={submitFinal}
+                disabled={loading}
+                className="flex-1 py-3 px-4 rounded-xl text-sm font-bold text-white hover:opacity-90 disabled:opacity-50"
+                style={{ background: "linear-gradient(135deg,#EF4444 0%,#DC2626 100%)" }}
               >
-                {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Submit"}
+                {loading ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : "End & Submit"}
               </button>
             </div>
           </div>
         </div>
-
-        {/* Question palette — jump directly to any question in the current section (PART 9 / PART 33) */}
-        <div className="sticky top-[65px] z-40 bg-[var(--bg-primary)] border-b border-[var(--border)] px-4 py-2.5">
-          <div className="max-w-7xl mx-auto flex flex-wrap gap-1.5">
-            {(questions[currentSection] || []).map((q, idx) => {
-              const answered = isQuestionAnswered(currentSection, idx);
-              const active = idx === currentQuestionIndex;
-              return (
-                <button
-                  key={q.questionId}
-                  onClick={() => handleJumpToQuestion(currentSection, idx)}
-                  title={`Question ${idx + 1}${answered ? " (answered)" : ""}`}
-                  className={`relative w-8 h-8 rounded-lg text-xs font-semibold cursor-pointer border transition-colors ${
-                    active
-                      ? "bg-[var(--primary)] text-white border-[var(--primary)]"
-                      : answered
-                      ? "bg-green-500/15 text-green-500 border-green-500/40"
-                      : "bg-[var(--card-bg)] text-[var(--text-secondary)] border-[var(--border)]"
-                  }`}
-                >
-                  {idx + 1}
-                  {answered && (
-                    <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-green-500 text-white flex items-center justify-center text-[8px] leading-none">
-                      ✓
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <AnimatePresence mode="wait">
-            {currentSection === "aptitude" && (
-              <AptitudeSection
-                key="aptitude"
-                questions={questions.aptitude}
-                currentIndex={currentQuestionIndex}
-                answers={answers.aptitude}
-                onSave={(questionId, answer) => handleSaveAnswer("aptitude", questionId, answer)}
-                onNext={handleNext}
-                onPrevious={handlePrevious}
-                onJumpTo={handleJumpToQuestion}
-              />
-            )}
-            {currentSection === "technical" && (
-              <TechnicalSection
-                key="technical"
-                questions={questions.technical}
-                currentIndex={currentQuestionIndex}
-                answers={answers.technical}
-                onSave={(questionId, answer) => handleSaveAnswer("technical", questionId, answer)}
-                onNext={handleNext}
-                onPrevious={handlePrevious}
-                onJumpTo={handleJumpToQuestion}
-              />
-            )}
-            {currentSection === "coding" && (
-              <CodingSection
-                key="coding"
-                questions={questions.coding}
-                currentIndex={currentQuestionIndex}
-                drafts={codingDrafts}
-                selectedLanguage={selectedLanguage}
-                onLanguageChange={setSelectedLanguage}
-                onSaveDraft={handleSaveCodingDraft}
-                onNext={handleNext}
-                onPrevious={handlePrevious}
-                onJumpTo={handleJumpToQuestion}
-                attemptId={attempt?._id}
-                token={token}
-              />
-            )}
-          </AnimatePresence>
-        </div>
-
-        {/* Question Navigator */}
-        <div className="fixed bottom-0 left-0 right-0 bg-[var(--card-bg)] border-t border-[var(--border)] p-4 z-40">
-          <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold" style={{ color: "var(--text-muted)" }}>
-                Question {currentQuestionIndex + 1} of {questions[currentSection]?.length || 0}
-              </span>
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={handlePrevious}
-                disabled={currentSection === "aptitude" && currentQuestionIndex === 0}
-                className="px-4 py-2 rounded-xl border text-sm font-semibold cursor-pointer disabled:opacity-50"
-                style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
-              >
-                <ChevronLeft className="w-4 h-4 inline" /> Previous
-              </button>
-              <button
-                onClick={handleNext}
-                className="px-4 py-2 rounded-xl text-sm font-bold text-white cursor-pointer"
-                style={{ background: "var(--primary)" }}
-              >
-                Next <ChevronRight className="w-4 h-4 inline" />
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Blocking lock overlay (fullscreen exit / tab switch / combined) — rendered
-            through a portal at document.body level so it sits above every assessment
-            element (editor, header, dropdowns) regardless of ancestor stacking contexts. */}
-        <AnimatePresence>
-          {lockReason && lockReason !== "fullscreen_required" && createPortal(
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="assessment-lock-overlay"
-              role="alertdialog"
-              aria-modal="true"
-            >
-              <div className="max-w-md mx-4 p-8 rounded-2xl border text-center bg-[var(--card-bg)] border-[var(--border)] shadow-2xl">
-                {lockReason === "fullscreen_exit" ? (
-                  <>
-                    <Maximize className="w-12 h-12 mx-auto mb-4 text-red-500" />
-                    <h2 className="text-xl font-bold mb-3" style={{ color: "var(--text-primary)" }}>Mock Interview Paused</h2>
-                    <p className="text-sm mb-2" style={{ color: "var(--text-secondary)" }}>
-                      You have exited fullscreen mode.
-                    </p>
-                    <p className="text-sm mb-3 text-left" style={{ color: "var(--text-secondary)" }}>
-                      For security and fairness, this Company Mock Interview must remain in fullscreen mode while the assessment is active.
-                    </p>
-                    <p className="text-sm mb-2 text-left" style={{ color: "var(--text-secondary)" }}>
-                      Your progress has been safely saved. Your timer has been paused. No answers, coding drafts, or completed questions have been lost.
-                    </p>
-                    <p className="text-sm mb-4 text-left" style={{ color: "var(--text-secondary)" }}>
-                      To continue the assessment, return to fullscreen mode. If you choose to exit the mock interview, your current progress will remain saved and you can resume this attempt later.
-                    </p>
-                    <div className="text-left mb-5 p-3 rounded-xl border text-[11px] space-y-1" style={{ borderColor: "var(--border)", color: "var(--text-muted)" }}>
-                      <p>✓ Answers saved</p>
-                      <p>✓ Coding drafts saved</p>
-                      <p>✓ Current question saved</p>
-                      <p>✓ Timer paused</p>
-                      <p>✓ Security event recorded</p>
-                    </div>
-                    <div className="flex flex-col gap-3">
-                      <button
-                        onClick={handleReturnToAssessment}
-                        className="px-6 py-3 rounded-xl font-bold text-white cursor-pointer"
-                        style={{ background: "var(--primary)" }}
-                      >
-                        Continue Mock Interview
-                      </button>
-                      <button
-                        onClick={() => setShowExitConfirm(true)}
-                        className="px-6 py-3 rounded-xl font-semibold cursor-pointer border"
-                        style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
-                      >
-                        Exit This Mock Interview
-                      </button>
-                    </div>
-                  </>
-                ) : lockReason === "tab_switch" ? (
-                  <>
-                    <Monitor className="w-12 h-12 mx-auto mb-4 text-amber-500" />
-                    <h2 className="text-xl font-bold mb-3" style={{ color: "var(--text-primary)" }}>Tab Switch Detected</h2>
-                    <p className="text-sm mb-2 text-left" style={{ color: "var(--text-secondary)" }}>
-                      Your assessment was paused because you left the mock interview window.
-                    </p>
-                    <p className="text-sm mb-2 text-left" style={{ color: "var(--text-secondary)" }}>
-                      Your progress has been saved and your timer has been paused.
-                    </p>
-                    <p className="text-sm mb-6 text-left" style={{ color: "var(--text-secondary)" }}>
-                      Return to the assessment to continue.
-                    </p>
-                    <div className="flex flex-col gap-3">
-                      <button
-                        onClick={handleReturnToAssessment}
-                        className="px-6 py-3 rounded-xl font-bold text-white cursor-pointer"
-                        style={{ background: "var(--primary)" }}
-                      >
-                        Continue Mock Interview
-                      </button>
-                      <button
-                        onClick={() => setShowExitConfirm(true)}
-                        className="px-6 py-3 rounded-xl font-semibold cursor-pointer border"
-                        style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
-                      >
-                        Exit This Mock Interview
-                      </button>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <Monitor className="w-12 h-12 mx-auto mb-4 text-red-500" />
-                    <h2 className="text-xl font-bold mb-3" style={{ color: "var(--text-primary)" }}>Mock Interview Paused</h2>
-                    <p className="text-sm mb-2 text-left" style={{ color: "var(--text-secondary)" }}>
-                      Fullscreen was exited or the assessment window was left.
-                    </p>
-                    <p className="text-sm mb-2 text-left" style={{ color: "var(--text-secondary)" }}>
-                      Your progress has been saved.
-                    </p>
-                    <p className="text-sm mb-6 text-left" style={{ color: "var(--text-secondary)" }}>
-                      The assessment timer is paused. This activity has been recorded.
-                    </p>
-                    <div className="flex flex-col gap-3">
-                      <button
-                        onClick={handleReturnToAssessment}
-                        className="px-6 py-3 rounded-xl font-bold text-white cursor-pointer"
-                        style={{ background: "var(--primary)" }}
-                      >
-                        Continue Mock Interview
-                      </button>
-                      <button
-                        onClick={() => setShowExitConfirm(true)}
-                        className="px-6 py-3 rounded-xl font-semibold cursor-pointer border"
-                        style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
-                      >
-                        Exit Mock Interview
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
-            </motion.div>,
-            document.body
-          )}
-        </AnimatePresence>
-
-        {/* Exit Mock Interview confirmation — also a portal above the lock overlay */}
-        <AnimatePresence>
-          {showExitConfirm && createPortal(
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="assessment-exit-confirm-overlay"
-              role="alertdialog"
-              aria-modal="true"
-            >
-              <div className="max-w-sm mx-4 p-8 rounded-2xl border text-center bg-[var(--card-bg)] border-[var(--border)] shadow-2xl">
-                <h2 className="text-lg font-bold mb-3" style={{ color: "var(--text-primary)" }}>
-                  Exit Mock Interview?
-                </h2>
-                <p className="text-sm mb-6" style={{ color: "var(--text-secondary)" }}>
-                  Your current progress will be saved. You can continue this mock interview later from the Company Mock Interview section.
-                </p>
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => setShowExitConfirm(false)}
-                    className="flex-1 px-4 py-2.5 rounded-xl font-semibold cursor-pointer border"
-                    style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
-                  >
-                    Continue Mock
-                  </button>
-                  <button
-                    onClick={handleConfirmExit}
-                    className="flex-1 px-4 py-2.5 rounded-xl font-bold text-white cursor-pointer"
-                    style={{ background: "var(--primary)" }}
-                  >
-                    Save &amp; Exit
-                  </button>
-                </div>
-              </div>
-            </motion.div>,
-            document.body
-          )}
-        </AnimatePresence>
-
-        {/* Final Submit confirmation — portal above everything (PART 21) */}
-        <AnimatePresence>
-          {showSubmitConfirm && createPortal(
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="assessment-exit-confirm-overlay"
-              role="alertdialog"
-              aria-modal="true"
-            >
-              <div className="max-w-sm mx-4 p-8 rounded-2xl border text-center bg-[var(--card-bg)] border-[var(--border)] shadow-2xl">
-                <h2 className="text-lg font-bold mb-3" style={{ color: "var(--text-primary)" }}>
-                  SUBMIT MOCK INTERVIEW?
-                </h2>
-                <div className="text-sm mb-2" style={{ color: "var(--text-secondary)" }}>
-                  You have attempted:
-                </div>
-                <div className="grid grid-cols-3 gap-2 mb-4">
-                  <div className="p-2 rounded-lg border" style={{ borderColor: "var(--border)" }}>
-                    <p className="text-base font-bold" style={{ color: "var(--text-primary)" }}>
-                      {getAnsweredCount("aptitude")}/{questions.aptitude?.length || 0}
-                    </p>
-                    <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>Aptitude</p>
-                  </div>
-                  <div className="p-2 rounded-lg border" style={{ borderColor: "var(--border)" }}>
-                    <p className="text-base font-bold" style={{ color: "var(--text-primary)" }}>
-                      {getAnsweredCount("technical")}/{questions.technical?.length || 0}
-                    </p>
-                    <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>Technical</p>
-                  </div>
-                  <div className="p-2 rounded-lg border" style={{ borderColor: "var(--border)" }}>
-                    <p className="text-base font-bold" style={{ color: "var(--text-primary)" }}>
-                      {getCodingAttemptedCount()}/{questions.coding?.length || 0}
-                    </p>
-                    <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>Coding</p>
-                  </div>
-                </div>
-                <p className="text-sm mb-6" style={{ color: "var(--text-secondary)" }}>
-                  Are you sure you want to submit? This action cannot be undone.
-                </p>
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => setShowSubmitConfirm(false)}
-                    className="flex-1 px-4 py-2.5 rounded-xl font-semibold cursor-pointer border"
-                    style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleSubmit}
-                    disabled={submitting}
-                    className="flex-1 px-4 py-2.5 rounded-xl font-bold text-white cursor-pointer flex items-center justify-center gap-2"
-                    style={{ background: "var(--primary)" }}
-                  >
-                    {submitting ? (<><Loader2 className="w-4 h-4 animate-spin" /> Submitting...</>) : "Submit Mock Interview"}
-                  </button>
-                </div>
-              </div>
-            </motion.div>,
-            document.body
-          )}
-        </AnimatePresence>
-      </div>
-    );
-  }
-
-  if (phase === "result") {
-    return (
-      <ResultSection
-        result={result}
-        company={selectedCompany}
-        onBackToDashboard={() => navigate("/dashboard")}
-        onViewHistory={() => navigate("/company-mock/history")}
-      />
-    );
-  }
-
-  return null;
+      )}
+    </div>
+  );
 }
 
-export default CompanyMockInterview;
+function ResumeRow({ label, value }) {
+  return (
+    <div className="flex items-center justify-between rounded-lg px-3 py-2" style={{ background: "var(--bg-secondary)", border: "1px solid var(--border)" }}>
+      <span className="text-xs" style={{ color: "var(--text-secondary)" }}>{label}</span>
+      <span className="text-sm font-bold">{value}</span>
+    </div>
+  );
+}

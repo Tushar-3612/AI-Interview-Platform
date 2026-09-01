@@ -39,7 +39,9 @@ import TestResult from "../pages/student/TestResult";
 import PlacementDashboard from "../pages/student/PlacementDashboard";
 import Leaderboard from "../pages/student/Leaderboard";
 import MockOA from "../pages/student/MockOA";
+import MockInterview from "../pages/student/MockInterview";
 import CompanyMockInterview from "../pages/student/CompanyMockInterview";
+import CompanyMockResult from "../pages/student/CompanyMockResult";
 import CompanyMockHistory from "../pages/student/CompanyMockHistory";
 import CompanyAnalytics from "../pages/student/CompanyAnalytics";
 import PerformanceGraphs from "../pages/student/PerformanceGraphs";
@@ -60,6 +62,11 @@ function AppRoutes() {
       {/* Dedicated Real AI Interview Control Room (Standalone without website navbar) */}
       <Route path="/interview" element={<StartInterview />} />
       <Route path="/interview/:sessionId" element={<StartInterview />} />
+
+      {/* Dedicated Company Mock Interview Control Room — standalone, renders ONLY
+          the assessment with no website Navbar/Footer/Layout. */}
+      <Route path="/company-mock" element={<CompanyMockInterview />} />
+      <Route path="/company-mock/result/:attemptId" element={<CompanyMockResult />} />
 
       <Route element={<StudentLayout />}>
         <Route path="/dashboard" element={<StudentDashboard />} />
@@ -82,8 +89,8 @@ function AppRoutes() {
         <Route path="/placement-dashboard" element={<PlacementDashboard />} />
         <Route path="/placement/leaderboard" element={<Leaderboard />} />
         <Route path="/placement/mock-oa" element={<MockOA />} />
-        <Route path="/company-mock" element={<CompanyMockInterview />} />
-        <Route path="/company-mock/history" element={<CompanyMockHistory />} />
+        <Route path="/mock-interview" element={<MockInterview />} />
+        <Route path="/mock-interview/history" element={<CompanyMockHistory />} />
         <Route path="/placement/company-analytics" element={<CompanyAnalytics />} />
         <Route path="/placement/performance" element={<PerformanceGraphs />} />
         <Route path="/placement/question-analytics" element={<QuestionAnalytics />} />

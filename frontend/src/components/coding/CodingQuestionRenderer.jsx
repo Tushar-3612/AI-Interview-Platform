@@ -53,6 +53,7 @@ function CodingQuestionRenderer({
   questionId,
   onCodeChange,
   onLanguageChange,
+  onSubmissionResult,
   initialCode,
   initialLanguage,
   readOnly = false,
@@ -277,6 +278,12 @@ function CodingQuestionRenderer({
 
       setRunStage(null);
       setOutput({ type: "submit", data: res.data });
+      onSubmissionResult?.({
+        status: res.data?.status,
+        passedCount: res.data?.passedCount ?? res.data?.passed ?? (res.data?.status === "accepted" ? 1 : 0),
+        totalCount: res.data?.totalCount ?? res.data?.total ?? 0,
+        score: res.data?.score ?? 0,
+      });
     } catch (err) {
       if (err.name === "CanceledError" || err.code === "ERR_CANCELED") return;
       const msg = err.response?.data?.message || "Failed to submit code";

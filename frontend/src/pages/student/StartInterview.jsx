@@ -504,18 +504,24 @@ function StartInterview() {
 
         let loadedQs = data.generatedQuestions || [];
 
-        // Lazy load round if no questions generated yet
+        // If no questions generated yet, automatically generate Question 1 via real-time AI
         if (!loadedQs || loadedQs.length === 0) {
           try {
-            const fetchRoundName = activeTarget !== "all" ? activeTarget : "aptitude";
-            const { data: roundData } = await api.get(`/api/student/interviews/${targetId}/round/${fetchRoundName}`, {
-              headers: { Authorization: `Bearer ${token}` }
-            });
-            if (roundData.questions && roundData.questions.length > 0) {
-              loadedQs = roundData.questions;
+            const fetchRoundName = activeTarget !== "all" ? activeTarget : "technical";
+            const { data: qGenData } = await api.post(
+              `/api/interview/${targetId}/generate-question`,
+              {
+                round: fetchRoundName,
+                questionNumber: 1,
+                totalQuestions: activeTarget === "coding" ? 3 : activeTarget === "hr" ? 5 : 10,
+              },
+              { headers: { Authorization: `Bearer ${token}` } }
+            );
+            if (qGenData && qGenData.question) {
+              loadedQs = [qGenData.question];
             }
-          } catch (roundErr) {
-            console.warn("Initial round lazy load notice:", roundErr.message);
+          } catch (genErr) {
+            console.warn("Dynamic Question #1 auto-generation notice:", genErr.message);
           }
         }
 
@@ -1249,10 +1255,10 @@ function StartInterview() {
   };
 
   // ─── NAVIGATION HANDLERS ───
-  const handleNextQuestion = () => {
+  const handleNextQuestion = async () => {
     stopSpeechRecognition();
     window.speechSynthesis?.cancel();
-    handleSaveAnswer("answered");
+    await handleSaveAnswer("answered");
 
     if (currentIndex < questions.length) {
       setIsGeneratingQuestion(true);
@@ -1261,7 +1267,40 @@ function StartInterview() {
       setTimeout(() => {
         setIsGeneratingQuestion(false);
         setCurrentIndex((prev) => prev + 1);
-      }, 900);
+        setTypedResponse("");
+      }, 700);
+    } else if (
+      activeInterviewId &&
+      questions.length < (targetRound === "coding" ? 3 : targetRound === "hr" ? 5 : targetRound === "aptitude" ? 25 : 58)
+    ) {
+      // Dynamic real-time next question generation
+      setIsGeneratingQuestion(true);
+      setAiStatus("THINKING");
+      try {
+        const nextRound = (currentSection || "technical").toLowerCase();
+        const { data: newQData } = await api.post(
+          `/api/interview/${activeInterviewId}/generate-question`,
+          {
+            round: nextRound,
+            questionNumber: currentIndex + 1,
+            totalQuestions: targetRound === "coding" ? 3 : targetRound === "hr" ? 5 : 10,
+          },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        if (newQData && newQData.question) {
+          setQuestions((prev) => [...prev, newQData.question]);
+          setCurrentIndex((prev) => prev + 1);
+          setTypedResponse("");
+        } else {
+          setIsCompleted(true);
+        }
+      } catch (err) {
+        console.warn("Dynamic next question generation notice:", err);
+        setIsCompleted(true);
+      } finally {
+        setIsGeneratingQuestion(false);
+      }
     } else {
       setIsCompleted(true);
     }
@@ -1273,10 +1312,10 @@ function StartInterview() {
     }
   };
 
-  const handleSkipQuestion = () => {
+  const handleSkipQuestion = async () => {
     stopSpeechRecognition();
     window.speechSynthesis?.cancel();
-    handleSaveAnswer("skipped");
+    await handleSaveAnswer("skipped");
     if (currentIndex < questions.length) {
       setIsGeneratingQuestion(true);
       setAiStatus("THINKING");
@@ -1284,7 +1323,8 @@ function StartInterview() {
       setTimeout(() => {
         setIsGeneratingQuestion(false);
         setCurrentIndex((prev) => prev + 1);
-      }, 900);
+        setTypedResponse("");
+      }, 700);
     } else {
       setIsCompleted(true);
     }

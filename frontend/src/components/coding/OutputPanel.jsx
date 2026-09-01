@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback } from "react";
 import {
   CheckCircle2, XCircle, Clock, MemoryStick, Lock,
   ChevronDown, ChevronRight, AlertTriangle,
@@ -34,39 +34,62 @@ function OutputPanel({
   });
   const [isDragging, setIsDragging] = useState(false);
   const dragStartRef = useRef({ startY: 0, startHeight: 0 });
+  const panelRef = useRef(null);
 
-  const handleDragStart = useCallback(
+  const clampH = (v) => {
+    // Hard cap from spec (share of viewport)...
+    let maxH =
+      typeof window !== "undefined" ? (window.innerHeight * MAX_HEIGHT_VH) / 100 : 700;
+    // ...but never let the panel grow taller than the available space above it
+    // (so the editor keeps a usable minimum height and the page never overflows).
+    const parent = panelRef.current?.parentElement;
+    if (parent) {
+      const available = parent.clientHeight - 160; // toolbar + min editor + chrome
+      if (available > MIN_HEIGHT) maxH = Math.min(maxH, available);
+    }
+    return Math.max(MIN_HEIGHT, Math.min(maxH, v));
+  };
+
+  // ── Pointer-event based resize (VS Code-like draggable divider) ──
+  // Pointer capture keeps move/up events flowing to the handle even if the
+  // cursor leaves it, so dragging is smooth and never "stuck".
+  const handleResizeStart = useCallback(
     (e) => {
       e.preventDefault();
-      setIsDragging(true);
+      try {
+        e.currentTarget.setPointerCapture(e.pointerId);
+      } catch {}
       dragStartRef.current = { startY: e.clientY, startHeight: panelHeight };
+      setIsDragging(true);
     },
     [panelHeight]
   );
 
-  const handleDragMove = useCallback(
+  const handleResizeMove = useCallback(
     (e) => {
       if (!isDragging) return;
-      const maxH =
-        typeof window !== "undefined"
-          ? (window.innerHeight * MAX_HEIGHT_VH) / 100
-          : 700;
-      const diff =
-        dragStartRef.current.startHeight -
-        (e.clientY - dragStartRef.current.startY);
-      const newHeight = Math.max(MIN_HEIGHT, Math.min(maxH, diff));
+      // Drag UP (clientY decreases) => panel gets taller.
+      const delta = dragStartRef.current.startY - e.clientY;
+      const newHeight = clampH(dragStartRef.current.startHeight + delta);
       setPanelHeight(newHeight);
       onResize && onResize();
     },
     [isDragging, onResize]
   );
 
-  const handleDragEnd = useCallback(() => {
-    setIsDragging(false);
-    try {
-      localStorage.setItem(TERMINAL_HEIGHT_KEY, String(panelHeight));
-    } catch {}
-  }, [panelHeight]);
+  const handleResizeEnd = useCallback(
+    (e) => {
+      if (!isDragging) return;
+      setIsDragging(false);
+      try {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      } catch {}
+      try {
+        localStorage.setItem(TERMINAL_HEIGHT_KEY, String(panelHeight));
+      } catch {}
+    },
+    [isDragging, panelHeight]
+  );
 
   const handleSeparatorDoubleClick = useCallback(() => {
     setPanelHeight(DEFAULT_HEIGHT);
@@ -76,48 +99,47 @@ function OutputPanel({
     onResize && onResize();
   }, [onResize]);
 
-  useEffect(() => {
-    if (isDragging) {
-      document.addEventListener("mousemove", handleDragMove);
-      document.addEventListener("mouseup", handleDragEnd);
-      document.body.style.cursor = "row-resize";
-      document.body.style.userSelect = "none";
-      return () => {
-        document.removeEventListener("mousemove", handleDragMove);
-        document.removeEventListener("mouseup", handleDragEnd);
-        document.body.style.cursor = "";
-        document.body.style.userSelect = "";
-      };
-    }
-  }, [isDragging, handleDragMove, handleDragEnd]);
-
   const hasResults = submit != null || run != null;
 
   return (
     <div
+      ref={panelRef}
       className="flex flex-col"
       style={{
+        // Keep the panel at its own (controlled) height so the editor above
+        // shrinks/grows to fill the remaining space instead of the panel being
+        // squished by flex.
+        flexShrink: 0,
         background: "#1a1a2e",
         color: "#e2e8f0",
         borderTop: "1px solid #2d2d44",
+        userSelect: isDragging ? "none" : "auto",
+        cursor: isDragging ? "row-resize" : "default",
       }}
     >
       {/* Drag separator */}
       <div
-        onMouseDown={handleDragStart}
+        onPointerDown={handleResizeStart}
+        onPointerMove={handleResizeMove}
+        onPointerUp={handleResizeEnd}
+        onPointerCancel={handleResizeEnd}
         onDoubleClick={handleSeparatorDoubleClick}
-        className="shrink-0 flex items-center justify-center cursor-row-resize group"
+        className="shrink-0 flex items-center justify-center cursor-row-resize group touch-none select-none"
         style={{
-          height: "5px",
+          height: "8px",
           background: isDragging ? "#6366f1" : "#2d2d44",
           transition: isDragging ? "none" : "background 0.15s",
         }}
         title="Drag to resize. Double-click to reset."
       >
         <div
-          className="w-10 h-[2px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+          className="flex items-center gap-[3px] opacity-0 group-hover:opacity-100 transition-opacity"
           style={{ background: isDragging ? "#fff" : "#6b7280" }}
-        />
+        >
+          <span className="block w-[3px] h-[3px] rounded-full" style={{ background: "currentColor" }} />
+          <span className="block w-[3px] h-[3px] rounded-full" style={{ background: "currentColor" }} />
+          <span className="block w-[3px] h-[3px] rounded-full" style={{ background: "currentColor" }} />
+        </div>
       </div>
 
       {/* Tab bar */}
@@ -155,9 +177,10 @@ function OutputPanel({
 
       {/* Tab content */}
       <div
-        className="flex-1 overflow-y-auto overflow-x-auto"
+        className="overflow-y-auto overflow-x-auto"
         style={{
           height: panelHeight,
+          flex: "0 0 auto",
           minHeight: 0,
           background: "#1a1a2e",
         }}

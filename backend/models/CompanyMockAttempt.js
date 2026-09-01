@@ -31,7 +31,7 @@ const companyMockAttemptSchema = new mongoose.Schema(
     config: {
       aptitudeCount: { type: Number, default: 15 },
       technicalCount: { type: Number, default: 15 },
-      codingCount: { type: Number, default: 2 },
+      codingCount: { type: Number, default: 3 },
       durationMinutes: { type: Number, default: 60 },
     },
     // Server-authoritative timer
@@ -86,6 +86,7 @@ const companyMockAttemptSchema = new mongoose.Schema(
         status: String, // accepted/failed/compile_error/runtime_error/time_limit/error/skipped
         passedCount: Number,
         totalCount: Number,
+        score: { type: Number, default: 0 },
         results: { type: [mongoose.Schema.Types.Mixed], default: [] },
         timeTakenMs: Number,
         submittedAt: { type: Date, default: null },
@@ -95,8 +96,10 @@ const companyMockAttemptSchema = new mongoose.Schema(
     scores: {
       aptitude: {
         total: { type: Number, default: 0 },
+        attempted: { type: Number, default: 0 },
         correct: { type: Number, default: 0 },
         wrong: { type: Number, default: 0 },
+        unanswered: { type: Number, default: 0 },
         skipped: { type: Number, default: 0 },
         percentage: { type: Number, default: 0 },
         marksObtained: { type: Number, default: 0 },
@@ -104,9 +107,10 @@ const companyMockAttemptSchema = new mongoose.Schema(
       },
       technical: {
         total: { type: Number, default: 0 },
+        attempted: { type: Number, default: 0 },
         correct: { type: Number, default: 0 },
         wrong: { type: Number, default: 0 },
-        answered: { type: Number, default: 0 },
+        unanswered: { type: Number, default: 0 },
         skipped: { type: Number, default: 0 },
         percentage: { type: Number, default: 0 },
         marksObtained: { type: Number, default: 0 },
@@ -120,6 +124,9 @@ const companyMockAttemptSchema = new mongoose.Schema(
         totalMarks: { type: Number, default: 0 },
       },
       overall: { type: Number, default: 0 },
+      totalMarks: { type: Number, default: 0 },
+      percentage: { type: Number, default: 0 },
+      passed: { type: Boolean, default: false },
     },
     // Security events (persistent, raw event log)
     securityEvents: [

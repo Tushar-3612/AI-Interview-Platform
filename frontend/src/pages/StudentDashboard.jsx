@@ -178,7 +178,7 @@ function StudentDashboard() {
         : (mockInterviewsCompleted !== null ? `${mockInterviewsCompleted} completed` : "No Data"),
       color: "#8B5CF6",
       icon: BrainCircuit,
-      onClick: () => navigate("/company-mock"),
+      onClick: () => navigate("/mock-interview"),
     },
     {
       id: "coding",
@@ -416,7 +416,7 @@ function StudentDashboard() {
                 </motion.button>
 
                 <motion.button
-                  onClick={() => navigate("/company-mock")}
+                  onClick={() => navigate("/mock-interview")}
                   className="px-6 py-3.5 rounded-2xl text-sm font-bold cursor-pointer flex items-center gap-2"
                   style={{
                     borderColor: "#8B5CF6",
@@ -684,7 +684,7 @@ function StudentDashboard() {
               </p>
             </div>
             <button
-              onClick={() => navigate("/company-mock/history")}
+              onClick={() => navigate("/mock-interview")}
               className="text-xs font-bold flex items-center gap-1 cursor-pointer hover:underline"
               style={{ color: "#8B5CF6" }}
             >
@@ -724,7 +724,7 @@ function StudentDashboard() {
                 {companyMock.recent.map((m) => (
                   <button
                     key={m.attemptId}
-                    onClick={() => navigate(`/company-mock?result=${m.attemptId}`)}
+                    onClick={() => navigate(`/company-mock/result/${m.attemptId}`)}
                     className="w-full flex items-center justify-between p-4 rounded-2xl border text-left cursor-pointer transition-colors hover:bg-[var(--bg-primary)]"
                     style={{ borderColor: "var(--border)" }}
                   >

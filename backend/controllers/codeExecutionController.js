@@ -299,8 +299,12 @@ export const submitCode = async (req, res) => {
       score: suiteResult.score,
       execution_time: suiteResult.executionTime,
       memory: suiteResult.memory,
-      compileOutput: suiteResult.compileOutput,
+      compileOutput: suiteResult.compileOutput || "",
       test_results: suiteResult.testResults,
+      passedCount: suiteResult.passed,
+      totalCount: suiteResult.total,
+      results: suiteResult.testResults,
+      timeMs: Math.round(Number(suiteResult.executionTime || 0) * 1000) || 0,
     });
   } catch (error) {
     console.error("Submit Code Error:", error.message);

@@ -13,6 +13,8 @@ import {
   persistInterviewQuestions,
   evaluateCompleteInterview,
   gatherCodingResults,
+  generateSingleAdaptiveQuestion,
+  evaluateSingleAnswer,
 } from "../services/interviewGenerationService.js";
 import { finalizeInterview } from "../services/interviewCompletionService.js";
 import { generateFollowUp } from "../services/ai/followUpGenerator.js";
@@ -23,6 +25,95 @@ import {
   onResultGenerated,
 } from "../utils/csvExporter.js";
 import { sendReportEmail } from "../utils/emailSender.js";
+
+/**
+ * POST /api/interview/generate-question & POST /api/interview/:id/generate-question
+ * Directly generates an adaptive interview question from the candidate's resume/profile,
+ * validates it, saves to DB (InterviewQuestion), and returns the question to the Interview Room.
+ */
+export const generateQuestion = async (req, res) => {
+  try {
+    const interviewId = req.params.id || req.body.interviewId || req.body.sessionId;
+    const userId = req.user?.id || req.user?._id;
+    const {
+      round = "technical",
+      questionNumber = 1,
+      totalQuestions = 10,
+      currentDifficulty = "medium",
+    } = req.body;
+
+    let interview = null;
+    let candidateProfile = null;
+
+    if (interviewId) {
+      interview = await Interview.findById(interviewId);
+      if (interview) {
+        candidateProfile = interview.candidateProfile;
+      }
+    }
+
+    if (!candidateProfile && userId) {
+      const student = await User.findById(userId).select("-password").lean();
+      if (student?.resumeBase64) {
+        try {
+          candidateProfile = await parseResumeToProfile(student.resumeBase64, student);
+        } catch (e) {}
+      }
+      if (!candidateProfile) {
+        candidateProfile = {
+          candidateName: student?.name || "Candidate",
+          skills: student?.skills || ["Problem Solving", "Web Development"],
+          projects: student?.projects || [],
+          experience: student?.experience || [],
+          department: student?.department || "Computer Science",
+        };
+      }
+    }
+
+    const question = await generateSingleAdaptiveQuestion({
+      interviewId,
+      userId,
+      round,
+      questionNumber,
+      totalQuestions,
+      currentDifficulty,
+      candidateProfile,
+    });
+
+    res.json({
+      success: true,
+      message: "Adaptive question generated successfully",
+      question: {
+        id: question.questionId || question.id,
+        questionId: question.questionId || question.id,
+        question: question.question,
+        aiSpeechText: question.aiSpeechText || question.question,
+        section: (question.section || round).toUpperCase(),
+        round: question.round || round,
+        category: question.round || round,
+        difficulty: question.difficulty || currentDifficulty,
+        skill: question.skill || "General",
+        topic: question.topic || "General",
+        questionType: question.questionType || "voice",
+        options: question.options || [],
+        starterCode: question.starterCode || "",
+        testCases: question.testCases || [],
+        inputFormat: question.inputFormat || "",
+        outputFormat: question.outputFormat || "",
+        constraints: question.constraints || "",
+        sampleInput: question.sampleInput || "",
+        sampleOutput: question.sampleOutput || "",
+        source: question.source || "ai_dynamic",
+      },
+    });
+  } catch (error) {
+    console.error("Generate Question Error:", error.message);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to generate dynamic question",
+    });
+  }
+};
 
 /**
  * POST /api/interview/start
@@ -531,40 +622,57 @@ export const saveAnswer = async (req, res) => {
 
     let score = 0;
     let feedback = "";
+    let evalDetails = null;
 
     if (officialAnswer && officialAnswer.trim().length > 0) {
       const normCategory = (category || section || "").toLowerCase();
 
       if (normCategory === "aptitude" || normCategory === "mcq") {
-        // Find question to check correctAnswer
+        // Objective evaluation for Aptitude
         let matchedQ = await InterviewQuestion.findOne({ interviewId, $or: [{ questionId }, { question }] }).lean();
         if (!matchedQ) {
           matchedQ = (interview.aptitudeQuestions || interview.generatedQuestions || []).find(
             q => (q.id === questionId || q.questionId === questionId || q.question === question)
           );
         }
-
-        if (matchedQ && matchedQ.correctAnswer) {
-          const isCorrect = officialAnswer.trim().toLowerCase() === matchedQ.correctAnswer.trim().toLowerCase();
-          score = isCorrect ? 100 : 0;
-          feedback = isCorrect ? "Correct answer selected." : `Incorrect answer. Correct answer was: ${matchedQ.correctAnswer}`;
-        } else {
-          score = 100;
-          feedback = "Answer recorded.";
-        }
+        evalDetails = await evaluateSingleAnswer({
+          question,
+          answer: officialAnswer,
+          round: "aptitude",
+          correctAnswer: matchedQ?.correctAnswer || "",
+        });
+        score = evalDetails.score;
+        feedback = evalDetails.feedback;
       } else if (normCategory === "coding") {
-        // Coding is evaluated by the existing compiler; the final AI evaluation
-        // (AI CALL #2) consumes the compiler results. No per-answer AI call here.
-        score = 0;
-        feedback = "Coding solution recorded for final evaluation.";
+        score = typeof req.body.score === "number" ? req.body.score : 80;
+        feedback = req.body.feedback || "Coding solution recorded for evaluation.";
+        evalDetails = {
+          score,
+          feedback,
+          suggestedDifficulty: score >= 75 ? "hard" : "medium",
+          strengths: ["Code solution submitted"],
+          weaknesses: [],
+        };
       } else {
-        // Technical / HR answers are NOT evaluated per-answer (would add AI calls).
-        // They are evaluated once at interview completion (AI CALL #2).
-        score = 0;
-        feedback = "Answer recorded for final evaluation.";
+        // Real-time AI evaluation for Technical / HR / Verbal questions
+        evalDetails = await evaluateSingleAnswer({
+          question,
+          answer: officialAnswer,
+          round: normCategory || "technical",
+        });
+        score = evalDetails.score;
+        feedback = evalDetails.feedback;
       }
     } else {
+      score = 0;
       feedback = "Question skipped or answer empty.";
+      evalDetails = {
+        score: 0,
+        feedback,
+        suggestedDifficulty: "easy",
+        strengths: [],
+        weaknesses: ["Question was omitted"],
+      };
     }
 
     const formattedInputMethod = inputMethod === "VOICE" || mode === "voice" ? "VOICE" : "TEXT";
@@ -581,6 +689,7 @@ export const saveAnswer = async (req, res) => {
       existingAnswer.duration = Math.max(0, Number(duration) || 0);
       existingAnswer.score = score;
       existingAnswer.feedback = feedback;
+      existingAnswer.evaluation = { score, feedback, strengths: evalDetails?.strengths, weaknesses: evalDetails?.weaknesses };
       existingAnswer.timestamp = new Date();
       newAnswer = await existingAnswer.save();
     } else {
@@ -596,7 +705,7 @@ export const saveAnswer = async (req, res) => {
         inputMethod: formattedInputMethod,
         mode: formattedInputMethod === "VOICE" ? "voice" : "text",
         duration: Math.max(0, Number(duration) || 0),
-        evaluation: { score, feedback },
+        evaluation: { score, feedback, strengths: evalDetails?.strengths, weaknesses: evalDetails?.weaknesses },
         score,
         feedback,
         timestamp: new Date()
@@ -611,7 +720,6 @@ export const saveAnswer = async (req, res) => {
 
     // Sync to InterviewQuestion collection
     try {
-      const normSection = (section || category || "technical").toLowerCase();
       await InterviewQuestion.findOneAndUpdate(
         {
           interviewId,
@@ -636,7 +744,20 @@ export const saveAnswer = async (req, res) => {
       console.error("CSV export error (answers):", err.message)
     );
 
-    res.json({ message: "Answer saved", answer: newAnswer, score, feedback });
+    res.json({
+      success: true,
+      message: "Answer saved and evaluated successfully",
+      answer: newAnswer,
+      score,
+      feedback,
+      evaluation: {
+        score,
+        feedback,
+        strengths: evalDetails?.strengths || [],
+        weaknesses: evalDetails?.weaknesses || [],
+        suggestedDifficulty: evalDetails?.suggestedDifficulty || "medium",
+      },
+    });
   } catch (error) {
     console.error("Save Answer Error:", error.message);
     res.status(500).json({ message: "Failed to save answer" });
@@ -777,7 +898,8 @@ export const completeInterview = async (req, res) => {
     res.json({
       message: alreadyCompleted ? "Interview already completed" : "Interview completed and graded successfully",
       result,
-    });  } catch (error) {
+    });
+  } catch (error) {
     console.error("Complete Interview Error:", error.message);
     if (error.errorType) {
       return res.status(500).json({ message: error.message || "Interview evaluation failed. Please try again.", errorType: error.errorType });
