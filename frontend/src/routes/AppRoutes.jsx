@@ -49,6 +49,8 @@ import QuestionAnalytics from "../pages/student/QuestionAnalytics";
 import Achievements from "../pages/student/Achievements";
 import AdminPlacementAnalytics from "../pages/admin/PlacementAnalytics";
 import AdminTechnicalManagement from "../pages/admin/AdminTechnicalManagement";
+import AnalyticsDashboard from "../pages/admin/AnalyticsDashboard";
+import MockQuestionManagement from "../pages/admin/MockQuestionManagement";
 
 function AppRoutes() {
   return (
@@ -101,9 +103,11 @@ function AppRoutes() {
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/admin/students" element={<StudentsList />} />
         <Route path="/admin/students/:id" element={<StudentDetails />} />
+        <Route path="/admin/analytics" element={<AnalyticsDashboard />} />
         <Route path="/admin/tests/create" element={<CreateTest />} />
         <Route path="/admin/tests/assigned" element={<AssignedTests />} />
         <Route path="/admin/companies" element={<CompanyManagement />} />
+        <Route path="/admin/mock-questions" element={<MockQuestionManagement />} />
         <Route path="/admin/coding-questions" element={<CodingQuestionManagement />} />
         <Route path="/admin/aptitude-questions" element={<AptitudeManagement />} />
         <Route path="/admin/audit-logs" element={<AuditLogs />} />

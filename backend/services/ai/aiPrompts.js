@@ -200,24 +200,22 @@ Certifications: ${p.certifications ? "" : ""}${p.certifications.join(", ") || "N
 
 export function buildCodingQuestionPrompt(profile = {}, count = 3) {
   const p = profileSummary(profile);
-  const languageHint =
-    p.skills.find((s) => /python|java|c\+\+|javascript|typescript|c#/i.test(s)) || "Python";
-  const instructions = `You are an expert coding interview problem designer.
+  const instructions = `You are an expert coding interview problem designer creating LeetCode-style coding problems.
 
 Generate exactly ${count} coding problems appropriate for this candidate's level, inferred from their profile:
 Skills: ${p.skills.join(", ") || "N/A"}
 Projects: ${p.projects.map((pr) => pr.name).join(", ") || "N/A"}
 
-Each problem must be clearly solvable in a standard programming interview and include concrete test cases.
-
-For each problem provide:
-- title
-- description (clear problem statement)
+Each problem MUST contain:
+- title (e.g. "Two Sum")
+- description (clear LeetCode-style problem statement)
 - difficulty (easy | medium | hard) — progress in difficulty across the ${count} problems
-- inputFormat
-- outputFormat
-- constraints
-- examples (array of { input, output/expected })
+- functionName (e.g. "twoSum")
+- returnType (e.g. "int[]" or "vector<int>" or "list")
+- parameters (array of { name, type })
+- starterCode (object containing exact problem-specific stubs for python, cpp, java, javascript)
+- constraints (string)
+- examples (array of { input, expected })
 - testCases (array of { input, expected, isHidden })
 - expectedApproach (brief)
 - topic`;
@@ -225,16 +223,30 @@ For each problem provide:
   const schema = `{
   "questions": [
     {
-      "title": "string",
-      "description": "string",
-      "difficulty": "easy | medium | hard",
-      "inputFormat": "string",
-      "outputFormat": "string",
-      "constraints": "string",
-      "examples": [ { "input": "string", "expected": "string" } ],
-      "testCases": [ { "input": "string", "expected": "string", "isHidden": false } ],
-      "expectedApproach": "string",
-      "topic": "string"
+      "title": "Two Sum",
+      "description": "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.",
+      "difficulty": "easy",
+      "functionName": "twoSum",
+      "returnType": "int[]",
+      "parameters": [
+        { "name": "nums", "type": "int[]" },
+        { "name": "target", "type": "int" }
+      ],
+      "starterCode": {
+        "python": "class Solution:\\n    def twoSum(self, nums: List[int], target: int) -> List[int]:\\n        # Write your solution here\\n        pass",
+        "cpp": "#include <bits/stdc++.h>\\nusing namespace std;\\n\\nclass Solution {\\npublic:\\n    vector<int> twoSum(vector<int>& nums, int target) {\\n        // Write your solution here\\n    }\\n};",
+        "java": "import java.util.*;\\n\\nclass Solution {\\n    public int[] twoSum(int[] nums, int target) {\\n        // Write your solution here\\n    }\\n}",
+        "javascript": "var twoSum = function(nums, target) {\\n    // Write your solution here\\n};"
+      },
+      "constraints": "2 <= nums.length <= 10^4",
+      "examples": [ { "input": "[2,7,11,15]\\n9", "expected": "[0,1]" } ],
+      "testCases": [
+        { "input": "[2,7,11,15]\\n9", "expected": "[0,1]", "isHidden": false },
+        { "input": "[3,2,4]\\n6", "expected": "[1,2]", "isHidden": false },
+        { "input": "[3,3]\\n6", "expected": "[0,1]", "isHidden": true }
+      ],
+      "expectedApproach": "Use a hash map to store complement indices.",
+      "topic": "Arrays & Hashing"
     }
   ]
 }`;

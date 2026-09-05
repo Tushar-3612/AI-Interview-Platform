@@ -36,21 +36,14 @@ import useLinter from "../../utils/coding/useLinter";
  *  - onLanguageChange(lang)  → set selected language + submission language
  *  - onSubmissionResult(result) → handleCodingSubmission
  */
+import { getStarterCode } from "../../utils/coding/starterGenerator";
+
 const CODING_LANGUAGES = [
-  { id: "cpp", label: "C++", ext: "cpp" },
-  { id: "c", label: "C", ext: "c" },
-  { id: "java", label: "Java", ext: "java" },
   { id: "python", label: "Python", ext: "py" },
+  { id: "cpp", label: "C++", ext: "cpp" },
+  { id: "java", label: "Java", ext: "java" },
   { id: "javascript", label: "JavaScript", ext: "js" },
 ];
-
-const DEFAULT_STARTER = {
-  cpp: `#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your solution here\n    int a, b;\n    if (cin >> a >> b) {\n        cout << a + b;\n    }\n    return 0;\n}`,
-  c: `#include <stdio.h>\n\nint main() {\n    // Write your solution here\n    int a, b;\n    if (scanf("%d %d", &a, &b) == 2) {\n        printf("%d", a + b);\n    }\n    return 0;\n}`,
-  java: `import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (sc.hasNextInt()) {\n            int a = sc.nextInt();\n            int b = sc.nextInt();\n            System.out.println(a + b);\n        }\n    }\n}`,
-  python: `import sys\n\n# Read input from stdin\nlines = sys.stdin.read().split()\nif len(lines) >= 2:\n    a, b = int(lines[0]), int(lines[1])\n    print(a + b)` ,
-  javascript: `const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nif (input.length >= 2) {\n    const [a, b] = input.map(Number);\n    console.log(a + b);\n}`,
-};
 
 function CompanyMockCodingIDE({
   question,
@@ -68,8 +61,8 @@ function CompanyMockCodingIDE({
   const token = getAuthToken();
   const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
-  const [code, setCode] = useState(initialCode || "");
-  const [language, setLanguage] = useState(initialLanguage || "java");
+  const [code, setCode] = useState(() => initialCode || getStarterCode(question, initialLanguage || "python"));
+  const [language, setLanguage] = useState(initialLanguage || "python");
   const [output, setOutput] = useState(null);
   const [bottomTab, setBottomTab] = useState("Testcase");
   const [splitView, setSplitView] = useState(false);
@@ -82,6 +75,16 @@ function CompanyMockCodingIDE({
   const abortControllerRef = useRef(null);
   const langDropRef = useRef(null);
   const codeByLanguageRef = useRef({});
+
+  // Sync question changes
+  useEffect(() => {
+    if (question) {
+      codeByLanguageRef.current = {};
+      const starter = getStarterCode(question, language);
+      setCode(initialCode || starter);
+      codeByLanguageRef.current[language] = initialCode || starter;
+    }
+  }, [question, initialCode]);
 
   // Linter diagnostics (as-you-type) — reused from Interview Practice.
   const lintState = useLinter(
@@ -170,21 +173,17 @@ function CompanyMockCodingIDE({
   // Language change — keep per-language code locally, notify parent.
   const handleLanguageChange = (langId) => {
     setLangDropOpen(false);
-    const prevStarter = DEFAULT_STARTER[language];
-    const isDefault =
-      code === "" ||
-      code === prevStarter ||
-      code === (question?.starterCode || "");
-
     codeByLanguageRef.current[language] = code;
 
     setLanguage(langId);
 
     const savedCode = codeByLanguageRef.current[langId];
-    if (savedCode) {
+    if (savedCode && savedCode.trim() !== "") {
       setCode(savedCode);
-    } else if (isDefault) {
-      setCode(DEFAULT_STARTER[langId] || "");
+    } else {
+      const newStarter = getStarterCode(question, langId);
+      setCode(newStarter);
+      codeByLanguageRef.current[langId] = newStarter;
     }
     onLanguageChange?.(langId);
   };

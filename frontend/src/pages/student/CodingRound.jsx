@@ -55,9 +55,9 @@ function getFullscreenElement() {
 
 const LANGUAGES = [
   { id: "python",     label: "Python",     ext: "py" },
-  { id: "java",       label: "Java",       ext: "java" },
-  { id: "c",          label: "C",          ext: "c" },
   { id: "cpp",        label: "C++",        ext: "cpp" },
+  { id: "java",       label: "Java",       ext: "java" },
+  { id: "javascript", label: "JavaScript", ext: "js" },
 ];
 
 const STARTER_CODE = {
@@ -402,8 +402,6 @@ function CodingRound() {
   const handleLanguageChange = (langId) => {
     setLangDropOpen(false);
     const q = questions[activeIndex];
-    const prevStarter = getStarterCode(q, language);
-    const isDefault = code === "" || code.trim() === prevStarter.trim() || code === STARTER_CODE[language] || code === (q?.starterCode || "");
 
     // Save current code for current language
     codeByLanguageRef.current[language] = code;
@@ -412,10 +410,12 @@ function CodingRound() {
 
     // Load code for new language
     const savedCode = codeByLanguageRef.current[langId];
-    if (savedCode) {
+    if (savedCode && savedCode.trim() !== "") {
       setCode(savedCode);
-    } else if (isDefault) {
-      setCode(getStarterCode(q, langId));
+    } else {
+      const newStarter = getStarterCode(q, langId);
+      setCode(newStarter);
+      codeByLanguageRef.current[langId] = newStarter;
     }
   };
 
@@ -439,9 +439,9 @@ function CodingRound() {
     if (!code || !q) return;
 
     // Validate language
-    const supportedLanguages = ["python", "java", "c", "cpp"];
+    const supportedLanguages = ["python", "java", "cpp", "javascript"];
     if (!supportedLanguages.includes(language)) {
-      setOutput({ type: "run", data: { type: "error", output: `Language "${language}" is not supported. Please use Python, Java, C, or C++.`, timeMs: 0 } });
+      setOutput({ type: "run", data: { type: "error", output: `Language "${language}" is not supported. Please use Python, C++, Java, or JavaScript.`, timeMs: 0 } });
       setBottomTab("Test Result");
       return;
     }

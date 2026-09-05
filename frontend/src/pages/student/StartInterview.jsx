@@ -26,6 +26,7 @@ import InterviewSettingsModal from "../../components/interview/InterviewSettings
 // Import Monaco editor & Output panel for Coding questions
 import MonacoCodeEditor from "../../components/coding/MonacoCodeEditor";
 import OutputPanel from "../../components/coding/OutputPanel";
+import { getStarterCode } from "../../utils/coding/starterGenerator";
 
 // Import mock fallback data if session fails
 import { MOCK_QUESTIONS, MOCK_CANDIDATE } from "../../data/interviewMockData";
@@ -99,8 +100,9 @@ function StartInterview() {
     javascript: `const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nif (input.length >= 2) {\n    const [a, b] = input.map(Number);\n    console.log(a + b);\n}\n`,
   };
 
-  const [codingLanguage, setCodingLanguage] = useState("cpp");
-  const [currentCode, setCurrentCode] = useState(CODING_STARTERS.cpp);
+  const [codingLanguage, setCodingLanguage] = useState("python");
+  const [currentCode, setCurrentCode] = useState("");
+  const codingCodeByLangRef = useRef({});
   const [customInput, setCustomInput] = useState("");
   const [compilerOutput, setCompilerOutput] = useState(null);
   const [codingSubmissionResult, setCodingSubmissionResult] = useState(null);
@@ -883,8 +885,10 @@ function StartInterview() {
     } else {
       setTypedResponse("");
       typedResponseRef.current = "";
-      speechBaseTextRef.current = "";
-      setCurrentCode(currentQuestion.starterCode || CODING_STARTERS.cpp);
+      codingCodeByLangRef.current = {};
+      const starter = getStarterCode(currentQuestion, codingLanguage);
+      setCurrentCode(starter);
+      codingCodeByLangRef.current[codingLanguage] = starter;
     }
 
     setCompilerOutput(null);
@@ -1476,21 +1480,30 @@ function StartInterview() {
                       value={codingLanguage}
                       onChange={(e) => {
                         const newLang = e.target.value;
+                        codingCodeByLangRef.current[codingLanguage] = currentCode;
                         setCodingLanguage(newLang);
-                        if (!currentCode || Object.values(CODING_STARTERS).includes(currentCode)) {
-                          setCurrentCode(CODING_STARTERS[newLang] || "");
+                        const saved = codingCodeByLangRef.current[newLang];
+                        if (saved && saved.trim() !== "") {
+                          setCurrentCode(saved);
+                        } else {
+                          const newStarter = getStarterCode(currentQuestion, newLang);
+                          setCurrentCode(newStarter);
+                          codingCodeByLangRef.current[newLang] = newStarter;
                         }
                       }}
                       className="bg-slate-800 border border-white/10 text-xs text-white rounded-lg px-2.5 py-1 outline-none cursor-pointer hover:border-white/20 transition"
                     >
-                      <option value="cpp">C++ (GCC 9.2.0)</option>
-                      <option value="c">C (GCC 9.2.0)</option>
-                      <option value="java">Java (OpenJDK 13)</option>
                       <option value="python">Python (3.8.1)</option>
+                      <option value="cpp">C++ (GCC 9.2.0)</option>
+                      <option value="java">Java (OpenJDK 13)</option>
                       <option value="javascript">JavaScript (Node 12)</option>
                     </select>
                     <button
-                      onClick={() => setCurrentCode(CODING_STARTERS[codingLanguage] || "")}
+                      onClick={() => {
+                        const resetCode = getStarterCode(currentQuestion, codingLanguage);
+                        setCurrentCode(resetCode);
+                        codingCodeByLangRef.current[codingLanguage] = resetCode;
+                      }}
                       title="Reset starter template"
                       className="text-[11px] text-white/50 hover:text-white px-2 py-1 rounded bg-white/5 hover:bg-white/10 cursor-pointer transition"
                     >

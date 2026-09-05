@@ -98,6 +98,7 @@ app.use("/api/aptitude", aptitudeRoutes);
 app.use("/api/coding-questions", codingQuestionRoutes);
 app.use("/api/practice", practiceRoutes);
 app.use("/api/code", codeExecutionRoutes);
+app.use("/api/compiler", codeExecutionRoutes);
 app.use("/api/placement", placementRoutes);
 app.use("/api/mock-interview", mockInterviewRoutes);
 app.use("/api/technical-questions", technicalQuestionRoutes);

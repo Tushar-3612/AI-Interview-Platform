@@ -7,13 +7,12 @@ import { useTheme } from "../../hooks/useTheme";
 import MonacoCodeEditor from "../coding/MonacoCodeEditor";
 import OutputPanel from "../coding/OutputPanel";
 import ProblemDescription from "../coding/ProblemDescription";
-import { explainError } from "../../utils/coding/errorExplanations";
+import { getStarterCode } from "../../utils/coding/starterGenerator";
 
 const CODING_LANGUAGES = [
-  { id: "cpp", label: "C++ (GCC 9.2.0)", ext: "cpp" },
-  { id: "c", label: "C (GCC 9.2.0)", ext: "c" },
-  { id: "java", label: "Java (OpenJDK 13)", ext: "java" },
   { id: "python", label: "Python (3.8.1)", ext: "py" },
+  { id: "cpp", label: "C++ (GCC 9.2.0)", ext: "cpp" },
+  { id: "java", label: "Java (OpenJDK 13)", ext: "java" },
   { id: "javascript", label: "JavaScript (Node 12)", ext: "js" },
 ];
 
@@ -62,7 +61,7 @@ function CodingQuestionRenderer({
   const token = getAuthToken();
   const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
-  const [code, setCode] = useState(initialCode || "");
+  const [code, setCode] = useState(() => initialCode || getStarterCode(question, initialLanguage || "python"));
   const [language, setLanguage] = useState(initialLanguage || "python");
   const [customInput, setCustomInput] = useState("");
   const [output, setOutput] = useState(null);
@@ -83,12 +82,15 @@ function CodingQuestionRenderer({
 
   codeRef.current = code;
 
-  // Sync external code/language changes
+  // Sync external question changes
   useEffect(() => {
-    if (initialCode !== undefined && initialCode !== code) {
-      setCode(initialCode);
+    if (question) {
+      codeByLanguageRef.current = {};
+      const starter = getStarterCode(question, language);
+      setCode(initialCode || starter);
+      codeByLanguageRef.current[language] = initialCode || starter;
     }
-  }, [initialCode]);
+  }, [question, initialCode]);
 
   useEffect(() => {
     if (initialLanguage !== undefined && initialLanguage !== language) {
@@ -153,7 +155,6 @@ function CodingQuestionRenderer({
   // Language change
   const handleLanguageChange = (langId) => {
     setLangDropOpen(false);
-    const isDefault = code === "" || code === STARTER_CODE[language] || code === "";
 
     // Save current code for current language
     codeByLanguageRef.current[language] = code;
@@ -162,10 +163,12 @@ function CodingQuestionRenderer({
 
     // Load code for new language
     const savedCode = codeByLanguageRef.current[langId];
-    if (savedCode) {
+    if (savedCode && savedCode.trim() !== "") {
       setCode(savedCode);
-    } else if (isDefault) {
-      setCode(STARTER_CODE[langId] || "");
+    } else {
+      const newStarter = getStarterCode(question, langId);
+      setCode(newStarter);
+      codeByLanguageRef.current[langId] = newStarter;
     }
     onLanguageChange?.(langId);
   };

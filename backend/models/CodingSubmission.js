@@ -27,6 +27,7 @@ const codingSubmissionSchema = new mongoose.Schema(
     companyName: { type: String, default: "" },
     language: { type: String, default: "cpp" },
     code: { type: String, required: true },
+    approach: { type: String, default: "" },
     status: {
       type: String,
       enum: ["completed", "accepted", "failed", "compile_error", "runtime_error", "time_limit", "error", "unsupported"],

@@ -199,7 +199,7 @@ export const submitCode = async (req, res) => {
     const {
       language = "cpp",
       code = "",
-      timeTakenMs = 0,
+      approach = "",
       questionSource = "codingQuestion",
       questionId,
       interviewId = "",
@@ -277,6 +277,7 @@ export const submitCode = async (req, res) => {
         title: questionTitle,
         language,
         code,
+        approach: String(approach || ""),
         status: suiteResult.status === "completed" ? "accepted" : suiteResult.status === "compile_error" ? "compile_error" : "failed",
         passedCount: suiteResult.passed,
         totalCount: suiteResult.total,

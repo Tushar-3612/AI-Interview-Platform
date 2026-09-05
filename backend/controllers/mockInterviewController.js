@@ -11,6 +11,8 @@ import { loadCodingBank, normalizeCodingQuestion } from "../services/codingQuest
 import {
   loadCompanyMockTechnical,
   loadCompanyMockCoding,
+  loadCompanyMockTechnicalAsync,
+  loadCompanyMockCodingAsync,
 } from "../services/companyMockBank.js";
 import {
   evaluateSingleAnswer,
@@ -298,7 +300,7 @@ export const startMockInterview = async (req, res) => {
     const accuracyLabel = perf.accuracy !== null ? `${Math.round(perf.accuracy * 100)}%` : "none";
     console.log(`[Adaptive] student=${userId} company=${company.id} accuracy=${accuracyLabel} target=${perf.tier}`);
 
-    const allCompanyTechnical = loadCompanyMockTechnical(company.id).map((q) => ({ ...q, _id: q.questionId }));
+    const allCompanyTechnical = (await loadCompanyMockTechnicalAsync(company.id)).map((q) => ({ ...q, _id: q.questionId }));
     const { questions: technicalQuestions, resetType: technicalReset } = await pickAdaptiveTechnicalWithCycleReset(
       allCompanyTechnical,
       seenIdsFor("technical"),
@@ -320,7 +322,7 @@ export const startMockInterview = async (req, res) => {
 
     /* ── 3) CODING — Company-specific companyMock pool, then DB coding questions, then local bank.
            Only the selected company's pool is used — coding questions are NEVER mixed between companies. ── */
-    const codingPool = loadCompanyMockCoding(company.id).map((q) => ({ ...q, _id: q.questionId }));
+    const codingPool = (await loadCompanyMockCodingAsync(company.id)).map((q) => ({ ...q, _id: q.questionId }));
     let { questions: codingQuestions, resetType: codingReset } = await pickWithCycleReset(
       codingPool, seenIdsFor("coding"), config.codingCount, "coding", company.id
     );

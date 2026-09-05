@@ -206,7 +206,6 @@ export function wrapFunctionHarness(sourceCode, language) {
   const lang = String(language).toLowerCase().trim();
 
   if (lang === "python" || lang === "py" || lang === "python3") {
-    // If the code already contains main execution or stdin reads, don't wrap
     if (
       sourceCode.includes("__main__") ||
       sourceCode.includes("sys.stdin") ||
@@ -216,16 +215,12 @@ export function wrapFunctionHarness(sourceCode, language) {
     }
 
     const fnMatch = sourceCode.match(/def\s+([a-zA-Z_]\w*)\s*\(([^)]*)\)/);
-    if (!fnMatch) return sourceCode;
-    const fnName = fnMatch[1];
-    const paramCount = fnMatch[2].split(",").map((p) => p.trim()).filter(Boolean).length;
+    const fnName = fnMatch ? fnMatch[1] : "solution";
 
     const harness = `
 
 if __name__ == "__main__":
-    import sys
-    import json
-    import ast
+    import sys, json, ast, inspect
 
     def __safe_eval(s):
         s = s.strip()
@@ -239,31 +234,41 @@ if __name__ == "__main__":
 
     __raw = sys.stdin.read().strip()
     if __raw:
-        __args = None
-        try:
-            __t = __safe_eval(f"({__raw})")
-            if isinstance(__t, tuple):
-                __args = list(__t)
-        except Exception:
-            pass
+        __lines = [l.strip() for l in __raw.splitlines() if l.strip()]
+        __parsed = [__safe_eval(l) for l in __lines]
 
-        if __args is None:
+        __fn = None
+        if "Solution" in globals() or "Solution" in locals():
             try:
-                __item = __safe_eval(__raw)
-                if isinstance(__item, list) and len(__item) == ${paramCount} and ${paramCount} > 1:
-                    __args = __item
-                elif isinstance(__item, tuple):
-                    __args = list(__item)
-                else:
-                    __args = [__item]
+                sol = Solution()
+                methods = [m for m in dir(sol) if not m.startswith("_") and callable(getattr(sol, m))]
+                if methods:
+                    __fn = getattr(sol, methods[0])
             except Exception:
-                __args = [__raw]
+                pass
 
-        __res = ${fnName}(*__args)
-        if isinstance(__res, (list, dict, int, float, bool, str)) or __res is None:
-            print(json.dumps(__res))
-        else:
-            print(__res)
+        if not __fn and "${fnName}" in globals():
+            __fn = globals()["${fnName}"]
+
+        if __fn:
+            try:
+                sig = inspect.signature(__fn)
+                p_count = len(sig.parameters)
+            except Exception:
+                p_count = len(__parsed)
+
+            if len(__parsed) == p_count:
+                __args = __parsed
+            elif len(__parsed) == 1 and isinstance(__parsed[0], (list, tuple)) and len(__parsed[0]) == p_count:
+                __args = list(__parsed[0])
+            else:
+                __args = __parsed
+
+            __res = __fn(*__args)
+            if isinstance(__res, (list, dict, int, float, bool, str)) or __res is None:
+                print(json.dumps(__res))
+            else:
+                print(__res)
 `;
     return sourceCode + harness;
   }
@@ -277,34 +282,37 @@ if __name__ == "__main__":
       return sourceCode;
     }
 
-    const fnMatch = sourceCode.match(/function\s+([a-zA-Z_]\w*)\s*\(([^)]*)\)/);
-    if (!fnMatch) return sourceCode;
-    const fnName = fnMatch[1];
-    const paramCount = fnMatch[2].split(",").map((p) => p.trim()).filter(Boolean).length;
+    const fnMatch = sourceCode.match(/(?:function\s+|var\s+|let\s+|const\s+)([a-zA-Z_]\w*)/);
+    const fnName = fnMatch ? fnMatch[1] : "solution";
 
     const harness = `
 
-const fs = require('fs');
-const __raw = fs.readFileSync(0, 'utf-8').trim();
-if (__raw) {
-    let __args = [];
-    try {
-        const direct = JSON.parse(__raw);
-        if (Array.isArray(direct) && direct.length === ${paramCount} && ${paramCount} > 1) {
-            __args = direct;
-        } else {
-            __args = [direct];
-        }
-    } catch {
-        try {
-            const wrapped = JSON.parse(\`[\${__raw}]\`);
-            __args = Array.isArray(wrapped) ? wrapped : [wrapped];
-        } catch {
-            __args = [__raw];
-        }
+if (typeof require !== 'undefined') {
+  const fs = require('fs');
+  const __raw = fs.readFileSync(0, 'utf-8').trim();
+  if (__raw) {
+    const __lines = __raw.split('\\n').map(l => l.trim()).filter(Boolean);
+    const __parsed = __lines.map(l => {
+      try { return JSON.parse(l); } catch(e) { return l; }
+    });
+
+    let __fn = null;
+    if (typeof Solution !== 'undefined') {
+      try {
+        const sol = new Solution();
+        const methods = Object.getOwnPropertyNames(Object.getPrototypeOf(sol)).filter(m => m !== 'constructor');
+        if (methods.length > 0) __fn = sol[methods[0]].bind(sol);
+      } catch(e) {}
     }
-    const __res = ${fnName}(...__args);
-    console.log(typeof __res === 'object' && __res !== null ? JSON.stringify(__res) : __res);
+    if (!__fn && typeof ${fnName} === 'function') {
+      __fn = ${fnName};
+    }
+
+    if (__fn) {
+      const __res = __fn(...__parsed);
+      console.log(typeof __res === 'object' && __res !== null ? JSON.stringify(__res) : __res);
+    }
+  }
 }
 `;
     return sourceCode + harness;
@@ -523,7 +531,7 @@ export async function executeJudge0TestSuite({
         isHidden,
         input: isHidden ? "" : String(tc.input || ""),
         expected: isHidden ? "" : String(tc.expected || tc.expectedOutput || ""),
-        actual: isHidden && !passed ? "" : execResult.stdout || "",
+        actual: isHidden ? "" : execResult.stdout || "",
         error: passed ? "" : execResult.stderr || (execResult.status !== "success" ? execResult.message : ""),
         status: passed ? "Accepted" : execResult.status === "success" ? "Wrong Answer" : execResult.statusDescription || "Failed",
         timeMs: execResult.timeMs,
