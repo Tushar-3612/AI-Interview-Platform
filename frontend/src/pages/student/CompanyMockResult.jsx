@@ -16,6 +16,7 @@ import {
   ChevronRight,
   FileText,
   Code2,
+  Sparkles,
 } from "lucide-react";
 
 const STATUS_COLORS = {
@@ -93,10 +94,14 @@ export default function CompanyMockResult() {
           total: apt.total ?? 15,
         },
         technical: {
-          correct: tech.correct ?? 0,
-          wrong: tech.wrong ?? 0,
-          skipped: tech.skipped ?? 0,
-          total: tech.total ?? 15,
+          correct: tech.marksObtained ?? tech.correct ?? 0,
+          wrong: 0,
+          skipped: 0,
+          total: tech.totalMarks ?? tech.total ?? 15,
+          // Keep MCQ count for reference
+          correctCount: tech.correct ?? 0,
+          mcqMarks: tech.mcqMarks ?? 0,
+          aiEvaluatedMarks: tech.aiEvaluatedMarks ?? 0,
         },
         coding: {
           correct: cod.accepted ?? 0,
@@ -107,7 +112,7 @@ export default function CompanyMockResult() {
       },
       perSection: {
         aptitude: { score: apt.correct ?? 0, total: apt.total ?? 15 },
-        technical: { score: tech.correct ?? 0, total: tech.total ?? 15 },
+        technical: { score: tech.marksObtained ?? tech.correct ?? 0, total: tech.totalMarks ?? tech.total ?? 15 },
         coding: { score: cod.accepted ?? 0, total: cod.total ?? 3 },
       },
     };
@@ -318,9 +323,18 @@ function SectionCard({ meta, stats, score, percentage, showResult }) {
       </div>
       {meta.label !== "Overall" && stats && (
         <div className="flex items-center gap-3 text-xs mt-1 flex-wrap" style={{ color: "var(--text-secondary)" }}>
-          <span className="flex items-center gap-1"><CheckCircle2 className="w-3.5 h-3.5" style={{ color: "var(--success)" }} /> {stats.correct} correct</span>
-          <span className="flex items-center gap-1"><XCircle className="w-3.5 h-3.5" style={{ color: "var(--error)" }} /> {stats.wrong ?? 0} wrong</span>
-          <span className="flex items-center gap-1"><MinusCircle className="w-3.5 h-3.5" style={{ color: "#F59E0B" }} /> {stats.skipped ?? 0} skipped</span>
+          {meta.label === "Technical" ? (
+            <>
+              <span className="flex items-center gap-1"><CheckCircle2 className="w-3.5 h-3.5" style={{ color: "var(--success)" }} /> {stats.correct} marks obtained</span>
+              {stats.aiEvaluatedMarks > 0 && <span className="flex items-center gap-1" style={{ color: "#A78BFA" }}>AI: {stats.aiEvaluatedMarks} marks</span>}
+            </>
+          ) : (
+            <>
+              <span className="flex items-center gap-1"><CheckCircle2 className="w-3.5 h-3.5" style={{ color: "var(--success)" }} /> {stats.correct} correct</span>
+              <span className="flex items-center gap-1"><XCircle className="w-3.5 h-3.5" style={{ color: "var(--error)" }} /> {stats.wrong ?? 0} wrong</span>
+              <span className="flex items-center gap-1"><MinusCircle className="w-3.5 h-3.5" style={{ color: "#F59E0B" }} /> {stats.skipped ?? 0} skipped</span>
+            </>
+          )}
         </div>
       )}
       {meta.label === "Overall" && (
@@ -342,6 +356,7 @@ function ReviewCard({ q, isOpen, onToggle }) {
   const statusLabel =
     q.status === "correct" ? "Correct" : q.status === "wrong" ? "Wrong" : q.status === "not_attempted" ? "Not Attempted" : "Skipped";
   const statusColor = STATUS_COLORS[q.status] || "var(--text-muted)";
+  const isAiEvaluated = q.isAiEvaluated && q.section === "technical";
 
   return (
     <div className="rounded-2xl border overflow-hidden" style={{ background: "var(--card-bg)", borderColor: "var(--card-border)" }}>
@@ -354,7 +369,39 @@ function ReviewCard({ q, isOpen, onToggle }) {
           {q.qn}
         </span>
         <span className="text-xs font-semibold uppercase tracking-wide shrink-0" style={{ color: meta.color }}>{meta.label}</span>
+        {q.section === "technical" && (
+          <>
+            <span className="shrink-0 text-[10px] px-1.5 py-0.5 rounded font-bold" style={{
+              background: "rgba(99,102,241,0.12)",
+              color: "#6366f1",
+            }}>
+              {q.isAiEvaluated ? "Technical" : "MCQ"}
+            </span>
+            {q.difficulty && (
+              <span className="shrink-0 text-[10px] px-1.5 py-0.5 rounded font-bold" style={{
+                background: q.difficulty === "Hard" ? "rgba(239,68,68,0.12)" : q.difficulty === "Easy" ? "rgba(16,185,129,0.12)" : "rgba(234,179,8,0.12)",
+                color: q.difficulty === "Hard" ? "var(--error)" : q.difficulty === "Easy" ? "var(--success)" : "var(--warning)",
+              }}>
+                {q.difficulty} ({q.marks ?? "?"}m)
+              </span>
+            )}
+            {q.questionStatus && (
+              <span className="shrink-0 text-[10px] px-1.5 py-0.5 rounded font-bold" style={{
+                background: q.questionStatus === "interview_reported" ? "rgba(245,158,11,0.12)" : "rgba(107,114,128,0.12)",
+                color: q.questionStatus === "interview_reported" ? "#F59E0B" : "#6B7280",
+              }}>
+                {q.questionStatus === "interview_reported" ? "Interview Reported" : "Practice"}
+              </span>
+            )}
+          </>
+        )}
         <span className="flex-1 min-w-0 text-sm truncate">{q.question || q.title || "Question"}</span>
+        {isAiEvaluated && q.aiScore !== null && q.aiScore !== undefined && (
+          <span className="shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1" style={{ background: "rgba(167,139,250,0.15)", color: "#A78BFA" }}>
+            <Sparkles className="w-3 h-3" />
+            {q.aiScore}/{q.aiMaxMarks ?? q.marks ?? "?"}
+          </span>
+        )}
         <span className="shrink-0 text-xs font-bold px-2.5 py-1 rounded-full" style={{ background: `color-mix(in srgb, ${statusColor} 14%, transparent)`, color: statusColor }}>
           {statusLabel}
         </span>
@@ -375,14 +422,41 @@ function ReviewCard({ q, isOpen, onToggle }) {
 }
 
 function McqDetail({ q }) {
-  const typeLabel = q.section === "technical" ? "Technical" : "Aptitude";
+  const isAiEvaluated = q.isAiEvaluated && q.section === "technical";
+
   return (
     <div className="space-y-3 pt-3">
       <div>
-        <div className="text-xs font-bold uppercase tracking-wide mb-1" style={{ color: "var(--text-muted)" }}>{typeLabel} Question</div>
+        <div className="flex flex-wrap items-center gap-2 mb-1">
+          <span className="text-xs font-bold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
+            {isAiEvaluated ? "Technical" : q.section === "aptitude" ? "Aptitude" : "MCQ"} Question
+          </span>
+          {q.difficulty && (
+            <span className="text-[10px] px-1.5 py-0.5 rounded font-bold" style={{
+              background: q.difficulty === "Hard" ? "rgba(239,68,68,0.12)" : q.difficulty === "Easy" ? "rgba(16,185,129,0.12)" : "rgba(234,179,8,0.12)",
+              color: q.difficulty === "Hard" ? "var(--error)" : q.difficulty === "Easy" ? "var(--success)" : "var(--warning)",
+            }}>
+              {q.difficulty}
+            </span>
+          )}
+          {q.marks != null && (
+            <span className="text-[10px] px-1.5 py-0.5 rounded font-bold" style={{ background: "rgba(99,102,241,0.12)", color: "#6366f1" }}>
+              {q.marks} marks
+            </span>
+          )}
+          {q.questionStatus && (
+            <span className="text-[10px] px-1.5 py-0.5 rounded font-bold" style={{
+              background: q.questionStatus === "interview_reported" ? "rgba(245,158,11,0.12)" : "rgba(107,114,128,0.12)",
+              color: q.questionStatus === "interview_reported" ? "#F59E0B" : "#6B7280",
+            }}>
+              {q.questionStatus === "interview_reported" ? "Interview Reported" : "Practice"}
+            </span>
+          )}
+        </div>
         <p className="text-sm leading-relaxed">{q.question}</p>
       </div>
 
+      {/* MCQ Options */}
       {q.options && q.options.length > 0 && (
         <div className="space-y-1.5">
           <div className="text-xs font-bold uppercase tracking-wide mb-1" style={{ color: "var(--text-muted)" }}>Options</div>
@@ -409,18 +483,89 @@ function McqDetail({ q }) {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 pb-1">
-        <div className="rounded-lg px-3 py-2 text-sm" style={{ background: "var(--bg-secondary)", border: "1px solid var(--border)" }}>
-          <span className="text-xs font-bold uppercase tracking-wide block" style={{ color: "var(--text-muted)" }}>Your Answer</span>
-          <span style={{ color: q.status === "correct" ? "var(--success)" : q.status === "wrong" ? "var(--error)" : "var(--text-muted)" }}>
-            {q.status === "skipped" ? "Skipped" : q.selectedOption || "—"}
-          </span>
+      {/* AI Evaluation for Free-Text Questions */}
+      {isAiEvaluated ? (
+        <div className="space-y-3">
+          {/* Candidate Answer */}
+          <div className="rounded-lg px-3 py-2 text-sm" style={{ background: "var(--bg-secondary)", border: "1px solid var(--border)" }}>
+            <span className="text-xs font-bold uppercase tracking-wide block mb-1" style={{ color: "var(--text-muted)" }}>Your Answer</span>
+            <p className="whitespace-pre-wrap" style={{ color: q.candidateAnswer ? "var(--text-primary)" : "var(--text-muted)" }}>
+              {q.candidateAnswer || "No answer provided"}
+            </p>
+          </div>
+
+          {/* AI Score */}
+          {q.aiScore !== null && q.aiScore !== undefined && (
+            <div className="flex items-center gap-3 rounded-lg px-3 py-2" style={{ background: `color-mix(in srgb, ${q.aiScore > 0 ? "var(--success)" : "var(--error)"} 10%, var(--bg-secondary))`, border: `1px solid ${q.aiScore > 0 ? "rgba(16,185,129,0.3)" : "rgba(239,68,68,0.3)"}` }}>
+              <span className="text-2xl font-bold" style={{ color: q.aiScore > 0 ? "var(--success)" : "var(--error)" }}>{q.aiScore}</span>
+              <span className="text-sm" style={{ color: "var(--text-secondary)" }}>/ {q.aiMaxMarks} marks</span>
+              <span className="text-xs px-2 py-0.5 rounded-full ml-auto" style={{ background: q.evaluationStatus === "ai_evaluated" ? "rgba(16,185,129,0.15)" : "rgba(234,179,8,0.15)", color: q.evaluationStatus === "ai_evaluated" ? "var(--success)" : "var(--warning)" }}>
+                {q.evaluationStatus === "ai_evaluated" ? "AI Evaluated" : "Fallback"}
+              </span>
+            </div>
+          )}
+
+          {/* AI Evaluation */}
+          {q.aiEvaluation && (
+            <div className="rounded-lg px-3 py-2 text-sm" style={{ background: "var(--bg-secondary)", border: "1px solid var(--border)" }}>
+              <span className="text-xs font-bold uppercase tracking-wide block mb-1" style={{ color: "var(--text-muted)" }}>AI Evaluation</span>
+              <p className="whitespace-pre-wrap leading-relaxed">{q.aiEvaluation}</p>
+            </div>
+          )}
+
+          {/* Strengths & Weaknesses */}
+          {(q.aiStrengths?.length > 0 || q.aiWeaknesses?.length > 0) && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              {q.aiStrengths?.length > 0 && (
+                <div className="rounded-lg px-3 py-2 text-sm" style={{ background: "rgba(16,185,129,0.06)", border: "1px solid rgba(16,185,129,0.2)" }}>
+                  <span className="text-xs font-bold uppercase tracking-wide block mb-1" style={{ color: "var(--success)" }}>Strengths</span>
+                  <ul className="list-disc list-inside space-y-0.5">
+                    {q.aiStrengths.map((s, i) => <li key={i} className="text-xs">{s}</li>)}
+                  </ul>
+                </div>
+              )}
+              {q.aiWeaknesses?.length > 0 && (
+                <div className="rounded-lg px-3 py-2 text-sm" style={{ background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.2)" }}>
+                  <span className="text-xs font-bold uppercase tracking-wide block mb-1" style={{ color: "var(--error)" }}>Areas to Improve</span>
+                  <ul className="list-disc list-inside space-y-0.5">
+                    {q.aiWeaknesses.map((w, i) => <li key={i} className="text-xs">{w}</li>)}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Better Answer */}
+          {q.aiBetterAnswer && (
+            <div className="rounded-lg px-3 py-2 text-sm" style={{ background: "rgba(59,130,246,0.06)", border: "1px solid rgba(59,130,246,0.2)" }}>
+              <span className="text-xs font-bold uppercase tracking-wide block mb-1" style={{ color: "#3B82F6" }}>Suggested Better Answer</span>
+              <p className="whitespace-pre-wrap leading-relaxed">{q.aiBetterAnswer}</p>
+            </div>
+          )}
+
+          {/* Expected Answer (reference) */}
+          {q.expectedAnswer && q.expectedAnswer !== q.aiBetterAnswer && (
+            <div className="rounded-lg px-3 py-2 text-sm" style={{ background: "var(--bg-secondary)", border: "1px solid var(--border)" }}>
+              <span className="text-xs font-bold uppercase tracking-wide block mb-1" style={{ color: "var(--text-muted)" }}>Expected Answer (Reference)</span>
+              <p className="whitespace-pre-wrap leading-relaxed" style={{ color: "var(--text-secondary)" }}>{q.expectedAnswer}</p>
+            </div>
+          )}
         </div>
-        <div className="rounded-lg px-3 py-2 text-sm" style={{ background: "var(--bg-secondary)", border: "1px solid var(--border)" }}>
-          <span className="text-xs font-bold uppercase tracking-wide block" style={{ color: "var(--text-muted)" }}>Correct Answer</span>
-          <span style={{ color: "var(--success)" }}>{q.correctAnswer || "—"}</span>
+      ) : (
+        /* MCQ or Aptitude Answer Display */
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 pb-1">
+          <div className="rounded-lg px-3 py-2 text-sm" style={{ background: "var(--bg-secondary)", border: "1px solid var(--border)" }}>
+            <span className="text-xs font-bold uppercase tracking-wide block" style={{ color: "var(--text-muted)" }}>Your Answer</span>
+            <span style={{ color: q.status === "correct" ? "var(--success)" : q.status === "wrong" ? "var(--error)" : "var(--text-muted)" }}>
+              {q.status === "skipped" ? "Skipped" : q.selectedOption || "—"}
+            </span>
+          </div>
+          <div className="rounded-lg px-3 py-2 text-sm" style={{ background: "var(--bg-secondary)", border: "1px solid var(--border)" }}>
+            <span className="text-xs font-bold uppercase tracking-wide block" style={{ color: "var(--text-muted)" }}>Correct Answer</span>
+            <span style={{ color: "var(--success)" }}>{q.correctAnswer || "—"}</span>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

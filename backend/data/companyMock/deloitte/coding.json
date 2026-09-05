@@ -1,0 +1,1314 @@
+[
+  {
+    "questionId": "deloitte-coding-1",
+    "id": "deloitte-coding-1",
+    "title": "Reverse a String",
+    "company": "deloitte",
+    "difficulty": "Easy",
+    "category": "Strings",
+    "tags": ["String Manipulation", "Two Pointers"],
+    "marks": 10,
+    "problemStatement": "Given a string s, reverse the string and return it. The input string may contain any printable ASCII characters. Do not allocate extra space for another array; you must modify the input string in-place.",
+    "description": "Reverse the characters in a given string.",
+    "constraints": "1 <= s.length <= 10^5\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "A single string s.",
+    "outputFormat": "Return the reversed string.",
+    "examples": [
+      {
+        "input": "\"hello\"",
+        "output": "\"olleh\"",
+        "explanation": "Reversing 'hello' gives 'olleh'."
+      },
+      {
+        "input": "\"abcdef\"",
+        "output": "\"fedcba\"",
+        "explanation": "Reversing 'abcdef' gives 'fedcba'."
+      }
+    ],
+    "explanation": "Use two pointers, one at the start and one at the end, swap characters and move inward until they meet.",
+    "starterCode": "function solution(s) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      {"input": "\"hello\"", "expected": "\"olleh\""},
+      {"input": "\"abcdef\"", "expected": "\"fedcba\""}
+    ],
+    "hiddenTestCases": [
+      {"input": "\"a\"", "expected": "\"a\""},
+      {"input": "\"abcdefg\"", "expected": "\"gfedcba\""}
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "deloitte-coding-2",
+    "id": "deloitte-coding-2",
+    "title": "Palindrome Number Check",
+    "company": "deloitte",
+    "difficulty": "Easy",
+    "category": "Math",
+    "tags": ["Number Theory", "Two Pointers"],
+    "marks": 10,
+    "problemStatement": "Given an integer x, return true if x is a palindrome number. A palindrome number reads the same backward as forward. For example, 121 is a palindrome while 123 is not.",
+    "description": "Determine if an integer is a palindrome.",
+    "constraints": "-2^31 <= x <= 2^31 - 1\nTime: O(log N)\nSpace: O(1)",
+    "inputFormat": "A single integer x.",
+    "outputFormat": "Return true if x is a palindrome, false otherwise.",
+    "examples": [
+      {
+        "input": "121",
+        "output": "true",
+        "explanation": "121 reads the same backward as forward."
+      },
+      {
+        "input": "-121",
+        "output": "false",
+        "explanation": "The minus sign makes it read differently backward."
+      }
+    ],
+    "explanation": "Convert to string and check if it equals its reverse, or reverse the number mathematically by extracting digits.",
+    "starterCode": "function solution(x) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      {"input": "121", "expected": "true"},
+      {"input": "-121", "expected": "false"}
+    ],
+    "hiddenTestCases": [
+      {"input": "1221", "expected": "true"},
+      {"input": "0", "expected": "true"}
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "deloitte-coding-3",
+    "id": "deloitte-coding-3",
+    "title": "Prime Number Check",
+    "company": "deloitte",
+    "difficulty": "Easy",
+    "category": "Math",
+    "tags": ["Number Theory", "Optimization"],
+    "marks": 10,
+    "problemStatement": "Given a positive integer n, determine if it is a prime number. A prime number is a natural number greater than 1 that has no positive divisors other than 1 and itself.",
+    "description": "Check whether a given number is prime.",
+    "constraints": "0 <= n <= 10^9\nTime: O(sqrt(N))\nSpace: O(1)",
+    "inputFormat": "A single integer n.",
+    "outputFormat": "Return true if n is prime, false otherwise.",
+    "examples": [
+      {
+        "input": "7",
+        "output": "true",
+        "explanation": "7 is only divisible by 1 and 7."
+      },
+      {
+        "input": "10",
+        "output": "false",
+        "explanation": "10 is divisible by 2 and 5."
+      }
+    ],
+    "explanation": "Check divisibility from 2 up to sqrt(n). If any divisor divides n evenly, it's not prime.",
+    "starterCode": "function solution(n) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      {"input": "7", "expected": "true"},
+      {"input": "10", "expected": "false"}
+    ],
+    "hiddenTestCases": [
+      {"input": "2", "expected": "true"},
+      {"input": "1", "expected": "false"}
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "deloitte-coding-4",
+    "id": "deloitte-coding-4",
+    "title": "Factorial of a Number",
+    "company": "deloitte",
+    "difficulty": "Easy",
+    "category": "Math",
+    "tags": ["Recursion", "Iteration"],
+    "marks": 10,
+    "problemStatement": "Given a non-negative integer n, calculate the factorial of n. Factorial of n is the product of all positive integers less than or equal to n. By convention, 0! = 1.",
+    "description": "Compute the factorial of a non-negative integer.",
+    "constraints": "0 <= n <= 20\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "A single integer n.",
+    "outputFormat": "Return the factorial of n.",
+    "examples": [
+      {
+        "input": "5",
+        "output": "120",
+        "explanation": "5! = 5 * 4 * 3 * 2 * 1 = 120"
+      },
+      {
+        "input": "0",
+        "output": "1",
+        "explanation": "0! = 1 by convention."
+      }
+    ],
+    "explanation": "Iteratively multiply numbers from 1 to n, or use recursion with base case n <= 1 returning 1.",
+    "starterCode": "function solution(n) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      {"input": "5", "expected": "120"},
+      {"input": "0", "expected": "1"}
+    ],
+    "hiddenTestCases": [
+      {"input": "10", "expected": "3628800"},
+      {"input": "20", "expected": "2432902008176640000"}
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "deloitte-coding-5",
+    "id": "deloitte-coding-5",
+    "title": "Fibonacci Number",
+    "company": "deloitte",
+    "difficulty": "Easy",
+    "category": "Math",
+    "tags": ["Recursion", "Dynamic Programming"],
+    "marks": 10,
+    "problemStatement": "Given an integer n, return the nth Fibonacci number. Fibonacci sequence is defined as: F(0) = 0, F(1) = 1, and F(n) = F(n-1) + F(n-2) for n > 1.",
+    "description": "Find the nth Fibonacci number.",
+    "constraints": "0 <= n <= 30\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "A single integer n.",
+    "outputFormat": "Return the nth Fibonacci number.",
+    "examples": [
+      {
+        "input": "5",
+        "output": "5",
+        "explanation": "F(5) = F(4) + F(3) = 3 + 2 = 5"
+      },
+      {
+        "input": "0",
+        "output": "0",
+        "explanation": "F(0) = 0"
+      }
+    ],
+    "explanation": "Use iterative approach keeping track of previous two values to compute F(n) in linear time.",
+    "starterCode": "function solution(n) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      {"input": "5", "expected": "5"},
+      {"input": "0", "expected": "0"}
+    ],
+    "hiddenTestCases": [
+      {"input": "10", "expected": "55"},
+      {"input": "1", "expected": "1"}
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "deloitte-coding-6",
+    "id": "deloitte-coding-6",
+    "title": "Count Vowels and Consonants",
+    "company": "deloitte",
+    "difficulty": "Easy",
+    "category": "Strings",
+    "tags": ["String Traversal", "Counting"],
+    "marks": 10,
+    "problemStatement": "Given a string s consisting of lowercase English letters, count the number of vowels and consonants. Return the result as a string in the format 'vowels:X consonants:Y'.",
+    "description": "Count vowels and consonants in a string.",
+    "constraints": "1 <= s.length <= 10^5\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "A single string s of lowercase English letters.",
+    "outputFormat": "Return a string 'vowels:X consonants:Y'.",
+    "examples": [
+      {
+        "input": "\"hello\"",
+        "output": "vowels:2 consonants:3",
+        "explanation": "Vowels: e, o (2). Consonants: h, l, l (3)."
+      },
+      {
+        "input": "\"abcde\"",
+        "output": "vowels:2 consonants:3",
+        "explanation": "Vowels: a, e (2). Consonants: b, c, d (3)."
+      }
+    ],
+    "explanation": "Traverse the string, check each character against vowels set, increment respective counters.",
+    "starterCode": "function solution(s) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      {"input": "\"hello\"", "expected": "vowels:2 consonants:3"},
+      {"input": "\"abcde\"", "expected": "vowels:2 consonants:3"}
+    ],
+    "hiddenTestCases": [
+      {"input": "\"aeiou\"", "expected": "vowels:5 consonants:0"},
+      {"input": "\"xyz\"", "expected": "vowels:0 consonants:3"}
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "deloitte-coding-7",
+    "id": "deloitte-coding-7",
+    "title": "Sum of Array Elements",
+    "company": "deloitte",
+    "difficulty": "Easy",
+    "category": "Arrays",
+    "tags": ["Array Traversal", "Summation"],
+    "marks": 10,
+    "problemStatement": "Given an array of integers arr, return the sum of all elements in the array.",
+    "description": "Calculate the sum of all elements in an integer array.",
+    "constraints": "1 <= arr.length <= 10^5\n-10^4 <= arr[i] <= 10^4\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "First line contains an integer n. Second line contains n space-separated integers.",
+    "outputFormat": "Return the sum of all elements.",
+    "examples": [
+      {
+        "input": "[1, 2, 3, 4, 5]",
+        "output": "15",
+        "explanation": "1 + 2 + 3 + 4 + 5 = 15"
+      },
+      {
+        "input": "[-1, -2, -3]",
+        "output": "-6",
+        "explanation": "-1 + (-2) + (-3) = -6"
+      }
+    ],
+    "explanation": "Iterate through the array and accumulate the sum.",
+    "starterCode": "function solution(arr) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      {"input": "[1, 2, 3, 4, 5]", "expected": "15"},
+      {"input": "[-1, -2, -3]", "expected": "-6"}
+    ],
+    "hiddenTestCases": [
+      {"input": "[0, 0, 0]", "expected": "0"},
+      {"input": "[100]", "expected": "100"}
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "deloitte-coding-8",
+    "id": "deloitte-coding-8",
+    "title": "Find Maximum Element",
+    "company": "deloitte",
+    "difficulty": "Easy",
+    "category": "Arrays",
+    "tags": ["Array Traversal", "Comparison"],
+    "marks": 10,
+    "problemStatement": "Given an array of integers arr, find and return the maximum element in the array.",
+    "description": "Find the largest element in an integer array.",
+    "constraints": "1 <= arr.length <= 10^5\n-10^4 <= arr[i] <= 10^4\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "An array of integers arr.",
+    "outputFormat": "Return the maximum element.",
+    "examples": [
+      {
+        "input": "[3, 7, 2, 9, 1]",
+        "output": "9",
+        "explanation": "The maximum element is 9."
+      },
+      {
+        "input": "[-5, -1, -8, -3]",
+        "output": "-1",
+        "explanation": "The maximum element is -1."
+      }
+    ],
+    "explanation": "Initialize max with the first element and iterate, updating max when a larger element is found.",
+    "starterCode": "function solution(arr) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      {"input": "[3, 7, 2, 9, 1]", "expected": "9"},
+      {"input": "[-5, -1, -8, -3]", "expected": "-1"}
+    ],
+    "hiddenTestCases": [
+      {"input": "[10]", "expected": "10"},
+      {"input": "[5, 5, 5, 5]", "expected": "5"}
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "deloitte-coding-9",
+    "id": "deloitte-coding-9",
+    "title": "Second Largest Element",
+    "company": "deloitte",
+    "difficulty": "Easy",
+    "category": "Arrays",
+    "tags": ["Array Traversal", "Comparison"],
+    "marks": 10,
+    "problemStatement": "Given an array of integers arr, find and return the second largest distinct element. If there is no second largest element (all elements are the same), return -1.",
+    "description": "Find the second largest distinct element in an array.",
+    "constraints": "2 <= arr.length <= 10^5\n-10^4 <= arr[i] <= 10^4\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "An array of integers arr.",
+    "outputFormat": "Return the second largest element or -1.",
+    "examples": [
+      {
+        "input": "[12, 35, 1, 10, 34, 1]",
+        "output": "34",
+        "explanation": "The largest is 35, second largest is 34."
+      },
+      {
+        "input": "[10, 10, 10]",
+        "output": "-1",
+        "explanation": "All elements are the same, no second largest."
+      }
+    ],
+    "explanation": "Track the largest and second largest in a single pass, updating accordingly.",
+    "starterCode": "function solution(arr) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      {"input": "[12, 35, 1, 10, 34, 1]", "expected": "34"},
+      {"input": "[10, 10, 10]", "expected": "-1"}
+    ],
+    "hiddenTestCases": [
+      {"input": "[5, 1]", "expected": "1"},
+      {"input": "[1, 2, 3, 4, 5]", "expected": "4"}
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "deloitte-coding-10",
+    "id": "deloitte-coding-10",
+    "title": "Remove Duplicates from Sorted Array",
+    "company": "deloitte",
+    "difficulty": "Easy",
+    "category": "Arrays",
+    "tags": ["Two Pointers", "In-place"],
+    "marks": 10,
+    "problemStatement": "Given a sorted array arr, remove the duplicates in-place such that each element appears only once and return the new length. Do not allocate extra space for another array.",
+    "description": "Remove duplicates from a sorted array in-place.",
+    "constraints": "1 <= arr.length <= 3 * 10^4\n-10^4 <= arr[i] <= 10^4\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "A sorted array of integers arr.",
+    "outputFormat": "Return the new length of the array after removing duplicates.",
+    "examples": [
+      {
+        "input": "[1, 1, 2]",
+        "output": "2",
+        "explanation": "The array becomes [1, 2] with length 2."
+      },
+      {
+        "input": "[0, 0, 1, 1, 1, 2, 2, 3, 3, 4]",
+        "output": "5",
+        "explanation": "The array becomes [0, 1, 2, 3, 4] with length 5."
+      }
+    ],
+    "explanation": "Use a two-pointer approach: one for the current position and one for the next unique position.",
+    "starterCode": "function solution(arr) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      {"input": "[1, 1, 2]", "expected": "2"},
+      {"input": "[0, 0, 1, 1, 1, 2, 2, 3, 3, 4]", "expected": "5"}
+    ],
+    "hiddenTestCases": [
+      {"input": "[1]", "expected": "1"},
+      {"input": "[1, 1, 1, 1]", "expected": "1"}
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "deloitte-coding-11",
+    "id": "deloitte-coding-11",
+    "title": "Binary to Decimal Conversion",
+    "company": "deloitte",
+    "difficulty": "Easy",
+    "category": "Math",
+    "tags": ["Number Conversion", "Bit Manipulation"],
+    "marks": 10,
+    "problemStatement": "Given a string binary representing a binary number, convert it to its decimal equivalent and return the integer.",
+    "description": "Convert a binary string to its decimal value.",
+    "constraints": "1 <= binary.length <= 30\nbinary contains only '0' and '1'\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "A string binary consisting of characters '0' and '1'.",
+    "outputFormat": "Return the decimal equivalent of the binary string.",
+    "examples": [
+      {
+        "input": "\"101\"",
+        "output": "5",
+        "explanation": "1*4 + 0*2 + 1*1 = 5"
+      },
+      {
+        "input": "\"1100\"",
+        "output": "12",
+        "explanation": "1*8 + 1*4 + 0*2 + 0*1 = 12"
+      }
+    ],
+    "explanation": "Iterate through the string, multiply result by 2 and add current bit value.",
+    "starterCode": "function solution(binary) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      {"input": "\"101\"", "expected": "5"},
+      {"input": "\"1100\"", "expected": "12"}
+    ],
+    "hiddenTestCases": [
+      {"input": "\"0\"", "expected": "0"},
+      {"input": "\"11111111\"", "expected": "255"}
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "deloitte-coding-12",
+    "id": "deloitte-coding-12",
+    "title": "Armstrong Number Check",
+    "company": "deloitte",
+    "difficulty": "Easy",
+    "category": "Math",
+    "tags": ["Number Theory", "Digit Extraction"],
+    "marks": 10,
+    "problemStatement": "Given a positive integer n, determine if it is an Armstrong number. An Armstrong number of n digits is a number where the sum of its digits each raised to the power of n equals the number itself. For example, 153 = 1^3 + 5^3 + 3^3.",
+    "description": "Check if a number is an Armstrong number.",
+    "constraints": "1 <= n <= 10^8\nTime: O(log N)\nSpace: O(1)",
+    "inputFormat": "A single integer n.",
+    "outputFormat": "Return true if n is an Armstrong number, false otherwise.",
+    "examples": [
+      {
+        "input": "153",
+        "output": "true",
+        "explanation": "1^3 + 5^3 + 3^3 = 1 + 125 + 27 = 153"
+      },
+      {
+        "input": "123",
+        "output": "false",
+        "explanation": "1^3 + 2^3 + 3^3 = 1 + 8 + 27 = 36 != 123"
+      }
+    ],
+    "explanation": "Count digits, extract each digit, raise to power of digit count, sum and compare.",
+    "starterCode": "function solution(n) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      {"input": "153", "expected": "true"},
+      {"input": "123", "expected": "false"}
+    ],
+    "hiddenTestCases": [
+      {"input": "370", "expected": "true"},
+      {"input": "9474", "expected": "true"}
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "deloitte-coding-13",
+    "id": "deloitte-coding-13",
+    "title": "GCD of Two Numbers",
+    "company": "deloitte",
+    "difficulty": "Easy",
+    "category": "Math",
+    "tags": ["Euclidean Algorithm", "Number Theory"],
+    "marks": 10,
+    "problemStatement": "Given two integers a and b, return the Greatest Common Divisor (GCD) of the two numbers. The GCD is the largest positive integer that divides both a and b without leaving a remainder.",
+    "description": "Find the GCD of two integers using Euclidean algorithm.",
+    "constraints": "1 <= a, b <= 10^9\nTime: O(log(min(a,b)))\nSpace: O(1)",
+    "inputFormat": "Two integers a and b separated by space.",
+    "outputFormat": "Return the GCD of a and b.",
+    "examples": [
+      {
+        "input": "12 8",
+        "output": "4",
+        "explanation": "The divisors of 12 are 1,2,3,4,6,12. Divisors of 8 are 1,2,4,8. GCD is 4."
+      },
+      {
+        "input": "15 5",
+        "output": "5",
+        "explanation": "5 divides both 15 and 5."
+      }
+    ],
+    "explanation": "Use Euclidean algorithm: GCD(a, b) = GCD(b, a % b) until b becomes 0.",
+    "starterCode": "function solution(a, b) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      {"input": "12 8", "expected": "4"},
+      {"input": "15 5", "expected": "5"}
+    ],
+    "hiddenTestCases": [
+      {"input": "17 13", "expected": "1"},
+      {"input": "100 75", "expected": "25"}
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "deloitte-coding-14",
+    "id": "deloitte-coding-14",
+    "title": "Two Sum",
+    "company": "deloitte",
+    "difficulty": "Medium",
+    "category": "Arrays",
+    "tags": ["HashMap", "Two Pointers"],
+    "marks": 10,
+    "problemStatement": "Given an array of integers nums and an integer target, return the indices of the two numbers that add up to target. You may assume each input has exactly one solution, and you may not use the same element twice. Return the answer in any order.",
+    "description": "Find two numbers in an array that sum to a given target.",
+    "constraints": "2 <= nums.length <= 10^4\n-10^9 <= nums[i] <= 10^9\n-10^9 <= target <= 10^9\nTime: O(N)\nSpace: O(N)",
+    "inputFormat": "An array of integers nums and an integer target.",
+    "outputFormat": "Return an array of two indices.",
+    "examples": [
+      {
+        "input": "[2, 7, 11, 15] target=9",
+        "output": "[0, 1]",
+        "explanation": "nums[0] + nums[1] = 2 + 7 = 9"
+      },
+      {
+        "input": "[3, 2, 4] target=6",
+        "output": "[1, 2]",
+        "explanation": "nums[1] + nums[2] = 2 + 4 = 6"
+      }
+    ],
+    "explanation": "Use a hashmap to store each number's index. For each element, check if (target - element) exists in the map.",
+    "starterCode": "function solution(nums, target) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      {"input": "[2, 7, 11, 15] 9", "expected": "[0, 1]"},
+      {"input": "[3, 2, 4] 6", "expected": "[1, 2]"}
+    ],
+    "hiddenTestCases": [
+      {"input": "[3, 3] 6", "expected": "[0, 1]"},
+      {"input": "[1, 5, 3, 7] 8", "expected": "[0, 3]"}
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "deloitte-coding-15",
+    "id": "deloitte-coding-15",
+    "title": "Rotate Array by K Positions",
+    "company": "deloitte",
+    "difficulty": "Medium",
+    "category": "Arrays",
+    "tags": ["Array Rotation", "Reversal Algorithm"],
+    "marks": 10,
+    "problemStatement": "Given an integer array arr and an integer k, rotate the array to the right by k steps. For example, with k=3, the array [1,2,3,4,5,6,7] becomes [5,6,7,1,2,3,4].",
+    "description": "Rotate an array to the right by k positions.",
+    "constraints": "1 <= arr.length <= 10^5\n0 <= k <= 10^5\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "An array arr and integer k.",
+    "outputFormat": "Return the rotated array.",
+    "examples": [
+      {
+        "input": "[1, 2, 3, 4, 5, 6, 7] k=3",
+        "output": "[5, 6, 7, 1, 2, 3, 4]",
+        "explanation": "Rotating right by 3 gives [5,6,7,1,2,3,4]."
+      },
+      {
+        "input": "[-1, -100, 3, 99] k=2",
+        "output": "[3, 99, -1, -100]",
+        "explanation": "Rotating right by 2 gives [3,99,-1,-100]."
+      }
+    ],
+    "explanation": "Use the three-reverse algorithm: reverse the entire array, then reverse first k elements, then reverse the rest.",
+    "starterCode": "function solution(arr, k) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      {"input": "[1, 2, 3, 4, 5, 6, 7] 3", "expected": "[5, 6, 7, 1, 2, 3, 4]"},
+      {"input": "[-1, -100, 3, 99] 2", "expected": "[3, 99, -1, -100]"}
+    ],
+    "hiddenTestCases": [
+      {"input": "[1, 2] 3", "expected": "[2, 1]"},
+      {"input": "[1] 0", "expected": "[1]"}
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "deloitte-coding-16",
+    "id": "deloitte-coding-16",
+    "title": "Merge Two Sorted Arrays",
+    "company": "deloitte",
+    "difficulty": "Medium",
+    "category": "Arrays",
+    "tags": ["Two Pointers", "Merge"],
+    "marks": 10,
+    "problemStatement": "Given two sorted arrays nums1 and nums2, merge them into a single sorted array and return it. nums1 has m+n elements where first m are actual and remaining n are zeros. nums2 has n elements.",
+    "description": "Merge two sorted arrays into one sorted array.",
+    "constraints": "0 <= m, n <= 10^5\n1 <= m + n <= 10^5\nTime: O(m + n)\nSpace: O(1)",
+    "inputFormat": "Two sorted arrays nums1 and nums2.",
+    "outputFormat": "Return the merged sorted array.",
+    "examples": [
+      {
+        "input": "[1, 2, 3, 0, 0, 0] m=3 [2, 5, 6] n=3",
+        "output": "[1, 2, 2, 3, 5, 6]",
+        "explanation": "Merging [1,2,3] and [2,5,6] gives [1,2,2,3,5,6]."
+      },
+      {
+        "input": "[1] m=1 [] n=0",
+        "output": "[1]",
+        "explanation": "Second array is empty, result is [1]."
+      }
+    ],
+    "explanation": "Use three pointers starting from the end of both arrays and fill nums1 from the back.",
+    "starterCode": "function solution(nums1, m, nums2, n) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      {"input": "[1, 2, 3, 0, 0, 0] 3 [2, 5, 6] 3", "expected": "[1, 2, 2, 3, 5, 6]"},
+      {"input": "[1] 1 [] 0", "expected": "[1]"}
+    ],
+    "hiddenTestCases": [
+      {"input": "[0] 0 [1] 1", "expected": "[1]"},
+      {"input": "[2, 0] 1 [1] 1", "expected": "[1, 2]"}
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "deloitte-coding-17",
+    "id": "deloitte-coding-17",
+    "title": "Longest Common Prefix",
+    "company": "deloitte",
+    "difficulty": "Medium",
+    "category": "Strings",
+    "tags": ["String Comparison", "Vertical Scanning"],
+    "marks": 10,
+    "problemStatement": "Given an array of strings strs, find the longest common prefix string among them. If there is no common prefix, return an empty string.",
+    "description": "Find the longest common prefix string among an array of strings.",
+    "constraints": "1 <= strs.length <= 200\n1 <= strs[i].length <= 200\nTime: O(S) where S is sum of all characters\nSpace: O(1)",
+    "inputFormat": "An array of strings strs.",
+    "outputFormat": "Return the longest common prefix string.",
+    "examples": [
+      {
+        "input": "[\"flower\",\"flow\",\"flight\"]",
+        "output": "\"fl\"",
+        "explanation": "The longest common prefix is 'fl'."
+      },
+      {
+        "input": "[\"dog\",\"racecar\",\"car\"]",
+        "output": "\"\"",
+        "explanation": "There is no common prefix."
+      }
+    ],
+    "explanation": "Compare characters vertically across all strings. Stop when a mismatch is found.",
+    "starterCode": "function solution(strs) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      {"input": "[\"flower\",\"flow\",\"flight\"]", "expected": "\"fl\""},
+      {"input": "[\"dog\",\"racecar\",\"car\"]", "expected": "\"\""}
+    ],
+    "hiddenTestCases": [
+      {"input": "[\"interspecies\",\"interstellar\",\"internal\"]", "expected": "\"inter\""},
+      {"input": "[\"a\"]", "expected": "\"a\""}
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "deloitte-coding-18",
+    "id": "deloitte-coding-18",
+    "title": "Valid Parentheses",
+    "company": "deloitte",
+    "difficulty": "Medium",
+    "category": "Stack",
+    "tags": ["Stack", "String Parsing"],
+    "marks": 10,
+    "problemStatement": "Given a string s containing just the characters '(', ')', '{', '}', '[' and ']', determine if the input string is valid. An input string is valid if open brackets are closed by the same type and in the correct order.",
+    "description": "Check if a string of brackets is valid.",
+    "constraints": "1 <= s.length <= 10^4\nTime: O(N)\nSpace: O(N)",
+    "inputFormat": "A string s containing bracket characters.",
+    "outputFormat": "Return true if valid, false otherwise.",
+    "examples": [
+      {
+        "input": "\"()\"",
+        "output": "true",
+        "explanation": "Single pair of parentheses."
+      },
+      {
+        "input": "\"()[]{}\"",
+        "output": "true",
+        "explanation": "All brackets are properly matched."
+      }
+    ],
+    "explanation": "Use a stack: push opening brackets, pop on closing and check if they match.",
+    "starterCode": "function solution(s) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      {"input": "\"()\"", "expected": "true"},
+      {"input": "\"()[]{}\"", "expected": "true"}
+    ],
+    "hiddenTestCases": [
+      {"input": "\"(]\"", "expected": "false"},
+      {"input": "\"([)]\"", "expected": "false"}
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "deloitte-coding-19",
+    "id": "deloitte-coding-19",
+    "title": "Character Frequency Count",
+    "company": "deloitte",
+    "difficulty": "Medium",
+    "category": "HashMap",
+    "tags": ["Hash Map", "Counting"],
+    "marks": 10,
+    "problemStatement": "Given a string s, return the character frequency count as a map where keys are characters and values are their frequencies. Return the result sorted by character.",
+    "description": "Count the frequency of each character in a string.",
+    "constraints": "1 <= s.length <= 10^5\nTime: O(N)\nSpace: O(1) since at most 256 characters",
+    "inputFormat": "A string s.",
+    "outputFormat": "Return the frequency map sorted by character.",
+    "examples": [
+      {
+        "input": "\"hello\"",
+        "output": "{'e': 1, 'h': 1, 'l': 2, 'o': 1}",
+        "explanation": "h:1, e:1, l:2, o:1 sorted by character."
+      },
+      {
+        "input": "\"aab\"",
+        "output": "{'a': 2, 'b': 1}",
+        "explanation": "a appears twice, b once."
+      }
+    ],
+    "explanation": "Use a hashmap to count occurrences, then sort by character key.",
+    "starterCode": "function solution(s) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      {"input": "\"hello\"", "expected": "{'e': 1, 'h': 1, 'l': 2, 'o': 1}"},
+      {"input": "\"aab\"", "expected": "{'a': 2, 'b': 1}"}
+    ],
+    "hiddenTestCases": [
+      {"input": "\"abcabc\"", "expected": "{'a': 2, 'b': 2, 'c': 2}"},
+      {"input": "\"a\"", "expected": "{'a': 1}"}
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "deloitte-coding-20",
+    "id": "deloitte-coding-20",
+    "title": "First Non-Repeating Character",
+    "company": "deloitte",
+    "difficulty": "Medium",
+    "category": "HashMap",
+    "tags": ["Hash Map", "String Traversal"],
+    "marks": 10,
+    "problemStatement": "Given a string s, find the first non-repeating character and return its index. If no such character exists, return -1.",
+    "description": "Find the index of the first non-repeating character.",
+    "constraints": "1 <= s.length <= 10^5\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "A string s.",
+    "outputFormat": "Return the index of the first non-repeating character, or -1.",
+    "examples": [
+      {
+        "input": "\"leetcode\"",
+        "output": "0",
+        "explanation": "'l' is the first non-repeating character at index 0."
+      },
+      {
+        "input": "\"loveleetcode\"",
+        "output": "2",
+        "explanation": "'v' is the first non-repeating character at index 2."
+      }
+    ],
+    "explanation": "First pass counts frequencies, second pass finds first character with count 1.",
+    "starterCode": "function solution(s) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      {"input": "\"leetcode\"", "expected": "0"},
+      {"input": "\"loveleetcode\"", "expected": "2"}
+    ],
+    "hiddenTestCases": [
+      {"input": "\"aabb\"", "expected": "-1"},
+      {"input": "\"abcabc\"", "expected": "-1"}
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "deloitte-coding-21",
+    "id": "deloitte-coding-21",
+    "title": "Maximum Subarray Sum (Kadane's Algorithm)",
+    "company": "deloitte",
+    "difficulty": "Medium",
+    "category": "Arrays",
+    "tags": ["Dynamic Programming", "Kadane's Algorithm"],
+    "marks": 10,
+    "problemStatement": "Given an integer array nums, find the contiguous subarray with the largest sum and return its sum. A subarray is a contiguous non-empty sequence of elements.",
+    "description": "Find the maximum sum of any contiguous subarray.",
+    "constraints": "1 <= nums.length <= 10^5\n-10^4 <= nums[i] <= 10^4\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "An array of integers nums.",
+    "outputFormat": "Return the maximum subarray sum.",
+    "examples": [
+      {
+        "input": "[-2, 1, -3, 4, -1, 2, 1, -5, 4]",
+        "output": "6",
+        "explanation": "The subarray [4, -1, 2, 1] has sum 6."
+      },
+      {
+        "input": "[1]",
+        "output": "1",
+        "explanation": "Single element subarray."
+      }
+    ],
+    "explanation": "Use Kadane's algorithm: track current sum, reset to 0 when it goes negative, update max.",
+    "starterCode": "function solution(nums) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      {"input": "[-2, 1, -3, 4, -1, 2, 1, -5, 4]", "expected": "6"},
+      {"input": "[1]", "expected": "1"}
+    ],
+    "hiddenTestCases": [
+      {"input": "[5, 4, -1, 7, 8]", "expected": "23"},
+      {"input": "[-1]", "expected": "-1"}
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "deloitte-coding-22",
+    "id": "deloitte-coding-22",
+    "title": "Check if Two Strings are Anagrams",
+    "company": "deloitte",
+    "difficulty": "Medium",
+    "category": "Strings",
+    "tags": ["HashMap", "String Comparison"],
+    "marks": 10,
+    "problemStatement": "Given two strings s and t, return true if t is an anagram of s, and false otherwise. An anagram is a word formed by rearranging the letters of another word.",
+    "description": "Check if two strings are anagrams of each other.",
+    "constraints": "1 <= s.length, t.length <= 5 * 10^4\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "Two strings s and t.",
+    "outputFormat": "Return true if they are anagrams, false otherwise.",
+    "examples": [
+      {
+        "input": "\"anagram\" \"nagaram\"",
+        "output": "true",
+        "explanation": "Both strings have the same characters: a,a,a,g,m,n,r."
+      },
+      {
+        "input": "\"rat\" \"car\"",
+        "output": "false",
+        "explanation": "Different characters."
+      }
+    ],
+    "explanation": "Count character frequencies in both strings and compare, or sort both and compare.",
+    "starterCode": "function solution(s, t) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      {"input": "\"anagram\" \"nagaram\"", "expected": "true"},
+      {"input": "\"rat\" \"car\"", "expected": "false"}
+    ],
+    "hiddenTestCases": [
+      {"input": "\"listen\" \"silent\"", "expected": "true"},
+      {"input": "\"a\" \"ab\"", "expected": "false"}
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "deloitte-coding-23",
+    "id": "deloitte-coding-23",
+    "title": "Sort Array by Parity",
+    "company": "deloitte",
+    "difficulty": "Medium",
+    "category": "Arrays",
+    "tags": ["Two Pointers", "Sorting"],
+    "marks": 10,
+    "problemStatement": "Given an integer array nums, move all even integers to the beginning and all odd integers to the end. Return any array that satisfies this condition.",
+    "description": "Rearrange array so even numbers come first.",
+    "constraints": "1 <= nums.length <= 5000\n0 <= nums[i] <= 5000\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "An array of integers nums.",
+    "outputFormat": "Return the rearranged array with evens first.",
+    "examples": [
+      {
+        "input": "[3, 1, 2, 4]",
+        "output": "[2, 4, 3, 1]",
+        "explanation": "Evens [2,4] come before odds [3,1]."
+      },
+      {
+        "input": "[0]",
+        "output": "[0]",
+        "explanation": "Single even element."
+      }
+    ],
+    "explanation": "Use two pointers: one at start, one at end. Swap if left is odd and right is even.",
+    "starterCode": "function solution(nums) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      {"input": "[3, 1, 2, 4]", "expected": "[2, 4, 3, 1]"},
+      {"input": "[0]", "expected": "[0]"}
+    ],
+    "hiddenTestCases": [
+      {"input": "[1, 3, 5, 7]", "expected": "[1, 3, 5, 7]"},
+      {"input": "[2, 4, 6, 8]", "expected": "[2, 4, 6, 8]"}
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "deloitte-coding-24",
+    "id": "deloitte-coding-24",
+    "title": "Missing Number in Array",
+    "company": "deloitte",
+    "difficulty": "Medium",
+    "category": "Arrays",
+    "tags": ["Math", "XOR", "Sum"],
+    "marks": 10,
+    "problemStatement": "Given an array nums containing n distinct numbers in the range [0, n], return the only number in the range that is missing from the array.",
+    "description": "Find the missing number from 0 to n in an array.",
+    "constraints": "n == nums.length\n1 <= n <= 10^4\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "An array of n distinct numbers in range [0, n].",
+    "outputFormat": "Return the missing number.",
+    "examples": [
+      {
+        "input": "[3, 0, 1]",
+        "output": "2",
+        "explanation": "n=3, numbers 0-3, 2 is missing."
+      },
+      {
+        "input": "[0, 1]",
+        "output": "2",
+        "explanation": "n=2, numbers 0-2, 2 is missing."
+      }
+    ],
+    "explanation": "Calculate expected sum n*(n+1)/2 and subtract actual sum. Or use XOR approach.",
+    "starterCode": "function solution(nums) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      {"input": "[3, 0, 1]", "expected": "2"},
+      {"input": "[0, 1]", "expected": "2"}
+    ],
+    "hiddenTestCases": [
+      {"input": "[9,6,4,2,3,5,7,0,1]", "expected": "8"},
+      {"input": "[0]", "expected": "1"}
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "deloitte-coding-25",
+    "id": "deloitte-coding-25",
+    "title": "Spiral Order Matrix Traversal",
+    "company": "deloitte",
+    "difficulty": "Medium",
+    "category": "Arrays",
+    "tags": ["Matrix", "Simulation"],
+    "marks": 10,
+    "problemStatement": "Given an m x n matrix, return all elements of the matrix in spiral order (clockwise from outside to inside).",
+    "description": "Traverse a matrix in spiral order.",
+    "constraints": "1 <= m, n <= 10\n-100 <= matrix[i][j] <= 100\nTime: O(m*n)\nSpace: O(1)",
+    "inputFormat": "An m x n matrix.",
+    "outputFormat": "Return an array of elements in spiral order.",
+    "examples": [
+      {
+        "input": "[[1,2,3],[4,5,6],[7,8,9]]",
+        "output": "[1,2,3,6,9,8,7,4,5]",
+        "explanation": "Spiral: top row, right column, bottom row, left column, center."
+      },
+      {
+        "input": "[[1,2,3,4],[5,6,7,8],[9,10,11,12]]",
+        "output": "[1,2,3,4,8,12,11,10,9,5,6,7]",
+        "explanation": "Spiral traversal of 3x4 matrix."
+      }
+    ],
+    "explanation": "Use four boundaries (top, bottom, left, right) and traverse layer by layer.",
+    "starterCode": "function solution(matrix) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      {"input": "[[1,2,3],[4,5,6],[7,8,9]]", "expected": "[1,2,3,6,9,8,7,4,5]"},
+      {"input": "[[1,2,3,4],[5,6,7,8],[9,10,11,12]]", "expected": "[1,2,3,4,8,12,11,10,9,5,6,7]"}
+    ],
+    "hiddenTestCases": [
+      {"input": "[[1]]", "expected": "[1]"},
+      {"input": "[[1,2],[3,4]]", "expected": "[1,2,4,3]"}
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "deloitte-coding-26",
+    "id": "deloitte-coding-26",
+    "title": "Move Zeroes to End",
+    "company": "deloitte",
+    "difficulty": "Medium",
+    "category": "Arrays",
+    "tags": ["Two Pointers", "In-place"],
+    "marks": 10,
+    "problemStatement": "Given an integer array nums, move all 0's to the end while maintaining the relative order of the non-zero elements. Do this in-place with minimal operations.",
+    "description": "Move all zeros to the end of the array while preserving order of non-zero elements.",
+    "constraints": "1 <= nums.length <= 10^4\n-2^31 <= nums[i] <= 2^31 - 1\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "An array of integers nums.",
+    "outputFormat": "Return the modified array.",
+    "examples": [
+      {
+        "input": "[0, 1, 0, 3, 12]",
+        "output": "[1, 3, 12, 0, 0]",
+        "explanation": "Non-zeros [1,3,12] come first, zeros at end."
+      },
+      {
+        "input": "[0]",
+        "output": "[0]",
+        "explanation": "Single zero stays in place."
+      }
+    ],
+    "explanation": "Use a pointer to track next non-zero position. Swap elements when non-zero is found.",
+    "starterCode": "function solution(nums) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      {"input": "[0, 1, 0, 3, 12]", "expected": "[1, 3, 12, 0, 0]"},
+      {"input": "[0]", "expected": "[0]"}
+    ],
+    "hiddenTestCases": [
+      {"input": "[1, 2, 3]", "expected": "[1, 2, 3]"},
+      {"input": "[0, 0, 1]", "expected": "[1, 0, 0]"}
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "deloitte-coding-27",
+    "id": "deloitte-coding-27",
+    "title": "Find All Duplicates in Array",
+    "company": "deloitte",
+    "difficulty": "Medium",
+    "category": "Arrays",
+    "tags": ["HashMap", "In-place Marking"],
+    "marks": 10,
+    "problemStatement": "Given an integer array nums of length n where all elements are in range [1, n], some elements appear twice and others appear once. Find all elements that appear twice.",
+    "description": "Find all elements that appear twice in the array.",
+    "constraints": "n == nums.length\n1 <= n <= 10^5\n1 <= nums[i] <= n\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "An array of integers nums.",
+    "outputFormat": "Return an array of all elements that appear twice.",
+    "examples": [
+      {
+        "input": "[4, 3, 2, 7, 8, 2, 3, 1]",
+        "output": "[2, 3]",
+        "explanation": "2 and 3 appear twice."
+      },
+      {
+        "input": "[1, 1, 2]",
+        "output": "[1]",
+        "explanation": "1 appears twice."
+      }
+    ],
+    "explanation": "Mark visited indices by negating values. If a value is already negative, it's a duplicate.",
+    "starterCode": "function solution(nums) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      {"input": "[4, 3, 2, 7, 8, 2, 3, 1]", "expected": "[2, 3]"},
+      {"input": "[1, 1, 2]", "expected": "[1]"}
+    ],
+    "hiddenTestCases": [
+      {"input": "[1]", "expected": "[]"},
+      {"input": "[1, 2, 3, 4, 5, 5]", "expected": "[5]"}
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "deloitte-coding-28",
+    "id": "deloitte-coding-28",
+    "title": "Trapping Rain Water",
+    "company": "deloitte",
+    "difficulty": "Hard",
+    "category": "Arrays",
+    "tags": ["Two Pointers", "Stack", "Dynamic Programming"],
+    "marks": 10,
+    "problemStatement": "Given n non-negative integers representing an elevation map where the width of each bar is 1, compute how much water it can trap after raining.",
+    "description": "Calculate the total amount of water that can be trapped between bars.",
+    "constraints": "n == height.length\n1 <= n <= 2 * 10^4\n0 <= height[i] <= 10^5\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "An array of non-negative integers height.",
+    "outputFormat": "Return the total units of water trapped.",
+    "examples": [
+      {
+        "input": "[0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1]",
+        "output": "6",
+        "explanation": "Water is trapped in positions creating 6 units."
+      },
+      {
+        "input": "[4, 2, 0, 3, 2, 5]",
+        "output": "9",
+        "explanation": "Water trapped is 9 units total."
+      }
+    ],
+    "explanation": "Use two pointers from both ends tracking left_max and right_max. Water at each position is min(left_max, right_max) - height[i].",
+    "starterCode": "function solution(height) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      {"input": "[0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1]", "expected": "6"},
+      {"input": "[4, 2, 0, 3, 2, 5]", "expected": "9"}
+    ],
+    "hiddenTestCases": [
+      {"input": "[1]", "expected": "0"},
+      {"input": "[1, 2]", "expected": "0"}
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "deloitte-coding-29",
+    "id": "deloitte-coding-29",
+    "title": "Merge Intervals",
+    "company": "deloitte",
+    "difficulty": "Hard",
+    "category": "Arrays",
+    "tags": ["Sorting", "Intervals"],
+    "marks": 10,
+    "problemStatement": "Given an array of intervals where intervals[i] = [start_i, end_i], merge all overlapping intervals and return an array of non-overlapping intervals that cover all the intervals in the input.",
+    "description": "Merge overlapping intervals into non-overlapping intervals.",
+    "constraints": "1 <= intervals.length <= 10^4\nintervals[i].length == 2\n0 <= start_i <= end_i <= 10^4\nTime: O(N log N)\nSpace: O(N)",
+    "inputFormat": "An array of intervals.",
+    "outputFormat": "Return the merged intervals.",
+    "examples": [
+      {
+        "input": "[[1,3],[2,6],[8,10],[15,18]]",
+        "output": "[[1,6],[8,10],[15,18]]",
+        "explanation": "[1,3] and [2,6] overlap, merged to [1,6]."
+      },
+      {
+        "input": "[[1,4],[4,5]]",
+        "output": "[[1,5]]",
+        "explanation": "[1,4] and [4,5] overlap at 4, merged to [1,5]."
+      }
+    ],
+    "explanation": "Sort intervals by start time. Iterate and merge if current overlaps with previous.",
+    "starterCode": "function solution(intervals) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      {"input": "[[1,3],[2,6],[8,10],[15,18]]", "expected": "[[1,6],[8,10],[15,18]]"},
+      {"input": "[[1,4],[4,5]]", "expected": "[[1,5]]"}
+    ],
+    "hiddenTestCases": [
+      {"input": "[[1,4],[0,4]]", "expected": "[[0,4]]"},
+      {"input": "[[1,4],[2,3]]", "expected": "[[1,4]]"}
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "deloitte-coding-30",
+    "id": "deloitte-coding-30",
+    "title": "LRU Cache Implementation",
+    "company": "deloitte",
+    "difficulty": "Hard",
+    "category": "HashMap",
+    "tags": ["Design", "Linked List", "HashMap"],
+    "marks": 10,
+    "problemStatement": "Design a data structure that follows the constraints of a Least Recently Used (LRU) cache. Implement the LRUCache class with get(key) and put(key, value) methods, both O(1) time complexity.",
+    "description": "Implement an LRU Cache with O(1) get and put operations.",
+    "constraints": "1 <= capacity <= 3000\n0 <= key <= 10^4\n0 <= value <= 10^5\nTime: O(1) for both methods\nSpace: O(capacity)",
+    "inputFormat": "Commands: LRUCache(capacity), get(key), put(key, value)",
+    "outputFormat": "get returns the value or -1 if not found. put returns nothing.",
+    "examples": [
+      {
+        "input": "LRUCache(2), put(1,1), put(2,2), get(1), put(3,3), get(2)",
+        "output": "null, null, 1, null, -1",
+        "explanation": "After putting 3, key 2 is evicted as it was least recently used."
+      },
+      {
+        "input": "LRUCache(1), put(1,1), put(2,2), get(1)",
+        "output": "null, null, -1",
+        "explanation": "Key 1 evicted when key 2 was inserted."
+      }
+    ],
+    "explanation": "Use a HashMap for O(1) lookup and a Doubly Linked List for O(1) insertion/deletion to maintain access order.",
+    "starterCode": "class LRUCache {\n  constructor(capacity) {\n    // Write your code here\n    \n  }\n  \n  get(key) {\n    // Write your code here\n    \n  }\n  \n  put(key, value) {\n    // Write your code here\n    \n  }\n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      {"input": "LRUCache(2),put(1,1),put(2,2),get(1),put(3,3),get(2)", "expected": "-1"},
+      {"input": "LRUCache(1),put(1,1),put(2,2),get(1)", "expected": "-1"}
+    ],
+    "hiddenTestCases": [
+      {"input": "LRUCache(2),put(1,1),put(2,2),get(1),get(2),put(3,3),get(3)", "expected": "3"},
+      {"input": "LRUCache(3),put(1,1),put(2,2),put(3,3),get(1),put(4,4),get(2)", "expected": "-1"}
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "deloitte-coding-31",
+    "id": "deloitte-coding-31",
+    "title": "Sliding Window Maximum",
+    "company": "deloitte",
+    "difficulty": "Hard",
+    "category": "Arrays",
+    "tags": ["Sliding Window", "Deque", "Monotonic Queue"],
+    "marks": 10,
+    "problemStatement": "Given an array nums and a sliding window of size k moving from left to right, return the max value in each window position. The window moves one position at a time.",
+    "description": "Find the maximum in each sliding window of size k.",
+    "constraints": "1 <= nums.length <= 10^5\n1 <= k <= nums.length\n-10^4 <= nums[i] <= 10^4\nTime: O(N)\nSpace: O(k)",
+    "inputFormat": "An array nums and integer k.",
+    "outputFormat": "Return an array of maximum values for each window.",
+    "examples": [
+      {
+        "input": "[1, 3, -1, -3, 5, 3, 6, 7] k=3",
+        "output": "[3, 3, 5, 5, 6, 7]",
+        "explanation": "Windows: [1,3,-1]->3, [3,-1,-3]->3, [-1,-3,5]->5, [-3,5,3]->5, [5,3,6]->6, [3,6,7]->7."
+      },
+      {
+        "input": "[1] k=1",
+        "output": "[1]",
+        "explanation": "Single element window."
+      }
+    ],
+    "explanation": "Use a monotonic deque to maintain indices of potential maximums in decreasing order.",
+    "starterCode": "function solution(nums, k) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      {"input": "[1, 3, -1, -3, 5, 3, 6, 7] 3", "expected": "[3, 3, 5, 5, 6, 7]"},
+      {"input": "[1] 1", "expected": "[1]"}
+    ],
+    "hiddenTestCases": [
+      {"input": "[9, 11] 2", "expected": "[11]"},
+      {"input": "[4, 3, 2, 1] 2", "expected": "[4, 3, 2]"}
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "deloitte-coding-32",
+    "id": "deloitte-coding-32",
+    "title": "Product of Array Except Self",
+    "company": "deloitte",
+    "difficulty": "Hard",
+    "category": "Arrays",
+    "tags": ["Prefix Products", "Suffix Products"],
+    "marks": 10,
+    "problemStatement": "Given an integer array nums, return an array answer such that answer[i] is the product of all elements of nums except nums[i]. You must solve it without using division and in O(n) time.",
+    "description": "Compute product of all elements except self without division.",
+    "constraints": "2 <= nums.length <= 10^5\n-30 <= nums[i] <= 30\nTime: O(N)\nSpace: O(1) excluding output array",
+    "inputFormat": "An array of integers nums.",
+    "outputFormat": "Return an array where each element is the product of all other elements.",
+    "examples": [
+      {
+        "input": "[1, 2, 3, 4]",
+        "output": "[24, 12, 8, 6]",
+        "explanation": "[2*3*4, 1*3*4, 1*2*4, 1*2*3] = [24, 12, 8, 6]."
+      },
+      {
+        "input": "[-1, 1, 0, -3, 3]",
+        "output": "[0, 0, 9, 0, 0]",
+        "explanation": "Product except self for each position."
+      }
+    ],
+    "explanation": "Build prefix product array and suffix product array. Answer[i] = prefix[i] * suffix[i].",
+    "starterCode": "function solution(nums) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      {"input": "[1, 2, 3, 4]", "expected": "[24, 12, 8, 6]"},
+      {"input": "[-1, 1, 0, -3, 3]", "expected": "[0, 0, 9, 0, 0]"}
+    ],
+    "hiddenTestCases": [
+      {"input": "[2, 3]", "expected": "[3, 2]"},
+      {"input": "[1, 1, 1, 1]", "expected": "[1, 1, 1, 1]"}
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "interview_reported"
+  }
+]

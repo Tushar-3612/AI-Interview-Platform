@@ -1,0 +1,4223 @@
+[
+  {
+    "questionId": "infosys-mcq-001",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "System Design",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "An e-commerce backend experiences sudden 10x traffic spikes during flash sales. Which architectural pattern best prevents database saturation?",
+    "options": [
+      "Monolithic Architecture",
+      "Event-Driven Microservices with Message Queue",
+      "Single Database Shared Connection Pool",
+      "Synchronous REST API Cascading"
+    ],
+    "correctAnswer": "Event-Driven Microservices with Message Queue",
+    "explanation": "Message queues (e.g. Kafka/RabbitMQ) buffer incoming requests during traffic surges, allowing worker services to consume messages asynchronously at a manageable rate.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "infosys-mcq-002",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "System Design",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "A developer notices that client classes are forced to implement interface methods they do not use. Which SOLID principle is being violated?",
+    "options": [
+      "Single Responsibility Principle",
+      "Open/Closed Principle",
+      "Interface Segregation Principle",
+      "Dependency Inversion Principle"
+    ],
+    "correctAnswer": "Interface Segregation Principle",
+    "explanation": "Interface Segregation Principle (ISP) states that clients should not be forced to depend on interfaces they do not use. Fat interfaces should be split into smaller, specific ones.",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "infosys-mcq-003",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "System Design",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Which design pattern guarantees that a class has only one instance and provides a global point of access to it?",
+    "options": [
+      "Factory Method Pattern",
+      "Singleton Pattern",
+      "Observer Pattern",
+      "Strategy Pattern"
+    ],
+    "correctAnswer": "Singleton Pattern",
+    "explanation": "Singleton pattern restricts instantiation of a class to a single object instance and provides global access (e.g. database connection pool manager).",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "infosys-mcq-004",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "System Design",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "A system needs to route requests to multiple backend services based on URI path (/api/v1/users, /api/v1/orders) and handle rate limiting centrally. Which component should be introduced?",
+    "options": [
+      "Database Load Balancer",
+      "API Gateway",
+      "Reverse Proxy Cache",
+      "Distributed Message Broker"
+    ],
+    "correctAnswer": "API Gateway",
+    "explanation": "An API Gateway acts as a single entry point for API clients, handling routing, rate limiting, authentication, SSL termination, and request transformation.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "infosys-mcq-005",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "System Design",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "In a distributed microservice system, Service A needs to notify Service B and Service C about an order placement without waiting for their response. Which pattern should be used?",
+    "options": [
+      "Synchronous HTTP REST Calls",
+      "Publish-Subscribe (Pub/Sub) Messaging",
+      "Database Polling",
+      "RPC Method Call"
+    ],
+    "correctAnswer": "Publish-Subscribe (Pub/Sub) Messaging",
+    "explanation": "Pub/Sub messaging (via Kafka or RabbitMQ) decouples the producer (Service A) from consumers (Service B and C), enabling asynchronous event broadcasting.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "infosys-mcq-006",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "System Design",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "High-level system design of a URL Shortener requires generating short 6-character keys for long URLs. What hash/encoding technique is commonly used to convert 64-bit auto-increment IDs into alphanumeric short keys?",
+    "options": [
+      "Base64 Encoding",
+      "Base62 Encoding",
+      "MD5 Hashing",
+      "SHA-256 Hashing"
+    ],
+    "correctAnswer": "Base62 Encoding",
+    "explanation": "Base62 encoding (using [a-z, A-Z, 0-9]) turns a 64-bit integer ID into a compact 6-67 character string without special URL reserved characters like + or /.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "infosys-mcq-007",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "System Design",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Which SOLID principle states that high-level modules should not depend on low-level modules, but both should depend on abstractions?",
+    "options": [
+      "Liskov Substitution Principle",
+      "Dependency Inversion Principle",
+      "Single Responsibility Principle",
+      "Open/Closed Principle"
+    ],
+    "correctAnswer": "Dependency Inversion Principle",
+    "explanation": "Dependency Inversion Principle (DIP) advocates depending on interfaces/abstractions rather than concrete class implementations, enabling loose coupling.",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "infosys-mcq-008",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "System Design",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "A web application experiences high read latency on database queries fetching static product metadata. Which strategy provides the fastest read response improvement?",
+    "options": [
+      "Vertical Database Hardware Upgrade",
+      "Introducing an In-Memory Cache (Redis/Memcached)",
+      "Adding Database Triggers",
+      "Sharding Database Tables"
+    ],
+    "correctAnswer": "Introducing an In-Memory Cache (Redis/Memcached)",
+    "explanation": "In-memory caching stores frequently read, slow-changing data in RAM, reducing database query load and delivering sub-millisecond response times.",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "infosys-mcq-009",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "System Design",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "When choosing between Monolithic and Microservices architecture, what is a primary drawback of Microservices?",
+    "options": [
+      "Inability to scale individual services",
+      "Increased operational and distributed system complexity",
+      "Tightly coupled deployment cycles",
+      "Single technology stack restriction"
+    ],
+    "correctAnswer": "Increased operational and distributed system complexity",
+    "explanation": "Microservices introduce distributed system challenges like network latency, service discovery, distributed tracing, complex deployment pipelines, and eventual consistency.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-010",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "System Design",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Which load balancing algorithm distributes incoming requests sequentially across a list of healthy backend servers?",
+    "options": [
+      "Least Connections",
+      "Round Robin",
+      "IP Hash",
+      "Weighted Random"
+    ],
+    "correctAnswer": "Round Robin",
+    "explanation": "Round Robin passes each new request to the next server in a circular sequence, assuming all backend servers have equal capacity.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-011",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "System Design",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "In a distributed database, what does the CAP theorem state regarding Network Partitions (P)?",
+    "options": [
+      "A system can achieve Consistency, Availability, and Partition tolerance simultaneously",
+      "In the presence of a network partition, a system must choose between Consistency (C) and Availability (A)",
+      "Network partitions can be completely eliminated with fiber optic cables",
+      "Consistency can only be achieved if Availability is 100%"
+    ],
+    "correctAnswer": "In the presence of a network partition, a system must choose between Consistency (C) and Availability (A)",
+    "explanation": "CAP theorem proves that when a network partition (P) occurs, a distributed data store can guarantee either Consistency (CP) or Availability (AP), but not both.",
+    "marks": 5,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "infosys-mcq-012",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "System Design",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Which design pattern allows an object to alter its behavior when its internal state changes, appearing as if the object changed its class?",
+    "options": [
+      "State Pattern",
+      "Strategy Pattern",
+      "Command Pattern",
+      "Decorator Pattern"
+    ],
+    "correctAnswer": "State Pattern",
+    "explanation": "State pattern encapsulates state-specific behaviors into separate state classes and delegates execution to the current state object.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-013",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "System Design",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is the role of a Circuit Breaker pattern in microservice architecture?",
+    "options": [
+      "To encrypt HTTP payload data",
+      "To prevent a failing service from causing cascading failures across dependent services",
+      "To balance traffic evenly across API servers",
+      "To clean up unused database connections"
+    ],
+    "correctAnswer": "To prevent a failing service from causing cascading failures across dependent services",
+    "explanation": "Circuit Breaker (e.g. Resilience4j) trips open when remote calls fail repeatedly, returning fast fallback errors without overloading the downstream failing service.",
+    "marks": 5,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "infosys-mcq-014",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "System Design",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Which caching topology writes updated data directly to the cache and the underlying database simultaneously before returning success to the client?",
+    "options": [
+      "Cache-Aside (Lazy Loading)",
+      "Write-Through Cache",
+      "Write-Behind (Write-Back) Cache",
+      "Read-Through Cache"
+    ],
+    "correctAnswer": "Write-Through Cache",
+    "explanation": "Write-Through cache writes data to the cache and database synchronously. This ensures cache data is never stale, though write latency is higher.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-015",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "System Design",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is Database Sharding?",
+    "options": [
+      "Creating read replicas of a database",
+      "Horizontally partitioning a database table rows across multiple distinct database instances",
+      "Vertically splitting columns of a table into multiple tables",
+      "Backing up database tables to cloud storage"
+    ],
+    "correctAnswer": "Horizontally partitioning a database table rows across multiple distinct database instances",
+    "explanation": "Sharding splits a large table horizontally across multiple database servers based on a shard key (e.g., hash of user_id), scaling write operations beyond a single node.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "infosys-mcq-016",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "System Design",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Which Creational Design Pattern provides an interface for creating families of related or dependent objects without specifying their concrete classes?",
+    "options": [
+      "Factory Method",
+      "Abstract Factory",
+      "Builder",
+      "Prototype"
+    ],
+    "correctAnswer": "Abstract Factory",
+    "explanation": "Abstract Factory pattern defines an abstract creator interface producing related families of objects (e.g. WinButton & WinCheckbox vs MacButton & MacCheckbox).",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-017",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "System Design",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "A developer wants to attach additional responsibilities to an object dynamically without modifying its class structure or using deep subclassing. Which pattern is suitable?",
+    "options": [
+      "Adapter Pattern",
+      "Decorator Pattern",
+      "Facade Pattern",
+      "Proxy Pattern"
+    ],
+    "correctAnswer": "Decorator Pattern",
+    "explanation": "Decorator pattern wraps the original object in a decorator class matching its interface, dynamically adding behavior (e.g. BufferedReader wrapping FileReader).",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "infosys-mcq-018",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "System Design",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is the difference between REST API Authentication and Authorization?",
+    "options": [
+      "Authentication verifies who the user is; Authorization determines what permissions the authenticated user has",
+      "Authentication determines user permissions; Authorization checks passwords",
+      "Authentication happens on the database; Authorization happens in the browser",
+      "There is no difference between them"
+    ],
+    "correctAnswer": "Authentication verifies who the user is; Authorization determines what permissions the authenticated user has",
+    "explanation": "Authentication establishes identity (e.g. verifying credentials/JWT signature). Authorization checks if the identified user has rights to access a resource.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-019",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "System Design",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "In API Gateway design, what is Rate Limiting?",
+    "options": [
+      "Restricting the maximum file upload size",
+      "Limiting the number of API requests a client can make within a specified time window",
+      "Compressing HTTP response JSON bodies",
+      "Routing traffic to nearest geographical server"
+    ],
+    "correctAnswer": "Limiting the number of API requests a client can make within a specified time window",
+    "explanation": "Rate limiting protects APIs from abuse, denial of service (DoS), and resource starvation by rejecting requests exceeding quota (e.g., 100 req/min).",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-020",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "System Design",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Which architectural style relies on stateless HTTP communication where resources are identified by URIs and manipulated via standard HTTP methods?",
+    "options": [
+      "SOAP Web Services",
+      "REST (Representational State Transfer)",
+      "GraphQL",
+      "gRPC Protocol"
+    ],
+    "correctAnswer": "REST (Representational State Transfer)",
+    "explanation": "REST uses URI resources and standard HTTP methods (GET, POST, PUT, DELETE) statelessly to manipulate server state representations.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-021",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "System Design",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the main benefit of Horizontal Pod Autoscaling (HPA) in Kubernetes?",
+    "options": [
+      "Automates database schema migrations",
+      "Scales the number of pod replicas dynamically based on CPU/RAM metrics",
+      "Encrypts inter-service gRPC traffic",
+      "Replaces physical routers with virtual subnets"
+    ],
+    "correctAnswer": "Scales the number of pod replicas dynamically based on CPU/RAM metrics",
+    "explanation": "HPA automatically adjusts container replica counts to maintain target CPU/memory utilization.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "infosys-mcq-022",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "System Design",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "Which message broker concept guarantees strict message ordering within a partition?",
+    "options": [
+      "Kafka Partition Key",
+      "RabbitMQ Fanout Exchange",
+      "ActiveMQ Dead Letter Queue",
+      "Redis Pub/Sub Channel"
+    ],
+    "correctAnswer": "Kafka Partition Key",
+    "explanation": "Kafka routes messages with the same partition key to the same partition, guaranteeing total ordering per key.",
+    "marks": 5,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "infosys-mcq-023",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "System Design",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is Eventual Consistency in distributed storage?",
+    "options": [
+      "Data reads will return latest writes immediately across all nodes",
+      "Data replicas will converge to identical states given no new updates after some time",
+      "Transactions are aborted if network latency exceeds 10ms",
+      "All nodes execute writes synchronously"
+    ],
+    "correctAnswer": "Data replicas will converge to identical states given no new updates after some time",
+    "explanation": "Eventual consistency allows temporary read stale data in exchange for high write availability.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "infosys-mcq-024",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "System Design",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Which SOLID principle is violated if extending a class requires altering existing base class code?",
+    "options": [
+      "Open/Closed Principle",
+      "Single Responsibility Principle",
+      "Liskov Substitution Principle",
+      "Dependency Inversion Principle"
+    ],
+    "correctAnswer": "Open/Closed Principle",
+    "explanation": "Open/Closed Principle states software entities should be open for extension but closed for modification.",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "infosys-mcq-025",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "System Design",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the primary function of a Reverse Proxy like Nginx?",
+    "options": [
+      "Executing application business logic",
+      "Fronting backend servers to handle SSL termination, load balancing, and static caching",
+      "Storing user session state in RAM",
+      "Compiling Java bytecode at runtime"
+    ],
+    "correctAnswer": "Fronting backend servers to handle SSL termination, load balancing, and static caching",
+    "explanation": "A reverse proxy acts as an intermediary for client requests, enhancing security, scalability, and performance.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "infosys-mcq-026",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "DSA",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Given an array of size N, what is the worst-case time complexity of QuickSelect to find the K-th smallest element?",
+    "options": [
+      "O(N log N)",
+      "O(N^2)",
+      "O(N)",
+      "O(log N)"
+    ],
+    "correctAnswer": "O(N^2)",
+    "explanation": "QuickSelect has an average time complexity of O(N), but degrades to O(N^2) worst-case with bad pivot choices.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "infosys-mcq-027",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "DSA",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Which data structure is optimal for implementing LRU (Least Recently Used) cache with O(1) time complexity for get and put?",
+    "options": [
+      "Array + Hash Map",
+      "Doubly Linked List + Hash Map",
+      "Binary Search Tree + Queue",
+      "Stack + Priority Queue"
+    ],
+    "correctAnswer": "Doubly Linked List + Hash Map",
+    "explanation": "Hash Map gives O(1) node lookup; Doubly Linked List gives O(1) node deletion and moving to head.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "infosys-mcq-028",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "DSA",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is the space complexity of a recursive Depth First Search (DFS) on a tree of height H?",
+    "options": [
+      "O(1)",
+      "O(H)",
+      "O(N^2)",
+      "O(2^H)"
+    ],
+    "correctAnswer": "O(H)",
+    "explanation": "Call stack space during DFS corresponds directly to the maximum height of the tree H.",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "infosys-mcq-029",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Programming",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the output of the Java code snippet: `System.out.println(10 + 20 + \"Hello\" + 10 + 20);`?",
+    "options": [
+      "30Hello1020",
+      "30Hello30",
+      "1020Hello1020",
+      "Compile Error"
+    ],
+    "correctAnswer": "30Hello1020",
+    "explanation": "Left-to-right evaluation: 10+20=30, 30+\"Hello\"=\"30Hello\", \"30Hello\"+10=\"30Hello10\", +20=\"30Hello1020\".",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "infosys-mcq-030",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Programming",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "In Python, what is the result of `bool([])` and `bool([0])`?",
+    "options": [
+      "True, True",
+      "False, False",
+      "False, True",
+      "True, False"
+    ],
+    "correctAnswer": "False, True",
+    "explanation": "An empty list `[]` evaluates to False, whereas a non-empty list `[0]` evaluates to True.",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "infosys-mcq-031",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "OOP",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Which C++ concept enables runtime polymorphism?",
+    "options": [
+      "Static Function Overloading",
+      "Virtual Functions and Virtual Table (vtable)",
+      "Template Specialization",
+      "Inline Functions"
+    ],
+    "correctAnswer": "Virtual Functions and Virtual Table (vtable)",
+    "explanation": "Virtual functions use vtables and vptrs for dynamic dispatch at runtime.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "infosys-mcq-032",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "SQL",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "In SQL, what is the result of evaluating `NULL = NULL` in a WHERE clause?",
+    "options": [
+      "TRUE",
+      "FALSE",
+      "UNKNOWN (NULL)",
+      "Syntax Error"
+    ],
+    "correctAnswer": "UNKNOWN (NULL)",
+    "explanation": "In SQL 3-valued logic, comparisons with NULL yield UNKNOWN, which evaluates to false in filtering.",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "infosys-mcq-033",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "SQL",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Which SQL JOIN returns all rows from the left table and matched rows from the right table, filling unmatched right columns with NULL?",
+    "options": [
+      "INNER JOIN",
+      "RIGHT JOIN",
+      "LEFT OUTER JOIN",
+      "FULL OUTER JOIN"
+    ],
+    "correctAnswer": "LEFT OUTER JOIN",
+    "explanation": "LEFT JOIN retains all left table rows regardless of right table matches.",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "infosys-mcq-034",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "DBMS",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Which Database Normalization Form eliminates transitive dependencies (non-key attribute depending on another non-key attribute)?",
+    "options": [
+      "1NF",
+      "2NF",
+      "3NF",
+      "BCNF"
+    ],
+    "correctAnswer": "3NF",
+    "explanation": "Third Normal Form (3NF) requires 2NF and that no non-prime attribute is transitively dependent on the primary key.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "infosys-mcq-035",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "DBMS",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What does the 'A' in ACID database transaction properties represent?",
+    "options": [
+      "Abstraction",
+      "Atomicity",
+      "Availability",
+      "Authentication"
+    ],
+    "correctAnswer": "Atomicity",
+    "explanation": "Atomicity guarantees that all operations in a transaction complete successfully, or all are rolled back.",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "infosys-mcq-036",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "OS",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Which CPU Scheduling algorithm can lead to process starvation if long processes arrive continuously?",
+    "options": [
+      "Round Robin",
+      "Shortest Remaining Time First (SRTF)",
+      "First Come First Serve (FCFS)",
+      "Multilevel Queue with Aging"
+    ],
+    "correctAnswer": "Shortest Remaining Time First (SRTF)",
+    "explanation": "SRTF prioritizes short jobs, so continuous short jobs can cause long processes to starve indefinitely.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "infosys-mcq-037",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "OS",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What occurs during a Page Fault in an Operating System?",
+    "options": [
+      "The OS crashes due to illegal memory access",
+      "The CPU traps to the kernel to load the required page from swap disk into RAM",
+      "The process is immediately terminated",
+      "RAM memory is cleared entirely"
+    ],
+    "correctAnswer": "The CPU traps to the kernel to load the required page from swap disk into RAM",
+    "explanation": "A page fault occurs when a process accesses a virtual page not currently mapped in physical RAM.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "infosys-mcq-038",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Networking",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is the function of the ARP (Address Resolution Protocol)?",
+    "options": [
+      "Translates Domain Names to IP Addresses",
+      "Maps a known IP address to a physical MAC address on a local network",
+      "Routes packets across autonomous systems",
+      "Establishes encrypted TLS tunnels"
+    ],
+    "correctAnswer": "Maps a known IP address to a physical MAC address on a local network",
+    "explanation": "ARP resolves Layer 3 IP addresses to Layer 2 Ethernet MAC addresses for local subnet delivery.",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "infosys-mcq-039",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Networking",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Which TCP mechanism prevents a sender from overwhelming the receiver's processing buffer?",
+    "options": [
+      "Congestion Window (cwnd)",
+      "Flow Control (Sliding Window / Receiver Window rwnd)",
+      "Three-Way Handshake",
+      "Path MTU Discovery"
+    ],
+    "correctAnswer": "Flow Control (Sliding Window / Receiver Window rwnd)",
+    "explanation": "Flow control uses receiver window size (rwnd) in TCP headers to prevent buffer overflow.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "infosys-mcq-040",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Networking",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is the main advantage of IPv6 over IPv4?",
+    "options": [
+      "Faster packet routing headers",
+      "128-bit address space solving IPv4 address exhaustion",
+      "Built-in hardware encryption chips",
+      "Elimination of TCP protocols"
+    ],
+    "correctAnswer": "128-bit address space solving IPv4 address exhaustion",
+    "explanation": "IPv6 uses 128-bit addresses (2^128 unique addresses) compared to IPv4's 32-bit limit (2^32).",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "infosys-mcq-041",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "SQL",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Database scenario 1: An index is created on column (department_id, salary). Which query will NOT benefit from this composite index?",
+    "options": [
+      "WHERE department_id = 5 AND salary > 50000",
+      "WHERE department_id = 5",
+      "WHERE salary > 50000 without department_id",
+      "WHERE department_id = 10 ORDER BY salary"
+    ],
+    "correctAnswer": "WHERE salary > 50000 without department_id",
+    "explanation": "Composite indexes follow left-most prefix rules. A query filtering only on 'salary' skips the leading 'department_id' column.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-042",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "SQL",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Database scenario 2: An index is created on column (department_id, salary). Which query will NOT benefit from this composite index?",
+    "options": [
+      "WHERE department_id = 5 AND salary > 50000",
+      "WHERE department_id = 5",
+      "WHERE salary > 50000 without department_id",
+      "WHERE department_id = 10 ORDER BY salary"
+    ],
+    "correctAnswer": "WHERE salary > 50000 without department_id",
+    "explanation": "Composite indexes follow left-most prefix rules. A query filtering only on 'salary' skips the leading 'department_id' column.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-043",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "DBMS",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Database scenario 3: An index is created on column (department_id, salary). Which query will NOT benefit from this composite index?",
+    "options": [
+      "WHERE department_id = 5 AND salary > 50000",
+      "WHERE department_id = 5",
+      "WHERE salary > 50000 without department_id",
+      "WHERE department_id = 10 ORDER BY salary"
+    ],
+    "correctAnswer": "WHERE salary > 50000 without department_id",
+    "explanation": "Composite indexes follow left-most prefix rules. A query filtering only on 'salary' skips the leading 'department_id' column.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-044",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "DBMS",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Database scenario 4: An index is created on column (department_id, salary). Which query will NOT benefit from this composite index?",
+    "options": [
+      "WHERE department_id = 5 AND salary > 50000",
+      "WHERE department_id = 5",
+      "WHERE salary > 50000 without department_id",
+      "WHERE department_id = 10 ORDER BY salary"
+    ],
+    "correctAnswer": "WHERE salary > 50000 without department_id",
+    "explanation": "Composite indexes follow left-most prefix rules. A query filtering only on 'salary' skips the leading 'department_id' column.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-045",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "OS",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Operating System scenario 5: How does the Banker's Algorithm prevent deadlock in resource allocation?",
+    "options": [
+      "By forcibly preempting resources from low priority processes",
+      "By checking if granting a resource request keeps the system in a Safe State",
+      "By terminating processes holding locks for > 5 seconds",
+      "By disabling CPU interrupts"
+    ],
+    "correctAnswer": "By checking if granting a resource request keeps the system in a Safe State",
+    "explanation": "Banker's Algorithm tests for safety by simulating allocation of declared maximum resources before granting a request.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-046",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "OS",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "Operating System scenario 6: How does the Banker's Algorithm prevent deadlock in resource allocation?",
+    "options": [
+      "By forcibly preempting resources from low priority processes",
+      "By checking if granting a resource request keeps the system in a Safe State",
+      "By terminating processes holding locks for > 5 seconds",
+      "By disabling CPU interrupts"
+    ],
+    "correctAnswer": "By checking if granting a resource request keeps the system in a Safe State",
+    "explanation": "Banker's Algorithm tests for safety by simulating allocation of declared maximum resources before granting a request.",
+    "marks": 5,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-047",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Networking",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Networking scenario 7: What is the key functional difference between TCP and UDP transport protocols?",
+    "options": [
+      "TCP provides connection-oriented, ordered, reliable delivery; UDP provides connectionless, un-ordered, fast delivery",
+      "TCP operates at Layer 3; UDP operates at Layer 7",
+      "UDP guarantees packet arrival with ACKs; TCP does not",
+      "TCP is only used for video streaming"
+    ],
+    "correctAnswer": "TCP provides connection-oriented, ordered, reliable delivery; UDP provides connectionless, un-ordered, fast delivery",
+    "explanation": "TCP uses 3-way handshakes, sequencing, and ACKs for reliability. UDP minimizes latency without reliability overhead.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-048",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Networking",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Networking scenario 8: What is the key functional difference between TCP and UDP transport protocols?",
+    "options": [
+      "TCP provides connection-oriented, ordered, reliable delivery; UDP provides connectionless, un-ordered, fast delivery",
+      "TCP operates at Layer 3; UDP operates at Layer 7",
+      "UDP guarantees packet arrival with ACKs; TCP does not",
+      "TCP is only used for video streaming"
+    ],
+    "correctAnswer": "TCP provides connection-oriented, ordered, reliable delivery; UDP provides connectionless, un-ordered, fast delivery",
+    "explanation": "TCP uses 3-way handshakes, sequencing, and ACKs for reliability. UDP minimizes latency without reliability overhead.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-049",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Cloud",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Cloud & Microservices scenario 9: Which technology facilitates centralized logging across hundreds of containerized microservices?",
+    "options": [
+      "ELK Stack (Elasticsearch, Logstash, Kibana) / Fluentd",
+      "Docker Compose local volume",
+      "Nginx Load Balancer",
+      "Git Version Control"
+    ],
+    "correctAnswer": "ELK Stack (Elasticsearch, Logstash, Kibana) / Fluentd",
+    "explanation": "Centralized log aggregators collect, parse, and index logs from distributed containers into a searchable dashboard.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-050",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Cloud",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Cloud & Microservices scenario 10: Which technology facilitates centralized logging across hundreds of containerized microservices?",
+    "options": [
+      "ELK Stack (Elasticsearch, Logstash, Kibana) / Fluentd",
+      "Docker Compose local volume",
+      "Nginx Load Balancer",
+      "Git Version Control"
+    ],
+    "correctAnswer": "ELK Stack (Elasticsearch, Logstash, Kibana) / Fluentd",
+    "explanation": "Centralized log aggregators collect, parse, and index logs from distributed containers into a searchable dashboard.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-051",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Development",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Cloud & Microservices scenario 11: Which technology facilitates centralized logging across hundreds of containerized microservices?",
+    "options": [
+      "ELK Stack (Elasticsearch, Logstash, Kibana) / Fluentd",
+      "Docker Compose local volume",
+      "Nginx Load Balancer",
+      "Git Version Control"
+    ],
+    "correctAnswer": "ELK Stack (Elasticsearch, Logstash, Kibana) / Fluentd",
+    "explanation": "Centralized log aggregators collect, parse, and index logs from distributed containers into a searchable dashboard.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-052",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Development",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "Cloud & Microservices scenario 12: Which technology facilitates centralized logging across hundreds of containerized microservices?",
+    "options": [
+      "ELK Stack (Elasticsearch, Logstash, Kibana) / Fluentd",
+      "Docker Compose local volume",
+      "Nginx Load Balancer",
+      "Git Version Control"
+    ],
+    "correctAnswer": "ELK Stack (Elasticsearch, Logstash, Kibana) / Fluentd",
+    "explanation": "Centralized log aggregators collect, parse, and index logs from distributed containers into a searchable dashboard.",
+    "marks": 5,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-053",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "System Design",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Scenario 13: In a high-availability distributed system using CQRS pattern, how should read operations be optimized?",
+    "options": [
+      "By executing reads against a dedicated read-side database index",
+      "By locking all write tables during reads",
+      "By bypassing cache layers",
+      "By executing synchronous RPC calls to all replicas"
+    ],
+    "correctAnswer": "By executing reads against a dedicated read-side database index",
+    "explanation": "CQRS separates command (write) and query (read) models, allowing read stores to be independently scaled and indexed.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-054",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "System Design",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Scenario 14: In a high-availability distributed system using CQRS pattern, how should read operations be optimized?",
+    "options": [
+      "By executing reads against a dedicated read-side database index",
+      "By locking all write tables during reads",
+      "By bypassing cache layers",
+      "By executing synchronous RPC calls to all replicas"
+    ],
+    "correctAnswer": "By executing reads against a dedicated read-side database index",
+    "explanation": "CQRS separates command (write) and query (read) models, allowing read stores to be independently scaled and indexed.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-055",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "System Design",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Scenario 15: In a high-availability distributed system using CQRS pattern, how should read operations be optimized?",
+    "options": [
+      "By executing reads against a dedicated read-side database index",
+      "By locking all write tables during reads",
+      "By bypassing cache layers",
+      "By executing synchronous RPC calls to all replicas"
+    ],
+    "correctAnswer": "By executing reads against a dedicated read-side database index",
+    "explanation": "CQRS separates command (write) and query (read) models, allowing read stores to be independently scaled and indexed.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-056",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "System Design",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Scenario 16: In a high-availability distributed system using CQRS pattern, how should read operations be optimized?",
+    "options": [
+      "By executing reads against a dedicated read-side database index",
+      "By locking all write tables during reads",
+      "By bypassing cache layers",
+      "By executing synchronous RPC calls to all replicas"
+    ],
+    "correctAnswer": "By executing reads against a dedicated read-side database index",
+    "explanation": "CQRS separates command (write) and query (read) models, allowing read stores to be independently scaled and indexed.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-057",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "DSA",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Algorithm scenario 17: Given an unsorted array of integers, which algorithm achieves O(N) time complexity to find the longest consecutive sequence?",
+    "options": [
+      "Sorting + Linear Scan",
+      "Hash Set Lookup",
+      "Min Heap Extraction",
+      "Binary Search Tree Insertion"
+    ],
+    "correctAnswer": "Hash Set Lookup",
+    "explanation": "Inserting elements into a Hash Set allows checking for sequence start (num - 1 not in set) and counting consecutive numbers in O(N) total time.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-058",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "DSA",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "Algorithm scenario 18: Given an unsorted array of integers, which algorithm achieves O(N) time complexity to find the longest consecutive sequence?",
+    "options": [
+      "Sorting + Linear Scan",
+      "Hash Set Lookup",
+      "Min Heap Extraction",
+      "Binary Search Tree Insertion"
+    ],
+    "correctAnswer": "Hash Set Lookup",
+    "explanation": "Inserting elements into a Hash Set allows checking for sequence start (num - 1 not in set) and counting consecutive numbers in O(N) total time.",
+    "marks": 5,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-059",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "DSA",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Algorithm scenario 19: Given an unsorted array of integers, which algorithm achieves O(N) time complexity to find the longest consecutive sequence?",
+    "options": [
+      "Sorting + Linear Scan",
+      "Hash Set Lookup",
+      "Min Heap Extraction",
+      "Binary Search Tree Insertion"
+    ],
+    "correctAnswer": "Hash Set Lookup",
+    "explanation": "Inserting elements into a Hash Set allows checking for sequence start (num - 1 not in set) and counting consecutive numbers in O(N) total time.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-060",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "DSA",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Algorithm scenario 20: Given an unsorted array of integers, which algorithm achieves O(N) time complexity to find the longest consecutive sequence?",
+    "options": [
+      "Sorting + Linear Scan",
+      "Hash Set Lookup",
+      "Min Heap Extraction",
+      "Binary Search Tree Insertion"
+    ],
+    "correctAnswer": "Hash Set Lookup",
+    "explanation": "Inserting elements into a Hash Set allows checking for sequence start (num - 1 not in set) and counting consecutive numbers in O(N) total time.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-061",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Programming",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Code evaluation scenario 21: What is the time and space complexity of computing Fibonacci numbers using Dynamic Programming with space optimization?",
+    "options": [
+      "O(N) time, O(1) space",
+      "O(2^N) time, O(N) space",
+      "O(N log N) time, O(N) space",
+      "O(1) time, O(N) space"
+    ],
+    "correctAnswer": "O(N) time, O(1) space",
+    "explanation": "By keeping track of only the previous two terms in variables, space complexity is reduced from O(N) array to O(1).",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-062",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Programming",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Code evaluation scenario 22: What is the time and space complexity of computing Fibonacci numbers using Dynamic Programming with space optimization?",
+    "options": [
+      "O(N) time, O(1) space",
+      "O(2^N) time, O(N) space",
+      "O(N log N) time, O(N) space",
+      "O(1) time, O(N) space"
+    ],
+    "correctAnswer": "O(N) time, O(1) space",
+    "explanation": "By keeping track of only the previous two terms in variables, space complexity is reduced from O(N) array to O(1).",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-063",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Programming",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Code evaluation scenario 23: What is the time and space complexity of computing Fibonacci numbers using Dynamic Programming with space optimization?",
+    "options": [
+      "O(N) time, O(1) space",
+      "O(2^N) time, O(N) space",
+      "O(N log N) time, O(N) space",
+      "O(1) time, O(N) space"
+    ],
+    "correctAnswer": "O(N) time, O(1) space",
+    "explanation": "By keeping track of only the previous two terms in variables, space complexity is reduced from O(N) array to O(1).",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-064",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "OOP",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "Object-oriented scenario 24: A base class Animal has a virtual method speak(). Class Dog overrides speak(). If Animal* ptr = new Dog(); ptr->speak(); is called, which implementation executes?",
+    "options": [
+      "Dog's speak() method due to dynamic dispatch",
+      "Animal's speak() method",
+      "Compile time error",
+      "Undefined behavior"
+    ],
+    "correctAnswer": "Dog's speak() method due to dynamic dispatch",
+    "explanation": "Virtual functions resolve at runtime (dynamic polymorphism) using the vtable of the actual object type (Dog).",
+    "marks": 5,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-065",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "OOP",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Object-oriented scenario 25: A base class Animal has a virtual method speak(). Class Dog overrides speak(). If Animal* ptr = new Dog(); ptr->speak(); is called, which implementation executes?",
+    "options": [
+      "Dog's speak() method due to dynamic dispatch",
+      "Animal's speak() method",
+      "Compile time error",
+      "Undefined behavior"
+    ],
+    "correctAnswer": "Dog's speak() method due to dynamic dispatch",
+    "explanation": "Virtual functions resolve at runtime (dynamic polymorphism) using the vtable of the actual object type (Dog).",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-066",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "OOP",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Object-oriented scenario 26: A base class Animal has a virtual method speak(). Class Dog overrides speak(). If Animal* ptr = new Dog(); ptr->speak(); is called, which implementation executes?",
+    "options": [
+      "Dog's speak() method due to dynamic dispatch",
+      "Animal's speak() method",
+      "Compile time error",
+      "Undefined behavior"
+    ],
+    "correctAnswer": "Dog's speak() method due to dynamic dispatch",
+    "explanation": "Virtual functions resolve at runtime (dynamic polymorphism) using the vtable of the actual object type (Dog).",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-067",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "SQL",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Database scenario 27: An index is created on column (department_id, salary). Which query will NOT benefit from this composite index?",
+    "options": [
+      "WHERE department_id = 5 AND salary > 50000",
+      "WHERE department_id = 5",
+      "WHERE salary > 50000 without department_id",
+      "WHERE department_id = 10 ORDER BY salary"
+    ],
+    "correctAnswer": "WHERE salary > 50000 without department_id",
+    "explanation": "Composite indexes follow left-most prefix rules. A query filtering only on 'salary' skips the leading 'department_id' column.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-068",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "SQL",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Database scenario 28: An index is created on column (department_id, salary). Which query will NOT benefit from this composite index?",
+    "options": [
+      "WHERE department_id = 5 AND salary > 50000",
+      "WHERE department_id = 5",
+      "WHERE salary > 50000 without department_id",
+      "WHERE department_id = 10 ORDER BY salary"
+    ],
+    "correctAnswer": "WHERE salary > 50000 without department_id",
+    "explanation": "Composite indexes follow left-most prefix rules. A query filtering only on 'salary' skips the leading 'department_id' column.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-069",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "DBMS",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Database scenario 29: An index is created on column (department_id, salary). Which query will NOT benefit from this composite index?",
+    "options": [
+      "WHERE department_id = 5 AND salary > 50000",
+      "WHERE department_id = 5",
+      "WHERE salary > 50000 without department_id",
+      "WHERE department_id = 10 ORDER BY salary"
+    ],
+    "correctAnswer": "WHERE salary > 50000 without department_id",
+    "explanation": "Composite indexes follow left-most prefix rules. A query filtering only on 'salary' skips the leading 'department_id' column.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-070",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "DBMS",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "Database scenario 30: An index is created on column (department_id, salary). Which query will NOT benefit from this composite index?",
+    "options": [
+      "WHERE department_id = 5 AND salary > 50000",
+      "WHERE department_id = 5",
+      "WHERE salary > 50000 without department_id",
+      "WHERE department_id = 10 ORDER BY salary"
+    ],
+    "correctAnswer": "WHERE salary > 50000 without department_id",
+    "explanation": "Composite indexes follow left-most prefix rules. A query filtering only on 'salary' skips the leading 'department_id' column.",
+    "marks": 5,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-071",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "OS",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Operating System scenario 31: How does the Banker's Algorithm prevent deadlock in resource allocation?",
+    "options": [
+      "By forcibly preempting resources from low priority processes",
+      "By checking if granting a resource request keeps the system in a Safe State",
+      "By terminating processes holding locks for > 5 seconds",
+      "By disabling CPU interrupts"
+    ],
+    "correctAnswer": "By checking if granting a resource request keeps the system in a Safe State",
+    "explanation": "Banker's Algorithm tests for safety by simulating allocation of declared maximum resources before granting a request.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-072",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "OS",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Operating System scenario 32: How does the Banker's Algorithm prevent deadlock in resource allocation?",
+    "options": [
+      "By forcibly preempting resources from low priority processes",
+      "By checking if granting a resource request keeps the system in a Safe State",
+      "By terminating processes holding locks for > 5 seconds",
+      "By disabling CPU interrupts"
+    ],
+    "correctAnswer": "By checking if granting a resource request keeps the system in a Safe State",
+    "explanation": "Banker's Algorithm tests for safety by simulating allocation of declared maximum resources before granting a request.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-073",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Networking",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Networking scenario 33: What is the key functional difference between TCP and UDP transport protocols?",
+    "options": [
+      "TCP provides connection-oriented, ordered, reliable delivery; UDP provides connectionless, un-ordered, fast delivery",
+      "TCP operates at Layer 3; UDP operates at Layer 7",
+      "UDP guarantees packet arrival with ACKs; TCP does not",
+      "TCP is only used for video streaming"
+    ],
+    "correctAnswer": "TCP provides connection-oriented, ordered, reliable delivery; UDP provides connectionless, un-ordered, fast delivery",
+    "explanation": "TCP uses 3-way handshakes, sequencing, and ACKs for reliability. UDP minimizes latency without reliability overhead.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-074",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Networking",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Networking scenario 34: What is the key functional difference between TCP and UDP transport protocols?",
+    "options": [
+      "TCP provides connection-oriented, ordered, reliable delivery; UDP provides connectionless, un-ordered, fast delivery",
+      "TCP operates at Layer 3; UDP operates at Layer 7",
+      "UDP guarantees packet arrival with ACKs; TCP does not",
+      "TCP is only used for video streaming"
+    ],
+    "correctAnswer": "TCP provides connection-oriented, ordered, reliable delivery; UDP provides connectionless, un-ordered, fast delivery",
+    "explanation": "TCP uses 3-way handshakes, sequencing, and ACKs for reliability. UDP minimizes latency without reliability overhead.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-075",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Cloud",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Cloud & Microservices scenario 35: Which technology facilitates centralized logging across hundreds of containerized microservices?",
+    "options": [
+      "ELK Stack (Elasticsearch, Logstash, Kibana) / Fluentd",
+      "Docker Compose local volume",
+      "Nginx Load Balancer",
+      "Git Version Control"
+    ],
+    "correctAnswer": "ELK Stack (Elasticsearch, Logstash, Kibana) / Fluentd",
+    "explanation": "Centralized log aggregators collect, parse, and index logs from distributed containers into a searchable dashboard.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-076",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Cloud",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "Cloud & Microservices scenario 36: Which technology facilitates centralized logging across hundreds of containerized microservices?",
+    "options": [
+      "ELK Stack (Elasticsearch, Logstash, Kibana) / Fluentd",
+      "Docker Compose local volume",
+      "Nginx Load Balancer",
+      "Git Version Control"
+    ],
+    "correctAnswer": "ELK Stack (Elasticsearch, Logstash, Kibana) / Fluentd",
+    "explanation": "Centralized log aggregators collect, parse, and index logs from distributed containers into a searchable dashboard.",
+    "marks": 5,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-077",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Development",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Cloud & Microservices scenario 37: Which technology facilitates centralized logging across hundreds of containerized microservices?",
+    "options": [
+      "ELK Stack (Elasticsearch, Logstash, Kibana) / Fluentd",
+      "Docker Compose local volume",
+      "Nginx Load Balancer",
+      "Git Version Control"
+    ],
+    "correctAnswer": "ELK Stack (Elasticsearch, Logstash, Kibana) / Fluentd",
+    "explanation": "Centralized log aggregators collect, parse, and index logs from distributed containers into a searchable dashboard.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-078",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Development",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Cloud & Microservices scenario 38: Which technology facilitates centralized logging across hundreds of containerized microservices?",
+    "options": [
+      "ELK Stack (Elasticsearch, Logstash, Kibana) / Fluentd",
+      "Docker Compose local volume",
+      "Nginx Load Balancer",
+      "Git Version Control"
+    ],
+    "correctAnswer": "ELK Stack (Elasticsearch, Logstash, Kibana) / Fluentd",
+    "explanation": "Centralized log aggregators collect, parse, and index logs from distributed containers into a searchable dashboard.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-079",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "System Design",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Scenario 39: In a high-availability distributed system using CQRS pattern, how should read operations be optimized?",
+    "options": [
+      "By executing reads against a dedicated read-side database index",
+      "By locking all write tables during reads",
+      "By bypassing cache layers",
+      "By executing synchronous RPC calls to all replicas"
+    ],
+    "correctAnswer": "By executing reads against a dedicated read-side database index",
+    "explanation": "CQRS separates command (write) and query (read) models, allowing read stores to be independently scaled and indexed.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-080",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "System Design",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Scenario 40: In a high-availability distributed system using CQRS pattern, how should read operations be optimized?",
+    "options": [
+      "By executing reads against a dedicated read-side database index",
+      "By locking all write tables during reads",
+      "By bypassing cache layers",
+      "By executing synchronous RPC calls to all replicas"
+    ],
+    "correctAnswer": "By executing reads against a dedicated read-side database index",
+    "explanation": "CQRS separates command (write) and query (read) models, allowing read stores to be independently scaled and indexed.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-081",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "System Design",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Scenario 41: In a high-availability distributed system using CQRS pattern, how should read operations be optimized?",
+    "options": [
+      "By executing reads against a dedicated read-side database index",
+      "By locking all write tables during reads",
+      "By bypassing cache layers",
+      "By executing synchronous RPC calls to all replicas"
+    ],
+    "correctAnswer": "By executing reads against a dedicated read-side database index",
+    "explanation": "CQRS separates command (write) and query (read) models, allowing read stores to be independently scaled and indexed.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-082",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "System Design",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "Scenario 42: In a high-availability distributed system using Event Sourcing, how should read operations be optimized?",
+    "options": [
+      "By executing reads against a dedicated read-side database index",
+      "By locking all write tables during reads",
+      "By bypassing cache layers",
+      "By executing synchronous RPC calls to all replicas"
+    ],
+    "correctAnswer": "By executing reads against a dedicated read-side database index",
+    "explanation": "CQRS separates command (write) and query (read) models, allowing read stores to be independently scaled and indexed.",
+    "marks": 5,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-083",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "DSA",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Algorithm scenario 43: Given an unsorted array of integers, which algorithm achieves O(N) time complexity to find the longest consecutive sequence?",
+    "options": [
+      "Sorting + Linear Scan",
+      "Hash Set Lookup",
+      "Min Heap Extraction",
+      "Binary Search Tree Insertion"
+    ],
+    "correctAnswer": "Hash Set Lookup",
+    "explanation": "Inserting elements into a Hash Set allows checking for sequence start (num - 1 not in set) and counting consecutive numbers in O(N) total time.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-084",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "DSA",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Algorithm scenario 44: Given an unsorted array of integers, which algorithm achieves O(N) time complexity to find the longest consecutive sequence?",
+    "options": [
+      "Sorting + Linear Scan",
+      "Hash Set Lookup",
+      "Min Heap Extraction",
+      "Binary Search Tree Insertion"
+    ],
+    "correctAnswer": "Hash Set Lookup",
+    "explanation": "Inserting elements into a Hash Set allows checking for sequence start (num - 1 not in set) and counting consecutive numbers in O(N) total time.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-085",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "DSA",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Algorithm scenario 45: Given an unsorted array of integers, which algorithm achieves O(N) time complexity to find the longest consecutive sequence?",
+    "options": [
+      "Sorting + Linear Scan",
+      "Hash Set Lookup",
+      "Min Heap Extraction",
+      "Binary Search Tree Insertion"
+    ],
+    "correctAnswer": "Hash Set Lookup",
+    "explanation": "Inserting elements into a Hash Set allows checking for sequence start (num - 1 not in set) and counting consecutive numbers in O(N) total time.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-086",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "DSA",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Algorithm scenario 46: Given an unsorted array of integers, which algorithm achieves O(N) time complexity to find the longest consecutive sequence?",
+    "options": [
+      "Sorting + Linear Scan",
+      "Hash Set Lookup",
+      "Min Heap Extraction",
+      "Binary Search Tree Insertion"
+    ],
+    "correctAnswer": "Hash Set Lookup",
+    "explanation": "Inserting elements into a Hash Set allows checking for sequence start (num - 1 not in set) and counting consecutive numbers in O(N) total time.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-087",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Programming",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Code evaluation scenario 47: What is the time and space complexity of computing Fibonacci numbers using Dynamic Programming with space optimization?",
+    "options": [
+      "O(N) time, O(1) space",
+      "O(2^N) time, O(N) space",
+      "O(N log N) time, O(N) space",
+      "O(1) time, O(N) space"
+    ],
+    "correctAnswer": "O(N) time, O(1) space",
+    "explanation": "By keeping track of only the previous two terms in variables, space complexity is reduced from O(N) array to O(1).",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-088",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Programming",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "Code evaluation scenario 48: What is the time and space complexity of computing Fibonacci numbers using Dynamic Programming with space optimization?",
+    "options": [
+      "O(N) time, O(1) space",
+      "O(2^N) time, O(N) space",
+      "O(N log N) time, O(N) space",
+      "O(1) time, O(N) space"
+    ],
+    "correctAnswer": "O(N) time, O(1) space",
+    "explanation": "By keeping track of only the previous two terms in variables, space complexity is reduced from O(N) array to O(1).",
+    "marks": 5,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-089",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Programming",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Code evaluation scenario 49: What is the time and space complexity of computing Fibonacci numbers using Dynamic Programming with space optimization?",
+    "options": [
+      "O(N) time, O(1) space",
+      "O(2^N) time, O(N) space",
+      "O(N log N) time, O(N) space",
+      "O(1) time, O(N) space"
+    ],
+    "correctAnswer": "O(N) time, O(1) space",
+    "explanation": "By keeping track of only the previous two terms in variables, space complexity is reduced from O(N) array to O(1).",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-090",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "OOP",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Object-oriented scenario 50: A base class Animal has a virtual method speak(). Class Dog overrides speak(). If Animal* ptr = new Dog(); ptr->speak(); is called, which implementation executes?",
+    "options": [
+      "Dog's speak() method due to dynamic dispatch",
+      "Animal's speak() method",
+      "Compile time error",
+      "Undefined behavior"
+    ],
+    "correctAnswer": "Dog's speak() method due to dynamic dispatch",
+    "explanation": "Virtual functions resolve at runtime (dynamic polymorphism) using the vtable of the actual object type (Dog).",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-091",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "OOP",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Object-oriented scenario 51: A base class Animal has a virtual method speak(). Class Dog overrides speak(). If Animal* ptr = new Dog(); ptr->speak(); is called, which implementation executes?",
+    "options": [
+      "Dog's speak() method due to dynamic dispatch",
+      "Animal's speak() method",
+      "Compile time error",
+      "Undefined behavior"
+    ],
+    "correctAnswer": "Dog's speak() method due to dynamic dispatch",
+    "explanation": "Virtual functions resolve at runtime (dynamic polymorphism) using the vtable of the actual object type (Dog).",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-092",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "OOP",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Object-oriented scenario 52: A base class Animal has a virtual method speak(). Class Dog overrides speak(). If Animal* ptr = new Dog(); ptr->speak(); is called, which implementation executes?",
+    "options": [
+      "Dog's speak() method due to dynamic dispatch",
+      "Animal's speak() method",
+      "Compile time error",
+      "Undefined behavior"
+    ],
+    "correctAnswer": "Dog's speak() method due to dynamic dispatch",
+    "explanation": "Virtual functions resolve at runtime (dynamic polymorphism) using the vtable of the actual object type (Dog).",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-093",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "SQL",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Database scenario 53: An index is created on column (department_id, salary). Which query will NOT benefit from this composite index?",
+    "options": [
+      "WHERE department_id = 5 AND salary > 50000",
+      "WHERE department_id = 5",
+      "WHERE salary > 50000 without department_id",
+      "WHERE department_id = 10 ORDER BY salary"
+    ],
+    "correctAnswer": "WHERE salary > 50000 without department_id",
+    "explanation": "Composite indexes follow left-most prefix rules. A query filtering only on 'salary' skips the leading 'department_id' column.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-094",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "SQL",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "Database scenario 54: An index is created on column (department_id, salary). Which query will NOT benefit from this composite index?",
+    "options": [
+      "WHERE department_id = 5 AND salary > 50000",
+      "WHERE department_id = 5",
+      "WHERE salary > 50000 without department_id",
+      "WHERE department_id = 10 ORDER BY salary"
+    ],
+    "correctAnswer": "WHERE salary > 50000 without department_id",
+    "explanation": "Composite indexes follow left-most prefix rules. A query filtering only on 'salary' skips the leading 'department_id' column.",
+    "marks": 5,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-095",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "DBMS",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Database scenario 55: An index is created on column (department_id, salary). Which query will NOT benefit from this composite index?",
+    "options": [
+      "WHERE department_id = 5 AND salary > 50000",
+      "WHERE department_id = 5",
+      "WHERE salary > 50000 without department_id",
+      "WHERE department_id = 10 ORDER BY salary"
+    ],
+    "correctAnswer": "WHERE salary > 50000 without department_id",
+    "explanation": "Composite indexes follow left-most prefix rules. A query filtering only on 'salary' skips the leading 'department_id' column.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-096",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "DBMS",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Database scenario 56: An index is created on column (department_id, salary). Which query will NOT benefit from this composite index?",
+    "options": [
+      "WHERE department_id = 5 AND salary > 50000",
+      "WHERE department_id = 5",
+      "WHERE salary > 50000 without department_id",
+      "WHERE department_id = 10 ORDER BY salary"
+    ],
+    "correctAnswer": "WHERE salary > 50000 without department_id",
+    "explanation": "Composite indexes follow left-most prefix rules. A query filtering only on 'salary' skips the leading 'department_id' column.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-097",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "OS",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Operating System scenario 57: How does the Banker's Algorithm prevent deadlock in resource allocation?",
+    "options": [
+      "By forcibly preempting resources from low priority processes",
+      "By checking if granting a resource request keeps the system in a Safe State",
+      "By terminating processes holding locks for > 5 seconds",
+      "By disabling CPU interrupts"
+    ],
+    "correctAnswer": "By checking if granting a resource request keeps the system in a Safe State",
+    "explanation": "Banker's Algorithm tests for safety by simulating allocation of declared maximum resources before granting a request.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-098",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "OS",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Operating System scenario 58: How does the Banker's Algorithm prevent deadlock in resource allocation?",
+    "options": [
+      "By forcibly preempting resources from low priority processes",
+      "By checking if granting a resource request keeps the system in a Safe State",
+      "By terminating processes holding locks for > 5 seconds",
+      "By disabling CPU interrupts"
+    ],
+    "correctAnswer": "By checking if granting a resource request keeps the system in a Safe State",
+    "explanation": "Banker's Algorithm tests for safety by simulating allocation of declared maximum resources before granting a request.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-099",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Networking",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Networking scenario 59: What is the key functional difference between TCP and UDP transport protocols?",
+    "options": [
+      "TCP provides connection-oriented, ordered, reliable delivery; UDP provides connectionless, un-ordered, fast delivery",
+      "TCP operates at Layer 3; UDP operates at Layer 7",
+      "UDP guarantees packet arrival with ACKs; TCP does not",
+      "TCP is only used for video streaming"
+    ],
+    "correctAnswer": "TCP provides connection-oriented, ordered, reliable delivery; UDP provides connectionless, un-ordered, fast delivery",
+    "explanation": "TCP uses 3-way handshakes, sequencing, and ACKs for reliability. UDP minimizes latency without reliability overhead.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-100",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Networking",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "Networking scenario 60: What is the key functional difference between TCP and UDP transport protocols?",
+    "options": [
+      "TCP provides connection-oriented, ordered, reliable delivery; UDP provides connectionless, un-ordered, fast delivery",
+      "TCP operates at Layer 3; UDP operates at Layer 7",
+      "UDP guarantees packet arrival with ACKs; TCP does not",
+      "TCP is only used for video streaming"
+    ],
+    "correctAnswer": "TCP provides connection-oriented, ordered, reliable delivery; UDP provides connectionless, un-ordered, fast delivery",
+    "explanation": "TCP uses 3-way handshakes, sequencing, and ACKs for reliability. UDP minimizes latency without reliability overhead.",
+    "marks": 5,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-101",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Cloud",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Cloud & Microservices scenario 61: Which technology facilitates centralized logging across hundreds of containerized microservices?",
+    "options": [
+      "ELK Stack (Elasticsearch, Logstash, Kibana) / Fluentd",
+      "Docker Compose local volume",
+      "Nginx Load Balancer",
+      "Git Version Control"
+    ],
+    "correctAnswer": "ELK Stack (Elasticsearch, Logstash, Kibana) / Fluentd",
+    "explanation": "Centralized log aggregators collect, parse, and index logs from distributed containers into a searchable dashboard.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-102",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Cloud",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Cloud & Microservices scenario 62: Which technology facilitates centralized logging across hundreds of containerized microservices?",
+    "options": [
+      "ELK Stack (Elasticsearch, Logstash, Kibana) / Fluentd",
+      "Docker Compose local volume",
+      "Nginx Load Balancer",
+      "Git Version Control"
+    ],
+    "correctAnswer": "ELK Stack (Elasticsearch, Logstash, Kibana) / Fluentd",
+    "explanation": "Centralized log aggregators collect, parse, and index logs from distributed containers into a searchable dashboard.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-103",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Development",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Cloud & Microservices scenario 63: Which technology facilitates centralized logging across hundreds of containerized microservices?",
+    "options": [
+      "ELK Stack (Elasticsearch, Logstash, Kibana) / Fluentd",
+      "Docker Compose local volume",
+      "Nginx Load Balancer",
+      "Git Version Control"
+    ],
+    "correctAnswer": "ELK Stack (Elasticsearch, Logstash, Kibana) / Fluentd",
+    "explanation": "Centralized log aggregators collect, parse, and index logs from distributed containers into a searchable dashboard.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-104",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Development",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Cloud & Microservices scenario 64: Which technology facilitates centralized logging across hundreds of containerized microservices?",
+    "options": [
+      "ELK Stack (Elasticsearch, Logstash, Kibana) / Fluentd",
+      "Docker Compose local volume",
+      "Nginx Load Balancer",
+      "Git Version Control"
+    ],
+    "correctAnswer": "ELK Stack (Elasticsearch, Logstash, Kibana) / Fluentd",
+    "explanation": "Centralized log aggregators collect, parse, and index logs from distributed containers into a searchable dashboard.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-105",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "System Design",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Scenario 65: In a high-availability distributed system using CQRS pattern, how should read operations be optimized?",
+    "options": [
+      "By executing reads against a dedicated read-side database index",
+      "By locking all write tables during reads",
+      "By bypassing cache layers",
+      "By executing synchronous RPC calls to all replicas"
+    ],
+    "correctAnswer": "By executing reads against a dedicated read-side database index",
+    "explanation": "CQRS separates command (write) and query (read) models, allowing read stores to be independently scaled and indexed.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-106",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "System Design",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "Scenario 66: In a high-availability distributed system using Event Sourcing, how should read operations be optimized?",
+    "options": [
+      "By executing reads against a dedicated read-side database index",
+      "By locking all write tables during reads",
+      "By bypassing cache layers",
+      "By executing synchronous RPC calls to all replicas"
+    ],
+    "correctAnswer": "By executing reads against a dedicated read-side database index",
+    "explanation": "CQRS separates command (write) and query (read) models, allowing read stores to be independently scaled and indexed.",
+    "marks": 5,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-107",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "System Design",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Scenario 67: In a high-availability distributed system using CQRS pattern, how should read operations be optimized?",
+    "options": [
+      "By executing reads against a dedicated read-side database index",
+      "By locking all write tables during reads",
+      "By bypassing cache layers",
+      "By executing synchronous RPC calls to all replicas"
+    ],
+    "correctAnswer": "By executing reads against a dedicated read-side database index",
+    "explanation": "CQRS separates command (write) and query (read) models, allowing read stores to be independently scaled and indexed.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-108",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "System Design",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Scenario 68: In a high-availability distributed system using CQRS pattern, how should read operations be optimized?",
+    "options": [
+      "By executing reads against a dedicated read-side database index",
+      "By locking all write tables during reads",
+      "By bypassing cache layers",
+      "By executing synchronous RPC calls to all replicas"
+    ],
+    "correctAnswer": "By executing reads against a dedicated read-side database index",
+    "explanation": "CQRS separates command (write) and query (read) models, allowing read stores to be independently scaled and indexed.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-109",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "DSA",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Algorithm scenario 69: Given an unsorted array of integers, which algorithm achieves O(N) time complexity to find the longest consecutive sequence?",
+    "options": [
+      "Sorting + Linear Scan",
+      "Hash Set Lookup",
+      "Min Heap Extraction",
+      "Binary Search Tree Insertion"
+    ],
+    "correctAnswer": "Hash Set Lookup",
+    "explanation": "Inserting elements into a Hash Set allows checking for sequence start (num - 1 not in set) and counting consecutive numbers in O(N) total time.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-110",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "DSA",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Algorithm scenario 70: Given an unsorted array of integers, which algorithm achieves O(N) time complexity to find the longest consecutive sequence?",
+    "options": [
+      "Sorting + Linear Scan",
+      "Hash Set Lookup",
+      "Min Heap Extraction",
+      "Binary Search Tree Insertion"
+    ],
+    "correctAnswer": "Hash Set Lookup",
+    "explanation": "Inserting elements into a Hash Set allows checking for sequence start (num - 1 not in set) and counting consecutive numbers in O(N) total time.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-111",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "DSA",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Algorithm scenario 71: Given an unsorted array of integers, which algorithm achieves O(N) time complexity to find the longest consecutive sequence?",
+    "options": [
+      "Sorting + Linear Scan",
+      "Hash Set Lookup",
+      "Min Heap Extraction",
+      "Binary Search Tree Insertion"
+    ],
+    "correctAnswer": "Hash Set Lookup",
+    "explanation": "Inserting elements into a Hash Set allows checking for sequence start (num - 1 not in set) and counting consecutive numbers in O(N) total time.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-112",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "DSA",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "Algorithm scenario 72: Given an unsorted array of integers, which algorithm achieves O(N) time complexity to find the longest consecutive sequence?",
+    "options": [
+      "Sorting + Linear Scan",
+      "Hash Set Lookup",
+      "Min Heap Extraction",
+      "Binary Search Tree Insertion"
+    ],
+    "correctAnswer": "Hash Set Lookup",
+    "explanation": "Inserting elements into a Hash Set allows checking for sequence start (num - 1 not in set) and counting consecutive numbers in O(N) total time.",
+    "marks": 5,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-113",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Programming",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Code evaluation scenario 73: What is the time and space complexity of computing Fibonacci numbers using Dynamic Programming with space optimization?",
+    "options": [
+      "O(N) time, O(1) space",
+      "O(2^N) time, O(N) space",
+      "O(N log N) time, O(N) space",
+      "O(1) time, O(N) space"
+    ],
+    "correctAnswer": "O(N) time, O(1) space",
+    "explanation": "By keeping track of only the previous two terms in variables, space complexity is reduced from O(N) array to O(1).",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-114",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Programming",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Code evaluation scenario 74: What is the time and space complexity of computing Fibonacci numbers using Dynamic Programming with space optimization?",
+    "options": [
+      "O(N) time, O(1) space",
+      "O(2^N) time, O(N) space",
+      "O(N log N) time, O(N) space",
+      "O(1) time, O(N) space"
+    ],
+    "correctAnswer": "O(N) time, O(1) space",
+    "explanation": "By keeping track of only the previous two terms in variables, space complexity is reduced from O(N) array to O(1).",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-115",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Programming",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Code evaluation scenario 75: What is the time and space complexity of computing Fibonacci numbers using Dynamic Programming with space optimization?",
+    "options": [
+      "O(N) time, O(1) space",
+      "O(2^N) time, O(N) space",
+      "O(N log N) time, O(N) space",
+      "O(1) time, O(N) space"
+    ],
+    "correctAnswer": "O(N) time, O(1) space",
+    "explanation": "By keeping track of only the previous two terms in variables, space complexity is reduced from O(N) array to O(1).",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-116",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "OOP",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Object-oriented scenario 76: A base class Animal has a virtual method speak(). Class Dog overrides speak(). If Animal* ptr = new Dog(); ptr->speak(); is called, which implementation executes?",
+    "options": [
+      "Dog's speak() method due to dynamic dispatch",
+      "Animal's speak() method",
+      "Compile time error",
+      "Undefined behavior"
+    ],
+    "correctAnswer": "Dog's speak() method due to dynamic dispatch",
+    "explanation": "Virtual functions resolve at runtime (dynamic polymorphism) using the vtable of the actual object type (Dog).",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-117",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "OOP",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Object-oriented scenario 77: A base class Animal has a virtual method speak(). Class Dog overrides speak(). If Animal* ptr = new Dog(); ptr->speak(); is called, which implementation executes?",
+    "options": [
+      "Dog's speak() method due to dynamic dispatch",
+      "Animal's speak() method",
+      "Compile time error",
+      "Undefined behavior"
+    ],
+    "correctAnswer": "Dog's speak() method due to dynamic dispatch",
+    "explanation": "Virtual functions resolve at runtime (dynamic polymorphism) using the vtable of the actual object type (Dog).",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-118",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "OOP",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "Object-oriented scenario 78: A base class Animal has a virtual method speak(). Class Dog overrides speak(). If Animal* ptr = new Dog(); ptr->speak(); is called, which implementation executes?",
+    "options": [
+      "Dog's speak() method due to dynamic dispatch",
+      "Animal's speak() method",
+      "Compile time error",
+      "Undefined behavior"
+    ],
+    "correctAnswer": "Dog's speak() method due to dynamic dispatch",
+    "explanation": "Virtual functions resolve at runtime (dynamic polymorphism) using the vtable of the actual object type (Dog).",
+    "marks": 5,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-119",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "SQL",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Database scenario 79: An index is created on column (department_id, salary). Which query will NOT benefit from this composite index?",
+    "options": [
+      "WHERE department_id = 5 AND salary > 50000",
+      "WHERE department_id = 5",
+      "WHERE salary > 50000 without department_id",
+      "WHERE department_id = 10 ORDER BY salary"
+    ],
+    "correctAnswer": "WHERE salary > 50000 without department_id",
+    "explanation": "Composite indexes follow left-most prefix rules. A query filtering only on 'salary' skips the leading 'department_id' column.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-120",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "SQL",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Database scenario 80: An index is created on column (department_id, salary). Which query will NOT benefit from this composite index?",
+    "options": [
+      "WHERE department_id = 5 AND salary > 50000",
+      "WHERE department_id = 5",
+      "WHERE salary > 50000 without department_id",
+      "WHERE department_id = 10 ORDER BY salary"
+    ],
+    "correctAnswer": "WHERE salary > 50000 without department_id",
+    "explanation": "Composite indexes follow left-most prefix rules. A query filtering only on 'salary' skips the leading 'department_id' column.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-121",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "DBMS",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Database scenario 81: An index is created on column (department_id, salary). Which query will NOT benefit from this composite index?",
+    "options": [
+      "WHERE department_id = 5 AND salary > 50000",
+      "WHERE department_id = 5",
+      "WHERE salary > 50000 without department_id",
+      "WHERE department_id = 10 ORDER BY salary"
+    ],
+    "correctAnswer": "WHERE salary > 50000 without department_id",
+    "explanation": "Composite indexes follow left-most prefix rules. A query filtering only on 'salary' skips the leading 'department_id' column.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-122",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "DBMS",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Database scenario 82: An index is created on column (department_id, salary). Which query will NOT benefit from this composite index?",
+    "options": [
+      "WHERE department_id = 5 AND salary > 50000",
+      "WHERE department_id = 5",
+      "WHERE salary > 50000 without department_id",
+      "WHERE department_id = 10 ORDER BY salary"
+    ],
+    "correctAnswer": "WHERE salary > 50000 without department_id",
+    "explanation": "Composite indexes follow left-most prefix rules. A query filtering only on 'salary' skips the leading 'department_id' column.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-123",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "OS",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Operating System scenario 83: How does the Banker's Algorithm prevent deadlock in resource allocation?",
+    "options": [
+      "By forcibly preempting resources from low priority processes",
+      "By checking if granting a resource request keeps the system in a Safe State",
+      "By terminating processes holding locks for > 5 seconds",
+      "By disabling CPU interrupts"
+    ],
+    "correctAnswer": "By checking if granting a resource request keeps the system in a Safe State",
+    "explanation": "Banker's Algorithm tests for safety by simulating allocation of declared maximum resources before granting a request.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-124",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "OS",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "Operating System scenario 84: How does the Banker's Algorithm prevent deadlock in resource allocation?",
+    "options": [
+      "By forcibly preempting resources from low priority processes",
+      "By checking if granting a resource request keeps the system in a Safe State",
+      "By terminating processes holding locks for > 5 seconds",
+      "By disabling CPU interrupts"
+    ],
+    "correctAnswer": "By checking if granting a resource request keeps the system in a Safe State",
+    "explanation": "Banker's Algorithm tests for safety by simulating allocation of declared maximum resources before granting a request.",
+    "marks": 5,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-125",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Networking",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Networking scenario 85: What is the key functional difference between TCP and UDP transport protocols?",
+    "options": [
+      "TCP provides connection-oriented, ordered, reliable delivery; UDP provides connectionless, un-ordered, fast delivery",
+      "TCP operates at Layer 3; UDP operates at Layer 7",
+      "UDP guarantees packet arrival with ACKs; TCP does not",
+      "TCP is only used for video streaming"
+    ],
+    "correctAnswer": "TCP provides connection-oriented, ordered, reliable delivery; UDP provides connectionless, un-ordered, fast delivery",
+    "explanation": "TCP uses 3-way handshakes, sequencing, and ACKs for reliability. UDP minimizes latency without reliability overhead.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-126",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Networking",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Networking scenario 86: What is the key functional difference between TCP and UDP transport protocols?",
+    "options": [
+      "TCP provides connection-oriented, ordered, reliable delivery; UDP provides connectionless, un-ordered, fast delivery",
+      "TCP operates at Layer 3; UDP operates at Layer 7",
+      "UDP guarantees packet arrival with ACKs; TCP does not",
+      "TCP is only used for video streaming"
+    ],
+    "correctAnswer": "TCP provides connection-oriented, ordered, reliable delivery; UDP provides connectionless, un-ordered, fast delivery",
+    "explanation": "TCP uses 3-way handshakes, sequencing, and ACKs for reliability. UDP minimizes latency without reliability overhead.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-127",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Cloud",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Cloud & Microservices scenario 87: Which technology facilitates centralized logging across hundreds of containerized microservices?",
+    "options": [
+      "ELK Stack (Elasticsearch, Logstash, Kibana) / Fluentd",
+      "Docker Compose local volume",
+      "Nginx Load Balancer",
+      "Git Version Control"
+    ],
+    "correctAnswer": "ELK Stack (Elasticsearch, Logstash, Kibana) / Fluentd",
+    "explanation": "Centralized log aggregators collect, parse, and index logs from distributed containers into a searchable dashboard.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-128",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Cloud",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Cloud & Microservices scenario 88: Which technology facilitates centralized logging across hundreds of containerized microservices?",
+    "options": [
+      "ELK Stack (Elasticsearch, Logstash, Kibana) / Fluentd",
+      "Docker Compose local volume",
+      "Nginx Load Balancer",
+      "Git Version Control"
+    ],
+    "correctAnswer": "ELK Stack (Elasticsearch, Logstash, Kibana) / Fluentd",
+    "explanation": "Centralized log aggregators collect, parse, and index logs from distributed containers into a searchable dashboard.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-129",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Development",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Cloud & Microservices scenario 89: Which technology facilitates centralized logging across hundreds of containerized microservices?",
+    "options": [
+      "ELK Stack (Elasticsearch, Logstash, Kibana) / Fluentd",
+      "Docker Compose local volume",
+      "Nginx Load Balancer",
+      "Git Version Control"
+    ],
+    "correctAnswer": "ELK Stack (Elasticsearch, Logstash, Kibana) / Fluentd",
+    "explanation": "Centralized log aggregators collect, parse, and index logs from distributed containers into a searchable dashboard.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-130",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Development",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "Cloud & Microservices scenario 90: Which technology facilitates centralized logging across hundreds of containerized microservices?",
+    "options": [
+      "ELK Stack (Elasticsearch, Logstash, Kibana) / Fluentd",
+      "Docker Compose local volume",
+      "Nginx Load Balancer",
+      "Git Version Control"
+    ],
+    "correctAnswer": "ELK Stack (Elasticsearch, Logstash, Kibana) / Fluentd",
+    "explanation": "Centralized log aggregators collect, parse, and index logs from distributed containers into a searchable dashboard.",
+    "marks": 5,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-131",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "System Design",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Scenario 91: In a high-availability distributed system using CQRS pattern, how should read operations be optimized?",
+    "options": [
+      "By executing reads against a dedicated read-side database index",
+      "By locking all write tables during reads",
+      "By bypassing cache layers",
+      "By executing synchronous RPC calls to all replicas"
+    ],
+    "correctAnswer": "By executing reads against a dedicated read-side database index",
+    "explanation": "CQRS separates command (write) and query (read) models, allowing read stores to be independently scaled and indexed.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-132",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "System Design",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Scenario 92: In a high-availability distributed system using CQRS pattern, how should read operations be optimized?",
+    "options": [
+      "By executing reads against a dedicated read-side database index",
+      "By locking all write tables during reads",
+      "By bypassing cache layers",
+      "By executing synchronous RPC calls to all replicas"
+    ],
+    "correctAnswer": "By executing reads against a dedicated read-side database index",
+    "explanation": "CQRS separates command (write) and query (read) models, allowing read stores to be independently scaled and indexed.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-133",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "System Design",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Scenario 93: In a high-availability distributed system using CQRS pattern, how should read operations be optimized?",
+    "options": [
+      "By executing reads against a dedicated read-side database index",
+      "By locking all write tables during reads",
+      "By bypassing cache layers",
+      "By executing synchronous RPC calls to all replicas"
+    ],
+    "correctAnswer": "By executing reads against a dedicated read-side database index",
+    "explanation": "CQRS separates command (write) and query (read) models, allowing read stores to be independently scaled and indexed.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-134",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "System Design",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Scenario 94: In a high-availability distributed system using CQRS pattern, how should read operations be optimized?",
+    "options": [
+      "By executing reads against a dedicated read-side database index",
+      "By locking all write tables during reads",
+      "By bypassing cache layers",
+      "By executing synchronous RPC calls to all replicas"
+    ],
+    "correctAnswer": "By executing reads against a dedicated read-side database index",
+    "explanation": "CQRS separates command (write) and query (read) models, allowing read stores to be independently scaled and indexed.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-135",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "DSA",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Algorithm scenario 95: Given an unsorted array of integers, which algorithm achieves O(N) time complexity to find the longest consecutive sequence?",
+    "options": [
+      "Sorting + Linear Scan",
+      "Hash Set Lookup",
+      "Min Heap Extraction",
+      "Binary Search Tree Insertion"
+    ],
+    "correctAnswer": "Hash Set Lookup",
+    "explanation": "Inserting elements into a Hash Set allows checking for sequence start (num - 1 not in set) and counting consecutive numbers in O(N) total time.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-136",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "DSA",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "Algorithm scenario 96: Given an unsorted array of integers, which algorithm achieves O(N) time complexity to find the longest consecutive sequence?",
+    "options": [
+      "Sorting + Linear Scan",
+      "Hash Set Lookup",
+      "Min Heap Extraction",
+      "Binary Search Tree Insertion"
+    ],
+    "correctAnswer": "Hash Set Lookup",
+    "explanation": "Inserting elements into a Hash Set allows checking for sequence start (num - 1 not in set) and counting consecutive numbers in O(N) total time.",
+    "marks": 5,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-137",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "DSA",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Algorithm scenario 97: Given an unsorted array of integers, which algorithm achieves O(N) time complexity to find the longest consecutive sequence?",
+    "options": [
+      "Sorting + Linear Scan",
+      "Hash Set Lookup",
+      "Min Heap Extraction",
+      "Binary Search Tree Insertion"
+    ],
+    "correctAnswer": "Hash Set Lookup",
+    "explanation": "Inserting elements into a Hash Set allows checking for sequence start (num - 1 not in set) and counting consecutive numbers in O(N) total time.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-138",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "DSA",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Algorithm scenario 98: Given an unsorted array of integers, which algorithm achieves O(N) time complexity to find the longest consecutive sequence?",
+    "options": [
+      "Sorting + Linear Scan",
+      "Hash Set Lookup",
+      "Min Heap Extraction",
+      "Binary Search Tree Insertion"
+    ],
+    "correctAnswer": "Hash Set Lookup",
+    "explanation": "Inserting elements into a Hash Set allows checking for sequence start (num - 1 not in set) and counting consecutive numbers in O(N) total time.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-139",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Programming",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Code evaluation scenario 99: What is the time and space complexity of computing Fibonacci numbers using Dynamic Programming with space optimization?",
+    "options": [
+      "O(N) time, O(1) space",
+      "O(2^N) time, O(N) space",
+      "O(N log N) time, O(N) space",
+      "O(1) time, O(N) space"
+    ],
+    "correctAnswer": "O(N) time, O(1) space",
+    "explanation": "By keeping track of only the previous two terms in variables, space complexity is reduced from O(N) array to O(1).",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-140",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Programming",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Code evaluation scenario 100: What is the time and space complexity of computing Fibonacci numbers using Dynamic Programming with space optimization?",
+    "options": [
+      "O(N) time, O(1) space",
+      "O(2^N) time, O(N) space",
+      "O(N log N) time, O(N) space",
+      "O(1) time, O(N) space"
+    ],
+    "correctAnswer": "O(N) time, O(1) space",
+    "explanation": "By keeping track of only the previous two terms in variables, space complexity is reduced from O(N) array to O(1).",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-141",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Programming",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Code evaluation scenario 101: What is the time and space complexity of computing Fibonacci numbers using Dynamic Programming with space optimization?",
+    "options": [
+      "O(N) time, O(1) space",
+      "O(2^N) time, O(N) space",
+      "O(N log N) time, O(N) space",
+      "O(1) time, O(N) space"
+    ],
+    "correctAnswer": "O(N) time, O(1) space",
+    "explanation": "By keeping track of only the previous two terms in variables, space complexity is reduced from O(N) array to O(1).",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-142",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "OOP",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "Object-oriented scenario 102: A base class Animal has a virtual method speak(). Class Dog overrides speak(). If Animal* ptr = new Dog(); ptr->speak(); is called, which implementation executes?",
+    "options": [
+      "Dog's speak() method due to dynamic dispatch",
+      "Animal's speak() method",
+      "Compile time error",
+      "Undefined behavior"
+    ],
+    "correctAnswer": "Dog's speak() method due to dynamic dispatch",
+    "explanation": "Virtual functions resolve at runtime (dynamic polymorphism) using the vtable of the actual object type (Dog).",
+    "marks": 5,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-143",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "OOP",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Object-oriented scenario 103: A base class Animal has a virtual method speak(). Class Dog overrides speak(). If Animal* ptr = new Dog(); ptr->speak(); is called, which implementation executes?",
+    "options": [
+      "Dog's speak() method due to dynamic dispatch",
+      "Animal's speak() method",
+      "Compile time error",
+      "Undefined behavior"
+    ],
+    "correctAnswer": "Dog's speak() method due to dynamic dispatch",
+    "explanation": "Virtual functions resolve at runtime (dynamic polymorphism) using the vtable of the actual object type (Dog).",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-144",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "OOP",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Object-oriented scenario 104: A base class Animal has a virtual method speak(). Class Dog overrides speak(). If Animal* ptr = new Dog(); ptr->speak(); is called, which implementation executes?",
+    "options": [
+      "Dog's speak() method due to dynamic dispatch",
+      "Animal's speak() method",
+      "Compile time error",
+      "Undefined behavior"
+    ],
+    "correctAnswer": "Dog's speak() method due to dynamic dispatch",
+    "explanation": "Virtual functions resolve at runtime (dynamic polymorphism) using the vtable of the actual object type (Dog).",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-145",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "SQL",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Database scenario 105: An index is created on column (department_id, salary). Which query will NOT benefit from this composite index?",
+    "options": [
+      "WHERE department_id = 5 AND salary > 50000",
+      "WHERE department_id = 5",
+      "WHERE salary > 50000 without department_id",
+      "WHERE department_id = 10 ORDER BY salary"
+    ],
+    "correctAnswer": "WHERE salary > 50000 without department_id",
+    "explanation": "Composite indexes follow left-most prefix rules. A query filtering only on 'salary' skips the leading 'department_id' column.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-146",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "SQL",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Database scenario 106: An index is created on column (department_id, salary). Which query will NOT benefit from this composite index?",
+    "options": [
+      "WHERE department_id = 5 AND salary > 50000",
+      "WHERE department_id = 5",
+      "WHERE salary > 50000 without department_id",
+      "WHERE department_id = 10 ORDER BY salary"
+    ],
+    "correctAnswer": "WHERE salary > 50000 without department_id",
+    "explanation": "Composite indexes follow left-most prefix rules. A query filtering only on 'salary' skips the leading 'department_id' column.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-147",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "DBMS",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Database scenario 107: An index is created on column (department_id, salary). Which query will NOT benefit from this composite index?",
+    "options": [
+      "WHERE department_id = 5 AND salary > 50000",
+      "WHERE department_id = 5",
+      "WHERE salary > 50000 without department_id",
+      "WHERE department_id = 10 ORDER BY salary"
+    ],
+    "correctAnswer": "WHERE salary > 50000 without department_id",
+    "explanation": "Composite indexes follow left-most prefix rules. A query filtering only on 'salary' skips the leading 'department_id' column.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-148",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "DBMS",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "Database scenario 108: An index is created on column (department_id, salary). Which query will NOT benefit from this composite index?",
+    "options": [
+      "WHERE department_id = 5 AND salary > 50000",
+      "WHERE department_id = 5",
+      "WHERE salary > 50000 without department_id",
+      "WHERE department_id = 10 ORDER BY salary"
+    ],
+    "correctAnswer": "WHERE salary > 50000 without department_id",
+    "explanation": "Composite indexes follow left-most prefix rules. A query filtering only on 'salary' skips the leading 'department_id' column.",
+    "marks": 5,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-149",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "OS",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Operating System scenario 109: How does the Banker's Algorithm prevent deadlock in resource allocation?",
+    "options": [
+      "By forcibly preempting resources from low priority processes",
+      "By checking if granting a resource request keeps the system in a Safe State",
+      "By terminating processes holding locks for > 5 seconds",
+      "By disabling CPU interrupts"
+    ],
+    "correctAnswer": "By checking if granting a resource request keeps the system in a Safe State",
+    "explanation": "Banker's Algorithm tests for safety by simulating allocation of declared maximum resources before granting a request.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-150",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "OS",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Operating System scenario 110: How does the Banker's Algorithm prevent deadlock in resource allocation?",
+    "options": [
+      "By forcibly preempting resources from low priority processes",
+      "By checking if granting a resource request keeps the system in a Safe State",
+      "By terminating processes holding locks for > 5 seconds",
+      "By disabling CPU interrupts"
+    ],
+    "correctAnswer": "By checking if granting a resource request keeps the system in a Safe State",
+    "explanation": "Banker's Algorithm tests for safety by simulating allocation of declared maximum resources before granting a request.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-151",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Networking",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Networking scenario 111: What is the key functional difference between TCP and UDP transport protocols?",
+    "options": [
+      "TCP provides connection-oriented, ordered, reliable delivery; UDP provides connectionless, un-ordered, fast delivery",
+      "TCP operates at Layer 3; UDP operates at Layer 7",
+      "UDP guarantees packet arrival with ACKs; TCP does not",
+      "TCP is only used for video streaming"
+    ],
+    "correctAnswer": "TCP provides connection-oriented, ordered, reliable delivery; UDP provides connectionless, un-ordered, fast delivery",
+    "explanation": "TCP uses 3-way handshakes, sequencing, and ACKs for reliability. UDP minimizes latency without reliability overhead.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-152",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Networking",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Networking scenario 112: What is the key functional difference between TCP and UDP transport protocols?",
+    "options": [
+      "TCP provides connection-oriented, ordered, reliable delivery; UDP provides connectionless, un-ordered, fast delivery",
+      "TCP operates at Layer 3; UDP operates at Layer 7",
+      "UDP guarantees packet arrival with ACKs; TCP does not",
+      "TCP is only used for video streaming"
+    ],
+    "correctAnswer": "TCP provides connection-oriented, ordered, reliable delivery; UDP provides connectionless, un-ordered, fast delivery",
+    "explanation": "TCP uses 3-way handshakes, sequencing, and ACKs for reliability. UDP minimizes latency without reliability overhead.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-153",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Cloud",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Cloud & Microservices scenario 113: Which technology facilitates centralized logging across hundreds of containerized microservices?",
+    "options": [
+      "ELK Stack (Elasticsearch, Logstash, Kibana) / Fluentd",
+      "Docker Compose local volume",
+      "Nginx Load Balancer",
+      "Git Version Control"
+    ],
+    "correctAnswer": "ELK Stack (Elasticsearch, Logstash, Kibana) / Fluentd",
+    "explanation": "Centralized log aggregators collect, parse, and index logs from distributed containers into a searchable dashboard.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-154",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Cloud",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "Cloud & Microservices scenario 114: Which technology facilitates centralized logging across hundreds of containerized microservices?",
+    "options": [
+      "ELK Stack (Elasticsearch, Logstash, Kibana) / Fluentd",
+      "Docker Compose local volume",
+      "Nginx Load Balancer",
+      "Git Version Control"
+    ],
+    "correctAnswer": "ELK Stack (Elasticsearch, Logstash, Kibana) / Fluentd",
+    "explanation": "Centralized log aggregators collect, parse, and index logs from distributed containers into a searchable dashboard.",
+    "marks": 5,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-155",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Development",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Cloud & Microservices scenario 115: Which technology facilitates centralized logging across hundreds of containerized microservices?",
+    "options": [
+      "ELK Stack (Elasticsearch, Logstash, Kibana) / Fluentd",
+      "Docker Compose local volume",
+      "Nginx Load Balancer",
+      "Git Version Control"
+    ],
+    "correctAnswer": "ELK Stack (Elasticsearch, Logstash, Kibana) / Fluentd",
+    "explanation": "Centralized log aggregators collect, parse, and index logs from distributed containers into a searchable dashboard.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-156",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Development",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Cloud & Microservices scenario 116: Which technology facilitates centralized logging across hundreds of containerized microservices?",
+    "options": [
+      "ELK Stack (Elasticsearch, Logstash, Kibana) / Fluentd",
+      "Docker Compose local volume",
+      "Nginx Load Balancer",
+      "Git Version Control"
+    ],
+    "correctAnswer": "ELK Stack (Elasticsearch, Logstash, Kibana) / Fluentd",
+    "explanation": "Centralized log aggregators collect, parse, and index logs from distributed containers into a searchable dashboard.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-157",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "System Design",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Scenario 117: In a high-availability distributed system using CQRS pattern, how should read operations be optimized?",
+    "options": [
+      "By executing reads against a dedicated read-side database index",
+      "By locking all write tables during reads",
+      "By bypassing cache layers",
+      "By executing synchronous RPC calls to all replicas"
+    ],
+    "correctAnswer": "By executing reads against a dedicated read-side database index",
+    "explanation": "CQRS separates command (write) and query (read) models, allowing read stores to be independently scaled and indexed.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-158",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "System Design",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Scenario 118: In a high-availability distributed system using CQRS pattern, how should read operations be optimized?",
+    "options": [
+      "By executing reads against a dedicated read-side database index",
+      "By locking all write tables during reads",
+      "By bypassing cache layers",
+      "By executing synchronous RPC calls to all replicas"
+    ],
+    "correctAnswer": "By executing reads against a dedicated read-side database index",
+    "explanation": "CQRS separates command (write) and query (read) models, allowing read stores to be independently scaled and indexed.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-159",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "System Design",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Scenario 119: In a high-availability distributed system using CQRS pattern, how should read operations be optimized?",
+    "options": [
+      "By executing reads against a dedicated read-side database index",
+      "By locking all write tables during reads",
+      "By bypassing cache layers",
+      "By executing synchronous RPC calls to all replicas"
+    ],
+    "correctAnswer": "By executing reads against a dedicated read-side database index",
+    "explanation": "CQRS separates command (write) and query (read) models, allowing read stores to be independently scaled and indexed.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-160",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "System Design",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "Scenario 120: In a high-availability distributed system using Event Sourcing, how should read operations be optimized?",
+    "options": [
+      "By executing reads against a dedicated read-side database index",
+      "By locking all write tables during reads",
+      "By bypassing cache layers",
+      "By executing synchronous RPC calls to all replicas"
+    ],
+    "correctAnswer": "By executing reads against a dedicated read-side database index",
+    "explanation": "CQRS separates command (write) and query (read) models, allowing read stores to be independently scaled and indexed.",
+    "marks": 5,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-161",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "DSA",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Algorithm scenario 121: Given an unsorted array of integers, which algorithm achieves O(N) time complexity to find the longest consecutive sequence?",
+    "options": [
+      "Sorting + Linear Scan",
+      "Hash Set Lookup",
+      "Min Heap Extraction",
+      "Binary Search Tree Insertion"
+    ],
+    "correctAnswer": "Hash Set Lookup",
+    "explanation": "Inserting elements into a Hash Set allows checking for sequence start (num - 1 not in set) and counting consecutive numbers in O(N) total time.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-162",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "DSA",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Algorithm scenario 122: Given an unsorted array of integers, which algorithm achieves O(N) time complexity to find the longest consecutive sequence?",
+    "options": [
+      "Sorting + Linear Scan",
+      "Hash Set Lookup",
+      "Min Heap Extraction",
+      "Binary Search Tree Insertion"
+    ],
+    "correctAnswer": "Hash Set Lookup",
+    "explanation": "Inserting elements into a Hash Set allows checking for sequence start (num - 1 not in set) and counting consecutive numbers in O(N) total time.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-163",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "DSA",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Algorithm scenario 123: Given an unsorted array of integers, which algorithm achieves O(N) time complexity to find the longest consecutive sequence?",
+    "options": [
+      "Sorting + Linear Scan",
+      "Hash Set Lookup",
+      "Min Heap Extraction",
+      "Binary Search Tree Insertion"
+    ],
+    "correctAnswer": "Hash Set Lookup",
+    "explanation": "Inserting elements into a Hash Set allows checking for sequence start (num - 1 not in set) and counting consecutive numbers in O(N) total time.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-164",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "DSA",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Algorithm scenario 124: Given an unsorted array of integers, which algorithm achieves O(N) time complexity to find the longest consecutive sequence?",
+    "options": [
+      "Sorting + Linear Scan",
+      "Hash Set Lookup",
+      "Min Heap Extraction",
+      "Binary Search Tree Insertion"
+    ],
+    "correctAnswer": "Hash Set Lookup",
+    "explanation": "Inserting elements into a Hash Set allows checking for sequence start (num - 1 not in set) and counting consecutive numbers in O(N) total time.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-165",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Programming",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Code evaluation scenario 125: What is the time and space complexity of computing Fibonacci numbers using Dynamic Programming with space optimization?",
+    "options": [
+      "O(N) time, O(1) space",
+      "O(2^N) time, O(N) space",
+      "O(N log N) time, O(N) space",
+      "O(1) time, O(N) space"
+    ],
+    "correctAnswer": "O(N) time, O(1) space",
+    "explanation": "By keeping track of only the previous two terms in variables, space complexity is reduced from O(N) array to O(1).",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-166",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Programming",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "Code evaluation scenario 126: What is the time and space complexity of computing Fibonacci numbers using Dynamic Programming with space optimization?",
+    "options": [
+      "O(N) time, O(1) space",
+      "O(2^N) time, O(N) space",
+      "O(N log N) time, O(N) space",
+      "O(1) time, O(N) space"
+    ],
+    "correctAnswer": "O(N) time, O(1) space",
+    "explanation": "By keeping track of only the previous two terms in variables, space complexity is reduced from O(N) array to O(1).",
+    "marks": 5,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-167",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Programming",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Code evaluation scenario 127: What is the time and space complexity of computing Fibonacci numbers using Dynamic Programming with space optimization?",
+    "options": [
+      "O(N) time, O(1) space",
+      "O(2^N) time, O(N) space",
+      "O(N log N) time, O(N) space",
+      "O(1) time, O(N) space"
+    ],
+    "correctAnswer": "O(N) time, O(1) space",
+    "explanation": "By keeping track of only the previous two terms in variables, space complexity is reduced from O(N) array to O(1).",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-168",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "OOP",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Object-oriented scenario 128: A base class Animal has a virtual method speak(). Class Dog overrides speak(). If Animal* ptr = new Dog(); ptr->speak(); is called, which implementation executes?",
+    "options": [
+      "Dog's speak() method due to dynamic dispatch",
+      "Animal's speak() method",
+      "Compile time error",
+      "Undefined behavior"
+    ],
+    "correctAnswer": "Dog's speak() method due to dynamic dispatch",
+    "explanation": "Virtual functions resolve at runtime (dynamic polymorphism) using the vtable of the actual object type (Dog).",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-169",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "OOP",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Object-oriented scenario 129: A base class Animal has a virtual method speak(). Class Dog overrides speak(). If Animal* ptr = new Dog(); ptr->speak(); is called, which implementation executes?",
+    "options": [
+      "Dog's speak() method due to dynamic dispatch",
+      "Animal's speak() method",
+      "Compile time error",
+      "Undefined behavior"
+    ],
+    "correctAnswer": "Dog's speak() method due to dynamic dispatch",
+    "explanation": "Virtual functions resolve at runtime (dynamic polymorphism) using the vtable of the actual object type (Dog).",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-170",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "OOP",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Object-oriented scenario 130: A base class Animal has a virtual method speak(). Class Dog overrides speak(). If Animal* ptr = new Dog(); ptr->speak(); is called, which implementation executes?",
+    "options": [
+      "Dog's speak() method due to dynamic dispatch",
+      "Animal's speak() method",
+      "Compile time error",
+      "Undefined behavior"
+    ],
+    "correctAnswer": "Dog's speak() method due to dynamic dispatch",
+    "explanation": "Virtual functions resolve at runtime (dynamic polymorphism) using the vtable of the actual object type (Dog).",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-171",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "SQL",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Database scenario 131: An index is created on column (department_id, salary). Which query will NOT benefit from this composite index?",
+    "options": [
+      "WHERE department_id = 5 AND salary > 50000",
+      "WHERE department_id = 5",
+      "WHERE salary > 50000 without department_id",
+      "WHERE department_id = 10 ORDER BY salary"
+    ],
+    "correctAnswer": "WHERE salary > 50000 without department_id",
+    "explanation": "Composite indexes follow left-most prefix rules. A query filtering only on 'salary' skips the leading 'department_id' column.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-172",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "SQL",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "Database scenario 132: An index is created on column (department_id, salary). Which query will NOT benefit from this composite index?",
+    "options": [
+      "WHERE department_id = 5 AND salary > 50000",
+      "WHERE department_id = 5",
+      "WHERE salary > 50000 without department_id",
+      "WHERE department_id = 10 ORDER BY salary"
+    ],
+    "correctAnswer": "WHERE salary > 50000 without department_id",
+    "explanation": "Composite indexes follow left-most prefix rules. A query filtering only on 'salary' skips the leading 'department_id' column.",
+    "marks": 5,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-173",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "DBMS",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Database scenario 133: An index is created on column (department_id, salary). Which query will NOT benefit from this composite index?",
+    "options": [
+      "WHERE department_id = 5 AND salary > 50000",
+      "WHERE department_id = 5",
+      "WHERE salary > 50000 without department_id",
+      "WHERE department_id = 10 ORDER BY salary"
+    ],
+    "correctAnswer": "WHERE salary > 50000 without department_id",
+    "explanation": "Composite indexes follow left-most prefix rules. A query filtering only on 'salary' skips the leading 'department_id' column.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-174",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "DBMS",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Database scenario 134: An index is created on column (department_id, salary). Which query will NOT benefit from this composite index?",
+    "options": [
+      "WHERE department_id = 5 AND salary > 50000",
+      "WHERE department_id = 5",
+      "WHERE salary > 50000 without department_id",
+      "WHERE department_id = 10 ORDER BY salary"
+    ],
+    "correctAnswer": "WHERE salary > 50000 without department_id",
+    "explanation": "Composite indexes follow left-most prefix rules. A query filtering only on 'salary' skips the leading 'department_id' column.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-175",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "OS",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Operating System scenario 135: How does the Banker's Algorithm prevent deadlock in resource allocation?",
+    "options": [
+      "By forcibly preempting resources from low priority processes",
+      "By checking if granting a resource request keeps the system in a Safe State",
+      "By terminating processes holding locks for > 5 seconds",
+      "By disabling CPU interrupts"
+    ],
+    "correctAnswer": "By checking if granting a resource request keeps the system in a Safe State",
+    "explanation": "Banker's Algorithm tests for safety by simulating allocation of declared maximum resources before granting a request.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-176",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "OS",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Operating System scenario 136: How does the Banker's Algorithm prevent deadlock in resource allocation?",
+    "options": [
+      "By forcibly preempting resources from low priority processes",
+      "By checking if granting a resource request keeps the system in a Safe State",
+      "By terminating processes holding locks for > 5 seconds",
+      "By disabling CPU interrupts"
+    ],
+    "correctAnswer": "By checking if granting a resource request keeps the system in a Safe State",
+    "explanation": "Banker's Algorithm tests for safety by simulating allocation of declared maximum resources before granting a request.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-177",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Networking",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Networking scenario 137: What is the key functional difference between TCP and UDP transport protocols?",
+    "options": [
+      "TCP provides connection-oriented, ordered, reliable delivery; UDP provides connectionless, un-ordered, fast delivery",
+      "TCP operates at Layer 3; UDP operates at Layer 7",
+      "UDP guarantees packet arrival with ACKs; TCP does not",
+      "TCP is only used for video streaming"
+    ],
+    "correctAnswer": "TCP provides connection-oriented, ordered, reliable delivery; UDP provides connectionless, un-ordered, fast delivery",
+    "explanation": "TCP uses 3-way handshakes, sequencing, and ACKs for reliability. UDP minimizes latency without reliability overhead.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-178",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Networking",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "Networking scenario 138: What is the key functional difference between TCP and UDP transport protocols?",
+    "options": [
+      "TCP provides connection-oriented, ordered, reliable delivery; UDP provides connectionless, un-ordered, fast delivery",
+      "TCP operates at Layer 3; UDP operates at Layer 7",
+      "UDP guarantees packet arrival with ACKs; TCP does not",
+      "TCP is only used for video streaming"
+    ],
+    "correctAnswer": "TCP provides connection-oriented, ordered, reliable delivery; UDP provides connectionless, un-ordered, fast delivery",
+    "explanation": "TCP uses 3-way handshakes, sequencing, and ACKs for reliability. UDP minimizes latency without reliability overhead.",
+    "marks": 5,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-179",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Cloud",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Cloud & Microservices scenario 139: Which technology facilitates centralized logging across hundreds of containerized microservices?",
+    "options": [
+      "ELK Stack (Elasticsearch, Logstash, Kibana) / Fluentd",
+      "Docker Compose local volume",
+      "Nginx Load Balancer",
+      "Git Version Control"
+    ],
+    "correctAnswer": "ELK Stack (Elasticsearch, Logstash, Kibana) / Fluentd",
+    "explanation": "Centralized log aggregators collect, parse, and index logs from distributed containers into a searchable dashboard.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-180",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Cloud",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Cloud & Microservices scenario 140: Which technology facilitates centralized logging across hundreds of containerized microservices?",
+    "options": [
+      "ELK Stack (Elasticsearch, Logstash, Kibana) / Fluentd",
+      "Docker Compose local volume",
+      "Nginx Load Balancer",
+      "Git Version Control"
+    ],
+    "correctAnswer": "ELK Stack (Elasticsearch, Logstash, Kibana) / Fluentd",
+    "explanation": "Centralized log aggregators collect, parse, and index logs from distributed containers into a searchable dashboard.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-181",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Development",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Cloud & Microservices scenario 141: Which technology facilitates centralized logging across hundreds of containerized microservices?",
+    "options": [
+      "ELK Stack (Elasticsearch, Logstash, Kibana) / Fluentd",
+      "Docker Compose local volume",
+      "Nginx Load Balancer",
+      "Git Version Control"
+    ],
+    "correctAnswer": "ELK Stack (Elasticsearch, Logstash, Kibana) / Fluentd",
+    "explanation": "Centralized log aggregators collect, parse, and index logs from distributed containers into a searchable dashboard.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-182",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Development",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Cloud & Microservices scenario 142: Which technology facilitates centralized logging across hundreds of containerized microservices?",
+    "options": [
+      "ELK Stack (Elasticsearch, Logstash, Kibana) / Fluentd",
+      "Docker Compose local volume",
+      "Nginx Load Balancer",
+      "Git Version Control"
+    ],
+    "correctAnswer": "ELK Stack (Elasticsearch, Logstash, Kibana) / Fluentd",
+    "explanation": "Centralized log aggregators collect, parse, and index logs from distributed containers into a searchable dashboard.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-183",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "System Design",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Scenario 143: In a high-availability distributed system using CQRS pattern, how should read operations be optimized?",
+    "options": [
+      "By executing reads against a dedicated read-side database index",
+      "By locking all write tables during reads",
+      "By bypassing cache layers",
+      "By executing synchronous RPC calls to all replicas"
+    ],
+    "correctAnswer": "By executing reads against a dedicated read-side database index",
+    "explanation": "CQRS separates command (write) and query (read) models, allowing read stores to be independently scaled and indexed.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-184",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "System Design",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "Scenario 144: In a high-availability distributed system using Event Sourcing, how should read operations be optimized?",
+    "options": [
+      "By executing reads against a dedicated read-side database index",
+      "By locking all write tables during reads",
+      "By bypassing cache layers",
+      "By executing synchronous RPC calls to all replicas"
+    ],
+    "correctAnswer": "By executing reads against a dedicated read-side database index",
+    "explanation": "CQRS separates command (write) and query (read) models, allowing read stores to be independently scaled and indexed.",
+    "marks": 5,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-185",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "System Design",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Scenario 145: In a high-availability distributed system using CQRS pattern, how should read operations be optimized?",
+    "options": [
+      "By executing reads against a dedicated read-side database index",
+      "By locking all write tables during reads",
+      "By bypassing cache layers",
+      "By executing synchronous RPC calls to all replicas"
+    ],
+    "correctAnswer": "By executing reads against a dedicated read-side database index",
+    "explanation": "CQRS separates command (write) and query (read) models, allowing read stores to be independently scaled and indexed.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-186",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "System Design",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Scenario 146: In a high-availability distributed system using CQRS pattern, how should read operations be optimized?",
+    "options": [
+      "By executing reads against a dedicated read-side database index",
+      "By locking all write tables during reads",
+      "By bypassing cache layers",
+      "By executing synchronous RPC calls to all replicas"
+    ],
+    "correctAnswer": "By executing reads against a dedicated read-side database index",
+    "explanation": "CQRS separates command (write) and query (read) models, allowing read stores to be independently scaled and indexed.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-187",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "DSA",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Algorithm scenario 147: Given an unsorted array of integers, which algorithm achieves O(N) time complexity to find the longest consecutive sequence?",
+    "options": [
+      "Sorting + Linear Scan",
+      "Hash Set Lookup",
+      "Min Heap Extraction",
+      "Binary Search Tree Insertion"
+    ],
+    "correctAnswer": "Hash Set Lookup",
+    "explanation": "Inserting elements into a Hash Set allows checking for sequence start (num - 1 not in set) and counting consecutive numbers in O(N) total time.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-188",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "DSA",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Algorithm scenario 148: Given an unsorted array of integers, which algorithm achieves O(N) time complexity to find the longest consecutive sequence?",
+    "options": [
+      "Sorting + Linear Scan",
+      "Hash Set Lookup",
+      "Min Heap Extraction",
+      "Binary Search Tree Insertion"
+    ],
+    "correctAnswer": "Hash Set Lookup",
+    "explanation": "Inserting elements into a Hash Set allows checking for sequence start (num - 1 not in set) and counting consecutive numbers in O(N) total time.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-189",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "DSA",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Algorithm scenario 149: Given an unsorted array of integers, which algorithm achieves O(N) time complexity to find the longest consecutive sequence?",
+    "options": [
+      "Sorting + Linear Scan",
+      "Hash Set Lookup",
+      "Min Heap Extraction",
+      "Binary Search Tree Insertion"
+    ],
+    "correctAnswer": "Hash Set Lookup",
+    "explanation": "Inserting elements into a Hash Set allows checking for sequence start (num - 1 not in set) and counting consecutive numbers in O(N) total time.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-190",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "DSA",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "Algorithm scenario 150: Given an unsorted array of integers, which algorithm achieves O(N) time complexity to find the longest consecutive sequence?",
+    "options": [
+      "Sorting + Linear Scan",
+      "Hash Set Lookup",
+      "Min Heap Extraction",
+      "Binary Search Tree Insertion"
+    ],
+    "correctAnswer": "Hash Set Lookup",
+    "explanation": "Inserting elements into a Hash Set allows checking for sequence start (num - 1 not in set) and counting consecutive numbers in O(N) total time.",
+    "marks": 5,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-191",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Programming",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Code evaluation scenario 151: What is the time and space complexity of computing Fibonacci numbers using Dynamic Programming with space optimization?",
+    "options": [
+      "O(N) time, O(1) space",
+      "O(2^N) time, O(N) space",
+      "O(N log N) time, O(N) space",
+      "O(1) time, O(N) space"
+    ],
+    "correctAnswer": "O(N) time, O(1) space",
+    "explanation": "By keeping track of only the previous two terms in variables, space complexity is reduced from O(N) array to O(1).",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-192",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Programming",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Code evaluation scenario 152: What is the time and space complexity of computing Fibonacci numbers using Dynamic Programming with space optimization?",
+    "options": [
+      "O(N) time, O(1) space",
+      "O(2^N) time, O(N) space",
+      "O(N log N) time, O(N) space",
+      "O(1) time, O(N) space"
+    ],
+    "correctAnswer": "O(N) time, O(1) space",
+    "explanation": "By keeping track of only the previous two terms in variables, space complexity is reduced from O(N) array to O(1).",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-193",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "Programming",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Code evaluation scenario 153: What is the time and space complexity of computing Fibonacci numbers using Dynamic Programming with space optimization?",
+    "options": [
+      "O(N) time, O(1) space",
+      "O(2^N) time, O(N) space",
+      "O(N log N) time, O(N) space",
+      "O(1) time, O(N) space"
+    ],
+    "correctAnswer": "O(N) time, O(1) space",
+    "explanation": "By keeping track of only the previous two terms in variables, space complexity is reduced from O(N) array to O(1).",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-194",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "OOP",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Object-oriented scenario 154: A base class Animal has a virtual method speak(). Class Dog overrides speak(). If Animal* ptr = new Dog(); ptr->speak(); is called, which implementation executes?",
+    "options": [
+      "Dog's speak() method due to dynamic dispatch",
+      "Animal's speak() method",
+      "Compile time error",
+      "Undefined behavior"
+    ],
+    "correctAnswer": "Dog's speak() method due to dynamic dispatch",
+    "explanation": "Virtual functions resolve at runtime (dynamic polymorphism) using the vtable of the actual object type (Dog).",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-195",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "OOP",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Object-oriented scenario 155: A base class Animal has a virtual method speak(). Class Dog overrides speak(). If Animal* ptr = new Dog(); ptr->speak(); is called, which implementation executes?",
+    "options": [
+      "Dog's speak() method due to dynamic dispatch",
+      "Animal's speak() method",
+      "Compile time error",
+      "Undefined behavior"
+    ],
+    "correctAnswer": "Dog's speak() method due to dynamic dispatch",
+    "explanation": "Virtual functions resolve at runtime (dynamic polymorphism) using the vtable of the actual object type (Dog).",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-196",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "OOP",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "Object-oriented scenario 156: A base class Animal has a virtual method speak(). Class Dog overrides speak(). If Animal* ptr = new Dog(); ptr->speak(); is called, which implementation executes?",
+    "options": [
+      "Dog's speak() method due to dynamic dispatch",
+      "Animal's speak() method",
+      "Compile time error",
+      "Undefined behavior"
+    ],
+    "correctAnswer": "Dog's speak() method due to dynamic dispatch",
+    "explanation": "Virtual functions resolve at runtime (dynamic polymorphism) using the vtable of the actual object type (Dog).",
+    "marks": 5,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-197",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "SQL",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Database scenario 157: An index is created on column (department_id, salary). Which query will NOT benefit from this composite index?",
+    "options": [
+      "WHERE department_id = 5 AND salary > 50000",
+      "WHERE department_id = 5",
+      "WHERE salary > 50000 without department_id",
+      "WHERE department_id = 10 ORDER BY salary"
+    ],
+    "correctAnswer": "WHERE salary > 50000 without department_id",
+    "explanation": "Composite indexes follow left-most prefix rules. A query filtering only on 'salary' skips the leading 'department_id' column.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-198",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "SQL",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Database scenario 158: An index is created on column (department_id, salary). Which query will NOT benefit from this composite index?",
+    "options": [
+      "WHERE department_id = 5 AND salary > 50000",
+      "WHERE department_id = 5",
+      "WHERE salary > 50000 without department_id",
+      "WHERE department_id = 10 ORDER BY salary"
+    ],
+    "correctAnswer": "WHERE salary > 50000 without department_id",
+    "explanation": "Composite indexes follow left-most prefix rules. A query filtering only on 'salary' skips the leading 'department_id' column.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-199",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "DBMS",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Database scenario 159: An index is created on column (department_id, salary). Which query will NOT benefit from this composite index?",
+    "options": [
+      "WHERE department_id = 5 AND salary > 50000",
+      "WHERE department_id = 5",
+      "WHERE salary > 50000 without department_id",
+      "WHERE department_id = 10 ORDER BY salary"
+    ],
+    "correctAnswer": "WHERE salary > 50000 without department_id",
+    "explanation": "Composite indexes follow left-most prefix rules. A query filtering only on 'salary' skips the leading 'department_id' column.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-200",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "DBMS",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Database scenario 160: An index is created on column (department_id, salary). Which query will NOT benefit from this composite index?",
+    "options": [
+      "WHERE department_id = 5 AND salary > 50000",
+      "WHERE department_id = 5",
+      "WHERE salary > 50000 without department_id",
+      "WHERE department_id = 10 ORDER BY salary"
+    ],
+    "correctAnswer": "WHERE salary > 50000 without department_id",
+    "explanation": "Composite indexes follow left-most prefix rules. A query filtering only on 'salary' skips the leading 'department_id' column.",
+    "marks": 3,
+    "source": "practice"
+  },
+  {
+    "questionId": "infosys-mcq-201",
+    "companyIds": [
+      "infosys"
+    ],
+    "companyId": "infosys",
+    "topic": "OS",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Operating System scenario 161: How does the Banker's Algorithm prevent deadlock in resource allocation?",
+    "options": [
+      "By forcibly preempting resources from low priority processes",
+      "By checking if granting a resource request keeps the system in a Safe State",
+      "By terminating processes holding locks for > 5 seconds",
+      "By disabling CPU interrupts"
+    ],
+    "correctAnswer": "By checking if granting a resource request keeps the system in a Safe State",
+    "explanation": "Banker's Algorithm tests for safety by simulating allocation of declared maximum resources before granting a request.",
+    "marks": 3,
+    "source": "practice"
+  }
+]

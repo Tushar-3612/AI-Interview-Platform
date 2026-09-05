@@ -1,0 +1,2213 @@
+[
+  {
+    "questionId": "capgemini-coding-1",
+    "id": "capgemini-coding-1",
+    "title": "Armstrong Number",
+    "company": "capgemini",
+    "difficulty": "Easy",
+    "category": "Math",
+    "tags": [
+      "Math",
+      "Number Theory"
+    ],
+    "marks": 10,
+    "problemStatement": "Write a function `isArmstrong(n)` that checks whether a given positive integer `n` is an Armstrong number (also known as a narcissistic number). An Armstrong number of d digits is a number where the sum of each digit raised to the power d equals the number itself. For example, 153 = 1^3 + 5^3 + 3^3 = 1 + 125 + 27 = 153.",
+    "description": "Check if sum of digits each raised to the power of number of digits equals the number itself.",
+    "constraints": "0 <= n <= 10^9\nTime: O(D) where D is number of digits\nSpace: O(1)",
+    "inputFormat": "A single integer n.",
+    "outputFormat": "Return true if n is an Armstrong number, false otherwise.",
+    "examples": [
+      {
+        "input": "[153]",
+        "output": "true",
+        "explanation": "153 has 3 digits. 1^3 + 5^3 + 3^3 = 1 + 125 + 27 = 153. It is an Armstrong number."
+      },
+      {
+        "input": "[123]",
+        "output": "false",
+        "explanation": "123 has 3 digits. 1^3 + 2^3 + 3^3 = 1 + 8 + 27 = 36 != 123."
+      }
+    ],
+    "explanation": "Count the number of digits, then compute the sum of each digit raised to the power of the digit count. If the sum equals the original number, it is an Armstrong number.",
+    "starterCode": "function isArmstrong(n) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[153]",
+        "expected": "true"
+      },
+      {
+        "input": "[123]",
+        "expected": "false"
+      },
+      {
+        "input": "[1]",
+        "expected": "true"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[370]",
+        "expected": "true"
+      },
+      {
+        "input": "[9474]",
+        "expected": "true"
+      },
+      {
+        "input": "[100]",
+        "expected": "false"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "capgemini-coding-2",
+    "id": "capgemini-coding-2",
+    "title": "Palindrome Number",
+    "company": "capgemini",
+    "difficulty": "Easy",
+    "category": "Math",
+    "tags": [
+      "Math",
+      "Two Pointers"
+    ],
+    "marks": 10,
+    "problemStatement": "Write a function `isPalindrome(n)` that checks whether a given integer `n` reads the same forwards and backwards. Negative numbers are not palindromes.",
+    "description": "Determine if the integer is the same when its digits are reversed.",
+    "constraints": "-2^31 <= n <= 2^31 - 1\nTime: O(D) where D is number of digits\nSpace: O(1)",
+    "inputFormat": "A single integer n.",
+    "outputFormat": "Return true if n is a palindrome, false otherwise.",
+    "examples": [
+      {
+        "input": "[121]",
+        "output": "true",
+        "explanation": "121 reversed is 121. It is a palindrome."
+      },
+      {
+        "input": "[-121]",
+        "output": "false",
+        "explanation": "Negative numbers are not palindromes. -121 reversed would be 121-."
+      }
+    ],
+    "explanation": "Reverse the digits of the number and compare with the original. Alternatively, compare digits from both ends using two pointers.",
+    "starterCode": "function isPalindrome(n) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[121]",
+        "expected": "true"
+      },
+      {
+        "input": "[-121]",
+        "expected": "false"
+      },
+      {
+        "input": "[10]",
+        "expected": "false"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[12321]",
+        "expected": "true"
+      },
+      {
+        "input": "[12345]",
+        "expected": "false"
+      },
+      {
+        "input": "[0]",
+        "expected": "true"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "capgemini-coding-3",
+    "id": "capgemini-coding-3",
+    "title": "Prime Number",
+    "company": "capgemini",
+    "difficulty": "Easy",
+    "category": "Math",
+    "tags": [
+      "Math",
+      "Number Theory"
+    ],
+    "marks": 10,
+    "problemStatement": "Write a function `isPrime(n)` that checks whether a given positive integer `n` is a prime number. A prime number is a number greater than 1 that has no positive divisors other than 1 and itself.",
+    "description": "Check if the number is only divisible by 1 and itself.",
+    "constraints": "0 <= n <= 10^9\nTime: O(sqrt(N))\nSpace: O(1)",
+    "inputFormat": "A single integer n.",
+    "outputFormat": "Return true if n is prime, false otherwise.",
+    "examples": [
+      {
+        "input": "[7]",
+        "output": "true",
+        "explanation": "7 is only divisible by 1 and 7. It is a prime number."
+      },
+      {
+        "input": "[4]",
+        "output": "false",
+        "explanation": "4 is divisible by 1, 2, and 4. It is not a prime number."
+      }
+    ],
+    "explanation": "Check divisibility from 2 up to sqrt(n). If any divisor divides n evenly, it is not prime. Numbers less than 2 are not prime.",
+    "starterCode": "function isPrime(n) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[7]",
+        "expected": "true"
+      },
+      {
+        "input": "[4]",
+        "expected": "false"
+      },
+      {
+        "input": "[1]",
+        "expected": "false"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[2]",
+        "expected": "true"
+      },
+      {
+        "input": "[97]",
+        "expected": "true"
+      },
+      {
+        "input": "[100]",
+        "expected": "false"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "capgemini-coding-4",
+    "id": "capgemini-coding-4",
+    "title": "Reverse a String",
+    "company": "capgemini",
+    "difficulty": "Easy",
+    "category": "Strings",
+    "tags": [
+      "String",
+      "Two Pointers"
+    ],
+    "marks": 10,
+    "problemStatement": "Write a function `reverseString(s)` that returns the string `s` with its characters in reverse order. The original string must not be modified.",
+    "description": "Return a new string with characters in reverse order.",
+    "constraints": "0 <= s.length <= 10^5\ns contains printable ASCII characters\nTime: O(N)\nSpace: O(N)",
+    "inputFormat": "A single string s.",
+    "outputFormat": "The reversed string.",
+    "examples": [
+      {
+        "input": "\"hello\"",
+        "output": "\"olleh\"",
+        "explanation": "The characters are reversed: h e l l o -> o l l e h."
+      },
+      {
+        "input": "\"code\"",
+        "output": "\"edoc\"",
+        "explanation": "c o d e -> e d o c."
+      }
+    ],
+    "explanation": "Split the string into characters, reverse the array and join, or iterate from the end to the start building the result.",
+    "starterCode": "function reverseString(s) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "\"hello\"",
+        "expected": "\"olleh\""
+      },
+      {
+        "input": "\"code\"",
+        "expected": "\"edoc\""
+      },
+      {
+        "input": "\"a\"",
+        "expected": "\"a\""
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "\"racecar\"",
+        "expected": "\"racecar\""
+      },
+      {
+        "input": "\"abcdef\"",
+        "expected": "\"fedcba\""
+      },
+      {
+        "input": "\"\"",
+        "expected": "\"\""
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "capgemini-coding-5",
+    "id": "capgemini-coding-5",
+    "title": "Count Vowels",
+    "company": "capgemini",
+    "difficulty": "Easy",
+    "category": "Strings",
+    "tags": [
+      "String",
+      "Counting"
+    ],
+    "marks": 10,
+    "problemStatement": "Write a function `countVowels(s)` that counts the number of vowels (a, e, i, o, u) in the given string `s`. The check should be case-insensitive.",
+    "description": "Count occurrences of a, e, i, o, u in both uppercase and lowercase.",
+    "constraints": "0 <= s.length <= 10^5\ns contains only alphabetic characters\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "A single string s.",
+    "outputFormat": "A single integer — the count of vowels.",
+    "examples": [
+      {
+        "input": "\"hello\"",
+        "output": "2",
+        "explanation": "The vowels are 'e' and 'o'. Total = 2."
+      },
+      {
+        "input": "\"AEIOU\"",
+        "output": "5",
+        "explanation": "All 5 characters are vowels."
+      }
+    ],
+    "explanation": "Iterate through each character, check if it is a vowel (case-insensitive), and increment a counter.",
+    "starterCode": "function countVowels(s) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "\"hello\"",
+        "expected": "2"
+      },
+      {
+        "input": "\"AEIOU\"",
+        "expected": "5"
+      },
+      {
+        "input": "\"xyz\"",
+        "expected": "0"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "\"Education\"",
+        "expected": "5"
+      },
+      {
+        "input": "\"rhythm\"",
+        "expected": "0"
+      },
+      {
+        "input": "\"aEiOu\"",
+        "expected": "5"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "capgemini-coding-6",
+    "id": "capgemini-coding-6",
+    "title": "Factorial",
+    "company": "capgemini",
+    "difficulty": "Easy",
+    "category": "Math",
+    "tags": [
+      "Math",
+      "Recursion"
+    ],
+    "marks": 10,
+    "problemStatement": "Write a function `factorial(n)` that returns the factorial of a non-negative integer `n`. The factorial of n is n * (n-1) * (n-2) * ... * 1, and the factorial of 0 is 1.",
+    "description": "Compute the factorial iteratively or recursively.",
+    "constraints": "0 <= n <= 20\nTime: O(N)\nSpace: O(1) iterative, O(N) recursive",
+    "inputFormat": "A single integer n.",
+    "outputFormat": "A single integer — the factorial of n.",
+    "examples": [
+      {
+        "input": "[5]",
+        "output": "120",
+        "explanation": "5! = 5 * 4 * 3 * 2 * 1 = 120."
+      },
+      {
+        "input": "[0]",
+        "output": "1",
+        "explanation": "By definition, 0! = 1."
+      }
+    ],
+    "explanation": "Multiply all integers from 1 to n together in a loop, starting from 1. Handle the base case of n=0.",
+    "starterCode": "function factorial(n) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[5]",
+        "expected": "120"
+      },
+      {
+        "input": "[0]",
+        "expected": "1"
+      },
+      {
+        "input": "[1]",
+        "expected": "1"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[7]",
+        "expected": "5040"
+      },
+      {
+        "input": "[10]",
+        "expected": "3628800"
+      },
+      {
+        "input": "[20]",
+        "expected": "2432902008176640000"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "capgemini-coding-7",
+    "id": "capgemini-coding-7",
+    "title": "Fibonacci Number",
+    "company": "capgemini",
+    "difficulty": "Easy",
+    "category": "Math",
+    "tags": [
+      "Math",
+      "Dynamic Programming"
+    ],
+    "marks": 10,
+    "problemStatement": "Write a function `fibonacci(n)` that returns the nth Fibonacci number. The Fibonacci sequence is defined as: F(0) = 0, F(1) = 1, and F(n) = F(n-1) + F(n-2) for n > 1.",
+    "description": "Compute the nth Fibonacci number iteratively.",
+    "constraints": "0 <= n <= 50\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "A single integer n.",
+    "outputFormat": "A single integer — the nth Fibonacci number.",
+    "examples": [
+      {
+        "input": "[5]",
+        "output": "5",
+        "explanation": "F(5) = F(4) + F(3) = 3 + 2 = 5. Sequence: 0, 1, 1, 2, 3, 5."
+      },
+      {
+        "input": "[0]",
+        "output": "0",
+        "explanation": "F(0) = 0 by definition."
+      }
+    ],
+    "explanation": "Use two variables to track the previous two Fibonacci numbers. Iterate from 2 to n, computing each value as the sum of the previous two.",
+    "starterCode": "function fibonacci(n) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[5]",
+        "expected": "5"
+      },
+      {
+        "input": "[0]",
+        "expected": "0"
+      },
+      {
+        "input": "[1]",
+        "expected": "1"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[10]",
+        "expected": "55"
+      },
+      {
+        "input": "[20]",
+        "expected": "6765"
+      },
+      {
+        "input": "[7]",
+        "expected": "13"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "capgemini-coding-8",
+    "id": "capgemini-coding-8",
+    "title": "Sum of Digits",
+    "company": "capgemini",
+    "difficulty": "Easy",
+    "category": "Math",
+    "tags": [
+      "Math",
+      "Digit Manipulation"
+    ],
+    "marks": 10,
+    "problemStatement": "Write a function `sumOfDigits(n)` that returns the sum of all digits of a non-negative integer `n`.",
+    "description": "Add up all the individual digits of the number.",
+    "constraints": "0 <= n <= 10^9\nTime: O(D) where D is number of digits\nSpace: O(1)",
+    "inputFormat": "A single integer n.",
+    "outputFormat": "A single integer — the sum of digits.",
+    "examples": [
+      {
+        "input": "[123]",
+        "output": "6",
+        "explanation": "1 + 2 + 3 = 6."
+      },
+      {
+        "input": "[9999]",
+        "output": "36",
+        "explanation": "9 + 9 + 9 + 9 = 36."
+      }
+    ],
+    "explanation": "Repeatedly extract the last digit using n % 10, add it to the sum, then remove it using n = Math.floor(n / 10) until n becomes 0.",
+    "starterCode": "function sumOfDigits(n) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[123]",
+        "expected": "6"
+      },
+      {
+        "input": "[9999]",
+        "expected": "36"
+      },
+      {
+        "input": "[0]",
+        "expected": "0"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[100000]",
+        "expected": "1"
+      },
+      {
+        "input": "[55555]",
+        "expected": "25"
+      },
+      {
+        "input": "[123456789]",
+        "expected": "45"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "capgemini-coding-9",
+    "id": "capgemini-coding-9",
+    "title": "Find Maximum in Array",
+    "company": "capgemini",
+    "difficulty": "Easy",
+    "category": "Arrays",
+    "tags": [
+      "Array",
+      "Linear Search"
+    ],
+    "marks": 10,
+    "problemStatement": "Write a function `findMax(arr)` that returns the largest element in a non-empty array of integers `arr`.",
+    "description": "Find and return the maximum value in the array.",
+    "constraints": "1 <= arr.length <= 10^5\n-10^9 <= arr[i] <= 10^9\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "An array of integers.",
+    "outputFormat": "A single integer — the maximum element.",
+    "examples": [
+      {
+        "input": "[3, 7, 2, 9, 1]",
+        "output": "9",
+        "explanation": "The largest element in the array is 9."
+      },
+      {
+        "input": "[-5, -1, -8]",
+        "output": "-1",
+        "explanation": "The largest element is -1."
+      }
+    ],
+    "explanation": "Initialize max to the first element. Iterate through the array, updating max whenever a larger element is found.",
+    "starterCode": "function findMax(arr) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[3, 7, 2, 9, 1]",
+        "expected": "9"
+      },
+      {
+        "input": "[-5, -1, -8]",
+        "expected": "-1"
+      },
+      {
+        "input": "[42]",
+        "expected": "42"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[1000000, 999999, 1000001]",
+        "expected": "1000001"
+      },
+      {
+        "input": "[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]",
+        "expected": "10"
+      },
+      {
+        "input": "[-100, 0, 100]",
+        "expected": "100"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "capgemini-coding-10",
+    "id": "capgemini-coding-10",
+    "title": "Second Largest Element",
+    "company": "capgemini",
+    "difficulty": "Easy",
+    "category": "Arrays",
+    "tags": [
+      "Array",
+      "Sorting"
+    ],
+    "marks": 10,
+    "problemStatement": "Write a function `secondLargest(arr)` that returns the second largest distinct element in a non-empty array of integers `arr`. If there is no second largest distinct element, return -1.",
+    "description": "Find the second largest unique element in the array.",
+    "constraints": "1 <= arr.length <= 10^5\n-10^9 <= arr[i] <= 10^9\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "An array of integers.",
+    "outputFormat": "A single integer — the second largest element, or -1 if it does not exist.",
+    "examples": [
+      {
+        "input": "[10, 5, 20, 8, 15]",
+        "output": "15",
+        "explanation": "The largest is 20, the second largest is 15."
+      },
+      {
+        "input": "[5, 5, 5]",
+        "output": "-1",
+        "explanation": "All elements are the same, so there is no second largest distinct element."
+      }
+    ],
+    "explanation": "Track the largest and second largest in a single pass. When a new largest is found, shift the old largest to second largest.",
+    "starterCode": "function secondLargest(arr) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[10, 5, 20, 8, 15]",
+        "expected": "15"
+      },
+      {
+        "input": "[5, 5, 5]",
+        "expected": "-1"
+      },
+      {
+        "input": "[1, 2]",
+        "expected": "1"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[3, 1, 4, 1, 5, 9, 2, 6]",
+        "expected": "6"
+      },
+      {
+        "input": "[-1, -2, -3]",
+        "expected": "-2"
+      },
+      {
+        "input": "[100]",
+        "expected": "-1"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "capgemini-coding-11",
+    "id": "capgemini-coding-11",
+    "title": "Binary to Decimal",
+    "company": "capgemini",
+    "difficulty": "Easy",
+    "category": "Math",
+    "tags": [
+      "String",
+      "Math"
+    ],
+    "marks": 10,
+    "problemStatement": "Write a function `binaryToDecimal(binStr)` that converts a binary string to its decimal value. The input string contains only the characters '0' and '1'.",
+    "description": "Convert a binary string representation to a decimal integer.",
+    "constraints": "1 <= binStr.length <= 20\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "A single binary string.",
+    "outputFormat": "A single integer — the decimal value.",
+    "examples": [
+      {
+        "input": "\"101\"",
+        "output": "5",
+        "explanation": "1*4 + 0*2 + 1*1 = 5."
+      },
+      {
+        "input": "\"1111\"",
+        "output": "15",
+        "explanation": "1*8 + 1*4 + 1*2 + 1*1 = 15."
+      }
+    ],
+    "explanation": "Walk through the string from left to right, doubling the running total and adding the current bit (Horner's method).",
+    "starterCode": "function binaryToDecimal(binStr) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "\"101\"",
+        "expected": "5"
+      },
+      {
+        "input": "\"1111\"",
+        "expected": "15"
+      },
+      {
+        "input": "\"1000\"",
+        "expected": "8"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "\"0\"",
+        "expected": "0"
+      },
+      {
+        "input": "\"101010\"",
+        "expected": "42"
+      },
+      {
+        "input": "\"11111111\"",
+        "expected": "255"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "capgemini-coding-12",
+    "id": "capgemini-coding-12",
+    "title": "Remove Duplicates from String",
+    "company": "capgemini",
+    "difficulty": "Easy",
+    "category": "Strings",
+    "tags": [
+      "String",
+      "Hash Set"
+    ],
+    "marks": 10,
+    "problemStatement": "Write a function `removeDuplicates(s)` that removes all duplicate characters from a string and returns a new string with each character appearing only once. The result should maintain the original order of first occurrences.",
+    "description": "Remove duplicate characters while preserving the order of first occurrence.",
+    "constraints": "0 <= s.length <= 10^5\ns contains lowercase English letters only\nTime: O(N)\nSpace: O(1) since at most 26 characters",
+    "inputFormat": "A single string s.",
+    "outputFormat": "A string with duplicate characters removed.",
+    "examples": [
+      {
+        "input": "\"programming\"",
+        "output": "\"progamin\"",
+        "explanation": "First occurrence of each character is kept: p, r, o, g, a, m, i, n."
+      },
+      {
+        "input": "\"abcde\"",
+        "output": "\"abcde\"",
+        "explanation": "No duplicates, so the string remains unchanged."
+      }
+    ],
+    "explanation": "Use a set to track characters already seen. Iterate through the string, appending each character to the result only if it hasn't been seen before.",
+    "starterCode": "function removeDuplicates(s) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "\"programming\"",
+        "expected": "\"progamin\""
+      },
+      {
+        "input": "\"abcde\"",
+        "expected": "\"abcde\""
+      },
+      {
+        "input": "\"aabbcc\"",
+        "expected": "\"abc\""
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "\"abracadabra\"",
+        "expected": "\"abrcd\""
+      },
+      {
+        "input": "\"xyzxyz\"",
+        "expected": "\"xyz\""
+      },
+      {
+        "input": "\"aaaaa\"",
+        "expected": "\"a\""
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "capgemini-coding-13",
+    "id": "capgemini-coding-13",
+    "title": "Two Sum",
+    "company": "capgemini",
+    "difficulty": "Medium",
+    "category": "Arrays",
+    "tags": [
+      "Array",
+      "Hash Map"
+    ],
+    "marks": 10,
+    "problemStatement": "Write a function `twoSum(nums, target)` that returns the indices of two numbers in the array `nums` that add up to `target`. You may assume that each input has exactly one solution, and you may not use the same element twice. Return the indices as a two-element array.",
+    "description": "Find two numbers whose sum equals the target and return their indices.",
+    "constraints": "2 <= nums.length <= 10^5\n-10^9 <= nums[i] <= 10^9\n-10^9 <= target <= 10^9\nTime: O(N)\nSpace: O(N)",
+    "inputFormat": "An array of integers nums, and an integer target.",
+    "outputFormat": "An array of two indices [i, j] where nums[i] + nums[j] == target.",
+    "examples": [
+      {
+        "input": "[2, 7, 11, 15], 9",
+        "output": "[0, 1]",
+        "explanation": "nums[0] + nums[1] = 2 + 7 = 9."
+      },
+      {
+        "input": "[3, 2, 4], 6",
+        "output": "[1, 2]",
+        "explanation": "nums[1] + nums[2] = 2 + 4 = 6."
+      }
+    ],
+    "explanation": "Use a hash map to store each number's index. For each element, check if (target - element) exists in the map. If yes, return both indices.",
+    "starterCode": "function twoSum(nums, target) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[2, 7, 11, 15], 9",
+        "expected": "[0, 1]"
+      },
+      {
+        "input": "[3, 2, 4], 6",
+        "expected": "[1, 2]"
+      },
+      {
+        "input": "[3, 3], 6",
+        "expected": "[0, 1]"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[1, 5, 3, 7, 8], 12",
+        "expected": "[2, 3]"
+      },
+      {
+        "input": "[-1, -2, -3, -4, -5], -8",
+        "expected": "[2, 4]"
+      },
+      {
+        "input": "[0, 4, 3, 0], 0",
+        "expected": "[0, 3]"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "capgemini-coding-14",
+    "id": "capgemini-coding-14",
+    "title": "Rotate Array",
+    "company": "capgemini",
+    "difficulty": "Medium",
+    "category": "Arrays",
+    "tags": [
+      "Array",
+      "Reversal"
+    ],
+    "marks": 10,
+    "problemStatement": "Write a function `rotateArray(arr, k)` that rotates the array `arr` to the right by `k` positions. Elements that fall off the end reappear at the beginning.",
+    "description": "Rotate the array right by k steps.",
+    "constraints": "1 <= arr.length <= 10^5\n0 <= k <= 10^5\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "An array of integers arr, and an integer k.",
+    "outputFormat": "The rotated array.",
+    "examples": [
+      {
+        "input": "[1, 2, 3, 4, 5], 2",
+        "output": "[4, 5, 1, 2, 3]",
+        "explanation": "Rotating [1,2,3,4,5] right by 2 gives [4,5,1,2,3]."
+      },
+      {
+        "input": "[10, 20, 30, 40], 1",
+        "output": "[40, 10, 20, 30]",
+        "explanation": "Rotating right by 1 moves the last element to the front."
+      }
+    ],
+    "explanation": "Use the three-step reversal algorithm: (1) reverse the entire array, (2) reverse the first k elements, (3) reverse the remaining elements. This achieves O(1) extra space.",
+    "starterCode": "function rotateArray(arr, k) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[1, 2, 3, 4, 5], 2",
+        "expected": "[4, 5, 1, 2, 3]"
+      },
+      {
+        "input": "[10, 20, 30, 40], 1",
+        "expected": "[40, 10, 20, 30]"
+      },
+      {
+        "input": "[1, 2, 3], 3",
+        "expected": "[1, 2, 3]"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[1, 2, 3, 4, 5, 6, 7], 3",
+        "expected": "[5, 6, 7, 1, 2, 3, 4]"
+      },
+      {
+        "input": "[1, 2], 5",
+        "expected": "[2, 1]"
+      },
+      {
+        "input": "[1], 0",
+        "expected": "[1]"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "capgemini-coding-15",
+    "id": "capgemini-coding-15",
+    "title": "Merge Sorted Arrays",
+    "company": "capgemini",
+    "difficulty": "Medium",
+    "category": "Arrays",
+    "tags": [
+      "Array",
+      "Two Pointers",
+      "Sorting"
+    ],
+    "marks": 10,
+    "problemStatement": "Write a function `mergeSorted(arr1, arr2)` that merges two sorted arrays of integers into a single sorted array.",
+    "description": "Combine two sorted arrays into one sorted array.",
+    "constraints": "0 <= arr1.length, arr2.length <= 10^5\n-10^9 <= arr1[i], arr2[i] <= 10^9\nTime: O(N + M)\nSpace: O(N + M)",
+    "inputFormat": "Two sorted arrays of integers.",
+    "outputFormat": "A single sorted array containing all elements from both input arrays.",
+    "examples": [
+      {
+        "input": "[1, 3, 5], [2, 4, 6]",
+        "output": "[1, 2, 3, 4, 5, 6]",
+        "explanation": "Merging two sorted arrays produces [1,2,3,4,5,6]."
+      },
+      {
+        "input": "[1, 2, 3], []",
+        "output": "[1, 2, 3]",
+        "explanation": "Second array is empty, result is the first array."
+      }
+    ],
+    "explanation": "Use two pointers, one for each array. At each step, pick the smaller element and advance that pointer. Append remaining elements when one array is exhausted.",
+    "starterCode": "function mergeSorted(arr1, arr2) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[1, 3, 5], [2, 4, 6]",
+        "expected": "[1, 2, 3, 4, 5, 6]"
+      },
+      {
+        "input": "[1, 2, 3], []",
+        "expected": "[1, 2, 3]"
+      },
+      {
+        "input": "[], [4, 5, 6]",
+        "expected": "[4, 5, 6]"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[1, 1, 1], [1, 1, 1]",
+        "expected": "[1, 1, 1, 1, 1, 1]"
+      },
+      {
+        "input": "[1, 3, 5, 7], [2, 4, 6, 8]",
+        "expected": "[1, 2, 3, 4, 5, 6, 7, 8]"
+      },
+      {
+        "input": "[-5, -3, -1], [-4, -2, 0]",
+        "expected": "[-5, -4, -3, -2, -1, 0]"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "capgemini-coding-16",
+    "id": "capgemini-coding-16",
+    "title": "Longest Common Prefix",
+    "company": "capgemini",
+    "difficulty": "Medium",
+    "category": "Strings",
+    "tags": [
+      "String",
+      "Trie"
+    ],
+    "marks": 10,
+    "problemStatement": "Write a function `longestCommonPrefix(strs)` that finds the longest common prefix string among an array of strings. If there is no common prefix, return an empty string.",
+    "description": "Find the longest prefix common to all strings in the array.",
+    "constraints": "0 <= strs.length <= 200\n0 <= strs[i].length <= 200\nstrs[i] contains only lowercase English letters\nTime: O(S) where S is the sum of all characters\nSpace: O(1)",
+    "inputFormat": "An array of strings.",
+    "outputFormat": "A string — the longest common prefix.",
+    "examples": [
+      {
+        "input": "[\"flower\", \"flow\", \"flight\"]",
+        "output": "\"fl\"",
+        "explanation": "The longest common prefix is \"fl\"."
+      },
+      {
+        "input": "[\"dog\", \"racecar\", \"car\"]",
+        "output": "\"\"",
+        "explanation": "There is no common prefix."
+      }
+    ],
+    "explanation": "Compare characters at each position across all strings. Stop when a mismatch is found or when any string is exhausted. The prefix up to that point is the answer.",
+    "starterCode": "function longestCommonPrefix(strs) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[\"flower\", \"flow\", \"flight\"]",
+        "expected": "\"fl\""
+      },
+      {
+        "input": "[\"dog\", \"racecar\", \"car\"]",
+        "expected": "\"\""
+      },
+      {
+        "input": "[\"apple\", \"app\", \"application\"]",
+        "expected": "\"app\""
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[\"same\", \"same\", \"same\"]",
+        "expected": "\"same\""
+      },
+      {
+        "input": "[\"a\"]",
+        "expected": "\"a\""
+      },
+      {
+        "input": "[\"prefix\", \"pre\", \"present\"]",
+        "expected": "\"pre\""
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "capgemini-coding-17",
+    "id": "capgemini-coding-17",
+    "title": "Valid Parentheses",
+    "company": "capgemini",
+    "difficulty": "Medium",
+    "category": "Stack",
+    "tags": [
+      "Stack",
+      "String"
+    ],
+    "marks": 10,
+    "problemStatement": "Write a function `isValid(s)` that determines if the input string `s` containing only the characters '(', ')', '{', '}', '[' and ']' is valid. A string is valid if open brackets are closed by the same type of bracket and in the correct order.",
+    "description": "Check if all brackets are properly matched and nested.",
+    "constraints": "0 <= s.length <= 10^4\ns consists of parentheses only\nTime: O(N)\nSpace: O(N)",
+    "inputFormat": "A string s containing bracket characters.",
+    "outputFormat": "Return true if the string is valid, false otherwise.",
+    "examples": [
+      {
+        "input": "\"()[]{}\"",
+        "output": "true",
+        "explanation": "All brackets are properly matched."
+      },
+      {
+        "input": "\"(]\"",
+        "output": "false",
+        "explanation": "Parenthesis '(' is closed by ']', which is not its matching type."
+      }
+    ],
+    "explanation": "Use a stack. Push opening brackets onto the stack. When a closing bracket is encountered, check if it matches the top of the stack. The string is valid if the stack is empty at the end.",
+    "starterCode": "function isValid(s) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "\"()[]{}\"",
+        "expected": "true"
+      },
+      {
+        "input": "\"(]\"",
+        "expected": "false"
+      },
+      {
+        "input": "\"([])\"",
+        "expected": "true"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "\"{[()]}\"",
+        "expected": "true"
+      },
+      {
+        "input": "\"((()))\"",
+        "expected": "true"
+      },
+      {
+        "input": "\"([)]\"",
+        "expected": "false"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "capgemini-coding-18",
+    "id": "capgemini-coding-18",
+    "title": "Character Frequency",
+    "company": "capgemini",
+    "difficulty": "Medium",
+    "category": "Strings",
+    "tags": [
+      "String",
+      "Hash Map"
+    ],
+    "marks": 10,
+    "problemStatement": "Write a function `charFrequency(s)` that returns the frequency of each character in the string `s`. Return the result as an object/map where keys are characters and values are their counts.",
+    "description": "Count the occurrence of each character in the string.",
+    "constraints": "0 <= s.length <= 10^5\ns contains printable ASCII characters\nTime: O(N)\nSpace: O(1) since at most 256 distinct characters",
+    "inputFormat": "A single string s.",
+    "outputFormat": "A map/object of character frequencies.",
+    "examples": [
+      {
+        "input": "\"hello\"",
+        "output": "{h: 1, e: 1, l: 2, o: 1}",
+        "explanation": "'l' appears twice, all other characters appear once."
+      },
+      {
+        "input": "\"aabbcc\"",
+        "output": "{a: 2, b: 2, c: 2}",
+        "explanation": "Each character appears exactly twice."
+      }
+    ],
+    "explanation": "Iterate through the string and use a hash map to count occurrences of each character. Increment the count for each character encountered.",
+    "starterCode": "function charFrequency(s) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "\"hello\"",
+        "expected": "{\"h\": 1, \"e\": 1, \"l\": 2, \"o\": 1}"
+      },
+      {
+        "input": "\"aabbcc\"",
+        "expected": "{\"a\": 2, \"b\": 2, \"c\": 2}"
+      },
+      {
+        "input": "\"abc\"",
+        "expected": "{\"a\": 1, \"b\": 1, \"c\": 1}"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "\"mississippi\"",
+        "expected": "{\"m\": 1, \"i\": 4, \"s\": 4, \"p\": 2}"
+      },
+      {
+        "input": "\"aaaa\"",
+        "expected": "{\"a\": 4}"
+      },
+      {
+        "input": "\"\"",
+        "expected": "{}"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "capgemini-coding-19",
+    "id": "capgemini-coding-19",
+    "title": "Matrix Spiral Order",
+    "company": "capgemini",
+    "difficulty": "Medium",
+    "category": "Arrays",
+    "tags": [
+      "Array",
+      "Matrix",
+      "Simulation"
+    ],
+    "marks": 10,
+    "problemStatement": "Write a function `spiralOrder(matrix)` that returns all elements of an m x n matrix in spiral order (clockwise from the top-left corner).",
+    "description": "Traverse a 2D matrix in spiral/clockwise order.",
+    "constraints": "1 <= matrix.length, matrix[0].length <= 10\n-100 <= matrix[i][j] <= 100\nTime: O(M * N)\nSpace: O(1) excluding output",
+    "inputFormat": "A 2D matrix of integers.",
+    "outputFormat": "A flat array of integers in spiral order.",
+    "examples": [
+      {
+        "input": "[[1,2,3],[4,5,6],[7,8,9]]",
+        "output": "[1, 2, 3, 6, 9, 8, 7, 4, 5]",
+        "explanation": "Traverse top row left-to-right, right column top-to-bottom, bottom row right-to-left, left column bottom-to-top, then center."
+      },
+      {
+        "input": "[[1,2,3,4],[5,6,7,8],[9,10,11,12]]",
+        "output": "[1, 2, 3, 4, 8, 12, 11, 10, 9, 5, 6, 7]",
+        "explanation": "Traverse layer by layer in a spiral."
+      }
+    ],
+    "explanation": "Use four boundaries: top, bottom, left, right. Traverse right along the top row, down along the right column, left along the bottom row, and up along the left column. Shrink the boundaries after each pass.",
+    "starterCode": "function spiralOrder(matrix) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[[1,2,3],[4,5,6],[7,8,9]]",
+        "expected": "[1, 2, 3, 6, 9, 8, 7, 4, 5]"
+      },
+      {
+        "input": "[[1,2],[3,4]]",
+        "expected": "[1, 2, 4, 3]"
+      },
+      {
+        "input": "[[1]]",
+        "expected": "[1]"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[[1,2,3,4],[5,6,7,8],[9,10,11,12]]",
+        "expected": "[1, 2, 3, 4, 8, 12, 11, 10, 9, 5, 6, 7]"
+      },
+      {
+        "input": "[[1,2,3],[4,5,6]]",
+        "expected": "[1, 2, 3, 6, 5, 4]"
+      },
+      {
+        "input": "[[1],[2],[3]]",
+        "expected": "[1, 2, 3]"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "capgemini-coding-20",
+    "id": "capgemini-coding-20",
+    "title": "Maximum Subarray Sum",
+    "company": "capgemini",
+    "difficulty": "Medium",
+    "category": "Arrays",
+    "tags": [
+      "Array",
+      "Dynamic Programming",
+      "Kadane"
+    ],
+    "marks": 10,
+    "problemStatement": "Write a function `maxSubarraySum(arr)` that finds the contiguous subarray (containing at least one element) which has the largest sum and returns that sum. This is the classic Kadane's algorithm problem.",
+    "description": "Find the maximum sum of any contiguous subarray.",
+    "constraints": "1 <= arr.length <= 10^5\n-10^4 <= arr[i] <= 10^4\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "An array of integers.",
+    "outputFormat": "A single integer — the maximum subarray sum.",
+    "examples": [
+      {
+        "input": "[-2, 1, -3, 4, -1, 2, 1, -5, 4]",
+        "output": "6",
+        "explanation": "The subarray [4, -1, 2, 1] has the largest sum = 6."
+      },
+      {
+        "input": "[1]",
+        "output": "1",
+        "explanation": "The only element is the maximum subarray."
+      }
+    ],
+    "explanation": "Use Kadane's algorithm: maintain a running sum. If the running sum becomes negative, reset it to 0. Track the maximum sum seen so far at each step.",
+    "starterCode": "function maxSubarraySum(arr) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[-2, 1, -3, 4, -1, 2, 1, -5, 4]",
+        "expected": "6"
+      },
+      {
+        "input": "[1]",
+        "expected": "1"
+      },
+      {
+        "input": "[5, 4, -1, 7, 8]",
+        "expected": "23"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[-1, -2, -3, -4]",
+        "expected": "-1"
+      },
+      {
+        "input": "[1, 2, 3, 4, 5]",
+        "expected": "15"
+      },
+      {
+        "input": "[-3, 5, -2, 6, -1]",
+        "expected": "9"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "capgemini-coding-21",
+    "id": "capgemini-coding-21",
+    "title": "Sort Array by Parity",
+    "company": "capgemini",
+    "difficulty": "Medium",
+    "category": "Arrays",
+    "tags": [
+      "Array",
+      "Two Pointers",
+      "Sorting"
+    ],
+    "marks": 10,
+    "problemStatement": "Write a function `sortArrayByParity(arr)` that sorts an array of integers so that all even numbers come before all odd numbers. The relative order of even and odd numbers does not need to be preserved.",
+    "description": "Rearrange the array with even numbers first, followed by odd numbers.",
+    "constraints": "1 <= arr.length <= 10^5\n0 <= arr[i] <= 10^5\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "An array of integers.",
+    "outputFormat": "The rearranged array with even numbers first.",
+    "examples": [
+      {
+        "input": "[3, 1, 2, 4]",
+        "output": "[2, 4, 3, 1]",
+        "explanation": "Even numbers [2, 4] come first, then odd [3, 1]."
+      },
+      {
+        "input": "[0]",
+        "output": "[0]",
+        "explanation": "Single even number stays in place."
+      }
+    ],
+    "explanation": "Use two pointers: one from the left for even numbers, one from the right for odd numbers. Swap elements when they are in the wrong partition.",
+    "starterCode": "function sortArrayByParity(arr) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[3, 1, 2, 4]",
+        "expected": "[2, 4, 3, 1]"
+      },
+      {
+        "input": "[0]",
+        "expected": "[0]"
+      },
+      {
+        "input": "[2, 4, 6]",
+        "expected": "[2, 4, 6]"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[1, 3, 5, 7]",
+        "expected": "[1, 3, 5, 7]"
+      },
+      {
+        "input": "[1, 2, 3, 4, 5, 6]",
+        "expected": "[2, 4, 6, 1, 3, 5]"
+      },
+      {
+        "input": "[10, 1, 3, 20, 5]",
+        "expected": "[10, 20, 1, 3, 5]"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "capgemini-coding-22",
+    "id": "capgemini-coding-22",
+    "title": "Check Anagram",
+    "company": "capgemini",
+    "difficulty": "Medium",
+    "category": "Strings",
+    "tags": [
+      "String",
+      "Hash Map",
+      "Sorting"
+    ],
+    "marks": 10,
+    "problemStatement": "Write a function `isAnagram(s, t)` that determines if string `t` is an anagram of string `s`. An anagram is a word formed by rearranging the letters of another word, using all the original letters exactly once.",
+    "description": "Check if both strings contain the same characters with the same frequencies.",
+    "constraints": "1 <= s.length, t.length <= 5 * 10^4\ns and t consist of lowercase English letters\nTime: O(N)\nSpace: O(1) since at most 26 characters",
+    "inputFormat": "Two strings s and t.",
+    "outputFormat": "Return true if t is an anagram of s, false otherwise.",
+    "examples": [
+      {
+        "input": "\"anagram\", \"nagaram\"",
+        "output": "true",
+        "explanation": "\"nagaram\" is formed by rearranging the letters of \"anagram\"."
+      },
+      {
+        "input": "\"rat\", \"car\"",
+        "output": "false",
+        "explanation": "\"car\" cannot be formed from the letters of \"rat\"."
+      }
+    ],
+    "explanation": "Count the frequency of each character in both strings using a hash map or an array of size 26. Compare the two frequency maps. Alternatively, sort both strings and compare.",
+    "starterCode": "function isAnagram(s, t) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "\"anagram\", \"nagaram\"",
+        "expected": "true"
+      },
+      {
+        "input": "\"rat\", \"car\"",
+        "expected": "false"
+      },
+      {
+        "input": "\"listen\", \"silent\"",
+        "expected": "true"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "\"hello\", \"olleh\"",
+        "expected": "true"
+      },
+      {
+        "input": "\"aab\", \"abb\"",
+        "expected": "false"
+      },
+      {
+        "input": "\"a\", \"a\"",
+        "expected": "true"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "capgemini-coding-23",
+    "id": "capgemini-coding-23",
+    "title": "Flatten Nested Array",
+    "company": "capgemini",
+    "difficulty": "Medium",
+    "category": "Arrays",
+    "tags": [
+      "Array",
+      "Recursion"
+    ],
+    "marks": 10,
+    "problemStatement": "Write a function `flatten(arr)` that takes a deeply nested array `arr` and returns a new array with all elements flattened into a single level. The input may contain arrays nested to arbitrary depth.",
+    "description": "Flatten a multi-dimensional array into a single-dimensional array.",
+    "constraints": "0 <= arr.length <= 10^4\nElements can be integers or arrays\nTime: O(N) where N is the total number of elements\nSpace: O(N)",
+    "inputFormat": "A nested array of integers and sub-arrays.",
+    "outputFormat": "A flat (single-level) array.",
+    "examples": [
+      {
+        "input": "[1, [2, [3, 4], 5], 6]",
+        "output": "[1, 2, 3, 4, 5, 6]",
+        "explanation": "All nested arrays are recursively flattened."
+      },
+      {
+        "input": "[[1, 2], [3, [4, [5]]]]",
+        "output": "[1, 2, 3, 4, 5]",
+        "explanation": "Deeply nested structure is fully flattened."
+      }
+    ],
+    "explanation": "Use recursion: iterate through each element. If an element is an array, recursively flatten it. Otherwise, add it to the result.",
+    "starterCode": "function flatten(arr) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[1, [2, [3, 4], 5], 6]",
+        "expected": "[1, 2, 3, 4, 5, 6]"
+      },
+      {
+        "input": "[[1, 2], [3, 4]]",
+        "expected": "[1, 2, 3, 4]"
+      },
+      {
+        "input": "[]",
+        "expected": "[]"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[1, [2, [3, [4, [5]]]]]",
+        "expected": "[1, 2, 3, 4, 5]"
+      },
+      {
+        "input": "[[[], 1], [], [2, [3]]]",
+        "expected": "[1, 2, 3]"
+      },
+      {
+        "input": "[[[[1]]]]",
+        "expected": "[1]"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "capgemini-coding-24",
+    "id": "capgemini-coding-24",
+    "title": "Circular Queue",
+    "company": "capgemini",
+    "difficulty": "Medium",
+    "category": "Stack",
+    "tags": [
+      "Queue",
+      "Circular Buffer",
+      "Data Structure"
+    ],
+    "marks": 10,
+    "problemStatement": "Implement a circular queue `CircularQueue` with the following methods: `enqueue(value)` adds an element to the rear, `dequeue()` removes and returns the front element, `peek()` returns the front element without removing it, `isEmpty()` checks if the queue is empty, and `isFull()` checks if the queue is full.",
+    "description": "Design a fixed-size circular queue using an array.",
+    "constraints": "1 <= capacity <= 1000\n-10^9 <= value <= 10^9\nAll operations should be O(1) time\nSpace: O(capacity)",
+    "inputFormat": "A series of operations: enqueue(value), dequeue(), peek(), isEmpty(), isFull().",
+    "outputFormat": "Return the result of each operation. dequeue returns the removed value, peek returns the front value, isEmpty/isFull return boolean.",
+    "examples": [
+      {
+        "input": "CircularQueue(3), enqueue(1), enqueue(2), enqueue(3), peek(), dequeue(), enqueue(4), isFull()",
+        "output": "1, true",
+        "explanation": "After enqueueing 1,2,3: peek returns 1. After dequeue, front becomes 2. After enqueue(4), isFull returns true."
+      },
+      {
+        "input": "CircularQueue(2), enqueue(1), enqueue(2), dequeue(), dequeue(), isEmpty()",
+        "output": "1, 2, true",
+        "explanation": "Dequeue returns 1 then 2. Queue is now empty."
+      }
+    ],
+    "explanation": "Use an array with front and rear pointers. The rear pointer wraps around to the beginning when it reaches the end. A count variable tracks the number of elements to distinguish between full and empty states.",
+    "starterCode": "class CircularQueue {\n  constructor(capacity) {\n    // Initialize your queue\n  }\n  enqueue(value) {\n    // Write your code here\n  }\n  dequeue() {\n    // Write your code here\n  }\n  peek() {\n    // Write your code here\n  }\n  isEmpty() {\n    // Write your code here\n  }\n  isFull() {\n    // Write your code here\n  }\n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "CircularQueue(3).enqueue(1).enqueue(2).enqueue(3).dequeue().enqueue(4).isFull()",
+        "expected": "true"
+      },
+      {
+        "input": "CircularQueue(2).enqueue(1).enqueue(2).dequeue().dequeue().isEmpty()",
+        "expected": "true"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "CircularQueue(1).enqueue(5).peek()",
+        "expected": "5"
+      },
+      {
+        "input": "CircularQueue(3).enqueue(1).dequeue().enqueue(2).enqueue(3).peek()",
+        "expected": "2"
+      },
+      {
+        "input": "CircularQueue(2).isEmpty().isFull()",
+        "expected": "true, false"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "capgemini-coding-25",
+    "id": "capgemini-coding-25",
+    "title": "Linked List Reversal",
+    "company": "capgemini",
+    "difficulty": "Medium",
+    "category": "LinkedList",
+    "tags": [
+      "Linked List",
+      "In-place"
+    ],
+    "marks": 10,
+    "problemStatement": "Write a function `reverseList(head)` that reverses a singly linked list and returns the new head. You must reverse the list in-place (i.e., modify the existing nodes' next pointers).",
+    "description": "Reverse the direction of all links in a singly linked list.",
+    "constraints": "0 <= number of nodes <= 10^4\n-5000 <= node.val <= 5000\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "The head node of a singly linked list.",
+    "outputFormat": "The head node of the reversed linked list.",
+    "examples": [
+      {
+        "input": "[1, 2, 3, 4, 5]",
+        "output": "[5, 4, 3, 2, 1]",
+        "explanation": "The linked list 1->2->3->4->5 is reversed to 5->4->3->2->1."
+      },
+      {
+        "input": "[1, 2]",
+        "output": "[2, 1]",
+        "explanation": "The list 1->2 becomes 2->1."
+      }
+    ],
+    "explanation": "Use three pointers: prev, current, and next. At each step, store the next node, reverse the current node's pointer to point to prev, then advance all three pointers by one step.",
+    "starterCode": "function reverseList(head) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[1, 2, 3, 4, 5]",
+        "expected": "[5, 4, 3, 2, 1]"
+      },
+      {
+        "input": "[1, 2]",
+        "expected": "[2, 1]"
+      },
+      {
+        "input": "[]",
+        "expected": "[]"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[1]",
+        "expected": "[1]"
+      },
+      {
+        "input": "[1, 2, 3]",
+        "expected": "[3, 2, 1]"
+      },
+      {
+        "input": "[10, 20, 30, 40]",
+        "expected": "[40, 30, 20, 10]"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "capgemini-coding-26",
+    "id": "capgemini-coding-26",
+    "title": "String Compression",
+    "company": "capgemini",
+    "difficulty": "Medium",
+    "category": "Strings",
+    "tags": [
+      "String",
+      "Two Pointers"
+    ],
+    "marks": 10,
+    "problemStatement": "Write a function `compressString(s)` that performs basic run-length encoding on a string. Given a string `s`, compress it by replacing consecutive repeated characters with the character followed by the count of repetitions. If a character appears only once, just output the character without the count.",
+    "description": "Compress the string using run-length encoding.",
+    "constraints": "1 <= s.length <= 10^5\ns consists of lowercase English letters only\nTime: O(N)\nSpace: O(N)",
+    "inputFormat": "A single string s.",
+    "outputFormat": "The compressed string.",
+    "examples": [
+      {
+        "input": "\"aabcccccaaa\"",
+        "output": "\"a2b1c5a3\"",
+        "explanation": "a appears 2 times, b once, c 5 times, a 3 times."
+      },
+      {
+        "input": "\"abcdef\"",
+        "output": "\"abcdef\"",
+        "explanation": "No consecutive duplicates, so the string remains the same."
+      }
+    ],
+    "explanation": "Use two pointers: one to scan the string, one to build the result. Count consecutive identical characters and append the character and its count to the result.",
+    "starterCode": "function compressString(s) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "\"aabcccccaaa\"",
+        "expected": "\"a2b1c5a3\""
+      },
+      {
+        "input": "\"abcdef\"",
+        "expected": "\"abcdef\""
+      },
+      {
+        "input": "\"aaabbb\"",
+        "expected": "\"a3b3\""
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "\"aaaaaaaaaa\"",
+        "expected": "\"a10\""
+      },
+      {
+        "input": "\"aabb\"",
+        "expected": "\"a2b2\""
+      },
+      {
+        "input": "\"ab\"",
+        "expected": "\"ab\""
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "capgemini-coding-27",
+    "id": "capgemini-coding-27",
+    "title": "LRU Cache",
+    "company": "capgemini",
+    "difficulty": "Hard",
+    "category": "LinkedList",
+    "tags": [
+      "Linked List",
+      "Hash Map",
+      "Design"
+    ],
+    "marks": 10,
+    "problemStatement": "Design a data structure that follows the constraints of a Least Recently Used (LRU) cache. Implement the `LRUCache` class with `get(key)` and `put(key, value)` methods. Both operations must run in O(1) average time complexity. When the cache reaches its capacity, the least recently used item should be evicted before inserting a new item.",
+    "description": "Implement an LRU Cache with O(1) get and put operations.",
+    "constraints": "1 <= capacity <= 3000\n0 <= key <= 10^4\n0 <= value <= 10^5\nAt most 2 * 10^5 calls to get and put\nTime: O(1) per operation\nSpace: O(capacity)",
+    "inputFormat": "A capacity value, followed by a series of get(key) and put(key, value) calls.",
+    "outputFormat": "get(key) returns the value or -1 if not found. put(key, value) has no return value.",
+    "examples": [
+      {
+        "input": "LRUCache(2), put(1,1), put(2,2), get(1), put(3,3), get(2)",
+        "output": "1, -1",
+        "explanation": "After putting 1 and 2, get(1) returns 1. put(3) evicts key 2 (least recently used). get(2) returns -1."
+      },
+      {
+        "input": "LRUCache(1), put(1,1), put(2,2), get(1)",
+        "output": "-1",
+        "explanation": "put(2) evicts key 1. get(1) returns -1."
+      }
+    ],
+    "explanation": "Use a doubly linked list combined with a hash map. The hash map maps keys to linked list nodes for O(1) access. The linked list maintains order: most recently used at the head, least recently used at the tail.",
+    "starterCode": "class LRUCache {\n  constructor(capacity) {\n    // Initialize your LRU cache\n  }\n  get(key) {\n    // Write your code here\n  }\n  put(key, value) {\n    // Write your code here\n  }\n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "LRUCache(2).put(1,1).put(2,2).get(1).put(3,3).get(2)",
+        "expected": "1, -1"
+      },
+      {
+        "input": "LRUCache(1).put(1,1).put(2,2).get(1)",
+        "expected": "-1"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "LRUCache(2).put(1,10).put(2,20).get(1).put(3,30).get(2).put(4,40).get(1).get(3).get(4)",
+        "expected": "10, -1, 30, 40"
+      },
+      {
+        "input": "LRUCache(3).put(1,1).put(2,2).put(3,3).put(4,4).get(1).get(2)",
+        "expected": "-1, -1"
+      },
+      {
+        "input": "LRUCache(2).put(1,1).put(2,2).get(1).put(3,3).put(4,4).get(1).get(3).get(4)",
+        "expected": "1, -1, 4"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "capgemini-coding-28",
+    "id": "capgemini-coding-28",
+    "title": "Merge Intervals",
+    "company": "capgemini",
+    "difficulty": "Hard",
+    "category": "Arrays",
+    "tags": [
+      "Array",
+      "Sorting"
+    ],
+    "marks": 10,
+    "problemStatement": "Write a function `mergeIntervals(intervals)` that takes an array of intervals where intervals[i] = [start, end] and merges all overlapping intervals. Return an array of the non-overlapping intervals that cover all the intervals in the input.",
+    "description": "Merge all overlapping intervals and return the merged result.",
+    "constraints": "1 <= intervals.length <= 10^4\nintervals[i].length == 2\n0 <= start <= end <= 10^4\nTime: O(N log N)\nSpace: O(N)",
+    "inputFormat": "An array of intervals [start, end].",
+    "outputFormat": "An array of merged non-overlapping intervals.",
+    "examples": [
+      {
+        "input": "[[1,3],[2,6],[8,10],[15,18]]",
+        "output": "[[1,6],[8,10],[15,18]]",
+        "explanation": "Intervals [1,3] and [2,6] overlap and merge to [1,6]. Others remain separate."
+      },
+      {
+        "input": "[[1,4],[4,5]]",
+        "output": "[[1,5]]",
+        "explanation": "Intervals [1,4] and [4,5] are adjacent and merge to [1,5]."
+      }
+    ],
+    "explanation": "Sort intervals by start time. Iterate through them, merging the current interval with the last one in the result if they overlap (current start <= last end).",
+    "starterCode": "function mergeIntervals(intervals) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[[1,3],[2,6],[8,10],[15,18]]",
+        "expected": "[[1,6],[8,10],[15,18]]"
+      },
+      {
+        "input": "[[1,4],[4,5]]",
+        "expected": "[[1,5]]"
+      },
+      {
+        "input": "[[1,4],[2,3]]",
+        "expected": "[[1,4]]"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[[1,4],[0,4]]",
+        "expected": "[[0,4]]"
+      },
+      {
+        "input": "[[1,4],[2,3],[5,7],[6,8]]",
+        "expected": "[[1,4],[5,8]]"
+      },
+      {
+        "input": "[[1,10],[2,3],[5,7]]",
+        "expected": "[[1,10]]"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "capgemini-coding-29",
+    "id": "capgemini-coding-29",
+    "title": "Trapping Rain Water",
+    "company": "capgemini",
+    "difficulty": "Hard",
+    "category": "Arrays",
+    "tags": [
+      "Array",
+      "Two Pointers",
+      "Stack"
+    ],
+    "marks": 10,
+    "problemStatement": "Write a function `trap(height)` that computes how much water it can trap after raining, given an array of non-negative integers `height` where each element represents the height of a bar of width 1.",
+    "description": "Calculate the total units of water trapped between bars.",
+    "constraints": "1 <= height.length <= 2 * 10^4\n0 <= height[i] <= 10^5\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "An array of non-negative integers representing bar heights.",
+    "outputFormat": "A single integer — the total units of trapped water.",
+    "examples": [
+      {
+        "input": "[0,1,0,2,1,0,1,3,2,1,2,1]",
+        "output": "6",
+        "explanation": "Water is trapped at positions where bars are lower than the max height on both sides. Total = 6 units."
+      },
+      {
+        "input": "[4,2,0,3,2,5]",
+        "output": "9",
+        "explanation": "Water trapped: 4+1+4+1+0 = 9 units."
+      }
+    ],
+    "explanation": "Use two pointers from both ends. Track the maximum height seen from the left and right. At each step, process the side with the smaller max height. Water trapped at each position = min(leftMax, rightMax) - height[i].",
+    "starterCode": "function trap(height) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[0,1,0,2,1,0,1,3,2,1,2,1]",
+        "expected": "6"
+      },
+      {
+        "input": "[4,2,0,3,2,5]",
+        "expected": "9"
+      },
+      {
+        "input": "[1,0,1]",
+        "expected": "1"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[0]",
+        "expected": "0"
+      },
+      {
+        "input": "[1,2,3,4,5]",
+        "expected": "0"
+      },
+      {
+        "input": "[5,4,3,2,1]",
+        "expected": "0"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "capgemini-coding-30",
+    "id": "capgemini-coding-30",
+    "title": "Sliding Window Maximum",
+    "company": "capgemini",
+    "difficulty": "Hard",
+    "category": "Arrays",
+    "tags": [
+      "Array",
+      "Deque",
+      "Sliding Window"
+    ],
+    "marks": 10,
+    "problemStatement": "Write a function `maxSlidingWindow(nums, k)` that returns the maximum value in each sliding window of size `k` as it moves from left to right across the array `nums`.",
+    "description": "Find the maximum in every contiguous window of size k.",
+    "constraints": "1 <= nums.length <= 10^5\n1 <= k <= nums.length\n-10^4 <= nums[i] <= 10^4\nTime: O(N)\nSpace: O(N)",
+    "inputFormat": "An array of integers nums, and an integer window size k.",
+    "outputFormat": "An array of maximum values for each window.",
+    "examples": [
+      {
+        "input": "[1, 3, -1, -3, 5, 3, 6, 7], 3",
+        "output": "[3, 3, 5, 5, 6, 7]",
+        "explanation": "Windows: [1,3,-1]->3, [3,-1,-3]->3, [-1,-3,5]->5, [-3,5,3]->5, [5,3,6]->6, [3,6,7]->7."
+      },
+      {
+        "input": "[1], 1",
+        "output": "[1]",
+        "explanation": "Single element window, maximum is 1."
+      }
+    ],
+    "explanation": "Use a deque (double-ended queue) to maintain indices of elements in decreasing order of values. The front of the deque always holds the index of the current window's maximum. Remove indices outside the window from the front, and remove smaller elements from the back.",
+    "starterCode": "function maxSlidingWindow(nums, k) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[1, 3, -1, -3, 5, 3, 6, 7], 3",
+        "expected": "[3, 3, 5, 5, 6, 7]"
+      },
+      {
+        "input": "[1], 1",
+        "expected": "[1]"
+      },
+      {
+        "input": "[1, -1], 1",
+        "expected": "[1, -1]"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[9, 11], 2",
+        "expected": "[11]"
+      },
+      {
+        "input": "[4, 3, 2, 1], 2",
+        "expected": "[4, 3, 2]"
+      },
+      {
+        "input": "[1, 3, 1, 2, 0, 5], 3",
+        "expected": "[3, 3, 2, 5]"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "capgemini-coding-31",
+    "id": "capgemini-coding-31",
+    "title": "Graph BFS Level Order Traversal",
+    "company": "capgemini",
+    "difficulty": "Hard",
+    "category": "Searching",
+    "tags": [
+      "Graph",
+      "BFS",
+      "Level Order"
+    ],
+    "marks": 10,
+    "problemStatement": "Write a function `bfsLevelOrder(graph, start)` that performs a breadth-first search (BFS) on a graph represented as an adjacency list and returns the level-order traversal of the nodes. The graph has `n` nodes labeled from 0 to n-1.",
+    "description": "Traverse a graph using BFS and return nodes in level order.",
+    "constraints": "1 <= n <= 10^4\n0 <= edges.length <= 10^4\nThe graph may contain disconnected components\nTime: O(V + E)\nSpace: O(V)",
+    "inputFormat": "An adjacency list (array of arrays) representing the graph, and a starting node.",
+    "outputFormat": "An array of arrays, where each inner array contains nodes at that level.",
+    "examples": [
+      {
+        "input": "[[1,2],[0,3],[0,4],[1,5],[2,5],[3,4]], 0",
+        "output": "[[0],[1,2],[3,4],[5]]",
+        "explanation": "Level 0: [0], Level 1: [1,2], Level 2: [3,4], Level 3: [5]."
+      },
+      {
+        "input": "[[1],[0]], 0",
+        "output": "[[0],[1]]",
+        "explanation": "Two nodes connected to each other. BFS visits 0 then 1."
+      }
+    ],
+    "explanation": "Use a queue initialized with the start node and a visited set. While the queue is not empty, process all nodes at the current level, enqueue their unvisited neighbors, and mark them as visited.",
+    "starterCode": "function bfsLevelOrder(graph, start) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[[1,2],[0,3],[0,4],[1,5],[2,5],[3,4]], 0",
+        "expected": "[[0],[1,2],[3,4],[5]]"
+      },
+      {
+        "input": "[[1],[0]], 0",
+        "expected": "[[0],[1]]"
+      },
+      {
+        "input": "[[1,2,3],[0],[0],[0]], 0",
+        "expected": "[[0],[1,2,3]]"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[[1],[2],[3],[]], 0",
+        "expected": "[[0],[1],[2],[3]]"
+      },
+      {
+        "input": "[[1,4],[0,2],[1,3],[2,5],[0,5],[4,3]], 0",
+        "expected": "[[0],[1,4],[2,5],[3]]"
+      },
+      {
+        "input": "[[],[],[]], 0",
+        "expected": "[[0]]"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "questionId": "capgemini-coding-32",
+    "id": "capgemini-coding-32",
+    "title": "Best Time to Buy and Sell Stock",
+    "company": "capgemini",
+    "difficulty": "Hard",
+    "category": "Arrays",
+    "tags": [
+      "Array",
+      "Dynamic Programming",
+      "Greedy"
+    ],
+    "marks": 10,
+    "problemStatement": "Write a function `maxProfit(prices)` that finds the maximum profit from buying and selling a stock once. Given an array `prices` where prices[i] is the price of a stock on the ith day, you need to choose a single day to buy and a single day in the future to sell to maximize the profit. If no profit is possible, return 0.",
+    "description": "Find the maximum profit with one buy and one sell transaction.",
+    "constraints": "1 <= prices.length <= 10^5\n0 <= prices[i] <= 10^4\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "An array of stock prices.",
+    "outputFormat": "A single integer — the maximum profit, or 0 if no profit is possible.",
+    "examples": [
+      {
+        "input": "[7, 1, 5, 3, 6, 4]",
+        "output": "5",
+        "explanation": "Buy on day 2 (price=1), sell on day 5 (price=6). Profit = 6 - 1 = 5."
+      },
+      {
+        "input": "[7, 6, 4, 3, 1]",
+        "output": "0",
+        "explanation": "Prices are decreasing, no profit is possible."
+      }
+    ],
+    "explanation": "Track the minimum price seen so far while iterating. At each day, calculate the profit if selling on that day (price - minPrice) and update the maximum profit.",
+    "starterCode": "function maxProfit(prices) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[7, 1, 5, 3, 6, 4]",
+        "expected": "5"
+      },
+      {
+        "input": "[7, 6, 4, 3, 1]",
+        "expected": "0"
+      },
+      {
+        "input": "[1, 2]",
+        "expected": "1"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[2, 4, 1]",
+        "expected": "2"
+      },
+      {
+        "input": "[3, 3, 5, 0, 0, 3, 1, 4]",
+        "expected": "4"
+      },
+      {
+        "input": "[1]",
+        "expected": "0"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  }
+]

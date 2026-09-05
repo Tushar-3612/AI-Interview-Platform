@@ -1,0 +1,4412 @@
+[
+  {
+    "questionId": "benchmark-mcq-001",
+    "question": "What are the primary comparison sorting algorithms, and which one has the fastest average-case performance for in-memory general data?",
+    "options": [
+      "Quick Sort",
+      "Bubble Sort",
+      "Selection Sort",
+      "Linear Sort"
+    ],
+    "correctAnswer": "Quick Sort",
+    "explanation": "Quick Sort has an average-case time complexity of O(n log n) and exhibits smaller constant factors and better CPU cache locality than Merge Sort or Heap Sort.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Sorting Algorithms"
+  },
+  {
+    "questionId": "benchmark-mcq-002",
+    "question": "Which of the following sorting algorithms is guaranteed to be stable?",
+    "options": [
+      "Merge Sort",
+      "Quick Sort",
+      "Heap Sort",
+      "Selection Sort"
+    ],
+    "correctAnswer": "Merge Sort",
+    "explanation": "Merge Sort preserves the relative order of duplicate elements because when two elements are equal during the merge step, the element from the left subarray is always selected first.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Sorting Algorithms"
+  },
+  {
+    "questionId": "benchmark-mcq-003",
+    "question": "What is the worst-case time complexity of standard Quick Sort when selecting the first element as the pivot on an already-sorted array?",
+    "options": [
+      "O(n^2)",
+      "O(n log n)",
+      "O(n)",
+      "O(log n)"
+    ],
+    "correctAnswer": "O(n^2)",
+    "explanation": "When the array is already sorted and the first element is selected as pivot, each partitioning step produces partitions of size 0 and n-1, resulting in O(n^2) time complexity.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Sorting Algorithms"
+  },
+  {
+    "questionId": "benchmark-mcq-004",
+    "question": "Which sorting algorithm requires O(1) auxiliary space and guarantees O(n log n) time in all cases (best, average, and worst)?",
+    "options": [
+      "Heap Sort",
+      "Merge Sort",
+      "Quick Sort",
+      "Counting Sort"
+    ],
+    "correctAnswer": "Heap Sort",
+    "explanation": "Heap Sort operates directly in-place using array-based binary heaps (O(1) auxiliary space) and maintains O(n log n) runtime in best, average, and worst cases.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Sorting Algorithms"
+  },
+  {
+    "questionId": "benchmark-mcq-005",
+    "question": "When is Merge Sort strongly preferred over Quick Sort in practical engineering?",
+    "options": [
+      "When sorting singly linked lists or requiring guaranteed worst-case O(n log n) time",
+      "When strictly zero auxiliary memory is available",
+      "When sorting small arrays of less than 10 integers",
+      "When hardware cache lines are strictly limited"
+    ],
+    "correctAnswer": "When sorting singly linked lists or requiring guaranteed worst-case O(n log n) time",
+    "explanation": "Merge Sort can sort linked lists without random indexing in O(1) auxiliary pointer space and guarantees O(n log n) worst-case time, making it ideal for deterministic and external sorting.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Sorting Algorithms"
+  },
+  {
+    "questionId": "benchmark-mcq-006",
+    "question": "What is the best-case time complexity of Insertion Sort when the input array is already completely sorted?",
+    "options": [
+      "O(n)",
+      "O(n log n)",
+      "O(n^2)",
+      "O(1)"
+    ],
+    "correctAnswer": "O(n)",
+    "explanation": "When already sorted, Insertion Sort makes only 1 comparison per element and 0 shifts, completing in O(n) linear time.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Sorting Algorithms"
+  },
+  {
+    "questionId": "benchmark-mcq-007",
+    "question": "Which non-comparison sorting algorithm can sort n integers in the range [0, k] in O(n + k) time?",
+    "options": [
+      "Counting Sort",
+      "Quick Sort",
+      "Merge Sort",
+      "Binary Insertion Sort"
+    ],
+    "correctAnswer": "Counting Sort",
+    "explanation": "Counting Sort counts the occurrences of each key and calculates cumulative indices, achieving O(n + k) time and O(k) space.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Sorting Algorithms"
+  },
+  {
+    "questionId": "benchmark-mcq-008",
+    "question": "What is the worst-case number of comparisons in Binary Search on an array of size n?",
+    "options": [
+      "floor(log2(n)) + 1",
+      "n / 2",
+      "n",
+      "n * log2(n)"
+    ],
+    "correctAnswer": "floor(log2(n)) + 1",
+    "explanation": "Binary search eliminates half the search space on each comparison, making the maximum number of comparisons equal to floor(log2(n)) + 1.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Searching Algorithms"
+  },
+  {
+    "questionId": "benchmark-mcq-009",
+    "question": "Which data structure is primarily used to perform Breadth-First Search (BFS) on a graph?",
+    "options": [
+      "Queue",
+      "Stack",
+      "Priority Queue",
+      "Binary Search Tree"
+    ],
+    "correctAnswer": "Queue",
+    "explanation": "BFS explores nodes in order of their distance from the start node using a First-In-First-Out (FIFO) queue.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Data Structures"
+  },
+  {
+    "questionId": "benchmark-mcq-010",
+    "question": "What is the time complexity to insert an element at the beginning of a Singly Linked List vs a dynamic Array (Vector)?",
+    "options": [
+      "O(1) for Linked List, O(n) for Array",
+      "O(n) for Linked List, O(1) for Array",
+      "O(1) for both",
+      "O(n) for both"
+    ],
+    "correctAnswer": "O(1) for Linked List, O(n) for Array",
+    "explanation": "Inserting at the head of a linked list only updates a pointer (O(1)), whereas inserting at index 0 of an array requires shifting all n elements rightward (O(n)).",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Data Structures"
+  },
+  {
+    "questionId": "benchmark-mcq-011",
+    "question": "Which OOP concept allows a child class to provide a specific implementation of a method already defined in its parent class?",
+    "options": [
+      "Method Overriding",
+      "Method Overloading",
+      "Encapsulation",
+      "Data Hiding"
+    ],
+    "correctAnswer": "Method Overriding",
+    "explanation": "Method Overriding is dynamic polymorphism where a subclass redefines a parent class method with the same name and signature.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "OOP Concepts"
+  },
+  {
+    "questionId": "benchmark-mcq-012",
+    "question": "In Java, what happens if a class does not define any constructor?",
+    "options": [
+      "The compiler inserts a default no-argument constructor automatically",
+      "A compile-time error is generated",
+      "The class cannot be instantiated under any circumstances",
+      "A private constructor is assigned automatically"
+    ],
+    "correctAnswer": "The compiler inserts a default no-argument constructor automatically",
+    "explanation": "If no constructor is explicitly declared in a Java class, the compiler provides a default public/package-private no-argument constructor.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "OOP Concepts"
+  },
+  {
+    "questionId": "benchmark-mcq-013",
+    "question": "Which feature of OOP is violated if a class exposes its internal data members as `public` fields without getters and setters?",
+    "options": [
+      "Encapsulation",
+      "Polymorphism",
+      "Inheritance",
+      "Dynamic Dispatch"
+    ],
+    "correctAnswer": "Encapsulation",
+    "explanation": "Encapsulation requires keeping data members private and providing controlled access via methods to protect object invariants.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "OOP Concepts"
+  },
+  {
+    "questionId": "benchmark-mcq-014",
+    "question": "Which principle of SOLID states that 'High-level modules should not depend on low-level modules; both should depend on abstractions'?",
+    "options": [
+      "Dependency Inversion Principle",
+      "Single Responsibility Principle",
+      "Liskov Substitution Principle",
+      "Interface Segregation Principle"
+    ],
+    "correctAnswer": "Dependency Inversion Principle",
+    "explanation": "The Dependency Inversion Principle (DIP) decouples high-level and low-level software modules by having both depend on shared interfaces/abstractions.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "OOP Concepts"
+  },
+  {
+    "questionId": "benchmark-mcq-015",
+    "question": "Can an abstract class in Java have constructors?",
+    "options": [
+      "Yes, and they are called when a concrete subclass is instantiated via `super()`",
+      "No, abstract classes cannot declare constructors",
+      "Yes, but they can only be declared private",
+      "No, only interfaces can have constructors"
+    ],
+    "correctAnswer": "Yes, and they are called when a concrete subclass is instantiated via `super()`",
+    "explanation": "Abstract classes can declare constructors to initialize base class state, which execute via `super()` during subclass instantiation.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "OOP Concepts"
+  },
+  {
+    "questionId": "benchmark-mcq-016",
+    "question": "What is the difference between WHERE and HAVING clauses in SQL?",
+    "options": [
+      "WHERE filters individual rows before aggregation; HAVING filters groups after aggregation",
+      "WHERE is used only with numeric columns; HAVING is used only with text columns",
+      "WHERE operates after GROUP BY; HAVING operates before GROUP BY",
+      "There is no functional difference between WHERE and HAVING"
+    ],
+    "correctAnswer": "WHERE filters individual rows before aggregation; HAVING filters groups after aggregation",
+    "explanation": "In SQL query execution, WHERE filters base rows before grouping, whereas HAVING filters aggregated summary rows after GROUP BY.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Database & SQL"
+  },
+  {
+    "questionId": "benchmark-mcq-017",
+    "question": "Which SQL JOIN returns all rows from the left table, and the matched rows from the right table, filling NULL for unmatched right rows?",
+    "options": [
+      "LEFT JOIN",
+      "RIGHT JOIN",
+      "INNER JOIN",
+      "CROSS JOIN"
+    ],
+    "correctAnswer": "LEFT JOIN",
+    "explanation": "A LEFT OUTER JOIN preserves all rows from the left relation, matching available right table rows and substituting NULL where no predicate match exists.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Database & SQL"
+  },
+  {
+    "questionId": "benchmark-mcq-018",
+    "question": "In relational database design, which Normal Form requires a table to be in 1NF and have all non-key attributes fully functionally dependent on the entire primary key (no partial dependencies)?",
+    "options": [
+      "Second Normal Form (2NF)",
+      "First Normal Form (1NF)",
+      "Third Normal Form (3NF)",
+      "Boyce-Codd Normal Form (BCNF)"
+    ],
+    "correctAnswer": "Second Normal Form (2NF)",
+    "explanation": "2NF eliminates partial dependencies where non-prime attributes depend on only a subset of a composite primary key.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Database & SQL"
+  },
+  {
+    "questionId": "benchmark-mcq-019",
+    "question": "Which of the following ACID properties ensures that database transaction changes remain permanent even in the event of a power loss or system crash?",
+    "options": [
+      "Durability",
+      "Atomicity",
+      "Consistency",
+      "Isolation"
+    ],
+    "correctAnswer": "Durability",
+    "explanation": "Durability guarantees that once a transaction commits, its modifications persist permanently in non-volatile storage via write-ahead logging.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Database & SQL"
+  },
+  {
+    "questionId": "benchmark-mcq-020",
+    "question": "What will be the result of the SQL expression: `SELECT COUNT(*), COUNT(commission) FROM Employees;` if 5 out of 20 employees have NULL commission?",
+    "options": [
+      "COUNT(*) = 20, COUNT(commission) = 15",
+      "COUNT(*) = 20, COUNT(commission) = 20",
+      "COUNT(*) = 15, COUNT(commission) = 15",
+      "COUNT(*) = 15, COUNT(commission) = 5"
+    ],
+    "correctAnswer": "COUNT(*) = 20, COUNT(commission) = 15",
+    "explanation": "`COUNT(*)` counts all rows regardless of NULLs (20), while `COUNT(column_name)` ignores NULL values, yielding 20 - 5 = 15.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Database & SQL"
+  },
+  {
+    "questionId": "benchmark-mcq-021",
+    "question": "What is the in-order traversal output of a valid Binary Search Tree (BST)?",
+    "options": [
+      "Values in ascending sorted order",
+      "Values in descending sorted order",
+      "Values ordered by tree level",
+      "Arbitrary random order"
+    ],
+    "correctAnswer": "Values in ascending sorted order",
+    "explanation": "In-order traversal (Left -> Root -> Right) on a BST processes all elements in strictly non-decreasing sorted sequence.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Trees & BST"
+  },
+  {
+    "questionId": "benchmark-mcq-022",
+    "question": "What is the height of a balanced Binary Search Tree containing n nodes?",
+    "options": [
+      "O(log n)",
+      "O(n)",
+      "O(n log n)",
+      "O(1)"
+    ],
+    "correctAnswer": "O(log n)",
+    "explanation": "A balanced binary tree with n nodes has height h = floor(log2(n)) + 1.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Trees & BST"
+  },
+  {
+    "questionId": "benchmark-mcq-023",
+    "question": "In an AVL tree, what is the maximum permissible difference between heights of left and right subtrees for any node?",
+    "options": [
+      "1",
+      "0",
+      "2",
+      "log2(n)"
+    ],
+    "correctAnswer": "1",
+    "explanation": "The AVL balance factor is defined as height(left) - height(right) and must strictly reside in {-1, 0, +1}.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Trees & BST"
+  },
+  {
+    "questionId": "benchmark-mcq-024",
+    "question": "Which data structure follows the Last-In-First-Out (LIFO) order?",
+    "options": [
+      "Stack",
+      "Queue",
+      "Array",
+      "Linked List"
+    ],
+    "correctAnswer": "Stack",
+    "explanation": "A Stack inserts and removes elements from the top, obeying LIFO ordering.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Data Structures"
+  },
+  {
+    "questionId": "benchmark-mcq-025",
+    "question": "What is the average time complexity to lookup a key in a standard Hash Table with a good hash function?",
+    "options": [
+      "O(1)",
+      "O(log n)",
+      "O(n)",
+      "O(n log n)"
+    ],
+    "correctAnswer": "O(1)",
+    "explanation": "Direct index computation via hash functions yields O(1) constant average lookup time.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Data Structures"
+  },
+  {
+    "questionId": "benchmark-mcq-026",
+    "question": "What is the worst-case time complexity of insertion into a Hash Table when all keys collide into the same bucket using separate chaining with linked lists?",
+    "options": [
+      "O(n)",
+      "O(1)",
+      "O(log n)",
+      "O(n^2)"
+    ],
+    "correctAnswer": "O(n)",
+    "explanation": "When all n keys collide into a single bucket linked list, traversing the list takes linear O(n) time.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Data Structures"
+  },
+  {
+    "questionId": "benchmark-mcq-027",
+    "question": "Which of the following time complexities is the most efficient asymptotically for large n?",
+    "options": [
+      "O(log n)",
+      "O(n)",
+      "O(n log n)",
+      "O(n^2)"
+    ],
+    "correctAnswer": "O(log n)",
+    "explanation": "Logarithmic time O(log n) grows much slower than linear, linearithmic, or quadratic time.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Complexity & Algorithms"
+  },
+  {
+    "questionId": "benchmark-mcq-028",
+    "question": "What is the time complexity of the Master Theorem case when T(n) = 2T(n/2) + O(n)?",
+    "options": [
+      "O(n log n)",
+      "O(n)",
+      "O(n^2)",
+      "O(log n)"
+    ],
+    "correctAnswer": "O(n log n)",
+    "explanation": "Here a=2, b=2, d=1. Since log_b(a) = log_2(2) = 1 == d, the solution is O(n^d * log n) = O(n log n).",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Complexity & Algorithms"
+  },
+  {
+    "questionId": "benchmark-mcq-029",
+    "question": "What is the space complexity of standard recursive Depth First Search on a graph with V vertices and maximum depth D?",
+    "options": [
+      "O(D) for call stack",
+      "O(V^2)",
+      "O(1)",
+      "O(E * V)"
+    ],
+    "correctAnswer": "O(D) for call stack",
+    "explanation": "Recursive DFS stores at most D active function frames on the execution stack simultaneously.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Complexity & Algorithms"
+  },
+  {
+    "questionId": "benchmark-mcq-030",
+    "question": "Which keyword in Java is used to inherit a class?",
+    "options": [
+      "extends",
+      "implements",
+      "inherits",
+      "instanceof"
+    ],
+    "correctAnswer": "extends",
+    "explanation": "The `extends` keyword establishes class inheritance in Java.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "OOP Concepts"
+  },
+  {
+    "questionId": "benchmark-mcq-031",
+    "question": "Which keyword in Java is used by a class to implement an interface?",
+    "options": [
+      "implements",
+      "extends",
+      "interface",
+      "using"
+    ],
+    "correctAnswer": "implements",
+    "explanation": "The `implements` keyword is used by classes to implement interface contracts.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "OOP Concepts"
+  },
+  {
+    "questionId": "benchmark-mcq-032",
+    "question": "Can a constructor in Java be declared `static` or `final`?",
+    "options": [
+      "No, constructors cannot be static, final, or abstract",
+      "Yes, constructors can be both static and final",
+      "Yes, but only static is allowed",
+      "Yes, but only final is allowed"
+    ],
+    "correctAnswer": "No, constructors cannot be static, final, or abstract",
+    "explanation": "Constructors belong to object instantiation and cannot be inherited or overridden, making static/final/abstract invalid.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "OOP Concepts"
+  },
+  {
+    "questionId": "benchmark-mcq-033",
+    "question": "Which design pattern provides a surrogate or placeholder for another object to control access to it?",
+    "options": [
+      "Proxy Pattern",
+      "Adapter Pattern",
+      "Decorator Pattern",
+      "Facade Pattern"
+    ],
+    "correctAnswer": "Proxy Pattern",
+    "explanation": "The Proxy pattern controls access to an underlying object, used in lazy loading, caching, and security checks.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "OOP Concepts"
+  },
+  {
+    "questionId": "benchmark-mcq-034",
+    "question": "What is the primary difference between Adapter Pattern and Decorator Pattern?",
+    "options": [
+      "Adapter changes an interface to match client expectations; Decorator enhances object responsibilities dynamically without changing interface",
+      "Adapter creates new classes; Decorator destroys them",
+      "Decorator changes the interface; Adapter adds responsibilities",
+      "There is no architectural difference"
+    ],
+    "correctAnswer": "Adapter changes an interface to match client expectations; Decorator enhances object responsibilities dynamically without changing interface",
+    "explanation": "Adapter converts incompatible interfaces; Decorator adds behaviors while keeping the same interface.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "OOP Concepts"
+  },
+  {
+    "questionId": "benchmark-mcq-035",
+    "question": "Which SQL clause is used to eliminate duplicate rows from a query result set?",
+    "options": [
+      "DISTINCT",
+      "UNIQUE",
+      "GROUP",
+      "DIFFERENT"
+    ],
+    "correctAnswer": "DISTINCT",
+    "explanation": "The `DISTINCT` keyword filters out duplicate tuples from the output.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Database & SQL"
+  },
+  {
+    "questionId": "benchmark-mcq-036",
+    "question": "What type of index is created by default on the Primary Key column in MySQL InnoDB?",
+    "options": [
+      "Clustered B+Tree Index",
+      "Non-clustered Hash Index",
+      "Bitmap Index",
+      "Full-text Index"
+    ],
+    "correctAnswer": "Clustered B+Tree Index",
+    "explanation": "InnoDB stores table data physically sorted by the primary key inside a clustered B+Tree index.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Database & SQL"
+  },
+  {
+    "questionId": "benchmark-mcq-037",
+    "question": "What is the difference between a Correlated Subquery and a Non-Correlated Subquery in SQL?",
+    "options": [
+      "A correlated subquery references columns from the outer query and re-evaluates for every outer row; a non-correlated subquery executes once independently",
+      "A correlated subquery runs once; non-correlated runs multiple times",
+      "Correlated subqueries cannot contain WHERE clauses",
+      "Non-correlated subqueries must return multiple tables"
+    ],
+    "correctAnswer": "A correlated subquery references columns from the outer query and re-evaluates for every outer row; a non-correlated subquery executes once independently",
+    "explanation": "Correlated subqueries depend on outer row attributes and execute repeatedly for each candidate row.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Database & SQL"
+  },
+  {
+    "questionId": "benchmark-mcq-038",
+    "question": "Which SQL aggregate function computes the total sum of numerical column values?",
+    "options": [
+      "SUM()",
+      "TOTAL()",
+      "COUNT()",
+      "AVG()"
+    ],
+    "correctAnswer": "SUM()",
+    "explanation": "`SUM(column)` calculates the arithmetic sum of numerical values, ignoring NULLs.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Database & SQL"
+  },
+  {
+    "questionId": "benchmark-mcq-039",
+    "question": "What is the purpose of the FOREIGN KEY constraint with ON UPDATE CASCADE?",
+    "options": [
+      "When a primary key in parent table is updated, matching foreign keys in child table update automatically",
+      "It prevents primary keys from ever being updated",
+      "It deletes child rows when parent is updated",
+      "It creates a backup table"
+    ],
+    "correctAnswer": "When a primary key in parent table is updated, matching foreign keys in child table update automatically",
+    "explanation": "ON UPDATE CASCADE propagates parent key modifications down to all dependent child records.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Database & SQL"
+  },
+  {
+    "questionId": "benchmark-mcq-040",
+    "question": "In Java, what is the default value of an uninitialized boolean instance variable in a class?",
+    "options": [
+      "false",
+      "true",
+      "null",
+      "0"
+    ],
+    "correctAnswer": "false",
+    "explanation": "Java initializes boolean instance fields to `false` by default.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Java Programming"
+  },
+  {
+    "questionId": "benchmark-mcq-041",
+    "question": "What is the time complexity of `ArrayList.get(index)` vs `LinkedList.get(index)` in Java?",
+    "options": [
+      "O(1) for ArrayList, O(n) for LinkedList",
+      "O(n) for ArrayList, O(1) for LinkedList",
+      "O(1) for both",
+      "O(log n) for both"
+    ],
+    "correctAnswer": "O(1) for ArrayList, O(n) for LinkedList",
+    "explanation": "ArrayList offers O(1) random array access, while LinkedList requires O(n) sequential pointer traversal.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Java Programming"
+  },
+  {
+    "questionId": "benchmark-mcq-042",
+    "question": "What happens during a Java thread deadlock, and which JVM tool can detect it?",
+    "options": [
+      "Threads block indefinitely waiting on locks held by each other; detected using `jstack` or ThreadMXBean",
+      "The JVM crashes immediately with OutOfMemoryError",
+      "The garbage collector kills the deadlocked threads",
+      "The OS terminates the JVM process"
+    ],
+    "correctAnswer": "Threads block indefinitely waiting on locks held by each other; detected using `jstack` or ThreadMXBean",
+    "explanation": "Deadlocks cause threads to sleep indefinitely on mutual lock acquisition; `jstack <pid>` prints thread dumps identifying deadlocked locks.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Java Programming"
+  },
+  {
+    "questionId": "benchmark-mcq-043",
+    "question": "In C/C++, which operator is used to access members of a structure through a pointer?",
+    "options": [
+      "->",
+      ".",
+      "::",
+      "*."
+    ],
+    "correctAnswer": "->",
+    "explanation": "The arrow operator (`->`) dereferences a struct pointer and accesses its field directly.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "C/C++ Programming"
+  },
+  {
+    "questionId": "benchmark-mcq-044",
+    "question": "What is the size of a pointer variable on a 64-bit operating system architecture?",
+    "options": [
+      "8 bytes (64 bits)",
+      "4 bytes (32 bits)",
+      "2 bytes (16 bits)",
+      "Varies based on data type pointed to"
+    ],
+    "correctAnswer": "8 bytes (64 bits)",
+    "explanation": "On 64-bit architectures, all memory addresses and pointers occupy 8 bytes.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "C/C++ Programming"
+  },
+  {
+    "questionId": "benchmark-mcq-045",
+    "question": "Which of the following built-in data types in Python is mutable?",
+    "options": [
+      "List",
+      "Tuple",
+      "String",
+      "Integer"
+    ],
+    "correctAnswer": "List",
+    "explanation": "Lists in Python are mutable sequences allowing in-place modification (`append`, `pop`, index assignment).",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Python Programming"
+  },
+  {
+    "questionId": "benchmark-mcq-046",
+    "question": "What is a Python Generator function and how does it differ from a standard function returning a list?",
+    "options": [
+      "A generator uses `yield` to stream values lazily one-by-one, saving memory",
+      "A generator executes in parallel on all CPU cores",
+      "A generator cannot accept parameters",
+      "A generator converts code to C automatically"
+    ],
+    "correctAnswer": "A generator uses `yield` to stream values lazily one-by-one, saving memory",
+    "explanation": "Generators return an iterator yielding values on-demand, enabling O(1) memory pipelines for large datasets.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Python Programming"
+  },
+  {
+    "questionId": "benchmark-mcq-047",
+    "question": "Which HTTP status code indicates a successful resource creation in a REST API?",
+    "options": [
+      "201 Created",
+      "200 OK",
+      "204 No Content",
+      "301 Moved Permanently"
+    ],
+    "correctAnswer": "201 Created",
+    "explanation": "HTTP 201 indicates that a new resource has been successfully created on the server.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Web & REST APIs"
+  },
+  {
+    "questionId": "benchmark-mcq-048",
+    "question": "Which HTTP method is considered safe and idempotent according to RFC specifications?",
+    "options": [
+      "GET",
+      "POST",
+      "PATCH",
+      "CONNECT"
+    ],
+    "correctAnswer": "GET",
+    "explanation": "GET is both safe (read-only without server state changes) and idempotent (repeated identical calls return identical responses).",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Web & REST APIs"
+  },
+  {
+    "questionId": "benchmark-mcq-049",
+    "question": "Which JavaScript keyword declares a block-scoped variable that cannot be re-assigned?",
+    "options": [
+      "const",
+      "let",
+      "var",
+      "static"
+    ],
+    "correctAnswer": "const",
+    "explanation": "`const` declares a block-scoped identifier that cannot be reassigned after initialization.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "JavaScript & Frontend"
+  },
+  {
+    "questionId": "benchmark-mcq-050",
+    "question": "What is a Closure in JavaScript?",
+    "options": [
+      "A function that retains access to its lexical outer scope variables even after outer function has executed",
+      "A method that terminates the browser window",
+      "A syntax error in asynchronous code",
+      "An object with private prototype"
+    ],
+    "correctAnswer": "A function that retains access to its lexical outer scope variables even after outer function has executed",
+    "explanation": "Closures bundle a function with its lexical environment, allowing access to outer scope variables from an inner function.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "JavaScript & Frontend"
+  },
+  {
+    "questionId": "benchmark-mcq-051",
+    "question": "Which CPU scheduling algorithm gives each process a fixed time slice (quantum) in cyclic order?",
+    "options": [
+      "Round Robin",
+      "First-Come First-Served",
+      "Shortest Job First",
+      "Priority Scheduling"
+    ],
+    "correctAnswer": "Round Robin",
+    "explanation": "Round Robin preempts processes after their allocated time quantum in FIFO circular queue order.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Operating Systems"
+  },
+  {
+    "questionId": "benchmark-mcq-052",
+    "question": "Which layer of the OSI model is responsible for end-to-end reliable transmission and flow control?",
+    "options": [
+      "Transport Layer (Layer 4)",
+      "Network Layer (Layer 3)",
+      "Data Link Layer (Layer 2)",
+      "Session Layer (Layer 5)"
+    ],
+    "correctAnswer": "Transport Layer (Layer 4)",
+    "explanation": "Layer 4 (Transport, e.g. TCP) provides end-to-end connection management, flow control, and error recovery.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Computer Networks"
+  },
+  {
+    "questionId": "benchmark-mcq-053",
+    "question": "What is the in-order traversal output of a valid Binary Search Tree (BST)?",
+    "options": [
+      "Values in ascending sorted order",
+      "Values in descending sorted order",
+      "Values ordered by tree level",
+      "Arbitrary random order"
+    ],
+    "correctAnswer": "Values in ascending sorted order",
+    "explanation": "In-order traversal (Left -> Root -> Right) on a BST processes all elements in strictly non-decreasing sorted sequence.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Trees & BST"
+  },
+  {
+    "questionId": "benchmark-mcq-054",
+    "question": "What is the height of a balanced Binary Search Tree containing n nodes?",
+    "options": [
+      "O(log n)",
+      "O(n)",
+      "O(n log n)",
+      "O(1)"
+    ],
+    "correctAnswer": "O(log n)",
+    "explanation": "A balanced binary tree with n nodes has height h = floor(log2(n)) + 1.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Trees & BST"
+  },
+  {
+    "questionId": "benchmark-mcq-055",
+    "question": "In an AVL tree, what is the maximum permissible difference between heights of left and right subtrees for any node?",
+    "options": [
+      "1",
+      "0",
+      "2",
+      "log2(n)"
+    ],
+    "correctAnswer": "1",
+    "explanation": "The AVL balance factor is defined as height(left) - height(right) and must strictly reside in {-1, 0, +1}.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Trees & BST"
+  },
+  {
+    "questionId": "benchmark-mcq-056",
+    "question": "Which data structure follows the Last-In-First-Out (LIFO) order?",
+    "options": [
+      "Stack",
+      "Queue",
+      "Array",
+      "Linked List"
+    ],
+    "correctAnswer": "Stack",
+    "explanation": "A Stack inserts and removes elements from the top, obeying LIFO ordering.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Data Structures"
+  },
+  {
+    "questionId": "benchmark-mcq-057",
+    "question": "What is the average time complexity to lookup a key in a standard Hash Table with a good hash function?",
+    "options": [
+      "O(1)",
+      "O(log n)",
+      "O(n)",
+      "O(n log n)"
+    ],
+    "correctAnswer": "O(1)",
+    "explanation": "Direct index computation via hash functions yields O(1) constant average lookup time.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Data Structures"
+  },
+  {
+    "questionId": "benchmark-mcq-058",
+    "question": "What is the worst-case time complexity of insertion into a Hash Table when all keys collide into the same bucket using separate chaining with linked lists?",
+    "options": [
+      "O(n)",
+      "O(1)",
+      "O(log n)",
+      "O(n^2)"
+    ],
+    "correctAnswer": "O(n)",
+    "explanation": "When all n keys collide into a single bucket linked list, traversing the list takes linear O(n) time.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Data Structures"
+  },
+  {
+    "questionId": "benchmark-mcq-059",
+    "question": "Which of the following time complexities is the most efficient asymptotically for large n?",
+    "options": [
+      "O(log n)",
+      "O(n)",
+      "O(n log n)",
+      "O(n^2)"
+    ],
+    "correctAnswer": "O(log n)",
+    "explanation": "Logarithmic time O(log n) grows much slower than linear, linearithmic, or quadratic time.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Complexity & Algorithms"
+  },
+  {
+    "questionId": "benchmark-mcq-060",
+    "question": "What is the time complexity of the Master Theorem case when T(n) = 2T(n/2) + O(n)?",
+    "options": [
+      "O(n log n)",
+      "O(n)",
+      "O(n^2)",
+      "O(log n)"
+    ],
+    "correctAnswer": "O(n log n)",
+    "explanation": "Here a=2, b=2, d=1. Since log_b(a) = log_2(2) = 1 == d, the solution is O(n^d * log n) = O(n log n).",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Complexity & Algorithms"
+  },
+  {
+    "questionId": "benchmark-mcq-061",
+    "question": "What is the space complexity of standard recursive Depth First Search on a graph with V vertices and maximum depth D?",
+    "options": [
+      "O(D) for call stack",
+      "O(V^2)",
+      "O(1)",
+      "O(E * V)"
+    ],
+    "correctAnswer": "O(D) for call stack",
+    "explanation": "Recursive DFS stores at most D active function frames on the execution stack simultaneously.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Complexity & Algorithms"
+  },
+  {
+    "questionId": "benchmark-mcq-062",
+    "question": "Which keyword in Java is used to inherit a class?",
+    "options": [
+      "extends",
+      "implements",
+      "inherits",
+      "instanceof"
+    ],
+    "correctAnswer": "extends",
+    "explanation": "The `extends` keyword establishes class inheritance in Java.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "OOP Concepts"
+  },
+  {
+    "questionId": "benchmark-mcq-063",
+    "question": "Which keyword in Java is used by a class to implement an interface?",
+    "options": [
+      "implements",
+      "extends",
+      "interface",
+      "using"
+    ],
+    "correctAnswer": "implements",
+    "explanation": "The `implements` keyword is used by classes to implement interface contracts.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "OOP Concepts"
+  },
+  {
+    "questionId": "benchmark-mcq-064",
+    "question": "Can a constructor in Java be declared `static` or `final`?",
+    "options": [
+      "No, constructors cannot be static, final, or abstract",
+      "Yes, constructors can be both static and final",
+      "Yes, but only static is allowed",
+      "Yes, but only final is allowed"
+    ],
+    "correctAnswer": "No, constructors cannot be static, final, or abstract",
+    "explanation": "Constructors belong to object instantiation and cannot be inherited or overridden, making static/final/abstract invalid.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "OOP Concepts"
+  },
+  {
+    "questionId": "benchmark-mcq-065",
+    "question": "Which design pattern provides a surrogate or placeholder for another object to control access to it?",
+    "options": [
+      "Proxy Pattern",
+      "Adapter Pattern",
+      "Decorator Pattern",
+      "Facade Pattern"
+    ],
+    "correctAnswer": "Proxy Pattern",
+    "explanation": "The Proxy pattern controls access to an underlying object, used in lazy loading, caching, and security checks.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "OOP Concepts"
+  },
+  {
+    "questionId": "benchmark-mcq-066",
+    "question": "What is the primary difference between Adapter Pattern and Decorator Pattern?",
+    "options": [
+      "Adapter changes an interface to match client expectations; Decorator enhances object responsibilities dynamically without changing interface",
+      "Adapter creates new classes; Decorator destroys them",
+      "Decorator changes the interface; Adapter adds responsibilities",
+      "There is no architectural difference"
+    ],
+    "correctAnswer": "Adapter changes an interface to match client expectations; Decorator enhances object responsibilities dynamically without changing interface",
+    "explanation": "Adapter converts incompatible interfaces; Decorator adds behaviors while keeping the same interface.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "OOP Concepts"
+  },
+  {
+    "questionId": "benchmark-mcq-067",
+    "question": "Which SQL clause is used to eliminate duplicate rows from a query result set?",
+    "options": [
+      "DISTINCT",
+      "UNIQUE",
+      "GROUP",
+      "DIFFERENT"
+    ],
+    "correctAnswer": "DISTINCT",
+    "explanation": "The `DISTINCT` keyword filters out duplicate tuples from the output.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Database & SQL"
+  },
+  {
+    "questionId": "benchmark-mcq-068",
+    "question": "What type of index is created by default on the Primary Key column in MySQL InnoDB?",
+    "options": [
+      "Clustered B+Tree Index",
+      "Non-clustered Hash Index",
+      "Bitmap Index",
+      "Full-text Index"
+    ],
+    "correctAnswer": "Clustered B+Tree Index",
+    "explanation": "InnoDB stores table data physically sorted by the primary key inside a clustered B+Tree index.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Database & SQL"
+  },
+  {
+    "questionId": "benchmark-mcq-069",
+    "question": "What is the difference between a Correlated Subquery and a Non-Correlated Subquery in SQL?",
+    "options": [
+      "A correlated subquery references columns from the outer query and re-evaluates for every outer row; a non-correlated subquery executes once independently",
+      "A correlated subquery runs once; non-correlated runs multiple times",
+      "Correlated subqueries cannot contain WHERE clauses",
+      "Non-correlated subqueries must return multiple tables"
+    ],
+    "correctAnswer": "A correlated subquery references columns from the outer query and re-evaluates for every outer row; a non-correlated subquery executes once independently",
+    "explanation": "Correlated subqueries depend on outer row attributes and execute repeatedly for each candidate row.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Database & SQL"
+  },
+  {
+    "questionId": "benchmark-mcq-070",
+    "question": "Which SQL aggregate function computes the total sum of numerical column values?",
+    "options": [
+      "SUM()",
+      "TOTAL()",
+      "COUNT()",
+      "AVG()"
+    ],
+    "correctAnswer": "SUM()",
+    "explanation": "`SUM(column)` calculates the arithmetic sum of numerical values, ignoring NULLs.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Database & SQL"
+  },
+  {
+    "questionId": "benchmark-mcq-071",
+    "question": "What is the purpose of the FOREIGN KEY constraint with ON UPDATE CASCADE?",
+    "options": [
+      "When a primary key in parent table is updated, matching foreign keys in child table update automatically",
+      "It prevents primary keys from ever being updated",
+      "It deletes child rows when parent is updated",
+      "It creates a backup table"
+    ],
+    "correctAnswer": "When a primary key in parent table is updated, matching foreign keys in child table update automatically",
+    "explanation": "ON UPDATE CASCADE propagates parent key modifications down to all dependent child records.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Database & SQL"
+  },
+  {
+    "questionId": "benchmark-mcq-072",
+    "question": "In Java, what is the default value of an uninitialized boolean instance variable in a class?",
+    "options": [
+      "false",
+      "true",
+      "null",
+      "0"
+    ],
+    "correctAnswer": "false",
+    "explanation": "Java initializes boolean instance fields to `false` by default.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Java Programming"
+  },
+  {
+    "questionId": "benchmark-mcq-073",
+    "question": "What is the time complexity of `ArrayList.get(index)` vs `LinkedList.get(index)` in Java?",
+    "options": [
+      "O(1) for ArrayList, O(n) for LinkedList",
+      "O(n) for ArrayList, O(1) for LinkedList",
+      "O(1) for both",
+      "O(log n) for both"
+    ],
+    "correctAnswer": "O(1) for ArrayList, O(n) for LinkedList",
+    "explanation": "ArrayList offers O(1) random array access, while LinkedList requires O(n) sequential pointer traversal.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Java Programming"
+  },
+  {
+    "questionId": "benchmark-mcq-074",
+    "question": "What happens during a Java thread deadlock, and which JVM tool can detect it?",
+    "options": [
+      "Threads block indefinitely waiting on locks held by each other; detected using `jstack` or ThreadMXBean",
+      "The JVM crashes immediately with OutOfMemoryError",
+      "The garbage collector kills the deadlocked threads",
+      "The OS terminates the JVM process"
+    ],
+    "correctAnswer": "Threads block indefinitely waiting on locks held by each other; detected using `jstack` or ThreadMXBean",
+    "explanation": "Deadlocks cause threads to sleep indefinitely on mutual lock acquisition; `jstack <pid>` prints thread dumps identifying deadlocked locks.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Java Programming"
+  },
+  {
+    "questionId": "benchmark-mcq-075",
+    "question": "In C/C++, which operator is used to access members of a structure through a pointer?",
+    "options": [
+      "->",
+      ".",
+      "::",
+      "*."
+    ],
+    "correctAnswer": "->",
+    "explanation": "The arrow operator (`->`) dereferences a struct pointer and accesses its field directly.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "C/C++ Programming"
+  },
+  {
+    "questionId": "benchmark-mcq-076",
+    "question": "What is the size of a pointer variable on a 64-bit operating system architecture?",
+    "options": [
+      "8 bytes (64 bits)",
+      "4 bytes (32 bits)",
+      "2 bytes (16 bits)",
+      "Varies based on data type pointed to"
+    ],
+    "correctAnswer": "8 bytes (64 bits)",
+    "explanation": "On 64-bit architectures, all memory addresses and pointers occupy 8 bytes.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "C/C++ Programming"
+  },
+  {
+    "questionId": "benchmark-mcq-077",
+    "question": "Which of the following built-in data types in Python is mutable?",
+    "options": [
+      "List",
+      "Tuple",
+      "String",
+      "Integer"
+    ],
+    "correctAnswer": "List",
+    "explanation": "Lists in Python are mutable sequences allowing in-place modification (`append`, `pop`, index assignment).",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Python Programming"
+  },
+  {
+    "questionId": "benchmark-mcq-078",
+    "question": "What is a Python Generator function and how does it differ from a standard function returning a list?",
+    "options": [
+      "A generator uses `yield` to stream values lazily one-by-one, saving memory",
+      "A generator executes in parallel on all CPU cores",
+      "A generator cannot accept parameters",
+      "A generator converts code to C automatically"
+    ],
+    "correctAnswer": "A generator uses `yield` to stream values lazily one-by-one, saving memory",
+    "explanation": "Generators return an iterator yielding values on-demand, enabling O(1) memory pipelines for large datasets.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Python Programming"
+  },
+  {
+    "questionId": "benchmark-mcq-079",
+    "question": "Which HTTP status code indicates a successful resource creation in a REST API?",
+    "options": [
+      "201 Created",
+      "200 OK",
+      "204 No Content",
+      "301 Moved Permanently"
+    ],
+    "correctAnswer": "201 Created",
+    "explanation": "HTTP 201 indicates that a new resource has been successfully created on the server.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Web & REST APIs"
+  },
+  {
+    "questionId": "benchmark-mcq-080",
+    "question": "Which HTTP method is considered safe and idempotent according to RFC specifications?",
+    "options": [
+      "GET",
+      "POST",
+      "PATCH",
+      "CONNECT"
+    ],
+    "correctAnswer": "GET",
+    "explanation": "GET is both safe (read-only without server state changes) and idempotent (repeated identical calls return identical responses).",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Web & REST APIs"
+  },
+  {
+    "questionId": "benchmark-mcq-081",
+    "question": "Which JavaScript keyword declares a block-scoped variable that cannot be re-assigned?",
+    "options": [
+      "const",
+      "let",
+      "var",
+      "static"
+    ],
+    "correctAnswer": "const",
+    "explanation": "`const` declares a block-scoped identifier that cannot be reassigned after initialization.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "JavaScript & Frontend"
+  },
+  {
+    "questionId": "benchmark-mcq-082",
+    "question": "What is a Closure in JavaScript?",
+    "options": [
+      "A function that retains access to its lexical outer scope variables even after outer function has executed",
+      "A method that terminates the browser window",
+      "A syntax error in asynchronous code",
+      "An object with private prototype"
+    ],
+    "correctAnswer": "A function that retains access to its lexical outer scope variables even after outer function has executed",
+    "explanation": "Closures bundle a function with its lexical environment, allowing access to outer scope variables from an inner function.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "JavaScript & Frontend"
+  },
+  {
+    "questionId": "benchmark-mcq-083",
+    "question": "Which CPU scheduling algorithm gives each process a fixed time slice (quantum) in cyclic order?",
+    "options": [
+      "Round Robin",
+      "First-Come First-Served",
+      "Shortest Job First",
+      "Priority Scheduling"
+    ],
+    "correctAnswer": "Round Robin",
+    "explanation": "Round Robin preempts processes after their allocated time quantum in FIFO circular queue order.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Operating Systems"
+  },
+  {
+    "questionId": "benchmark-mcq-084",
+    "question": "Which layer of the OSI model is responsible for end-to-end reliable transmission and flow control?",
+    "options": [
+      "Transport Layer (Layer 4)",
+      "Network Layer (Layer 3)",
+      "Data Link Layer (Layer 2)",
+      "Session Layer (Layer 5)"
+    ],
+    "correctAnswer": "Transport Layer (Layer 4)",
+    "explanation": "Layer 4 (Transport, e.g. TCP) provides end-to-end connection management, flow control, and error recovery.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Computer Networks"
+  },
+  {
+    "questionId": "benchmark-mcq-085",
+    "question": "What is the in-order traversal output of a valid Binary Search Tree (BST)?",
+    "options": [
+      "Values in ascending sorted order",
+      "Values in descending sorted order",
+      "Values ordered by tree level",
+      "Arbitrary random order"
+    ],
+    "correctAnswer": "Values in ascending sorted order",
+    "explanation": "In-order traversal (Left -> Root -> Right) on a BST processes all elements in strictly non-decreasing sorted sequence.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Trees & BST"
+  },
+  {
+    "questionId": "benchmark-mcq-086",
+    "question": "What is the height of a balanced Binary Search Tree containing n nodes?",
+    "options": [
+      "O(log n)",
+      "O(n)",
+      "O(n log n)",
+      "O(1)"
+    ],
+    "correctAnswer": "O(log n)",
+    "explanation": "A balanced binary tree with n nodes has height h = floor(log2(n)) + 1.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Trees & BST"
+  },
+  {
+    "questionId": "benchmark-mcq-087",
+    "question": "In an AVL tree, what is the maximum permissible difference between heights of left and right subtrees for any node?",
+    "options": [
+      "1",
+      "0",
+      "2",
+      "log2(n)"
+    ],
+    "correctAnswer": "1",
+    "explanation": "The AVL balance factor is defined as height(left) - height(right) and must strictly reside in {-1, 0, +1}.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Trees & BST"
+  },
+  {
+    "questionId": "benchmark-mcq-088",
+    "question": "Which data structure follows the Last-In-First-Out (LIFO) order?",
+    "options": [
+      "Stack",
+      "Queue",
+      "Array",
+      "Linked List"
+    ],
+    "correctAnswer": "Stack",
+    "explanation": "A Stack inserts and removes elements from the top, obeying LIFO ordering.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Data Structures"
+  },
+  {
+    "questionId": "benchmark-mcq-089",
+    "question": "What is the average time complexity to lookup a key in a standard Hash Table with a good hash function?",
+    "options": [
+      "O(1)",
+      "O(log n)",
+      "O(n)",
+      "O(n log n)"
+    ],
+    "correctAnswer": "O(1)",
+    "explanation": "Direct index computation via hash functions yields O(1) constant average lookup time.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Data Structures"
+  },
+  {
+    "questionId": "benchmark-mcq-090",
+    "question": "What is the worst-case time complexity of insertion into a Hash Table when all keys collide into the same bucket using separate chaining with linked lists?",
+    "options": [
+      "O(n)",
+      "O(1)",
+      "O(log n)",
+      "O(n^2)"
+    ],
+    "correctAnswer": "O(n)",
+    "explanation": "When all n keys collide into a single bucket linked list, traversing the list takes linear O(n) time.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Data Structures"
+  },
+  {
+    "questionId": "benchmark-mcq-091",
+    "question": "Which of the following time complexities is the most efficient asymptotically for large n?",
+    "options": [
+      "O(log n)",
+      "O(n)",
+      "O(n log n)",
+      "O(n^2)"
+    ],
+    "correctAnswer": "O(log n)",
+    "explanation": "Logarithmic time O(log n) grows much slower than linear, linearithmic, or quadratic time.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Complexity & Algorithms"
+  },
+  {
+    "questionId": "benchmark-mcq-092",
+    "question": "What is the time complexity of the Master Theorem case when T(n) = 2T(n/2) + O(n)?",
+    "options": [
+      "O(n log n)",
+      "O(n)",
+      "O(n^2)",
+      "O(log n)"
+    ],
+    "correctAnswer": "O(n log n)",
+    "explanation": "Here a=2, b=2, d=1. Since log_b(a) = log_2(2) = 1 == d, the solution is O(n^d * log n) = O(n log n).",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Complexity & Algorithms"
+  },
+  {
+    "questionId": "benchmark-mcq-093",
+    "question": "What is the space complexity of standard recursive Depth First Search on a graph with V vertices and maximum depth D?",
+    "options": [
+      "O(D) for call stack",
+      "O(V^2)",
+      "O(1)",
+      "O(E * V)"
+    ],
+    "correctAnswer": "O(D) for call stack",
+    "explanation": "Recursive DFS stores at most D active function frames on the execution stack simultaneously.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Complexity & Algorithms"
+  },
+  {
+    "questionId": "benchmark-mcq-094",
+    "question": "Which keyword in Java is used to inherit a class?",
+    "options": [
+      "extends",
+      "implements",
+      "inherits",
+      "instanceof"
+    ],
+    "correctAnswer": "extends",
+    "explanation": "The `extends` keyword establishes class inheritance in Java.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "OOP Concepts"
+  },
+  {
+    "questionId": "benchmark-mcq-095",
+    "question": "Which keyword in Java is used by a class to implement an interface?",
+    "options": [
+      "implements",
+      "extends",
+      "interface",
+      "using"
+    ],
+    "correctAnswer": "implements",
+    "explanation": "The `implements` keyword is used by classes to implement interface contracts.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "OOP Concepts"
+  },
+  {
+    "questionId": "benchmark-mcq-096",
+    "question": "Can a constructor in Java be declared `static` or `final`?",
+    "options": [
+      "No, constructors cannot be static, final, or abstract",
+      "Yes, constructors can be both static and final",
+      "Yes, but only static is allowed",
+      "Yes, but only final is allowed"
+    ],
+    "correctAnswer": "No, constructors cannot be static, final, or abstract",
+    "explanation": "Constructors belong to object instantiation and cannot be inherited or overridden, making static/final/abstract invalid.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "OOP Concepts"
+  },
+  {
+    "questionId": "benchmark-mcq-097",
+    "question": "Which design pattern provides a surrogate or placeholder for another object to control access to it?",
+    "options": [
+      "Proxy Pattern",
+      "Adapter Pattern",
+      "Decorator Pattern",
+      "Facade Pattern"
+    ],
+    "correctAnswer": "Proxy Pattern",
+    "explanation": "The Proxy pattern controls access to an underlying object, used in lazy loading, caching, and security checks.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "OOP Concepts"
+  },
+  {
+    "questionId": "benchmark-mcq-098",
+    "question": "What is the primary difference between Adapter Pattern and Decorator Pattern?",
+    "options": [
+      "Adapter changes an interface to match client expectations; Decorator enhances object responsibilities dynamically without changing interface",
+      "Adapter creates new classes; Decorator destroys them",
+      "Decorator changes the interface; Adapter adds responsibilities",
+      "There is no architectural difference"
+    ],
+    "correctAnswer": "Adapter changes an interface to match client expectations; Decorator enhances object responsibilities dynamically without changing interface",
+    "explanation": "Adapter converts incompatible interfaces; Decorator adds behaviors while keeping the same interface.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "OOP Concepts"
+  },
+  {
+    "questionId": "benchmark-mcq-099",
+    "question": "Which SQL clause is used to eliminate duplicate rows from a query result set?",
+    "options": [
+      "DISTINCT",
+      "UNIQUE",
+      "GROUP",
+      "DIFFERENT"
+    ],
+    "correctAnswer": "DISTINCT",
+    "explanation": "The `DISTINCT` keyword filters out duplicate tuples from the output.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Database & SQL"
+  },
+  {
+    "questionId": "benchmark-mcq-100",
+    "question": "What type of index is created by default on the Primary Key column in MySQL InnoDB?",
+    "options": [
+      "Clustered B+Tree Index",
+      "Non-clustered Hash Index",
+      "Bitmap Index",
+      "Full-text Index"
+    ],
+    "correctAnswer": "Clustered B+Tree Index",
+    "explanation": "InnoDB stores table data physically sorted by the primary key inside a clustered B+Tree index.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Database & SQL"
+  },
+  {
+    "questionId": "benchmark-mcq-101",
+    "question": "What is the difference between a Correlated Subquery and a Non-Correlated Subquery in SQL?",
+    "options": [
+      "A correlated subquery references columns from the outer query and re-evaluates for every outer row; a non-correlated subquery executes once independently",
+      "A correlated subquery runs once; non-correlated runs multiple times",
+      "Correlated subqueries cannot contain WHERE clauses",
+      "Non-correlated subqueries must return multiple tables"
+    ],
+    "correctAnswer": "A correlated subquery references columns from the outer query and re-evaluates for every outer row; a non-correlated subquery executes once independently",
+    "explanation": "Correlated subqueries depend on outer row attributes and execute repeatedly for each candidate row.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Database & SQL"
+  },
+  {
+    "questionId": "benchmark-mcq-102",
+    "question": "Which SQL aggregate function computes the total sum of numerical column values?",
+    "options": [
+      "SUM()",
+      "TOTAL()",
+      "COUNT()",
+      "AVG()"
+    ],
+    "correctAnswer": "SUM()",
+    "explanation": "`SUM(column)` calculates the arithmetic sum of numerical values, ignoring NULLs.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Database & SQL"
+  },
+  {
+    "questionId": "benchmark-mcq-103",
+    "question": "What is the purpose of the FOREIGN KEY constraint with ON UPDATE CASCADE?",
+    "options": [
+      "When a primary key in parent table is updated, matching foreign keys in child table update automatically",
+      "It prevents primary keys from ever being updated",
+      "It deletes child rows when parent is updated",
+      "It creates a backup table"
+    ],
+    "correctAnswer": "When a primary key in parent table is updated, matching foreign keys in child table update automatically",
+    "explanation": "ON UPDATE CASCADE propagates parent key modifications down to all dependent child records.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Database & SQL"
+  },
+  {
+    "questionId": "benchmark-mcq-104",
+    "question": "In Java, what is the default value of an uninitialized boolean instance variable in a class?",
+    "options": [
+      "false",
+      "true",
+      "null",
+      "0"
+    ],
+    "correctAnswer": "false",
+    "explanation": "Java initializes boolean instance fields to `false` by default.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Java Programming"
+  },
+  {
+    "questionId": "benchmark-mcq-105",
+    "question": "What is the time complexity of `ArrayList.get(index)` vs `LinkedList.get(index)` in Java?",
+    "options": [
+      "O(1) for ArrayList, O(n) for LinkedList",
+      "O(n) for ArrayList, O(1) for LinkedList",
+      "O(1) for both",
+      "O(log n) for both"
+    ],
+    "correctAnswer": "O(1) for ArrayList, O(n) for LinkedList",
+    "explanation": "ArrayList offers O(1) random array access, while LinkedList requires O(n) sequential pointer traversal.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Java Programming"
+  },
+  {
+    "questionId": "benchmark-mcq-106",
+    "question": "What happens during a Java thread deadlock, and which JVM tool can detect it?",
+    "options": [
+      "Threads block indefinitely waiting on locks held by each other; detected using `jstack` or ThreadMXBean",
+      "The JVM crashes immediately with OutOfMemoryError",
+      "The garbage collector kills the deadlocked threads",
+      "The OS terminates the JVM process"
+    ],
+    "correctAnswer": "Threads block indefinitely waiting on locks held by each other; detected using `jstack` or ThreadMXBean",
+    "explanation": "Deadlocks cause threads to sleep indefinitely on mutual lock acquisition; `jstack <pid>` prints thread dumps identifying deadlocked locks.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Java Programming"
+  },
+  {
+    "questionId": "benchmark-mcq-107",
+    "question": "In C/C++, which operator is used to access members of a structure through a pointer?",
+    "options": [
+      "->",
+      ".",
+      "::",
+      "*."
+    ],
+    "correctAnswer": "->",
+    "explanation": "The arrow operator (`->`) dereferences a struct pointer and accesses its field directly.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "C/C++ Programming"
+  },
+  {
+    "questionId": "benchmark-mcq-108",
+    "question": "What is the size of a pointer variable on a 64-bit operating system architecture?",
+    "options": [
+      "8 bytes (64 bits)",
+      "4 bytes (32 bits)",
+      "2 bytes (16 bits)",
+      "Varies based on data type pointed to"
+    ],
+    "correctAnswer": "8 bytes (64 bits)",
+    "explanation": "On 64-bit architectures, all memory addresses and pointers occupy 8 bytes.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "C/C++ Programming"
+  },
+  {
+    "questionId": "benchmark-mcq-109",
+    "question": "Which of the following built-in data types in Python is mutable?",
+    "options": [
+      "List",
+      "Tuple",
+      "String",
+      "Integer"
+    ],
+    "correctAnswer": "List",
+    "explanation": "Lists in Python are mutable sequences allowing in-place modification (`append`, `pop`, index assignment).",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Python Programming"
+  },
+  {
+    "questionId": "benchmark-mcq-110",
+    "question": "What is a Python Generator function and how does it differ from a standard function returning a list?",
+    "options": [
+      "A generator uses `yield` to stream values lazily one-by-one, saving memory",
+      "A generator executes in parallel on all CPU cores",
+      "A generator cannot accept parameters",
+      "A generator converts code to C automatically"
+    ],
+    "correctAnswer": "A generator uses `yield` to stream values lazily one-by-one, saving memory",
+    "explanation": "Generators return an iterator yielding values on-demand, enabling O(1) memory pipelines for large datasets.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Python Programming"
+  },
+  {
+    "questionId": "benchmark-mcq-111",
+    "question": "Which HTTP status code indicates a successful resource creation in a REST API?",
+    "options": [
+      "201 Created",
+      "200 OK",
+      "204 No Content",
+      "301 Moved Permanently"
+    ],
+    "correctAnswer": "201 Created",
+    "explanation": "HTTP 201 indicates that a new resource has been successfully created on the server.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Web & REST APIs"
+  },
+  {
+    "questionId": "benchmark-mcq-112",
+    "question": "Which HTTP method is considered safe and idempotent according to RFC specifications?",
+    "options": [
+      "GET",
+      "POST",
+      "PATCH",
+      "CONNECT"
+    ],
+    "correctAnswer": "GET",
+    "explanation": "GET is both safe (read-only without server state changes) and idempotent (repeated identical calls return identical responses).",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Web & REST APIs"
+  },
+  {
+    "questionId": "benchmark-mcq-113",
+    "question": "Which JavaScript keyword declares a block-scoped variable that cannot be re-assigned?",
+    "options": [
+      "const",
+      "let",
+      "var",
+      "static"
+    ],
+    "correctAnswer": "const",
+    "explanation": "`const` declares a block-scoped identifier that cannot be reassigned after initialization.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "JavaScript & Frontend"
+  },
+  {
+    "questionId": "benchmark-mcq-114",
+    "question": "What is a Closure in JavaScript?",
+    "options": [
+      "A function that retains access to its lexical outer scope variables even after outer function has executed",
+      "A method that terminates the browser window",
+      "A syntax error in asynchronous code",
+      "An object with private prototype"
+    ],
+    "correctAnswer": "A function that retains access to its lexical outer scope variables even after outer function has executed",
+    "explanation": "Closures bundle a function with its lexical environment, allowing access to outer scope variables from an inner function.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "JavaScript & Frontend"
+  },
+  {
+    "questionId": "benchmark-mcq-115",
+    "question": "Which CPU scheduling algorithm gives each process a fixed time slice (quantum) in cyclic order?",
+    "options": [
+      "Round Robin",
+      "First-Come First-Served",
+      "Shortest Job First",
+      "Priority Scheduling"
+    ],
+    "correctAnswer": "Round Robin",
+    "explanation": "Round Robin preempts processes after their allocated time quantum in FIFO circular queue order.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Operating Systems"
+  },
+  {
+    "questionId": "benchmark-mcq-116",
+    "question": "Which layer of the OSI model is responsible for end-to-end reliable transmission and flow control?",
+    "options": [
+      "Transport Layer (Layer 4)",
+      "Network Layer (Layer 3)",
+      "Data Link Layer (Layer 2)",
+      "Session Layer (Layer 5)"
+    ],
+    "correctAnswer": "Transport Layer (Layer 4)",
+    "explanation": "Layer 4 (Transport, e.g. TCP) provides end-to-end connection management, flow control, and error recovery.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Computer Networks"
+  },
+  {
+    "questionId": "benchmark-mcq-117",
+    "question": "What is the in-order traversal output of a valid Binary Search Tree (BST)?",
+    "options": [
+      "Values in ascending sorted order",
+      "Values in descending sorted order",
+      "Values ordered by tree level",
+      "Arbitrary random order"
+    ],
+    "correctAnswer": "Values in ascending sorted order",
+    "explanation": "In-order traversal (Left -> Root -> Right) on a BST processes all elements in strictly non-decreasing sorted sequence.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Trees & BST"
+  },
+  {
+    "questionId": "benchmark-mcq-118",
+    "question": "What is the height of a balanced Binary Search Tree containing n nodes?",
+    "options": [
+      "O(log n)",
+      "O(n)",
+      "O(n log n)",
+      "O(1)"
+    ],
+    "correctAnswer": "O(log n)",
+    "explanation": "A balanced binary tree with n nodes has height h = floor(log2(n)) + 1.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Trees & BST"
+  },
+  {
+    "questionId": "benchmark-mcq-119",
+    "question": "In an AVL tree, what is the maximum permissible difference between heights of left and right subtrees for any node?",
+    "options": [
+      "1",
+      "0",
+      "2",
+      "log2(n)"
+    ],
+    "correctAnswer": "1",
+    "explanation": "The AVL balance factor is defined as height(left) - height(right) and must strictly reside in {-1, 0, +1}.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Trees & BST"
+  },
+  {
+    "questionId": "benchmark-mcq-120",
+    "question": "Which data structure follows the Last-In-First-Out (LIFO) order?",
+    "options": [
+      "Stack",
+      "Queue",
+      "Array",
+      "Linked List"
+    ],
+    "correctAnswer": "Stack",
+    "explanation": "A Stack inserts and removes elements from the top, obeying LIFO ordering.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Data Structures"
+  },
+  {
+    "questionId": "benchmark-mcq-121",
+    "question": "What is the average time complexity to lookup a key in a standard Hash Table with a good hash function?",
+    "options": [
+      "O(1)",
+      "O(log n)",
+      "O(n)",
+      "O(n log n)"
+    ],
+    "correctAnswer": "O(1)",
+    "explanation": "Direct index computation via hash functions yields O(1) constant average lookup time.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Data Structures"
+  },
+  {
+    "questionId": "benchmark-mcq-122",
+    "question": "What is the worst-case time complexity of insertion into a Hash Table when all keys collide into the same bucket using separate chaining with linked lists?",
+    "options": [
+      "O(n)",
+      "O(1)",
+      "O(log n)",
+      "O(n^2)"
+    ],
+    "correctAnswer": "O(n)",
+    "explanation": "When all n keys collide into a single bucket linked list, traversing the list takes linear O(n) time.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Data Structures"
+  },
+  {
+    "questionId": "benchmark-mcq-123",
+    "question": "Which of the following time complexities is the most efficient asymptotically for large n?",
+    "options": [
+      "O(log n)",
+      "O(n)",
+      "O(n log n)",
+      "O(n^2)"
+    ],
+    "correctAnswer": "O(log n)",
+    "explanation": "Logarithmic time O(log n) grows much slower than linear, linearithmic, or quadratic time.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Complexity & Algorithms"
+  },
+  {
+    "questionId": "benchmark-mcq-124",
+    "question": "What is the time complexity of the Master Theorem case when T(n) = 2T(n/2) + O(n)?",
+    "options": [
+      "O(n log n)",
+      "O(n)",
+      "O(n^2)",
+      "O(log n)"
+    ],
+    "correctAnswer": "O(n log n)",
+    "explanation": "Here a=2, b=2, d=1. Since log_b(a) = log_2(2) = 1 == d, the solution is O(n^d * log n) = O(n log n).",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Complexity & Algorithms"
+  },
+  {
+    "questionId": "benchmark-mcq-125",
+    "question": "What is the space complexity of standard recursive Depth First Search on a graph with V vertices and maximum depth D?",
+    "options": [
+      "O(D) for call stack",
+      "O(V^2)",
+      "O(1)",
+      "O(E * V)"
+    ],
+    "correctAnswer": "O(D) for call stack",
+    "explanation": "Recursive DFS stores at most D active function frames on the execution stack simultaneously.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Complexity & Algorithms"
+  },
+  {
+    "questionId": "benchmark-mcq-126",
+    "question": "Which keyword in Java is used to inherit a class?",
+    "options": [
+      "extends",
+      "implements",
+      "inherits",
+      "instanceof"
+    ],
+    "correctAnswer": "extends",
+    "explanation": "The `extends` keyword establishes class inheritance in Java.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "OOP Concepts"
+  },
+  {
+    "questionId": "benchmark-mcq-127",
+    "question": "Which keyword in Java is used by a class to implement an interface?",
+    "options": [
+      "implements",
+      "extends",
+      "interface",
+      "using"
+    ],
+    "correctAnswer": "implements",
+    "explanation": "The `implements` keyword is used by classes to implement interface contracts.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "OOP Concepts"
+  },
+  {
+    "questionId": "benchmark-mcq-128",
+    "question": "Can a constructor in Java be declared `static` or `final`?",
+    "options": [
+      "No, constructors cannot be static, final, or abstract",
+      "Yes, constructors can be both static and final",
+      "Yes, but only static is allowed",
+      "Yes, but only final is allowed"
+    ],
+    "correctAnswer": "No, constructors cannot be static, final, or abstract",
+    "explanation": "Constructors belong to object instantiation and cannot be inherited or overridden, making static/final/abstract invalid.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "OOP Concepts"
+  },
+  {
+    "questionId": "benchmark-mcq-129",
+    "question": "Which design pattern provides a surrogate or placeholder for another object to control access to it?",
+    "options": [
+      "Proxy Pattern",
+      "Adapter Pattern",
+      "Decorator Pattern",
+      "Facade Pattern"
+    ],
+    "correctAnswer": "Proxy Pattern",
+    "explanation": "The Proxy pattern controls access to an underlying object, used in lazy loading, caching, and security checks.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "OOP Concepts"
+  },
+  {
+    "questionId": "benchmark-mcq-130",
+    "question": "What is the primary difference between Adapter Pattern and Decorator Pattern?",
+    "options": [
+      "Adapter changes an interface to match client expectations; Decorator enhances object responsibilities dynamically without changing interface",
+      "Adapter creates new classes; Decorator destroys them",
+      "Decorator changes the interface; Adapter adds responsibilities",
+      "There is no architectural difference"
+    ],
+    "correctAnswer": "Adapter changes an interface to match client expectations; Decorator enhances object responsibilities dynamically without changing interface",
+    "explanation": "Adapter converts incompatible interfaces; Decorator adds behaviors while keeping the same interface.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "OOP Concepts"
+  },
+  {
+    "questionId": "benchmark-mcq-131",
+    "question": "Which SQL clause is used to eliminate duplicate rows from a query result set?",
+    "options": [
+      "DISTINCT",
+      "UNIQUE",
+      "GROUP",
+      "DIFFERENT"
+    ],
+    "correctAnswer": "DISTINCT",
+    "explanation": "The `DISTINCT` keyword filters out duplicate tuples from the output.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Database & SQL"
+  },
+  {
+    "questionId": "benchmark-mcq-132",
+    "question": "What type of index is created by default on the Primary Key column in MySQL InnoDB?",
+    "options": [
+      "Clustered B+Tree Index",
+      "Non-clustered Hash Index",
+      "Bitmap Index",
+      "Full-text Index"
+    ],
+    "correctAnswer": "Clustered B+Tree Index",
+    "explanation": "InnoDB stores table data physically sorted by the primary key inside a clustered B+Tree index.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Database & SQL"
+  },
+  {
+    "questionId": "benchmark-mcq-133",
+    "question": "What is the difference between a Correlated Subquery and a Non-Correlated Subquery in SQL?",
+    "options": [
+      "A correlated subquery references columns from the outer query and re-evaluates for every outer row; a non-correlated subquery executes once independently",
+      "A correlated subquery runs once; non-correlated runs multiple times",
+      "Correlated subqueries cannot contain WHERE clauses",
+      "Non-correlated subqueries must return multiple tables"
+    ],
+    "correctAnswer": "A correlated subquery references columns from the outer query and re-evaluates for every outer row; a non-correlated subquery executes once independently",
+    "explanation": "Correlated subqueries depend on outer row attributes and execute repeatedly for each candidate row.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Database & SQL"
+  },
+  {
+    "questionId": "benchmark-mcq-134",
+    "question": "Which SQL aggregate function computes the total sum of numerical column values?",
+    "options": [
+      "SUM()",
+      "TOTAL()",
+      "COUNT()",
+      "AVG()"
+    ],
+    "correctAnswer": "SUM()",
+    "explanation": "`SUM(column)` calculates the arithmetic sum of numerical values, ignoring NULLs.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Database & SQL"
+  },
+  {
+    "questionId": "benchmark-mcq-135",
+    "question": "What is the purpose of the FOREIGN KEY constraint with ON UPDATE CASCADE?",
+    "options": [
+      "When a primary key in parent table is updated, matching foreign keys in child table update automatically",
+      "It prevents primary keys from ever being updated",
+      "It deletes child rows when parent is updated",
+      "It creates a backup table"
+    ],
+    "correctAnswer": "When a primary key in parent table is updated, matching foreign keys in child table update automatically",
+    "explanation": "ON UPDATE CASCADE propagates parent key modifications down to all dependent child records.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Database & SQL"
+  },
+  {
+    "questionId": "benchmark-mcq-136",
+    "question": "In Java, what is the default value of an uninitialized boolean instance variable in a class?",
+    "options": [
+      "false",
+      "true",
+      "null",
+      "0"
+    ],
+    "correctAnswer": "false",
+    "explanation": "Java initializes boolean instance fields to `false` by default.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Java Programming"
+  },
+  {
+    "questionId": "benchmark-mcq-137",
+    "question": "What is the time complexity of `ArrayList.get(index)` vs `LinkedList.get(index)` in Java?",
+    "options": [
+      "O(1) for ArrayList, O(n) for LinkedList",
+      "O(n) for ArrayList, O(1) for LinkedList",
+      "O(1) for both",
+      "O(log n) for both"
+    ],
+    "correctAnswer": "O(1) for ArrayList, O(n) for LinkedList",
+    "explanation": "ArrayList offers O(1) random array access, while LinkedList requires O(n) sequential pointer traversal.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Java Programming"
+  },
+  {
+    "questionId": "benchmark-mcq-138",
+    "question": "What happens during a Java thread deadlock, and which JVM tool can detect it?",
+    "options": [
+      "Threads block indefinitely waiting on locks held by each other; detected using `jstack` or ThreadMXBean",
+      "The JVM crashes immediately with OutOfMemoryError",
+      "The garbage collector kills the deadlocked threads",
+      "The OS terminates the JVM process"
+    ],
+    "correctAnswer": "Threads block indefinitely waiting on locks held by each other; detected using `jstack` or ThreadMXBean",
+    "explanation": "Deadlocks cause threads to sleep indefinitely on mutual lock acquisition; `jstack <pid>` prints thread dumps identifying deadlocked locks.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Java Programming"
+  },
+  {
+    "questionId": "benchmark-mcq-139",
+    "question": "In C/C++, which operator is used to access members of a structure through a pointer?",
+    "options": [
+      "->",
+      ".",
+      "::",
+      "*."
+    ],
+    "correctAnswer": "->",
+    "explanation": "The arrow operator (`->`) dereferences a struct pointer and accesses its field directly.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "C/C++ Programming"
+  },
+  {
+    "questionId": "benchmark-mcq-140",
+    "question": "What is the size of a pointer variable on a 64-bit operating system architecture?",
+    "options": [
+      "8 bytes (64 bits)",
+      "4 bytes (32 bits)",
+      "2 bytes (16 bits)",
+      "Varies based on data type pointed to"
+    ],
+    "correctAnswer": "8 bytes (64 bits)",
+    "explanation": "On 64-bit architectures, all memory addresses and pointers occupy 8 bytes.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "C/C++ Programming"
+  },
+  {
+    "questionId": "benchmark-mcq-141",
+    "question": "Which of the following built-in data types in Python is mutable?",
+    "options": [
+      "List",
+      "Tuple",
+      "String",
+      "Integer"
+    ],
+    "correctAnswer": "List",
+    "explanation": "Lists in Python are mutable sequences allowing in-place modification (`append`, `pop`, index assignment).",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Python Programming"
+  },
+  {
+    "questionId": "benchmark-mcq-142",
+    "question": "What is a Python Generator function and how does it differ from a standard function returning a list?",
+    "options": [
+      "A generator uses `yield` to stream values lazily one-by-one, saving memory",
+      "A generator executes in parallel on all CPU cores",
+      "A generator cannot accept parameters",
+      "A generator converts code to C automatically"
+    ],
+    "correctAnswer": "A generator uses `yield` to stream values lazily one-by-one, saving memory",
+    "explanation": "Generators return an iterator yielding values on-demand, enabling O(1) memory pipelines for large datasets.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Python Programming"
+  },
+  {
+    "questionId": "benchmark-mcq-143",
+    "question": "Which HTTP status code indicates a successful resource creation in a REST API?",
+    "options": [
+      "201 Created",
+      "200 OK",
+      "204 No Content",
+      "301 Moved Permanently"
+    ],
+    "correctAnswer": "201 Created",
+    "explanation": "HTTP 201 indicates that a new resource has been successfully created on the server.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Web & REST APIs"
+  },
+  {
+    "questionId": "benchmark-mcq-144",
+    "question": "Which HTTP method is considered safe and idempotent according to RFC specifications?",
+    "options": [
+      "GET",
+      "POST",
+      "PATCH",
+      "CONNECT"
+    ],
+    "correctAnswer": "GET",
+    "explanation": "GET is both safe (read-only without server state changes) and idempotent (repeated identical calls return identical responses).",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Web & REST APIs"
+  },
+  {
+    "questionId": "benchmark-mcq-145",
+    "question": "Which JavaScript keyword declares a block-scoped variable that cannot be re-assigned?",
+    "options": [
+      "const",
+      "let",
+      "var",
+      "static"
+    ],
+    "correctAnswer": "const",
+    "explanation": "`const` declares a block-scoped identifier that cannot be reassigned after initialization.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "JavaScript & Frontend"
+  },
+  {
+    "questionId": "benchmark-mcq-146",
+    "question": "What is a Closure in JavaScript?",
+    "options": [
+      "A function that retains access to its lexical outer scope variables even after outer function has executed",
+      "A method that terminates the browser window",
+      "A syntax error in asynchronous code",
+      "An object with private prototype"
+    ],
+    "correctAnswer": "A function that retains access to its lexical outer scope variables even after outer function has executed",
+    "explanation": "Closures bundle a function with its lexical environment, allowing access to outer scope variables from an inner function.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "JavaScript & Frontend"
+  },
+  {
+    "questionId": "benchmark-mcq-147",
+    "question": "Which CPU scheduling algorithm gives each process a fixed time slice (quantum) in cyclic order?",
+    "options": [
+      "Round Robin",
+      "First-Come First-Served",
+      "Shortest Job First",
+      "Priority Scheduling"
+    ],
+    "correctAnswer": "Round Robin",
+    "explanation": "Round Robin preempts processes after their allocated time quantum in FIFO circular queue order.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Operating Systems"
+  },
+  {
+    "questionId": "benchmark-mcq-148",
+    "question": "Which layer of the OSI model is responsible for end-to-end reliable transmission and flow control?",
+    "options": [
+      "Transport Layer (Layer 4)",
+      "Network Layer (Layer 3)",
+      "Data Link Layer (Layer 2)",
+      "Session Layer (Layer 5)"
+    ],
+    "correctAnswer": "Transport Layer (Layer 4)",
+    "explanation": "Layer 4 (Transport, e.g. TCP) provides end-to-end connection management, flow control, and error recovery.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Computer Networks"
+  },
+  {
+    "questionId": "benchmark-mcq-149",
+    "question": "What is the in-order traversal output of a valid Binary Search Tree (BST)?",
+    "options": [
+      "Values in ascending sorted order",
+      "Values in descending sorted order",
+      "Values ordered by tree level",
+      "Arbitrary random order"
+    ],
+    "correctAnswer": "Values in ascending sorted order",
+    "explanation": "In-order traversal (Left -> Root -> Right) on a BST processes all elements in strictly non-decreasing sorted sequence.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Trees & BST"
+  },
+  {
+    "questionId": "benchmark-mcq-150",
+    "question": "What is the height of a balanced Binary Search Tree containing n nodes?",
+    "options": [
+      "O(log n)",
+      "O(n)",
+      "O(n log n)",
+      "O(1)"
+    ],
+    "correctAnswer": "O(log n)",
+    "explanation": "A balanced binary tree with n nodes has height h = floor(log2(n)) + 1.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Trees & BST"
+  },
+  {
+    "questionId": "benchmark-mcq-151",
+    "question": "In an AVL tree, what is the maximum permissible difference between heights of left and right subtrees for any node?",
+    "options": [
+      "1",
+      "0",
+      "2",
+      "log2(n)"
+    ],
+    "correctAnswer": "1",
+    "explanation": "The AVL balance factor is defined as height(left) - height(right) and must strictly reside in {-1, 0, +1}.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Trees & BST"
+  },
+  {
+    "questionId": "benchmark-mcq-152",
+    "question": "Which data structure follows the Last-In-First-Out (LIFO) order?",
+    "options": [
+      "Stack",
+      "Queue",
+      "Array",
+      "Linked List"
+    ],
+    "correctAnswer": "Stack",
+    "explanation": "A Stack inserts and removes elements from the top, obeying LIFO ordering.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Data Structures"
+  },
+  {
+    "questionId": "benchmark-mcq-153",
+    "question": "What is the average time complexity to lookup a key in a standard Hash Table with a good hash function?",
+    "options": [
+      "O(1)",
+      "O(log n)",
+      "O(n)",
+      "O(n log n)"
+    ],
+    "correctAnswer": "O(1)",
+    "explanation": "Direct index computation via hash functions yields O(1) constant average lookup time.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Data Structures"
+  },
+  {
+    "questionId": "benchmark-mcq-154",
+    "question": "What is the worst-case time complexity of insertion into a Hash Table when all keys collide into the same bucket using separate chaining with linked lists?",
+    "options": [
+      "O(n)",
+      "O(1)",
+      "O(log n)",
+      "O(n^2)"
+    ],
+    "correctAnswer": "O(n)",
+    "explanation": "When all n keys collide into a single bucket linked list, traversing the list takes linear O(n) time.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Data Structures"
+  },
+  {
+    "questionId": "benchmark-mcq-155",
+    "question": "Which of the following time complexities is the most efficient asymptotically for large n?",
+    "options": [
+      "O(log n)",
+      "O(n)",
+      "O(n log n)",
+      "O(n^2)"
+    ],
+    "correctAnswer": "O(log n)",
+    "explanation": "Logarithmic time O(log n) grows much slower than linear, linearithmic, or quadratic time.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Complexity & Algorithms"
+  },
+  {
+    "questionId": "benchmark-mcq-156",
+    "question": "What is the time complexity of the Master Theorem case when T(n) = 2T(n/2) + O(n)?",
+    "options": [
+      "O(n log n)",
+      "O(n)",
+      "O(n^2)",
+      "O(log n)"
+    ],
+    "correctAnswer": "O(n log n)",
+    "explanation": "Here a=2, b=2, d=1. Since log_b(a) = log_2(2) = 1 == d, the solution is O(n^d * log n) = O(n log n).",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Complexity & Algorithms"
+  },
+  {
+    "questionId": "benchmark-mcq-157",
+    "question": "What is the space complexity of standard recursive Depth First Search on a graph with V vertices and maximum depth D?",
+    "options": [
+      "O(D) for call stack",
+      "O(V^2)",
+      "O(1)",
+      "O(E * V)"
+    ],
+    "correctAnswer": "O(D) for call stack",
+    "explanation": "Recursive DFS stores at most D active function frames on the execution stack simultaneously.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Complexity & Algorithms"
+  },
+  {
+    "questionId": "benchmark-mcq-158",
+    "question": "Which keyword in Java is used to inherit a class?",
+    "options": [
+      "extends",
+      "implements",
+      "inherits",
+      "instanceof"
+    ],
+    "correctAnswer": "extends",
+    "explanation": "The `extends` keyword establishes class inheritance in Java.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "OOP Concepts"
+  },
+  {
+    "questionId": "benchmark-mcq-159",
+    "question": "Which keyword in Java is used by a class to implement an interface?",
+    "options": [
+      "implements",
+      "extends",
+      "interface",
+      "using"
+    ],
+    "correctAnswer": "implements",
+    "explanation": "The `implements` keyword is used by classes to implement interface contracts.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "OOP Concepts"
+  },
+  {
+    "questionId": "benchmark-mcq-160",
+    "question": "Can a constructor in Java be declared `static` or `final`?",
+    "options": [
+      "No, constructors cannot be static, final, or abstract",
+      "Yes, constructors can be both static and final",
+      "Yes, but only static is allowed",
+      "Yes, but only final is allowed"
+    ],
+    "correctAnswer": "No, constructors cannot be static, final, or abstract",
+    "explanation": "Constructors belong to object instantiation and cannot be inherited or overridden, making static/final/abstract invalid.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "OOP Concepts"
+  },
+  {
+    "questionId": "benchmark-mcq-161",
+    "question": "Which design pattern provides a surrogate or placeholder for another object to control access to it?",
+    "options": [
+      "Proxy Pattern",
+      "Adapter Pattern",
+      "Decorator Pattern",
+      "Facade Pattern"
+    ],
+    "correctAnswer": "Proxy Pattern",
+    "explanation": "The Proxy pattern controls access to an underlying object, used in lazy loading, caching, and security checks.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "OOP Concepts"
+  },
+  {
+    "questionId": "benchmark-mcq-162",
+    "question": "What is the primary difference between Adapter Pattern and Decorator Pattern?",
+    "options": [
+      "Adapter changes an interface to match client expectations; Decorator enhances object responsibilities dynamically without changing interface",
+      "Adapter creates new classes; Decorator destroys them",
+      "Decorator changes the interface; Adapter adds responsibilities",
+      "There is no architectural difference"
+    ],
+    "correctAnswer": "Adapter changes an interface to match client expectations; Decorator enhances object responsibilities dynamically without changing interface",
+    "explanation": "Adapter converts incompatible interfaces; Decorator adds behaviors while keeping the same interface.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "OOP Concepts"
+  },
+  {
+    "questionId": "benchmark-mcq-163",
+    "question": "Which SQL clause is used to eliminate duplicate rows from a query result set?",
+    "options": [
+      "DISTINCT",
+      "UNIQUE",
+      "GROUP",
+      "DIFFERENT"
+    ],
+    "correctAnswer": "DISTINCT",
+    "explanation": "The `DISTINCT` keyword filters out duplicate tuples from the output.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Database & SQL"
+  },
+  {
+    "questionId": "benchmark-mcq-164",
+    "question": "What type of index is created by default on the Primary Key column in MySQL InnoDB?",
+    "options": [
+      "Clustered B+Tree Index",
+      "Non-clustered Hash Index",
+      "Bitmap Index",
+      "Full-text Index"
+    ],
+    "correctAnswer": "Clustered B+Tree Index",
+    "explanation": "InnoDB stores table data physically sorted by the primary key inside a clustered B+Tree index.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Database & SQL"
+  },
+  {
+    "questionId": "benchmark-mcq-165",
+    "question": "What is the difference between a Correlated Subquery and a Non-Correlated Subquery in SQL?",
+    "options": [
+      "A correlated subquery references columns from the outer query and re-evaluates for every outer row; a non-correlated subquery executes once independently",
+      "A correlated subquery runs once; non-correlated runs multiple times",
+      "Correlated subqueries cannot contain WHERE clauses",
+      "Non-correlated subqueries must return multiple tables"
+    ],
+    "correctAnswer": "A correlated subquery references columns from the outer query and re-evaluates for every outer row; a non-correlated subquery executes once independently",
+    "explanation": "Correlated subqueries depend on outer row attributes and execute repeatedly for each candidate row.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Database & SQL"
+  },
+  {
+    "questionId": "benchmark-mcq-166",
+    "question": "Which SQL aggregate function computes the total sum of numerical column values?",
+    "options": [
+      "SUM()",
+      "TOTAL()",
+      "COUNT()",
+      "AVG()"
+    ],
+    "correctAnswer": "SUM()",
+    "explanation": "`SUM(column)` calculates the arithmetic sum of numerical values, ignoring NULLs.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Database & SQL"
+  },
+  {
+    "questionId": "benchmark-mcq-167",
+    "question": "What is the purpose of the FOREIGN KEY constraint with ON UPDATE CASCADE?",
+    "options": [
+      "When a primary key in parent table is updated, matching foreign keys in child table update automatically",
+      "It prevents primary keys from ever being updated",
+      "It deletes child rows when parent is updated",
+      "It creates a backup table"
+    ],
+    "correctAnswer": "When a primary key in parent table is updated, matching foreign keys in child table update automatically",
+    "explanation": "ON UPDATE CASCADE propagates parent key modifications down to all dependent child records.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Database & SQL"
+  },
+  {
+    "questionId": "benchmark-mcq-168",
+    "question": "In Java, what is the default value of an uninitialized boolean instance variable in a class?",
+    "options": [
+      "false",
+      "true",
+      "null",
+      "0"
+    ],
+    "correctAnswer": "false",
+    "explanation": "Java initializes boolean instance fields to `false` by default.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Java Programming"
+  },
+  {
+    "questionId": "benchmark-mcq-169",
+    "question": "What is the time complexity of `ArrayList.get(index)` vs `LinkedList.get(index)` in Java?",
+    "options": [
+      "O(1) for ArrayList, O(n) for LinkedList",
+      "O(n) for ArrayList, O(1) for LinkedList",
+      "O(1) for both",
+      "O(log n) for both"
+    ],
+    "correctAnswer": "O(1) for ArrayList, O(n) for LinkedList",
+    "explanation": "ArrayList offers O(1) random array access, while LinkedList requires O(n) sequential pointer traversal.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Java Programming"
+  },
+  {
+    "questionId": "benchmark-mcq-170",
+    "question": "What happens during a Java thread deadlock, and which JVM tool can detect it?",
+    "options": [
+      "Threads block indefinitely waiting on locks held by each other; detected using `jstack` or ThreadMXBean",
+      "The JVM crashes immediately with OutOfMemoryError",
+      "The garbage collector kills the deadlocked threads",
+      "The OS terminates the JVM process"
+    ],
+    "correctAnswer": "Threads block indefinitely waiting on locks held by each other; detected using `jstack` or ThreadMXBean",
+    "explanation": "Deadlocks cause threads to sleep indefinitely on mutual lock acquisition; `jstack <pid>` prints thread dumps identifying deadlocked locks.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Java Programming"
+  },
+  {
+    "questionId": "benchmark-mcq-171",
+    "question": "In C/C++, which operator is used to access members of a structure through a pointer?",
+    "options": [
+      "->",
+      ".",
+      "::",
+      "*."
+    ],
+    "correctAnswer": "->",
+    "explanation": "The arrow operator (`->`) dereferences a struct pointer and accesses its field directly.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "C/C++ Programming"
+  },
+  {
+    "questionId": "benchmark-mcq-172",
+    "question": "What is the size of a pointer variable on a 64-bit operating system architecture?",
+    "options": [
+      "8 bytes (64 bits)",
+      "4 bytes (32 bits)",
+      "2 bytes (16 bits)",
+      "Varies based on data type pointed to"
+    ],
+    "correctAnswer": "8 bytes (64 bits)",
+    "explanation": "On 64-bit architectures, all memory addresses and pointers occupy 8 bytes.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "C/C++ Programming"
+  },
+  {
+    "questionId": "benchmark-mcq-173",
+    "question": "Which of the following built-in data types in Python is mutable?",
+    "options": [
+      "List",
+      "Tuple",
+      "String",
+      "Integer"
+    ],
+    "correctAnswer": "List",
+    "explanation": "Lists in Python are mutable sequences allowing in-place modification (`append`, `pop`, index assignment).",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Python Programming"
+  },
+  {
+    "questionId": "benchmark-mcq-174",
+    "question": "What is a Python Generator function and how does it differ from a standard function returning a list?",
+    "options": [
+      "A generator uses `yield` to stream values lazily one-by-one, saving memory",
+      "A generator executes in parallel on all CPU cores",
+      "A generator cannot accept parameters",
+      "A generator converts code to C automatically"
+    ],
+    "correctAnswer": "A generator uses `yield` to stream values lazily one-by-one, saving memory",
+    "explanation": "Generators return an iterator yielding values on-demand, enabling O(1) memory pipelines for large datasets.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Python Programming"
+  },
+  {
+    "questionId": "benchmark-mcq-175",
+    "question": "Which HTTP status code indicates a successful resource creation in a REST API?",
+    "options": [
+      "201 Created",
+      "200 OK",
+      "204 No Content",
+      "301 Moved Permanently"
+    ],
+    "correctAnswer": "201 Created",
+    "explanation": "HTTP 201 indicates that a new resource has been successfully created on the server.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Web & REST APIs"
+  },
+  {
+    "questionId": "benchmark-mcq-176",
+    "question": "Which HTTP method is considered safe and idempotent according to RFC specifications?",
+    "options": [
+      "GET",
+      "POST",
+      "PATCH",
+      "CONNECT"
+    ],
+    "correctAnswer": "GET",
+    "explanation": "GET is both safe (read-only without server state changes) and idempotent (repeated identical calls return identical responses).",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Web & REST APIs"
+  },
+  {
+    "questionId": "benchmark-mcq-177",
+    "question": "Which JavaScript keyword declares a block-scoped variable that cannot be re-assigned?",
+    "options": [
+      "const",
+      "let",
+      "var",
+      "static"
+    ],
+    "correctAnswer": "const",
+    "explanation": "`const` declares a block-scoped identifier that cannot be reassigned after initialization.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "JavaScript & Frontend"
+  },
+  {
+    "questionId": "benchmark-mcq-178",
+    "question": "What is a Closure in JavaScript?",
+    "options": [
+      "A function that retains access to its lexical outer scope variables even after outer function has executed",
+      "A method that terminates the browser window",
+      "A syntax error in asynchronous code",
+      "An object with private prototype"
+    ],
+    "correctAnswer": "A function that retains access to its lexical outer scope variables even after outer function has executed",
+    "explanation": "Closures bundle a function with its lexical environment, allowing access to outer scope variables from an inner function.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "JavaScript & Frontend"
+  },
+  {
+    "questionId": "benchmark-mcq-179",
+    "question": "Which CPU scheduling algorithm gives each process a fixed time slice (quantum) in cyclic order?",
+    "options": [
+      "Round Robin",
+      "First-Come First-Served",
+      "Shortest Job First",
+      "Priority Scheduling"
+    ],
+    "correctAnswer": "Round Robin",
+    "explanation": "Round Robin preempts processes after their allocated time quantum in FIFO circular queue order.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Operating Systems"
+  },
+  {
+    "questionId": "benchmark-mcq-180",
+    "question": "Which layer of the OSI model is responsible for end-to-end reliable transmission and flow control?",
+    "options": [
+      "Transport Layer (Layer 4)",
+      "Network Layer (Layer 3)",
+      "Data Link Layer (Layer 2)",
+      "Session Layer (Layer 5)"
+    ],
+    "correctAnswer": "Transport Layer (Layer 4)",
+    "explanation": "Layer 4 (Transport, e.g. TCP) provides end-to-end connection management, flow control, and error recovery.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Computer Networks"
+  },
+  {
+    "questionId": "benchmark-mcq-181",
+    "question": "What is the in-order traversal output of a valid Binary Search Tree (BST)?",
+    "options": [
+      "Values in ascending sorted order",
+      "Values in descending sorted order",
+      "Values ordered by tree level",
+      "Arbitrary random order"
+    ],
+    "correctAnswer": "Values in ascending sorted order",
+    "explanation": "In-order traversal (Left -> Root -> Right) on a BST processes all elements in strictly non-decreasing sorted sequence.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Trees & BST"
+  },
+  {
+    "questionId": "benchmark-mcq-182",
+    "question": "What is the height of a balanced Binary Search Tree containing n nodes?",
+    "options": [
+      "O(log n)",
+      "O(n)",
+      "O(n log n)",
+      "O(1)"
+    ],
+    "correctAnswer": "O(log n)",
+    "explanation": "A balanced binary tree with n nodes has height h = floor(log2(n)) + 1.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Trees & BST"
+  },
+  {
+    "questionId": "benchmark-mcq-183",
+    "question": "In an AVL tree, what is the maximum permissible difference between heights of left and right subtrees for any node?",
+    "options": [
+      "1",
+      "0",
+      "2",
+      "log2(n)"
+    ],
+    "correctAnswer": "1",
+    "explanation": "The AVL balance factor is defined as height(left) - height(right) and must strictly reside in {-1, 0, +1}.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Trees & BST"
+  },
+  {
+    "questionId": "benchmark-mcq-184",
+    "question": "Which data structure follows the Last-In-First-Out (LIFO) order?",
+    "options": [
+      "Stack",
+      "Queue",
+      "Array",
+      "Linked List"
+    ],
+    "correctAnswer": "Stack",
+    "explanation": "A Stack inserts and removes elements from the top, obeying LIFO ordering.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Data Structures"
+  },
+  {
+    "questionId": "benchmark-mcq-185",
+    "question": "What is the average time complexity to lookup a key in a standard Hash Table with a good hash function?",
+    "options": [
+      "O(1)",
+      "O(log n)",
+      "O(n)",
+      "O(n log n)"
+    ],
+    "correctAnswer": "O(1)",
+    "explanation": "Direct index computation via hash functions yields O(1) constant average lookup time.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Data Structures"
+  },
+  {
+    "questionId": "benchmark-mcq-186",
+    "question": "What is the worst-case time complexity of insertion into a Hash Table when all keys collide into the same bucket using separate chaining with linked lists?",
+    "options": [
+      "O(n)",
+      "O(1)",
+      "O(log n)",
+      "O(n^2)"
+    ],
+    "correctAnswer": "O(n)",
+    "explanation": "When all n keys collide into a single bucket linked list, traversing the list takes linear O(n) time.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Data Structures"
+  },
+  {
+    "questionId": "benchmark-mcq-187",
+    "question": "Which of the following time complexities is the most efficient asymptotically for large n?",
+    "options": [
+      "O(log n)",
+      "O(n)",
+      "O(n log n)",
+      "O(n^2)"
+    ],
+    "correctAnswer": "O(log n)",
+    "explanation": "Logarithmic time O(log n) grows much slower than linear, linearithmic, or quadratic time.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Complexity & Algorithms"
+  },
+  {
+    "questionId": "benchmark-mcq-188",
+    "question": "What is the time complexity of the Master Theorem case when T(n) = 2T(n/2) + O(n)?",
+    "options": [
+      "O(n log n)",
+      "O(n)",
+      "O(n^2)",
+      "O(log n)"
+    ],
+    "correctAnswer": "O(n log n)",
+    "explanation": "Here a=2, b=2, d=1. Since log_b(a) = log_2(2) = 1 == d, the solution is O(n^d * log n) = O(n log n).",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Complexity & Algorithms"
+  },
+  {
+    "questionId": "benchmark-mcq-189",
+    "question": "What is the space complexity of standard recursive Depth First Search on a graph with V vertices and maximum depth D?",
+    "options": [
+      "O(D) for call stack",
+      "O(V^2)",
+      "O(1)",
+      "O(E * V)"
+    ],
+    "correctAnswer": "O(D) for call stack",
+    "explanation": "Recursive DFS stores at most D active function frames on the execution stack simultaneously.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Complexity & Algorithms"
+  },
+  {
+    "questionId": "benchmark-mcq-190",
+    "question": "Which keyword in Java is used to inherit a class?",
+    "options": [
+      "extends",
+      "implements",
+      "inherits",
+      "instanceof"
+    ],
+    "correctAnswer": "extends",
+    "explanation": "The `extends` keyword establishes class inheritance in Java.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "OOP Concepts"
+  },
+  {
+    "questionId": "benchmark-mcq-191",
+    "question": "Which keyword in Java is used by a class to implement an interface?",
+    "options": [
+      "implements",
+      "extends",
+      "interface",
+      "using"
+    ],
+    "correctAnswer": "implements",
+    "explanation": "The `implements` keyword is used by classes to implement interface contracts.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "OOP Concepts"
+  },
+  {
+    "questionId": "benchmark-mcq-192",
+    "question": "Can a constructor in Java be declared `static` or `final`?",
+    "options": [
+      "No, constructors cannot be static, final, or abstract",
+      "Yes, constructors can be both static and final",
+      "Yes, but only static is allowed",
+      "Yes, but only final is allowed"
+    ],
+    "correctAnswer": "No, constructors cannot be static, final, or abstract",
+    "explanation": "Constructors belong to object instantiation and cannot be inherited or overridden, making static/final/abstract invalid.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "OOP Concepts"
+  },
+  {
+    "questionId": "benchmark-mcq-193",
+    "question": "Which design pattern provides a surrogate or placeholder for another object to control access to it?",
+    "options": [
+      "Proxy Pattern",
+      "Adapter Pattern",
+      "Decorator Pattern",
+      "Facade Pattern"
+    ],
+    "correctAnswer": "Proxy Pattern",
+    "explanation": "The Proxy pattern controls access to an underlying object, used in lazy loading, caching, and security checks.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "OOP Concepts"
+  },
+  {
+    "questionId": "benchmark-mcq-194",
+    "question": "What is the primary difference between Adapter Pattern and Decorator Pattern?",
+    "options": [
+      "Adapter changes an interface to match client expectations; Decorator enhances object responsibilities dynamically without changing interface",
+      "Adapter creates new classes; Decorator destroys them",
+      "Decorator changes the interface; Adapter adds responsibilities",
+      "There is no architectural difference"
+    ],
+    "correctAnswer": "Adapter changes an interface to match client expectations; Decorator enhances object responsibilities dynamically without changing interface",
+    "explanation": "Adapter converts incompatible interfaces; Decorator adds behaviors while keeping the same interface.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "OOP Concepts"
+  },
+  {
+    "questionId": "benchmark-mcq-195",
+    "question": "Which SQL clause is used to eliminate duplicate rows from a query result set?",
+    "options": [
+      "DISTINCT",
+      "UNIQUE",
+      "GROUP",
+      "DIFFERENT"
+    ],
+    "correctAnswer": "DISTINCT",
+    "explanation": "The `DISTINCT` keyword filters out duplicate tuples from the output.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Database & SQL"
+  },
+  {
+    "questionId": "benchmark-mcq-196",
+    "question": "What type of index is created by default on the Primary Key column in MySQL InnoDB?",
+    "options": [
+      "Clustered B+Tree Index",
+      "Non-clustered Hash Index",
+      "Bitmap Index",
+      "Full-text Index"
+    ],
+    "correctAnswer": "Clustered B+Tree Index",
+    "explanation": "InnoDB stores table data physically sorted by the primary key inside a clustered B+Tree index.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Database & SQL"
+  },
+  {
+    "questionId": "benchmark-mcq-197",
+    "question": "What is the difference between a Correlated Subquery and a Non-Correlated Subquery in SQL?",
+    "options": [
+      "A correlated subquery references columns from the outer query and re-evaluates for every outer row; a non-correlated subquery executes once independently",
+      "A correlated subquery runs once; non-correlated runs multiple times",
+      "Correlated subqueries cannot contain WHERE clauses",
+      "Non-correlated subqueries must return multiple tables"
+    ],
+    "correctAnswer": "A correlated subquery references columns from the outer query and re-evaluates for every outer row; a non-correlated subquery executes once independently",
+    "explanation": "Correlated subqueries depend on outer row attributes and execute repeatedly for each candidate row.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Database & SQL"
+  },
+  {
+    "questionId": "benchmark-mcq-198",
+    "question": "Which SQL aggregate function computes the total sum of numerical column values?",
+    "options": [
+      "SUM()",
+      "TOTAL()",
+      "COUNT()",
+      "AVG()"
+    ],
+    "correctAnswer": "SUM()",
+    "explanation": "`SUM(column)` calculates the arithmetic sum of numerical values, ignoring NULLs.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Database & SQL"
+  },
+  {
+    "questionId": "benchmark-mcq-199",
+    "question": "What is the purpose of the FOREIGN KEY constraint with ON UPDATE CASCADE?",
+    "options": [
+      "When a primary key in parent table is updated, matching foreign keys in child table update automatically",
+      "It prevents primary keys from ever being updated",
+      "It deletes child rows when parent is updated",
+      "It creates a backup table"
+    ],
+    "correctAnswer": "When a primary key in parent table is updated, matching foreign keys in child table update automatically",
+    "explanation": "ON UPDATE CASCADE propagates parent key modifications down to all dependent child records.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Database & SQL"
+  },
+  {
+    "questionId": "benchmark-mcq-200",
+    "question": "In Java, what is the default value of an uninitialized boolean instance variable in a class?",
+    "options": [
+      "false",
+      "true",
+      "null",
+      "0"
+    ],
+    "correctAnswer": "false",
+    "explanation": "Java initializes boolean instance fields to `false` by default.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Java Programming"
+  },
+  {
+    "questionId": "benchmark-mcq-201",
+    "question": "What is the time complexity of `ArrayList.get(index)` vs `LinkedList.get(index)` in Java?",
+    "options": [
+      "O(1) for ArrayList, O(n) for LinkedList",
+      "O(n) for ArrayList, O(1) for LinkedList",
+      "O(1) for both",
+      "O(log n) for both"
+    ],
+    "correctAnswer": "O(1) for ArrayList, O(n) for LinkedList",
+    "explanation": "ArrayList offers O(1) random array access, while LinkedList requires O(n) sequential pointer traversal.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Java Programming"
+  },
+  {
+    "questionId": "benchmark-mcq-202",
+    "question": "What happens during a Java thread deadlock, and which JVM tool can detect it?",
+    "options": [
+      "Threads block indefinitely waiting on locks held by each other; detected using `jstack` or ThreadMXBean",
+      "The JVM crashes immediately with OutOfMemoryError",
+      "The garbage collector kills the deadlocked threads",
+      "The OS terminates the JVM process"
+    ],
+    "correctAnswer": "Threads block indefinitely waiting on locks held by each other; detected using `jstack` or ThreadMXBean",
+    "explanation": "Deadlocks cause threads to sleep indefinitely on mutual lock acquisition; `jstack <pid>` prints thread dumps identifying deadlocked locks.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Java Programming"
+  },
+  {
+    "questionId": "benchmark-mcq-203",
+    "question": "In C/C++, which operator is used to access members of a structure through a pointer?",
+    "options": [
+      "->",
+      ".",
+      "::",
+      "*."
+    ],
+    "correctAnswer": "->",
+    "explanation": "The arrow operator (`->`) dereferences a struct pointer and accesses its field directly.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "C/C++ Programming"
+  },
+  {
+    "questionId": "benchmark-mcq-204",
+    "question": "What is the size of a pointer variable on a 64-bit operating system architecture?",
+    "options": [
+      "8 bytes (64 bits)",
+      "4 bytes (32 bits)",
+      "2 bytes (16 bits)",
+      "Varies based on data type pointed to"
+    ],
+    "correctAnswer": "8 bytes (64 bits)",
+    "explanation": "On 64-bit architectures, all memory addresses and pointers occupy 8 bytes.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "C/C++ Programming"
+  },
+  {
+    "questionId": "benchmark-mcq-205",
+    "question": "Which of the following built-in data types in Python is mutable?",
+    "options": [
+      "List",
+      "Tuple",
+      "String",
+      "Integer"
+    ],
+    "correctAnswer": "List",
+    "explanation": "Lists in Python are mutable sequences allowing in-place modification (`append`, `pop`, index assignment).",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Python Programming"
+  },
+  {
+    "questionId": "benchmark-mcq-206",
+    "question": "What is a Python Generator function and how does it differ from a standard function returning a list?",
+    "options": [
+      "A generator uses `yield` to stream values lazily one-by-one, saving memory",
+      "A generator executes in parallel on all CPU cores",
+      "A generator cannot accept parameters",
+      "A generator converts code to C automatically"
+    ],
+    "correctAnswer": "A generator uses `yield` to stream values lazily one-by-one, saving memory",
+    "explanation": "Generators return an iterator yielding values on-demand, enabling O(1) memory pipelines for large datasets.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Python Programming"
+  },
+  {
+    "questionId": "benchmark-mcq-207",
+    "question": "Which HTTP status code indicates a successful resource creation in a REST API?",
+    "options": [
+      "201 Created",
+      "200 OK",
+      "204 No Content",
+      "301 Moved Permanently"
+    ],
+    "correctAnswer": "201 Created",
+    "explanation": "HTTP 201 indicates that a new resource has been successfully created on the server.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Web & REST APIs"
+  },
+  {
+    "questionId": "benchmark-mcq-208",
+    "question": "Which HTTP method is considered safe and idempotent according to RFC specifications?",
+    "options": [
+      "GET",
+      "POST",
+      "PATCH",
+      "CONNECT"
+    ],
+    "correctAnswer": "GET",
+    "explanation": "GET is both safe (read-only without server state changes) and idempotent (repeated identical calls return identical responses).",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "Web & REST APIs"
+  },
+  {
+    "questionId": "benchmark-mcq-209",
+    "question": "Which JavaScript keyword declares a block-scoped variable that cannot be re-assigned?",
+    "options": [
+      "const",
+      "let",
+      "var",
+      "static"
+    ],
+    "correctAnswer": "const",
+    "explanation": "`const` declares a block-scoped identifier that cannot be reassigned after initialization.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "JavaScript & Frontend"
+  },
+  {
+    "questionId": "benchmark-mcq-210",
+    "question": "What is a Closure in JavaScript?",
+    "options": [
+      "A function that retains access to its lexical outer scope variables even after outer function has executed",
+      "A method that terminates the browser window",
+      "A syntax error in asynchronous code",
+      "An object with private prototype"
+    ],
+    "correctAnswer": "A function that retains access to its lexical outer scope variables even after outer function has executed",
+    "explanation": "Closures bundle a function with its lexical environment, allowing access to outer scope variables from an inner function.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "benchmark",
+    "companyIds": [
+      "benchmark"
+    ],
+    "topic": "JavaScript & Frontend"
+  }
+]

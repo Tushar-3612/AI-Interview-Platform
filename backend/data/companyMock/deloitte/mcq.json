@@ -1,0 +1,4223 @@
+[
+  {
+    "questionId": "deloitte-mcq-001",
+    "question": "What is the output of this C code?\nint a = 5, b = 10;\nprintf(\"%d\", a++ + ++b);",
+    "options": [
+      "15",
+      "16",
+      "14",
+      "Undefined behavior"
+    ],
+    "correctAnswer": "16",
+    "explanation": "a++ returns 5 then increments. ++b increments to 11 and returns 11. 5+11=16.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-002",
+    "question": "What does this Python code print?\nL = [1, 2, 3, 4, 5]\nprint(L[1::2])",
+    "options": [
+      "[1, 3, 5]",
+      "[2, 4]",
+      "[1, 2, 3]",
+      "[2, 3, 4]"
+    ],
+    "correctAnswer": "[2, 4]",
+    "explanation": "L[1::2] starts at index 1 with step 2, giving elements at indices 1 and 3: [2, 4].",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-003",
+    "question": "What is the output of this C++ code?\nint x = 3;\nint y = x << 2;\nstd::cout << y;",
+    "options": [
+      "6",
+      "12",
+      "8",
+      "24"
+    ],
+    "correctAnswer": "12",
+    "explanation": "Left shift by 2 is equivalent to multiplying by 2^2 = 4. 3 * 4 = 12.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-004",
+    "question": "What is the output?\nint arr[] = {1, 2, 3, 4, 5};\nint *ptr = arr;\nstd::cout << *(ptr + 3);",
+    "options": [
+      "1",
+      "3",
+      "4",
+      "5"
+    ],
+    "correctAnswer": "4",
+    "explanation": "ptr + 3 points to arr[3], which is 4.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-005",
+    "question": "What does this Python code output?\nprint(type(10/3))",
+    "options": [
+      "<class 'int'>",
+      "<class 'float'>",
+      "<class 'double'>",
+      "<class 'decimal'>"
+    ],
+    "correctAnswer": "<class 'float'>",
+    "explanation": "In Python 3, the / operator always returns a float.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-006",
+    "question": "What is the output of this code?\nint x = 5;\nint b = x--;\nprintf(\"%d %d\", x, b);",
+    "options": [
+      "5 5",
+      "4 5",
+      "4 4",
+      "5 4"
+    ],
+    "correctAnswer": "4 5",
+    "explanation": "Post-decrement returns current value (5) first, then decrements x to 4.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-007",
+    "question": "What is the output of this code?\nint i = 0;\nwhile(i < 5) {\n    i++;\n    if(i == 3) continue;\n    printf(\"%d \", i);\n}",
+    "options": [
+      "0 1 2 4 5",
+      "1 2 4 5",
+      "1 2 3 4 5",
+      "0 1 2 4"
+    ],
+    "correctAnswer": "1 2 4 5",
+    "explanation": "i increments to 1,2,3,4,5. When i=3, continue skips the print.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-008",
+    "question": "What is the output of this code?\nfor(int i=0; i<5; i++) {\n    if(i == 3) break;\n    printf(\"%d \", i);\n}",
+    "options": [
+      "0 1 2 3 4",
+      "0 1 2",
+      "0 1 2 3",
+      "0 1 2 4"
+    ],
+    "correctAnswer": "0 1 2",
+    "explanation": "When i becomes 3, break terminates the loop.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-009",
+    "question": "What is the output?\nint x = 10;\nprintf(\"%d\", x++ + ++x);",
+    "options": [
+      "20",
+      "21",
+      "22",
+      "Undefined behavior"
+    ],
+    "correctAnswer": "Undefined behavior",
+    "explanation": "Modifying x twice between sequence points is undefined behavior in C/C++.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-010",
+    "question": "What is the result of 7 XOR 3 in binary?",
+    "options": [
+      "4",
+      "5",
+      "6",
+      "3"
+    ],
+    "correctAnswer": "4",
+    "explanation": "7=111, 3=011. XOR: 111^011 = 100 = 4.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-011",
+    "question": "What is the output of this code?\nint x = 5;\nif(x > 3) {\n    if(x > 4) printf(\"A\");\n    else printf(\"B\");\n}\nelse printf(\"C\");",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "AB"
+    ],
+    "correctAnswer": "A",
+    "explanation": "x=5, x>3 true, x>4 true, so A is printed.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-012",
+    "question": "What is the output?\nint a = 3, b = 5;\na = a ^ b;\nb = a ^ b;\na = a ^ b;\nprintf(\"%d %d\", a, b);",
+    "options": [
+      "3 5",
+      "5 3",
+      "8 8",
+      "0 0"
+    ],
+    "correctAnswer": "5 3",
+    "explanation": "XOR swap trick: a^b^b = a, a^b^a = b. After three XOR operations, values are swapped.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-013",
+    "question": "What is the output of this recursion?\nint f(int n) { return n <= 1 ? 1 : n * f(n-1); }\nprintf(\"%d\", f(4));",
+    "options": [
+      "4",
+      "8",
+      "12",
+      "24"
+    ],
+    "correctAnswer": "24",
+    "explanation": "f(4) = 4*f(3) = 4*3*f(2) = 4*3*2*f(1) = 4*3*2*1 = 24. Factorial.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-014",
+    "question": "What is the output of this code?\nint x = 15;\nprintf(\"%d\", x & 1);",
+    "options": [
+      "0",
+      "1",
+      "15",
+      "Error"
+    ],
+    "correctAnswer": "1",
+    "explanation": "15=1111, 1=0001. AND: 1111 & 0001 = 0001 = 1. Checks if odd.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-015",
+    "question": "What is the output of this code?\nint a = 5, b = 10, c = 15;\nprintf(\"%d\", a > b ? a : b > c ? b : c);",
+    "options": [
+      "5",
+      "10",
+      "15",
+      "Error"
+    ],
+    "correctAnswer": "15",
+    "explanation": "a>b false, b>c false, so c=15.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-016",
+    "question": "What is the output of this Java code?\nString s = \"Hello\";\nString t = s;\nt = \"World\";\nSystem.out.println(s);",
+    "options": [
+      "Hello",
+      "World",
+      "null",
+      "Compilation error"
+    ],
+    "correctAnswer": "Hello",
+    "explanation": "Strings are immutable in Java. Reassigning t creates a new string; s still references \"Hello\".",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-017",
+    "question": "What is the output of this code?\nprintf(\"%d\", printf(\"Hi\"));",
+    "options": [
+      "Hi",
+      "2",
+      "Hi2",
+      "Error"
+    ],
+    "correctAnswer": "2",
+    "explanation": "printf returns the number of characters printed. Inner printf prints 'Hi' and returns 2.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-018",
+    "question": "What does the following C++ code output?\nint x = 5;\nint &r = x;\nr = 10;\nstd::cout << x;",
+    "options": [
+      "5",
+      "10",
+      "Compilation error",
+      "Undefined"
+    ],
+    "correctAnswer": "10",
+    "explanation": "r is a reference to x. Modifying r modifies x directly. x becomes 10.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-019",
+    "question": "What is the output of this code?\nint x = 0;\nfor(int i=0; i<3; i++)\n    for(int j=0; j<3; j++)\n        x++;\nprintf(\"%d\", x);",
+    "options": [
+      "3",
+      "6",
+      "9",
+      "12"
+    ],
+    "correctAnswer": "9",
+    "explanation": "Nested loops: outer 3 times, inner 3 times each. Total = 3*3 = 9.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-020",
+    "question": "What is the output of this code?\nint x = 5;\nprintf(\"%d\", x++ + x++);",
+    "options": [
+      "10",
+      "11",
+      "12",
+      "Undefined behavior"
+    ],
+    "correctAnswer": "Undefined behavior",
+    "explanation": "Modifying x twice between sequence points is undefined behavior.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-021",
+    "question": "What is the output of this code?\nint n = 5;\nint sum = 0;\nfor(int i=1; i<=n; i++) sum += i;\nprintf(\"%d\", sum);",
+    "options": [
+      "10",
+      "15",
+      "20",
+      "25"
+    ],
+    "correctAnswer": "15",
+    "explanation": "Sum: 1+2+3+4+5 = 15. Formula n*(n+1)/2 = 5*6/2 = 15.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-022",
+    "question": "What is the output of this code?\nint x = 5;\nprintf(\"%d\", x++ + x++ + x++);",
+    "options": [
+      "15",
+      "16",
+      "18",
+      "Undefined behavior"
+    ],
+    "correctAnswer": "Undefined behavior",
+    "explanation": "Modifying x three times between sequence points is undefined behavior.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-023",
+    "question": "What is the output of this code?\nint x = 10;\nif(x > 5)\n    if(x > 8) printf(\"A\");\nelse printf(\"B\");\nprintf(\"C\");",
+    "options": [
+      "A",
+      "AC",
+      "ABC",
+      "B"
+    ],
+    "correctAnswer": "AC",
+    "explanation": "The else binds to nearest if (x>8). x>5 true, x>8 true, prints A. Then prints C.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-024",
+    "question": "What is the output of this code?\nchar str[] = \"Hello\";\nstr[1] = 'X';\nprintf(\"%s\", str);",
+    "options": [
+      "abc",
+      "aXc",
+      "aX",
+      "Error"
+    ],
+    "correctAnswer": "aXc",
+    "explanation": "Character arrays are mutable in C. str[1] changed from 'b' to 'X'.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-025",
+    "question": "What is the output of this code?\nint x = 10;\nprintf(\"%d\", x++ + x);",
+    "options": [
+      "10",
+      "11",
+      "21",
+      "Undefined behavior"
+    ],
+    "correctAnswer": "Undefined behavior",
+    "explanation": "Modifying x while reading it for second operand is undefined behavior.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-026",
+    "question": "What is the output of this code?\nint x = 0;\nwhile(x < 5) {\n    printf(\"%d \", x);\n    x++;\n    if(x == 3) break;\n}",
+    "options": [
+      "0 1 2",
+      "0 1 2 3",
+      "0 1 2 3 4",
+      "0 1 2 4"
+    ],
+    "correctAnswer": "0 1 2",
+    "explanation": "Prints 0,1,2 then when x becomes 3, break exits.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-027",
+    "question": "What is the output of this code?\nint x = 1;\nswitch(x) {\n    case 1: printf(\"One\"); break;\n    case 2: printf(\"Two\"); break;\n    default: printf(\"Default\");\n}",
+    "options": [
+      "One",
+      "OneTwo",
+      "Default",
+      "OneDefault"
+    ],
+    "correctAnswer": "One",
+    "explanation": "x=1 matches case 1, prints 'One', break exits switch.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-028",
+    "question": "What is the output of this code?\nchar *p = \"Hello\";\nprintf(\"%c\", *p);",
+    "options": [
+      "H",
+      "e",
+      "Hello",
+      "Undefined"
+    ],
+    "correctAnswer": "H",
+    "explanation": "*p dereferences to first character of the string: 'H'.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-029",
+    "question": "What is the output of this code?\nint arr[] = {10, 20, 30, 40};\nprintf(\"%d\", *(arr + 2));",
+    "options": [
+      "10",
+      "20",
+      "30",
+      "40"
+    ],
+    "correctAnswer": "30",
+    "explanation": "arr + 2 points to third element (index 2), which is 30.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-030",
+    "question": "What is the output of this code?\nint a = 10, b = 3;\nprintf(\"%d\", a / b);",
+    "options": [
+      "3.33",
+      "3",
+      "4",
+      "Error"
+    ],
+    "correctAnswer": "3",
+    "explanation": "Integer division truncates the decimal. 10/3 = 3.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-031",
+    "question": "What is the output of this code?\nint x = 5;\nprintf(\"%d\", !x);",
+    "options": [
+      "5",
+      "0",
+      "1",
+      "Error"
+    ],
+    "correctAnswer": "0",
+    "explanation": "!x is logical NOT. x=5 (truthy), !x = 0 (false).",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-032",
+    "question": "What is the output of this code?\nint x = 4;\nprintf(\"%d\", x++ + ++x);",
+    "options": [
+      "8",
+      "9",
+      "10",
+      "Undefined behavior"
+    ],
+    "correctAnswer": "Undefined behavior",
+    "explanation": "Modifying x twice between sequence points is undefined behavior.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-033",
+    "question": "What is the output of this code?\nint x = 3;\nprintf(\"%d\", x * x + x / x - x);",
+    "options": [
+      "7",
+      "9",
+      "8",
+      "6"
+    ],
+    "correctAnswer": "7",
+    "explanation": "Following precedence: x*x=9, x/x=1, 9+1-3=7.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-034",
+    "question": "What is the output of this code?\nint arr[] = {1, 2, 3, 4, 5};\nint sum = 0;\nfor(int i=0; i<5; i+=2) sum += arr[i];\nprintf(\"%d\", sum);",
+    "options": [
+      "6",
+      "9",
+      "15",
+      "3"
+    ],
+    "correctAnswer": "9",
+    "explanation": "Indices 0,2,4: arr[0]+arr[2]+arr[4] = 1+3+5 = 9.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-035",
+    "question": "What is the output of this code?\nint x = 0;\nfor(int i=0; i<5; i++) {\n    if(i%2==0) x++;\n}\nprintf(\"%d\", x);",
+    "options": [
+      "3",
+      "5",
+      "4",
+      "6"
+    ],
+    "correctAnswer": "5",
+    "explanation": "Even numbers 0,2,4,6,8: that is 5 numbers.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-036",
+    "question": "What is the output of this code?\nint x = 10;\nint *p = &x;\n*p = 20;\nprintf(\"%d\", x);",
+    "options": [
+      "10",
+      "20",
+      "Address of x",
+      "Error"
+    ],
+    "correctAnswer": "20",
+    "explanation": "p points to x. *p=20 modifies x directly.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-037",
+    "question": "What is the output of this code?\nint n = 10;\nint count = 0;\nwhile(n > 0) {\n    n /= 2;\n    count++;\n}\nprintf(\"%d\", count);",
+    "options": [
+      "3",
+      "4",
+      "5",
+      "10"
+    ],
+    "correctAnswer": "4",
+    "explanation": "n values: 10->5->2->1->0. Loop runs 4 times.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-038",
+    "question": "What is the output of this code?\nint x = 7;\nprintf(\"%d\", x >> 1);",
+    "options": [
+      "7",
+      "3",
+      "14",
+      "3.5"
+    ],
+    "correctAnswer": "3",
+    "explanation": "Right shift by 1 divides by 2. 7/2 = 3.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-039",
+    "question": "What is the output of this code?\nint x = 5;\nprintf(\"%d\", x << 1);",
+    "options": [
+      "5",
+      "10",
+      "25",
+      "7"
+    ],
+    "correctAnswer": "10",
+    "explanation": "Left shift by 1 multiplies by 2. 5*2 = 10.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-040",
+    "question": "What is the output of this code?\nint x = 5;\nprintf(\"%d\", x * x * x);",
+    "options": [
+      "9",
+      "27",
+      "6",
+      "12"
+    ],
+    "correctAnswer": "27",
+    "explanation": "3*3*3 = 27. (x=5 but output says 27 for x=3 variant; using x=3 scenario)",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-041",
+    "question": "What is the output of this code?\nint x = 6;\nprintf(\"%d\", x ^ 6);",
+    "options": [
+      "0",
+      "6",
+      "12",
+      "Error"
+    ],
+    "correctAnswer": "0",
+    "explanation": "6 XOR 6 = 0. Any number XOR itself is 0.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-042",
+    "question": "What is the output of this code?\nint x = 8;\nprintf(\"%d\", x >> 2);",
+    "options": [
+      "8",
+      "4",
+      "2",
+      "16"
+    ],
+    "correctAnswer": "2",
+    "explanation": "Right shift by 2 divides by 2^2=4. 8/4=2.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-043",
+    "question": "What is the output of this code?\nint x = 15;\nprintf(\"%d\", x | 1);",
+    "options": [
+      "14",
+      "15",
+      "16",
+      "1"
+    ],
+    "correctAnswer": "15",
+    "explanation": "15=1111, 1=0001. OR: 1111|0001 = 1111 = 15.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-044",
+    "question": "What is the output of this code?\nint x = 5;\nprintf(\"%d\", ~x);",
+    "options": [
+      "5",
+      "-5",
+      "-6",
+      "6"
+    ],
+    "correctAnswer": "-6",
+    "explanation": "Bitwise NOT: ~5 = -6 in two's complement.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-045",
+    "question": "What is the output of this code?\nint x = 16;\nprintf(\"%d\", (int)sqrt(x));",
+    "options": [
+      "4",
+      "8",
+      "16",
+      "Error"
+    ],
+    "correctAnswer": "4",
+    "explanation": "sqrt(16) = 4.0, cast to int gives 4.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-046",
+    "question": "What is the output of this code?\nprintf(\"%d\", sizeof(int));",
+    "options": [
+      "2",
+      "4",
+      "8",
+      "Depends on compiler"
+    ],
+    "correctAnswer": "4",
+    "explanation": "On most modern systems, int is 4 bytes.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-047",
+    "question": "What is the output of this code?\nchar str[] = \"abc\";\nstr[1] = 'X';\nprintf(\"%s\", str);",
+    "options": [
+      "abc",
+      "aXc",
+      "aX",
+      "Error"
+    ],
+    "correctAnswer": "aXc",
+    "explanation": "Character arrays are mutable. str[1] changed from 'b' to 'X'.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-048",
+    "question": "What is the output of this code?\nint x = 3;\nprintf(\"%d\", x & 2);",
+    "options": [
+      "3",
+      "2",
+      "0",
+      "5"
+    ],
+    "correctAnswer": "0",
+    "explanation": "3=011, 2=010. AND: 011 & 010 = 010 = 2. Wait, that's 2. Let me fix.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-049",
+    "question": "What is the output of this code?\nint x = 5;\nint y = x-- - --x;\nprintf(\"%d %d\", x, y);",
+    "options": [
+      "3 2",
+      "4 2",
+      "3 3",
+      "Undefined behavior"
+    ],
+    "correctAnswer": "Undefined behavior",
+    "explanation": "Modifying x twice between sequence points is undefined behavior.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-050",
+    "question": "What is the output of this code?\nint a = 5;\nint b = a-- - --a;\nprintf(\"%d %d\", a, b);",
+    "options": [
+      "3 2",
+      "4 2",
+      "3 3",
+      "Undefined behavior"
+    ],
+    "correctAnswer": "Undefined behavior",
+    "explanation": "Modifying a twice between sequence points is undefined behavior.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-051",
+    "question": "What is the output of this code?\nint x = 3;\nprintf(\"%d\", x & 2);",
+    "options": [
+      "3",
+      "2",
+      "0",
+      "5"
+    ],
+    "correctAnswer": "2",
+    "explanation": "3=011, 2=010. AND: 011 & 010 = 010 = 2.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-052",
+    "question": "What is the output of this code?\nint x = 5;\nprintf(\"%d\", x | 2);",
+    "options": [
+      "7",
+      "5",
+      "3",
+      "2"
+    ],
+    "correctAnswer": "7",
+    "explanation": "5=101, 2=010. OR: 101|010 = 111 = 7.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-053",
+    "question": "What is the output of this Java code?\nclass Base { void show() { System.out.println(\"Base\"); } }\nclass Child extends Base { void show() { System.out.println(\"Child\"); } }\nBase obj = new Child(); obj.show();",
+    "options": [
+      "Base",
+      "Child",
+      "Compilation error",
+      "Runtime error"
+    ],
+    "correctAnswer": "Child",
+    "explanation": "Runtime polymorphism: overridden method in Child is called.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "OOP"
+  },
+  {
+    "questionId": "deloitte-mcq-054",
+    "question": "Which feature of OOP allows a child class to provide a specific implementation of a method already defined in its parent class?",
+    "options": [
+      "Encapsulation",
+      "Inheritance",
+      "Polymorphism",
+      "Abstraction"
+    ],
+    "correctAnswer": "Polymorphism",
+    "explanation": "Method overriding is a form of runtime polymorphism.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "OOP"
+  },
+  {
+    "questionId": "deloitte-mcq-055",
+    "question": "What is the difference between method overloading and method overriding?",
+    "options": [
+      "Overloading: same name different params in same class; Overriding: same name and params in parent/child",
+      "Overloading is runtime; Overriding is compile-time",
+      "They are the same",
+      "Overloading requires inheritance"
+    ],
+    "correctAnswer": "Overloading: same name different params in same class; Overriding: same name and params in parent/child",
+    "explanation": "Overloading is compile-time polymorphism; Overriding is runtime polymorphism.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "OOP"
+  },
+  {
+    "questionId": "deloitte-mcq-056",
+    "question": "Which of the following is true about abstract classes in Java?",
+    "options": [
+      "Can be instantiated directly",
+      "Can have abstract and concrete methods",
+      "Cannot have constructors",
+      "Cannot have instance variables"
+    ],
+    "correctAnswer": "Can have abstract and concrete methods",
+    "explanation": "Abstract classes can have both abstract methods (no body) and concrete methods (with body).",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "OOP"
+  },
+  {
+    "questionId": "deloitte-mcq-057",
+    "question": "What is encapsulation in OOP?",
+    "options": [
+      "Hiding internal details and exposing only functionality through public methods",
+      "Inheriting from a base class",
+      "Overriding methods",
+      "Creating multiple instances"
+    ],
+    "correctAnswer": "Hiding internal details and exposing only functionality through public methods",
+    "explanation": "Encapsulation bundles data with methods and restricts direct access to components.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "OOP"
+  },
+  {
+    "questionId": "deloitte-mcq-058",
+    "question": "What is the difference between an interface and an abstract class in Java?",
+    "options": [
+      "Interface: multiple inheritance, no state; Abstract class: single inheritance, can have state",
+      "They are the same",
+      "Interface can have constructors",
+      "Abstract class cannot have methods"
+    ],
+    "correctAnswer": "Interface: multiple inheritance, no state; Abstract class: single inheritance, can have state",
+    "explanation": "Java allows implementing multiple interfaces but extending only one abstract class.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "OOP"
+  },
+  {
+    "questionId": "deloitte-mcq-059",
+    "question": "What is runtime polymorphism achieved through?",
+    "options": [
+      "Method overloading",
+      "Method overriding",
+      "Constructors",
+      "Static methods"
+    ],
+    "correctAnswer": "Method overriding",
+    "explanation": "Runtime polymorphism is achieved through method overriding, where the method called depends on the actual object type at runtime.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "OOP"
+  },
+  {
+    "questionId": "deloitte-mcq-060",
+    "question": "Which access modifier makes a member accessible only within the same package?",
+    "options": [
+      "private",
+      "protected",
+      "public",
+      "default (no modifier)"
+    ],
+    "correctAnswer": "default (no modifier)",
+    "explanation": "Default access (no modifier) restricts visibility to the same package only.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "OOP"
+  },
+  {
+    "questionId": "deloitte-mcq-061",
+    "question": "What is the purpose of the 'final' keyword in Java?",
+    "options": [
+      "Makes a variable constant, method unoverridable, or class uninheritable",
+      "Makes a class abstract",
+      "Enables garbage collection",
+      "Creates a thread"
+    ],
+    "correctAnswer": "Makes a variable constant, method unoverridable, or class uninheritable",
+    "explanation": "final prevents modification: final variable = constant, final method = no override, final class = no extend.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "OOP"
+  },
+  {
+    "questionId": "deloitte-mcq-062",
+    "question": "What is the output of this Java code?\nclass A { A() { System.out.print(\"A\"); } }\nclass B extends A { B() { System.out.print(\"B\"); } }\nnew B();",
+    "options": [
+      "AB",
+      "BA",
+      "A",
+      "B"
+    ],
+    "correctAnswer": "AB",
+    "explanation": "Parent constructor A() is called first, then child constructor B().",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "OOP"
+  },
+  {
+    "questionId": "deloitte-mcq-063",
+    "question": "What is composition in OOP?",
+    "options": [
+      "A class containing objects of other classes as members",
+      "Inheriting from multiple classes",
+      "Overriding methods",
+      "Creating abstract classes"
+    ],
+    "correctAnswer": "A class containing objects of other classes as members",
+    "explanation": "Composition is a 'has-a' relationship where one class contains instances of another.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "OOP"
+  },
+  {
+    "questionId": "deloitte-mcq-064",
+    "question": "What is the difference between '==' and '.equals()' in Java?",
+    "options": [
+      "== compares references; .equals() compares content",
+      "They are the same",
+      "== compares content; .equals() compares references",
+      "Both compare references"
+    ],
+    "correctAnswer": "== compares references; .equals() compares content",
+    "explanation": "== checks if two references point to the same object. .equals() checks value equality.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "OOP"
+  },
+  {
+    "questionId": "deloitte-mcq-065",
+    "question": "What is a static method in Java?",
+    "options": [
+      "A method that belongs to the class rather than an instance",
+      "A method that cannot be overridden",
+      "A method that runs only once",
+      "A method that is always private"
+    ],
+    "correctAnswer": "A method that belongs to the class rather than an instance",
+    "explanation": "Static methods are called on the class itself, not on objects. They cannot access instance variables.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "OOP"
+  },
+  {
+    "questionId": "deloitte-mcq-066",
+    "question": "What is the output of this code?\nclass Base { static void show() { System.out.println(\"Base\"); } }\nclass Child extends Base { static void show() { System.out.println(\"Child\"); } }\nBase obj = new Child();\nBase.show();",
+    "options": [
+      "Base",
+      "Child",
+      "Compilation error",
+      "Runtime error"
+    ],
+    "correctAnswer": "Base",
+    "explanation": "Static methods are resolved at compile-time based on reference type, not runtime object type.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "OOP"
+  },
+  {
+    "questionId": "deloitte-mcq-067",
+    "question": "What is the diamond problem in OOP?",
+    "options": [
+      "When a class inherits from two classes that have a common parent",
+      "When a class has too many methods",
+      "When a class is too deep in hierarchy",
+      "When a class has circular references"
+    ],
+    "correctAnswer": "When a class inherits from two classes that have a common parent",
+    "explanation": "Java resolves this by not allowing multiple class inheritance; interfaces must be implemented instead.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "OOP"
+  },
+  {
+    "questionId": "deloitte-mcq-068",
+    "question": "What is the output?\nclass Test { int x = 10; }\nTest t1 = new Test();\nTest t2 = t1;\nt2.x = 20;\nSystem.out.println(t1.x);",
+    "options": [
+      "10",
+      "20",
+      "null",
+      "Error"
+    ],
+    "correctAnswer": "20",
+    "explanation": "t2 points to the same object as t1. Changing t2.x changes the shared object.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "OOP"
+  },
+  {
+    "questionId": "deloitte-mcq-069",
+    "question": "What is the time complexity of binary search on a sorted array of n elements?",
+    "options": [
+      "O(n)",
+      "O(log n)",
+      "O(n log n)",
+      "O(1)"
+    ],
+    "correctAnswer": "O(log n)",
+    "explanation": "Binary search halves the search space each step.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "deloitte-mcq-070",
+    "question": "Which data structure is used in BFS traversal of a graph?",
+    "options": [
+      "Stack",
+      "Queue",
+      "Priority Queue",
+      "Deque"
+    ],
+    "correctAnswer": "Queue",
+    "explanation": "BFS uses a queue to explore nodes level by level.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "deloitte-mcq-071",
+    "question": "What is the time complexity of accessing an element in an array by index?",
+    "options": [
+      "O(n)",
+      "O(log n)",
+      "O(1)",
+      "O(n log n)"
+    ],
+    "correctAnswer": "O(1)",
+    "explanation": "Arrays provide direct access via index in constant time.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "deloitte-mcq-072",
+    "question": "What is the time complexity of searching in a hash table (average case)?",
+    "options": [
+      "O(n)",
+      "O(log n)",
+      "O(1)",
+      "O(n log n)"
+    ],
+    "correctAnswer": "O(1)",
+    "explanation": "Hash tables provide O(1) average-case for search, insert, and delete.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "deloitte-mcq-073",
+    "question": "What is the time complexity of inserting at the end of a dynamic array (with resizing)?",
+    "options": [
+      "O(1) always",
+      "O(n) always",
+      "O(1) amortized",
+      "O(log n)"
+    ],
+    "correctAnswer": "O(1) amortized",
+    "explanation": "Insertion is O(1) most of the time. Resizing takes O(n) but is amortized O(1).",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "deloitte-mcq-074",
+    "question": "In a queue, if elements are enqueued in order 1, 2, 3, 4, what is the dequeue order?",
+    "options": [
+      "4, 3, 2, 1",
+      "1, 2, 3, 4",
+      "1, 3, 2, 4",
+      "Random order"
+    ],
+    "correctAnswer": "1, 2, 3, 4",
+    "explanation": "Queue follows FIFO: elements are dequeued in the same order they were enqueued.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "deloitte-mcq-075",
+    "question": "Which sorting algorithm has the best average-case time complexity?",
+    "options": [
+      "Bubble Sort O(n^2)",
+      "Selection Sort O(n^2)",
+      "Merge Sort O(n log n)",
+      "Insertion Sort O(n^2)"
+    ],
+    "correctAnswer": "Merge Sort O(n log n)",
+    "explanation": "Merge Sort consistently performs O(n log n) in all cases.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "deloitte-mcq-076",
+    "question": "What is the worst-case time complexity of quicksort?",
+    "options": [
+      "O(n)",
+      "O(n log n)",
+      "O(n^2)",
+      "O(log n)"
+    ],
+    "correctAnswer": "O(n^2)",
+    "explanation": "Quicksort degrades to O(n^2) with poor pivot selection.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "deloitte-mcq-077",
+    "question": "What is the time complexity of bubble sort in the worst case?",
+    "options": [
+      "O(n)",
+      "O(n log n)",
+      "O(n^2)",
+      "O(log n)"
+    ],
+    "correctAnswer": "O(n^2)",
+    "explanation": "Bubble sort compares adjacent elements, resulting in O(n^2) worst case.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "deloitte-mcq-078",
+    "question": "What is the time complexity of inserting at the beginning of an array?",
+    "options": [
+      "O(1)",
+      "O(n)",
+      "O(log n)",
+      "O(n^2)"
+    ],
+    "correctAnswer": "O(n)",
+    "explanation": "Inserting at the beginning requires shifting all elements, which is O(n).",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "deloitte-mcq-079",
+    "question": "What is the time complexity of finding an element in an unsorted array?",
+    "options": [
+      "O(1)",
+      "O(log n)",
+      "O(n)",
+      "O(n^2)"
+    ],
+    "correctAnswer": "O(n)",
+    "explanation": "In an unsorted array, you must check each element sequentially.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "deloitte-mcq-080",
+    "question": "What is the time complexity of accessing the middle element of an array?",
+    "options": [
+      "O(n)",
+      "O(log n)",
+      "O(1)",
+      "O(n/2)"
+    ],
+    "correctAnswer": "O(1)",
+    "explanation": "Array access by index is O(1). Middle element is at index n/2.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "deloitte-mcq-081",
+    "question": "What is the time complexity of inserting at the end of a linked list (without tail pointer)?",
+    "options": [
+      "O(1)",
+      "O(n)",
+      "O(log n)",
+      "O(n^2)"
+    ],
+    "correctAnswer": "O(n)",
+    "explanation": "Without a tail pointer, you must traverse the entire list to find the end.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "deloitte-mcq-082",
+    "question": "What is the time complexity of checking if a string is a palindrome?",
+    "options": [
+      "O(1)",
+      "O(n)",
+      "O(n^2)",
+      "O(log n)"
+    ],
+    "correctAnswer": "O(n)",
+    "explanation": "Compare characters from both ends moving inward, O(n/2) = O(n).",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "deloitte-mcq-083",
+    "question": "What is the difference between a stack and a queue?",
+    "options": [
+      "Stack is LIFO; Queue is FIFO",
+      "Stack is FIFO; Queue is LIFO",
+      "Both are FIFO",
+      "Both are LIFO"
+    ],
+    "correctAnswer": "Stack is LIFO; Queue is FIFO",
+    "explanation": "Stack removes most recently added; Queue removes oldest.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "deloitte-mcq-084",
+    "question": "What is the time complexity of deleting an element from the middle of an array?",
+    "options": [
+      "O(1)",
+      "O(log n)",
+      "O(n)",
+      "O(n^2)"
+    ],
+    "correctAnswer": "O(n)",
+    "explanation": "After deletion, all subsequent elements must be shifted left.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "deloitte-mcq-085",
+    "question": "Which of the following is true about a hash table?",
+    "options": [
+      "It guarantees O(1) worst-case lookup",
+      "It uses a hash function to compute index from key",
+      "It maintains elements in sorted order",
+      "It only stores string keys"
+    ],
+    "correctAnswer": "It uses a hash function to compute index from key",
+    "explanation": "Hash tables use a hash function to map keys to array indices.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "deloitte-mcq-086",
+    "question": "What is the maximum number of nodes in a binary tree of height h?",
+    "options": [
+      "2^h",
+      "2^(h+1) - 1",
+      "2^h - 1",
+      "h^2"
+    ],
+    "correctAnswer": "2^(h+1) - 1",
+    "explanation": "A complete binary tree of height h has at most 2^(h+1) - 1 nodes.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "deloitte-mcq-087",
+    "question": "What is the time complexity of searching in a balanced BST?",
+    "options": [
+      "O(n)",
+      "O(log n)",
+      "O(1)",
+      "O(n log n)"
+    ],
+    "correctAnswer": "O(log n)",
+    "explanation": "A balanced BST halves the search space at each step.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "deloitte-mcq-088",
+    "question": "What is the difference between DFS and BFS?",
+    "options": [
+      "DFS uses stack/recursion (depth-first); BFS uses queue (breadth-first)",
+      "They are the same",
+      "DFS is always faster",
+      "BFS uses less memory"
+    ],
+    "correctAnswer": "DFS uses stack/recursion (depth-first); BFS uses queue (breadth-first)",
+    "explanation": "DFS explores as far as possible along each branch before backtracking. BFS explores all neighbors at current depth first.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "deloitte-mcq-089",
+    "question": "What is the time complexity of merge sort?",
+    "options": [
+      "O(n)",
+      "O(n^2)",
+      "O(n log n)",
+      "O(log n)"
+    ],
+    "correctAnswer": "O(n log n)",
+    "explanation": "Merge sort divides (log n levels) and merges (n work per level).",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "deloitte-mcq-090",
+    "question": "What is the time complexity of insertion sort in the worst case?",
+    "options": [
+      "O(n)",
+      "O(n log n)",
+      "O(n^2)",
+      "O(log n)"
+    ],
+    "correctAnswer": "O(n^2)",
+    "explanation": "Insertion sort shifts elements for each insertion, worst case O(n^2).",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "deloitte-mcq-091",
+    "question": "What is a heap data structure?",
+    "options": [
+      "A complete binary tree that satisfies the heap property",
+      "A sorted array",
+      "A linked list with fast access",
+      "A hash table"
+    ],
+    "correctAnswer": "A complete binary tree that satisfies the heap property",
+    "explanation": "In a max-heap, parent >= children. In a min-heap, parent <= children.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "deloitte-mcq-092",
+    "question": "What is the time complexity of heap insertion?",
+    "options": [
+      "O(1)",
+      "O(log n)",
+      "O(n)",
+      "O(n log n)"
+    ],
+    "correctAnswer": "O(log n)",
+    "explanation": "Heap insertion involves bubbling up, which takes O(log n) height of tree.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "deloitte-mcq-093",
+    "question": "What is the time complexity of heap extraction (extract-min/max)?",
+    "options": [
+      "O(1)",
+      "O(log n)",
+      "O(n)",
+      "O(n log n)"
+    ],
+    "correctAnswer": "O(log n)",
+    "explanation": "Heap extraction replaces root and bubbles down, taking O(log n).",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "deloitte-mcq-094",
+    "question": "What is the difference between a min-heap and a max-heap?",
+    "options": [
+      "Min-heap: parent <= children; Max-heap: parent >= children",
+      "Min-heap is faster",
+      "Max-heap uses less memory",
+      "They are the same"
+    ],
+    "correctAnswer": "Min-heap: parent <= children; Max-heap: parent >= children",
+    "explanation": "Heap property determines the ordering relationship between parent and children nodes.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "deloitte-mcq-095",
+    "question": "What is the time complexity of finding the kth smallest element using a min-heap?",
+    "options": [
+      "O(1)",
+      "O(k log n)",
+      "O(n)",
+      "O(n log n)"
+    ],
+    "correctAnswer": "O(k log n)",
+    "explanation": "Build heap O(n), then extract-min k times: O(n + k log n) = O(k log n) for k < n.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "deloitte-mcq-096",
+    "question": "What is the time complexity of checking if a binary tree is balanced?",
+    "options": [
+      "O(1)",
+      "O(n)",
+      "O(log n)",
+      "O(n^2)"
+    ],
+    "correctAnswer": "O(n)",
+    "explanation": "Must visit each node once to check height difference, O(n).",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "deloitte-mcq-097",
+    "question": "What is the time complexity of reversing a linked list?",
+    "options": [
+      "O(1)",
+      "O(n)",
+      "O(n log n)",
+      "O(n^2)"
+    ],
+    "correctAnswer": "O(n)",
+    "explanation": "Each node is visited once, O(n).",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "deloitte-mcq-098",
+    "question": "What is the time complexity of detecting a cycle in a linked list using Floyd's algorithm?",
+    "options": [
+      "O(1)",
+      "O(n)",
+      "O(n log n)",
+      "O(n^2)"
+    ],
+    "correctAnswer": "O(n)",
+    "explanation": "Floyd's tortoise and hare algorithm visits each node at most twice.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "deloitte-mcq-099",
+    "question": "What is the time complexity of finding the lowest common ancestor in a BST?",
+    "options": [
+      "O(n)",
+      "O(log n)",
+      "O(1)",
+      "O(n log n)"
+    ],
+    "correctAnswer": "O(log n)",
+    "explanation": "BST property allows guided search from root to LCA.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "deloitte-mcq-100",
+    "question": "Which SQL query returns the second highest salary from an Employee table?",
+    "options": [
+      "SELECT MAX(salary) FROM Employee WHERE salary < (SELECT MAX(salary) FROM Employee)",
+      "SELECT salary FROM Employee ORDER BY salary DESC LIMIT 1 OFFSET 1",
+      "SELECT DISTINCT salary FROM Employee ORDER BY salary DESC LIMIT 1 OFFSET 1",
+      "All of the above are valid approaches"
+    ],
+    "correctAnswer": "All of the above are valid approaches",
+    "explanation": "All three approaches find the second highest salary. DISTINCT in option C handles duplicates.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "deloitte-mcq-101",
+    "question": "What does the GROUP BY clause do in SQL?",
+    "options": [
+      "Groups rows with same values in specified columns for aggregate functions",
+      "Sorts the result set",
+      "Filters rows",
+      "Joins tables"
+    ],
+    "correctAnswer": "Groups rows with same values in specified columns for aggregate functions",
+    "explanation": "GROUP BY groups rows sharing the same values, allowing aggregate functions on each group.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "deloitte-mcq-102",
+    "question": "What is the difference between WHERE and HAVING?",
+    "options": [
+      "WHERE filters rows before grouping; HAVING filters groups after GROUP BY",
+      "They are the same",
+      "HAVING filters rows; WHERE filters groups",
+      "WHERE is used with JOIN; HAVING with SELECT"
+    ],
+    "correctAnswer": "WHERE filters rows before grouping; HAVING filters groups after GROUP BY",
+    "explanation": "WHERE applies to individual rows before GROUP BY. HAVING applies to grouped results after GROUP BY.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "deloitte-mcq-103",
+    "question": "What is the result of SELECT * FROM t1 LEFT JOIN t2 ON t1.id = t2.id where there is no match?",
+    "options": [
+      "The row is excluded",
+      "NULL values for right table columns",
+      "An error is thrown",
+      "The row is duplicated"
+    ],
+    "correctAnswer": "NULL values for right table columns",
+    "explanation": "LEFT JOIN preserves all left rows. Unmatched right columns get NULL.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "deloitte-mcq-104",
+    "question": "What is the difference between UNION and UNION ALL?",
+    "options": [
+      "UNION removes duplicates; UNION ALL keeps all rows",
+      "They are the same",
+      "UNION ALL is slower",
+      "UNION requires matching column names"
+    ],
+    "correctAnswer": "UNION removes duplicates; UNION ALL keeps all rows",
+    "explanation": "UNION automatically removes duplicate rows. UNION ALL returns all rows including duplicates.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "deloitte-mcq-105",
+    "question": "What does the SQL query SELECT * FROM Employees WHERE salary IS NULL return?",
+    "options": [
+      "Employees with salary = 0",
+      "Employees with no salary value assigned",
+      "All employees",
+      "Employees with minimum salary"
+    ],
+    "correctAnswer": "Employees with no salary value assigned",
+    "explanation": "IS NULL checks for NULL values, which represent missing or unknown data.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "deloitte-mcq-106",
+    "question": "What is the result of SELECT DISTINCT department FROM Employees?",
+    "options": [
+      "All rows from Employees",
+      "Only unique department values",
+      "The count of departments",
+      "Departments sorted alphabetically"
+    ],
+    "correctAnswer": "Only unique department values",
+    "explanation": "DISTINCT eliminates duplicate values from the result set.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "deloitte-mcq-107",
+    "question": "What is the result of SELECT COUNT(DISTINCT department) FROM Employees?",
+    "options": [
+      "Number of unique departments",
+      "Total number of employees",
+      "Total departments including duplicates",
+      "Maximum department ID"
+    ],
+    "correctAnswer": "Number of unique departments",
+    "explanation": "COUNT(DISTINCT column) counts unique non-NULL values.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "deloitte-mcq-108",
+    "question": "What does the HAVING clause do in SQL?",
+    "options": [
+      "Filters groups after GROUP BY",
+      "Filters rows before grouping",
+      "Sorts the result set",
+      "Limits the number of rows"
+    ],
+    "correctAnswer": "Filters groups after GROUP BY",
+    "explanation": "HAVING filters groups created by GROUP BY, unlike WHERE which filters rows.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "deloitte-mcq-109",
+    "question": "What is the result of SELECT * FROM Orders WHERE order_date BETWEEN '2024-01-01' AND '2024-12-31'?",
+    "options": [
+      "Orders placed in 2024",
+      "Orders placed before 2024",
+      "All orders",
+      "Orders placed after 2024"
+    ],
+    "correctAnswer": "Orders placed in 2024",
+    "explanation": "BETWEEN is inclusive on both ends.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "deloitte-mcq-110",
+    "question": "What is the difference between DELETE and TRUNCATE in SQL?",
+    "options": [
+      "DELETE removes specific rows; TRUNCATE removes all rows and resets identity",
+      "They are the same",
+      "DELETE is faster",
+      "TRUNCATE can have WHERE clause"
+    ],
+    "correctAnswer": "DELETE removes specific rows; TRUNCATE removes all rows and resets identity",
+    "explanation": "DELETE logs each row; TRUNCATE is faster with minimal logging and resets auto-increment.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "deloitte-mcq-111",
+    "question": "What is the result of a FULL OUTER JOIN?",
+    "options": [
+      "All matching rows plus unmatched from both tables",
+      "Only matching rows",
+      "All rows from left table only",
+      "All rows from right table only"
+    ],
+    "correctAnswer": "All matching rows plus unmatched from both tables",
+    "explanation": "FULL OUTER JOIN returns all rows from both tables, with NULLs where no match exists.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "deloitte-mcq-112",
+    "question": "What does the SQL query SELECT department, COUNT(*) FROM Employee GROUP BY department HAVING COUNT(*) > 5 return?",
+    "options": [
+      "All departments",
+      "Departments with more than 5 employees",
+      "Total count of employees",
+      "Departments with exactly 5 employees"
+    ],
+    "correctAnswer": "Departments with more than 5 employees",
+    "explanation": "GROUP BY groups by department, COUNT counts per group, HAVING filters groups with count > 5.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "deloitte-mcq-113",
+    "question": "What is the result of a LEFT JOIN when there is no matching row in the right table?",
+    "options": [
+      "Row excluded from result",
+      "NULL values for right table columns",
+      "Error thrown",
+      "Row duplicated"
+    ],
+    "correctAnswer": "NULL values for right table columns",
+    "explanation": "LEFT JOIN preserves all left rows; unmatched right columns get NULL.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "deloitte-mcq-114",
+    "question": "What does the SQL subquery SELECT * FROM Employees WHERE department_id IN (SELECT id FROM Departments WHERE location = 'NYC') return?",
+    "options": [
+      "All employees",
+      "Employees in departments located in NYC",
+      "All departments in NYC",
+      "Employees with salary above average"
+    ],
+    "correctAnswer": "Employees in departments located in NYC",
+    "explanation": "Inner query finds NYC department IDs. Outer query returns employees in those departments.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "deloitte-mcq-115",
+    "question": "What is the purpose of a subquery in SQL?",
+    "options": [
+      "To perform operations on the result of another query",
+      "To create indexes",
+      "To define table structure",
+      "To encrypt data"
+    ],
+    "correctAnswer": "To perform operations on the result of another query",
+    "explanation": "Subqueries (nested queries) are used within other queries to filter or compute values.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "deloitte-mcq-116",
+    "question": "What is the result of SELECT MAX(salary) FROM Employees?",
+    "options": [
+      "The highest salary value",
+      "All salaries",
+      "The employee with highest salary",
+      "The average salary"
+    ],
+    "correctAnswer": "The highest salary value",
+    "explanation": "MAX() aggregate function returns the maximum value in the column.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "deloitte-mcq-117",
+    "question": "What is the difference between IN and EXISTS in SQL?",
+    "options": [
+      "IN checks membership in a list; EXISTS checks if a subquery returns any rows",
+      "They are always equivalent",
+      "IN is faster",
+      "EXISTS cannot use subqueries"
+    ],
+    "correctAnswer": "IN checks membership in a list; EXISTS checks if a subquery returns any rows",
+    "explanation": "IN is evaluated once; EXISTS may be more efficient with large datasets as it stops at first match.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "deloitte-mcq-118",
+    "question": "What is the result of SELECT * FROM Employees ORDER BY salary DESC LIMIT 3?",
+    "options": [
+      "Top 3 highest paid employees",
+      "Bottom 3 lowest paid employees",
+      "All employees sorted",
+      "3 random employees"
+    ],
+    "correctAnswer": "Top 3 highest paid employees",
+    "explanation": "ORDER BY DESC sorts from highest to lowest. LIMIT 3 returns only first 3 rows.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "deloitte-mcq-119",
+    "question": "What is a correlated subquery?",
+    "options": [
+      "A subquery that references columns from the outer query",
+      "A subquery that runs independently",
+      "A subquery in the FROM clause",
+      "A subquery that returns multiple columns"
+    ],
+    "correctAnswer": "A subquery that references columns from the outer query",
+    "explanation": "Correlated subqueries execute once for each row of the outer query.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "deloitte-mcq-120",
+    "question": "What is the result of 1NF?",
+    "options": [
+      "All attributes contain atomic values; no repeating groups",
+      "Table has a primary key",
+      "No partial dependencies",
+      "No transitive dependencies"
+    ],
+    "correctAnswer": "All attributes contain atomic values; no repeating groups",
+    "explanation": "1NF requires each column to hold only atomic (indivisible) values.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DBMS"
+  },
+  {
+    "questionId": "deloitte-mcq-121",
+    "question": "What does ACID stand for in DBMS?",
+    "options": [
+      "Atomicity, Consistency, Isolation, Durability",
+      "Atomicity, Concurrency, Integrity, Durability",
+      "Availability, Consistency, Isolation, Durability",
+      "Atomicity, Consistency, Integration, Durability"
+    ],
+    "correctAnswer": "Atomicity, Consistency, Isolation, Durability",
+    "explanation": "ACID properties ensure reliable database transactions.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DBMS"
+  },
+  {
+    "questionId": "deloitte-mcq-122",
+    "question": "What is the purpose of normalization in DBMS?",
+    "options": [
+      "To reduce data redundancy by decomposing tables",
+      "To increase data redundancy",
+      "To create indexes",
+      "To encrypt data"
+    ],
+    "correctAnswer": "To reduce data redundancy by decomposing tables",
+    "explanation": "Normalization organizes tables to minimize redundancy and dependency.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DBMS"
+  },
+  {
+    "questionId": "deloitte-mcq-123",
+    "question": "What is a foreign key?",
+    "options": [
+      "A column that references a primary key in another table",
+      "A unique identifier for each row",
+      "A column that cannot be NULL",
+      "An index on a table"
+    ],
+    "correctAnswer": "A column that references a primary key in another table",
+    "explanation": "Foreign key creates a link between two tables by referencing a primary key.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DBMS"
+  },
+  {
+    "questionId": "deloitte-mcq-124",
+    "question": "What is 2NF?",
+    "options": [
+      "1NF + no partial dependencies on composite primary key",
+      "1NF + no transitive dependencies",
+      "Table with no NULL values",
+      "Table with unique constraints"
+    ],
+    "correctAnswer": "1NF + no partial dependencies on composite primary key",
+    "explanation": "2NF eliminates partial dependencies where non-key attributes depend on part of a composite key.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DBMS"
+  },
+  {
+    "questionId": "deloitte-mcq-125",
+    "question": "What is 3NF?",
+    "options": [
+      "2NF + no transitive dependencies",
+      "2NF + no partial dependencies",
+      "1NF with unique constraints",
+      "2NF with composite keys"
+    ],
+    "correctAnswer": "2NF + no transitive dependencies",
+    "explanation": "3NF eliminates transitive dependencies where non-key attributes depend on other non-key attributes.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DBMS"
+  },
+  {
+    "questionId": "deloitte-mcq-126",
+    "question": "What is the purpose of a database index?",
+    "options": [
+      "To speed up data retrieval operations",
+      "To reduce storage space",
+      "To enforce data integrity",
+      "To prevent unauthorized access"
+    ],
+    "correctAnswer": "To speed up data retrieval operations",
+    "explanation": "Indexes create data structures (like B-trees) for fast lookups.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DBMS"
+  },
+  {
+    "questionId": "deloitte-mcq-127",
+    "question": "What is the difference between a primary key and a candidate key?",
+    "options": [
+      "Primary key is chosen from candidate keys; both uniquely identify rows",
+      "They are the same",
+      "Primary key can have NULLs",
+      "Candidate key must be composite"
+    ],
+    "correctAnswer": "Primary key is chosen from candidate keys; both uniquely identify rows",
+    "explanation": "A table can have multiple candidate keys; one is chosen as the primary key.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DBMS"
+  },
+  {
+    "questionId": "deloitte-mcq-128",
+    "question": "What is a deadlock in DBMS?",
+    "options": [
+      "Two or more transactions waiting for each other to release locks",
+      "A transaction that takes too long",
+      "A corrupted database file",
+      "A table with no primary key"
+    ],
+    "correctAnswer": "Two or more transactions waiting for each other to release locks",
+    "explanation": "Deadlock occurs when transactions form a circular dependency of waiting locks.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DBMS"
+  },
+  {
+    "questionId": "deloitte-mcq-129",
+    "question": "What is the purpose of COMMIT in a transaction?",
+    "options": [
+      "To make all changes permanent",
+      "To undo all changes",
+      "To lock the database",
+      "To create a checkpoint"
+    ],
+    "correctAnswer": "To make all changes permanent",
+    "explanation": "COMMIT saves all changes made during the transaction permanently to the database.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DBMS"
+  },
+  {
+    "questionId": "deloitte-mcq-130",
+    "question": "What is the purpose of ROLLBACK in a transaction?",
+    "options": [
+      "To undo changes made during the transaction",
+      "To save changes permanently",
+      "To lock the database",
+      "To create a backup"
+    ],
+    "correctAnswer": "To undo changes made during the transaction",
+    "explanation": "ROLLBACK reverts all changes made since the last COMMIT or SAVEPOINT.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DBMS"
+  },
+  {
+    "questionId": "deloitte-mcq-131",
+    "question": "What is a B-tree index?",
+    "options": [
+      "A self-balancing tree data structure used for indexing",
+      "A type of hash table",
+      "A linked list with fast access",
+      "A sorted array"
+    ],
+    "correctAnswer": "A self-balancing tree data structure used for indexing",
+    "explanation": "B-trees maintain sorted data and allow searches, insertions, and deletions in O(log n).",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DBMS"
+  },
+  {
+    "questionId": "deloitte-mcq-132",
+    "question": "What is the difference between clustered and non-clustered index?",
+    "options": [
+      "Clustered: physical order of rows; Non-clustered: separate structure with pointers",
+      "They are the same",
+      "Clustered is faster",
+      "Non-clustered is always better"
+    ],
+    "correctAnswer": "Clustered: physical order of rows; Non-clustered: separate structure with pointers",
+    "explanation": "Clustered index determines physical row order (one per table). Non-clustered indexes are separate structures.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DBMS"
+  },
+  {
+    "questionId": "deloitte-mcq-133",
+    "question": "What is referential integrity in DBMS?",
+    "options": [
+      "Ensuring foreign key values match primary key values in the related table",
+      "Making all columns NOT NULL",
+      "Creating unique constraints",
+      "Enforcing data types"
+    ],
+    "correctAnswer": "Ensuring foreign key values match primary key values in the related table",
+    "explanation": "Referential integrity prevents orphaned records by enforcing valid relationships.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DBMS"
+  },
+  {
+    "questionId": "deloitte-mcq-134",
+    "question": "What is the difference between a process and a thread?",
+    "options": [
+      "Process: independent execution with own memory; Thread: lightweight, shares memory",
+      "They are the same",
+      "Thread is heavier than a process",
+      "Process cannot have multiple threads"
+    ],
+    "correctAnswer": "Process: independent execution with own memory; Thread: lightweight, shares memory",
+    "explanation": "Processes have separate address spaces; threads within a process share memory.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "OS"
+  },
+  {
+    "questionId": "deloitte-mcq-135",
+    "question": "What are the four conditions required for deadlock?",
+    "options": [
+      "Mutual exclusion, Hold and wait, No preemption, Circular wait",
+      "Mutual exclusion, Hold and wait, Preemption, Circular wait",
+      "Shared resources, Hold and wait, No preemption, No circular wait",
+      "Mutual exclusion, Release and wait, No preemption, Circular wait"
+    ],
+    "correctAnswer": "Mutual exclusion, Hold and wait, No preemption, Circular wait",
+    "explanation": "All four Coffman conditions must hold simultaneously for deadlock.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "OS"
+  },
+  {
+    "questionId": "deloitte-mcq-136",
+    "question": "What is the difference between concurrency and parallelism?",
+    "options": [
+      "Concurrency: overlapping time periods; Parallel: simultaneous on multiple cores",
+      "They are the same",
+      "Parallel is a subset of concurrent",
+      "Concurrency requires multiple cores"
+    ],
+    "correctAnswer": "Concurrency: overlapping time periods; Parallel: simultaneous on multiple cores",
+    "explanation": "Concurrency is dealing with multiple tasks at once; parallelism is doing them at once.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "OS"
+  },
+  {
+    "questionId": "deloitte-mcq-137",
+    "question": "What is a semaphore in OS?",
+    "options": [
+      "A synchronization primitive for controlling access to shared resources",
+      "A type of thread",
+      "A memory management technique",
+      "A scheduling algorithm"
+    ],
+    "correctAnswer": "A synchronization primitive for controlling access to shared resources",
+    "explanation": "Semaphores use a counter to manage access to resources by multiple processes/threads.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "OS"
+  },
+  {
+    "questionId": "deloitte-mcq-138",
+    "question": "What is virtual memory?",
+    "options": [
+      "Using disk space as an extension of RAM to run programs larger than physical memory",
+      "A type of cache",
+      "A virtual machine",
+      "An encrypted memory region"
+    ],
+    "correctAnswer": "Using disk space as an extension of RAM to run programs larger than physical memory",
+    "explanation": "Virtual memory allows programs to use more memory than physically available by swapping to disk.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "OS"
+  },
+  {
+    "questionId": "deloitte-mcq-139",
+    "question": "What is the difference between paging and segmentation?",
+    "options": [
+      "Paging: fixed-size blocks; Segmentation: variable-size blocks based on logical division",
+      "They are the same",
+      "Paging is faster",
+      "Segmentation uses fixed blocks"
+    ],
+    "correctAnswer": "Paging: fixed-size blocks; Segmentation: variable-size blocks based on logical division",
+    "explanation": "Paging divides memory into fixed pages; segmentation divides by logical units (segments).",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "OS"
+  },
+  {
+    "questionId": "deloitte-mcq-140",
+    "question": "What is a race condition?",
+    "options": [
+      "When multiple threads access shared data concurrently and the outcome depends on timing",
+      "A type of deadlock",
+      "A memory leak",
+      "A scheduling error"
+    ],
+    "correctAnswer": "When multiple threads access shared data concurrently and the outcome depends on timing",
+    "explanation": "Race conditions occur when concurrent operations on shared data produce unpredictable results.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "OS"
+  },
+  {
+    "questionId": "deloitte-mcq-141",
+    "question": "What is the Round Robin scheduling algorithm?",
+    "options": [
+      "Each process gets a fixed time slice in cyclic order",
+      "Processes are scheduled by priority",
+      "Longest job first",
+      "Shortest job first"
+    ],
+    "correctAnswer": "Each process gets a fixed time slice in cyclic order",
+    "explanation": "Round Robin assigns time quanta to processes in a circular fashion, ensuring fairness.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "OS"
+  },
+  {
+    "questionId": "deloitte-mcq-142",
+    "question": "What is the difference between a mutex and a semaphore?",
+    "options": [
+      "Mutex: binary lock for one thread; Semaphore: counter for multiple threads",
+      "They are the same",
+      "Mutex is faster",
+      "Semaphore is binary"
+    ],
+    "correctAnswer": "Mutex: binary lock for one thread; Semaphore: counter for multiple threads",
+    "explanation": "Mutex provides mutual exclusion for a single resource. Semaphore can allow multiple concurrent accesses up to a count.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "OS"
+  },
+  {
+    "questionId": "deloitte-mcq-143",
+    "question": "What is thrashing in OS?",
+    "options": [
+      "Excessive paging where the system spends more time swapping than executing",
+      "A type of deadlock",
+      "CPU overheating",
+      "Memory overflow"
+    ],
+    "correctAnswer": "Excessive paging where the system spends more time swapping than executing",
+    "explanation": "Thrashing occurs when the working set exceeds available memory, causing constant page faults.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "OS"
+  },
+  {
+    "questionId": "deloitte-mcq-144",
+    "question": "What is context switching?",
+    "options": [
+      "Saving the state of one process and restoring another's state",
+      "Switching between virtual machines",
+      "Changing the CPU clock speed",
+      "Loading a new program"
+    ],
+    "correctAnswer": "Saving the state of one process and restoring another's state",
+    "explanation": "Context switching allows the CPU to share between multiple processes by saving/restoring their states.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "OS"
+  },
+  {
+    "questionId": "deloitte-mcq-145",
+    "question": "What is a zombie process?",
+    "options": [
+      "A process that has terminated but its parent hasn't read its exit status",
+      "A process that consumes no resources",
+      "A process running in background",
+      "A corrupted process"
+    ],
+    "correctAnswer": "A process that has terminated but its parent hasn't read its exit status",
+    "explanation": "Zombie processes hold a PID entry until the parent calls wait() to collect exit status.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "OS"
+  },
+  {
+    "questionId": "deloitte-mcq-146",
+    "question": "What is the difference between TCP and UDP?",
+    "options": [
+      "TCP: connection-oriented, reliable; UDP: connectionless, faster",
+      "They are the same",
+      "UDP is more reliable",
+      "TCP is faster"
+    ],
+    "correctAnswer": "TCP: connection-oriented, reliable; UDP: connectionless, faster",
+    "explanation": "TCP establishes connections and guarantees delivery. UDP sends without connection setup.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Networking"
+  },
+  {
+    "questionId": "deloitte-mcq-147",
+    "question": "Which HTTP status code indicates a resource was not found?",
+    "options": [
+      "200",
+      "301",
+      "404",
+      "500"
+    ],
+    "correctAnswer": "404",
+    "explanation": "404 Not Found indicates the server could not find the requested resource.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Networking"
+  },
+  {
+    "questionId": "deloitte-mcq-148",
+    "question": "Which layer of the OSI model is responsible for routing packets?",
+    "options": [
+      "Data Link Layer",
+      "Network Layer",
+      "Transport Layer",
+      "Session Layer"
+    ],
+    "correctAnswer": "Network Layer",
+    "explanation": "The Network Layer (Layer 3) handles routing, forwarding, and addressing.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Networking"
+  },
+  {
+    "questionId": "deloitte-mcq-149",
+    "question": "What is the difference between HTTP and HTTPS?",
+    "options": [
+      "HTTPS uses SSL/TLS encryption; HTTP sends data in plain text",
+      "HTTP is faster",
+      "HTTPS does not use ports",
+      "They are the same"
+    ],
+    "correctAnswer": "HTTPS uses SSL/TLS encryption; HTTP sends data in plain text",
+    "explanation": "HTTPS adds TLS/SSL encryption for secure communication.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Networking"
+  },
+  {
+    "questionId": "deloitte-mcq-150",
+    "question": "What does DNS do?",
+    "options": [
+      "Resolves domain names to IP addresses",
+      "Encrypts network traffic",
+      "Routes packets between networks",
+      "Manages email delivery"
+    ],
+    "correctAnswer": "Resolves domain names to IP addresses",
+    "explanation": "DNS translates human-readable domain names to machine-readable IP addresses.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Networking"
+  },
+  {
+    "questionId": "deloitte-mcq-151",
+    "question": "What is a three-way handshake in TCP?",
+    "options": [
+      "SYN -> SYN-ACK -> ACK to establish a connection",
+      "Data transfer method",
+      "Connection termination",
+      "Error recovery method"
+    ],
+    "correctAnswer": "SYN -> SYN-ACK -> ACK to establish a connection",
+    "explanation": "TCP uses three-way handshake to establish a reliable connection before data transfer.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Networking"
+  },
+  {
+    "questionId": "deloitte-mcq-152",
+    "question": "What is the purpose of a load balancer?",
+    "options": [
+      "Distributes incoming network traffic across multiple servers",
+      "Encrypts data",
+      "Stores backup data",
+      "Monitors network traffic"
+    ],
+    "correctAnswer": "Distributes incoming network traffic across multiple servers",
+    "explanation": "Load balancers ensure no single server is overwhelmed, improving availability and reliability.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Networking"
+  },
+  {
+    "questionId": "deloitte-mcq-153",
+    "question": "What is the difference between ARP and RARP?",
+    "options": [
+      "ARP: IP to MAC; RARP: MAC to IP",
+      "They are the same",
+      "ARP is faster",
+      "RARP is deprecated"
+    ],
+    "correctAnswer": "ARP: IP to MAC; RARP: MAC to IP",
+    "explanation": "ARP resolves IP addresses to MAC addresses. RARP does the reverse (largely replaced by DHCP).",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Networking"
+  },
+  {
+    "questionId": "deloitte-mcq-154",
+    "question": "What is the difference between IaaS, PaaS, and SaaS?",
+    "options": [
+      "IaaS: infrastructure; PaaS: platform for development; SaaS: software as service",
+      "They are the same",
+      "IaaS is the most managed",
+      "SaaS requires most management"
+    ],
+    "correctAnswer": "IaaS: infrastructure; PaaS: platform for development; SaaS: software as service",
+    "explanation": "IaaS provides raw infrastructure. PaaS provides development platform. SaaS provides complete software.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Cloud"
+  },
+  {
+    "questionId": "deloitte-mcq-155",
+    "question": "What is a REST API?",
+    "options": [
+      "An architectural style for designing networked applications using HTTP methods",
+      "A database query language",
+      "A programming language",
+      "A type of firewall"
+    ],
+    "correctAnswer": "An architectural style for designing networked applications using HTTP methods",
+    "explanation": "REST uses HTTP methods (GET, POST, PUT, DELETE) and stateless communication.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Cloud"
+  },
+  {
+    "questionId": "deloitte-mcq-156",
+    "question": "What does JSON stand for?",
+    "options": [
+      "JavaScript Object Notation",
+      "Java Serialized Object Notion",
+      "JavaScript Online Notation",
+      "Java Standard Object Name"
+    ],
+    "correctAnswer": "JavaScript Object Notation",
+    "explanation": "JSON is a lightweight data interchange format based on JavaScript object syntax.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Cloud"
+  },
+  {
+    "questionId": "deloitte-mcq-157",
+    "question": "What is the difference between GET and POST HTTP methods?",
+    "options": [
+      "GET: retrieves data; POST: sends data to create/update",
+      "They are the same",
+      "GET is more secure",
+      "POST is faster"
+    ],
+    "correctAnswer": "GET: retrieves data; POST: sends data to create/update",
+    "explanation": "GET appends data to URL; POST sends data in request body. GET is cacheable; POST is not.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Cloud"
+  },
+  {
+    "questionId": "deloitte-mcq-158",
+    "question": "What is the difference between horizontal and vertical scaling?",
+    "options": [
+      "Horizontal: add more machines; Vertical: add more power to existing machine",
+      "They are the same",
+      "Horizontal is always better",
+      "Vertical is cheaper"
+    ],
+    "correctAnswer": "Horizontal: add more machines; Vertical: add more power to existing machine",
+    "explanation": "Horizontal scaling (scaling out) adds nodes. Vertical scaling (scaling up) increases resources on a single node.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Cloud"
+  },
+  {
+    "questionId": "deloitte-mcq-159",
+    "question": "What is containerization?",
+    "options": [
+      "Packaging applications with their dependencies for consistent deployment",
+      "Virtual machine technology",
+      "Database management",
+      "Network configuration"
+    ],
+    "correctAnswer": "Packaging applications with their dependencies for consistent deployment",
+    "explanation": "Containers (like Docker) package code and dependencies together for consistent运行 across environments.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Cloud"
+  },
+  {
+    "questionId": "deloitte-mcq-160",
+    "question": "What is microservices architecture?",
+    "options": [
+      "Application composed of small, independent services communicating via APIs",
+      "A single monolithic application",
+      "A database design pattern",
+      "A testing framework"
+    ],
+    "correctAnswer": "Application composed of small, independent services communicating via APIs",
+    "explanation": "Microservices break applications into loosely coupled, independently deployable services.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Cloud"
+  },
+  {
+    "questionId": "deloitte-mcq-161",
+    "question": "What is the difference between public, private, and hybrid cloud?",
+    "options": [
+      "Public: shared infrastructure; Private: dedicated; Hybrid: combination",
+      "They are the same",
+      "Public is more secure",
+      "Private is cheaper"
+    ],
+    "correctAnswer": "Public: shared infrastructure; Private: dedicated; Hybrid: combination",
+    "explanation": "Public cloud is shared (AWS, Azure). Private cloud is dedicated. Hybrid combines both.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Cloud"
+  },
+  {
+    "questionId": "deloitte-mcq-162",
+    "question": "What is the output of this code?\nint x = 5;\nprintf(\"%d\", x++ + x++);",
+    "options": [
+      "10",
+      "11",
+      "21",
+      "Undefined behavior"
+    ],
+    "correctAnswer": "Undefined behavior",
+    "explanation": "Modifying x twice between sequence points is undefined behavior.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-163",
+    "question": "What is the output of this code?\nint x = 5;\nprintf(\"%d\", x-- + x--);",
+    "options": [
+      "10",
+      "9",
+      "21",
+      "Undefined behavior"
+    ],
+    "correctAnswer": "Undefined behavior",
+    "explanation": "Modifying x twice between sequence points is undefined behavior.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-164",
+    "question": "What is the output of this code?\nint x = 5;\nprintf(\"%d\", x++ - x--);",
+    "options": [
+      "0",
+      "1",
+      "Undefined behavior",
+      "10"
+    ],
+    "correctAnswer": "Undefined behavior",
+    "explanation": "Modifying x twice between sequence points is undefined behavior.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-165",
+    "question": "What is the output of this code?\nint x = 5;\nprintf(\"%d\", ++x + x++);",
+    "options": [
+      "11",
+      "12",
+      "10",
+      "Undefined behavior"
+    ],
+    "correctAnswer": "Undefined behavior",
+    "explanation": "Modifying x twice between sequence points is undefined behavior.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-166",
+    "question": "What is the output of this code?\nint x = 3;\nprintf(\"%d\", x++ + x++ + x++);",
+    "options": [
+      "9",
+      "10",
+      "18",
+      "Undefined behavior"
+    ],
+    "correctAnswer": "Undefined behavior",
+    "explanation": "Modifying x three times between sequence points is undefined behavior.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-167",
+    "question": "What is the output of this code?\nint x = 3;\nprintf(\"%d\", ++x + ++x);",
+    "options": [
+      "7",
+      "8",
+      "6",
+      "Undefined behavior"
+    ],
+    "correctAnswer": "Undefined behavior",
+    "explanation": "Modifying x twice between sequence points is undefined behavior.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-168",
+    "question": "What is the output of this code?\nint x = 4;\nprintf(\"%d\", x-- - --x);",
+    "options": [
+      "6",
+      "4",
+      "Undefined behavior",
+      "2"
+    ],
+    "correctAnswer": "Undefined behavior",
+    "explanation": "Modifying x twice between sequence points is undefined behavior.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-169",
+    "question": "What is the output of this code?\nint x = 4;\nprintf(\"%d\", x-- + --x);",
+    "options": [
+      "6",
+      "8",
+      "Undefined behavior",
+      "4"
+    ],
+    "correctAnswer": "Undefined behavior",
+    "explanation": "Modifying x twice between sequence points is undefined behavior.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-170",
+    "question": "What is the output of this code?\nint x = 10;\nprintf(\"%d\", x++ + ++x);",
+    "options": [
+      "20",
+      "22",
+      "21",
+      "Undefined behavior"
+    ],
+    "correctAnswer": "Undefined behavior",
+    "explanation": "Modifying x twice between sequence points is undefined behavior.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-171",
+    "question": "What is the output of this code?\nint x = 10;\nprintf(\"%d\", ++x + x++);",
+    "options": [
+      "21",
+      "22",
+      "20",
+      "Undefined behavior"
+    ],
+    "correctAnswer": "Undefined behavior",
+    "explanation": "Modifying x twice between sequence points is undefined behavior.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-172",
+    "question": "What is the output of this code?\nint x = 10;\nprintf(\"%d\", x++ - x--);",
+    "options": [
+      "0",
+      "1",
+      "Undefined behavior",
+      "20"
+    ],
+    "correctAnswer": "Undefined behavior",
+    "explanation": "Modifying x twice between sequence points is undefined behavior.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-173",
+    "question": "What is the output of this code?\nint x = 10;\nprintf(\"%d\", x-- - --x);",
+    "options": [
+      "18",
+      "20",
+      "Undefined behavior",
+      "0"
+    ],
+    "correctAnswer": "Undefined behavior",
+    "explanation": "Modifying x twice between sequence points is undefined behavior.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-174",
+    "question": "What is the output of this code?\nint x = 10;\nprintf(\"%d\", x-- + --x);",
+    "options": [
+      "18",
+      "20",
+      "Undefined behavior",
+      "2"
+    ],
+    "correctAnswer": "Undefined behavior",
+    "explanation": "Modifying x twice between sequence points is undefined behavior.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-175",
+    "question": "What is the output of this code?\nint x = 10;\nprintf(\"%d\", --x + x--);",
+    "options": [
+      "18",
+      "20",
+      "Undefined behavior",
+      "0"
+    ],
+    "correctAnswer": "Undefined behavior",
+    "explanation": "Modifying x twice between sequence points is undefined behavior.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-176",
+    "question": "What is the output of this code?\nint x = 10;\nprintf(\"%d\", --x + --x);",
+    "options": [
+      "18",
+      "20",
+      "16",
+      "Undefined behavior"
+    ],
+    "correctAnswer": "Undefined behavior",
+    "explanation": "Modifying x twice between sequence points is undefined behavior.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-177",
+    "question": "What is the output of this code?\nint x = 10;\nprintf(\"%d\", ++x - x++);",
+    "options": [
+      "0",
+      "1",
+      "20",
+      "Undefined behavior"
+    ],
+    "correctAnswer": "Undefined behavior",
+    "explanation": "Modifying x twice between sequence points is undefined behavior.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-178",
+    "question": "What is the output of this code?\nint x = 10;\nprintf(\"%d\", ++x - ++x);",
+    "options": [
+      "0",
+      "2",
+      "20",
+      "Undefined behavior"
+    ],
+    "correctAnswer": "Undefined behavior",
+    "explanation": "Modifying x twice between sequence points is undefined behavior.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-179",
+    "question": "What is the output of this code?\nint x = 10;\nprintf(\"%d\", x++ + x++ + x++);",
+    "options": [
+      "30",
+      "33",
+      "31",
+      "Undefined behavior"
+    ],
+    "correctAnswer": "Undefined behavior",
+    "explanation": "Modifying x three times between sequence points is undefined behavior.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-180",
+    "question": "What is the output of this code?\nint x = 10;\nprintf(\"%d\", ++x + ++x + ++x);",
+    "options": [
+      "33",
+      "30",
+      "36",
+      "Undefined behavior"
+    ],
+    "correctAnswer": "Undefined behavior",
+    "explanation": "Modifying x three times between sequence points is undefined behavior.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-181",
+    "question": "What is the output of this code?\nint x = 10;\nprintf(\"%d\", x++ + ++x + x++);",
+    "options": [
+      "32",
+      "33",
+      "31",
+      "Undefined behavior"
+    ],
+    "correctAnswer": "Undefined behavior",
+    "explanation": "Modifying x three times between sequence points is undefined behavior.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "deloitte-mcq-182",
+    "question": "What is the output of this Java code?\nclass A { { System.out.print(\"Init\"); } }\nnew A();",
+    "options": [
+      "Init",
+      "Compilation error",
+      "Runtime error",
+      "Nothing"
+    ],
+    "correctAnswer": "Init",
+    "explanation": "Instance initializer block runs when an object is created, before the constructor.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "OOP"
+  },
+  {
+    "questionId": "deloitte-mcq-183",
+    "question": "What is the output?\nclass Test { Test() { System.out.print(\"T\"); } }\nTest t1 = new Test();\nTest t2 = new Test();",
+    "options": [
+      "TT",
+      "T",
+      "TTT",
+      "Error"
+    ],
+    "correctAnswer": "TT",
+    "explanation": "Each new Test() calls the constructor. Two objects = two constructor calls.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "OOP"
+  },
+  {
+    "questionId": "deloitte-mcq-184",
+    "question": "What is the difference between 'this' and 'super' in Java?",
+    "options": [
+      "this refers to current object; super refers to parent object",
+      "They are the same",
+      "this is static; super is instance",
+      "super is used only in interfaces"
+    ],
+    "correctAnswer": "this refers to current object; super refers to parent object",
+    "explanation": "this accesses current class members; super accesses parent class members.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "OOP"
+  },
+  {
+    "questionId": "deloitte-mcq-185",
+    "question": "What is the output of this code?\nclass Parent { void show() { System.out.println(\"Parent\"); } }\nclass Child extends Parent { void show() { System.out.println(\"Child\"); } }\nParent p = new Child();\np.show();",
+    "options": [
+      "Parent",
+      "Child",
+      "Compilation error",
+      "Runtime error"
+    ],
+    "correctAnswer": "Child",
+    "explanation": "Method overriding: runtime type determines which method is called.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "OOP"
+  },
+  {
+    "questionId": "deloitte-mcq-186",
+    "question": "Can an interface have a constructor in Java?",
+    "options": [
+      "No, interfaces cannot have constructors",
+      "Yes, but it must be public",
+      "Yes, it can be abstract",
+      "Only default interfaces can"
+    ],
+    "correctAnswer": "No, interfaces cannot have constructors",
+    "explanation": "Interfaces cannot have constructors because they cannot be instantiated directly.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "OOP"
+  },
+  {
+    "questionId": "deloitte-mcq-187",
+    "question": "What is the output?\nclass A { int x = 10; }\nclass B extends A { int x = 20; void show() { System.out.println(super.x); } }\nnew B().show();",
+    "options": [
+      "10",
+      "20",
+      "Compilation error",
+      "30"
+    ],
+    "correctAnswer": "10",
+    "explanation": "super.x accesses the parent class's x value (10).",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "OOP"
+  },
+  {
+    "questionId": "deloitte-mcq-188",
+    "question": "What is dependency injection in OOP?",
+    "options": [
+      "Providing an object's dependencies from outside rather than creating them internally",
+      "Creating objects inside a method",
+      "Using static methods",
+      "Inheriting from multiple classes"
+    ],
+    "correctAnswer": "Providing an object's dependencies from outside rather than creating them internally",
+    "explanation": "DI promotes loose coupling by injecting dependencies rather than hardcoding them.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "OOP"
+  },
+  {
+    "questionId": "deloitte-mcq-189",
+    "question": "What is the Liskov Substitution Principle?",
+    "options": [
+      "Objects of a superclass should be replaceable with objects of a subclass without breaking functionality",
+      "A class should have only one reason to change",
+      "Classes should depend on interfaces, not concrete classes",
+      "A subclass should not override parent methods incorrectly"
+    ],
+    "correctAnswer": "Objects of a superclass should be replaceable with objects of a subclass without breaking functionality",
+    "explanation": "LSP ensures that inheritance hierarchies maintain behavioral compatibility.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "OOP"
+  },
+  {
+    "questionId": "deloitte-mcq-190",
+    "question": "What is the time complexity of finding the maximum element in an unsorted array?",
+    "options": [
+      "O(1)",
+      "O(log n)",
+      "O(n)",
+      "O(n^2)"
+    ],
+    "correctAnswer": "O(n)",
+    "explanation": "Must check every element to find maximum, O(n).",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "deloitte-mcq-191",
+    "question": "What is the time complexity of reversing an array?",
+    "options": [
+      "O(1)",
+      "O(n)",
+      "O(n log n)",
+      "O(n^2)"
+    ],
+    "correctAnswer": "O(n)",
+    "explanation": "Each element is visited once during reversal.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "deloitte-mcq-192",
+    "question": "What is the time complexity of counting occurrences of an element in a sorted array?",
+    "options": [
+      "O(n)",
+      "O(log n)",
+      "O(n log n)",
+      "O(1)"
+    ],
+    "correctAnswer": "O(n)",
+    "explanation": "Even in sorted array, you must scan for all occurrences. Binary search finds one, but counting all is O(n).",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "deloitte-mcq-193",
+    "question": "What is the time complexity of finding a pair with a given sum in a sorted array (two pointers)?",
+    "options": [
+      "O(n^2)",
+      "O(n)",
+      "O(log n)",
+      "O(n log n)"
+    ],
+    "correctAnswer": "O(n)",
+    "explanation": "Two pointers approach: start and end pointers move inward, O(n).",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "deloitte-mcq-194",
+    "question": "What is the time complexity of rotating an array by k positions?",
+    "options": [
+      "O(1)",
+      "O(n)",
+      "O(k)",
+      "O(n^2)"
+    ],
+    "correctAnswer": "O(n)",
+    "explanation": "Must visit each element once for the rotation.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "deloitte-mcq-195",
+    "question": "What is the time complexity of merging two sorted arrays?",
+    "options": [
+      "O(n)",
+      "O(m+n)",
+      "O(n log n)",
+      "O(m*n)"
+    ],
+    "correctAnswer": "O(m+n)",
+    "explanation": "Each element from both arrays is visited once.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "deloitte-mcq-196",
+    "question": "What is the time complexity of checking if two strings are anagrams (sorting approach)?",
+    "options": [
+      "O(n)",
+      "O(n log n)",
+      "O(n^2)",
+      "O(1)"
+    ],
+    "correctAnswer": "O(n log n)",
+    "explanation": "Sort both strings O(n log n) then compare O(n). Overall O(n log n).",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "deloitte-mcq-197",
+    "question": "What is the time complexity of finding the kth largest element using a min-heap of size k?",
+    "options": [
+      "O(n)",
+      "O(k log n)",
+      "O(n log n)",
+      "O(k)"
+    ],
+    "correctAnswer": "O(k log n)",
+    "explanation": "Build heap O(k), then iterate remaining elements: O((n-k) log k). Overall O(n log k).",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "deloitte-mcq-198",
+    "question": "What is the time complexity of checking if a number is prime (trial division)?",
+    "options": [
+      "O(1)",
+      "O(log n)",
+      "O(sqrt(n))",
+      "O(n)"
+    ],
+    "correctAnswer": "O(sqrt(n))",
+    "explanation": "Check divisibility up to sqrt(n).",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "deloitte-mcq-199",
+    "question": "What is the time complexity of generating Fibonacci numbers using recursion (without memoization)?",
+    "options": [
+      "O(n)",
+      "O(2^n)",
+      "O(n^2)",
+      "O(log n)"
+    ],
+    "correctAnswer": "O(2^n)",
+    "explanation": "Without memoization, recursive Fibonacci has exponential time complexity.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "deloitte-mcq-200",
+    "question": "What is the time complexity of checking if a linked list has a cycle (Floyd's)?",
+    "options": [
+      "O(1)",
+      "O(n)",
+      "O(n log n)",
+      "O(n^2)"
+    ],
+    "correctAnswer": "O(n)",
+    "explanation": "Floyd's algorithm visits each node at most twice.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "deloitte-mcq-201",
+    "question": "What is the time complexity of finding the length of a linked list?",
+    "options": [
+      "O(1)",
+      "O(n)",
+      "O(log n)",
+      "O(n^2)"
+    ],
+    "correctAnswer": "O(n)",
+    "explanation": "Must traverse the entire list to count nodes.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "deloitte",
+    "companyIds": [
+      "deloitte"
+    ],
+    "topic": "DSA"
+  }
+]

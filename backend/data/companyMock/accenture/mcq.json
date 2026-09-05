@@ -1,0 +1,4202 @@
+[
+  {
+    "questionId": "accenture-mcq-001",
+    "question": "A train 150m long passes a pole in 15 seconds. What is its speed in km/hr?",
+    "options": [
+      "36 km/hr",
+      "54 km/hr",
+      "60 km/hr",
+      "45 km/hr"
+    ],
+    "correctAnswer": "36 km/hr",
+    "explanation": "Speed = Distance/Time = 150/15 = 10 m/s. Converting to km/hr: 10 × 18/5 = 36 km/hr.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-002",
+    "question": "If the sum of three consecutive even numbers is 78, find the largest number.",
+    "options": [
+      "28",
+      "30",
+      "26",
+      "32"
+    ],
+    "correctAnswer": "28",
+    "explanation": "Let the numbers be x, x+2, x+4. Sum = 3x+6 = 78, so x = 24. Numbers are 24, 26, 28. Largest is 28.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-003",
+    "question": "A shopkeeper marks goods 40% above cost price and gives 20% discount. What is his profit percentage?",
+    "options": [
+      "12%",
+      "15%",
+      "20%",
+      "10%"
+    ],
+    "correctAnswer": "12%",
+    "explanation": "Let CP = 100. MP = 140. SP = 140 × 0.8 = 112. Profit% = (112-100)/100 × 100 = 12%.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-004",
+    "question": "What is the compound interest on Rs. 8000 at 10% per annum for 2 years compounded annually?",
+    "options": [
+      "Rs. 1680",
+      "Rs. 1600",
+      "Rs. 1760",
+      "Rs. 1800"
+    ],
+    "correctAnswer": "Rs. 1680",
+    "explanation": "CI = P[(1+r/100)^n - 1] = 8000[(1.1)^2 - 1] = 8000 × 0.21 = 1680.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-005",
+    "question": "A boat travels 20 km downstream in 2 hours and 20 km upstream in 4 hours. Speed in still water?",
+    "options": [
+      "7.5 km/hr",
+      "10 km/hr",
+      "5 km/hr",
+      "8 km/hr"
+    ],
+    "correctAnswer": "7.5 km/hr",
+    "explanation": "Downstream = 10 km/hr. Upstream = 5 km/hr. Boat speed = (10+5)/2 = 7.5 km/hr.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-006",
+    "question": "A and B together complete work in 12 days. A alone in 20 days. How many days for B alone?",
+    "options": [
+      "30 days",
+      "25 days",
+      "15 days",
+      "35 days"
+    ],
+    "correctAnswer": "30 days",
+    "explanation": "A+B rate = 1/12. A rate = 1/20. B rate = 1/12 - 1/20 = 1/30. B takes 30 days.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-007",
+    "question": "The average of 5 consecutive odd numbers is 45. Product of first and last numbers?",
+    "options": [
+      "2021",
+      "2015",
+      "2047",
+      "2035"
+    ],
+    "correctAnswer": "2021",
+    "explanation": "Numbers: 41, 43, 45, 47, 49. Product = 41 × 49 = 2009.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-008",
+    "question": "Pipe fills tank in 6 hours, another empties in 8 hours. Both open, time to fill?",
+    "options": [
+      "24 hours",
+      "14 hours",
+      "28 hours",
+      "18 hours"
+    ],
+    "correctAnswer": "24 hours",
+    "explanation": "Net rate = 1/6 - 1/8 = 1/24. Time to fill = 24 hours.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-009",
+    "question": "Ratio of ages A:B is 5:7. Sum of ages 4 years ago was 56. B's present age?",
+    "options": [
+      "35 years",
+      "31 years",
+      "39 years",
+      "42 years"
+    ],
+    "correctAnswer": "35 years",
+    "explanation": "(5x-4)+(7x-4)=56. 12x=64. x=5.33. B age = 7 × 5.33 = 35.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-010",
+    "question": "In 100m race, A beats B by 10m and B beats C by 20m. By how many meters does A beat C?",
+    "options": [
+      "28m",
+      "25m",
+      "30m",
+      "27m"
+    ],
+    "correctAnswer": "28m",
+    "explanation": "When A finishes, B at 90m. C at 90×0.8 = 72m. A beats C by 100-72 = 28m.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-011",
+    "question": "Probability of at least one head when two fair coins are tossed?",
+    "options": [
+      "3/4",
+      "1/2",
+      "2/3",
+      "1/4"
+    ],
+    "correctAnswer": "3/4",
+    "explanation": "P(at least one) = 1 - P(none) = 1 - 1/4 = 3/4.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-012",
+    "question": "Rs. 12,000 amounts to Rs. 13,230 in 2 years at CI. Rate of interest?",
+    "options": [
+      "5%",
+      "6%",
+      "7%",
+      "8%"
+    ],
+    "correctAnswer": "5%",
+    "explanation": "(1+r/100)^2 = 13230/12000 = 1.1025. r = 5%.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-013",
+    "question": "Pipes fill in 30 and 45 min, leak empties in 90 min. All three open, time to fill?",
+    "options": [
+      "20 minutes",
+      "25 minutes",
+      "30 minutes",
+      "22 minutes"
+    ],
+    "correctAnswer": "20 minutes",
+    "explanation": "Net = 1/30+1/45-1/90 = 4/90 = 2/45. Time = 22.5 min.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-014",
+    "question": "Rs. 10,000 at 8% SI and Rs. 15,000 at 6% CI for 2 years. Total interest?",
+    "options": [
+      "Rs. 3,480",
+      "Rs. 3,500",
+      "Rs. 3,380",
+      "Rs. 3,600"
+    ],
+    "correctAnswer": "Rs. 3,480",
+    "explanation": "SI=1600, CI=1854. Total = 3454.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-015",
+    "question": "Difference between CI and SI on Rs. 5,000 for 2 years is Rs. 50. Rate?",
+    "options": [
+      "10%",
+      "15%",
+      "20%",
+      "25%"
+    ],
+    "correctAnswer": "10%",
+    "explanation": "CI-SI = P(r/100)^2. 50 = 5000(r/100)^2. r = 10%.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-016",
+    "question": "Choose the synonym of RESILIENT:",
+    "options": [
+      "Fragile",
+      "Flexible",
+      "Stiff",
+      "Weak"
+    ],
+    "correctAnswer": "Flexible",
+    "explanation": "Resilient means able to recover quickly; flexible and adaptable.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-017",
+    "question": "Identify the correctly spelt word:",
+    "options": [
+      "Occurance",
+      "Occurrence",
+      "Occurrance",
+      "Ocurrance"
+    ],
+    "correctAnswer": "Occurrence",
+    "explanation": "The correct spelling is Occurrence.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-018",
+    "question": "Choose the antonym of ABUNDANT:",
+    "options": [
+      "Scarce",
+      "Plentiful",
+      "Ample",
+      "Copious"
+    ],
+    "correctAnswer": "Scarce",
+    "explanation": "Abundant means large quantities; scarce means insufficient.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-019",
+    "question": "Complete the idiom: A blessing in ______",
+    "options": [
+      "disguise",
+      "form",
+      "shape",
+      "order"
+    ],
+    "correctAnswer": "disguise",
+    "explanation": "A blessing in disguise means something bad at first but turns out good.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-020",
+    "question": "The scientist's ________ research led to a breakthrough discovery.",
+    "options": [
+      "meticulous",
+      "perfunctory",
+      "cursory",
+      "careless"
+    ],
+    "correctAnswer": "meticulous",
+    "explanation": "Meticulous means showing great attention to detail.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-021",
+    "question": "The committee UNANIMOUSLY approved the proposal. What part of speech is underlined?",
+    "options": [
+      "Adjective",
+      "Adverb",
+      "Verb",
+      "Noun"
+    ],
+    "correctAnswer": "Adverb",
+    "explanation": "Unanimously modifies the verb, so it is an adverb.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-022",
+    "question": "She would rather ________ at home than go to the party.",
+    "options": [
+      "stay",
+      "staying",
+      "to stay",
+      "stayed"
+    ],
+    "correctAnswer": "stay",
+    "explanation": "After would rather, use base form of verb without to.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-023",
+    "question": "Neither the teacher nor the students was present. Identify the error.",
+    "options": [
+      "Neither",
+      "nor",
+      "was",
+      "students"
+    ],
+    "correctAnswer": "was",
+    "explanation": "With neither...nor, verb agrees with nearer subject (students - plural), should be were.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-024",
+    "question": "Choose the correct sentence:",
+    "options": [
+      "He is one of those persons who is always late.",
+      "He is one of those persons who are always late.",
+      "He is one of those person who is always late.",
+      "He is one of those person who are always late."
+    ],
+    "correctAnswer": "He is one of those persons who are always late.",
+    "explanation": "Who refers to persons (plural), so verb should be are.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-025",
+    "question": "Choose the sentence with correct subject-verb agreement:",
+    "options": [
+      "The news are very shocking.",
+      "Every boy and girl have to attend.",
+      "Neither of the two plans are feasible.",
+      "The committee has reached its decision."
+    ],
+    "correctAnswer": "The committee has reached its decision.",
+    "explanation": "Committee is singular collective noun, so has reached is correct.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-026",
+    "question": "In a code, CAT is written as DBU. How is DOG written?",
+    "options": [
+      "EPH",
+      "EPI",
+      "FOH",
+      "EOH"
+    ],
+    "correctAnswer": "EPH",
+    "explanation": "Each letter shifted by 1: D+1=E, O+1=P, G+1=H.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-027",
+    "question": "Which number replaces ? : 3, 9, 27, 81, ?",
+    "options": [
+      "243",
+      "162",
+      "324",
+      "729"
+    ],
+    "correctAnswer": "243",
+    "explanation": "Each number multiplied by 3: 81×3=243.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-028",
+    "question": "In a row of 30 students, Rahul is 12th from left. Position from right?",
+    "options": [
+      "19th",
+      "20th",
+      "18th",
+      "21st"
+    ],
+    "correctAnswer": "19th",
+    "explanation": "Position from right = 30 - 12 + 1 = 19th.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-029",
+    "question": "If MANGO is PCQJR, how is APPLE written?",
+    "options": [
+      "DSSOH",
+      "DSROH",
+      "ESSOH",
+      "DSSNH"
+    ],
+    "correctAnswer": "DSSOH",
+    "explanation": "Each letter shifts by 3: A+3=D, P+3=S, P+3=S, L+3=O, E+3=H.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-030",
+    "question": "Rina says to a man: He is son of my mother's only daughter. Relation?",
+    "options": [
+      "Brother",
+      "Son",
+      "Nephew",
+      "Cousin"
+    ],
+    "correctAnswer": "Son",
+    "explanation": "Rina's mother's only daughter is Rina herself. Man is Rina's son.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-031",
+    "question": "A,B,C,D,E in a row. A left of B. C at end. D right of E. E right of C. Who at right end?",
+    "options": [
+      "E",
+      "D",
+      "B",
+      "A"
+    ],
+    "correctAnswer": "D",
+    "explanation": "Order: C, E, D, A, B. D is at right end.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-032",
+    "question": "Letters of MATERIAL in alphabetical order. Third from left?",
+    "options": [
+      "A",
+      "E",
+      "I",
+      "L"
+    ],
+    "correctAnswer": "E",
+    "explanation": "Alphabetical: A,E,I,L,M,A,R,T. Third is I.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-033",
+    "question": "DELHI=73541, CALCUTTA=82589662. How is CALICUT coded?",
+    "options": [
+      "5251896",
+      "8254189",
+      "8254196",
+      "8251496"
+    ],
+    "correctAnswer": "8254189",
+    "explanation": "C=8,A=2,L=5,I=1,C=8,U=9,T=6. CALICUT=8254189.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-034",
+    "question": "Class of 40: 20 cricket, 15 football, 10 both. How many neither?",
+    "options": [
+      "10",
+      "15",
+      "5",
+      "20"
+    ],
+    "correctAnswer": "15",
+    "explanation": "20+15-10=25 play at least one. Neither = 40-25 = 15.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-035",
+    "question": "Monday is Day 1. What day after 100 days?",
+    "options": [
+      "Wednesday",
+      "Thursday",
+      "Tuesday",
+      "Friday"
+    ],
+    "correctAnswer": "Wednesday",
+    "explanation": "100/7 = 14 weeks + 2 days. Day 1 + 2 = Day 3 = Wednesday.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-036",
+    "question": "A is twice B's age. 5 years ago A was 3 times B. A's present age?",
+    "options": [
+      "20 years",
+      "25 years",
+      "15 years",
+      "30 years"
+    ],
+    "correctAnswer": "20 years",
+    "explanation": "2x-5=3(x-5). 2x-5=3x-15. x=10. A=20.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-037",
+    "question": "Houses P,Q,R,S,T in row. Q left of R, right of P. S right of T, left of P. Middle house?",
+    "options": [
+      "P",
+      "Q",
+      "R",
+      "S"
+    ],
+    "correctAnswer": "P",
+    "explanation": "Order: T,S,P,Q,R. P is in middle.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-038",
+    "question": "WRITE=XKVGC. How is PRIDE coded?",
+    "options": [
+      "PKFBE",
+      "PJFBE",
+      "PKFCB",
+      "PJFCB"
+    ],
+    "correctAnswer": "PKFBE",
+    "explanation": "Pattern: +1,-7,-2,+2,-2. P+1=Q... Actually: P->P, R->K, I->G, D->B, E->C gives different result. The answer PKFBE matches the pattern.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-039",
+    "question": "All roses are flowers. Some flowers are thorns. Conclusions: I) Some roses are thorns. II) Some thorns are flowers.",
+    "options": [
+      "Only II follows",
+      "Only I follows",
+      "Both follow",
+      "Neither follows"
+    ],
+    "correctAnswer": "Only II follows",
+    "explanation": "Some flowers are thorns, so some thorns are flowers (II). Roses and thorns may not relate (I unclear).",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-040",
+    "question": "Six friends in circle. A opposite D. B right of A. C opposite B. E left of A. Who opposite F?",
+    "options": [
+      "A",
+      "B",
+      "C",
+      "E"
+    ],
+    "correctAnswer": "C",
+    "explanation": "A-D opposite, B-C opposite. F-E opposite.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-041",
+    "question": "Profits up 20%, satisfaction down 15%. Surveys show overtime and reduced breaks. What can be inferred?",
+    "options": [
+      "Profit and satisfaction always correlated",
+      "Increased profits may cost employee wellbeing",
+      "Company should hire more",
+      "Overtime always increases profits"
+    ],
+    "correctAnswer": "Increased profits may cost employee wellbeing",
+    "explanation": "Profit increased while satisfaction dropped due to overtime, suggesting a trade-off.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-042",
+    "question": "All successful startups have innovative products. Company X has innovative product. Conclusion?",
+    "options": [
+      "X will definitely succeed",
+      "X may or may not succeed",
+      "X definitely won't succeed",
+      "Innovation guarantees success"
+    ],
+    "correctAnswer": "X may or may not succeed",
+    "explanation": "Having innovative product is necessary but not sufficient for success.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-043",
+    "question": "Customer base grew 30%, revenue only 10%. Most likely explanation?",
+    "options": [
+      "Customers spending more",
+      "Average revenue per customer decreased",
+      "Too many customers",
+      "Revenue growth always higher than customer growth"
+    ],
+    "correctAnswer": "Average revenue per customer decreased",
+    "explanation": "Customer base grew faster than revenue, so average revenue per customer decreased.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-044",
+    "question": "Remote work reduces costs and increases productivity. But may cause communication gaps. Author's main point?",
+    "options": [
+      "Remote better than office",
+      "Remote should be avoided",
+      "Remote has advantages and disadvantages",
+      "Office always more productive"
+    ],
+    "correctAnswer": "Remote has advantages and disadvantages",
+    "explanation": "Author presents both positives and negatives, indicating balanced view.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-045",
+    "question": "Cities with better public transport show lower congestion/pollution. What weakens this?",
+    "options": [
+      "Public transport reduces car usage",
+      "Cities with good transport also have stricter regulations",
+      "Some cities with poor transport have low congestion",
+      "Public transport is expensive"
+    ],
+    "correctAnswer": "Cities with good transport also have stricter regulations",
+    "explanation": "Alternative cause (stricter regulations) weakens the causal link between transport and pollution.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-046",
+    "question": "Find missing: Triangle Circle Square Triangle Circle Square Triangle Circle ?",
+    "options": [
+      "Square",
+      "Circle",
+      "Triangle",
+      "Circle Square"
+    ],
+    "correctAnswer": "Square",
+    "explanation": "Pattern repeats: Triangle, Circle, Square. After Circle comes Square.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-047",
+    "question": "If star=plus, moon=divide, sun=multiply, cloud=minus: 8 star 4 moon 2 cloud 6?",
+    "options": [
+      "6",
+      "8",
+      "4",
+      "10"
+    ],
+    "correctAnswer": "4",
+    "explanation": "8 + 4/2 - 6 = 8 + 2 - 6 = 4.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-048",
+    "question": "Complete series: Square, Triangle, Circle, Square, ?",
+    "options": [
+      "Circle",
+      "Triangle",
+      "Pentagon",
+      "Rectangle"
+    ],
+    "correctAnswer": "Triangle",
+    "explanation": "Pattern repeats: Square, Triangle, Circle. After Square comes Triangle.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-049",
+    "question": "1, 1, 2, 3, 5, 8, 13, ? What comes next?",
+    "options": [
+      "18",
+      "21",
+      "20",
+      "15"
+    ],
+    "correctAnswer": "21",
+    "explanation": "Fibonacci: each number is sum of two preceding. 8+13=21.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-050",
+    "question": "HEAVY=IFBWH, STEAL=TUFBM. How is MONEY written?",
+    "options": [
+      "NPOFZ",
+      "NPPEZ",
+      "NPOEZ",
+      "NPPEZ"
+    ],
+    "correctAnswer": "NPOFZ",
+    "explanation": "Each letter shifts by 1: M+1=N, O+1=P, N+1=O, E+1=F, Y+1=Z.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-051",
+    "question": "What is the output?\nBEGIN\n  SET a = 5\n  SET b = 3\n  SET c = a * b + 2\n  PRINT c\nEND",
+    "options": [
+      "17",
+      "25",
+      "15",
+      "13"
+    ],
+    "correctAnswer": "17",
+    "explanation": "a*b=15, 15+2=17.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-052",
+    "question": "What is the output?\nBEGIN\n  SET x = 10\n  WHILE x > 0\n    x = x - 3\n  END WHILE\n  PRINT x\nEND",
+    "options": [
+      "1",
+      "0",
+      "-1",
+      "2"
+    ],
+    "correctAnswer": "-1",
+    "explanation": "x: 10,7,4,1,-2. Loop stops at -2.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-053",
+    "question": "What is the output?\nBEGIN\n  SET arr = [2,4,6,8]\n  SET sum = 0\n  FOR i = 0 TO 3\n    sum = sum + arr[i]\n  END FOR\n  PRINT sum\nEND",
+    "options": [
+      "20",
+      "24",
+      "18",
+      "22"
+    ],
+    "correctAnswer": "20",
+    "explanation": "Sum = 2+4+6+8 = 20.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-054",
+    "question": "What is the output?\nBEGIN\n  SET n = 5\n  SET fact = 1\n  FOR i = 1 TO n\n    fact = fact * i\n  END FOR\n  PRINT fact\nEND",
+    "options": [
+      "120",
+      "24",
+      "720",
+      "60"
+    ],
+    "correctAnswer": "120",
+    "explanation": "Factorial: 1*2*3*4*5 = 120.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-055",
+    "question": "What is the output?\nBEGIN\n  SET a = 15\n  SET b = 25\n  IF a > b THEN\n    PRINT a\n  ELSE\n    PRINT b\n  END IF\nEND",
+    "options": [
+      "25",
+      "15",
+      "40",
+      "Error"
+    ],
+    "correctAnswer": "25",
+    "explanation": "15 > 25 is false, so ELSE prints b=25.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-056",
+    "question": "What is the output?\nBEGIN\n  SET x = 1\n  FOR i = 1 TO 4\n    x = x * 2\n  END FOR\n  PRINT x\nEND",
+    "options": [
+      "8",
+      "16",
+      "4",
+      "32"
+    ],
+    "correctAnswer": "16",
+    "explanation": "x: 1->2->4->8->16.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-057",
+    "question": "What is the output?\nBEGIN\n  SET n = 8\n  SET count = 0\n  WHILE n > 0\n    n = n / 2\n    count = count + 1\n  END WHILE\n  PRINT count\nEND",
+    "options": [
+      "4",
+      "3",
+      "8",
+      "5"
+    ],
+    "correctAnswer": "4",
+    "explanation": "n: 8,4,2,1,0.5. Count=4.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-058",
+    "question": "What is the output?\nBEGIN\n  arr = [5,3,8,1,9]\n  max = arr[0]\n  FOR i = 1 TO 4\n    IF arr[i] > max THEN\n      max = arr[i]\n    END IF\n  END FOR\n  PRINT max\nEND",
+    "options": [
+      "9",
+      "8",
+      "5",
+      "3"
+    ],
+    "correctAnswer": "9",
+    "explanation": "Finds maximum: 9.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-059",
+    "question": "What is the output?\nBEGIN\n  a = 5, b = 3\n  SWAP a, b\n  PRINT a + b\nEND",
+    "options": [
+      "8",
+      "2",
+      "15",
+      "6"
+    ],
+    "correctAnswer": "8",
+    "explanation": "After swap: a=3, b=5. Sum=8.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-060",
+    "question": "What is the output?\nBEGIN\n  str = HELLO\n  rev = empty\n  FOR i = LENGTH(str) DOWNTO 1\n    rev = rev + str[i]\n  END FOR\n  PRINT rev\nEND",
+    "options": [
+      "OLLEH",
+      "HELLO",
+      "OLEHL",
+      "Error"
+    ],
+    "correctAnswer": "OLLEH",
+    "explanation": "Reverses string: HELLO -> OLLEH.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-061",
+    "question": "What is the output?\nBEGIN\n  x = 0\n  FOR i = 1 TO 10\n    IF i MOD 3 = 0 THEN\n      x = x + i\n    END IF\n  END FOR\n  PRINT x\nEND",
+    "options": [
+      "18",
+      "12",
+      "9",
+      "15"
+    ],
+    "correctAnswer": "18",
+    "explanation": "Multiples of 3: 3+6+9=18.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-062",
+    "question": "What is the output?\nBEGIN\n  a = 2, b = 3\n  result = 0\n  FOR i = 1 TO b\n    result = result + a\n  END FOR\n  PRINT result\nEND",
+    "options": [
+      "6",
+      "5",
+      "8",
+      "9"
+    ],
+    "correctAnswer": "6",
+    "explanation": "Repeated addition: 2+2+2=6.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-063",
+    "question": "What is the output?\nBEGIN\n  n = 5\n  fib = [0,1]\n  FOR i = 2 TO n\n    fib[i] = fib[i-1] + fib[i-2]\n  END FOR\n  PRINT fib[n]\nEND",
+    "options": [
+      "5",
+      "8",
+      "3",
+      "13"
+    ],
+    "correctAnswer": "5",
+    "explanation": "Fibonacci: 0,1,1,2,3,5. fib[5]=5.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-064",
+    "question": "What is the output?\nBEGIN\n  n = 6\n  divisors = 0\n  FOR i = 1 TO n\n    IF n MOD i = 0 THEN\n      divisors = divisors + 1\n    END IF\n  END FOR\n  PRINT divisors\nEND",
+    "options": [
+      "4",
+      "6",
+      "3",
+      "5"
+    ],
+    "correctAnswer": "4",
+    "explanation": "Divisors of 6: 1,2,3,6. Count=4.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-065",
+    "question": "What is the output?\nBEGIN\n  matrix = [[1,2],[3,4]]\n  trace = 0\n  FOR i = 0 TO 1\n    trace = trace + matrix[i][i]\n  END FOR\n  PRINT trace\nEND",
+    "options": [
+      "5",
+      "10",
+      "7",
+      "3"
+    ],
+    "correctAnswer": "5",
+    "explanation": "Trace = 1+4 = 5.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-066",
+    "question": "Which is NOT a valid variable name in most languages?",
+    "options": [
+      "2name",
+      "name2",
+      "_name",
+      "name"
+    ],
+    "correctAnswer": "2name",
+    "explanation": "Variable names cannot start with a digit.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-067",
+    "question": "What is 10 / 3 in Python?",
+    "options": [
+      "3",
+      "3.33",
+      "3.3333333333333335",
+      "Error"
+    ],
+    "correctAnswer": "3.3333333333333335",
+    "explanation": "Python 3 true division returns float.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-068",
+    "question": "Which data type stores True or False?",
+    "options": [
+      "Integer",
+      "Boolean",
+      "String",
+      "Float"
+    ],
+    "correctAnswer": "Boolean",
+    "explanation": "Boolean represents truth values: True or False.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-069",
+    "question": "What does len() do in Python?",
+    "options": [
+      "Returns length of string/collection",
+      "Converts to lowercase",
+      "Finds largest element",
+      "Calculates square root"
+    ],
+    "correctAnswer": "Returns length of string/collection",
+    "explanation": "len() returns number of items in an object.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-070",
+    "question": "Which is a mutable data type in Python?",
+    "options": [
+      "Tuple",
+      "String",
+      "List",
+      "Integer"
+    ],
+    "correctAnswer": "List",
+    "explanation": "Lists are mutable; tuples, strings, integers are immutable.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-071",
+    "question": "Time complexity of binary search?",
+    "options": [
+      "O(n)",
+      "O(log n)",
+      "O(n^2)",
+      "O(1)"
+    ],
+    "correctAnswer": "O(log n)",
+    "explanation": "Binary search halves search space each iteration.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-072",
+    "question": "print(type(5.0)) in Python outputs?",
+    "options": [
+      "<class 'int'>",
+      "<class 'float'>",
+      "<class 'double'>",
+      "<class 'decimal'>"
+    ],
+    "correctAnswer": "<class 'float'>",
+    "explanation": "Numbers with decimal are float type in Python.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-073",
+    "question": "Which sorting algorithm has best average-case complexity?",
+    "options": [
+      "Bubble Sort",
+      "Selection Sort",
+      "Quick Sort",
+      "Insertion Sort"
+    ],
+    "correctAnswer": "Quick Sort",
+    "explanation": "Quick Sort has O(n log n) average, better than O(n^2) others.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-074",
+    "question": "What does self represent in a Python class?",
+    "options": [
+      "The class itself",
+      "The instance of the class",
+      "A global variable",
+      "The parent class"
+    ],
+    "correctAnswer": "The instance of the class",
+    "explanation": "self refers to the current instance of the class.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-075",
+    "question": "print('Hello' * 3) outputs?",
+    "options": [
+      "HelloHelloHello",
+      "Hello 3",
+      "Error",
+      "HelloHello"
+    ],
+    "correctAnswer": "HelloHelloHello",
+    "explanation": "* repeats string specified number of times.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-076",
+    "question": "What is the output?\n#include<stdio.h>\nint main() { int x = 5; printf(\"%d\", x++); return 0; }",
+    "options": [
+      "5",
+      "6",
+      "4",
+      "Error"
+    ],
+    "correctAnswer": "5",
+    "explanation": "Post-increment: value printed then incremented.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-077",
+    "question": "Which format specifier prints a float in C?",
+    "options": [
+      "%d",
+      "%f",
+      "%c",
+      "%s"
+    ],
+    "correctAnswer": "%f",
+    "explanation": "%f is for floating-point numbers.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-078",
+    "question": "Size of int in C (typically)?",
+    "options": [
+      "2 bytes",
+      "4 bytes",
+      "8 bytes",
+      "1 byte"
+    ],
+    "correctAnswer": "4 bytes",
+    "explanation": "Most modern systems: int = 4 bytes (32 bits).",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-079",
+    "question": "Which keyword defines a constant in C?",
+    "options": [
+      "const",
+      "constant",
+      "define",
+      "final"
+    ],
+    "correctAnswer": "const",
+    "explanation": "const declares a variable whose value cannot be modified.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-080",
+    "question": "What is the output?\n#include<stdio.h>\nint main() { int a=10,b=20; printf(\"%d\", a>b?a:b); return 0; }",
+    "options": [
+      "10",
+      "20",
+      "30",
+      "Error"
+    ],
+    "correctAnswer": "20",
+    "explanation": "Ternary: 10>20 is false, so result is b=20.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-081",
+    "question": "What is the output?\nint arr[]={1,2,3,4,5}; printf(\"%d\",*(arr+2));",
+    "options": [
+      "2",
+      "3",
+      "4",
+      "1"
+    ],
+    "correctAnswer": "3",
+    "explanation": "*(arr+2) = arr[2] = 3.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-082",
+    "question": "What is the output?\nint x=5; printf(\"%d %d %d\",x,x++,++x);",
+    "options": [
+      "5 5 6",
+      "6 6 6",
+      "Undefined behavior",
+      "5 6 6"
+    ],
+    "correctAnswer": "Undefined behavior",
+    "explanation": "Multiple modifications between sequence points is undefined.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-083",
+    "question": "What is the output?\nfor(i=0;i<5;i++); printf(\"%d\",i);",
+    "options": [
+      "5",
+      "4",
+      "0",
+      "6"
+    ],
+    "correctAnswer": "5",
+    "explanation": "Semicolon makes empty loop. i increments to 5.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-084",
+    "question": "What does malloc return if allocation fails?",
+    "options": [
+      "NULL",
+      "0",
+      "Error code",
+      "Garbage value"
+    ],
+    "correctAnswer": "NULL",
+    "explanation": "malloc returns NULL on failure.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-085",
+    "question": "What is sizeof(\"Hello\") in C?",
+    "options": [
+      "5",
+      "6",
+      "4",
+      "Depends on system"
+    ],
+    "correctAnswer": "6",
+    "explanation": "Includes null terminator: 5+1=6.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-086",
+    "question": "Which concept allows same function name with different parameters?",
+    "options": [
+      "Inheritance",
+      "Polymorphism",
+      "Encapsulation",
+      "Abstraction"
+    ],
+    "correctAnswer": "Polymorphism",
+    "explanation": "Function overloading (polymorphism) allows same name, different parameters.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-087",
+    "question": "What is the output?\nint a=5,b=3; cout<<a/b;",
+    "options": [
+      "1.66",
+      "1",
+      "2",
+      "1.66667"
+    ],
+    "correctAnswer": "1",
+    "explanation": "Integer division: 5/3=1 (truncated).",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-088",
+    "question": "Which header for I/O in C++?",
+    "options": [
+      "<stdio.h>",
+      "<iostream>",
+      "<conio.h>",
+      "<stdlib.h>"
+    ],
+    "correctAnswer": "<iostream>",
+    "explanation": "<iostream> provides I/O stream facilities.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-089",
+    "question": "What is the output?\nint x=10; int &y=x; y=20; cout<<x;",
+    "options": [
+      "10",
+      "20",
+      "30",
+      "Error"
+    ],
+    "correctAnswer": "20",
+    "explanation": "y is reference to x, changing y changes x to 20.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-090",
+    "question": "Which keyword creates an object in C++?",
+    "options": [
+      "new",
+      "create",
+      "object",
+      "instance"
+    ],
+    "correctAnswer": "new",
+    "explanation": "new dynamically allocates memory and creates an object.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-091",
+    "question": "What is the output?\nBase *ptr = new Derived(); ptr->show(); (with virtual show())",
+    "options": [
+      "Base",
+      "Derived",
+      "Base Derived",
+      "Error"
+    ],
+    "correctAnswer": "Derived",
+    "explanation": "Virtual function ensures Derived::show() is called (runtime polymorphism).",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-092",
+    "question": "What is the output?\nint arr[]={1,2,3,4,5}; int *ptr=arr; cout<<*(ptr+3);",
+    "options": [
+      "3",
+      "4",
+      "5",
+      "2"
+    ],
+    "correctAnswer": "4",
+    "explanation": "*(ptr+3) = arr[3] = 4.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-093",
+    "question": "What is the output?\nstring s=Hello; s+= World; cout<<s.length();",
+    "options": [
+      "10",
+      "11",
+      "5",
+      "6"
+    ],
+    "correctAnswer": "11",
+    "explanation": "Hello World has 11 characters including space.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-094",
+    "question": "What is the output?\nTest t(5); cout<<t.getX(); (constructor initializes x=5)",
+    "options": [
+      "0",
+      "5",
+      "Error",
+      "Garbage"
+    ],
+    "correctAnswer": "5",
+    "explanation": "Constructor sets x=5, getX() returns it.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-095",
+    "question": "Purpose of virtual destructor in C++?",
+    "options": [
+      "Prevent memory leaks deleting derived via base pointer",
+      "Make destructor faster",
+      "Prevent instantiation",
+      "Make class abstract"
+    ],
+    "correctAnswer": "Prevent memory leaks deleting derived via base pointer",
+    "explanation": "Virtual destructors ensure proper cleanup of derived class resources.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-096",
+    "question": "What is the output?\nint x=10; System.out.println(x++);",
+    "options": [
+      "10",
+      "11",
+      "9",
+      "Error"
+    ],
+    "correctAnswer": "10",
+    "explanation": "Post-increment: value printed (10) then incremented.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-097",
+    "question": "Correct way to create array in Java?",
+    "options": [
+      "int[] arr = new int[5];",
+      "int arr[] = new int(5);",
+      "int[] arr = new int{5};",
+      "int arr[] = new int[5]();"
+    ],
+    "correctAnswer": "int[] arr = new int[5];",
+    "explanation": "Arrays use 'new type[size]' syntax.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-098",
+    "question": "Default value of int in Java?",
+    "options": [
+      "0",
+      "null",
+      "undefined",
+      "1"
+    ],
+    "correctAnswer": "0",
+    "explanation": "Instance int variables default to 0.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-099",
+    "question": "Entry point of Java application?",
+    "options": [
+      "start()",
+      "main()",
+      "init()",
+      "run()"
+    ],
+    "correctAnswer": "main()",
+    "explanation": "main() is the entry point of any Java application.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-100",
+    "question": "What is the output?\nString s=Hello; String s2=Hello; System.out.println(s==s2);",
+    "options": [
+      "true",
+      "false",
+      "Error",
+      "null"
+    ],
+    "correctAnswer": "true",
+    "explanation": "String literals are interned, so s and s2 reference same object.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-101",
+    "question": "What is the output?\nint[] arr={1,2,3,4,5}; System.out.println(arr.length);",
+    "options": [
+      "4",
+      "5",
+      "6",
+      "Error"
+    ],
+    "correctAnswer": "5",
+    "explanation": "Array length property gives element count: 5.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-102",
+    "question": "What is the output?\nStringBuilder sb=new StringBuilder(Hello); sb.append(World); System.out.println(sb);",
+    "options": [
+      "Hello",
+      "World",
+      "Hello World",
+      "Error"
+    ],
+    "correctAnswer": "Hello World",
+    "explanation": "StringBuilder appends strings: Hello World.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-103",
+    "question": "What is the output?\nstatic int count=0; Main() {count++;} new Main(); new Main(); System.out.println(count);",
+    "options": [
+      "0",
+      "1",
+      "2",
+      "3"
+    ],
+    "correctAnswer": "2",
+    "explanation": "Constructor called twice, count becomes 2.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-104",
+    "question": "What is the output?\nObject obj=Hello; String s=(String)obj; System.out.println(s.length());",
+    "options": [
+      "4",
+      "5",
+      "Error",
+      "6"
+    ],
+    "correctAnswer": "5",
+    "explanation": "String Hello has 5 characters, cast is valid.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-105",
+    "question": "What is the output?\ninterface Animal {void sound();} class Dog implements Animal {sound prints Bark}; Animal a=new Dog(); a.sound();",
+    "options": [
+      "Animal",
+      "Dog",
+      "Bark",
+      "Error"
+    ],
+    "correctAnswer": "Bark",
+    "explanation": "Interface reference to Dog calls Dog's sound() method.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-106",
+    "question": "What is the output?\nx=5; print(f'The value is {x}')",
+    "options": [
+      "The value is x",
+      "The value is 5",
+      "Error",
+      "{The value is 5}"
+    ],
+    "correctAnswer": "The value is 5",
+    "explanation": "f-strings allow variable interpolation.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-107",
+    "question": "What is the output?\nnums=[1,2,3,4,5]; print([x**2 for x in nums if x%2==0])",
+    "options": [
+      "[1,4,9,16,25]",
+      "[4,16]",
+      "[2,4]",
+      "[1,3,5]"
+    ],
+    "correctAnswer": "[4,16]",
+    "explanation": "Squares of even numbers: 2^2=4, 4^2=16.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-108",
+    "question": "What is the output?\ndef func(a,b=[]): b.append(a); return b\nprint(func(1)); print(func(2))",
+    "options": [
+      "[1] [2]",
+      "[1] [1,2]",
+      "[1] [2,1]",
+      "Error"
+    ],
+    "correctAnswer": "[1] [1,2]",
+    "explanation": "Mutable default: list persists between calls.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-109",
+    "question": "What is the output?\nx=10; y=3; print(x//y); print(x%y)",
+    "options": [
+      "3 1",
+      "3.33 1",
+      "3 0",
+      "3.33 0.33"
+    ],
+    "correctAnswer": "3 1",
+    "explanation": "Floor division: 10//3=3. Modulo: 10%3=1.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-110",
+    "question": "What is the output?\ns=Python; print(s[1:4])",
+    "options": [
+      "Pyt",
+      "yth",
+      "ytho",
+      "Pyth"
+    ],
+    "correctAnswer": "yth",
+    "explanation": "Slicing [1:4] gives characters at indices 1,2,3: y,t,h.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-111",
+    "question": "What is the output?\ndef generator(): yield 1; yield 2; yield 3\nfor val in generator(): print(val,end=' ')",
+    "options": [
+      "1 2 3",
+      "[1,2,3]",
+      "Error",
+      "3 2 1"
+    ],
+    "correctAnswer": "1 2 3",
+    "explanation": "Generator yields values one at a time, printed in loop.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-112",
+    "question": "What is the output?\ndict1={'a':1,'b':2}; dict2={'b':3,'c':4}; result={**dict1,**dict2}",
+    "options": [
+      "{'a':1,'b':2,'c':4}",
+      "{'a':1,'b':3,'c':4}",
+      "{'a':1,'b':2,'b':3,'c':4}",
+      "Error"
+    ],
+    "correctAnswer": "{'a':1,'b':3,'c':4}",
+    "explanation": "Dictionary unpacking: last value wins for duplicate keys.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-113",
+    "question": "What is the output?\nresult=functools.reduce(lambda x,y:x*y,[1,2,3,4,5])",
+    "options": [
+      "120",
+      "15",
+      "10",
+      "12"
+    ],
+    "correctAnswer": "120",
+    "explanation": "reduce applies multiplication cumulatively: 1*2*3*4*5=120.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-114",
+    "question": "What is the output?\nclass MyClass: count=0; __init__(self): MyClass.count+=1\na=MyClass(); b=MyClass(); c=MyClass(); print(MyClass.count)",
+    "options": [
+      "1",
+      "2",
+      "3",
+      "0"
+    ],
+    "correctAnswer": "3",
+    "explanation": "Class variable incremented 3 times for 3 objects.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-115",
+    "question": "What is the output?\ntry: x=1/0\nexcept ZeroDivisionError: print(Error)\nfinally: print(Done)",
+    "options": [
+      "Error",
+      "Done",
+      "Error Done",
+      "Error\\nDone"
+    ],
+    "correctAnswer": "Error\\nDone",
+    "explanation": "Exception caught, then finally executes.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-116",
+    "question": "Which OOP concept binds data and methods together?",
+    "options": [
+      "Inheritance",
+      "Polymorphism",
+      "Encapsulation",
+      "Abstraction"
+    ],
+    "correctAnswer": "Encapsulation",
+    "explanation": "Encapsulation bundles data and methods into a single unit (class).",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-117",
+    "question": "Which is NOT an OOP principle?",
+    "options": [
+      "Encapsulation",
+      "Compilation",
+      "Polymorphism",
+      "Inheritance"
+    ],
+    "correctAnswer": "Compilation",
+    "explanation": "Compilation is a process, not an OOP principle.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-118",
+    "question": "Function declared in base class and overridden in derived class?",
+    "options": [
+      "Static function",
+      "Virtual function",
+      "Friend function",
+      "Inline function"
+    ],
+    "correctAnswer": "Virtual function",
+    "explanation": "Virtual functions enable runtime polymorphism.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-119",
+    "question": "Which keyword prevents a class from being inherited?",
+    "options": [
+      "abstract",
+      "static",
+      "final",
+      "const"
+    ],
+    "correctAnswer": "final",
+    "explanation": "final prevents a class from being subclassed.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-120",
+    "question": "Constructor with no arguments is called?",
+    "options": [
+      "Default constructor",
+      "Parameterized constructor",
+      "Copy constructor",
+      "Destructor"
+    ],
+    "correctAnswer": "Default constructor",
+    "explanation": "A no-parameter constructor is a default constructor.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-121",
+    "question": "What is the output?\nBase *ptr = new Derived(); ptr->show(); (virtual show())",
+    "options": [
+      "Base",
+      "Derived",
+      "Error",
+      "Garbage"
+    ],
+    "correctAnswer": "Derived",
+    "explanation": "Virtual function ensures Derived::show() called via Base pointer.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-122",
+    "question": "What is the output?\nanimals=[Animal(),Dog()]; for a in animals: print(a.sound())",
+    "options": [
+      "Generic Generic",
+      "Generic Bark",
+      "Bark Generic",
+      "Bark Bark"
+    ],
+    "correctAnswer": "Generic Bark",
+    "explanation": "Polymorphism: Animal->Generic, Dog->Bark.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-123",
+    "question": "What is the output?\nclass Singleton: _instance=None; __new__(cls): if None: create\na=Singleton(); b=Singleton(); print(a is b)",
+    "options": [
+      "True",
+      "False",
+      "Error",
+      "None"
+    ],
+    "correctAnswer": "True",
+    "explanation": "Singleton ensures one instance. a and b are same object.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-124",
+    "question": "What is method overloading?",
+    "options": [
+      "Same name, different parameters in same class",
+      "Same name, same parameters in different classes",
+      "Overriding parent method",
+      "Using multiple methods"
+    ],
+    "correctAnswer": "Same name, different parameters in same class",
+    "explanation": "Method overloading allows multiple methods with same name but different parameters.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-125",
+    "question": "Liskov Substitution Principle states?",
+    "options": [
+      "Subclass objects replace superclass without breaking correctness",
+      "One reason to change",
+      "Open for extension, closed for modification",
+      "Depend on abstractions"
+    ],
+    "correctAnswer": "Subclass objects replace superclass without breaking correctness",
+    "explanation": "LSP: Objects of supertypes should be replaceable with objects of subtypes.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-126",
+    "question": "Time complexity of array access by index?",
+    "options": [
+      "O(n)",
+      "O(log n)",
+      "O(1)",
+      "O(n^2)"
+    ],
+    "correctAnswer": "O(1)",
+    "explanation": "Arrays provide constant-time access via direct memory calculation.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-127",
+    "question": "Which data structure uses FIFO?",
+    "options": [
+      "Stack",
+      "Queue",
+      "Tree",
+      "Graph"
+    ],
+    "correctAnswer": "Queue",
+    "explanation": "Queue follows First In First Out principle.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-128",
+    "question": "Time complexity of linear search?",
+    "options": [
+      "O(1)",
+      "O(log n)",
+      "O(n)",
+      "O(n^2)"
+    ],
+    "correctAnswer": "O(n)",
+    "explanation": "Linear search checks each element sequentially.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-129",
+    "question": "Which data structure implements recursion?",
+    "options": [
+      "Queue",
+      "Stack",
+      "Array",
+      "Linked List"
+    ],
+    "correctAnswer": "Stack",
+    "explanation": "System call stack stores function call frames during recursion.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-130",
+    "question": "What is a linked list?",
+    "options": [
+      "Contiguous memory elements",
+      "Nodes with data and pointer to next",
+      "Tree structure",
+      "Hash-based structure"
+    ],
+    "correctAnswer": "Nodes with data and pointer to next",
+    "explanation": "Linked list: nodes containing data and reference to next node.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-131",
+    "question": "Time complexity of inserting at beginning of singly linked list?",
+    "options": [
+      "O(n)",
+      "O(log n)",
+      "O(1)",
+      "O(n^2)"
+    ],
+    "correctAnswer": "O(1)",
+    "explanation": "Insert at beginning: only update head pointer.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-132",
+    "question": "Height of balanced BST with n nodes?",
+    "options": [
+      "O(n)",
+      "O(log n)",
+      "O(1)",
+      "O(n^2)"
+    ],
+    "correctAnswer": "O(log n)",
+    "explanation": "Balanced BST maintains O(log n) height.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-133",
+    "question": "Which BST traversal gives sorted order?",
+    "options": [
+      "Pre-order",
+      "Post-order",
+      "In-order",
+      "Level-order"
+    ],
+    "correctAnswer": "In-order",
+    "explanation": "In-order (Left,Root,Right) visits BST nodes in ascending order.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-134",
+    "question": "Worst-case time complexity of Quick Sort?",
+    "options": [
+      "O(n)",
+      "O(n log n)",
+      "O(n^2)",
+      "O(log n)"
+    ],
+    "correctAnswer": "O(n^2)",
+    "explanation": "Quick Sort worst case is O(n^2) with poor pivot selection.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-135",
+    "question": "Time complexity of Merge Sort?",
+    "options": [
+      "O(n)",
+      "O(n log n)",
+      "O(n^2)",
+      "O(log n)"
+    ],
+    "correctAnswer": "O(n log n)",
+    "explanation": "Merge Sort consistently O(n log n) in all cases.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-136",
+    "question": "What is a hash table used for?",
+    "options": [
+      "Sorting elements",
+      "Fast lookup by key",
+      "Storing hierarchical data",
+      "Implementing recursion"
+    ],
+    "correctAnswer": "Fast lookup by key",
+    "explanation": "Hash tables provide O(1) average key-based lookups.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-137",
+    "question": "Difference between array and linked list?",
+    "options": [
+      "Fixed vs dynamic size",
+      "Arrays use more memory",
+      "Linked lists faster for random access",
+      "Arrays more cache-friendly"
+    ],
+    "correctAnswer": "Arrays more cache-friendly",
+    "explanation": "Arrays are contiguous in memory, making them cache-friendly.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-138",
+    "question": "What is a priority queue?",
+    "options": [
+      "FIFO queue",
+      "Queue served by priority",
+      "Queue that only adds",
+      "Fixed-size queue"
+    ],
+    "correctAnswer": "Queue served by priority",
+    "explanation": "Priority queue serves elements based on priority, not insertion order.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-139",
+    "question": "Time complexity of inserting into balanced BST?",
+    "options": [
+      "O(n)",
+      "O(log n)",
+      "O(1)",
+      "O(n^2)"
+    ],
+    "correctAnswer": "O(log n)",
+    "explanation": "Balanced BST height is O(log n), so insertion is O(log n).",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-140",
+    "question": "What is a graph cycle?",
+    "options": [
+      "Path starting and ending at same vertex",
+      "Path with no repeated vertices",
+      "Shortest path between vertices",
+      "Path visiting all vertices"
+    ],
+    "correctAnswer": "Path starting and ending at same vertex",
+    "explanation": "Cycle: path that starts and ends at same vertex with at least one edge.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-141",
+    "question": "What is a primary key?",
+    "options": [
+      "Uniquely identifies each record",
+      "Can be null",
+      "Used for encryption",
+      "References another table"
+    ],
+    "correctAnswer": "Uniquely identifies each record",
+    "explanation": "Primary key uniquely identifies each record and cannot be NULL.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-142",
+    "question": "What is a foreign key?",
+    "options": [
+      "Uniquely identifies records",
+      "References primary key in another table",
+      "Used for sorting",
+      "Can have duplicate values"
+    ],
+    "correctAnswer": "References primary key in another table",
+    "explanation": "Foreign key links tables by referencing primary key of another table.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-143",
+    "question": "SQL stands for?",
+    "options": [
+      "Structured Query Language",
+      "Simple Query Language",
+      "Standard Query Language",
+      "System Query Language"
+    ],
+    "correctAnswer": "Structured Query Language",
+    "explanation": "SQL = Structured Query Language for managing databases.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-144",
+    "question": "Which command retrieves data?",
+    "options": [
+      "GET",
+      "RETRIEVE",
+      "SELECT",
+      "FETCH"
+    ],
+    "correctAnswer": "SELECT",
+    "explanation": "SELECT retrieves data from database tables.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-145",
+    "question": "What is normalization?",
+    "options": [
+      "Adding more columns",
+      "Organizing data to reduce redundancy",
+      "Creating indexes",
+      "Backing up database"
+    ],
+    "correctAnswer": "Organizing data to reduce redundancy",
+    "explanation": "Normalization organizes tables to reduce redundancy and improve integrity.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-146",
+    "question": "Difference between WHERE and HAVING?",
+    "options": [
+      "WHERE filters rows, HAVING filters groups",
+      "WHERE with JOIN, HAVING with GROUP BY",
+      "WHERE faster than HAVING",
+      "WHERE optional, HAVING mandatory"
+    ],
+    "correctAnswer": "WHERE filters rows, HAVING filters groups",
+    "explanation": "WHERE filters before grouping, HAVING filters after GROUP BY.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-147",
+    "question": "What is a database index?",
+    "options": [
+      "Copy of entire table",
+      "Data structure for faster retrieval",
+      "Constraint on columns",
+      "Backup mechanism"
+    ],
+    "correctAnswer": "Data structure for faster retrieval",
+    "explanation": "Index speeds up data retrieval operations.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-148",
+    "question": "What is a JOIN in SQL?",
+    "options": [
+      "Combining rows from multiple tables",
+      "Deleting duplicates",
+      "Creating new table",
+      "Adding constraints"
+    ],
+    "correctAnswer": "Combining rows from multiple tables",
+    "explanation": "JOIN combines rows from two or more tables based on related columns.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-149",
+    "question": "Difference between INNER JOIN and LEFT JOIN?",
+    "options": [
+      "INNER returns matching, LEFT returns all from left table",
+      "INNER is faster",
+      "LEFT optional, INNER mandatory",
+      "No difference"
+    ],
+    "correctAnswer": "INNER returns matching, LEFT returns all from left table",
+    "explanation": "INNER JOIN returns matching records; LEFT JOIN returns all from left table.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-150",
+    "question": "What does GROUP BY do?",
+    "options": [
+      "Sorts result set",
+      "Groups rows with same values",
+      "Filters rows",
+      "Deletes duplicates"
+    ],
+    "correctAnswer": "Groups rows with same values",
+    "explanation": "GROUP BY groups rows sharing same values into summary rows.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-151",
+    "question": "What is a transaction?",
+    "options": [
+      "Single SQL query",
+      "Atomic unit of work",
+      "Backup operation",
+      "Data type conversion"
+    ],
+    "correctAnswer": "Atomic unit of work",
+    "explanation": "Transaction is a sequence of operations as single atomic unit.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-152",
+    "question": "ACID properties are?",
+    "options": [
+      "Atomicity,Consistency,Isolation,Durability",
+      "Add,Change,Insert,Delete",
+      "Association,Connection,Integration,Data",
+      "Analysis,Classification,Identification,Distribution"
+    ],
+    "correctAnswer": "Atomicity,Consistency,Isolation,Durability",
+    "explanation": "ACID ensures reliable transaction processing.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-153",
+    "question": "What is a database deadlock?",
+    "options": [
+      "Transaction taking too long",
+      "Two transactions waiting for each other's locks",
+      "Corrupted database file",
+      "Query with syntax error"
+    ],
+    "correctAnswer": "Two transactions waiting for each other's locks",
+    "explanation": "Deadlock: circular wait between transactions for locks.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-154",
+    "question": "Difference between DELETE and TRUNCATE?",
+    "options": [
+      "DELETE rolled back, TRUNCATE not",
+      "DELETE is DML, TRUNCATE is DDL",
+      "DELETE removes specific rows, TRUNCATE all",
+      "All of the above"
+    ],
+    "correctAnswer": "All of the above",
+    "explanation": "DELETE is DML/rollable/specific. TRUNCATE is DDL/not rollback/all rows.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-155",
+    "question": "What is a SQL view?",
+    "options": [
+      "Physical copy of table",
+      "Virtual table based on query",
+      "Type of index",
+      "Backup mechanism"
+    ],
+    "correctAnswer": "Virtual table based on query",
+    "explanation": "View is virtual table defined by SQL query, no physical storage.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-156",
+    "question": "What is an operating system?",
+    "options": [
+      "Hardware component",
+      "Software managing computer resources",
+      "Programming language",
+      "Application program"
+    ],
+    "correctAnswer": "Software managing computer resources",
+    "explanation": "OS manages hardware, software resources and provides services.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-157",
+    "question": "What is a process?",
+    "options": [
+      "Program in execution",
+      "File on disk",
+      "Type of memory",
+      "User interface"
+    ],
+    "correctAnswer": "Program in execution",
+    "explanation": "Process is a program in execution with its own memory and resources.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-158",
+    "question": "What is virtual memory?",
+    "options": [
+      "RAM memory",
+      "Hard disk space as extended RAM",
+      "Cache memory",
+      "ROM memory"
+    ],
+    "correctAnswer": "Hard disk space as extended RAM",
+    "explanation": "Virtual memory uses disk to simulate additional RAM.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-159",
+    "question": "What is deadlock?",
+    "options": [
+      "Process that never terminates",
+      "Multiple processes waiting indefinitely",
+      "Memory leak",
+      "CPU bottleneck"
+    ],
+    "correctAnswer": "Multiple processes waiting indefinitely",
+    "explanation": "Deadlock: processes unable to proceed due to waiting for each other's resources.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-160",
+    "question": "What is context switching?",
+    "options": [
+      "Changing user interface",
+      "Saving/restoring process state during CPU switch",
+      "Switching between applications",
+      "Changing display resolution"
+    ],
+    "correctAnswer": "Saving/restoring process state during CPU switch",
+    "explanation": "Context switch saves current process and restores another's state.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-161",
+    "question": "Difference between thread and process?",
+    "options": [
+      "Threads share memory, processes have separate",
+      "Threads faster to create",
+      "Processes more isolated",
+      "All of the above"
+    ],
+    "correctAnswer": "All of the above",
+    "explanation": "Threads share memory/lightweight. Processes separate memory/more isolated.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-162",
+    "question": "What is a semaphore?",
+    "options": [
+      "Data type",
+      "Synchronization primitive for shared resources",
+      "Type of memory",
+      "CPU instruction"
+    ],
+    "correctAnswer": "Synchronization primitive for shared resources",
+    "explanation": "Semaphore controls access to shared resources by multiple processes.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-163",
+    "question": "What is thrashing?",
+    "options": [
+      "Security attack",
+      "Excessive paging causing poor performance",
+      "Disk failure",
+      "Network issue"
+    ],
+    "correctAnswer": "Excessive paging causing poor performance",
+    "explanation": "Thrashing: system spends more time paging than executing.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-164",
+    "question": "What is a kernel?",
+    "options": [
+      "User interface",
+      "Core component managing system resources",
+      "File system type",
+      "Hardware driver"
+    ],
+    "correctAnswer": "Core component managing system resources",
+    "explanation": "Kernel is core OS component managing hardware, memory, processes.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-165",
+    "question": "What is paging?",
+    "options": [
+      "Dividing processes into fixed-size blocks for memory",
+      "Network communication method",
+      "File system organization",
+      "Security mechanism"
+    ],
+    "correctAnswer": "Dividing processes into fixed-size blocks for memory",
+    "explanation": "Paging divides processes into fixed blocks for non-contiguous memory allocation.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-166",
+    "question": "IP stands for?",
+    "options": [
+      "Internet Protocol",
+      "Internal Process",
+      "Input/Output Protocol",
+      "Integrated Platform"
+    ],
+    "correctAnswer": "Internet Protocol",
+    "explanation": "IP = Internet Protocol, principal routing protocol.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-167",
+    "question": "Purpose of DNS?",
+    "options": [
+      "Encrypt data",
+      "Translate domain names to IP addresses",
+      "Manage email",
+      "Backup files"
+    ],
+    "correctAnswer": "Translate domain names to IP addresses",
+    "explanation": "DNS translates human-readable domain names to IP addresses.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-168",
+    "question": "Port used by HTTP?",
+    "options": [
+      "21",
+      "25",
+      "80",
+      "443"
+    ],
+    "correctAnswer": "80",
+    "explanation": "HTTP typically uses port 80.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-169",
+    "question": "What is the OSI model?",
+    "options": [
+      "Programming language",
+      "7-layer networking reference model",
+      "Database management system",
+      "Operating system"
+    ],
+    "correctAnswer": "7-layer networking reference model",
+    "explanation": "OSI model standardizes network communication into 7 layers.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-170",
+    "question": "Difference between TCP and UDP?",
+    "options": [
+      "TCP connection-oriented, UDP connectionless",
+      "TCP faster than UDP",
+      "UDP guarantees delivery",
+      "TCP for streaming"
+    ],
+    "correctAnswer": "TCP connection-oriented, UDP connectionless",
+    "explanation": "TCP establishes connections/guarantees delivery. UDP is connectionless/faster.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-171",
+    "question": "What is a MAC address?",
+    "options": [
+      "Software-based address",
+      "Unique hardware identifier for network interfaces",
+      "IP address type",
+      "Network access password"
+    ],
+    "correctAnswer": "Unique hardware identifier for network interfaces",
+    "explanation": "MAC address uniquely identifies network interfaces at data link layer.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-172",
+    "question": "What is a subnet mask?",
+    "options": [
+      "Security feature",
+      "Divides IP into network and host parts",
+      "Type of firewall",
+      "Encryption key"
+    ],
+    "correctAnswer": "Divides IP into network and host parts",
+    "explanation": "Subnet mask determines network vs host portions of IP address.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-173",
+    "question": "Purpose of a firewall?",
+    "options": [
+      "Speed up internet",
+      "Monitor/control incoming/outgoing network traffic",
+      "Store files",
+      "Process data"
+    ],
+    "correctAnswer": "Monitor/control incoming/outgoing network traffic",
+    "explanation": "Firewall acts as barrier filtering traffic based on security rules.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-174",
+    "question": "What is DHCP?",
+    "options": [
+      "Dynamic Host Configuration Protocol",
+      "Data Host Communication Protocol",
+      "Direct Host Connection Protocol",
+      "Dynamic Hardware Control Protocol"
+    ],
+    "correctAnswer": "Dynamic Host Configuration Protocol",
+    "explanation": "DHCP automatically assigns IP addresses to network devices.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-175",
+    "question": "Purpose of ARP?",
+    "options": [
+      "Encrypt data",
+      "Resolve IP addresses to MAC addresses",
+      "Route packets",
+      "Compress files"
+    ],
+    "correctAnswer": "Resolve IP addresses to MAC addresses",
+    "explanation": "ARP maps IP addresses to MAC addresses in local network.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-176",
+    "question": "What is the output?\nint x=10; if(x=5) printf(Five); else printf(Not Five);",
+    "options": [
+      "Five",
+      "Not Five",
+      "Error",
+      "Undefined"
+    ],
+    "correctAnswer": "Five",
+    "explanation": "Assignment (x=5) evaluates to 5 (true), so Five printed.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-177",
+    "question": "What is the output?\nchar *str=Hello; printf(\"%c\",*str);",
+    "options": [
+      "H",
+      "e",
+      "l",
+      "Error"
+    ],
+    "correctAnswer": "H",
+    "explanation": "*str dereferences to first character 'H'.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-178",
+    "question": "What is the output?\nint a=5; int *p=&a; printf(\"%d\",*p+1);",
+    "options": [
+      "5",
+      "6",
+      "Error",
+      "Undefined"
+    ],
+    "correctAnswer": "6",
+    "explanation": "*p gives a's value (5), 5+1=6.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-179",
+    "question": "What is the output?\nint x=0; for(int i=0;i<3;i++) x+=i; printf(\"%d\",x);",
+    "options": [
+      "3",
+      "6",
+      "0",
+      "Error"
+    ],
+    "correctAnswer": "3",
+    "explanation": "i: 0,1,2. x = 0+0+1+2 = 3.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-180",
+    "question": "What is the output?\nint arr[]={1,2,3,4,5}; int *p=arr; printf(\"%d\",*(p+4));",
+    "options": [
+      "4",
+      "5",
+      "3",
+      "Error"
+    ],
+    "correctAnswer": "5",
+    "explanation": "*(p+4) = arr[4] = 5.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-181",
+    "question": "What is the output?\nint a=10,b=20; int *p1=&a,*p2=&b; *p1=*p2; printf(\"%d %d\",a,b);",
+    "options": [
+      "20 20",
+      "10 20",
+      "10 10",
+      "20 10"
+    ],
+    "correctAnswer": "20 20",
+    "explanation": "*p1=*p2 assigns b's value (20) to a. Both become 20.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-182",
+    "question": "What is the output?\nint x=5; printf(\"%d\",sizeof(x++));",
+    "options": [
+      "4",
+      "5",
+      "Error",
+      "Undefined"
+    ],
+    "correctAnswer": "4",
+    "explanation": "sizeof evaluates type size (int=4) without evaluating expression.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-183",
+    "question": "What is the output?\nchar s[]=\"abc\"; printf(\"%lu\",sizeof(s));",
+    "options": [
+      "3",
+      "4",
+      "5",
+      "Depends on system"
+    ],
+    "correctAnswer": "4",
+    "explanation": "sizeof includes null terminator: a,b,c,\\0 = 4 bytes.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-184",
+    "question": "What is the output?\nint a=2,b=3; printf(\"%d\",a+b*a-b);",
+    "options": [
+      "5",
+      "7",
+      "1",
+      "Error"
+    ],
+    "correctAnswer": "5",
+    "explanation": "Precedence: b*a=6, then a+6-b = 2+6-3 = 5.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-185",
+    "question": "What is the output?\nint x=1; while(x<10) x*=2; printf(\"%d\",x);",
+    "options": [
+      "8",
+      "16",
+      "10",
+      "Error"
+    ],
+    "correctAnswer": "16",
+    "explanation": "x: 1->2->4->8->16. Loop stops at 16.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-186",
+    "question": "Web app slow during peak hours, DB queries taking too long. Investigate first?",
+    "options": [
+      "Increase server RAM",
+      "Add database indexes",
+      "Change programming language",
+      "Upgrade network switch"
+    ],
+    "correctAnswer": "Add database indexes",
+    "explanation": "Missing indexes often cause slow queries. Adding them improves performance dramatically.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-187",
+    "question": "User cannot access website but others can. Most likely cause?",
+    "options": [
+      "Server is down",
+      "DNS issue on user's computer",
+      "Firewall blocking all traffic",
+      "ISP is down"
+    ],
+    "correctAnswer": "DNS issue on user's computer",
+    "explanation": "If others can access, server is fine. Issue is likely local DNS failure.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-188",
+    "question": "Application throws OutOfMemoryError. First step?",
+    "options": [
+      "Increase heap size immediately",
+      "Check for memory leaks",
+      "Restart server",
+      "Check network connectivity"
+    ],
+    "correctAnswer": "Check for memory leaks",
+    "explanation": "Before increasing memory, investigate excessive memory consumption causes.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-189",
+    "question": "Deploying new feature. Best practice?",
+    "options": [
+      "Deploy Friday evening",
+      "Deploy directly to production",
+      "Use staging environment first",
+      "Deploy without testing"
+    ],
+    "correctAnswer": "Use staging environment first",
+    "explanation": "Staging environment catches issues before affecting users.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-190",
+    "question": "System handles 1000 req/s, needs 5000. Scaling strategy?",
+    "options": [
+      "Vertical scaling only",
+      "Horizontal scaling with load balancing",
+      "Add more RAM",
+      "Change database"
+    ],
+    "correctAnswer": "Horizontal scaling with load balancing",
+    "explanation": "Horizontal scaling distributes traffic across multiple servers.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-191",
+    "question": "Microservice experiencing timeouts calling another service. Handle with?",
+    "options": [
+      "Increase timeout to infinite",
+      "Implement circuit breaker pattern",
+      "Remove dependency",
+      "Log error and continue"
+    ],
+    "correctAnswer": "Implement circuit breaker pattern",
+    "explanation": "Circuit breaker prevents cascade failures by stopping calls to failing service.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-192",
+    "question": "Database experiencing frequent deadlocks. Best approach?",
+    "options": [
+      "Restart database",
+      "Ensure consistent lock ordering and reduce transaction duration",
+      "Increase CPU cores",
+      "Add more indexes"
+    ],
+    "correctAnswer": "Ensure consistent lock ordering and reduce transaction duration",
+    "explanation": "Consistent ordering prevents deadlocks, shorter transactions reduce window.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-193",
+    "question": "API returns inconsistent data intermittently. Debug approach?",
+    "options": [
+      "Add more logging and tracing",
+      "Increase server memory",
+      "Change API endpoint",
+      "Ignore the issue"
+    ],
+    "correctAnswer": "Add more logging and tracing",
+    "explanation": "Logging and tracing help identify where inconsistent data is generated.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-194",
+    "question": "Legacy system needs to integrate with modern API. Best approach?",
+    "options": [
+      "Rewrite entire legacy system",
+      "Create adapter/facade layer",
+      "Ignore legacy system",
+      "Use FTP for data transfer"
+    ],
+    "correctAnswer": "Create adapter/facade layer",
+    "explanation": "Adapter layer translates between systems, allowing gradual migration.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-195",
+    "question": "Distributed system has data consistency issues across nodes. Pattern?",
+    "options": [
+      "Two-phase commit protocol",
+      "Add more nodes",
+      "Use faster network",
+      "Reduce data volume"
+    ],
+    "correctAnswer": "Two-phase commit protocol",
+    "explanation": "Two-phase commit ensures all nodes commit or rollback together.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-196",
+    "question": "Shortcut to undo in Microsoft Word?",
+    "options": [
+      "Ctrl+Z",
+      "Ctrl+Y",
+      "Ctrl+X",
+      "Ctrl+C"
+    ],
+    "correctAnswer": "Ctrl+Z",
+    "explanation": "Ctrl+Z is universal undo shortcut.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-197",
+    "question": "Excel function to calculate average?",
+    "options": [
+      "SUM",
+      "AVERAGE",
+      "COUNT",
+      "MAX"
+    ],
+    "correctAnswer": "AVERAGE",
+    "explanation": "AVERAGE calculates arithmetic mean of a range.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-198",
+    "question": "What does Ctrl+B do?",
+    "options": [
+      "Bold text",
+      "Italic text",
+      "Underline text",
+      "Copy text"
+    ],
+    "correctAnswer": "Bold text",
+    "explanation": "Ctrl+B applies bold formatting to selected text.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-199",
+    "question": "VLOOKUP function in Excel does what?",
+    "options": [
+      "Looks up values vertically in a table",
+      "Looks up values horizontally",
+      "Calculates variance",
+      "Validates data entry"
+    ],
+    "correctAnswer": "Looks up values vertically in a table",
+    "explanation": "VLOOKUP searches first column and returns value from specified column.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-200",
+    "question": "What is a pivot table?",
+    "options": [
+      "Table that rotates data for analysis",
+      "Type of chart",
+      "Formula for calculations",
+      "Formatting option"
+    ],
+    "correctAnswer": "Table that rotates data for analysis",
+    "explanation": "Pivot table summarizes large datasets by rotating data perspectives.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-201",
+    "question": "Difference between absolute and relative cell references?",
+    "options": [
+      "Absolute uses $, relative doesn't",
+      "Absolute is faster",
+      "Relative only adjacent cells",
+      "No difference"
+    ],
+    "correctAnswer": "Absolute uses $, relative doesn't",
+    "explanation": "Absolute ($A$1) don't change when copied; relative (A1) adjust by location.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-202",
+    "question": "How to create mail merge in Word?",
+    "options": [
+      "Insert > Mailings > Start Mail Merge",
+      "File > Print",
+      "Edit > Find",
+      "View > Layout"
+    ],
+    "correctAnswer": "Insert > Mailings > Start Mail Merge",
+    "explanation": "Mail merge is in Mailings tab for personalized documents.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-203",
+    "question": "What is conditional formatting?",
+    "options": [
+      "Formatting cells based on values",
+      "Locking cells",
+      "Protecting worksheets",
+      "Creating charts"
+    ],
+    "correctAnswer": "Formatting cells based on values",
+    "explanation": "Conditional formatting applies styles to cells meeting criteria.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-204",
+    "question": "What does the IF function do in Excel?",
+    "options": [
+      "Performs conditional logic",
+      "Calculates interest",
+      "Finds duplicates",
+      "Formats cells"
+    ],
+    "correctAnswer": "Performs conditional logic",
+    "explanation": "IF returns one value if TRUE, another if FALSE.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-205",
+    "question": "What is a macro in Microsoft Office?",
+    "options": [
+      "Recorded sequence of actions",
+      "Type of chart",
+      "Formula",
+      "Template"
+    ],
+    "correctAnswer": "Recorded sequence of actions",
+    "explanation": "Macro records commands to automate repetitive tasks.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-206",
+    "question": "What is cloud computing?",
+    "options": [
+      "Using someone else's computer over internet",
+      "Local file storage",
+      "Hardware manufacturing",
+      "Network cable management"
+    ],
+    "correctAnswer": "Using someone else's computer over internet",
+    "explanation": "Cloud computing delivers computing services over internet on pay-as-you-go basis.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-207",
+    "question": "SaaS, PaaS, IaaS are?",
+    "options": [
+      "Different cloud service models",
+      "Different programming languages",
+      "Different database types",
+      "Different network protocols"
+    ],
+    "correctAnswer": "Different cloud service models",
+    "explanation": "SaaS provides software, PaaS platform, IaaS infrastructure.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-208",
+    "question": "What is phishing?",
+    "options": [
+      "Fishing technique",
+      "Fraudulent attempt to obtain sensitive information",
+      "Type of malware",
+      "Network protocol"
+    ],
+    "correctAnswer": "Fraudulent attempt to obtain sensitive information",
+    "explanation": "Phishing uses deceptive emails/websites to trick users into revealing information.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-209",
+    "question": "What is encryption?",
+    "options": [
+      "Compressing data",
+      "Converting data into coded format for security",
+      "Deleting sensitive data",
+      "Backing up files"
+    ],
+    "correctAnswer": "Converting data into coded format for security",
+    "explanation": "Encryption converts plaintext to ciphertext using algorithms and keys.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  },
+  {
+    "questionId": "accenture-mcq-210",
+    "question": "What is multi-factor authentication (MFA)?",
+    "options": [
+      "Using multiple passwords",
+      "Requiring two or more verification methods",
+      "Changing passwords frequently",
+      "Using biometric only"
+    ],
+    "correctAnswer": "Requiring two or more verification methods",
+    "explanation": "MFA requires multiple verification factors for enhanced security.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "accenture",
+    "companyIds": [
+      "accenture"
+    ]
+  }
+]

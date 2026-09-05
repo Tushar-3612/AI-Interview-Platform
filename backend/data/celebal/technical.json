@@ -1,0 +1,4712 @@
+[
+  {
+    "questionId": "celebal-mcq-001",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics",
+    "subtopic": "Statistics & Probability",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is the mean of the dataset [2, 4, 6, 8, 10]?",
+    "options": [
+      "5",
+      "6",
+      "7",
+      "8"
+    ],
+    "correctAnswer": "6",
+    "expectedAnswer": "",
+    "explanation": "Mean = (2+4+6+8+10)/5 = 30/5 = 6",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-002",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics",
+    "subtopic": "Statistics & Probability",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Which measure of central tendency is most affected by outliers?",
+    "options": [
+      "Mean",
+      "Median",
+      "Mode",
+      "Range"
+    ],
+    "correctAnswer": "Mean",
+    "expectedAnswer": "",
+    "explanation": "The mean is sensitive to extreme values (outliers) because it uses all values in its calculation.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-003",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics",
+    "subtopic": "Statistics & Probability",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What does a p-value of 0.03 indicate at significance level α = 0.05?",
+    "options": [
+      "Fail to reject the null hypothesis",
+      "Reject the null hypothesis",
+      "The result is not statistically significant",
+      "There is a 3% chance the null hypothesis is true"
+    ],
+    "correctAnswer": "Reject the null hypothesis",
+    "expectedAnswer": "",
+    "explanation": "p-value (0.03) < α (0.05), so we reject the null hypothesis. The result is statistically significant.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-004",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics",
+    "subtopic": "Statistics & Probability",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Which test is used to compare means of two independent groups?",
+    "options": [
+      "Paired t-test",
+      "Independent t-test",
+      "Chi-square test",
+      "ANOVA"
+    ],
+    "correctAnswer": "Independent t-test",
+    "expectedAnswer": "",
+    "explanation": "Independent t-test compares means of two independent groups. Paired t-test is for related groups.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-005",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Which of the following is a supervised learning algorithm?",
+    "options": [
+      "K-Means Clustering",
+      "Linear Regression",
+      "PCA",
+      "DBSCAN"
+    ],
+    "correctAnswer": "Linear Regression",
+    "expectedAnswer": "",
+    "explanation": "Linear Regression is supervised (uses labeled data). K-Means, PCA, DBSCAN are unsupervised.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-006",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What does overfitting mean in machine learning?",
+    "options": [
+      "Model performs well on training data but poorly on test data",
+      "Model performs poorly on both training and test data",
+      "Model is too simple to capture patterns",
+      "Model has high bias and low variance"
+    ],
+    "correctAnswer": "Model performs well on training data but poorly on test data",
+    "expectedAnswer": "",
+    "explanation": "Overfitting occurs when a model learns noise in training data, performing well on training but poorly on unseen data.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-007",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Which metric is most appropriate for an imbalanced binary classification problem?",
+    "options": [
+      "Accuracy",
+      "F1 Score",
+      "Mean Squared Error",
+      "R-squared"
+    ],
+    "correctAnswer": "F1 Score",
+    "expectedAnswer": "",
+    "explanation": "F1 Score is the harmonic mean of precision and recall, making it suitable for imbalanced datasets where accuracy can be misleading.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-008",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the main advantage of Random Forest over a single Decision Tree?",
+    "options": [
+      "Faster training time",
+      "Reduced overfitting through ensemble averaging",
+      "Requires less memory",
+      "Simpler to interpret"
+    ],
+    "correctAnswer": "Reduced overfitting through ensemble averaging",
+    "expectedAnswer": "",
+    "explanation": "Random Forest reduces overfitting by combining multiple decision trees trained on different subsets of data and features.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-009",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "In gradient boosting, what does each new tree correct?",
+    "options": [
+      "The errors of the original dataset",
+      "The residuals of the combined ensemble so far",
+      "The bias of the previous tree",
+      "The variance of the training data"
+    ],
+    "correctAnswer": "The residuals of the combined ensemble so far",
+    "expectedAnswer": "",
+    "explanation": "Gradient boosting sequentially adds trees, each one fitting the residuals (errors) of the combined ensemble up to that point.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-010",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the purpose of a validation set?",
+    "options": [
+      "To train the model on more data",
+      "To tune hyperparameters and prevent overfitting",
+      "To evaluate final model performance on unseen data",
+      "To increase the size of the training set"
+    ],
+    "correctAnswer": "To tune hyperparameters and prevent overfitting",
+    "expectedAnswer": "",
+    "explanation": "Validation set is used for model selection and hyperparameter tuning, helping detect overfitting during training.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-011",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Deep Learning",
+    "subtopic": "Deep Learning",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is the purpose of an activation function in a neural network?",
+    "options": [
+      "To initialize weights",
+      "To introduce non-linearity",
+      "To reduce the learning rate",
+      "To normalize the input data"
+    ],
+    "correctAnswer": "To introduce non-linearity",
+    "expectedAnswer": "",
+    "explanation": "Activation functions introduce non-linearity, allowing neural networks to learn complex patterns beyond linear relationships.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-012",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Deep Learning",
+    "subtopic": "Deep Learning",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Which problem does the LSTM architecture specifically address?",
+    "options": [
+      "Overfitting in convolutional networks",
+      "Vanishing gradient problem in RNNs",
+      "Slow convergence in feedforward networks",
+      "Poor performance on image classification"
+    ],
+    "correctAnswer": "Vanishing gradient problem in RNNs",
+    "expectedAnswer": "",
+    "explanation": "LSTM (Long Short-Term Memory) networks use gates to preserve gradients over long sequences, addressing the vanishing gradient problem.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-013",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Deep Learning",
+    "subtopic": "Deep Learning",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the role of a dropout layer in neural networks?",
+    "options": [
+      "To increase model capacity",
+      "To randomly deactivate neurons during training to prevent overfitting",
+      "To normalize batch statistics",
+      "To accelerate training speed"
+    ],
+    "correctAnswer": "To randomly deactivate neurons during training to prevent overfitting",
+    "expectedAnswer": "",
+    "explanation": "Dropout randomly sets a fraction of neurons to zero during training, preventing co-adaptation and reducing overfitting.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-014",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "NLP",
+    "subtopic": "Natural Language Processing",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is tokenization in NLP?",
+    "options": [
+      "Converting text to numerical vectors",
+      "Splitting text into individual units (tokens)",
+      "Removing stop words from text",
+      "Stemming words to their root form"
+    ],
+    "correctAnswer": "Splitting text into individual units (tokens)",
+    "expectedAnswer": "",
+    "explanation": "Tokenization is the process of splitting text into smaller units such as words, subwords, or characters.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-015",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "NLP",
+    "subtopic": "Natural Language Processing",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the main difference between Bag of Words and TF-IDF?",
+    "options": [
+      "BoW uses word frequency, TF-IDF also considers document frequency",
+      "TF-IDF is faster than BoW",
+      "BoW works only for English, TF-IDF is language-agnostic",
+      "TF-IDF removes stop words, BoW does not"
+    ],
+    "correctAnswer": "BoW uses word frequency, TF-IDF also considers document frequency",
+    "expectedAnswer": "",
+    "explanation": "TF-IDF weights words by their frequency in a document inversely weighted by their frequency across all documents.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-016",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Python",
+    "subtopic": "Python",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is the output of `type([])` in Python?",
+    "options": [
+      "<class 'array'>",
+      "<class 'list'>",
+      "<class 'tuple'>",
+      "<class 'dict'>"
+    ],
+    "correctAnswer": "<class 'list'>",
+    "expectedAnswer": "",
+    "explanation": "In Python, `[]` creates an empty list, and `type([])` returns `<class 'list'>`.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-017",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Python",
+    "subtopic": "Python",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Which of the following is immutable in Python?",
+    "options": [
+      "List",
+      "Dictionary",
+      "Tuple",
+      "Set"
+    ],
+    "correctAnswer": "Tuple",
+    "expectedAnswer": "",
+    "explanation": "Tuples are immutable in Python - once created, their elements cannot be modified.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-018",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Python",
+    "subtopic": "Python",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is a decorator in Python?",
+    "options": [
+      "A variable naming convention",
+      "A function that takes another function and extends its behavior",
+      "A comment format for documentation",
+      "A type of loop construct"
+    ],
+    "correctAnswer": "A function that takes another function and extends its behavior",
+    "expectedAnswer": "",
+    "explanation": "Decorators are functions that modify the behavior of other functions, commonly used for logging, authentication, etc.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-019",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "SQL",
+    "subtopic": "SQL",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Which SQL clause is used to filter rows after grouping?",
+    "options": [
+      "WHERE",
+      "HAVING",
+      "ORDER BY",
+      "GROUP BY"
+    ],
+    "correctAnswer": "HAVING",
+    "expectedAnswer": "",
+    "explanation": "HAVING filters groups created by GROUP BY. WHERE filters rows before grouping.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-020",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "SQL",
+    "subtopic": "SQL",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the difference between INNER JOIN and LEFT JOIN?",
+    "options": [
+      "INNER JOIN returns all rows, LEFT JOIN returns only matching rows",
+      "INNER JOIN returns only matching rows, LEFT JOIN returns all rows from left table plus matching from right",
+      "There is no difference",
+      "LEFT JOIN is faster than INNER JOIN"
+    ],
+    "correctAnswer": "INNER JOIN returns only matching rows, LEFT JOIN returns all rows from left table plus matching from right",
+    "expectedAnswer": "",
+    "explanation": "INNER JOIN returns rows with matches in both tables. LEFT JOIN returns all left table rows with NULLs where no match exists.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-021",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "In SVM, what is the kernel trick used for?",
+    "options": [
+      "To reduce the number of support vectors",
+      "To transform data into higher dimensions where it becomes linearly separable",
+      "To speed up the training process",
+      "To handle missing values in the dataset"
+    ],
+    "correctAnswer": "To transform data into higher dimensions where it becomes linearly separable",
+    "expectedAnswer": "",
+    "explanation": "The kernel trick implicitly maps data to higher dimensions without explicit computation, enabling linear separation of non-linear data.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-022",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the curse of dimensionality?",
+    "options": [
+      "Models train slower with more features",
+      "As dimensions increase, data becomes sparse and distances become less meaningful",
+      "Neural networks cannot handle high-dimensional data",
+      "More features always lead to better model performance"
+    ],
+    "correctAnswer": "As dimensions increase, data becomes sparse and distances become less meaningful",
+    "expectedAnswer": "",
+    "explanation": "In high-dimensional spaces, data points become equidistant, making distance-based algorithms less effective.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-023",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics",
+    "subtopic": "Statistics & Probability",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is the Central Limit Theorem?",
+    "options": [
+      "The mean of any distribution is always normally distributed",
+      "The sampling distribution of the sample mean approaches normality as sample size increases, regardless of population distribution",
+      "All datasets follow a normal distribution",
+      "The standard deviation decreases as sample size increases"
+    ],
+    "correctAnswer": "The sampling distribution of the sample mean approaches normality as sample size increases, regardless of population distribution",
+    "expectedAnswer": "",
+    "explanation": "CLT states that for sufficiently large samples, the sampling distribution of the mean approximates a normal distribution.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-024",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Deep Learning",
+    "subtopic": "Deep Learning",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is the key innovation of the Transformer architecture over RNNs?",
+    "options": [
+      "Deeper network layers",
+      "Self-attention mechanism enabling parallel processing of sequences",
+      "Use of convolutional layers",
+      "Smaller model size"
+    ],
+    "correctAnswer": "Self-attention mechanism enabling parallel processing of sequences",
+    "expectedAnswer": "",
+    "explanation": "Transformers use self-attention to process all positions in parallel, unlike RNNs which process sequentially.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-025",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Generative AI",
+    "subtopic": "Generative AI",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the purpose of a vector database in RAG systems?",
+    "options": [
+      "To store raw text documents",
+      "To store and retrieve document embeddings by semantic similarity",
+      "To train language models from scratch",
+      "To compress text data for storage"
+    ],
+    "correctAnswer": "To store and retrieve document embeddings by semantic similarity",
+    "expectedAnswer": "",
+    "explanation": "Vector databases store embeddings and enable fast similarity search, which is essential for retrieving relevant context in RAG.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-026",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Generative AI",
+    "subtopic": "Generative AI",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What does RAG stand for?",
+    "options": [
+      "Random Aggregate Generation",
+      "Retrieval-Augmented Generation",
+      "Recurrent Attention Gateway",
+      "Recursive Auto-Gradient"
+    ],
+    "correctAnswer": "Retrieval-Augmented Generation",
+    "expectedAnswer": "",
+    "explanation": "RAG combines retrieval (finding relevant documents) with generation (producing answers) to ground LLM responses in factual data.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-027",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is feature scaling?",
+    "options": [
+      "Adding more features to the dataset",
+      "Transforming features to a common scale without distorting differences",
+      "Removing irrelevant features",
+      "Creating new features from existing ones"
+    ],
+    "correctAnswer": "Transforming features to a common scale without distorting differences",
+    "expectedAnswer": "",
+    "explanation": "Feature scaling normalizes the range of features so that no single feature dominates due to its magnitude.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-028",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Python",
+    "subtopic": "Python",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is the output of `list(range(0, 10, 3))`?",
+    "options": [
+      "[0, 3, 6, 9]",
+      "[0, 3, 6]",
+      "[3, 6, 9]",
+      "[0, 3, 6, 9, 12]"
+    ],
+    "correctAnswer": "[0, 3, 6, 9]",
+    "expectedAnswer": "",
+    "explanation": "range(0, 10, 3) generates 0, 3, 6, 9 (start=0, stop=10, step=3).",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-029",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "NLP",
+    "subtopic": "Natural Language Processing",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is the BLEU score used for?",
+    "options": [
+      "Measuring sentiment polarity of text",
+      "Evaluating quality of machine-translated text against reference translations",
+      "Detecting spam emails",
+      "Classifying text topics"
+    ],
+    "correctAnswer": "Evaluating quality of machine-translated text against reference translations",
+    "expectedAnswer": "",
+    "explanation": "BLEU (Bilingual Evaluation Understudy) measures how similar machine translations are to human reference translations.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-030",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is the difference between classification and regression?",
+    "options": [
+      "Classification predicts categories, regression predicts continuous values",
+      "Classification is faster than regression",
+      "Regression is unsupervised, classification is supervised",
+      "They are the same thing"
+    ],
+    "correctAnswer": "Classification predicts categories, regression predicts continuous values",
+    "expectedAnswer": "",
+    "explanation": "Classification outputs discrete labels (categories), while regression outputs continuous numerical values.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-tech-001",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Generative AI / NLP",
+    "subtopic": "Natural Language Processing",
+    "difficulty": "Hard",
+    "questionType": "Descriptive",
+    "question": "Explain the Transformer model. Why is it better?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R1)",
+    "marks": 5,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-002",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML / Classification",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What's the difference between multilabel and multiclass classification?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R2)",
+    "marks": 3,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-003",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics",
+    "subtopic": "Statistics & Probability",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "Probability-related questions.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R3)",
+    "marks": 2,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-004",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics",
+    "subtopic": "Statistics & Probability",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "Statistics-related questions such as IQR.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R3)",
+    "marks": 2,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-005",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Decision Trees",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is the difference between entropy and information gain?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R3)",
+    "marks": 3,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-006",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Hard",
+    "questionType": "Descriptive",
+    "question": "Examples of ensemble classification techniques in ML and explain them.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R8)",
+    "marks": 5,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-007",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Neural Networks",
+    "subtopic": "Deep Learning",
+    "difficulty": "Hard",
+    "questionType": "Descriptive",
+    "question": "Can we use ANN for unsupervised learning? How?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R8)",
+    "marks": 5,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-008",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "Evaluation metrics used in Regression.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R8)",
+    "marks": 2,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-009",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "Evaluation metrics used in Clustering.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R8)",
+    "marks": 2,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-010",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "Explain precision and recall in ML.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R8)",
+    "marks": 3,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-011",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "Model evaluation techniques.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R8)",
+    "marks": 3,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-012",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Python",
+    "subtopic": "Python",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "Explain a lambda function.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R8)",
+    "marks": 2,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-013",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Python / Visualization",
+    "subtopic": "Python",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "Seaborn vs Matplotlib.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R8)",
+    "marks": 3,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-014",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "Decision Tree and Random Forest.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R8)",
+    "marks": 3,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-015",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "Overfitting and underfitting and ways to handle them.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R8)",
+    "marks": 3,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-016",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "L1 and L2 regularization.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R8)",
+    "marks": 3,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-017",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Time Series",
+    "subtopic": "Time Series",
+    "difficulty": "Hard",
+    "questionType": "Descriptive",
+    "question": "Why did you use an LSTM model rather than an Auto-regressive model for time-series forecasting of stock prices?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R8)",
+    "marks": 5,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-018",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Deep Learning",
+    "subtopic": "Deep Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "Deep Learning questions.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R1)",
+    "marks": 3,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-019",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "LLM",
+    "subtopic": "Generative AI",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "LLM-related questions.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R1)",
+    "marks": 3,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-020",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "RAG",
+    "subtopic": "Generative AI",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "RAG-related questions.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R1)",
+    "marks": 3,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-021",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Data Science",
+    "subtopic": "Data Science",
+    "difficulty": "Hard",
+    "questionType": "Descriptive",
+    "question": "Questions related to the candidate's resume.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R1)",
+    "marks": 5,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-022",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Python",
+    "subtopic": "Python",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "Python programming questions.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R1)",
+    "marks": 2,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-023",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Project",
+    "subtopic": "Project",
+    "difficulty": "Hard",
+    "questionType": "Descriptive",
+    "question": "Explain the best project you have done.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R6)",
+    "marks": 5,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-024",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "SQL",
+    "subtopic": "SQL",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "SQL queries in the Data Scientist interview.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R6)",
+    "marks": 3,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-025",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "DSA",
+    "subtopic": "DSA & Coding",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "One or two DSA questions.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R6)",
+    "marks": 3,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-026",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Python",
+    "subtopic": "Python",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "Palindrome.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R4)",
+    "marks": 2,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-027",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Python",
+    "subtopic": "Python",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "List and tuple.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R4)",
+    "marks": 2,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-028",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "NLP",
+    "subtopic": "Natural Language Processing",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "NLP basic questions.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R4)",
+    "marks": 2,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-029",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Data Science",
+    "subtopic": "Data Science",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "Basic Data Science questions.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R4)",
+    "marks": 2,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-030",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Computer Vision",
+    "subtopic": "Computer Vision",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "CNN model.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R5)",
+    "marks": 3,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-031",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics",
+    "subtopic": "Statistics & Probability",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "Mean and median.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R5)",
+    "marks": 2,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-032",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "Metrics in data.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R5)",
+    "marks": 2,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-033",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "Accuracy.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R5)",
+    "marks": 2,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-034",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "NLP",
+    "subtopic": "Natural Language Processing",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "BLEU score.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R5)",
+    "marks": 3,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-035",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Computer Vision",
+    "subtopic": "Computer Vision",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "Image processing basics.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R5)",
+    "marks": 2,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-036",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Coding",
+    "subtopic": "DSA & Coding",
+    "difficulty": "Hard",
+    "questionType": "Descriptive",
+    "question": "Given three coordinates of a triangle, find the largest angle.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R7)",
+    "marks": 5,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-037",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Data Science",
+    "subtopic": "Data Science",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "Types of machine learning algorithms.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R2)",
+    "marks": 3,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-038",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "Evaluation metrics.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R2)",
+    "marks": 2,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-039",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Data Science",
+    "subtopic": "Data Science",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "Fundamentals of Data Science and Machine Learning.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R2)",
+    "marks": 2,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-040",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Project",
+    "subtopic": "Project",
+    "difficulty": "Hard",
+    "questionType": "Descriptive",
+    "question": "Questions related to the ML model used in the candidate's project.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R8)",
+    "marks": 5,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-041",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Hard",
+    "questionType": "Descriptive",
+    "question": "Explain the Gradient Boosting model used in your project.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R8)",
+    "marks": 5,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-042",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "How do you handle overfitting and underfitting?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R8)",
+    "marks": 3,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-043",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "What are evaluation metrics for regression?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R8)",
+    "marks": 2,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-044",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "What are evaluation metrics for clustering?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R8)",
+    "marks": 2,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-045",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "Explain precision and recall.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R8)",
+    "marks": 3,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-046",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "Explain Decision Tree.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R8)",
+    "marks": 3,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-047",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "Explain Random Forest.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R8)",
+    "marks": 3,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-048",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "Explain L1 and L2 regularization.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R8)",
+    "marks": 3,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-049",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Data Science",
+    "subtopic": "Data Science",
+    "difficulty": "Hard",
+    "questionType": "Descriptive",
+    "question": "Questions about libraries used in the candidate's project.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R8)",
+    "marks": 5,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-050",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Deep Learning",
+    "subtopic": "Deep Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "CNN model questions.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R5)",
+    "marks": 3,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-051",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Computer Vision",
+    "subtopic": "Computer Vision",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "Image processing basic questions.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R5)",
+    "marks": 2,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-052",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Python",
+    "subtopic": "Python",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "Python programming questions related to the candidate's profile.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R1)",
+    "marks": 2,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-053",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "LLM/RAG",
+    "subtopic": "Generative AI",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "LLM and RAG questions were reported in the 2026 Data Scientist interview.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R1)",
+    "marks": 3,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-054",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Project",
+    "subtopic": "Project",
+    "difficulty": "Hard",
+    "questionType": "Descriptive",
+    "question": "Resume/project-related questioning was reported in the 2026 Data Scientist interview.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R1)",
+    "marks": 5,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-055",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Data Science",
+    "subtopic": "Data Science",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "Data Science fundamentals were reported as a fresher interview focus.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R2)",
+    "marks": 2,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-056",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Machine Learning",
+    "subtopic": "Machine Learning",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "Machine Learning fundamentals were reported as a fresher interview focus.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R2)",
+    "marks": 2,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-057",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics",
+    "subtopic": "Statistics & Probability",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "IQR/statistics questions were reported in a Data Scientist interview.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R3)",
+    "marks": 2,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-058",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Probability",
+    "subtopic": "Statistics & Probability",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "Probability questions were reported in a Data Scientist interview.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R3)",
+    "marks": 2,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-059",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Model Evaluation",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "Model evaluation questions were reported in Associate Data Scientist interviews.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R8)",
+    "marks": 3,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-060",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Visualization",
+    "subtopic": "Visualization",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "Seaborn and Matplotlib comparison was reported.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Source: Celebal Technologies Data Scientist Interview (R8)",
+    "marks": 3,
+    "questionStatus": "interview_reported",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-061",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics",
+    "subtopic": "Statistics & Probability",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "Explain mean, median and mode and when each is useful.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-062",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics",
+    "subtopic": "Statistics & Probability",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "Explain variance and standard deviation.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-063",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics",
+    "subtopic": "Statistics & Probability",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "What is covariance?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-064",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics",
+    "subtopic": "Statistics & Probability",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "What is correlation?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-065",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics",
+    "subtopic": "Statistics & Probability",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "Pearson vs Spearman correlation.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-066",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics",
+    "subtopic": "Statistics & Probability",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "What is a probability distribution?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-067",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics",
+    "subtopic": "Statistics & Probability",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "Explain normal distribution.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-068",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics",
+    "subtopic": "Statistics & Probability",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "Explain binomial distribution.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-069",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics",
+    "subtopic": "Statistics & Probability",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "Explain Poisson distribution.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-070",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics",
+    "subtopic": "Statistics & Probability",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is the Central Limit Theorem?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-071",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics",
+    "subtopic": "Statistics & Probability",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is hypothesis testing?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-072",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics",
+    "subtopic": "Statistics & Probability",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "Null hypothesis vs alternative hypothesis.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-073",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics",
+    "subtopic": "Statistics & Probability",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is a p-value?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-074",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics",
+    "subtopic": "Statistics & Probability",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is a confidence interval?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-075",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics",
+    "subtopic": "Statistics & Probability",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "Type I vs Type II error.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-076",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics",
+    "subtopic": "Statistics & Probability",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is statistical significance?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-077",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics",
+    "subtopic": "Statistics & Probability",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "How do you detect outliers using IQR?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-078",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics",
+    "subtopic": "Statistics & Probability",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "What is a Z-score?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-079",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics",
+    "subtopic": "Statistics & Probability",
+    "difficulty": "Hard",
+    "questionType": "Descriptive",
+    "question": "How does Bayes' theorem work?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-080",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics",
+    "subtopic": "Statistics & Probability",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "What is conditional probability?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-081",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics",
+    "subtopic": "Statistics & Probability",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is sampling bias?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-082",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics",
+    "subtopic": "Statistics & Probability",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "Population vs sample.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-083",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics",
+    "subtopic": "Statistics & Probability",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is standard error?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-084",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics",
+    "subtopic": "Statistics & Probability",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is the law of large numbers?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-085",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics",
+    "subtopic": "Statistics & Probability",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "What is skewness?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-086",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics",
+    "subtopic": "Statistics & Probability",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "What is kurtosis?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-087",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics",
+    "subtopic": "Statistics & Probability",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "What is a confidence level?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-088",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics",
+    "subtopic": "Statistics & Probability",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is a normality test?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-089",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics",
+    "subtopic": "Statistics & Probability",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "How would you handle an imbalanced sample?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-090",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics",
+    "subtopic": "Statistics & Probability",
+    "difficulty": "Hard",
+    "questionType": "Descriptive",
+    "question": "What is bootstrapping?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-091",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "What is supervised learning?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-092",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "What is unsupervised learning?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-093",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is semi-supervised learning?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-094",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is reinforcement learning?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-095",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "Classification vs regression.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-096",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is linear regression?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-097",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is logistic regression?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-098",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "Linear regression vs logistic regression.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-099",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is regularization?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-100",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "L1 vs L2 regularization.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-101",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is cross-validation?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-102",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "Why use train/validation/test splits?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-103",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Hard",
+    "questionType": "Descriptive",
+    "question": "What is data leakage?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-104",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "How do you detect overfitting?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-105",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "How do you handle underfitting?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-106",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is feature engineering?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-107",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is feature selection?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-108",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is dimensionality reduction?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-109",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "Explain PCA.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-110",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is K-Means clustering?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-111",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "How do you choose K in K-Means?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-112",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What are the limitations of K-Means?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-113",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is DBSCAN?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-114",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "K-Means vs DBSCAN.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-115",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is hierarchical clustering?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-116",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is a decision tree?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-117",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is pruning?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-118",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "Decision Tree vs Random Forest.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-119",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "Random Forest vs Gradient Boosting.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-120",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is XGBoost?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-121",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is AdaBoost?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-122",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "Bagging vs boosting.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-123",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "What is Naive Bayes?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-124",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "Why is Naive Bayes called naive?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-125",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is SVM?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-126",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Hard",
+    "questionType": "Descriptive",
+    "question": "What is the kernel trick?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-127",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "How do you handle imbalanced datasets?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-128",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is SMOTE?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-129",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "What is a confusion matrix?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-130",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "What is accuracy?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-131",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "What is precision?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-132",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "What is recall?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-133",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "What is F1 score?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-134",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is ROC-AUC?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-135",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is PR-AUC?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-136",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "When can accuracy be misleading?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-137",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "What are regression evaluation metrics?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-138",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "MAE vs MSE.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-139",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "RMSE vs MAE.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-140",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is R-squared?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-141",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is adjusted R-squared?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-142",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "How do you select the best ML model?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-143",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "How do you tune hyperparameters?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-144",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "Grid search vs random search.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-145",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is early stopping?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-146",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Hard",
+    "questionType": "Descriptive",
+    "question": "What is model calibration?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-147",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is ensemble learning?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-148",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "Hard voting vs soft voting.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-149",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Hard",
+    "questionType": "Descriptive",
+    "question": "What is stacking?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-150",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "What is feature scaling?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-151",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "Normalization vs standardization.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-152",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "When should you use standardization?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-153",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "How do you handle missing values?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-154",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "Mean/median/mode imputation.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-155",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "When should you not impute missing values?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-156",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Hard",
+    "questionType": "Descriptive",
+    "question": "How do you detect data leakage?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-157",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "How do you handle categorical variables?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-158",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "One-hot encoding vs label encoding.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-159",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is target encoding?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-160",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is multicollinearity?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-161",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "How do you detect multicollinearity?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-162",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is VIF?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-163",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "How do you handle multicollinearity?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-164",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Hard",
+    "questionType": "Descriptive",
+    "question": "What is bias-variance tradeoff?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-165",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Hard",
+    "questionType": "Descriptive",
+    "question": "Explain the complete ML lifecycle.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-166",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Hard",
+    "questionType": "Descriptive",
+    "question": "How do you deploy a machine learning model?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-167",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is model drift?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-168",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is concept drift?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-169",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Hard",
+    "questionType": "Descriptive",
+    "question": "How do you monitor an ML model in production?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-170",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Deep Learning",
+    "subtopic": "Deep Learning",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "What is a neural network?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-171",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Deep Learning",
+    "subtopic": "Deep Learning",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "What is an activation function?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-172",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Deep Learning",
+    "subtopic": "Deep Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "ReLU vs sigmoid vs tanh.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-173",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Deep Learning",
+    "subtopic": "Deep Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is backpropagation?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-174",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Deep Learning",
+    "subtopic": "Deep Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "How does gradient descent work?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-175",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Deep Learning",
+    "subtopic": "Deep Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "Batch vs stochastic vs mini-batch gradient descent.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-176",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Deep Learning",
+    "subtopic": "Deep Learning",
+    "difficulty": "Hard",
+    "questionType": "Descriptive",
+    "question": "What is vanishing gradient?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-177",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Deep Learning",
+    "subtopic": "Deep Learning",
+    "difficulty": "Hard",
+    "questionType": "Descriptive",
+    "question": "What is exploding gradient?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-178",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Deep Learning",
+    "subtopic": "Deep Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is dropout?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-179",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Deep Learning",
+    "subtopic": "Deep Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is batch normalization?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-180",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Deep Learning",
+    "subtopic": "Deep Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "Explain CNN architecture.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-181",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Deep Learning",
+    "subtopic": "Deep Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "Why are CNNs useful for images?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-182",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Deep Learning",
+    "subtopic": "Deep Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is convolution?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-183",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Deep Learning",
+    "subtopic": "Deep Learning",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "What is pooling?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-184",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Deep Learning",
+    "subtopic": "Deep Learning",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "Max pooling vs average pooling.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-185",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Deep Learning",
+    "subtopic": "Deep Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is data augmentation?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-186",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Deep Learning",
+    "subtopic": "Deep Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is transfer learning?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-187",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Deep Learning",
+    "subtopic": "Deep Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "RNN vs LSTM.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-188",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Deep Learning",
+    "subtopic": "Deep Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What problem does LSTM solve?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-189",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Deep Learning",
+    "subtopic": "Deep Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is GRU?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-190",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Deep Learning",
+    "subtopic": "Deep Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is attention?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-191",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Deep Learning",
+    "subtopic": "Deep Learning",
+    "difficulty": "Hard",
+    "questionType": "Descriptive",
+    "question": "What is self-attention?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-192",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Deep Learning",
+    "subtopic": "Deep Learning",
+    "difficulty": "Hard",
+    "questionType": "Descriptive",
+    "question": "What is a Transformer?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-193",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Deep Learning",
+    "subtopic": "Deep Learning",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "Encoder vs decoder.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-194",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Deep Learning",
+    "subtopic": "Deep Learning",
+    "difficulty": "Hard",
+    "questionType": "Descriptive",
+    "question": "Why are Transformers useful for NLP?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-195",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "NLP",
+    "subtopic": "Natural Language Processing",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "What is tokenization?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-196",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "NLP",
+    "subtopic": "Natural Language Processing",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "What is stemming?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-197",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "NLP",
+    "subtopic": "Natural Language Processing",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "What is lemmatization?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-198",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "NLP",
+    "subtopic": "Natural Language Processing",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "Bag of Words vs TF-IDF.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-199",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "NLP",
+    "subtopic": "Natural Language Processing",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What are word embeddings?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-200",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "NLP",
+    "subtopic": "Natural Language Processing",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "Word2Vec vs GloVe.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-201",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "NLP",
+    "subtopic": "Natural Language Processing",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is named entity recognition?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-202",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "NLP",
+    "subtopic": "Natural Language Processing",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "What is sentiment analysis?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-203",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "NLP",
+    "subtopic": "Natural Language Processing",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is sequence-to-sequence learning?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-204",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "NLP",
+    "subtopic": "Natural Language Processing",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is BLEU score?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-205",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Generative AI",
+    "subtopic": "Generative AI",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "What is an LLM?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-206",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Generative AI",
+    "subtopic": "Generative AI",
+    "difficulty": "Hard",
+    "questionType": "Descriptive",
+    "question": "How does a Transformer-based LLM work?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-207",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Generative AI",
+    "subtopic": "Generative AI",
+    "difficulty": "Easy",
+    "questionType": "Descriptive",
+    "question": "What is an embedding?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-208",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Generative AI",
+    "subtopic": "Generative AI",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is a vector database?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-209",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Generative AI",
+    "subtopic": "Generative AI",
+    "difficulty": "Medium",
+    "questionType": "Descriptive",
+    "question": "What is RAG?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  },
+  {
+    "questionId": "celebal-tech-210",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Generative AI",
+    "subtopic": "Generative AI",
+    "difficulty": "Hard",
+    "questionType": "Descriptive",
+    "question": "Why use RAG instead of fine-tuning?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "",
+    "explanation": "Celebal Technologies Practice Question",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_technical"
+  }
+]

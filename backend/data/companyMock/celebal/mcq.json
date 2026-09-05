@@ -1,0 +1,5714 @@
+[
+  {
+    "questionId": "celebal-mcq-001",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics",
+    "subtopic": "Statistics & Probability",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is the mean of the dataset [2, 4, 6, 8, 10]?",
+    "options": [
+      "5",
+      "6",
+      "7",
+      "8"
+    ],
+    "correctAnswer": "6",
+    "expectedAnswer": "",
+    "explanation": "Mean = (2+4+6+8+10)/5 = 30/5 = 6",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-002",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics",
+    "subtopic": "Statistics & Probability",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Which measure of central tendency is most affected by outliers?",
+    "options": [
+      "Mean",
+      "Median",
+      "Mode",
+      "Range"
+    ],
+    "correctAnswer": "Mean",
+    "expectedAnswer": "",
+    "explanation": "The mean is sensitive to extreme values (outliers) because it uses all values in its calculation.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-003",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics",
+    "subtopic": "Statistics & Probability",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What does a p-value of 0.03 indicate at significance level α = 0.05?",
+    "options": [
+      "Fail to reject the null hypothesis",
+      "Reject the null hypothesis",
+      "The result is not statistically significant",
+      "There is a 3% chance the null hypothesis is true"
+    ],
+    "correctAnswer": "Reject the null hypothesis",
+    "expectedAnswer": "",
+    "explanation": "p-value (0.03) < α (0.05), so we reject the null hypothesis. The result is statistically significant.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-004",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics",
+    "subtopic": "Statistics & Probability",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Which test is used to compare means of two independent groups?",
+    "options": [
+      "Paired t-test",
+      "Independent t-test",
+      "Chi-square test",
+      "ANOVA"
+    ],
+    "correctAnswer": "Independent t-test",
+    "expectedAnswer": "",
+    "explanation": "Independent t-test compares means of two independent groups. Paired t-test is for related groups.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-005",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Which of the following is a supervised learning algorithm?",
+    "options": [
+      "K-Means Clustering",
+      "Linear Regression",
+      "PCA",
+      "DBSCAN"
+    ],
+    "correctAnswer": "Linear Regression",
+    "expectedAnswer": "",
+    "explanation": "Linear Regression is supervised (uses labeled data). K-Means, PCA, DBSCAN are unsupervised.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-006",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What does overfitting mean in machine learning?",
+    "options": [
+      "Model performs well on training data but poorly on test data",
+      "Model performs poorly on both training and test data",
+      "Model is too simple to capture patterns",
+      "Model has high bias and low variance"
+    ],
+    "correctAnswer": "Model performs well on training data but poorly on test data",
+    "expectedAnswer": "",
+    "explanation": "Overfitting occurs when a model learns noise in training data, performing well on training but poorly on unseen data.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-007",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Which metric is most appropriate for an imbalanced binary classification problem?",
+    "options": [
+      "Accuracy",
+      "F1 Score",
+      "Mean Squared Error",
+      "R-squared"
+    ],
+    "correctAnswer": "F1 Score",
+    "expectedAnswer": "",
+    "explanation": "F1 Score is the harmonic mean of precision and recall, making it suitable for imbalanced datasets where accuracy can be misleading.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-008",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the main advantage of Random Forest over a single Decision Tree?",
+    "options": [
+      "Faster training time",
+      "Reduced overfitting through ensemble averaging",
+      "Requires less memory",
+      "Simpler to interpret"
+    ],
+    "correctAnswer": "Reduced overfitting through ensemble averaging",
+    "expectedAnswer": "",
+    "explanation": "Random Forest reduces overfitting by combining multiple decision trees trained on different subsets of data and features.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-009",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "In gradient boosting, what does each new tree correct?",
+    "options": [
+      "The errors of the original dataset",
+      "The residuals of the combined ensemble so far",
+      "The bias of the previous tree",
+      "The variance of the training data"
+    ],
+    "correctAnswer": "The residuals of the combined ensemble so far",
+    "expectedAnswer": "",
+    "explanation": "Gradient boosting sequentially adds trees, each one fitting the residuals (errors) of the combined ensemble up to that point.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-010",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the purpose of a validation set?",
+    "options": [
+      "To train the model on more data",
+      "To tune hyperparameters and prevent overfitting",
+      "To evaluate final model performance on unseen data",
+      "To increase the size of the training set"
+    ],
+    "correctAnswer": "To tune hyperparameters and prevent overfitting",
+    "expectedAnswer": "",
+    "explanation": "Validation set is used for model selection and hyperparameter tuning, helping detect overfitting during training.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-011",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Deep Learning",
+    "subtopic": "Deep Learning",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is the purpose of an activation function in a neural network?",
+    "options": [
+      "To initialize weights",
+      "To introduce non-linearity",
+      "To reduce the learning rate",
+      "To normalize the input data"
+    ],
+    "correctAnswer": "To introduce non-linearity",
+    "expectedAnswer": "",
+    "explanation": "Activation functions introduce non-linearity, allowing neural networks to learn complex patterns beyond linear relationships.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-012",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Deep Learning",
+    "subtopic": "Deep Learning",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Which problem does the LSTM architecture specifically address?",
+    "options": [
+      "Overfitting in convolutional networks",
+      "Vanishing gradient problem in RNNs",
+      "Slow convergence in feedforward networks",
+      "Poor performance on image classification"
+    ],
+    "correctAnswer": "Vanishing gradient problem in RNNs",
+    "expectedAnswer": "",
+    "explanation": "LSTM (Long Short-Term Memory) networks use gates to preserve gradients over long sequences, addressing the vanishing gradient problem.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-013",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Deep Learning",
+    "subtopic": "Deep Learning",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the role of a dropout layer in neural networks?",
+    "options": [
+      "To increase model capacity",
+      "To randomly deactivate neurons during training to prevent overfitting",
+      "To normalize batch statistics",
+      "To accelerate training speed"
+    ],
+    "correctAnswer": "To randomly deactivate neurons during training to prevent overfitting",
+    "expectedAnswer": "",
+    "explanation": "Dropout randomly sets a fraction of neurons to zero during training, preventing co-adaptation and reducing overfitting.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-014",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "NLP",
+    "subtopic": "Natural Language Processing",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is tokenization in NLP?",
+    "options": [
+      "Converting text to numerical vectors",
+      "Splitting text into individual units (tokens)",
+      "Removing stop words from text",
+      "Stemming words to their root form"
+    ],
+    "correctAnswer": "Splitting text into individual units (tokens)",
+    "expectedAnswer": "",
+    "explanation": "Tokenization is the process of splitting text into smaller units such as words, subwords, or characters.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-015",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "NLP",
+    "subtopic": "Natural Language Processing",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the main difference between Bag of Words and TF-IDF?",
+    "options": [
+      "BoW uses word frequency, TF-IDF also considers document frequency",
+      "TF-IDF is faster than BoW",
+      "BoW works only for English, TF-IDF is language-agnostic",
+      "TF-IDF removes stop words, BoW does not"
+    ],
+    "correctAnswer": "BoW uses word frequency, TF-IDF also considers document frequency",
+    "expectedAnswer": "",
+    "explanation": "TF-IDF weights words by their frequency in a document inversely weighted by their frequency across all documents.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-016",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Python",
+    "subtopic": "Python",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is the output of `type([])` in Python?",
+    "options": [
+      "<class 'array'>",
+      "<class 'list'>",
+      "<class 'tuple'>",
+      "<class 'dict'>"
+    ],
+    "correctAnswer": "<class 'list'>",
+    "expectedAnswer": "",
+    "explanation": "In Python, `[]` creates an empty list, and `type([])` returns `<class 'list'>`.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-017",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Python",
+    "subtopic": "Python",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Which of the following is immutable in Python?",
+    "options": [
+      "List",
+      "Dictionary",
+      "Tuple",
+      "Set"
+    ],
+    "correctAnswer": "Tuple",
+    "expectedAnswer": "",
+    "explanation": "Tuples are immutable in Python - once created, their elements cannot be modified.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-018",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Python",
+    "subtopic": "Python",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is a decorator in Python?",
+    "options": [
+      "A variable naming convention",
+      "A function that takes another function and extends its behavior",
+      "A comment format for documentation",
+      "A type of loop construct"
+    ],
+    "correctAnswer": "A function that takes another function and extends its behavior",
+    "expectedAnswer": "",
+    "explanation": "Decorators are functions that modify the behavior of other functions, commonly used for logging, authentication, etc.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-019",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "SQL",
+    "subtopic": "SQL",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Which SQL clause is used to filter rows after grouping?",
+    "options": [
+      "WHERE",
+      "HAVING",
+      "ORDER BY",
+      "GROUP BY"
+    ],
+    "correctAnswer": "HAVING",
+    "expectedAnswer": "",
+    "explanation": "HAVING filters groups created by GROUP BY. WHERE filters rows before grouping.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-020",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "SQL",
+    "subtopic": "SQL",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the difference between INNER JOIN and LEFT JOIN?",
+    "options": [
+      "INNER JOIN returns all rows, LEFT JOIN returns only matching rows",
+      "INNER JOIN returns only matching rows, LEFT JOIN returns all rows from left table plus matching from right",
+      "There is no difference",
+      "LEFT JOIN is faster than INNER JOIN"
+    ],
+    "correctAnswer": "INNER JOIN returns only matching rows, LEFT JOIN returns all rows from left table plus matching from right",
+    "expectedAnswer": "",
+    "explanation": "INNER JOIN returns rows with matches in both tables. LEFT JOIN returns all left table rows with NULLs where no match exists.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-021",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "In SVM, what is the kernel trick used for?",
+    "options": [
+      "To reduce the number of support vectors",
+      "To transform data into higher dimensions where it becomes linearly separable",
+      "To speed up the training process",
+      "To handle missing values in the dataset"
+    ],
+    "correctAnswer": "To transform data into higher dimensions where it becomes linearly separable",
+    "expectedAnswer": "",
+    "explanation": "The kernel trick implicitly maps data to higher dimensions without explicit computation, enabling linear separation of non-linear data.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-022",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the curse of dimensionality?",
+    "options": [
+      "Models train slower with more features",
+      "As dimensions increase, data becomes sparse and distances become less meaningful",
+      "Neural networks cannot handle high-dimensional data",
+      "More features always lead to better model performance"
+    ],
+    "correctAnswer": "As dimensions increase, data becomes sparse and distances become less meaningful",
+    "expectedAnswer": "",
+    "explanation": "In high-dimensional spaces, data points become equidistant, making distance-based algorithms less effective.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-023",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics",
+    "subtopic": "Statistics & Probability",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is the Central Limit Theorem?",
+    "options": [
+      "The mean of any distribution is always normally distributed",
+      "The sampling distribution of the sample mean approaches normality as sample size increases, regardless of population distribution",
+      "All datasets follow a normal distribution",
+      "The standard deviation decreases as sample size increases"
+    ],
+    "correctAnswer": "The sampling distribution of the sample mean approaches normality as sample size increases, regardless of population distribution",
+    "expectedAnswer": "",
+    "explanation": "CLT states that for sufficiently large samples, the sampling distribution of the mean approximates a normal distribution.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-024",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Deep Learning",
+    "subtopic": "Deep Learning",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is the key innovation of the Transformer architecture over RNNs?",
+    "options": [
+      "Deeper network layers",
+      "Self-attention mechanism enabling parallel processing of sequences",
+      "Use of convolutional layers",
+      "Smaller model size"
+    ],
+    "correctAnswer": "Self-attention mechanism enabling parallel processing of sequences",
+    "expectedAnswer": "",
+    "explanation": "Transformers use self-attention to process all positions in parallel, unlike RNNs which process sequentially.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-025",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Generative AI",
+    "subtopic": "Generative AI",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the purpose of a vector database in RAG systems?",
+    "options": [
+      "To store raw text documents",
+      "To store and retrieve document embeddings by semantic similarity",
+      "To train language models from scratch",
+      "To compress text data for storage"
+    ],
+    "correctAnswer": "To store and retrieve document embeddings by semantic similarity",
+    "expectedAnswer": "",
+    "explanation": "Vector databases store embeddings and enable fast similarity search, which is essential for retrieving relevant context in RAG.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-026",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Generative AI",
+    "subtopic": "Generative AI",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What does RAG stand for?",
+    "options": [
+      "Random Aggregate Generation",
+      "Retrieval-Augmented Generation",
+      "Recurrent Attention Gateway",
+      "Recursive Auto-Gradient"
+    ],
+    "correctAnswer": "Retrieval-Augmented Generation",
+    "expectedAnswer": "",
+    "explanation": "RAG combines retrieval (finding relevant documents) with generation (producing answers) to ground LLM responses in factual data.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-027",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is feature scaling?",
+    "options": [
+      "Adding more features to the dataset",
+      "Transforming features to a common scale without distorting differences",
+      "Removing irrelevant features",
+      "Creating new features from existing ones"
+    ],
+    "correctAnswer": "Transforming features to a common scale without distorting differences",
+    "expectedAnswer": "",
+    "explanation": "Feature scaling normalizes the range of features so that no single feature dominates due to its magnitude.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-028",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Python",
+    "subtopic": "Python",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is the output of `list(range(0, 10, 3))`?",
+    "options": [
+      "[0, 3, 6, 9]",
+      "[0, 3, 6]",
+      "[3, 6, 9]",
+      "[0, 3, 6, 9, 12]"
+    ],
+    "correctAnswer": "[0, 3, 6, 9]",
+    "expectedAnswer": "",
+    "explanation": "range(0, 10, 3) generates 0, 3, 6, 9 (start=0, stop=10, step=3).",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-029",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "NLP",
+    "subtopic": "Natural Language Processing",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is the BLEU score used for?",
+    "options": [
+      "Measuring sentiment polarity of text",
+      "Evaluating quality of machine-translated text against reference translations",
+      "Detecting spam emails",
+      "Classifying text topics"
+    ],
+    "correctAnswer": "Evaluating quality of machine-translated text against reference translations",
+    "expectedAnswer": "",
+    "explanation": "BLEU (Bilingual Evaluation Understudy) measures how similar machine translations are to human reference translations.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-030",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "ML",
+    "subtopic": "Machine Learning",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is the difference between classification and regression?",
+    "options": [
+      "Classification predicts categories, regression predicts continuous values",
+      "Classification is faster than regression",
+      "Regression is unsupervised, classification is supervised",
+      "They are the same thing"
+    ],
+    "correctAnswer": "Classification predicts categories, regression predicts continuous values",
+    "expectedAnswer": "",
+    "explanation": "Classification outputs discrete labels (categories), while regression outputs continuous numerical values.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-031",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics and Probability",
+    "subtopic": "Central Limit Theorem",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What does the Central Limit Theorem state?",
+    "options": [
+      "The sampling distribution of the sample mean approaches a normal distribution as sample size increases",
+      "The population distribution becomes normal with large samples",
+      "The sample standard deviation equals the population standard deviation",
+      "The mean of all possible samples equals zero"
+    ],
+    "correctAnswer": "The sampling distribution of the sample mean approaches a normal distribution as sample size increases",
+    "expectedAnswer": "",
+    "explanation": "The CLT states that for any population with finite variance, the sampling distribution of the sample mean approaches a normal distribution as sample size increases, regardless of the population's shape.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-032",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics and Probability",
+    "subtopic": "Hypothesis Testing",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "A researcher conducts a hypothesis test and gets a p-value of 0.03. At significance level α = 0.05, what can they conclude?",
+    "options": [
+      "Reject the null hypothesis",
+      "Fail to reject the null hypothesis",
+      "Accept the alternative hypothesis",
+      "The result is not statistically significant"
+    ],
+    "correctAnswer": "Reject the null hypothesis",
+    "expectedAnswer": "",
+    "explanation": "Since p-value (0.03) < α (0.05), we reject the null hypothesis. This means the observed data is unlikely under the null hypothesis.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-033",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics and Probability",
+    "subtopic": "Probability Distributions",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Which distribution is used to model the number of successes in a fixed number of independent Bernoulli trials?",
+    "options": [
+      "Binomial distribution",
+      "Poisson distribution",
+      "Normal distribution",
+      "Uniform distribution"
+    ],
+    "correctAnswer": "Binomial distribution",
+    "expectedAnswer": "",
+    "explanation": "The Binomial distribution models the number of successes in n independent Bernoulli trials, each with probability of success p.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-034",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics and Probability",
+    "subtopic": "Variance and Standard Deviation",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "If the standard deviation of a dataset is 5, what is the variance?",
+    "options": [
+      "25",
+      "10",
+      "5",
+      "√5"
+    ],
+    "correctAnswer": "25",
+    "expectedAnswer": "",
+    "explanation": "Variance is the square of standard deviation. So variance = 5² = 25.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-035",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics and Probability",
+    "subtopic": "Correlation",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What does a correlation coefficient of -0.9 indicate?",
+    "options": [
+      "Strong negative linear relationship",
+      "Strong positive linear relationship",
+      "No relationship",
+      "Weak negative linear relationship"
+    ],
+    "correctAnswer": "Strong negative linear relationship",
+    "expectedAnswer": "",
+    "explanation": "A correlation coefficient of -0.9 indicates a strong negative linear relationship, meaning as one variable increases, the other tends to decrease.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-036",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Classification",
+    "subtopic": "Logistic Regression",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is the output range of the sigmoid function used in logistic regression?",
+    "options": [
+      "(0, 1)",
+      "(-1, 1)",
+      "[0, 1]",
+      "(-∞, ∞)"
+    ],
+    "correctAnswer": "(0, 1)",
+    "expectedAnswer": "",
+    "explanation": "The sigmoid function σ(x) = 1/(1+e^(-x)) outputs values strictly between 0 and 1, representing probabilities.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-037",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Classification",
+    "subtopic": "Decision Boundaries",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Which classifier creates linear decision boundaries?",
+    "options": [
+      "Logistic Regression",
+      "Random Forest",
+      "Neural Network",
+      "KNN"
+    ],
+    "correctAnswer": "Logistic Regression",
+    "expectedAnswer": "",
+    "explanation": "Logistic Regression creates a linear decision boundary. It learns a linear combination of features and applies the sigmoid function.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-038",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Classification",
+    "subtopic": "Precision-Recall",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "In a fraud detection system, which metric is more important: precision or recall?",
+    "options": [
+      "Precision",
+      "Recall",
+      "Both are equally important",
+      "Neither is important"
+    ],
+    "correctAnswer": "Recall",
+    "expectedAnswer": "",
+    "explanation": "In fraud detection, recall is more important because missing a fraud case (false negative) is typically more costly than flagging a legitimate transaction (false positive).",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-039",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Classification",
+    "subtopic": "Confusion Matrix",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What does a false positive represent in binary classification?",
+    "options": [
+      "The model incorrectly predicted positive",
+      "The model incorrectly predicted negative",
+      "The model correctly predicted positive",
+      "The model correctly predicted negative"
+    ],
+    "correctAnswer": "The model incorrectly predicted positive",
+    "expectedAnswer": "",
+    "explanation": "A false positive (Type I error) occurs when the model predicts the positive class incorrectly, but the actual class is negative.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-040",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Classification",
+    "subtopic": "Multi-class Classification",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Which strategy is commonly used to extend binary classifiers to multi-class problems?",
+    "options": [
+      "One-vs-Rest",
+      "Bagging",
+      "Boosting",
+      "Stacking"
+    ],
+    "correctAnswer": "One-vs-Rest",
+    "expectedAnswer": "",
+    "explanation": "One-vs-Rest (OvR) trains N binary classifiers, one for each class, where each classifier distinguishes one class from all others.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-041",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Regression",
+    "subtopic": "Linear Regression",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What does linear regression minimize?",
+    "options": [
+      "Sum of squared residuals",
+      "Sum of absolute residuals",
+      "Maximum residual",
+      "Number of misclassified points"
+    ],
+    "correctAnswer": "Sum of squared residuals",
+    "expectedAnswer": "",
+    "explanation": "Linear regression minimizes the sum of squared residuals (RSS) to find the best-fitting line through the data.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-042",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Regression",
+    "subtopic": "Polynomial Regression",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is a key risk of using high-degree polynomial regression?",
+    "options": [
+      "Underfitting",
+      "Overfitting",
+      "High bias",
+      "Too few parameters"
+    ],
+    "correctAnswer": "Overfitting",
+    "expectedAnswer": "",
+    "explanation": "High-degree polynomials can fit training data perfectly but generalize poorly to new data, causing overfitting due to increased model complexity.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-043",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Regression",
+    "subtopic": "Regularization",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is the main purpose of L1 regularization (Lasso)?",
+    "options": [
+      "Feature selection by driving coefficients to zero",
+      "Keeping all features but reducing their magnitude",
+      "Increasing model complexity",
+      "Speeding up training"
+    ],
+    "correctAnswer": "Feature selection by driving coefficients to zero",
+    "expectedAnswer": "",
+    "explanation": "L1 regularization adds absolute value of coefficients to the loss function, which can drive some coefficients exactly to zero, effectively performing feature selection.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-044",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Regression",
+    "subtopic": "R-squared",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What does an R-squared value of 0.85 indicate?",
+    "options": [
+      "85% of the variance in the target is explained by the model",
+      "85% of predictions are correct",
+      "The model has 85% accuracy",
+      "The model overfits 85% of the time"
+    ],
+    "correctAnswer": "85% of the variance in the target is explained by the model",
+    "expectedAnswer": "",
+    "explanation": "R-squared represents the proportion of variance in the dependent variable that is predictable from the independent variables.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-045",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Regression",
+    "subtopic": "Multicollinearity",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "How does multicollinearity affect linear regression?",
+    "options": [
+      "Inflates standard errors of coefficients",
+      "Improves model accuracy",
+      "Increases R-squared",
+      "Reduces overfitting"
+    ],
+    "correctAnswer": "Inflates standard errors of coefficients",
+    "expectedAnswer": "",
+    "explanation": "Multicollinearity makes coefficient estimates unstable by inflating their standard errors, making it difficult to determine individual feature importance.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-046",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Decision Trees",
+    "subtopic": "Information Gain",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is information gain in decision trees?",
+    "options": [
+      "Reduction in entropy after splitting",
+      "Total number of features",
+      "Number of leaf nodes",
+      "Accuracy of the model"
+    ],
+    "correctAnswer": "Reduction in entropy after splitting",
+    "expectedAnswer": "",
+    "explanation": "Information gain measures the reduction in entropy (or impurity) achieved by splitting on a particular feature. Higher information gain indicates a better split.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-047",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Decision Trees",
+    "subtopic": "Pruning",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is the purpose of pruning a decision tree?",
+    "options": [
+      "To reduce overfitting",
+      "To increase depth",
+      "To add more features",
+      "To increase accuracy on training data"
+    ],
+    "correctAnswer": "To reduce overfitting",
+    "expectedAnswer": "",
+    "explanation": "Pruning removes branches that have little power to classify instances, reducing model complexity and preventing overfitting.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-048",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Decision Trees",
+    "subtopic": "Gini Impurity",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the Gini impurity of a perfectly pure node?",
+    "options": [
+      "0",
+      "1",
+      "0.5",
+      "-1"
+    ],
+    "correctAnswer": "0",
+    "expectedAnswer": "",
+    "explanation": "A perfectly pure node has Gini impurity of 0, meaning all samples belong to the same class.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-049",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Decision Trees",
+    "subtopic": "Overfitting",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "A decision tree with depth 50 is trained on 100 samples. What is likely happening?",
+    "options": [
+      "The tree is likely overfitting",
+      "The tree is underfitting",
+      "The tree is optimal",
+      "The tree needs more data"
+    ],
+    "correctAnswer": "The tree is likely overfitting",
+    "expectedAnswer": "",
+    "explanation": "A very deep tree on a small dataset is likely overfitting, memorizing noise rather than learning generalizable patterns.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-050",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Decision Trees",
+    "subtopic": "Splitting Criteria",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Which criterion is commonly used to decide the best split in a decision tree?",
+    "options": [
+      "Information Gain or Gini Impurity",
+      "Mean Squared Error",
+      "R-squared",
+      "AUC-ROC"
+    ],
+    "correctAnswer": "Information Gain or Gini Impurity",
+    "expectedAnswer": "",
+    "explanation": "Decision trees commonly use Information Gain (based on entropy) or Gini Impurity to evaluate the quality of splits.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-051",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Random Forest",
+    "subtopic": "Bagging",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What does Random Forest use to reduce correlation between trees?",
+    "options": [
+      "Random feature subsets at each split",
+      "Random data subsets",
+      "Random hyperparameters",
+      "Random initialization"
+    ],
+    "correctAnswer": "Random feature subsets at each split",
+    "expectedAnswer": "",
+    "explanation": "Random Forest introduces randomness by considering only a random subset of features at each split, which decorrelates the trees.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-052",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Random Forest",
+    "subtopic": "Ensemble",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Why does Random Forest generally perform better than a single decision tree?",
+    "options": [
+      "Averaging reduces variance",
+      "It uses deeper trees",
+      "It uses more data",
+      "It uses fewer features"
+    ],
+    "correctAnswer": "Averaging reduces variance",
+    "expectedAnswer": "",
+    "explanation": "Random Forest aggregates predictions from multiple trees, which reduces variance through averaging while maintaining low bias.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-053",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Random Forest",
+    "subtopic": "Feature Importance",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "How is feature importance typically calculated in Random Forest?",
+    "options": [
+      "Mean decrease in impurity across all trees",
+      "Number of times feature is used",
+      "Correlation with target",
+      "Chi-square test"
+    ],
+    "correctAnswer": "Mean decrease in impurity across all trees",
+    "expectedAnswer": "",
+    "explanation": "Feature importance is calculated as the mean decrease in impurity (e.g., Gini) across all trees where the feature is used for splitting.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-054",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Random Forest",
+    "subtopic": "Out-of-Bag",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is the Out-of-Bag (OOB) score in Random Forest?",
+    "options": [
+      "Accuracy estimate using samples not in bootstrap",
+      "Test set accuracy",
+      "Cross-validation score",
+      "Training accuracy"
+    ],
+    "correctAnswer": "Accuracy estimate using samples not in bootstrap",
+    "expectedAnswer": "",
+    "explanation": "OOB score uses samples not included in each tree's bootstrap sample to estimate generalization performance without a separate validation set.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-055",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Random Forest",
+    "subtopic": "Hyperparameters",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is a key hyperparameter in Random Forest?",
+    "options": [
+      "Number of trees (n_estimators)",
+      "Learning rate",
+      "Number of layers",
+      "Kernel type"
+    ],
+    "correctAnswer": "Number of trees (n_estimators)",
+    "expectedAnswer": "",
+    "explanation": "n_estimators controls how many trees are built in the forest. More trees generally improve performance but increase computation.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-056",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Gradient Boosting",
+    "subtopic": "Sequential Learning",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "How does Gradient Boosting differ from Random Forest?",
+    "options": [
+      "Trees are built sequentially to correct previous errors",
+      "Trees are built in parallel",
+      "Uses only one tree",
+      "Uses bagging instead of boosting"
+    ],
+    "correctAnswer": "Trees are built sequentially to correct previous errors",
+    "expectedAnswer": "",
+    "explanation": "Gradient Boosting builds trees sequentially, where each new tree focuses on reducing the residual errors of the previous ensemble.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-057",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Gradient Boosting",
+    "subtopic": "Learning Rate",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What happens if the learning rate in Gradient Boosting is too high?",
+    "options": [
+      "Model may overfit and fail to converge",
+      "Model underfits",
+      "Training is faster but less accurate",
+      "No effect"
+    ],
+    "correctAnswer": "Model may overfit and fail to converge",
+    "expectedAnswer": "",
+    "explanation": "A high learning rate means each tree contributes too much to the ensemble, potentially causing overfitting and convergence issues.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-058",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Gradient Boosting",
+    "subtopic": "Weak Learners",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What type of base learners does Gradient Boosting typically use?",
+    "options": [
+      "Shallow decision trees (stumps)",
+      "Deep decision trees",
+      "Linear models",
+      "Neural networks"
+    ],
+    "correctAnswer": "Shallow decision trees (stumps)",
+    "expectedAnswer": "",
+    "explanation": "Gradient Boosting typically uses shallow decision trees (stumps) as weak learners to keep individual contributions small and reduce overfitting.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-059",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Gradient Boosting",
+    "subtopic": "Loss Function",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What loss function does Gradient Boosting for regression typically minimize?",
+    "options": [
+      "Mean Squared Error",
+      "Cross-Entropy Loss",
+      "Hinge Loss",
+      "MAE"
+    ],
+    "correctAnswer": "Mean Squared Error",
+    "expectedAnswer": "",
+    "explanation": "Gradient Boosting for regression minimizes the Mean Squared Error (MSE) by fitting trees to the negative gradient of the loss function.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-060",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Gradient Boosting",
+    "subtopic": "Overfitting Control",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "Which technique is most effective to prevent overfitting in Gradient Boosting?",
+    "options": [
+      "Shrinkage (learning rate)",
+      "Increasing tree depth",
+      "Adding more trees",
+      "Removing regularization"
+    ],
+    "correctAnswer": "Shrinkage (learning rate)",
+    "expectedAnswer": "",
+    "explanation": "Shrinkage reduces the contribution of each tree, requiring more trees to fit but resulting in better generalization and reduced overfitting.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-061",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "XGBoost",
+    "subtopic": "Regularization",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What makes XGBoost different from regular Gradient Boosting?",
+    "options": [
+      "Built-in L1/L2 regularization",
+      "Faster training",
+      "Better accuracy",
+      "Simpler implementation"
+    ],
+    "correctAnswer": "Built-in L1/L2 regularization",
+    "expectedAnswer": "",
+    "explanation": "XGBoost adds L1 and L2 regularization terms to the objective function, which helps prevent overfitting and improves generalization.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-062",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "XGBoost",
+    "subtopic": "Missing Values",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "How does XGBoost handle missing values?",
+    "options": [
+      "It learns the best direction for missing values",
+      "It imputes with mean",
+      "It drops rows with missing values",
+      "It requires complete data"
+    ],
+    "correctAnswer": "It learns the best direction for missing values",
+    "expectedAnswer": "",
+    "explanation": "XGBoost learns the optimal direction (left or right) for missing values during tree construction, making it robust to missing data.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-063",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "XGBoost",
+    "subtopic": "Parallel Processing",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "How does XGBoost achieve parallelization?",
+    "options": [
+      "At the feature level within each tree",
+      "At the tree level across iterations",
+      "At the data level across samples",
+      "At the node level within trees"
+    ],
+    "correctAnswer": "At the feature level within each tree",
+    "expectedAnswer": "",
+    "explanation": "XGBoost parallelizes feature evaluation within each tree, not across trees, since trees are built sequentially in boosting.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-064",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "XGBoost",
+    "subtopic": "Objective Function",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is the objective function in XGBoost?",
+    "options": [
+      "Loss function + regularization term",
+      "Loss function only",
+      "Regularization only",
+      "Accuracy metric"
+    ],
+    "correctAnswer": "Loss function + regularization term",
+    "expectedAnswer": "",
+    "explanation": "XGBoost's objective combines the loss function (e.g., MSE) with L1/L2 regularization terms to balance model fit and complexity.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-065",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "XGBoost",
+    "subtopic": "Early Stopping",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is the purpose of early stopping in XGBoost?",
+    "options": [
+      "Stop training when validation performance stops improving",
+      "Stop after fixed number of iterations",
+      "Stop when training loss is zero",
+      "Stop when learning rate is too low"
+    ],
+    "correctAnswer": "Stop training when validation performance stops improving",
+    "expectedAnswer": "",
+    "explanation": "Early stopping monitors validation performance and stops training when it stops improving, preventing overfitting and saving computation.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-066",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "AdaBoost",
+    "subtopic": "Weighted Voting",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "How does AdaBoost combine predictions from weak learners?",
+    "options": [
+      "Weighted majority vote",
+      "Simple majority vote",
+      "Averaging",
+      "Stacking"
+    ],
+    "correctAnswer": "Weighted majority vote",
+    "expectedAnswer": "",
+    "explanation": "AdaBoost combines weak learners using weighted majority vote, where weights are proportional to each learner's accuracy.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-067",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "AdaBoost",
+    "subtopic": "Sample Weights",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What happens to misclassified samples in AdaBoost?",
+    "options": [
+      "Their weights are increased",
+      "Their weights are decreased",
+      "They are removed",
+      "Their weights stay the same"
+    ],
+    "correctAnswer": "Their weights are increased",
+    "expectedAnswer": "",
+    "explanation": "AdaBoost increases the weights of misclassified samples so that subsequent learners focus more on difficult examples.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-068",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "AdaBoost",
+    "subtopic": "Weak Learners",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the typical base learner in AdaBoost?",
+    "options": [
+      "Decision stump (depth-1 tree)",
+      "Deep decision tree",
+      "Random forest",
+      "Neural network"
+    ],
+    "correctAnswer": "Decision stump (depth-1 tree)",
+    "expectedAnswer": "",
+    "explanation": "AdaBoost typically uses decision stumps (single-split decision trees) as weak learners, which are simple models that perform slightly better than random guessing.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-069",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "AdaBoost",
+    "subtopic": "Convergence",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What happens to training error as more weak learners are added in AdaBoost?",
+    "options": [
+      "It decreases exponentially",
+      "It increases",
+      "It stays constant",
+      "It oscillates"
+    ],
+    "correctAnswer": "It decreases exponentially",
+    "expectedAnswer": "",
+    "explanation": "Under certain conditions, AdaBoost's training error decreases exponentially with the number of weak learners, converging to zero with sufficient learners.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-070",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "AdaBoost",
+    "subtopic": "Sensitivity",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is AdaBoost sensitive to?",
+    "options": [
+      "Noisy data and outliers",
+      "Feature scaling",
+      "Missing values",
+      "Multicollinearity"
+    ],
+    "correctAnswer": "Noisy data and outliers",
+    "expectedAnswer": "",
+    "explanation": "AdaBoost can be sensitive to noisy data and outliers because it increases weights of misclassified samples, which may include noise.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-071",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Naive Bayes",
+    "subtopic": "Independence Assumption",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is the 'naive' assumption in Naive Bayes?",
+    "options": [
+      "Features are conditionally independent given the class",
+      "Features are correlated",
+      "Classes are balanced",
+      "Data is normally distributed"
+    ],
+    "correctAnswer": "Features are conditionally independent given the class",
+    "expectedAnswer": "",
+    "explanation": "Naive Bayes assumes that features are conditionally independent given the class label, which simplifies computation but may not hold in practice.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-072",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Naive Bayes",
+    "subtopic": "Text Classification",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Why is Naive Bayes popular for text classification?",
+    "options": [
+      "It handles high-dimensional sparse data well",
+      "It requires large datasets",
+      "It handles missing values",
+      "It's non-parametric"
+    ],
+    "correctAnswer": "It handles high-dimensional sparse data well",
+    "expectedAnswer": "",
+    "explanation": "Naive Bayes handles high-dimensional sparse data efficiently, making it well-suited for text classification where feature vectors are large and sparse.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-073",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Naive Bayes",
+    "subtopic": "Gaussian NB",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What assumption does Gaussian Naive Bayes make about continuous features?",
+    "options": [
+      "Features follow a Gaussian distribution within each class",
+      "Features are uniformly distributed",
+      "Features are binary",
+      "Features follow Poisson distribution"
+    ],
+    "correctAnswer": "Features follow a Gaussian distribution within each class",
+    "expectedAnswer": "",
+    "explanation": "Gaussian Naive Bayes assumes that continuous features follow a Gaussian (normal) distribution within each class.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-074",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Naive Bayes",
+    "subtopic": "Laplace Smoothing",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What problem does Laplace smoothing solve in Naive Bayes?",
+    "options": [
+      "Zero probability problem for unseen feature values",
+      "Overfitting",
+      "Multicollinearity",
+      "Feature scaling"
+    ],
+    "correctAnswer": "Zero probability problem for unseen feature values",
+    "expectedAnswer": "",
+    "explanation": "Laplace smoothing adds a small constant to all feature counts, preventing zero probabilities for feature values not seen during training.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-075",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Naive Bayes",
+    "subtopic": "Posterior Probability",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What does Naive Bayes compute to make predictions?",
+    "options": [
+      "Posterior probability P(class|features)",
+      "Prior probability P(features)",
+      "Likelihood P(features|class)",
+      "Joint probability P(class, features)"
+    ],
+    "correctAnswer": "Posterior probability P(class|features)",
+    "expectedAnswer": "",
+    "explanation": "Naive Bayes computes the posterior probability P(class|features) using Bayes' theorem and the independence assumption.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-076",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "SVM",
+    "subtopic": "Hyperplane",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is the goal of SVM in linear classification?",
+    "options": [
+      "Find the hyperplane that maximizes the margin",
+      "Find the hyperplane that minimizes error",
+      "Find any separating hyperplane",
+      "Find the hyperplane closest to origin"
+    ],
+    "correctAnswer": "Find the hyperplane that maximizes the margin",
+    "expectedAnswer": "",
+    "explanation": "SVM finds the hyperplane that maximizes the margin between classes, which improves generalization to unseen data.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-077",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "SVM",
+    "subtopic": "Kernel Trick",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What does the kernel trick in SVM allow?",
+    "options": [
+      "Mapping data to higher dimensions without explicit computation",
+      "Reducing dimensionality",
+      "Handling missing values",
+      "Speeding up training"
+    ],
+    "correctAnswer": "Mapping data to higher dimensions without explicit computation",
+    "expectedAnswer": "",
+    "explanation": "The kernel trick computes inner products in higher-dimensional space without explicitly mapping data, allowing SVM to learn non-linear boundaries efficiently.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-078",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "SVM",
+    "subtopic": "Support Vectors",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What are support vectors in SVM?",
+    "options": [
+      "Data points closest to the decision boundary",
+      "All training data points",
+      "Centroids of clusters",
+      "Most distant points"
+    ],
+    "correctAnswer": "Data points closest to the decision boundary",
+    "expectedAnswer": "",
+    "explanation": "Support vectors are the data points that lie closest to the decision boundary and define the margin. Only these points influence the hyperplane.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-079",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "SVM",
+    "subtopic": "C Parameter",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What does a large value of C in SVM indicate?",
+    "options": [
+      "Hard margin (less misclassification allowed)",
+      "Soft margin (more misclassification allowed)",
+      "Larger margin",
+      "Simpler model"
+    ],
+    "correctAnswer": "Hard margin (less misclassification allowed)",
+    "expectedAnswer": "",
+    "explanation": "A large C value penalizes misclassification heavily, creating a hard margin that allows fewer misclassifications, potentially overfitting.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-080",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "SVM",
+    "subtopic": "Non-linear Classification",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Which kernel is most commonly used for non-linear classification in SVM?",
+    "options": [
+      "RBF (Radial Basis Function)",
+      "Linear kernel",
+      "Polynomial kernel",
+      "Sigmoid kernel"
+    ],
+    "correctAnswer": "RBF (Radial Basis Function)",
+    "expectedAnswer": "",
+    "explanation": "The RBF kernel is widely used for non-linear classification as it can map data to infinite-dimensional space and handle complex decision boundaries.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-081",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "KNN",
+    "subtopic": "Distance Metrics",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What distance metric is most commonly used in KNN?",
+    "options": [
+      "Euclidean distance",
+      "Manhattan distance",
+      "Cosine similarity",
+      "Hamming distance"
+    ],
+    "correctAnswer": "Euclidean distance",
+    "expectedAnswer": "",
+    "explanation": "Euclidean distance is the most common metric for KNN, measuring the straight-line distance between two points in feature space.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-082",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "KNN",
+    "subtopic": "Curse of Dimensionality",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What happens to KNN performance as the number of features increases?",
+    "options": [
+      "Performance degrades due to curse of dimensionality",
+      "Performance improves",
+      "Performance stays constant",
+      "Training time increases"
+    ],
+    "correctAnswer": "Performance degrades due to curse of dimensionality",
+    "expectedAnswer": "",
+    "explanation": "In high dimensions, all points become approximately equidistant, making distance-based methods like KNN less effective.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-083",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "KNN",
+    "subtopic": "K Value Selection",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What happens when K is very small in KNN?",
+    "options": [
+      "Model becomes sensitive to noise (overfitting)",
+      "Model becomes too simple (underfitting)",
+      "Bias increases",
+      "Variance decreases"
+    ],
+    "correctAnswer": "Model becomes sensitive to noise (overfitting)",
+    "expectedAnswer": "",
+    "explanation": "Small K values make the model sensitive to noise in the training data, leading to overfitting with high variance.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-084",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "KNN",
+    "subtopic": "Lazy Learning",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Why is KNN called a lazy learner?",
+    "options": [
+      "It stores all training data and defers computation to prediction",
+      "It trains slowly",
+      "It requires little memory",
+      "It has low accuracy"
+    ],
+    "correctAnswer": "It stores all training data and defers computation to prediction",
+    "expectedAnswer": "",
+    "explanation": "KNN doesn't learn a model during training; it stores all data and performs computation only when making predictions.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-085",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "KNN",
+    "subtopic": "Feature Scaling",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Why is feature scaling important in KNN?",
+    "options": [
+      "Distance metrics are sensitive to feature scales",
+      "It reduces training time",
+      "It increases accuracy",
+      "It handles missing values"
+    ],
+    "correctAnswer": "Distance metrics are sensitive to feature scales",
+    "expectedAnswer": "",
+    "explanation": "Features with larger scales dominate the distance calculation. Scaling ensures all features contribute equally to the distance metric.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-086",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Clustering",
+    "subtopic": "K-Means",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What does K-Means clustering minimize?",
+    "options": [
+      "Within-cluster sum of squared distances",
+      "Between-cluster distances",
+      "Number of clusters",
+      "Feature correlations"
+    ],
+    "correctAnswer": "Within-cluster sum of squared distances",
+    "expectedAnswer": "",
+    "explanation": "K-Means minimizes the within-cluster sum of squared distances (WCSS), also known as inertia, to form compact clusters.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-087",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Clustering",
+    "subtopic": "K-Means Initialization",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What problem can poor initialization cause in K-Means?",
+    "options": [
+      "Converging to a local optimum",
+      "Overfitting",
+      "Underfitting",
+      "Feature scaling issues"
+    ],
+    "correctAnswer": "Converging to a local optimum",
+    "expectedAnswer": "",
+    "explanation": "Poor initialization can cause K-Means to converge to a local optimum rather than the global optimum, resulting in suboptimal clustering.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-088",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Clustering",
+    "subtopic": "DBSCAN",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is a key advantage of DBSCAN over K-Means?",
+    "options": [
+      "It can find clusters of arbitrary shape",
+      "It's faster",
+      "It requires fewer parameters",
+      "It works better with high dimensions"
+    ],
+    "correctAnswer": "It can find clusters of arbitrary shape",
+    "expectedAnswer": "",
+    "explanation": "DBSCAN can discover clusters of arbitrary shape and is robust to outliers, unlike K-Means which assumes spherical clusters.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-089",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Clustering",
+    "subtopic": "Elbow Method",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What does the elbow method help determine in K-Means?",
+    "options": [
+      "Optimal number of clusters",
+      "Optimal feature selection",
+      "Optimal initialization",
+      "Optimal learning rate"
+    ],
+    "correctAnswer": "Optimal number of clusters",
+    "expectedAnswer": "",
+    "explanation": "The elbow method plots WCSS against the number of clusters and identifies the 'elbow' point where adding more clusters provides diminishing returns.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-090",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Clustering",
+    "subtopic": "Silhouette Score",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What does a silhouette score close to 1 indicate?",
+    "options": [
+      "Well-matched to own cluster and poorly matched to neighboring clusters",
+      "Poor clustering",
+      "Points on cluster boundary",
+      "Overlapping clusters"
+    ],
+    "correctAnswer": "Well-matched to own cluster and poorly matched to neighboring clusters",
+    "expectedAnswer": "",
+    "explanation": "A silhouette score close to 1 indicates that a point is well-clustered, far from neighboring clusters, suggesting good cluster separation.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-091",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Feature Engineering",
+    "subtopic": "One-Hot Encoding",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "When should one-hot encoding be used?",
+    "options": [
+      "For nominal categorical variables",
+      "For ordinal variables",
+      "For numerical variables",
+      "For target variables"
+    ],
+    "correctAnswer": "For nominal categorical variables",
+    "expectedAnswer": "",
+    "explanation": "One-hot encoding is used for nominal categorical variables where there is no inherent order, preventing the model from assuming false ordinal relationships.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-092",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Feature Engineering",
+    "subtopic": "Feature Scaling",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Which models require feature scaling?",
+    "options": [
+      "SVM, KNN, and Neural Networks",
+      "Random Forest",
+      "Decision Trees",
+      "Naive Bayes"
+    ],
+    "correctAnswer": "SVM, KNN, and Neural Networks",
+    "expectedAnswer": "",
+    "explanation": "Distance-based models (SVM, KNN) and gradient-based models (Neural Networks) require feature scaling to ensure fair feature contribution.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-093",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Feature Engineering",
+    "subtopic": "Log Transformation",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "When is log transformation useful?",
+    "options": [
+      "When data is right-skewed",
+      "When data is left-skewed",
+      "When data is uniform",
+      "When data is normal"
+    ],
+    "correctAnswer": "When data is right-skewed",
+    "expectedAnswer": "",
+    "explanation": "Log transformation is useful for right-skewed data, as it compresses large values and spreads out small values, making the distribution more symmetric.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-094",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Feature Engineering",
+    "subtopic": "Feature Selection",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is the difference between feature selection and feature extraction?",
+    "options": [
+      "Selection keeps existing features, extraction creates new ones",
+      "Selection creates new features, extraction removes ones",
+      "They are the same thing",
+      "Selection is supervised, extraction is unsupervised"
+    ],
+    "correctAnswer": "Selection keeps existing features, extraction creates new ones",
+    "expectedAnswer": "",
+    "explanation": "Feature selection identifies and keeps a subset of existing features, while feature extraction (like PCA) creates new features by combining existing ones.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-095",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Feature Engineering",
+    "subtopic": "Target Encoding",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is target encoding for categorical variables?",
+    "options": [
+      "Replacing categories with the mean of the target variable",
+      "One-hot encoding the target",
+      "Label encoding the target",
+      "Encoding target as binary"
+    ],
+    "correctAnswer": "Replacing categories with the mean of the target variable",
+    "expectedAnswer": "",
+    "explanation": "Target encoding replaces each category with the mean of the target variable for that category, which can capture relationships but risks data leakage.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-096",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "PCA",
+    "subtopic": "Dimensionality Reduction",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is the primary purpose of PCA?",
+    "options": [
+      "Reduce dimensionality while preserving variance",
+      "Increase dimensionality",
+      "Classify data",
+      "Cluster data"
+    ],
+    "correctAnswer": "Reduce dimensionality while preserving variance",
+    "expectedAnswer": "",
+    "explanation": "PCA reduces the number of features while retaining as much variance (information) as possible in the data.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-097",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "PCA",
+    "subtopic": "Principal Components",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What are principal components in PCA?",
+    "options": [
+      "Orthogonal directions of maximum variance",
+      "Original features",
+      "Cluster centroids",
+      "Decision boundaries"
+    ],
+    "correctAnswer": "Orthogonal directions of maximum variance",
+    "expectedAnswer": "",
+    "explanation": "Principal components are linear combinations of original features that capture maximum variance and are orthogonal to each other.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-098",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "PCA",
+    "subtopic": "Explained Variance",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What does explained variance ratio tell you in PCA?",
+    "options": [
+      "Proportion of total variance captured by each component",
+      "Number of components needed",
+      "Total variance in data",
+      "Correlation between components"
+    ],
+    "correctAnswer": "Proportion of total variance captured by each component",
+    "expectedAnswer": "",
+    "explanation": "Explained variance ratio shows what percentage of the total variance in the data is captured by each principal component.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-099",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "PCA",
+    "subtopic": "Preprocessing",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What preprocessing step is required before applying PCA?",
+    "options": [
+      "Standardization (scaling)",
+      "Normalization",
+      "Encoding categorical variables",
+      "Handling missing values"
+    ],
+    "correctAnswer": "Standardization (scaling)",
+    "expectedAnswer": "",
+    "explanation": "PCA requires standardization because it is sensitive to the scale of features. Without scaling, features with larger scales would dominate.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-100",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "PCA",
+    "subtopic": "Multicollinearity",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "How does PCA help with multicollinearity?",
+    "options": [
+      "Principal components are orthogonal (uncorrelated)",
+      "It removes outliers",
+      "It increases variance",
+      "It adds regularization"
+    ],
+    "correctAnswer": "Principal components are orthogonal (uncorrelated)",
+    "expectedAnswer": "",
+    "explanation": "PCA transforms correlated features into uncorrelated principal components, eliminating multicollinearity by construction.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-101",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Bias-Variance Tradeoff",
+    "subtopic": "Underfitting",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What characterizes a model with high bias?",
+    "options": [
+      "Underfitting: model is too simple",
+      "Overfitting: model is too complex",
+      "Good generalization",
+      "High variance"
+    ],
+    "correctAnswer": "Underfitting: model is too simple",
+    "expectedAnswer": "",
+    "explanation": "High bias means the model makes strong assumptions and is too simple, leading to underfitting where it fails to capture the underlying pattern.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-102",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Bias-Variance Tradeoff",
+    "subtopic": "Overfitting",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What characterizes a model with high variance?",
+    "options": [
+      "Overfitting: model is too complex",
+      "Underfitting: model is too simple",
+      "Good generalization",
+      "High bias"
+    ],
+    "correctAnswer": "Overfitting: model is too complex",
+    "expectedAnswer": "",
+    "explanation": "High variance means the model is too complex and captures noise in the training data, leading to overfitting and poor generalization.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-103",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Bias-Variance Tradeoff",
+    "subtopic": "Decomposition",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is the bias-variance decomposition of expected error?",
+    "options": [
+      "Error = Bias² + Variance + Irreducible Error",
+      "Error = Bias + Variance",
+      "Error = Bias² + Variance",
+      "Error = Bias × Variance"
+    ],
+    "correctAnswer": "Error = Bias² + Variance + Irreducible Error",
+    "expectedAnswer": "",
+    "explanation": "Expected prediction error decomposes into bias² (systematic error), variance (sensitivity to training data), and irreducible error (noise).",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-104",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Bias-Variance Tradeoff",
+    "subtopic": "Model Complexity",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What happens to bias and variance as model complexity increases?",
+    "options": [
+      "Bias decreases, variance increases",
+      "Bias increases, variance decreases",
+      "Both increase",
+      "Both decrease"
+    ],
+    "correctAnswer": "Bias decreases, variance increases",
+    "expectedAnswer": "",
+    "explanation": "As model complexity increases, bias decreases (model fits training data better) but variance increases (model becomes more sensitive to training data).",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-105",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Bias-Variance Tradeoff",
+    "subtopic": "Regularization",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "How does regularization help manage bias-variance?",
+    "options": [
+      "It increases bias but reduces variance",
+      "It decreases both bias and variance",
+      "It increases both",
+      "It has no effect"
+    ],
+    "correctAnswer": "It increases bias but reduces variance",
+    "expectedAnswer": "",
+    "explanation": "Regularization constrains model complexity, increasing bias slightly but significantly reducing variance, often improving generalization.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-106",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Model Evaluation Metrics",
+    "subtopic": "AUC-ROC",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What does an AUC-ROC score of 0.5 indicate?",
+    "options": [
+      "Model performs no better than random",
+      "Model is perfect",
+      "Model has 50% accuracy",
+      "Model overfits"
+    ],
+    "correctAnswer": "Model performs no better than random",
+    "expectedAnswer": "",
+    "explanation": "AUC-ROC of 0.5 indicates the model has no discriminative ability and performs no better than random guessing.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-107",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Model Evaluation Metrics",
+    "subtopic": "F1 Score",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is the F1 score the harmonic mean of?",
+    "options": [
+      "Precision and Recall",
+      "Accuracy and Precision",
+      "Recall and Specificity",
+      "Sensitivity and Specificity"
+    ],
+    "correctAnswer": "Precision and Recall",
+    "expectedAnswer": "",
+    "explanation": "F1 score is the harmonic mean of precision and recall, providing a single metric that balances both concerns.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-108",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Model Evaluation Metrics",
+    "subtopic": "Accuracy",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "When is accuracy a misleading metric?",
+    "options": [
+      "When classes are imbalanced",
+      "When data is clean",
+      "When features are scaled",
+      "When model is simple"
+    ],
+    "correctAnswer": "When classes are imbalanced",
+    "expectedAnswer": "",
+    "explanation": "Accuracy can be misleading with imbalanced classes because a model that always predicts the majority class can have high accuracy but be useless.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-109",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Model Evaluation Metrics",
+    "subtopic": "Confusion Matrix",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is specificity in a confusion matrix?",
+    "options": [
+      "True Negative Rate",
+      "True Positive Rate",
+      "False Positive Rate",
+      "False Negative Rate"
+    ],
+    "correctAnswer": "True Negative Rate",
+    "expectedAnswer": "",
+    "explanation": "Specificity measures the proportion of actual negatives that are correctly identified, also known as the True Negative Rate.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-110",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Model Evaluation Metrics",
+    "subtopic": "Log Loss",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What does log loss penalize more heavily?",
+    "options": [
+      "Confident wrong predictions",
+      "Confident correct predictions",
+      "Uncertain predictions",
+      "All predictions equally"
+    ],
+    "correctAnswer": "Confident wrong predictions",
+    "expectedAnswer": "",
+    "explanation": "Log loss heavily penalizes predictions that are confident but wrong, making it a useful metric for evaluating probability estimates.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-111",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Imbalanced Data",
+    "subtopic": "SMOTE",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What does SMOTE do?",
+    "options": [
+      "Creates synthetic samples for minority class",
+      "Removes samples from majority class",
+      "Changes class labels",
+      "Adds noise to data"
+    ],
+    "correctAnswer": "Creates synthetic samples for minority class",
+    "expectedAnswer": "",
+    "explanation": "SMOTE (Synthetic Minority Over-sampling Technique) generates synthetic samples by interpolating between existing minority class samples.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-112",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Imbalanced Data",
+    "subtopic": "Class Weights",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "How does class weight help with imbalanced data?",
+    "options": [
+      "Gives more importance to minority class",
+      "Gives more importance to majority class",
+      "Removes class imbalance",
+      "Increases accuracy"
+    ],
+    "correctAnswer": "Gives more importance to minority class",
+    "expectedAnswer": "",
+    "explanation": "Class weights assign higher weights to minority class samples, making the model pay more attention to underrepresented classes during training.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-113",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Imbalanced Data",
+    "subtopic": "Resampling",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the difference between oversampling and undersampling?",
+    "options": [
+      "Oversampling increases minority, undersampling decreases majority",
+      "Oversampling decreases minority, undersampling increases majority",
+      "They are the same",
+      "Both increase minority class"
+    ],
+    "correctAnswer": "Oversampling increases minority, undersampling decreases majority",
+    "expectedAnswer": "",
+    "explanation": "Oversampling adds more minority class samples (or creates synthetic ones), while undersampling removes majority class samples to balance classes.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-114",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Imbalanced Data",
+    "subtopic": "Evaluation",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "Which metric is most appropriate for imbalanced classification?",
+    "options": [
+      "F1-score or AUC-ROC",
+      "Accuracy",
+      "Mean Squared Error",
+      "R-squared"
+    ],
+    "correctAnswer": "F1-score or AUC-ROC",
+    "expectedAnswer": "",
+    "explanation": "F1-score and AUC-ROC are more appropriate than accuracy for imbalanced data because they account for both classes and their trade-offs.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-115",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Imbalanced Data",
+    "subtopic": "Borderline-SMOTE",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "How does Borderline-SMOTE differ from regular SMOTE?",
+    "options": [
+      "It generates synthetic samples only near the decision boundary",
+      "It generates samples anywhere in feature space",
+      "It removes majority class samples",
+      "It uses clustering instead of interpolation"
+    ],
+    "correctAnswer": "It generates synthetic samples only near the decision boundary",
+    "expectedAnswer": "",
+    "explanation": "Borderline-SMOTE focuses on generating synthetic samples near the decision boundary (borderline cases), which are most critical for classification.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-116",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Cross Validation",
+    "subtopic": "K-Fold",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "In 5-fold cross-validation, what percentage of data is used for testing in each fold?",
+    "options": [
+      "20%",
+      "50%",
+      "80%",
+      "10%"
+    ],
+    "correctAnswer": "20%",
+    "expectedAnswer": "",
+    "explanation": "In K-fold cross-validation, 1/K of the data is used for testing in each fold. For 5-fold, that's 1/5 = 20%.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-117",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Cross Validation",
+    "subtopic": "Stratified",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Why use stratified cross-validation?",
+    "options": [
+      "To maintain class distribution in each fold",
+      "To speed up training",
+      "To reduce overfitting",
+      "To increase accuracy"
+    ],
+    "correctAnswer": "To maintain class distribution in each fold",
+    "expectedAnswer": "",
+    "explanation": "Stratified cross-validation ensures each fold has approximately the same class distribution as the full dataset, important for imbalanced data.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-118",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Cross Validation",
+    "subtopic": "Data Leakage",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is data leakage in cross-validation?",
+    "options": [
+      "Information from test set influencing training",
+      "Missing values in data",
+      "Duplicate samples",
+      "Feature scaling issues"
+    ],
+    "correctAnswer": "Information from test set influencing training",
+    "expectedAnswer": "",
+    "explanation": "Data leakage occurs when information from the test set leaks into the training process, leading to overly optimistic performance estimates.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-119",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Cross Validation",
+    "subtopic": "Leave-One-Out",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "When is Leave-One-Out cross-validation most appropriate?",
+    "options": [
+      "Small datasets where every sample matters",
+      "Large datasets with many features",
+      "Time series data",
+      "When classes are imbalanced"
+    ],
+    "correctAnswer": "Small datasets where every sample matters",
+    "expectedAnswer": "",
+    "explanation": "LOO-CV is appropriate for small datasets where you want to use as much data as possible for training while still getting reliable estimates.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-120",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Cross Validation",
+    "subtopic": "Nested CV",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is the purpose of nested cross-validation?",
+    "options": [
+      "To perform both model selection and evaluation without bias",
+      "To speed up cross-validation",
+      "To handle missing values",
+      "To reduce computational cost"
+    ],
+    "correctAnswer": "To perform both model selection and evaluation without bias",
+    "expectedAnswer": "",
+    "explanation": "Nested CV uses an inner loop for hyperparameter tuning and an outer loop for unbiased performance estimation, preventing information leakage.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-121",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "CNN",
+    "subtopic": "Convolution Operation",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is the main purpose of convolutional layers in CNNs?",
+    "options": [
+      "Extract spatial features from input",
+      "Fully connect all neurons",
+      "Reduce dimensionality",
+      "Perform classification"
+    ],
+    "correctAnswer": "Extract spatial features from input",
+    "expectedAnswer": "",
+    "explanation": "Convolutional layers use learnable filters to detect local patterns (edges, textures, shapes) in the input, extracting hierarchical spatial features.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-122",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "CNN",
+    "subtopic": "Pooling",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What does max pooling do in a CNN?",
+    "options": [
+      "Reduces spatial dimensions by taking maximum value in each window",
+      "Increases spatial dimensions",
+      "Adds more parameters",
+      "Changes the number of channels"
+    ],
+    "correctAnswer": "Reduces spatial dimensions by taking maximum value in each window",
+    "expectedAnswer": "",
+    "explanation": "Max pooling reduces the spatial size of feature maps by taking the maximum value in each pooling window, providing translation invariance.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-123",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "CNN",
+    "subtopic": "Parameter Sharing",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is parameter sharing in CNNs?",
+    "options": [
+      "Same filter weights are applied across the entire input",
+      "Each pixel has its own weights",
+      "Weights are shared between layers",
+      "Biases are shared across neurons"
+    ],
+    "correctAnswer": "Same filter weights are applied across the entire input",
+    "expectedAnswer": "",
+    "explanation": "Parameter sharing means the same filter (set of weights) is applied to all positions in the input, drastically reducing the number of parameters.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-124",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "CNN",
+    "subtopic": "Receptive Field",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is the receptive field in a CNN?",
+    "options": [
+      "The region in the input that affects a particular feature",
+      "The size of the output",
+      "The number of filters",
+      "The depth of the network"
+    ],
+    "correctAnswer": "The region in the input that affects a particular feature",
+    "expectedAnswer": "",
+    "explanation": "The receptive field is the area in the original input that influences a specific neuron's activation, which grows deeper in the network.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-125",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "CNN",
+    "subtopic": "Transfer Learning",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Why is transfer learning effective with CNNs?",
+    "options": [
+      "Early layers learn universal features (edges, textures)",
+      "CNNs always overfit",
+      "Transfer learning is always faster",
+      "CNNs have few parameters"
+    ],
+    "correctAnswer": "Early layers learn universal features (edges, textures)",
+    "expectedAnswer": "",
+    "explanation": "CNNs learn hierarchical features where early layers capture universal patterns (edges, textures) that transfer well across visual tasks.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-126",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "RNN/LSTM/GRU",
+    "subtopic": "Vanishing Gradient",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What problem does LSTM solve that basic RNNs struggle with?",
+    "options": [
+      "Vanishing gradient problem in long sequences",
+      "Computational efficiency",
+      "Memory usage",
+      "Parallelization"
+    ],
+    "correctAnswer": "Vanishing gradient problem in long sequences",
+    "expectedAnswer": "",
+    "explanation": "LSTMs use gating mechanisms to maintain gradients over long sequences, solving the vanishing gradient problem that limits basic RNNs.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-127",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "RNN/LSTM/GRU",
+    "subtopic": "Gates",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "How many gates does an LSTM cell have?",
+    "options": [
+      "3 (forget, input, output)",
+      "2 (input, output)",
+      "4 (forget, input, output, cell)",
+      "1 (gate)"
+    ],
+    "correctAnswer": "3 (forget, input, output)",
+    "expectedAnswer": "",
+    "explanation": "LSTM has three gates: forget gate (what to discard), input gate (what to store), and output gate (what to output).",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-128",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "RNN/LSTM/GRU",
+    "subtopic": "GRU vs LSTM",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the main difference between GRU and LSTM?",
+    "options": [
+      "GRU has 2 gates (update, reset), LSTM has 3",
+      "GRU is always more accurate",
+      "LSTM is faster",
+      "GRU has no cell state"
+    ],
+    "correctAnswer": "GRU has 2 gates (update, reset), LSTM has 3",
+    "expectedAnswer": "",
+    "explanation": "GRU combines the forget and input gates into an update gate and merges the cell state with hidden state, making it simpler than LSTM.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-129",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "RNN/LSTM/GRU",
+    "subtopic": "Bidirectional",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the advantage of bidirectional RNNs?",
+    "options": [
+      "They process sequences in both directions for richer context",
+      "They are faster than unidirectional RNNs",
+      "They use less memory",
+      "They don't need gating"
+    ],
+    "correctAnswer": "They process sequences in both directions for richer context",
+    "expectedAnswer": "",
+    "explanation": "Bidirectional RNNs process sequences forward and backward, capturing context from both past and future for better representations.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-130",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "RNN/LSTM/GRU",
+    "subtopic": "Sequence-to-Sequence",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is the bottleneck in basic encoder-decoder seq2seq models?",
+    "options": [
+      "Fixed-length context vector limits information from long sequences",
+      "Decoder is too slow",
+      "Encoder is too deep",
+      "Training is unstable"
+    ],
+    "correctAnswer": "Fixed-length context vector limits information from long sequences",
+    "expectedAnswer": "",
+    "explanation": "The encoder compresses the entire input into a fixed-length vector, which loses information for long sequences, motivating the attention mechanism.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-131",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Attention Mechanisms",
+    "subtopic": "Self-Attention",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What does self-attention compute?",
+    "options": [
+      "Relationships between all positions in a sequence",
+      "Relationships between input and output",
+      "Only adjacent positions",
+      "Attention to a fixed window"
+    ],
+    "correctAnswer": "Relationships between all positions in a sequence",
+    "expectedAnswer": "",
+    "explanation": "Self-attention computes attention weights between every pair of positions in the sequence, capturing global dependencies regardless of distance.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-132",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Attention Mechanisms",
+    "subtopic": "Multi-Head Attention",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Why does multi-head attention use multiple attention heads?",
+    "options": [
+      "To capture different types of relationships simultaneously",
+      "To reduce computation",
+      "To increase model size",
+      "To improve training speed"
+    ],
+    "correctAnswer": "To capture different types of relationships simultaneously",
+    "expectedAnswer": "",
+    "explanation": "Multiple heads allow the model to attend to different representation subspaces and capture various types of relationships in parallel.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-133",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Attention Mechanisms",
+    "subtopic": "Scaled Dot-Product",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Why is scaling by √d_k used in dot-product attention?",
+    "options": [
+      "To prevent large values from causing softmax saturation",
+      "To increase attention weights",
+      "To reduce memory usage",
+      "To speed up computation"
+    ],
+    "correctAnswer": "To prevent large values from causing softmax saturation",
+    "expectedAnswer": "",
+    "explanation": "Scaling by √d_k keeps the dot products in a reasonable range, preventing the softmax from becoming too peaked (saturating) and maintaining gradient flow.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-134",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Attention Mechanisms",
+    "subtopic": "Cross-Attention",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is the difference between self-attention and cross-attention?",
+    "options": [
+      "Self-attention attends within one sequence, cross-attention attends between two sequences",
+      "Self-attention is faster",
+      "Cross-attention is simpler",
+      "They are identical"
+    ],
+    "correctAnswer": "Self-attention attends within one sequence, cross-attention attends between two sequences",
+    "expectedAnswer": "",
+    "explanation": "Self-attention computes relationships within a single sequence, while cross-attention attends from one sequence (queries) to another (keys/values).",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-135",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Attention Mechanisms",
+    "subtopic": "Positional Encoding",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "Why is positional encoding needed in attention-based models?",
+    "options": [
+      "Attention is permutation-invariant and needs position information",
+      "To reduce computation",
+      "To handle missing values",
+      "To increase model depth"
+    ],
+    "correctAnswer": "Attention is permutation-invariant and needs position information",
+    "expectedAnswer": "",
+    "explanation": "Self-attention doesn't inherently capture sequence order, so positional encoding injects position information to maintain sequential context.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-136",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Transformers",
+    "subtopic": "Architecture",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What are the two main components of a Transformer?",
+    "options": [
+      "Encoder and Decoder",
+      "Input and Output",
+      "Feed-forward and Attention",
+      "Convolution and Pooling"
+    ],
+    "correctAnswer": "Encoder and Decoder",
+    "expectedAnswer": "",
+    "explanation": "The Transformer consists of an encoder (processes input) and decoder (generates output), each built from stacked attention and feed-forward layers.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-137",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Transformers",
+    "subtopic": "Parallelization",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Why can Transformers be parallelized more efficiently than RNNs?",
+    "options": [
+      "All positions are processed simultaneously in attention",
+      "They use less memory",
+      "They have fewer parameters",
+      "They don't need gradients"
+    ],
+    "correctAnswer": "All positions are processed simultaneously in attention",
+    "expectedAnswer": "",
+    "explanation": "Unlike RNNs which process sequentially, Transformers compute attention for all positions in parallel, enabling efficient GPU utilization.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-138",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Transformers",
+    "subtopic": "Layer Normalization",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the purpose of layer normalization in Transformers?",
+    "options": [
+      "Stabilize training by normalizing activations across features",
+      "Increase model depth",
+      "Reduce computation",
+      "Handle missing values"
+    ],
+    "correctAnswer": "Stabilize training by normalizing activations across features",
+    "expectedAnswer": "",
+    "explanation": "Layer normalization normalizes activations across the feature dimension for each sample, stabilizing training and enabling faster convergence.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-139",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Transformers",
+    "subtopic": "Position-wise FFN",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What does the position-wise feed-forward network do in a Transformer?",
+    "options": [
+      "Transforms each position independently with the same MLP",
+      "Processes positions sequentially",
+      "Computes attention weights",
+      "Encodes positional information"
+    ],
+    "correctAnswer": "Transforms each position independently with the same MLP",
+    "expectedAnswer": "",
+    "explanation": "The FFN applies the same two-layer MLP independently to each position, adding non-linearity and capacity after attention.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-140",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Transformers",
+    "subtopic": "Pre-LN vs Post-LN",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is the difference between Pre-LN and Post-LN Transformers?",
+    "options": [
+      "Pre-LN applies layer norm before attention/FFN, Post-LN after",
+      "Pre-LN is slower",
+      "Post-LN uses more memory",
+      "They have different attention mechanisms"
+    ],
+    "correctAnswer": "Pre-LN applies layer norm before attention/FFN, Post-LN after",
+    "expectedAnswer": "",
+    "explanation": "Pre-LN applies normalization before sublayers, allowing smoother gradient flow and easier training, while Post-LN applies it after, which can be harder to train.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-141",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "LLMs",
+    "subtopic": "Tokenization",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is tokenization in LLMs?",
+    "options": [
+      "Converting text into numerical tokens for model input",
+      "Generating text from tokens",
+      "Removing stop words",
+      "Stemming words"
+    ],
+    "correctAnswer": "Converting text into numerical tokens for model input",
+    "expectedAnswer": "",
+    "explanation": "Tokenization splits text into subword units (tokens) and maps them to numerical IDs that the model can process.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-142",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "LLMs",
+    "subtopic": "Temperature",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What does the temperature parameter control in LLM generation?",
+    "options": [
+      "Randomness/creativity of outputs",
+      "Model size",
+      "Training speed",
+      "Context window size"
+    ],
+    "correctAnswer": "Randomness/creativity of outputs",
+    "expectedAnswer": "",
+    "explanation": "Temperature scales the logits before softmax. Higher temperature (e.g., 1.5) makes outputs more random/creative, lower (e.g., 0.1) makes them more deterministic.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-143",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "LLMs",
+    "subtopic": "Context Window",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is the context window of an LLM?",
+    "options": [
+      "Maximum number of tokens the model can process at once",
+      "Training data size",
+      "Number of parameters",
+      "Batch size during training"
+    ],
+    "correctAnswer": "Maximum number of tokens the model can process at once",
+    "expectedAnswer": "",
+    "explanation": "The context window defines the maximum sequence length (in tokens) that the model can attend to in a single forward pass.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-144",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "LLMs",
+    "subtopic": "Hallucination",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is hallucination in LLMs?",
+    "options": [
+      "Model generates plausible but factually incorrect information",
+      "Model fails to generate any output",
+      "Model crashes during inference",
+      "Model memorizes training data"
+    ],
+    "correctAnswer": "Model generates plausible but factually incorrect information",
+    "expectedAnswer": "",
+    "explanation": "Hallucination occurs when LLMs generate fluent, confident-sounding text that is factually wrong or fabricated, a major challenge in deployment.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-145",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "LLMs",
+    "subtopic": "Instruction Tuning",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is instruction tuning in LLMs?",
+    "options": [
+      "Fine-tuning on instruction-response pairs to improve following directions",
+      "Pre-training on large text corpora",
+      "Adding more parameters",
+      "Reducing model size"
+    ],
+    "correctAnswer": "Fine-tuning on instruction-response pairs to improve following directions",
+    "expectedAnswer": "",
+    "explanation": "Instruction tuning fine-tunes pre-trained LLMs on datasets of (instruction, response) pairs to improve their ability to follow human instructions.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-146",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "RAG",
+    "subtopic": "Architecture",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What does RAG stand for?",
+    "options": [
+      "Retrieval-Augmented Generation",
+      "Recursive Attention Generation",
+      "Random Access Gradient",
+      "Reinforced Adaptive Generation"
+    ],
+    "correctAnswer": "Retrieval-Augmented Generation",
+    "expectedAnswer": "",
+    "explanation": "RAG combines retrieval of relevant documents from a knowledge base with generation by an LLM, grounding responses in factual information.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-147",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "RAG",
+    "subtopic": "Retrieval Step",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the retrieval step in RAG?",
+    "options": [
+      "Finding relevant documents from a knowledge base",
+      "Generating the final answer",
+      "Tokenizing the input",
+      "Fine-tuning the model"
+    ],
+    "correctAnswer": "Finding relevant documents from a knowledge base",
+    "expectedAnswer": "",
+    "explanation": "The retrieval step uses the query to search a vector database or search engine to find relevant documents that can help answer the question.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-148",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "RAG",
+    "subtopic": "Generation Step",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "How does the generation step in RAG use retrieved documents?",
+    "options": [
+      "Documents are included in the LLM prompt as context",
+      "Documents replace the query",
+      "Documents are used for training",
+      "Documents are ignored if LLM knows the answer"
+    ],
+    "correctAnswer": "Documents are included in the LLM prompt as context",
+    "expectedAnswer": "",
+    "explanation": "Retrieved documents are concatenated with the query and included in the prompt, allowing the LLM to generate answers grounded in the provided context.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-149",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "RAG",
+    "subtopic": "Advantages",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is a key advantage of RAG over pure LLM generation?",
+    "options": [
+      "Reduced hallucination by grounding in retrieved facts",
+      "Faster inference",
+      "Smaller model size",
+      "No need for training data"
+    ],
+    "correctAnswer": "Reduced hallucination by grounding in retrieved facts",
+    "expectedAnswer": "",
+    "explanation": "RAG reduces hallucination by providing the LLM with relevant, factual documents as context, making generated answers more grounded and verifiable.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-150",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "RAG",
+    "subtopic": "Chunking",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "Why is document chunking important in RAG?",
+    "options": [
+      "Documents must fit within the LLM's context window",
+      "Chunking improves retrieval speed",
+      "Chunks are easier to store",
+      "Chunks reduce memory usage"
+    ],
+    "correctAnswer": "Documents must fit within the LLM's context window",
+    "expectedAnswer": "",
+    "explanation": "Documents are split into chunks because they must fit within the LLM's context window. Chunking strategy affects retrieval quality and answer relevance.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-151",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Embeddings and Vector Databases",
+    "subtopic": "Word Embeddings",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What do word embeddings capture?",
+    "options": [
+      "Semantic relationships between words as dense vectors",
+      "Part-of-speech tags",
+      "Spelling corrections",
+      "Document length"
+    ],
+    "correctAnswer": "Semantic relationships between words as dense vectors",
+    "expectedAnswer": "",
+    "explanation": "Word embeddings map words to dense vectors where similar words are close in vector space, capturing semantic relationships.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-152",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Embeddings and Vector Databases",
+    "subtopic": "Similarity Search",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What metric is commonly used for similarity search in vector databases?",
+    "options": [
+      "Cosine similarity",
+      "Mean Squared Error",
+      "Accuracy",
+      "R-squared"
+    ],
+    "correctAnswer": "Cosine similarity",
+    "expectedAnswer": "",
+    "explanation": "Cosine similarity measures the angle between vectors, making it ideal for comparing embeddings regardless of magnitude.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-153",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Embeddings and Vector Databases",
+    "subtopic": "ANN",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is Approximate Nearest Neighbor (ANN) search?",
+    "options": [
+      "Fast approximate similarity search using indexing",
+      "Exact nearest neighbor search",
+      "A clustering algorithm",
+      "A classification method"
+    ],
+    "correctAnswer": "Fast approximate similarity search using indexing",
+    "expectedAnswer": "",
+    "explanation": "ANN algorithms trade exactness for speed, using indexes like HNSW or IVF to find approximate nearest neighbors quickly in high-dimensional spaces.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-154",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Embeddings and Vector Databases",
+    "subtopic": "Document Embeddings",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "How are document embeddings typically created?",
+    "options": [
+      "Aggregating word/sentence embeddings using pooling or learned models",
+      "Counting word frequencies",
+      "Extracting keywords",
+      "Using one-hot encoding"
+    ],
+    "correctAnswer": "Aggregating word/sentence embeddings using pooling or learned models",
+    "expectedAnswer": "",
+    "explanation": "Document embeddings are created by averaging word embeddings, using specialized models (Sentence-BERT), or other aggregation techniques.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-155",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Embeddings and Vector Databases",
+    "subtopic": "Vector DB Indexing",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is HNSW in vector databases?",
+    "options": [
+      "Hierarchical Navigable Small World graph index",
+      "Hash-based Neural Similarity Weighting",
+      "Hierarchical Normalized Spectral Window",
+      "Hybrid Non-Linear Search Walk"
+    ],
+    "correctAnswer": "Hierarchical Navigable Small World graph index",
+    "expectedAnswer": "",
+    "explanation": "HNSW is a graph-based index that creates a multi-layer navigable structure for efficient approximate nearest neighbor search.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-156",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "NumPy",
+    "subtopic": "Arrays",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is a key advantage of NumPy arrays over Python lists?",
+    "options": [
+      "Faster element-wise operations",
+      "Support for strings",
+      "Dynamic typing",
+      "Built-in visualization"
+    ],
+    "correctAnswer": "Faster element-wise operations",
+    "expectedAnswer": "",
+    "explanation": "NumPy arrays are stored in contiguous memory and implemented in C, enabling much faster element-wise operations than Python lists.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-157",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "NumPy",
+    "subtopic": "Broadcasting",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is broadcasting in NumPy?",
+    "options": [
+      "Automatic alignment of arrays with different shapes for element-wise operations",
+      "Sending data between processes",
+      "Storing arrays on multiple disks",
+      "Parallel computing"
+    ],
+    "correctAnswer": "Automatic alignment of arrays with different shapes for element-wise operations",
+    "expectedAnswer": "",
+    "explanation": "Broadcasting allows NumPy to perform operations on arrays with different shapes by automatically expanding dimensions to match.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-158",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "NumPy",
+    "subtopic": "Vectorization",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is vectorization in NumPy?",
+    "options": [
+      "Applying operations to entire arrays without explicit loops",
+      "Converting lists to vectors",
+      "Reducing dimensions",
+      "Normalizing data"
+    ],
+    "correctAnswer": "Applying operations to entire arrays without explicit loops",
+    "expectedAnswer": "",
+    "explanation": "Vectorization replaces explicit Python loops with optimized C-level operations on entire arrays, significantly improving performance.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-159",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "NumPy",
+    "subtopic": "Memory Layout",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is the difference between C-order and Fortran-order in NumPy?",
+    "options": [
+      "C-order stores rows contiguously, Fortran-order stores columns contiguously",
+      "C-order is faster",
+      "Fortran-order uses less memory",
+      "They produce different results"
+    ],
+    "correctAnswer": "C-order stores rows contiguously, Fortran-order stores columns contiguously",
+    "expectedAnswer": "",
+    "explanation": "C-order (row-major) stores elements row by row in memory, while Fortran-order (column-major) stores column by column, affecting performance.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-160",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "NumPy",
+    "subtopic": "Linear Algebra",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Which NumPy function computes the dot product of two arrays?",
+    "options": [
+      "np.dot()",
+      "np.multiply()",
+      "np.add()",
+      "np.divide()"
+    ],
+    "correctAnswer": "np.dot()",
+    "expectedAnswer": "",
+    "explanation": "np.dot() computes the dot product of two arrays (or matrix multiplication for 2D arrays), which is fundamental for linear algebra operations.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-161",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Pandas",
+    "subtopic": "DataFrames",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is the primary data structure in Pandas for labeled tabular data?",
+    "options": [
+      "DataFrame",
+      "Series",
+      "Dictionary",
+      "Array"
+    ],
+    "correctAnswer": "DataFrame",
+    "expectedAnswer": "",
+    "explanation": "DataFrame is Pandas' primary structure, a 2D labeled data structure with rows and columns, similar to a spreadsheet or SQL table.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-162",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Pandas",
+    "subtopic": "Missing Data",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "How does Pandas handle missing values in operations by default?",
+    "options": [
+      "It ignores NaN values (skipna=True)",
+      "It raises an error",
+      "It fills with zero",
+      "It drops all rows with NaN"
+    ],
+    "correctAnswer": "It ignores NaN values (skipna=True)",
+    "expectedAnswer": "",
+    "explanation": "By default, Pandas skips NaN values in operations like mean(), sum(), etc., using the skipna=True parameter.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-163",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Pandas",
+    "subtopic": "GroupBy",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What does the groupby operation do in Pandas?",
+    "options": [
+      "Splits data into groups, applies functions, and combines results",
+      "Sorts data by groups",
+      "Creates new columns",
+      "Merges DataFrames"
+    ],
+    "correctAnswer": "Splits data into groups, applies functions, and combines results",
+    "expectedAnswer": "",
+    "explanation": "GroupBy follows a split-apply-combine paradigm: split data by keys, apply aggregation functions, and combine results into a new structure.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-164",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Pandas",
+    "subtopic": "Indexing",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is the difference between loc and iloc in Pandas?",
+    "options": [
+      "loc uses labels, iloc uses integer positions",
+      "loc is faster",
+      "iloc uses labels",
+      "They are identical"
+    ],
+    "correctAnswer": "loc uses labels, iloc uses integer positions",
+    "expectedAnswer": "",
+    "explanation": "loc indexes by label (row/column names), while iloc indexes by integer position (0-based index), providing different ways to access data.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-165",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Pandas",
+    "subtopic": "Merge",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is the difference between merge and join in Pandas?",
+    "options": [
+      "Merge is more flexible (join on columns), join is for index-based combining",
+      "They are identical",
+      "Merge is faster",
+      "Join handles more data types"
+    ],
+    "correctAnswer": "Merge is more flexible (join on columns), join is for index-based combining",
+    "expectedAnswer": "",
+    "explanation": "merge() joins on column values (like SQL joins), while join() combines on index labels. merge() is more flexible and commonly used.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-166",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "DSA",
+    "subtopic": "Time Complexity",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is the time complexity of binary search?",
+    "options": [
+      "O(log n)",
+      "O(n)",
+      "O(n²)",
+      "O(1)"
+    ],
+    "correctAnswer": "O(log n)",
+    "expectedAnswer": "",
+    "explanation": "Binary search halves the search space with each step, resulting in O(log n) time complexity for sorted arrays.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-167",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "DSA",
+    "subtopic": "Data Structures",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Which data structure is best for LIFO (Last-In-First-Out) operations?",
+    "options": [
+      "Stack",
+      "Queue",
+      "Linked List",
+      "Tree"
+    ],
+    "correctAnswer": "Stack",
+    "expectedAnswer": "",
+    "explanation": "A stack follows LIFO principle: the last element pushed is the first one popped, like a stack of plates.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-168",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "DSA",
+    "subtopic": "Graph Algorithms",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the time complexity of BFS on a graph with V vertices and E edges?",
+    "options": [
+      "O(V + E)",
+      "O(V × E)",
+      "O(V²)",
+      "O(log V)"
+    ],
+    "correctAnswer": "O(V + E)",
+    "expectedAnswer": "",
+    "explanation": "BFS visits each vertex once and explores each edge once, resulting in O(V + E) time complexity.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-169",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "DSA",
+    "subtopic": "Dynamic Programming",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is the key property that makes a problem suitable for dynamic programming?",
+    "options": [
+      "Optimal substructure and overlapping subproblems",
+      "Only optimal substructure",
+      "Only overlapping subproblems",
+      "Neither"
+    ],
+    "correctAnswer": "Optimal substructure and overlapping subproblems",
+    "expectedAnswer": "",
+    "explanation": "DP requires both optimal substructure (optimal solution contains optimal sub-solutions) and overlapping subproblems (same subproblems solved repeatedly).",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-170",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "DSA",
+    "subtopic": "Trees",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the height of a balanced binary tree with n nodes?",
+    "options": [
+      "O(log n)",
+      "O(n)",
+      "O(n²)",
+      "O(1)"
+    ],
+    "correctAnswer": "O(log n)",
+    "expectedAnswer": "",
+    "explanation": "A balanced binary tree maintains height O(log n) by ensuring the depth difference between left and right subtrees is at most 1.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-171",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Computer Vision",
+    "subtopic": "Object Detection",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What does object detection identify in an image?",
+    "options": [
+      "Location (bounding box) and class of objects",
+      "Only object class",
+      "Only object location",
+      "Image quality"
+    ],
+    "correctAnswer": "Location (bounding box) and class of objects",
+    "expectedAnswer": "",
+    "explanation": "Object detection identifies what objects are present (classification) and where they are located (bounding box coordinates) in an image.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-172",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Computer Vision",
+    "subtopic": "Data Augmentation",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is data augmentation in computer vision?",
+    "options": [
+      "Creating modified versions of images to increase training data diversity",
+      "Reducing image resolution",
+      "Removing noise from images",
+      "Converting images to grayscale"
+    ],
+    "correctAnswer": "Creating modified versions of images to increase training data diversity",
+    "expectedAnswer": "",
+    "explanation": "Data augmentation applies transformations (rotation, flip, crop, color jitter) to create new training samples, improving model generalization.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-173",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Computer Vision",
+    "subtopic": "Segmentation",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the difference between semantic and instance segmentation?",
+    "options": [
+      "Semantic labels all pixels of same class, instance distinguishes individual objects",
+      "They are the same",
+      "Instance is faster",
+      "Semantic handles more classes"
+    ],
+    "correctAnswer": "Semantic labels all pixels of same class, instance distinguishes individual objects",
+    "expectedAnswer": "",
+    "explanation": "Semantic segmentation labels every pixel with a class but doesn't distinguish instances. Instance segmentation identifies each individual object separately.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-174",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Computer Vision",
+    "subtopic": "YOLO",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What makes YOLO (You Only Look Once) fast for object detection?",
+    "options": [
+      "Single-pass detection without region proposals",
+      "Multiple detection passes",
+      "Using only grayscale images",
+      "Reducing image resolution"
+    ],
+    "correctAnswer": "Single-pass detection without region proposals",
+    "expectedAnswer": "",
+    "explanation": "YOLO treats detection as a single regression problem, predicting bounding boxes and classes in one forward pass, avoiding expensive region proposal steps.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-175",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Computer Vision",
+    "subtopic": "ImageNet",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Why was the ImageNet dataset significant for computer vision?",
+    "options": [
+      "It enabled training large-scale deep learning models with 1000 classes",
+      "It was the first image dataset",
+      "It contains only medical images",
+      "It has no labels"
+    ],
+    "correctAnswer": "It enabled training large-scale deep learning models with 1000 classes",
+    "expectedAnswer": "",
+    "explanation": "ImageNet's scale (millions of labeled images across 1000 classes) enabled the deep learning revolution, starting with AlexNet in 2012.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-176",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics and Probability",
+    "subtopic": "Bayes Theorem",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "In Bayes theorem, what does the posterior probability represent?",
+    "options": [
+      "Updated belief after observing evidence",
+      "Initial belief before evidence",
+      "Probability of evidence",
+      "Probability of hypothesis being true initially"
+    ],
+    "correctAnswer": "Updated belief after observing evidence",
+    "expectedAnswer": "",
+    "explanation": "Posterior probability P(H|E) is the updated probability of hypothesis H after observing evidence E, combining prior belief with likelihood.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-177",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics and Probability",
+    "subtopic": "Type I vs Type II Error",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is a Type II error in hypothesis testing?",
+    "options": [
+      "Failing to reject a false null hypothesis",
+      "Rejecting a true null hypothesis",
+      "Accepting a true alternative",
+      "Rejecting a false alternative"
+    ],
+    "correctAnswer": "Failing to reject a false null hypothesis",
+    "expectedAnswer": "",
+    "explanation": "Type II error (β) occurs when we fail to reject the null hypothesis even though it is actually false — a missed detection.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-178",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Statistics and Probability",
+    "subtopic": "Confidence Interval",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "A 95% confidence interval means:",
+    "options": [
+      "If we repeated the experiment many times, 95% of intervals would contain the true parameter",
+      "There is a 95% chance the true parameter lies in this specific interval",
+      "95% of the data falls within this range",
+      "The test has 95% power"
+    ],
+    "correctAnswer": "If we repeated the experiment many times, 95% of intervals would contain the true parameter",
+    "expectedAnswer": "",
+    "explanation": "A 95% CI means that in repeated sampling, approximately 95% of such intervals would contain the true population parameter.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-179",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Classification",
+    "subtopic": "Threshold Tuning",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What happens when you lower the classification threshold in logistic regression?",
+    "options": [
+      "Recall increases, precision may decrease",
+      "Precision increases, recall decreases",
+      "Both increase",
+      "Both decrease"
+    ],
+    "correctAnswer": "Recall increases, precision may decrease",
+    "expectedAnswer": "",
+    "explanation": "Lowering the threshold classifies more samples as positive, catching more true positives (higher recall) but also more false positives (lower precision).",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-180",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Classification",
+    "subtopic": "One-vs-One",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "How many classifiers are needed for a one-vs-one strategy with 5 classes?",
+    "options": [
+      "10",
+      "5",
+      "25",
+      "2"
+    ],
+    "correctAnswer": "10",
+    "expectedAnswer": "",
+    "explanation": "One-vs-one trains one classifier per pair of classes: C(5,2) = 5×4/2 = 10 classifiers.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-181",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Classification",
+    "subtopic": "ROC Curve",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What does the ROC curve plot?",
+    "options": [
+      "TPR vs FPR across different thresholds",
+      "Precision vs Recall",
+      "Accuracy vs Threshold",
+      "Loss vs Epochs"
+    ],
+    "correctAnswer": "TPR vs FPR across different thresholds",
+    "expectedAnswer": "",
+    "explanation": "The ROC curve plots True Positive Rate (sensitivity) against False Positive Rate (1-specificity) at various classification thresholds.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-182",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Regression",
+    "subtopic": "Ridge Regression",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is Ridge regression?",
+    "options": [
+      "Linear regression with L2 penalty on coefficients",
+      "Linear regression with L1 penalty",
+      "Non-linear regression",
+      "Polynomial regression"
+    ],
+    "correctAnswer": "Linear regression with L2 penalty on coefficients",
+    "expectedAnswer": "",
+    "explanation": "Ridge regression adds an L2 penalty (λΣβ²) to the loss function, shrinking coefficients toward zero but never exactly to zero.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-183",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Regression",
+    "subtopic": "Elastic Net",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What does Elastic Net combine?",
+    "options": [
+      "L1 and L2 regularization penalties",
+      "Ridge and Lasso only conceptually",
+      "Dropout and batch normalization",
+      "Bagging and boosting"
+    ],
+    "correctAnswer": "L1 and L2 regularization penalties",
+    "expectedAnswer": "",
+    "explanation": "Elastic Net combines both L1 (Lasso) and L2 (Ridge) penalties, getting feature selection from L1 and stability from L2.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-184",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Regression",
+    "subtopic": "Residual Analysis",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What pattern in residual plots suggests a good linear model fit?",
+    "options": [
+      "Random scatter around zero",
+      "Clear curved pattern",
+      "Funnel shape",
+      "Increasing spread"
+    ],
+    "correctAnswer": "Random scatter around zero",
+    "expectedAnswer": "",
+    "explanation": "Randomly scattered residuals around zero indicate the linear model captures the underlying pattern well, with no systematic errors.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-185",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Decision Trees",
+    "subtopic": "Entropy",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the entropy of a dataset where 50% of samples are positive and 50% negative?",
+    "options": [
+      "1.0",
+      "0.5",
+      "0.0",
+      "2.0"
+    ],
+    "correctAnswer": "1.0",
+    "expectedAnswer": "",
+    "explanation": "Entropy = -p log(p) - (1-p) log(1-p). For p=0.5: -0.5×log(0.5) - 0.5×log(0.5) = 1.0 (maximum impurity).",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-186",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Decision Trees",
+    "subtopic": "Pre-pruning",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is pre-pruning in decision trees?",
+    "options": [
+      "Stopping tree growth before it becomes too complex",
+      "Removing branches after full growth",
+      "Adding more training data",
+      "Increasing tree depth"
+    ],
+    "correctAnswer": "Stopping tree growth before it becomes too complex",
+    "expectedAnswer": "",
+    "explanation": "Pre-pruning limits tree growth during training using criteria like max_depth, min_samples_split, or min_impurity_decrease to prevent overfitting early.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-187",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Random Forest",
+    "subtopic": "OOB Prediction",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "How is the OOB prediction for a sample computed?",
+    "options": [
+      "Average of predictions from trees that did NOT use that sample in training",
+      "Average of all tree predictions",
+      "Prediction from the first tree only",
+      "Majority vote of all trees"
+    ],
+    "correctAnswer": "Average of predictions from trees that did NOT use that sample in training",
+    "expectedAnswer": "",
+    "explanation": "OOB prediction uses only the trees where the sample was out-of-bag (not in bootstrap), providing an unbiased generalization estimate.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-188",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Random Forest",
+    "subtopic": "Feature Importance Comparison",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "Why might permutation importance differ from impurity-based importance?",
+    "options": [
+      "Permutation importance measures actual predictive impact, impurity importance can be biased toward high-cardinality features",
+      "They always give the same result",
+      "Permutation importance is faster",
+      "Impurity importance is always more accurate"
+    ],
+    "correctAnswer": "Permutation importance measures actual predictive impact, impurity importance can be biased toward high-cardinality features",
+    "expectedAnswer": "",
+    "explanation": "Impurity-based importance can be biased toward features with many unique values, while permutation importance directly measures the effect of shuffling each feature on model performance.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-189",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Gradient Boosting",
+    "subtopic": "Residual Fitting",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What do the trees in Gradient Boosting fit at each iteration?",
+    "options": [
+      "The negative gradient (pseudo-residuals) of the loss function",
+      "The original target values",
+      "The difference between prediction and target",
+      "The log-odds of the target"
+    ],
+    "correctAnswer": "The negative gradient (pseudo-residuals) of the loss function",
+    "expectedAnswer": "",
+    "explanation": "Each tree in Gradient Boosting fits the negative gradient of the loss function with respect to the current predictions, which generalizes to any differentiable loss.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-190",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Gradient Boosting",
+    "subtopic": "Subsampling",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is stochastic Gradient Boosting?",
+    "options": [
+      "Using a random subset of data for each tree",
+      "Using random features only",
+      "Adding noise to gradients",
+      "Using random learning rates"
+    ],
+    "correctAnswer": "Using a random subset of data for each tree",
+    "expectedAnswer": "",
+    "explanation": "Stochastic Gradient Boosting subsamples the training data (e.g., 80%) for each tree, introducing randomness that reduces variance and overfitting.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-191",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "XGBoost",
+    "subtopic": "Sparsity Awareness",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "How does XGBoost handle sparse data?",
+    "options": [
+      "It learns the default direction for missing/sparse values",
+      "It imputes zeros",
+      "It drops sparse features",
+      "It densifies the matrix"
+    ],
+    "correctAnswer": "It learns the default direction for missing/sparse values",
+    "expectedAnswer": "",
+    "explanation": "XGBoost treats missing values as a separate direction and learns the optimal split direction (left or right) for them, making it naturally sparse-aware.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-192",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "XGBoost",
+    "subtopic": "Weighted Quantile Sketch",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What algorithm does XGBoost use for finding optimal splits?",
+    "options": [
+      "Weighted quantile sketch for approximate split-finding",
+      "Exhaustive search",
+      "Random search",
+      "Gradient descent on splits"
+    ],
+    "correctAnswer": "Weighted quantile sketch for approximate split-finding",
+    "expectedAnswer": "",
+    "explanation": "XGBoost uses a weighted quantile sketch algorithm to efficiently propose candidate split points, balancing accuracy and speed for large datasets.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-193",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "AdaBoost",
+    "subtopic": "Exponential Loss",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What loss function does AdaBoost implicitly minimize?",
+    "options": [
+      "Exponential loss",
+      "Hinge loss",
+      "Log loss",
+      "Squared error"
+    ],
+    "correctAnswer": "Exponential loss",
+    "expectedAnswer": "",
+    "explanation": "AdaBoost can be viewed as forward stagewise additive modeling that minimizes the exponential loss function L = Σ exp(-y_i × f(x_i)).",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-194",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "AdaBoost",
+    "subtopic": "SAMME",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is SAMME in the context of AdaBoost?",
+    "options": [
+      "Stagewise Additive Modeling using a Multi-class Exponential loss",
+      "Sequential Approximate Maximum Margin Estimation",
+      "Sampling Algorithm for Multi-class Model Ensembles",
+      "Statistical Analysis of Multiclass Model Error"
+    ],
+    "correctAnswer": "Stagewise Additive Modeling using a Multi-class Exponential loss",
+    "expectedAnswer": "",
+    "explanation": "SAMME extends AdaBoost to handle multi-class classification directly, using a multi-class exponential loss function.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-195",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Naive Bayes",
+    "subtopic": "Bernoulli NB",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "When would you use Bernoulli Naive Bayes?",
+    "options": [
+      "When features are binary (present/absent)",
+      "When features are continuous",
+      "When features are text",
+      "When features are categorical"
+    ],
+    "correctAnswer": "When features are binary (present/absent)",
+    "expectedAnswer": "",
+    "explanation": "Bernoulli Naive Bayes is designed for binary feature vectors, modeling whether features are present or absent, commonly used in document classification with binary term indicators.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-196",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Naive Bayes",
+    "subtopic": "Complement NB",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What problem does Complement Naive Bayes address?",
+    "options": [
+      "Imbalanced datasets by using complement class statistics",
+      "Missing values",
+      "High dimensionality",
+      "Non-linear boundaries"
+    ],
+    "correctAnswer": "Imbalanced datasets by using complement class statistics",
+    "expectedAnswer": "",
+    "explanation": "Complement Naive Bayes computes parameters from the complement of each class, making it more robust to imbalanced training data.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-197",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "SVM",
+    "subtopic": "Multi-class SVM",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "How does SVM handle multi-class classification natively?",
+    "options": [
+      "It doesn't natively; requires one-vs-one or one-vs-rest strategies",
+      "It uses softmax output",
+      "It uses multiple hyperplanes simultaneously",
+      "It uses a single hyperplane with multiple classes"
+    ],
+    "correctAnswer": "It doesn't natively; requires one-vs-one or one-vs-rest strategies",
+    "expectedAnswer": "",
+    "explanation": "SVM is inherently binary. Multi-class is handled by combining multiple binary classifiers using strategies like one-vs-one or one-vs-rest.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-198",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "SVM",
+    "subtopic": "Linear SVM",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is the relationship between the C parameter and margin width in linear SVM?",
+    "options": [
+      "Higher C → smaller margin (harder margin)",
+      "Higher C → larger margin",
+      "C doesn't affect margin",
+      "C only affects training speed"
+    ],
+    "correctAnswer": "Higher C → smaller margin (harder margin)",
+    "expectedAnswer": "",
+    "explanation": "Higher C penalizes misclassifications more, resulting in a narrower margin that tries to classify all training points correctly.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-199",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "KNN",
+    "subtopic": "Weighted KNN",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the advantage of weighted KNN over standard KNN?",
+    "options": [
+      "Closer neighbors have more influence on prediction",
+      "All neighbors have equal influence",
+      "It's faster",
+      "It uses fewer neighbors"
+    ],
+    "correctAnswer": "Closer neighbors have more influence on prediction",
+    "expectedAnswer": "",
+    "explanation": "Weighted KNN assigns weights to neighbors based on distance (closer = higher weight), giving more influence to nearby points.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-200",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "KNN",
+    "subtopic": "KD-Tree",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "When does a KD-tree become inefficient for KNN?",
+    "options": [
+      "In high-dimensional data (curse of dimensionality)",
+      "With small datasets",
+      "With few features",
+      "When K is large"
+    ],
+    "correctAnswer": "In high-dimensional data (curse of dimensionality)",
+    "expectedAnswer": "",
+    "explanation": "KD-trees lose efficiency in high dimensions because the number of cells to search grows exponentially, falling back to brute-force search.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-201",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Clustering",
+    "subtopic": "Hierarchical Clustering",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the difference between agglomerative and divisive hierarchical clustering?",
+    "options": [
+      "Agglomerative is bottom-up (merging), divisive is top-down (splitting)",
+      "Agglomerative is faster",
+      "Divisive is bottom-up",
+      "They are the same"
+    ],
+    "correctAnswer": "Agglomerative is bottom-up (merging), divisive is top-down (splitting)",
+    "expectedAnswer": "",
+    "explanation": "Agglomerative starts with each point as a cluster and merges closest pairs. Divisive starts with one cluster and recursively splits.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-202",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Clustering",
+    "subtopic": "GMM",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What assumption does Gaussian Mixture Model clustering make?",
+    "options": [
+      "Data is generated from a mixture of Gaussian distributions",
+      "Clusters are spherical",
+      "Clusters have equal size",
+      "Data is uniformly distributed"
+    ],
+    "correctAnswer": "Data is generated from a mixture of Gaussian distributions",
+    "expectedAnswer": "",
+    "explanation": "GMM assumes data points are generated from a mixture of several Gaussian distributions, each representing a cluster with its own mean and covariance.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-203",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Feature Engineering",
+    "subtopic": "Polynomial Features",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What do polynomial features create?",
+    "options": [
+      "Interaction terms and power combinations of original features",
+      "Only squared terms",
+      "Only interaction terms",
+      "New categorical features"
+    ],
+    "correctAnswer": "Interaction terms and power combinations of original features",
+    "expectedAnswer": "",
+    "explanation": "Polynomial features generate new features including squared terms, cubic terms, and interaction products of original features, capturing non-linear relationships.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-204",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Feature Engineering",
+    "subtopic": "Binning",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is binning (discretization) in feature engineering?",
+    "options": [
+      "Converting continuous features into discrete intervals",
+      "Removing outliers",
+      "Scaling features",
+      "Encoding categories"
+    ],
+    "correctAnswer": "Converting continuous features into discrete intervals",
+    "expectedAnswer": "",
+    "explanation": "Binning transforms continuous numerical features into categorical intervals (bins), which can capture non-linear relationships and reduce noise.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-205",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "PCA",
+    "subtopic": "SVD Connection",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "How is PCA mathematically related to SVD?",
+    "options": [
+      "PCA performs SVD on the centered data matrix to find principal components",
+      "PCA uses eigenvalues of the correlation matrix only",
+      "PCA and SVD are unrelated",
+      "SVD is a special case of PCA"
+    ],
+    "correctAnswer": "PCA performs SVD on the centered data matrix to find principal components",
+    "expectedAnswer": "",
+    "explanation": "PCA can be implemented via SVD: centering the data and computing SVD gives principal components from V^T and singular values that relate to explained variance.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-206",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "PCA",
+    "subtopic": "Kernel PCA",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is Kernel PCA?",
+    "options": [
+      "PCA that uses kernel trick to find non-linear principal components",
+      "PCA with a linear kernel",
+      "PCA for categorical data",
+      "PCA with regularization"
+    ],
+    "correctAnswer": "PCA that uses kernel trick to find non-linear principal components",
+    "expectedAnswer": "",
+    "explanation": "Kernel PCA applies the kernel trick to PCA, enabling it to find non-linear principal components in high-dimensional feature space.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-207",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Bias-Variance Tradeoff",
+    "subtopic": "Ensemble Methods",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "How do ensemble methods like bagging primarily help?",
+    "options": [
+      "Reduce variance while keeping bias roughly the same",
+      "Reduce bias while keeping variance the same",
+      "Reduce both bias and variance equally",
+      "Increase model complexity"
+    ],
+    "correctAnswer": "Reduce variance while keeping bias roughly the same",
+    "expectedAnswer": "",
+    "explanation": "Bagging (e.g., Random Forest) reduces variance by averaging multiple models trained on different subsets, without significantly changing bias.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-208",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Bias-Variance Tradeoff",
+    "subtopic": "Learning Curves",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What does it mean when training error is low but validation error is high?",
+    "options": [
+      "The model is overfitting",
+      "The model is underfitting",
+      "The model is well-fitted",
+      "More data is needed"
+    ],
+    "correctAnswer": "The model is overfitting",
+    "expectedAnswer": "",
+    "explanation": "Low training error but high validation error indicates overfitting: the model memorized training data but fails to generalize to unseen data.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-209",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Model Evaluation Metrics",
+    "subtopic": "Cohen's Kappa",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What does Cohen's Kappa measure?",
+    "options": [
+      "Agreement between two raters beyond chance",
+      "Model accuracy",
+      "Feature importance",
+      "Data quality"
+    ],
+    "correctAnswer": "Agreement between two raters beyond chance",
+    "expectedAnswer": "",
+    "explanation": "Cohen's Kappa measures inter-rater agreement for categorical items, correcting for agreement that would occur by chance. Useful for evaluating annotation consistency.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-210",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Model Evaluation Metrics",
+    "subtopic": "MCC",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is the Matthews Correlation Coefficient (MCC)?",
+    "options": [
+      "A balanced measure using all four confusion matrix quadrants",
+      "Same as accuracy",
+      "Only uses true positives",
+      "A regression metric"
+    ],
+    "correctAnswer": "A balanced measure using all four confusion matrix quadrants",
+    "expectedAnswer": "",
+    "explanation": "MCC considers TP, TN, FP, and FN, producing a score between -1 and +1. It's considered one of the best metrics for imbalanced binary classification.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-211",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Model Evaluation Metrics",
+    "subtopic": "PR-AUC",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "When is PR-AUC (Precision-Recall AUC) preferred over ROC-AUC?",
+    "options": [
+      "When the positive class is rare (highly imbalanced data)",
+      "When data is balanced",
+      "When there are many classes",
+      "For regression problems"
+    ],
+    "correctAnswer": "When the positive class is rare (highly imbalanced data)",
+    "expectedAnswer": "",
+    "explanation": "PR-AUC focuses on the positive class performance and is more informative than ROC-AUC when the positive class is rare, as ROC-AUC can be misleadingly high.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-212",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Imbalanced Data",
+    "subtopic": "NearMiss",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What does NearMiss undersampling do?",
+    "options": [
+      "Selects majority class samples closest to minority class samples",
+      "Removes random majority samples",
+      "Duplicates minority samples",
+      "Generates synthetic samples"
+    ],
+    "correctAnswer": "Selects majority class samples closest to minority class samples",
+    "expectedAnswer": "",
+    "explanation": "NearMiss selects majority class samples that are closest to minority class samples, preserving the decision boundary while reducing imbalance.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-213",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Imbalanced Data",
+    "subtopic": "Tomek Links",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What are Tomek Links used for?",
+    "options": [
+      "Removing borderline majority class samples that form pairs with minority samples",
+      "Adding synthetic minority samples",
+      "Changing class labels",
+      "Feature selection"
+    ],
+    "correctAnswer": "Removing borderline majority class samples that form pairs with minority samples",
+    "expectedAnswer": "",
+    "explanation": "Tomek Links identify pairs of samples from different classes that are nearest neighbors. Removing the majority class sample from each pair cleans the decision boundary.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-214",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Cross Validation",
+    "subtopic": "Time Series Split",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "Why can't you use standard K-fold CV for time series data?",
+    "options": [
+      "It would cause data leakage by using future data to predict past",
+      "It's too slow",
+      "Time series has no labels",
+      "K-fold only works for classification"
+    ],
+    "correctAnswer": "It would cause data leakage by using future data to predict past",
+    "expectedAnswer": "",
+    "explanation": "Standard K-fold randomly splits data, which would put future observations in the training set. Time series CV respects temporal order, training only on past data.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-215",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Cross Validation",
+    "subtopic": "Group K-Fold",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "When should you use Group K-Fold cross-validation?",
+    "options": [
+      "When data has groups (e.g., multiple samples per patient)",
+      "When data is imbalanced",
+      "When features are correlated",
+      "When the dataset is small"
+    ],
+    "correctAnswer": "When data has groups (e.g., multiple samples per patient)",
+    "expectedAnswer": "",
+    "explanation": "Group K-Fold ensures all samples from the same group are in the same fold, preventing leakage when groups are correlated (e.g., multiple measurements from one patient).",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-216",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "CNN",
+    "subtopic": "1x1 Convolution",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is the purpose of 1x1 convolution in CNNs?",
+    "options": [
+      "Dimensionality reduction across channels without changing spatial dimensions",
+      "Increasing spatial resolution",
+      "Adding non-linearity only",
+      "Replacing pooling layers"
+    ],
+    "correctAnswer": "Dimensionality reduction across channels without changing spatial dimensions",
+    "expectedAnswer": "",
+    "explanation": "1x1 convolution reduces the number of channels (depth) while preserving spatial dimensions, used in GoogLeNet/Inception for efficient dimensionality reduction.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-217",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "CNN",
+    "subtopic": "Batch Normalization",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What does batch normalization do in a CNN?",
+    "options": [
+      "Normalizes layer inputs to stabilize and accelerate training",
+      "Reduces the number of parameters",
+      "Increases model depth",
+      "Handles missing values"
+    ],
+    "correctAnswer": "Normalizes layer inputs to stabilize and accelerate training",
+    "expectedAnswer": "",
+    "explanation": "Batch normalization normalizes the inputs of each layer to have zero mean and unit variance, reducing internal covariate shift and enabling faster, more stable training.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-218",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "RNN/LSTM/GRU",
+    "subtopic": "Teacher Forcing",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is teacher forcing in sequence-to-sequence training?",
+    "options": [
+      "Using the actual previous target token as input during training",
+      "Using the model's own prediction as next input",
+      "Forcing the model to learn faster",
+      "Adding noise to inputs"
+    ],
+    "correctAnswer": "Using the actual previous target token as input during training",
+    "expectedAnswer": "",
+    "explanation": "Teacher forcing feeds the ground-truth previous token as input during training instead of the model's own prediction, speeding up convergence but potentially causing exposure bias.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-219",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "RNN/LSTM/GRU",
+    "subtopic": "Stateful RNN",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is a stateful RNN?",
+    "options": [
+      "An RNN that preserves hidden state across batches for long sequences",
+      "An RNN that resets state every batch",
+      "An RNN with more parameters",
+      "An RNN with dropout"
+    ],
+    "correctAnswer": "An RNN that preserves hidden state across batches for long sequences",
+    "expectedAnswer": "",
+    "explanation": "A stateful RNN maintains hidden state between batches, allowing it to process very long sequences by splitting them across batches while preserving temporal context.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-220",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Attention Mechanisms",
+    "subtopic": "Sparse Attention",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is sparse attention?",
+    "options": [
+      "Attention that only computes weights for a subset of positions",
+      "Attention with zero weights everywhere",
+      "Full attention with regularization",
+      "Attention that skips every other position"
+    ],
+    "correctAnswer": "Attention that only computes weights for a subset of positions",
+    "expectedAnswer": "",
+    "explanation": "Sparse attention reduces the O(n²) complexity by computing attention only for selected positions (e.g., local windows, strided patterns), enabling longer context windows.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-221",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Attention Mechanisms",
+    "subtopic": "Flash Attention",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What optimization does Flash Attention implement?",
+    "options": [
+      "IO-aware attention that reduces memory reads/writes using tiling",
+      "Faster matrix multiplication only",
+      "Reduced number of attention heads",
+      "Lower precision computation only"
+    ],
+    "correctAnswer": "IO-aware attention that reduces memory reads/writes using tiling",
+    "expectedAnswer": "",
+    "explanation": "Flash Attention optimizes attention by restructuring computation to minimize GPU memory access (IO), using tiling and recomputation, achieving 2-4x speedup with less memory.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-222",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Transformers",
+    "subtopic": "Relative Positional Encoding",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is the advantage of relative positional encoding over absolute?",
+    "options": [
+      "It captures relative distances between tokens, generalizing better to longer sequences",
+      "It uses less memory",
+      "It's simpler to implement",
+      "It doesn't need positional info"
+    ],
+    "correctAnswer": "It captures relative distances between tokens, generalizing better to longer sequences",
+    "expectedAnswer": "",
+    "explanation": "Relative positional encoding encodes the distance between tokens rather than absolute positions, allowing better generalization to sequence lengths not seen during training.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-223",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Transformers",
+    "subtopic": "Mixture of Experts",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is Mixture of Experts (MoE) in Transformers?",
+    "options": [
+      "Using multiple expert FFN layers where each token activates only a subset",
+      "Using multiple attention heads",
+      "Ensembling multiple Transformer models",
+      "Using different tokenizers"
+    ],
+    "correctAnswer": "Using multiple expert FFN layers where each token activates only a subset",
+    "expectedAnswer": "",
+    "explanation": "MoE replaces the FFN with multiple expert networks, using a gating mechanism to route each token to only a few experts, increasing capacity without proportional compute increase.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-224",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "LLMs",
+    "subtopic": "RLHF",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is RLHF in LLM training?",
+    "options": [
+      "Reinforcement Learning from Human Feedback to align models with human preferences",
+      "Random Linear Head Fine-tuning",
+      "Recurrent Layer Hidden Fusion",
+      "Regularized Language Model Head Freezing"
+    ],
+    "correctAnswer": "Reinforcement Learning from Human Feedback to align models with human preferences",
+    "expectedAnswer": "",
+    "explanation": "RLHF trains a reward model on human preference data, then uses PPO to fine-tune the LLM to generate responses that maximize the reward, aligning with human values.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-225",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "LLMs",
+    "subtopic": "Chain-of-Thought",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is chain-of-thought prompting?",
+    "options": [
+      "Asking the model to show step-by-step reasoning before giving an answer",
+      "Chaining multiple prompts together",
+      "Using longer prompts",
+      "Forcing the model to think silently"
+    ],
+    "correctAnswer": "Asking the model to show step-by-step reasoning before giving an answer",
+    "expectedAnswer": "",
+    "explanation": "Chain-of-thought prompting includes examples of step-by-step reasoning in the prompt, encouraging the model to break down complex problems into intermediate steps.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-226",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "LLMs",
+    "subtopic": "Quantization",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What does quantizing an LLM do?",
+    "options": [
+      "Reduces model size and inference cost by using lower precision weights",
+      "Increases model accuracy",
+      "Adds more parameters",
+      "Speeds up training only"
+    ],
+    "correctAnswer": "Reduces model size and inference cost by using lower precision weights",
+    "expectedAnswer": "",
+    "explanation": "Quantization converts model weights from 32-bit/16-bit floats to 8-bit/4-bit integers, reducing memory and computation while maintaining most of the model's quality.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-227",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "RAG",
+    "subtopic": "Re-ranking",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is re-ranking in RAG pipelines?",
+    "options": [
+      "Using a more powerful model to re-score retrieved documents for relevance",
+      "Re-ranking training data",
+      "Sorting output tokens",
+      "Re-embedding documents"
+    ],
+    "correctAnswer": "Using a more powerful model to re-score retrieved documents for relevance",
+    "expectedAnswer": "",
+    "explanation": "Re-ranking uses a cross-encoder or more powerful model to re-score the initially retrieved documents, improving the quality of context provided to the LLM.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-228",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "RAG",
+    "subtopic": "HyDE",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is Hypothetical Document Embeddings (HyDE)?",
+    "options": [
+      "Generating a hypothetical answer first, then using its embedding for retrieval",
+      "Using hypothetical training data",
+      "Creating synthetic documents for training",
+      "Hypothesizing about document quality"
+    ],
+    "correctAnswer": "Generating a hypothetical answer first, then using its embedding for retrieval",
+    "expectedAnswer": "",
+    "explanation": "HyDE generates a hypothetical answer using the LLM, embeds it, and uses that embedding to retrieve similar real documents, bridging the semantic gap between queries and documents.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-229",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Embeddings and Vector Databases",
+    "subtopic": "Fine-tuning Embeddings",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "Why fine-tune embeddings for a specific domain?",
+    "options": [
+      "Domain-specific data improves retrieval relevance for that domain",
+      "It reduces embedding dimensions",
+      "It speeds up inference",
+      "It's required for all applications"
+    ],
+    "correctAnswer": "Domain-specific data improves retrieval relevance for that domain",
+    "expectedAnswer": "",
+    "explanation": "Fine-tuning embeddings on domain-specific data teaches the model domain-specific semantics, significantly improving retrieval quality for specialized content.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-230",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Embeddings and Vector Databases",
+    "subtopic": "Matryoshka Representations",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is Matryoshka Representation Learning (MRL)?",
+    "options": [
+      "Training embeddings so shorter truncated versions remain useful",
+      "Stacking multiple embedding models",
+      "Using Russian dolls as metaphors",
+      "Concatenating multiple embeddings"
+    ],
+    "correctAnswer": "Training embeddings so shorter truncated versions remain useful",
+    "expectedAnswer": "",
+    "explanation": "MRL trains embeddings so that prefixes (first d dimensions) remain semantically meaningful, allowing flexible truncation to save storage and compute without retraining.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-231",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "NumPy",
+    "subtopic": "Strides",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What are strides in NumPy arrays?",
+    "options": [
+      "Bytes to step in each dimension when traversing the array",
+      "The speed of operations",
+      "The number of dimensions",
+      "The data type size"
+    ],
+    "correctAnswer": "Bytes to step in each dimension when traversing the array",
+    "expectedAnswer": "",
+    "explanation": "Strides define how many bytes to move in memory for each index change in each dimension. They enable efficient slicing and reshaping without copying data.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-232",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "NumPy",
+    "subtopic": "Memory Mapping",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is np.memmap used for?",
+    "options": [
+      "Memory-mapping large arrays from disk without loading entirely into RAM",
+      "Creating in-memory arrays faster",
+      "Mapping array values to colors",
+      "Compressing arrays"
+    ],
+    "correctAnswer": "Memory-mapping large arrays from disk without loading entirely into RAM",
+    "expectedAnswer": "",
+    "explanation": "np.memmap creates a virtual array backed by a file on disk, allowing access to array elements without loading the entire file into memory.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-233",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Pandas",
+    "subtopic": "Method Chaining",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is method chaining in Pandas?",
+    "options": [
+      "Calling multiple operations in sequence using dot notation or pipe",
+      "Joining multiple DataFrames",
+      "Running methods in parallel",
+      "Using lambda functions only"
+    ],
+    "correctAnswer": "Calling multiple operations in sequence using dot notation or pipe",
+    "expectedAnswer": "",
+    "explanation": "Method chaining allows combining multiple Pandas operations in a readable pipeline, e.g., df.groupby().agg().reset_index(), or using .pipe() for custom functions.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-234",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Pandas",
+    "subtopic": "Categorical Dtype",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the benefit of using Pandas categorical dtype?",
+    "options": [
+      "Lower memory usage and faster operations for repeated string values",
+      "Better for numerical data",
+      "Enables GPU acceleration",
+      "Increases precision"
+    ],
+    "correctAnswer": "Lower memory usage and faster operations for repeated string values",
+    "expectedAnswer": "",
+    "explanation": "Categorical dtype stores unique values once with integer codes, significantly reducing memory for columns with many repeated values and speeding up groupby operations.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-235",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "DSA",
+    "subtopic": "Hash Tables",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is the average time complexity of hash table lookup?",
+    "options": [
+      "O(1)",
+      "O(log n)",
+      "O(n)",
+      "O(n²)"
+    ],
+    "correctAnswer": "O(1)",
+    "expectedAnswer": "",
+    "explanation": "Hash tables provide O(1) average-case lookup by directly computing an index from the key via a hash function.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-236",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "DSA",
+    "subtopic": "Merge Sort",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the time complexity of merge sort?",
+    "options": [
+      "O(n log n)",
+      "O(n²)",
+      "O(n)",
+      "O(log n)"
+    ],
+    "correctAnswer": "O(n log n)",
+    "expectedAnswer": "",
+    "explanation": "Merge sort divides the array in half (log n levels) and merges at each level (n work per level), giving O(n log n) in all cases.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-237",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Computer Vision",
+    "subtopic": "IoU",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What does Intersection over Union (IoU) measure in object detection?",
+    "options": [
+      "Overlap between predicted bounding box and ground truth",
+      "Number of detected objects",
+      "Image resolution",
+      "Detection confidence"
+    ],
+    "correctAnswer": "Overlap between predicted bounding box and ground truth",
+    "expectedAnswer": "",
+    "explanation": "IoU = Area of Intersection / Area of Union. It measures how well the predicted bounding box overlaps with the ground truth, with 1.0 being perfect overlap.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  },
+  {
+    "questionId": "celebal-mcq-238",
+    "companyIds": [
+      "celebal"
+    ],
+    "companyId": "celebal",
+    "topic": "Computer Vision",
+    "subtopic": "NMS",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is Non-Maximum Suppression (NMS)?",
+    "options": [
+      "Removing overlapping detections by keeping only the highest confidence ones",
+      "Detecting all objects in an image",
+      "Enhancing image resolution",
+      "Training a detection model"
+    ],
+    "correctAnswer": "Removing overlapping detections by keeping only the highest confidence ones",
+    "expectedAnswer": "",
+    "explanation": "NMS removes redundant bounding boxes by suppressing those with high IoU overlap with a higher-confidence detection, reducing duplicate predictions.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "celebal_mcq"
+  }
+]

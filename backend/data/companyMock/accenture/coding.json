@@ -1,0 +1,1538 @@
+[
+  {
+    "questionId": "accenture-coding-01",
+    "id": "accenture-coding-01",
+    "title": "Count Prime Digits in Number",
+    "company": "accenture",
+    "difficulty": "Easy",
+    "category": "Math",
+    "tags": ["Prime Numbers", "Math", "Digits"],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Given an integer `n`, write a function `countPrimeDigits(n)` that returns the count of digits in `n` which are prime numbers (2, 3, 5, 7). The input can be negative; treat the absolute value.",
+    "description": "Count how many digits of the given number are prime digits (2, 3, 5, or 7).",
+    "constraints": "-10^9 <= n <= 10^9\nTime: O(log N)\nSpace: O(1)",
+    "inputFormat": "A single integer n.",
+    "outputFormat": "A single integer — the count of prime digits.",
+    "examples": [
+      {
+        "input": "2345",
+        "output": "3",
+        "explanation": "Digits 2, 3, 5 are prime. 4 is not. Count = 3."
+      },
+      {
+        "input": "1111",
+        "output": "0",
+        "explanation": "None of the digits are prime."
+      },
+      {
+        "input": "2222",
+        "output": "4",
+        "explanation": "All four digits are 2, which is prime."
+      }
+    ],
+    "explanation": "Take absolute value, extract each digit, and check if it is in {2, 3, 5, 7}.",
+    "starterCode": "function countPrimeDigits(n) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      { "input": "2345", "expected": "3" },
+      { "input": "1111", "expected": "0" },
+      { "input": "2222", "expected": "4" }
+    ],
+    "hiddenTestCases": [
+      { "input": "0", "expected": "0" },
+      { "input": "-2357", "expected": "4" },
+      { "input": "9876543210", "expected": "4" }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "accenture-coding-02",
+    "id": "accenture-coding-02",
+    "title": "Reverse a String",
+    "company": "accenture",
+    "difficulty": "Easy",
+    "category": "Strings",
+    "tags": ["String", "Two Pointers"],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Given a string `s`, write a function `reverseString(s)` that returns the reversed string.",
+    "description": "Reverse the characters of the input string and return the result.",
+    "constraints": "1 <= s.length <= 10^5\ns consists of printable ASCII characters.\nTime: O(N)\nSpace: O(N)",
+    "inputFormat": "A single string s.",
+    "outputFormat": "A single string — the reversed input.",
+    "examples": [
+      {
+        "input": "\"hello\"",
+        "output": "\"olleh\"",
+        "explanation": "Characters reversed: h-e-l-l-o becomes o-l-l-e-h."
+      },
+      {
+        "input": "\"Accenture\"",
+        "output": "\"erutnecxA\"",
+        "explanation": "The string is reversed character by character."
+      },
+      {
+        "input": "\"a\"",
+        "output": "\"a\"",
+        "explanation": "Single character remains the same."
+      }
+    ],
+    "explanation": "Swap characters from both ends moving towards the center, or use built-in reversal.",
+    "starterCode": "function reverseString(s) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      { "input": "\"hello\"", "expected": "\"olleh\"" },
+      { "input": "\"Accenture\"", "expected": "\"erutnecxA\"" },
+      { "input": "\"a\"", "expected": "\"a\"" }
+    ],
+    "hiddenTestCases": [
+      { "input": "\"ab\"", "expected": "\"ba\"" },
+      { "input": "\"12345\"", "expected": "\"54321\"" },
+      { "input": "\"A man a plan a canal Panama\"", "expected": "\"amanaP lanac a nalp a nam A\"" }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "accenture-coding-03",
+    "id": "accenture-coding-03",
+    "title": "Sum of Array Elements",
+    "company": "accenture",
+    "difficulty": "Easy",
+    "category": "Arrays",
+    "tags": ["Array", "Math"],
+    "marks": 10,
+    "source": "practice",
+    "problemStatement": "Given an integer array `arr`, write a function `sumOfElements(arr)` that returns the sum of all elements in the array.",
+    "description": "Compute the total sum of all integers in the array.",
+    "constraints": "1 <= arr.length <= 10^5\n-10^9 <= arr[i] <= 10^9\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "An array of integers.",
+    "outputFormat": "A single integer — the sum of all elements.",
+    "examples": [
+      {
+        "input": "[1, 2, 3, 4, 5]",
+        "output": "15",
+        "explanation": "1 + 2 + 3 + 4 + 5 = 15."
+      },
+      {
+        "input": "[-1, -2, 3]",
+        "output": "0",
+        "explanation": "-1 + (-2) + 3 = 0."
+      },
+      {
+        "input": "[100]",
+        "output": "100",
+        "explanation": "Single element array."
+      }
+    ],
+    "explanation": "Iterate through the array and accumulate the sum.",
+    "starterCode": "function sumOfElements(arr) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      { "input": "[1, 2, 3, 4, 5]", "expected": "15" },
+      { "input": "[-1, -2, 3]", "expected": "0" },
+      { "input": "[100]", "expected": "100" }
+    ],
+    "hiddenTestCases": [
+      { "input": "[0, 0, 0]", "expected": "0" },
+      { "input": "[-5, -10, -15]", "expected": "-30" },
+      { "input": "[1000000000, -1000000000]", "expected": "0" }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "accenture-coding-04",
+    "id": "accenture-coding-04",
+    "title": "Generate Floyd's Triangle",
+    "company": "accenture",
+    "difficulty": "Easy",
+    "category": "Math",
+    "tags": ["Math", "Pattern", "Floyd's Triangle"],
+    "marks": 10,
+    "source": "practice",
+    "problemStatement": "Given an integer `n`, write a function `floydsTriangle(n)` that returns the first `n` rows of Floyd's triangle as a 2D array. Floyd's triangle is a right-angled triangular array of natural numbers starting from 1.",
+    "description": "Row 1 has 1 number, row 2 has 2 numbers, row 3 has 3 numbers, and so on. Numbers are filled sequentially starting from 1.",
+    "constraints": "1 <= n <= 100\nTime: O(N^2)\nSpace: O(N^2)",
+    "inputFormat": "A single integer n.",
+    "outputFormat": "A 2D array representing Floyd's triangle.",
+    "examples": [
+      {
+        "input": "4",
+        "output": "[[1], [2, 3], [4, 5, 6], [7, 8, 9, 10]]",
+        "explanation": "Row 1: 1. Row 2: 2,3. Row 3: 4,5,6. Row 4: 7,8,9,10."
+      },
+      {
+        "input": "1",
+        "output": "[[1]]",
+        "explanation": "Single row with number 1."
+      },
+      {
+        "input": "3",
+        "output": "[[1], [2, 3], [4, 5, 6]]",
+        "explanation": "Three rows with sequential numbers."
+      }
+    ],
+    "explanation": "Maintain a counter starting at 1. For each row i (1-indexed), add i numbers to that row.",
+    "starterCode": "function floydsTriangle(n) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      { "input": "4", "expected": "[[1], [2, 3], [4, 5, 6], [7, 8, 9, 10]]" },
+      { "input": "1", "expected": "[[1]]" },
+      { "input": "3", "expected": "[[1], [2, 3], [4, 5, 6]]" }
+    ],
+    "hiddenTestCases": [
+      { "input": "2", "expected": "[[1], [2, 3]]" },
+      { "input": "5", "expected": "[[1], [2, 3], [4, 5, 6], [7, 8, 9, 10], [11, 12, 13, 14, 15]]" },
+      { "input": "6", "expected": "[[1], [2, 3], [4, 5, 6], [7, 8, 9, 10], [11, 12, 13, 14, 15], [16, 17, 18, 19, 20, 21]]" }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "accenture-coding-05",
+    "id": "accenture-coding-05",
+    "title": "GCD of Two Numbers",
+    "company": "accenture",
+    "difficulty": "Easy",
+    "category": "Math",
+    "tags": ["Math", "GCD", "Euclidean Algorithm"],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Given two integers `a` and `b`, write a function `findGCD(a, b)` that returns their Greatest Common Divisor (GCD).",
+    "description": "Use the Euclidean algorithm to efficiently compute the GCD. GCD is the largest positive integer that divides both numbers.",
+    "constraints": "1 <= a, b <= 10^9\nTime: O(log(min(a, b)))\nSpace: O(1)",
+    "inputFormat": "Two integers a and b.",
+    "outputFormat": "A single integer — the GCD of a and b.",
+    "examples": [
+      {
+        "input": "12, 8",
+        "output": "4",
+        "explanation": "GCD(12, 8) = 4. Divisors of 12: 1,2,3,4,6,12. Divisors of 8: 1,2,4,8. Common: 1,2,4."
+      },
+      {
+        "input": "7, 13",
+        "output": "1",
+        "explanation": "7 and 13 are both prime and coprime. GCD = 1."
+      },
+      {
+        "input": "100, 75",
+        "output": "25",
+        "explanation": "GCD(100, 75) = 25."
+      }
+    ],
+    "explanation": "Apply Euclidean algorithm: GCD(a, b) = GCD(b, a % b) until b becomes 0.",
+    "starterCode": "function findGCD(a, b) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      { "input": "12, 8", "expected": "4" },
+      { "input": "7, 13", "expected": "1" },
+      { "input": "100, 75", "expected": "25" }
+    ],
+    "hiddenTestCases": [
+      { "input": "1, 1", "expected": "1" },
+      { "input": "54, 24", "expected": "6" },
+      { "input": "1000000000, 1", "expected": "1" }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "accenture-coding-06",
+    "id": "accenture-coding-06",
+    "title": "Collatz Sequence Length",
+    "company": "accenture",
+    "difficulty": "Easy",
+    "category": "Math",
+    "tags": ["Math", "Collatz", "Recursion"],
+    "marks": 10,
+    "source": "practice",
+    "problemStatement": "Given a positive integer `n`, write a function `collatzLength(n)` that returns the number of steps to reach 1 using the Collatz conjecture rules: if `n` is even, divide by 2; if odd, multiply by 3 and add 1. Count the number of steps including the final step to reach 1.",
+    "description": "The Collatz conjecture states that any positive integer will eventually reach 1. Count how many steps it takes.",
+    "constraints": "1 <= n <= 10^6\nTime: O(log N) amortized\nSpace: O(1)",
+    "inputFormat": "A single positive integer n.",
+    "outputFormat": "A single integer — the number of steps to reach 1.",
+    "examples": [
+      {
+        "input": "6",
+        "output": "8",
+        "explanation": "6->3->10->5->16->8->4->2->1. That is 8 steps."
+      },
+      {
+        "input": "1",
+        "output": "0",
+        "explanation": "Already at 1, zero steps needed."
+      },
+      {
+        "input": "11",
+        "output": "14",
+        "explanation": "11->34->17->52->26->13->40->20->10->5->16->8->4->2->1. 14 steps."
+      }
+    ],
+    "explanation": "Apply Collatz rules iteratively: if n is even, n = n/2; if n is odd, n = 3*n+1. Count steps until n equals 1.",
+    "starterCode": "function collatzLength(n) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      { "input": "6", "expected": "8" },
+      { "input": "1", "expected": "0" },
+      { "input": "11", "expected": "14" }
+    ],
+    "hiddenTestCases": [
+      { "input": "2", "expected": "1" },
+      { "input": "27", "expected": "111" },
+      { "input": "100", "expected": "25" }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "accenture-coding-07",
+    "id": "accenture-coding-07",
+    "title": "Check Palindrome String",
+    "company": "accenture",
+    "difficulty": "Easy",
+    "category": "Strings",
+    "tags": ["String", "Two Pointers"],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Given a string `s`, write a function `isPalindrome(s)` that returns `true` if the string reads the same forwards and backwards (case-insensitive, considering only alphanumeric characters), and `false` otherwise.",
+    "description": "Ignore non-alphanumeric characters and case when checking for palindrome.",
+    "constraints": "1 <= s.length <= 10^5\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "A single string s.",
+    "outputFormat": "A boolean true or false.",
+    "examples": [
+      {
+        "input": "\"racecar\"",
+        "output": "true",
+        "explanation": "Reads the same forwards and backwards."
+      },
+      {
+        "input": "\"A man, a plan, a canal: Panama\"",
+        "output": "true",
+        "explanation": "After removing non-alphanumeric and lowercasing: \"amanaplanacanalpanama\" — a palindrome."
+      },
+      {
+        "input": "\"hello\"",
+        "output": "false",
+        "explanation": "Reversed is \"olleh\" which is not equal."
+      }
+    ],
+    "explanation": "Use two pointers from both ends, skip non-alphanumeric characters, compare lowercase characters.",
+    "starterCode": "function isPalindrome(s) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      { "input": "\"racecar\"", "expected": "true" },
+      { "input": "\"A man, a plan, a canal: Panama\"", "expected": "true" },
+      { "input": "\"hello\"", "expected": "false" }
+    ],
+    "hiddenTestCases": [
+      { "input": "\" \"", "expected": "true" },
+      { "input": "\"0P\"", "expected": "false" },
+      { "input": "\"No 'x' in Nixon\"", "expected": "true" }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "accenture-coding-08",
+    "id": "accenture-coding-08",
+    "title": "Count Vowels and Consonants",
+    "company": "accenture",
+    "difficulty": "Easy",
+    "category": "Strings",
+    "tags": ["String", "Counting", "String Formatting"],
+    "marks": 10,
+    "source": "practice",
+    "problemStatement": "Given a string `s`, write a function `countVowelsConsonants(s)` that returns an array `[vowelCount, consonantCount]`. Ignore non-alabetic characters. The comparison should be case-insensitive.",
+    "description": "Vowels are a, e, i, o, u. Consonants are all other alphabetic characters. Non-alphabetic characters are ignored.",
+    "constraints": "1 <= s.length <= 10^5\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "A single string s.",
+    "outputFormat": "An array [vowelCount, consonantCount].",
+    "examples": [
+      {
+        "input": "\"Hello World\"",
+        "output": "[3, 7]",
+        "explanation": "Vowels: e, o, o (3). Consonants: H, l, l, W, r, l, d (7)."
+      },
+      {
+        "input": "\"12345\"",
+        "output": "[0, 0]",
+        "explanation": "No alphabetic characters."
+      },
+      {
+        "input": "\"AEIOUaeiou\"",
+        "output": "[10, 0]",
+        "explanation": "All vowels, no consonants."
+      }
+    ],
+    "explanation": "Iterate through each character. If alphabetic, classify as vowel or consonant. Ignore non-alphabetic.",
+    "starterCode": "function countVowelsConsonants(s) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      { "input": "\"Hello World\"", "expected": "[3, 7]" },
+      { "input": "\"12345\"", "expected": "[0, 0]" },
+      { "input": "\"AEIOUaeiou\"", "expected": "[10, 0]" }
+    ],
+    "hiddenTestCases": [
+      { "input": "\"bcdfghjklmnpqrstvwxyz\"", "expected": "[0, 21]" },
+      { "input": "\"Accenture NQT 2024\"", "expected": "[7, 8]" },
+      { "input": "\"\"", "expected": "[0, 0]" }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "accenture-coding-09",
+    "id": "accenture-coding-09",
+    "title": "Binary to Decimal Conversion",
+    "company": "accenture",
+    "difficulty": "Easy",
+    "category": "Strings",
+    "tags": ["String", "Math", "String Formatting", "Binary"],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Given a binary string `binaryStr` representing a binary number, write a function `binaryToDecimal(binaryStr)` that returns its decimal (base-10) equivalent as an integer.",
+    "description": "The binary string contains only characters '0' and '1'. Convert it to a decimal integer.",
+    "constraints": "1 <= binaryStr.length <= 32\nbinaryStr contains only '0' or '1'.\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "A single binary string.",
+    "outputFormat": "A single integer in decimal.",
+    "examples": [
+      {
+        "input": "\"1010\"",
+        "output": "10",
+        "explanation": "1*8 + 0*4 + 1*2 + 0*1 = 10."
+      },
+      {
+        "input": "\"1111\"",
+        "output": "15",
+        "explanation": "1*8 + 1*4 + 1*2 + 1*1 = 15."
+      },
+      {
+        "input": "\"0\"",
+        "output": "0",
+        "explanation": "Binary 0 is decimal 0."
+      }
+    ],
+    "explanation": "Process each character from left to right. For each bit, multiply the running total by 2 and add the bit value.",
+    "starterCode": "function binaryToDecimal(binaryStr) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      { "input": "\"1010\"", "expected": "10" },
+      { "input": "\"1111\"", "expected": "15" },
+      { "input": "\"0\"", "expected": "0" }
+    ],
+    "hiddenTestCases": [
+      { "input": "\"1\"", "expected": "1" },
+      { "input": "\"10000\"", "expected": "16" },
+      { "input": "\"11111111\"", "expected": "255" }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "accenture-coding-10",
+    "id": "accenture-coding-10",
+    "title": "Factorial Using Recursion",
+    "company": "accenture",
+    "difficulty": "Easy",
+    "category": "Recursion",
+    "tags": ["Recursion", "Math"],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Given a non-negative integer `n`, write a function `factorial(n)` that returns `n!` (n factorial) using recursion. By definition, 0! = 1.",
+    "description": "Factorial of n is the product of all positive integers less than or equal to n. Implement using recursion.",
+    "constraints": "0 <= n <= 20\nTime: O(N)\nSpace: O(N) (recursion stack)",
+    "inputFormat": "A single non-negative integer n.",
+    "outputFormat": "A single integer — n factorial.",
+    "examples": [
+      {
+        "input": "5",
+        "output": "120",
+        "explanation": "5! = 5 * 4 * 3 * 2 * 1 = 120."
+      },
+      {
+        "input": "0",
+        "output": "1",
+        "explanation": "By definition, 0! = 1."
+      },
+      {
+        "input": "10",
+        "output": "3628800",
+        "explanation": "10! = 3628800."
+      }
+    ],
+    "explanation": "Base case: if n <= 1, return 1. Otherwise return n * factorial(n-1).",
+    "starterCode": "function factorial(n) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      { "input": "5", "expected": "120" },
+      { "input": "0", "expected": "1" },
+      { "input": "10", "expected": "3628800" }
+    ],
+    "hiddenTestCases": [
+      { "input": "1", "expected": "1" },
+      { "input": "15", "expected": "1307674368000" },
+      { "input": "20", "expected": "2432902008176640000" }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "accenture-coding-11",
+    "id": "accenture-coding-11",
+    "title": "Find Largest Element in Array",
+    "company": "accenture",
+    "difficulty": "Easy",
+    "category": "Arrays",
+    "tags": ["Array", "Traversal"],
+    "marks": 10,
+    "source": "practice",
+    "problemStatement": "Given an integer array `arr`, write a function `findLargest(arr)` that returns the largest element in the array. If the array is empty, return -1.",
+    "description": "Find the maximum value in a non-empty array of integers.",
+    "constraints": "0 <= arr.length <= 10^5\n-10^9 <= arr[i] <= 10^9\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "An array of integers.",
+    "outputFormat": "A single integer — the largest element, or -1 if empty.",
+    "examples": [
+      {
+        "input": "[3, 7, 2, 9, 1]",
+        "output": "9",
+        "explanation": "9 is the largest element."
+      },
+      {
+        "input": "[-5, -1, -8]",
+        "output": "-1",
+        "explanation": "-1 is the largest among negative numbers."
+      },
+      {
+        "input": "[]",
+        "output": "-1",
+        "explanation": "Empty array returns -1."
+      }
+    ],
+    "explanation": "Iterate through the array tracking the maximum value seen so far.",
+    "starterCode": "function findLargest(arr) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      { "input": "[3, 7, 2, 9, 1]", "expected": "9" },
+      { "input": "[-5, -1, -8]", "expected": "-1" },
+      { "input": "[]", "expected": "-1" }
+    ],
+    "hiddenTestCases": [
+      { "input": "[42]", "expected": "42" },
+      { "input": "[1000000000, -1000000000]", "expected": "1000000000" },
+      { "input": "[5, 5, 5, 5]", "expected": "5" }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "accenture-coding-12",
+    "id": "accenture-coding-12",
+    "title": "Sum of Digits",
+    "company": "accenture",
+    "difficulty": "Easy",
+    "category": "Math",
+    "tags": ["Math", "Digits"],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Given a positive integer `n`, write a function `sumOfDigits(n)` that returns the sum of all its digits.",
+    "description": "Extract each digit from the number and compute their sum.",
+    "constraints": "1 <= n <= 10^9\nTime: O(log N)\nSpace: O(1)",
+    "inputFormat": "A single positive integer.",
+    "outputFormat": "A single integer — the sum of digits.",
+    "examples": [
+      {
+        "input": "1234",
+        "output": "10",
+        "explanation": "1 + 2 + 3 + 4 = 10."
+      },
+      {
+        "input": "9999",
+        "output": "36",
+        "explanation": "9 + 9 + 9 + 9 = 36."
+      },
+      {
+        "input": "5",
+        "output": "5",
+        "explanation": "Single digit, sum is 5."
+      }
+    ],
+    "explanation": "Repeatedly take n % 10 to get the last digit, add to sum, then n = Math.floor(n / 10).",
+    "starterCode": "function sumOfDigits(n) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      { "input": "1234", "expected": "10" },
+      { "input": "9999", "expected": "36" },
+      { "input": "5", "expected": "5" }
+    ],
+    "hiddenTestCases": [
+      { "input": "1000000000", "expected": "1" },
+      { "input": "10", "expected": "1" },
+      { "input": "987654321", "expected": "45" }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "accenture-coding-13",
+    "id": "accenture-coding-13",
+    "title": "Rotate Array by K Positions",
+    "company": "accenture",
+    "difficulty": "Medium",
+    "category": "Arrays",
+    "tags": ["Array", "Two Pointers", "Rotation"],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Given an integer array `nums` and an integer `k`, write a function `rotateArray(nums, k)` that rotates the array to the right by `k` positions. Return the rotated array.",
+    "description": "Elements that fall off the end wrap around to the beginning.",
+    "constraints": "1 <= nums.length <= 10^5\n0 <= k <= 10^5\nTime: O(N)\nSpace: O(1) auxiliary",
+    "inputFormat": "An array of integers and an integer k.",
+    "outputFormat": "An array of rotated integers.",
+    "examples": [
+      {
+        "input": "[1, 2, 3, 4, 5, 6, 7], 3",
+        "output": "[5, 6, 7, 1, 2, 3, 4]",
+        "explanation": "Each element moves 3 positions to the right."
+      },
+      {
+        "input": "[-1, -100, 3, 99], 2",
+        "output": "[3, 99, -1, -100]",
+        "explanation": "Rotated 2 steps right."
+      },
+      {
+        "input": "[1, 2], 0",
+        "output": "[1, 2]",
+        "explanation": "k=0 means no rotation."
+      }
+    ],
+    "explanation": "Normalize k = k % n. Reverse entire array, reverse first k elements, reverse remaining n-k elements.",
+    "starterCode": "function rotateArray(nums, k) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      { "input": "[1, 2, 3, 4, 5, 6, 7], 3", "expected": "[5, 6, 7, 1, 2, 3, 4]" },
+      { "input": "[-1, -100, 3, 99], 2", "expected": "[3, 99, -1, -100]" },
+      { "input": "[1, 2], 0", "expected": "[1, 2]" }
+    ],
+    "hiddenTestCases": [
+      { "input": "[1], 10", "expected": "[1]" },
+      { "input": "[1, 2, 3, 4], 4", "expected": "[1, 2, 3, 4]" },
+      { "input": "[10, 20, 30], 1", "expected": "[30, 10, 20]" }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "accenture-coding-14",
+    "id": "accenture-coding-14",
+    "title": "Longest Substring Without Repeating Characters",
+    "company": "accenture",
+    "difficulty": "Medium",
+    "category": "Strings",
+    "tags": ["String", "Sliding Window", "Hash Map"],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Given a string `s`, write a function `longestUniqueSubstring(s)` that finds the length of the longest substring without repeating characters.",
+    "description": "A substring is a contiguous sequence of characters. Find the longest one with all unique characters.",
+    "constraints": "0 <= s.length <= 5 * 10^4\ns consists of English letters, digits, symbols and spaces.\nTime: O(N)\nSpace: O(min(N, M)) where M is character set size",
+    "inputFormat": "A single string s.",
+    "outputFormat": "A single integer — the length of the longest substring.",
+    "examples": [
+      {
+        "input": "\"abcabcbb\"",
+        "output": "3",
+        "explanation": "The answer is \"abc\" with length 3."
+      },
+      {
+        "input": "\"bbbbb\"",
+        "output": "1",
+        "explanation": "The answer is \"b\" with length 1."
+      },
+      {
+        "input": "\"pwwkew\"",
+        "output": "3",
+        "explanation": "The answer is \"wke\" with length 3."
+      }
+    ],
+    "explanation": "Use a sliding window with a hash map storing the last index of each character. Move left pointer when duplicate found.",
+    "starterCode": "function longestUniqueSubstring(s) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      { "input": "\"abcabcbb\"", "expected": "3" },
+      { "input": "\"bbbbb\"", "expected": "1" },
+      { "input": "\"pwwkew\"", "expected": "3" }
+    ],
+    "hiddenTestCases": [
+      { "input": "\"\"", "expected": "0" },
+      { "input": "\"au\"", "expected": "2" },
+      { "input": "\"tmmzuxt\"", "expected": "5" }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "accenture-coding-15",
+    "id": "accenture-coding-15",
+    "title": "Binary Search in Sorted Array",
+    "company": "accenture",
+    "difficulty": "Medium",
+    "category": "Binary Search",
+    "tags": ["Binary Search", "Array"],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Given a sorted array of distinct integers `nums` and a target value `target`, write a function `binarySearch(nums, target)` that returns the index of `target` in the array. If `target` is not found, return -1. You must implement a solution with O(log n) time complexity.",
+    "description": "Use binary search to find the target in a sorted array.",
+    "constraints": "1 <= nums.length <= 10^4\n-10^4 < nums[i], target < 10^4\nAll integers in nums are unique.\nnums is sorted in ascending order.\nTime: O(log N)\nSpace: O(1)",
+    "inputFormat": "A sorted array of integers and an integer target.",
+    "outputFormat": "A single integer — the index of target, or -1.",
+    "examples": [
+      {
+        "input": "[-1, 0, 3, 5, 9, 12], 9",
+        "output": "4",
+        "explanation": "9 is at index 4."
+      },
+      {
+        "input": "[-1, 0, 3, 5, 9, 12], 2",
+        "output": "-1",
+        "explanation": "2 is not in the array."
+      },
+      {
+        "input": "[5], 5",
+        "output": "0",
+        "explanation": "Single element, found at index 0."
+      }
+    ],
+    "explanation": "Maintain left and right pointers. Compare mid element with target and narrow the search half.",
+    "starterCode": "function binarySearch(nums, target) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      { "input": "[-1, 0, 3, 5, 9, 12], 9", "expected": "4" },
+      { "input": "[-1, 0, 3, 5, 9, 12], 2", "expected": "-1" },
+      { "input": "[5], 5", "expected": "0" }
+    ],
+    "hiddenTestCases": [
+      { "input": "[1, 2, 3, 4, 5], 1", "expected": "0" },
+      { "input": "[1, 2, 3, 4, 5], 5", "expected": "4" },
+      { "input": "[1, 2, 3, 4, 5], 6", "expected": "-1" }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "accenture-coding-16",
+    "id": "accenture-coding-16",
+    "title": "Merge Two Sorted Arrays",
+    "company": "accenture",
+    "difficulty": "Medium",
+    "category": "Sorting",
+    "tags": ["Sorting", "Two Pointers", "Array"],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Given two sorted integer arrays `arr1` and `arr2`, write a function `mergeSortedArrays(arr1, arr2)` that returns a new sorted array containing all elements from both arrays.",
+    "description": "Merge two pre-sorted arrays into one sorted array without using built-in sort.",
+    "constraints": "0 <= arr1.length, arr2.length <= 10^5\n-10^9 <= arr1[i], arr2[i] <= 10^9\nTime: O(N + M)\nSpace: O(N + M)",
+    "inputFormat": "Two sorted integer arrays.",
+    "outputFormat": "A single sorted integer array.",
+    "examples": [
+      {
+        "input": "[1, 3, 5], [2, 4, 6]",
+        "output": "[1, 2, 3, 4, 5, 6]",
+        "explanation": "Merged in sorted order."
+      },
+      {
+        "input": "[], [1, 2, 3]",
+        "output": "[1, 2, 3]",
+        "explanation": "First array is empty."
+      },
+      {
+        "input": "[1, 2, 3], []",
+        "output": "[1, 2, 3]",
+        "explanation": "Second array is empty."
+      }
+    ],
+    "explanation": "Use two pointers, one for each array. Compare elements and push the smaller one to the result.",
+    "starterCode": "function mergeSortedArrays(arr1, arr2) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      { "input": "[1, 3, 5], [2, 4, 6]", "expected": "[1, 2, 3, 4, 5, 6]" },
+      { "input": "[], [1, 2, 3]", "expected": "[1, 2, 3]" },
+      { "input": "[1, 2, 3], []", "expected": "[1, 2, 3]" }
+    ],
+    "hiddenTestCases": [
+      { "input": "[1, 1, 1], [2, 2, 2]", "expected": "[1, 1, 1, 2, 2, 2]" },
+      { "input": "[-3, -1, 0], [-2, 4, 5]", "expected": "[-3, -2, -1, 0, 4, 5]" },
+      { "input": "[5], [1]", "expected": "[1, 5]" }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "accenture-coding-17",
+    "id": "accenture-coding-17",
+    "title": "Two Sum II - Sorted Input",
+    "company": "accenture",
+    "difficulty": "Medium",
+    "category": "Two Pointers",
+    "tags": ["Two Pointers", "Array"],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Given a 1-indexed sorted array of integers `numbers` and a target value `target`, write a function `twoSumSorted(numbers, target)` that returns the indices `[i, j]` (1-indexed) of the two numbers that add up to `target`. You may assume exactly one solution exists.",
+    "description": "The array is sorted in non-decreasing order. Use two pointers to find the pair.",
+    "constraints": "2 <= numbers.length <= 10^4\n-10^3 <= numbers[i] <= 10^3\ntarget is guaranteed to exist.\nNumbers are sorted.\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "A sorted array and an integer target.",
+    "outputFormat": "An array of two 1-indexed integers.",
+    "examples": [
+      {
+        "input": "[2, 7, 11, 15], 9",
+        "output": "[1, 2]",
+        "explanation": "numbers[1] + numbers[2] = 2 + 7 = 9."
+      },
+      {
+        "input": "[2, 3, 4], 6",
+        "output": "[1, 3]",
+        "explanation": "numbers[1] + numbers[3] = 2 + 4 = 6."
+      },
+      {
+        "input": "[-1, 0], -1",
+        "output": "[1, 2]",
+        "explanation": "numbers[1] + numbers[2] = -1 + 0 = -1."
+      }
+    ],
+    "explanation": "Use two pointers: left at start, right at end. If sum is too large, move right left; if too small, move left right.",
+    "starterCode": "function twoSumSorted(numbers, target) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      { "input": "[2, 7, 11, 15], 9", "expected": "[1, 2]" },
+      { "input": "[2, 3, 4], 6", "expected": "[1, 3]" },
+      { "input": "[-1, 0], -1", "expected": "[1, 2]" }
+    ],
+    "hiddenTestCases": [
+      { "input": "[1, 2, 3, 4, 5], 9", "expected": "[4, 5]" },
+      { "input": "[-3, -1, 0, 2, 5], 4", "expected": "[2, 5]" },
+      { "input": "[0, 0, 3, 4], 0", "expected": "[1, 2]" }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "accenture-coding-18",
+    "id": "accenture-coding-18",
+    "title": "Group Anagrams",
+    "company": "accenture",
+    "difficulty": "Medium",
+    "category": "Strings",
+    "tags": ["String", "Hash Map", "Sorting"],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Given an array of strings `strs`, write a function `groupAnagrams(strs)` that groups the anagrams together. Return the groups as a 2D array. You can return the answer in any order.",
+    "description": "An anagram is a word formed by rearranging the letters of another word. Group strings that are anagrams of each other.",
+    "constraints": "1 <= strs.length <= 10^4\n0 <= strs[i].length <= 100\nstrs[i] consists of lowercase English letters.\nTime: O(N * K log K) where K is max string length\nSpace: O(N * K)",
+    "inputFormat": "An array of strings.",
+    "outputFormat": "A 2D array of grouped anagram strings.",
+    "examples": [
+      {
+        "input": "[\"eat\",\"tea\",\"tan\",\"ate\",\"nat\",\"bat\"]",
+        "output": "[[\"eat\",\"tea\",\"ate\"],[\"tan\",\"nat\"],[\"bat\"]]",
+        "explanation": "Grouped by identical character counts."
+      },
+      {
+        "input": "[\"\"]",
+        "output": "[[\"\"]]",
+        "explanation": "Single empty string in one group."
+      },
+      {
+        "input": "[\"a\"]",
+        "output": "[[\"a\"]]",
+        "explanation": "Single character string."
+      }
+    ],
+    "explanation": "Use sorted string as hash map key. Group original strings by their sorted key.",
+    "starterCode": "function groupAnagrams(strs) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      { "input": "[\"eat\",\"tea\",\"tan\",\"ate\",\"nat\",\"bat\"]", "expected": "[[\"eat\",\"tea\",\"ate\"],[\"tan\",\"nat\"],[\"bat\"]]" },
+      { "input": "[\"\"]", "expected": "[[\"\"]]" },
+      { "input": "[\"a\"]", "expected": "[[\"a\"]]" }
+    ],
+    "hiddenTestCases": [
+      { "input": "[\"abc\",\"bca\",\"cab\",\"xyz\"]", "expected": "[[\"abc\",\"bca\",\"cab\"],[\"xyz\"]]" },
+      { "input": "[\"listen\",\"silent\",\"enlist\"]", "expected": "[[\"listen\",\"silent\",\"enlist\"]]" },
+      { "input": "[\"ab\",\"ba\",\"cd\",\"dc\"]", "expected": "[[\"ab\",\"ba\"],[\"cd\",\"dc\"]]" }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "accenture-coding-19",
+    "id": "accenture-coding-19",
+    "title": "Min Stack",
+    "company": "accenture",
+    "difficulty": "Medium",
+    "category": "Stack",
+    "tags": ["Stack", "Design"],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Design a stack that supports push, pop, top, and retrieving the minimum element in constant time. Implement the `MinStack` class with methods: `push(val)`, `pop()`, `top()`, and `getMin()`.",
+    "description": "All four operations must run in O(1) time complexity.",
+    "constraints": "-2^31 <= val <= 2^31 - 1\nAt most 3 * 10^4 calls will be made to push, pop, top, and getMin.\nTime: O(1) per operation\nSpace: O(N)",
+    "inputFormat": "A sequence of operations: push(val), pop(), top(), getMin().",
+    "outputFormat": "For top() return the top element. For getMin() return the minimum. For push/pop no output.",
+    "examples": [
+      {
+        "input": "[\"push\",-2,\"push\",0,\"push\",-3,\"getMin\",\"pop\",\"top\",\"getMin\"]",
+        "output": "[null, null, null, -3, null, 0, -2]",
+        "explanation": "getMin returns -3, after pop top is 0 and getMin is -2."
+      },
+      {
+        "input": "[\"push\",1,\"push\",2,\"top\",\"getMin\",\"pop\",\"getMin\"]",
+        "output": "[null, null, 2, 1, null, 1]",
+        "explanation": "Top is 2, min is 1. After popping 2, min is still 1."
+      },
+      {
+        "input": "[\"push\",5,\"getMin\",\"push\",3,\"getMin\",\"pop\",\"getMin\"]",
+        "output": "[null, 5, null, 3, null, 5]",
+        "explanation": "After pushing 5, min is 5. After pushing 3, min is 3. After popping 3, min is 5."
+      }
+    ],
+    "explanation": "Use two stacks: one for values and one to track the current minimum at each level.",
+    "starterCode": "function MinStack() {\n  // Initialize your data structures here\n  \n}\n\nMinStack.prototype.push = function(val) {\n  // Push val onto the stack\n};\n\nMinStack.prototype.pop = function() {\n  // Remove the top element\n};\n\nMinStack.prototype.top = function() {\n  // Get the top element\n};\n\nMinStack.prototype.getMin = function() {\n  // Get the minimum element\n};",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      { "input": "[\"push\",-2,\"push\",0,\"push\",-3,\"getMin\",\"pop\",\"top\",\"getMin\"]", "expected": "[null, null, null, -3, null, 0, -2]" },
+      { "input": "[\"push\",1,\"push\",2,\"top\",\"getMin\",\"pop\",\"getMin\"]", "expected": "[null, null, 2, 1, null, 1]" },
+      { "input": "[\"push\",5,\"getMin\",\"push\",3,\"getMin\",\"pop\",\"getMin\"]", "expected": "[null, 5, null, 3, null, 5]" }
+    ],
+    "hiddenTestCases": [
+      { "input": "[\"push\",0,\"getMin\",\"push\",-1,\"getMin\",\"pop\",\"getMin\"]", "expected": "[null, 0, null, -1, null, 0]" },
+      { "input": "[\"push\",10,\"push\",5,\"push\",15,\"getMin\",\"pop\",\"getMin\"]", "expected": "[null, null, null, 5, null, 5]" },
+      { "input": "[\"push\",-1,\"top\",\"getMin\"]", "expected": "[null, -1, -1]" }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "accenture-coding-20",
+    "id": "accenture-coding-20",
+    "title": "Spiral Order Matrix Traversal",
+    "company": "accenture",
+    "difficulty": "Medium",
+    "category": "Matrix",
+    "tags": ["Matrix", "Array", "Simulation"],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Given an `m x n` matrix `matrix`, write a function `spiralOrder(matrix)` that returns all elements of the matrix in spiral order (clockwise from the top-left corner).",
+    "description": "Traverse the matrix in a spiral pattern: right, down, left, up, repeating until all elements are visited.",
+    "constraints": "1 <= m, n <= 10\n-100 <= matrix[i][j] <= 100\nTime: O(m * n)\nSpace: O(1) auxiliary",
+    "inputFormat": "A 2D matrix of integers.",
+    "outputFormat": "A single array of integers in spiral order.",
+    "examples": [
+      {
+        "input": "[[1,2,3],[4,5,6],[7,8,9]]",
+        "output": "[1,2,3,6,9,8,7,4,5]",
+        "explanation": "Spiral: 1->2->3->6->9->8->7->4->5."
+      },
+      {
+        "input": "[[1,2,3,4],[5,6,7,8],[9,10,11,12]]",
+        "output": "[1,2,3,4,8,12,11,10,9,5,6,7]",
+        "explanation": "Spiral traversal of 3x4 matrix."
+      },
+      {
+        "input": "[[1]]",
+        "output": "[1]",
+        "explanation": "Single element matrix."
+      }
+    ],
+    "explanation": "Maintain four boundaries: top, bottom, left, right. Traverse in order: right, down, left, up, shrinking boundaries.",
+    "starterCode": "function spiralOrder(matrix) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      { "input": "[[1,2,3],[4,5,6],[7,8,9]]", "expected": "[1,2,3,6,9,8,7,4,5]" },
+      { "input": "[[1,2,3,4],[5,6,7,8],[9,10,11,12]]", "expected": "[1,2,3,4,8,12,11,10,9,5,6,7]" },
+      { "input": "[[1]]", "expected": "[1]" }
+    ],
+    "hiddenTestCases": [
+      { "input": "[[1,2],[3,4]]", "expected": "[1,2,4,3]" },
+      { "input": "[[1,2,3]]", "expected": "[1,2,3]" },
+      { "input": "[[1],[2],[3]]", "expected": "[1,2,3]" }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "accenture-coding-21",
+    "id": "accenture-coding-21",
+    "title": "Linked List Cycle Detection",
+    "company": "accenture",
+    "difficulty": "Medium",
+    "category": "Linked List",
+    "tags": ["Linked List", "Two Pointers", "Floyd's Cycle"],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Given the `head` of a linked list, write a function `hasCycle(head)` that returns `true` if the linked list has a cycle in it, and `false` otherwise. A cycle exists if some node in the list can be reached again by continuously following the `next` pointer.",
+    "description": "Implement Floyd's cycle detection algorithm (tortoise and hare) with O(1) extra space.",
+    "constraints": "0 <= number of nodes <= 10^4\n-10^5 <= Node.val <= 10^5\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "Head node of a linked list (represented as an array, with pos indicating where the tail connects to, -1 if no cycle).",
+    "outputFormat": "A boolean true or false.",
+    "examples": [
+      {
+        "input": "[3, 2, 0, -4], pos=1",
+        "output": "true",
+        "explanation": "The tail connects to node at index 1, forming a cycle."
+      },
+      {
+        "input": "[1, 2], pos=0",
+        "output": "true",
+        "explanation": "The tail connects to the first node."
+      },
+      {
+        "input": "[1], pos=-1",
+        "output": "false",
+        "explanation": "Single node with no cycle."
+      }
+    ],
+    "explanation": "Use two pointers: slow moves one step, fast moves two steps. If they meet, a cycle exists.",
+    "starterCode": "function hasCycle(head) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      { "input": "[3, 2, 0, -4], pos=1", "expected": "true" },
+      { "input": "[1, 2], pos=0", "expected": "true" },
+      { "input": "[1], pos=-1", "expected": "false" }
+    ],
+    "hiddenTestCases": [
+      { "input": "[1], pos=-1", "expected": "false" },
+      { "input": "[1, 2, 3, 4, 5], pos=2", "expected": "true" },
+      { "input": "[], pos=-1", "expected": "false" }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "accenture-coding-22",
+    "id": "accenture-coding-22",
+    "title": "Product of Array Except Self",
+    "company": "accenture",
+    "difficulty": "Medium",
+    "category": "Arrays",
+    "tags": ["Array", "Prefix Sum", "Math"],
+    "marks": 10,
+    "source": "practice",
+    "problemStatement": "Given an integer array `nums`, write a function `productExceptSelf(nums)` that returns an array `answer` such that `answer[i]` is equal to the product of all elements of `nums` except `nums[i]`. You must implement it in O(n) time without using division.",
+    "description": "The product of any prefix or suffix of nums fits in a 32-bit integer. Do not use the division operation.",
+    "constraints": "2 <= nums.length <= 10^5\n-30 <= nums[i] <= 30\nTime: O(N)\nSpace: O(1) auxiliary (output array not counted)",
+    "inputFormat": "An array of integers.",
+    "outputFormat": "An array where each element is the product of all other elements.",
+    "examples": [
+      {
+        "input": "[1, 2, 3, 4]",
+        "output": "[24, 12, 8, 6]",
+        "explanation": "answer[0]=2*3*4=24, answer[1]=1*3*4=12, etc."
+      },
+      {
+        "input": "[-1, 1, 0, -3, 3]",
+        "output": "[0, 0, 9, 0, 0]",
+        "explanation": "Zero at index 2 zeroes out all except index 2's product."
+      },
+      {
+        "input": "[2, 3]",
+        "output": "[3, 2]",
+        "explanation": "Two elements: each is the other element."
+      }
+    ],
+    "explanation": "Build prefix products in a left pass, then multiply by suffix products in a right pass.",
+    "starterCode": "function productExceptSelf(nums) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      { "input": "[1, 2, 3, 4]", "expected": "[24, 12, 8, 6]" },
+      { "input": "[-1, 1, 0, -3, 3]", "expected": "[0, 0, 9, 0, 0]" },
+      { "input": "[2, 3]", "expected": "[3, 2]" }
+    ],
+    "hiddenTestCases": [
+      { "input": "[0, 0]", "expected": "[0, 0]" },
+      { "input": "[1, -1]", "expected": "[-1, 1]" },
+      { "input": "[2, 2, 2, 2]", "expected": "[8, 8, 8, 8]" }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "accenture-coding-23",
+    "id": "accenture-coding-23",
+    "title": "Maximum Subarray Sum (Kadane's Algorithm)",
+    "company": "accenture",
+    "difficulty": "Medium",
+    "category": "Arrays",
+    "tags": ["Array", "Dynamic Programming"],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Given an integer array `nums`, write a function `maxSubArray(nums)` that finds the contiguous subarray (containing at least one number) which has the largest sum and returns its sum.",
+    "description": "A subarray is a contiguous non-empty sequence of elements within an array.",
+    "constraints": "1 <= nums.length <= 10^5\n-10^4 <= nums[i] <= 10^4\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "An array of integers.",
+    "outputFormat": "A single integer — the maximum subarray sum.",
+    "examples": [
+      {
+        "input": "[-2, 1, -3, 4, -1, 2, 1, -5, 4]",
+        "output": "6",
+        "explanation": "Subarray [4, -1, 2, 1] has sum 6."
+      },
+      {
+        "input": "[1]",
+        "output": "1",
+        "explanation": "Single element is the maximum subarray."
+      },
+      {
+        "input": "[5, 4, -1, 7, 8]",
+        "output": "23",
+        "explanation": "Entire array sum is 23."
+      }
+    ],
+    "explanation": "Kadane's algorithm: track current sum, reset to 0 when current sum goes negative.",
+    "starterCode": "function maxSubArray(nums) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      { "input": "[-2, 1, -3, 4, -1, 2, 1, -5, 4]", "expected": "6" },
+      { "input": "[1]", "expected": "1" },
+      { "input": "[5, 4, -1, 7, 8]", "expected": "23" }
+    ],
+    "hiddenTestCases": [
+      { "input": "[-1]", "expected": "-1" },
+      { "input": "[-5, -2, -8, -1]", "expected": "-1" },
+      { "input": "[2, -1, 2, 3, 4, -5]", "expected": "10" }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "accenture-coding-24",
+    "id": "accenture-coding-24",
+    "title": "Flatten Binary Tree to Linked List",
+    "company": "accenture",
+    "difficulty": "Medium",
+    "category": "Trees",
+    "tags": ["Tree", "Binary Tree", "Linked List", "DFS"],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Given the `root` of a binary tree, write a function `flattenTree(root)` that flattens the tree into a linked list in-place. The right child of each node should point to the next node in a pre-order traversal, and the left child should always be null. Return the flattened tree root.",
+    "description": "Flatten using pre-order traversal. The right pointer of each node points to the next node in pre-order, left is always null.",
+    "constraints": "0 <= number of nodes <= 2000\n-100 <= Node.val <= 100\nTime: O(N)\nSpace: O(1) using Morris-like traversal",
+    "inputFormat": "Root of a binary tree (level-order array with null for missing nodes).",
+    "outputFormat": "Root of the flattened tree (right-skewed linked list).",
+    "examples": [
+      {
+        "input": "[1, 2, 5, 3, 4, null, 6]",
+        "output": "[1, null, 2, null, 3, null, 4, null, 5, null, 6]",
+        "explanation": "Pre-order: 1->2->3->4->5->6 flattened to right pointers."
+      },
+      {
+        "input": "[]",
+        "output": "[]",
+        "explanation": "Empty tree remains empty."
+      },
+      {
+        "input": "[0]",
+        "output": "[0]",
+        "explanation": "Single node tree."
+      }
+    ],
+    "explanation": "For each node, find the rightmost node in its left subtree and connect it to the node's right child. Then move the left subtree to the right.",
+    "starterCode": "function flattenTree(root) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      { "input": "[1, 2, 5, 3, 4, null, 6]", "expected": "[1, null, 2, null, 3, null, 4, null, 5, null, 6]" },
+      { "input": "[]", "expected": "[]" },
+      { "input": "[0]", "expected": "[0]" }
+    ],
+    "hiddenTestCases": [
+      { "input": "[1, 2, 3]", "expected": "[1, null, 2, null, 3]" },
+      { "input": "[1, null, 2, null, 3]", "expected": "[1, null, 2, null, 3]" },
+      { "input": "[1, 2, 3, 4, 5, 6, 7]", "expected": "[1, null, 2, null, 4, null, 5, null, 3, null, 6, null, 7]" }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "accenture-coding-25",
+    "id": "accenture-coding-25",
+    "title": "Number of Islands",
+    "company": "accenture",
+    "difficulty": "Medium",
+    "category": "Graphs",
+    "tags": ["Graph", "DFS", "Matrix", "BFS"],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Given an `m x n` 2D binary grid `grid` which represents a map of '1's (land) and '0's (water), write a function `numIslands(grid)` that returns the number of islands. An island is formed by connecting adjacent lands horizontally or vertically.",
+    "description": "Count connected components of '1's in the grid. Diagonal connections do not count.",
+    "constraints": "m == grid.length\nn == grid[i].length\n1 <= m, n <= 300\ngrid[i][j] is '0' or '1'.\nTime: O(m * n)\nSpace: O(m * n)",
+    "inputFormat": "A 2D grid of '1' and '0' characters.",
+    "outputFormat": "A single integer — the number of islands.",
+    "examples": [
+      {
+        "input": "[[\"1\",\"1\",\"1\",\"1\",\"0\"],[\"1\",\"1\",\"0\",\"1\",\"0\"],[\"1\",\"1\",\"0\",\"0\",\"0\"],[\"0\",\"0\",\"0\",\"0\",\"0\"]]",
+        "output": "1",
+        "explanation": "All land cells are connected forming one island."
+      },
+      {
+        "input": "[[\"1\",\"1\",\"0\",\"0\",\"0\"],[\"1\",\"1\",\"0\",\"0\",\"0\"],[\"0\",\"0\",\"1\",\"0\",\"0\"],[\"0\",\"0\",\"0\",\"1\",\"1\"]]",
+        "output": "3",
+        "explanation": "Three separate islands of connected land."
+      },
+      {
+        "input": "[[\"1\"]]",
+        "output": "1",
+        "explanation": "Single land cell is one island."
+      }
+    ],
+    "explanation": "Use DFS or BFS to traverse each connected component of '1's, marking visited cells. Count the number of DFS/BFS calls.",
+    "starterCode": "function numIslands(grid) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      { "input": "[[\"1\",\"1\",\"1\",\"1\",\"0\"],[\"1\",\"1\",\"0\",\"1\",\"0\"],[\"1\",\"1\",\"0\",\"0\",\"0\"],[\"0\",\"0\",\"0\",\"0\",\"0\"]]", "expected": "1" },
+      { "input": "[[\"1\",\"1\",\"0\",\"0\",\"0\"],[\"1\",\"1\",\"0\",\"0\",\"0\"],[\"0\",\"0\",\"1\",\"0\",\"0\"],[\"0\",\"0\",\"0\",\"1\",\"1\"]]", "expected": "3" },
+      { "input": "[[\"1\"]]", "expected": "1" }
+    ],
+    "hiddenTestCases": [
+      { "input": "[[\"0\"]]", "expected": "0" },
+      { "input": "[[\"1\",\"0\",\"1\"],[\"0\",\"1\",\"0\"],[\"1\",\"0\",\"1\"]]", "expected": "5" },
+      { "input": "[[\"1\",\"1\"],[\"1\",\"1\"]]", "expected": "1" }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "accenture-coding-26",
+    "id": "accenture-coding-26",
+    "title": "Coin Change Problem",
+    "company": "accenture",
+    "difficulty": "Medium",
+    "category": "Dynamic Programming",
+    "tags": ["Dynamic Programming", "Greedy", "Math"],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Given an integer array `coins` representing different coin denominations and an integer `amount`, write a function `coinChange(coins, amount)` that returns the minimum number of coins needed to make up the amount. If it is not possible to make the amount, return -1.",
+    "description": "Find the minimum number of coins that sum to the target amount. Unlimited supply of each coin type.",
+    "constraints": "1 <= coins.length <= 12\n1 <= coins[i] <= 2^31 - 1\n0 <= amount <= 10^4\nTime: O(amount * coins.length)\nSpace: O(amount)",
+    "inputFormat": "An array of coin denominations and an integer amount.",
+    "outputFormat": "A single integer — the minimum number of coins, or -1 if impossible.",
+    "examples": [
+      {
+        "input": "[1, 5, 10, 25], 30",
+        "output": "2",
+        "explanation": "25 + 5 = 30, using 2 coins."
+      },
+      {
+        "input": "[2], 3",
+        "output": "-1",
+        "explanation": "Cannot make 3 with only 2-coin denomination."
+      },
+      {
+        "input": "[1], 0",
+        "output": "0",
+        "explanation": "Zero amount requires zero coins."
+      }
+    ],
+    "explanation": "Use dynamic programming: dp[i] = min coins needed to make amount i. dp[0] = 0, dp[i] = min(dp[i], dp[i-coin]+1) for each coin.",
+    "starterCode": "function coinChange(coins, amount) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      { "input": "[1, 5, 10, 25], 30", "expected": "2" },
+      { "input": "[2], 3", "expected": "-1" },
+      { "input": "[1], 0", "expected": "0" }
+    ],
+    "hiddenTestCases": [
+      { "input": "[1, 2, 5], 11", "expected": "3" },
+      { "input": "[186, 419, 83, 408], 6249", "expected": "20" },
+      { "input": "[1, 2, 5], 0", "expected": "0" }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "accenture-coding-27",
+    "id": "accenture-coding-27",
+    "title": "N-Queens Problem",
+    "company": "accenture",
+    "difficulty": "Hard",
+    "category": "Backtracking",
+    "tags": ["Backtracking", "Recursion", "Array"],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Given an integer `n`, write a function `solveNQueens(n)` that returns the number of distinct solutions to the n-queens puzzle. The n-queens puzzle is the problem of placing n chess queens on an n x n chessboard so that no two queens attack each other.",
+    "description": "Queens attack horizontally, vertically, and diagonally. Find all valid placements.",
+    "constraints": "1 <= n <= 9\nTime: O(N!)\nSpace: O(N)",
+    "inputFormat": "A single integer n.",
+    "outputFormat": "A single integer — the number of distinct solutions.",
+    "examples": [
+      {
+        "input": "4",
+        "output": "2",
+        "explanation": "There are 2 distinct solutions for 4 queens."
+      },
+      {
+        "input": "1",
+        "output": "1",
+        "explanation": "One queen on a 1x1 board has 1 solution."
+      },
+      {
+        "input": "8",
+        "output": "92",
+        "explanation": "There are 92 distinct solutions for 8 queens."
+      }
+    ],
+    "explanation": "Use backtracking: try placing a queen in each row, check column and diagonal conflicts, backtrack if no valid position.",
+    "starterCode": "function solveNQueens(n) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      { "input": "4", "expected": "2" },
+      { "input": "1", "expected": "1" },
+      { "input": "8", "expected": "92" }
+    ],
+    "hiddenTestCases": [
+      { "input": "2", "expected": "0" },
+      { "input": "3", "expected": "0" },
+      { "input": "5", "expected": "10" }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "accenture-coding-28",
+    "id": "accenture-coding-28",
+    "title": "Word Ladder Length",
+    "company": "accenture",
+    "difficulty": "Hard",
+    "category": "Graphs",
+    "tags": ["Graph", "BFS", "String", "Hash Set"],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Given two words `beginWord` and `endWord`, and a dictionary `wordList`, write a function `ladderLength(beginWord, endWord, wordList)` that returns the minimum number of transformations needed to go from `beginWord` to `endWord`, where each transformation changes exactly one letter and the resulting word must be in `wordList`. If no such sequence exists, return 0.",
+    "description": "Find the shortest transformation sequence using BFS. Each intermediate word must exist in wordList.",
+    "constraints": "1 <= beginWord.length <= 10\n1 <= wordList.length <= 5000\nbeginWord, endWord, and wordList[i] have the same length.\nAll words consist of lowercase English letters.\nTime: O(N * M^2) where N = wordList size, M = word length\nSpace: O(N * M)",
+    "inputFormat": "beginWord, endWord, and an array wordList.",
+    "outputFormat": "A single integer — the length of the shortest transformation sequence, or 0.",
+    "examples": [
+      {
+        "input": "\"hit\", \"cog\", [\"hot\",\"dot\",\"dog\",\"lot\",\"log\",\"cog\"]",
+        "output": "5",
+        "explanation": "hit -> hot -> dot -> dog -> cog (5 steps including both ends)."
+      },
+      {
+        "input": "\"hit\", \"cog\", [\"hot\",\"dot\",\"dog\",\"lot\",\"log\"]",
+        "output": "0",
+        "explanation": "cog is not in wordList, so no path exists."
+      },
+      {
+        "input": "\"a\", \"c\", [\"a\",\"b\",\"c\"]",
+        "output": "2",
+        "explanation": "a -> c directly."
+      }
+    ],
+    "explanation": "Use BFS from beginWord. For each word, try changing each character to every letter and check if it exists in wordList.",
+    "starterCode": "function ladderLength(beginWord, endWord, wordList) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      { "input": "\"hit\", \"cog\", [\"hot\",\"dot\",\"dog\",\"lot\",\"log\",\"cog\"]", "expected": "5" },
+      { "input": "\"hit\", \"cog\", [\"hot\",\"dot\",\"dog\",\"lot\",\"log\"]", "expected": "0" },
+      { "input": "\"a\", \"c\", [\"a\",\"b\",\"c\"]", "expected": "2" }
+    ],
+    "hiddenTestCases": [
+      { "input": "\"hit\", \"hit\", [\"hit\"]", "expected": "1" },
+      { "input": "\"red\", \"tax\", [\"ted\",\"tex\",\"red\",\"tax\",\"tad\",\"den\",\"rex\",\"pee\"]", "expected": "4" },
+      { "input": "\"qa\", \"sq\", [\"si\",\"go\",\"se\",\"cm\",\"so\",\"ph\",\"ta\",\"su\",\"bu\",\"at\"]", "expected": "5" }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "accenture-coding-29",
+    "id": "accenture-coding-29",
+    "title": "Median of Two Sorted Arrays",
+    "company": "accenture",
+    "difficulty": "Hard",
+    "category": "Binary Search",
+    "tags": ["Binary Search", "Array", "Divide and Conquer"],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Given two sorted integer arrays `nums1` and `nums2`, write a function `findMedianSortedArrays(nums1, nums2)` that returns the median of the two sorted arrays. The overall run time complexity should be O(log(min(m, n))).",
+    "description": "Find the median without merging the arrays. Use binary search on the smaller array.",
+    "constraints": "0 <= nums1.length, nums2.length <= 10^4\n1 <= nums1.length + nums2.length <= 10^4\nnums1 and nums2 are both sorted in ascending order.\nTime: O(log(min(m, n)))\nSpace: O(1)",
+    "inputFormat": "Two sorted integer arrays.",
+    "outputFormat": "A single floating-point number — the median.",
+    "examples": [
+      {
+        "input": "[1, 3], [2]",
+        "output": "2.0",
+        "explanation": "Merged: [1,2,3], median is 2."
+      },
+      {
+        "input": "[1, 2], [3, 4]",
+        "output": "2.5",
+        "explanation": "Merged: [1,2,3,4], median is (2+3)/2 = 2.5."
+      },
+      {
+        "input": "[], [1]",
+        "output": "1.0",
+        "explanation": "Only one array has elements, median is 1."
+      }
+    ],
+    "explanation": "Binary search on the smaller array to partition both arrays such that left half has equal or one more element than right half.",
+    "starterCode": "function findMedianSortedArrays(nums1, nums2) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      { "input": "[1, 3], [2]", "expected": "2.0" },
+      { "input": "[1, 2], [3, 4]", "expected": "2.5" },
+      { "input": "[], [1]", "expected": "1.0" }
+    ],
+    "hiddenTestCases": [
+      { "input": "[1], []", "expected": "1.0" },
+      { "input": "[2], []", "expected": "2.0" },
+      { "input": "[1, 2, 3], [4, 5, 6]", "expected": "3.5" }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "accenture-coding-30",
+    "id": "accenture-coding-30",
+    "title": "Serialize and Deserialize Binary Tree",
+    "company": "accenture",
+    "difficulty": "Hard",
+    "category": "Trees",
+    "tags": ["Tree", "Binary Tree", "BFS", "Design"],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Design an algorithm to serialize and deserialize a binary tree. Write two functions: `serialize(root)` that converts the tree to a string, and `deserialize(data)` that reconstructs the tree from the string.",
+    "description": "Serialization converts a tree to a string. Deserialization converts it back. The process must be reversible.",
+    "constraints": "0 <= number of nodes <= 10^4\n-1000 <= Node.val <= 1000\nTime: O(N) for both\nSpace: O(N)",
+    "inputFormat": "Root of a binary tree (for serialize). String output (for deserialize).",
+    "outputFormat": "String for serialize. Root node for deserialize.",
+    "examples": [
+      {
+        "input": "[1, 2, 3, null, null, 4, 5]",
+        "output": "\"1,2,#,#,3,4,#,#,5,#,#\"",
+        "explanation": "Pre-order traversal with # for null nodes."
+      },
+      {
+        "input": "[]",
+        "output": "\"#\"",
+        "explanation": "Empty tree serializes to single #."
+      },
+      {
+        "input": "[1]",
+        "output": "\"1,#,#\"",
+        "explanation": "Single node tree."
+      }
+    ],
+    "explanation": "Use pre-order traversal: serialize by writing node values with '#' for nulls. Deserialize by reading values in the same order.",
+    "starterCode": "function serialize(root) {\n  // Write your code here\n  \n}\n\nfunction deserialize(data) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      { "input": "[1, 2, 3, null, null, 4, 5]", "expected": "\"1,2,#,#,3,4,#,#,5,#,#\"" },
+      { "input": "[]", "expected": "\"#\"" },
+      { "input": "[1]", "expected": "\"1,#,#\"" }
+    ],
+    "hiddenTestCases": [
+      { "input": "[1, 2]", "expected": "\"1,2,#,#,#\"" },
+      { "input": "[1, null, 2]", "expected": "\"1,#,2,#,#\"" },
+      { "input": "[1, 2, 3, 4]", "expected": "\"1,2,4,#,#,#,3,#,#\"" }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "accenture-coding-31",
+    "id": "accenture-coding-31",
+    "title": "Regular Expression Matching",
+    "company": "accenture",
+    "difficulty": "Hard",
+    "category": "Dynamic Programming",
+    "tags": ["Dynamic Programming", "String", "Recursion"],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Given a string `s` and a pattern `p`, write a function `isMatch(s, p)` that implements regular expression matching with support for '.' (matches any single character) and '*' (matches zero or more of the preceding element). The matching should cover the entire input string.",
+    "description": "Implement full regex matching with '.' and '*' special characters.",
+    "constraints": "1 <= s.length <= 20\n1 <= p.length <= 30\np contains only lowercase letters, '.', or '*'.\nIt is guaranteed that '*' appears after a valid character or '.'.\nTime: O(m * n)\nSpace: O(m * n)",
+    "inputFormat": "Two strings: s (text) and p (pattern).",
+    "outputFormat": "A boolean true or false.",
+    "examples": [
+      {
+        "input": "\"aa\", \"a\"",
+        "output": "false",
+        "explanation": "'a' does not match the entire string 'aa'."
+      },
+      {
+        "input": "\"aa\", \"a*\"",
+        "output": "true",
+        "explanation": "'*' means zero or more of the preceding element 'a'."
+      },
+      {
+        "input": "\"ab\", \".*\"",
+        "output": "true",
+        "explanation": "'.*' means zero or more of any character."
+      }
+    ],
+    "explanation": "Use DP: dp[i][j] = true if s[0..i-1] matches p[0..j-1]. Handle '.' (match any) and '*' (match zero or more of previous).",
+    "starterCode": "function isMatch(s, p) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      { "input": "\"aa\", \"a\"", "expected": "false" },
+      { "input": "\"aa\", \"a*\"", "expected": "true" },
+      { "input": "\"ab\", \".*\"", "expected": "true" }
+    ],
+    "hiddenTestCases": [
+      { "input": "\"aab\", \"c*a*b\"", "expected": "true" },
+      { "input": "\"mississippi\", \"mis*is*p*.\"", "expected": "false" },
+      { "input": "\"\", \".*\"", "expected": "true" }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "accenture-coding-32",
+    "id": "accenture-coding-32",
+    "title": "Alien Dictionary Order",
+    "company": "accenture",
+    "difficulty": "Hard",
+    "category": "Graphs",
+    "tags": ["Graph", "Topological Sort", "Backtracking", "Hash Map"],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Given a sorted list of words `words` in an alien language (where the order of characters is unknown), write a function `alienOrder(words)` that returns a string of unique characters in the correct order of the alien language. If there are multiple valid orders, return any one. If there is no valid order (cycle detected), return an empty string.",
+    "description": "Derive character ordering from the sorted words. Use topological sort on the character dependency graph.",
+    "constraints": "1 <= words.length <= 100\n1 <= words[i].length <= 20\nwords[i] consists of only lowercase English letters.\nTime: O(C) where C is total characters\nSpace: O(1) or O(C)",
+    "inputFormat": "An array of strings sorted in alien dictionary order.",
+    "outputFormat": "A string of characters in valid alien order, or empty string if invalid.",
+    "examples": [
+      {
+        "input": "[\"wrt\", \"wrf\", \"er\", \"ett\", \"rftt\"]",
+        "output": "\"wertf\"",
+        "explanation": "From comparisons: w < e < r < t < f."
+      },
+      {
+        "input": "[\"z\", \"x\"]",
+        "output": "\"zx\"",
+        "explanation": "z comes before x in alien order."
+      },
+      {
+        "input": "[\"z\", \"x\", \"z\"]",
+        "output": "\"\"",
+        "explanation": "Contradiction: z < x and x < z forms a cycle."
+      }
+    ],
+    "explanation": "Compare adjacent words to build a directed graph of character dependencies. Use topological sort (Kahn's algorithm) to find valid order. Cycle detection returns empty string.",
+    "starterCode": "function alienOrder(words) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      { "input": "[\"wrt\", \"wrf\", \"er\", \"ett\", \"rftt\"]", "expected": "\"wertf\"" },
+      { "input": "[\"z\", \"x\"]", "expected": "\"zx\"" },
+      { "input": "[\"z\", \"x\", \"z\"]", "expected": "\"\"" }
+    ],
+    "hiddenTestCases": [
+      { "input": "[\"abc\", \"ab\"]", "expected": "\"\"" },
+      { "input": "[\"abc\", \"abd\", \"abe\"]", "expected": "\"abcde\"" },
+      { "input": "[\"a\"]", "expected": "\"a\"" }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  }
+]

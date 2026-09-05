@@ -1,0 +1,2492 @@
+[
+  {
+    "questionId": "tcs-coding-1",
+    "id": "tcs-coding-1",
+    "title": "Find Second Largest Element",
+    "company": "tcs",
+    "difficulty": "Easy",
+    "category": "Arrays",
+    "tags": [
+      "Array",
+      "Sorting"
+    ],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Given an array of integers `arr`, write a function `findSecondLargest(arr)` that returns the second largest element in the array. If no such element exists (e.g. all elements are equal or the array has fewer than 2 distinct values), return -1.",
+    "description": "The array can contain duplicate values. The second largest must be strictly smaller than the largest value.",
+    "constraints": "1 <= arr.length <= 10^5\n-10^9 <= arr[i] <= 10^9\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "A single array of integers.",
+    "outputFormat": "A single integer — the second largest element, or -1 if it does not exist.",
+    "examples": [
+      {
+        "input": "[12, 35, 1, 10, 34, 1]",
+        "output": "34",
+        "explanation": "The largest element is 35 and the second largest is 34."
+      },
+      {
+        "input": "[10, 10, 10]",
+        "output": "-1",
+        "explanation": "All elements are equal, so there is no second largest element."
+      }
+    ],
+    "explanation": "Track the largest and second largest values in a single pass. If every value equals the largest, return -1.",
+    "starterCode": "function findSecondLargest(arr) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[12, 35, 1, 10, 34, 1]",
+        "expected": "34"
+      },
+      {
+        "input": "[5, 10, 20]",
+        "expected": "10"
+      },
+      {
+        "input": "[10, 10, 10]",
+        "expected": "-1"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[1, 2]",
+        "expected": "1"
+      },
+      {
+        "input": "[100, 99, 98, 97]",
+        "expected": "99"
+      },
+      {
+        "input": "[-5, -1, -3]",
+        "expected": "-3"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "tcs-coding-2",
+    "id": "tcs-coding-2",
+    "title": "Sum of Prime Digits",
+    "company": "tcs",
+    "difficulty": "Easy",
+    "category": "Strings",
+    "tags": [
+      "String",
+      "Math"
+    ],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Given a number represented as a string `numStr`, write a function `sumOfPrimeDigits(numStr)` that returns the sum of all digits which are prime numbers (2, 3, 5, 7). Non-prime digits are ignored.",
+    "description": "Treat the input purely as a string of digits. The result is the sum of the digit values 2, 3, 5 and 7 wherever they appear.",
+    "constraints": "1 <= numStr.length <= 10^5\nnumStr contains only digits '0'-'9'\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "A single string containing digits only.",
+    "outputFormat": "A single integer — the sum of the prime digits.",
+    "examples": [
+      {
+        "input": "\"23456789\"",
+        "output": "17",
+        "explanation": "Prime digits are 2, 3, 5, 7. Sum = 2 + 3 + 5 + 7 = 17."
+      },
+      {
+        "input": "\"1111\"",
+        "output": "0",
+        "explanation": "None of the digits are prime, so the sum is 0."
+      }
+    ],
+    "explanation": "Iterate over each character, convert it to an integer, and add it to the total only if it is 2, 3, 5 or 7.",
+    "starterCode": "function sumOfPrimeDigits(numStr) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "\"23456789\"",
+        "expected": "17"
+      },
+      {
+        "input": "\"1111\"",
+        "expected": "0"
+      },
+      {
+        "input": "\"2357\"",
+        "expected": "17"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "\"0\"",
+        "expected": "0"
+      },
+      {
+        "input": "\"9876543210\"",
+        "expected": "17"
+      },
+      {
+        "input": "\"222222\"",
+        "expected": "12"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "tcs-coding-3",
+    "id": "tcs-coding-3",
+    "title": "Reverse Words in a String",
+    "company": "tcs",
+    "difficulty": "Easy",
+    "category": "Strings",
+    "tags": [
+      "String",
+      "Two Pointers"
+    ],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Given an input string `s`, write a function `reverseWords(s)` that reverses the order of the words. A word is a sequence of non-space characters. Words in `s` are separated by at least one space. Return the words in reverse order joined by a single space.",
+    "description": "Leading and trailing spaces are ignored, and multiple spaces between words are collapsed into one in the output.",
+    "constraints": "1 <= s.length <= 10^4\ns contains printable ASCII characters and spaces\nTime: O(N)\nSpace: O(N)",
+    "inputFormat": "A single string.",
+    "outputFormat": "A single string with words reversed and separated by a single space.",
+    "examples": [
+      {
+        "input": "\"the sky is blue\"",
+        "output": "\"blue is sky the\"",
+        "explanation": "The words are reversed in order: blue, is, sky, the."
+      },
+      {
+        "input": "\"  hello world  \"",
+        "output": "\"world hello\"",
+        "explanation": "Extra spaces are trimmed from both ends and between words."
+      }
+    ],
+    "explanation": "Split the string on whitespace, filter out empty tokens, reverse the list and join with a single space.",
+    "starterCode": "function reverseWords(s) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "\"the sky is blue\"",
+        "expected": "\"blue is sky the\""
+      },
+      {
+        "input": "\"  hello world  \"",
+        "expected": "\"world hello\""
+      },
+      {
+        "input": "\"a good   example\"",
+        "expected": "\"example good a\""
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "\"single\"",
+        "expected": "\"single\""
+      },
+      {
+        "input": "\"  a  b  c  \"",
+        "expected": "\"c b a\""
+      },
+      {
+        "input": "\" hello \"",
+        "expected": "\"hello\""
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "tcs-coding-4",
+    "id": "tcs-coding-4",
+    "title": "Check Leap Year",
+    "company": "tcs",
+    "difficulty": "Easy",
+    "category": "Math",
+    "tags": [
+      "Math",
+      "Conditionals"
+    ],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Given an integer `year`, write a function `isLeapYear(year)` that returns `true` if the year is a leap year, and `false` otherwise.",
+    "description": "A year is a leap year if it is divisible by 400, or divisible by 4 but NOT divisible by 100.",
+    "constraints": "1 <= year <= 10^5\nTime: O(1)\nSpace: O(1)",
+    "inputFormat": "A single integer year.",
+    "outputFormat": "A boolean true or false.",
+    "examples": [
+      {
+        "input": "2000",
+        "output": "true",
+        "explanation": "2000 is divisible by 400."
+      },
+      {
+        "input": "1900",
+        "output": "false",
+        "explanation": "1900 is divisible by 100 but not 400."
+      },
+      {
+        "input": "2024",
+        "output": "true",
+        "explanation": "2024 is divisible by 4 and not 100."
+      }
+    ],
+    "explanation": "Return true if (year % 400 === 0) || (year % 4 === 0 && year % 100 !== 0).",
+    "starterCode": "function isLeapYear(year) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "2000",
+        "expected": "true"
+      },
+      {
+        "input": "1900",
+        "expected": "false"
+      },
+      {
+        "input": "2024",
+        "expected": "true"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "2023",
+        "expected": "false"
+      },
+      {
+        "input": "2400",
+        "expected": "true"
+      },
+      {
+        "input": "1800",
+        "expected": "false"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "tcs-coding-5",
+    "id": "tcs-coding-5",
+    "title": "Count Vowels and Consonants",
+    "company": "tcs",
+    "difficulty": "Easy",
+    "category": "Strings",
+    "tags": [
+      "Strings",
+      "Counting"
+    ],
+    "marks": 10,
+    "source": "practice",
+    "problemStatement": "Given a string `s`, write a function `countVowelsAndConsonants(s)` that returns an array `[vowelCount, consonantCount]`. Ignore non-alphabetic characters (digits, spaces, punctuation). Case-insensitive.",
+    "description": "Vowels are 'a', 'e', 'i', 'o', 'u' (both lowercase and uppercase). Consonants are all other alphabetic letters.",
+    "constraints": "1 <= s.length <= 10^5\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "A single string.",
+    "outputFormat": "An array of two integers [vowels, consonants].",
+    "examples": [
+      {
+        "input": "\"Hello World!\"",
+        "output": "[3, 7]",
+        "explanation": "Vowels: e, o, o (3). Consonants: H, l, l, W, r, l, d (7)."
+      },
+      {
+        "input": "\"12345\"",
+        "output": "[0, 0]",
+        "explanation": "No alphabetic letters."
+      }
+    ],
+    "explanation": "Iterate through the string, check if character is a letter, and classify as vowel or consonant.",
+    "starterCode": "function countVowelsAndConsonants(s) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "\"Hello World!\"",
+        "expected": "[3, 7]"
+      },
+      {
+        "input": "\"12345\"",
+        "expected": "[0, 0]"
+      },
+      {
+        "input": "\"AEIOU aeiou\"",
+        "expected": "[10, 0]"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "\"bcdfghjklmnpqrstvwxyz\"",
+        "expected": "[0, 21]"
+      },
+      {
+        "input": "\"TCS NQT 2024 Exam\"",
+        "expected": "[4, 8]"
+      },
+      {
+        "input": "\"\"",
+        "expected": "[0, 0]"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "tcs-coding-6",
+    "id": "tcs-coding-6",
+    "title": "Check Armstrong Number",
+    "company": "tcs",
+    "difficulty": "Easy",
+    "category": "Math",
+    "tags": [
+      "Math",
+      "Digits"
+    ],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Given a positive integer `n`, write a function `isArmstrong(n)` that returns `true` if `n` is an Armstrong number (Narcissistic number), and `false` otherwise.",
+    "description": "An Armstrong number of k digits is an integer such that the sum of its digits each raised to the power of k equals the number itself.",
+    "constraints": "1 <= n <= 10^8\nTime: O(log N)\nSpace: O(1)",
+    "inputFormat": "A single integer n.",
+    "outputFormat": "A boolean true or false.",
+    "examples": [
+      {
+        "input": "153",
+        "output": "true",
+        "explanation": "153 has 3 digits: 1^3 + 5^3 + 3^3 = 1 + 125 + 27 = 153."
+      },
+      {
+        "input": "123",
+        "output": "false",
+        "explanation": "1^3 + 2^3 + 3^3 = 1 + 8 + 27 = 36 != 123."
+      },
+      {
+        "input": "1634",
+        "output": "true",
+        "explanation": "1634 has 4 digits: 1^4 + 6^4 + 3^4 + 4^4 = 1 + 1296 + 81 + 256 = 1634."
+      }
+    ],
+    "explanation": "Count the number of digits k, compute the sum of digit^k, and compare with n.",
+    "starterCode": "function isArmstrong(n) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "153",
+        "expected": "true"
+      },
+      {
+        "input": "123",
+        "expected": "false"
+      },
+      {
+        "input": "1634",
+        "expected": "true"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "9",
+        "expected": "true"
+      },
+      {
+        "input": "370",
+        "expected": "true"
+      },
+      {
+        "input": "371",
+        "expected": "true"
+      },
+      {
+        "input": "407",
+        "expected": "true"
+      },
+      {
+        "input": "100",
+        "expected": "false"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "tcs-coding-7",
+    "id": "tcs-coding-7",
+    "title": "Move Zeroes to End",
+    "company": "tcs",
+    "difficulty": "Easy",
+    "category": "Arrays",
+    "tags": [
+      "Arrays",
+      "Two Pointers"
+    ],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Given an integer array `nums`, write a function `moveZeroes(nums)` that moves all `0`s to the end of the array while maintaining the relative order of the non-zero elements. Return the modified array.",
+    "description": "Operate in-place or return a new array with all zeroes placed at the end without altering non-zero sequence.",
+    "constraints": "1 <= nums.length <= 10^5\n-10^9 <= nums[i] <= 10^9\nTime: O(N)\nSpace: O(1) auxiliary",
+    "inputFormat": "An array of integers.",
+    "outputFormat": "An array of integers with all zeroes moved to the end.",
+    "examples": [
+      {
+        "input": "[0, 1, 0, 3, 12]",
+        "output": "[1, 3, 12, 0, 0]",
+        "explanation": "Non-zero elements 1, 3, 12 keep order, two 0s moved to the end."
+      },
+      {
+        "input": "[0]",
+        "output": "[0]",
+        "explanation": "Single element remains [0]."
+      }
+    ],
+    "explanation": "Use a pointer to track the insertion index of non-zero elements. Fill the remainder with zeroes.",
+    "starterCode": "function moveZeroes(nums) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[0, 1, 0, 3, 12]",
+        "expected": "[1, 3, 12, 0, 0]"
+      },
+      {
+        "input": "[0]",
+        "expected": "[0]"
+      },
+      {
+        "input": "[1, 2, 3]",
+        "expected": "[1, 2, 3]"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[0, 0, 0]",
+        "expected": "[0, 0, 0]"
+      },
+      {
+        "input": "[4, 0, 5, 0, 6]",
+        "expected": "[4, 5, 6, 0, 0]"
+      },
+      {
+        "input": "[0, 0, 1]",
+        "expected": "[1, 0, 0]"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "tcs-coding-8",
+    "id": "tcs-coding-8",
+    "title": "Sum of Array Except Minimum and Maximum",
+    "company": "tcs",
+    "difficulty": "Easy",
+    "category": "Arrays",
+    "tags": [
+      "Arrays",
+      "Math"
+    ],
+    "marks": 10,
+    "source": "practice",
+    "problemStatement": "Given an array of numbers `arr`, write a function `sumExceptMinMax(arr)` that returns the sum of all elements excluding the smallest and largest values. If there are duplicates of the minimum or maximum value, exclude only one instance of minimum and one instance of maximum. If array length is less than 3, return 0.",
+    "description": "Calculates total sum minus one minimum element and minus one maximum element.",
+    "constraints": "1 <= arr.length <= 10^5\n-10^5 <= arr[i] <= 10^5\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "An array of integers.",
+    "outputFormat": "An integer representing the sum.",
+    "examples": [
+      {
+        "input": "[6, 2, 1, 8, 10]",
+        "output": "16",
+        "explanation": "Min = 1, Max = 10. Remaining: 6 + 2 + 8 = 16."
+      },
+      {
+        "input": "[1, 1, 11, 2, 3]",
+        "output": "6",
+        "explanation": "Min = 1, Max = 11. Remaining: 1 + 2 + 3 = 6."
+      }
+    ],
+    "explanation": "Sum the array in one pass while tracking min and max. Return sum - min - max.",
+    "starterCode": "function sumExceptMinMax(arr) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[6, 2, 1, 8, 10]",
+        "expected": "16"
+      },
+      {
+        "input": "[1, 1, 11, 2, 3]",
+        "expected": "6"
+      },
+      {
+        "input": "[5, 10]",
+        "expected": "0"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[-10, 0, 10]",
+        "expected": "0"
+      },
+      {
+        "input": "[100]",
+        "expected": "0"
+      },
+      {
+        "input": "[4, 4, 4, 4]",
+        "expected": "8"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "tcs-coding-9",
+    "id": "tcs-coding-9",
+    "title": "Check Palindrome String",
+    "company": "tcs",
+    "difficulty": "Easy",
+    "category": "Strings",
+    "tags": [
+      "Strings",
+      "Two Pointers"
+    ],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Given a string `s`, write a function `isPalindrome(s)` that returns `true` if `s` is a palindrome considering only alphanumeric characters and ignoring cases, and `false` otherwise.",
+    "description": "A phrase is a palindrome if, after converting all uppercase letters into lowercase letters and removing all non-alphanumeric characters, it reads the same forward and backward.",
+    "constraints": "1 <= s.length <= 10^5\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "A single string s.",
+    "outputFormat": "A boolean true or false.",
+    "examples": [
+      {
+        "input": "\"A man, a plan, a canal: Panama\"",
+        "output": "true",
+        "explanation": "\"amanaplanacanalpanama\" is a palindrome."
+      },
+      {
+        "input": "\"race a car\"",
+        "output": "false",
+        "explanation": "\"raceacar\" is not a palindrome."
+      }
+    ],
+    "explanation": "Use two pointers moving inward, skipping non-alphanumeric characters and comparing lowercase versions.",
+    "starterCode": "function isPalindrome(s) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "\"A man, a plan, a canal: Panama\"",
+        "expected": "true"
+      },
+      {
+        "input": "\"race a car\"",
+        "expected": "false"
+      },
+      {
+        "input": "\" \"",
+        "expected": "true"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "\"0P\"",
+        "expected": "false"
+      },
+      {
+        "input": "\"ab_a\"",
+        "expected": "true"
+      },
+      {
+        "input": "\"No 'x' in Nixon\"",
+        "expected": "true"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "tcs-coding-10",
+    "id": "tcs-coding-10",
+    "title": "Find Missing Number in 1 to N",
+    "company": "tcs",
+    "difficulty": "Easy",
+    "category": "Arrays",
+    "tags": [
+      "Math",
+      "Arrays"
+    ],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Given an array `nums` containing `n` distinct numbers in the range `[0, n]`, return the only number in the range that is missing from the array.",
+    "description": "All numbers from 0 to n appear in nums except one.",
+    "constraints": "n == nums.length\n1 <= n <= 10^4\n0 <= nums[i] <= n\nAll numbers in nums are unique.\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "An array of integers nums.",
+    "outputFormat": "A single integer.",
+    "examples": [
+      {
+        "input": "[3, 0, 1]",
+        "output": "2",
+        "explanation": "n = 3, range [0,3], missing 2."
+      },
+      {
+        "input": "[0, 1]",
+        "output": "2",
+        "explanation": "n = 2, range [0,2], missing 2."
+      },
+      {
+        "input": "[9,6,4,2,3,5,7,0,1]",
+        "output": "8",
+        "explanation": "n = 9, missing 8."
+      }
+    ],
+    "explanation": "Expected sum is n*(n+1)/2. The missing number is expected sum - actual sum.",
+    "starterCode": "function missingNumber(nums) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[3, 0, 1]",
+        "expected": "2"
+      },
+      {
+        "input": "[0, 1]",
+        "expected": "2"
+      },
+      {
+        "input": "[9, 6, 4, 2, 3, 5, 7, 0, 1]",
+        "expected": "8"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[0]",
+        "expected": "1"
+      },
+      {
+        "input": "[1]",
+        "expected": "0"
+      },
+      {
+        "input": "[1, 2, 3, 4, 5]",
+        "expected": "0"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "tcs-coding-11",
+    "id": "tcs-coding-11",
+    "title": "Majority Element",
+    "company": "tcs",
+    "difficulty": "Easy",
+    "category": "Arrays",
+    "tags": [
+      "Arrays",
+      "Boyer-Moore"
+    ],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Given an array `nums` of size `n`, return the majority element. The majority element is the element that appears more than `n / 2` times. You may assume that the majority element always exists in the array.",
+    "description": "Find the element appearing > floor(n/2) times.",
+    "constraints": "1 <= nums.length <= 5 * 10^4\n-10^9 <= nums[i] <= 10^9\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "An array of integers nums.",
+    "outputFormat": "A single integer.",
+    "examples": [
+      {
+        "input": "[3, 2, 3]",
+        "output": "3",
+        "explanation": "3 appears 2 times which is > 3/2."
+      },
+      {
+        "input": "[2, 2, 1, 1, 1, 2, 2]",
+        "output": "2",
+        "explanation": "2 appears 4 times which is > 7/2."
+      }
+    ],
+    "explanation": "Use Boyer-Moore Voting Algorithm: maintain a candidate and count.",
+    "starterCode": "function majorityElement(nums) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[3, 2, 3]",
+        "expected": "3"
+      },
+      {
+        "input": "[2, 2, 1, 1, 1, 2, 2]",
+        "expected": "2"
+      },
+      {
+        "input": "[1]",
+        "expected": "1"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[6, 5, 5]",
+        "expected": "5"
+      },
+      {
+        "input": "[10, 10, 10, 20, 10]",
+        "expected": "10"
+      },
+      {
+        "input": "[-1, -1, -1, 2, 3, -1, -1]",
+        "expected": "-1"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "tcs-coding-12",
+    "id": "tcs-coding-12",
+    "title": "Maximum Subarray Sum (Kadane's Algorithm)",
+    "company": "tcs",
+    "difficulty": "Medium",
+    "category": "Arrays",
+    "tags": [
+      "Arrays",
+      "Dynamic Programming"
+    ],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Given an integer array `nums`, find the subarray with the largest sum, and return its sum.",
+    "description": "A subarray is a contiguous non-empty sequence of elements within an array.",
+    "constraints": "1 <= nums.length <= 10^5\n-10^4 <= nums[i] <= 10^4\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "An array of integers nums.",
+    "outputFormat": "A single integer.",
+    "examples": [
+      {
+        "input": "[-2, 1, -3, 4, -1, 2, 1, -5, 4]",
+        "output": "6",
+        "explanation": "The subarray [4, -1, 2, 1] has the largest sum = 6."
+      },
+      {
+        "input": "[1]",
+        "output": "1",
+        "explanation": "Subarray [1] has sum 1."
+      },
+      {
+        "input": "[5, 4, -1, 7, 8]",
+        "output": "23",
+        "explanation": "The entire array has sum 23."
+      }
+    ],
+    "explanation": "Use Kadane's Algorithm: maxCurrent = Math.max(nums[i], maxCurrent + nums[i]), maxGlobal = Math.max(maxGlobal, maxCurrent).",
+    "starterCode": "function maxSubArray(nums) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[-2, 1, -3, 4, -1, 2, 1, -5, 4]",
+        "expected": "6"
+      },
+      {
+        "input": "[1]",
+        "expected": "1"
+      },
+      {
+        "input": "[5, 4, -1, 7, 8]",
+        "expected": "23"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[-1]",
+        "expected": "-1"
+      },
+      {
+        "input": "[-5, -2, -8, -1]",
+        "expected": "-1"
+      },
+      {
+        "input": "[2, -1, 2, 3, 4, -5]",
+        "expected": "10"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "tcs-coding-13",
+    "id": "tcs-coding-13",
+    "title": "Longest Substring Without Repeating Characters",
+    "company": "tcs",
+    "difficulty": "Medium",
+    "category": "Strings",
+    "tags": [
+      "Strings",
+      "Sliding Window",
+      "Hash Map"
+    ],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Given a string `s`, find the length of the longest substring without repeating characters.",
+    "description": "A substring is a contiguous non-empty sequence of characters within a string.",
+    "constraints": "0 <= s.length <= 5 * 10^4\ns consists of English letters, digits, symbols and spaces.\nTime: O(N)\nSpace: O(min(N, M)) where M is character set size",
+    "inputFormat": "A single string s.",
+    "outputFormat": "A single integer length.",
+    "examples": [
+      {
+        "input": "\"abcabcbb\"",
+        "output": "3",
+        "explanation": "The answer is \"abc\", with the length of 3."
+      },
+      {
+        "input": "\"bbbbb\"",
+        "output": "1",
+        "explanation": "The answer is \"b\", with the length of 1."
+      },
+      {
+        "input": "\"pwwkew\"",
+        "output": "3",
+        "explanation": "The answer is \"wke\", with the length of 3."
+      }
+    ],
+    "explanation": "Use a sliding window with a hash map storing the last seen index of each character.",
+    "starterCode": "function lengthOfLongestSubstring(s) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "\"abcabcbb\"",
+        "expected": "3"
+      },
+      {
+        "input": "\"bbbbb\"",
+        "expected": "1"
+      },
+      {
+        "input": "\"pwwkew\"",
+        "expected": "3"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "\"\"",
+        "expected": "0"
+      },
+      {
+        "input": "\"au\"",
+        "expected": "2"
+      },
+      {
+        "input": "\"tmmzuxt\"",
+        "expected": "5"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "tcs-coding-14",
+    "id": "tcs-coding-14",
+    "title": "String Compression (Run-Length Encoding)",
+    "company": "tcs",
+    "difficulty": "Medium",
+    "category": "Strings",
+    "tags": [
+      "Strings",
+      "Two Pointers"
+    ],
+    "marks": 10,
+    "source": "practice",
+    "problemStatement": "Given a string `s` of consecutive characters, write a function `compressString(s)` that returns the compressed string using run-length encoding. For each consecutive group of identical characters, append the character followed by its count. If the count is 1, still include the count 1.",
+    "description": "Example: \"aabcccccaaa\" becomes \"a2b1c5a3\".",
+    "constraints": "0 <= s.length <= 10^5\ns contains alphabetic characters.\nTime: O(N)\nSpace: O(N)",
+    "inputFormat": "A single string s.",
+    "outputFormat": "A compressed string.",
+    "examples": [
+      {
+        "input": "\"aabcccccaaa\"",
+        "output": "\"a2b1c5a3\"",
+        "explanation": "2 a's, 1 b, 5 c's, 3 a's."
+      },
+      {
+        "input": "\"abcd\"",
+        "output": "\"a1b1c1d1\"",
+        "explanation": "Each character appears once."
+      }
+    ],
+    "explanation": "Iterate with a counter tracking consecutive identical characters, appending char and count upon change.",
+    "starterCode": "function compressString(s) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "\"aabcccccaaa\"",
+        "expected": "\"a2b1c5a3\""
+      },
+      {
+        "input": "\"abcd\"",
+        "expected": "\"a1b1c1d1\""
+      },
+      {
+        "input": "\"\"",
+        "expected": "\"\""
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "\"zzzzz\"",
+        "expected": "\"z5\""
+      },
+      {
+        "input": "\"AABBBCCCC\"",
+        "expected": "\"A2B3C4\""
+      },
+      {
+        "input": "\"a\"",
+        "expected": "\"a1\""
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "tcs-coding-15",
+    "id": "tcs-coding-15",
+    "title": "Rotate Array Right by K Steps",
+    "company": "tcs",
+    "difficulty": "Medium",
+    "category": "Arrays",
+    "tags": [
+      "Arrays",
+      "Two Pointers"
+    ],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Given an integer array `nums`, rotate the array to the right by `k` steps, where `k` is non-negative. Return the rotated array.",
+    "description": "Elements shifted past the end wrap around to the beginning.",
+    "constraints": "1 <= nums.length <= 10^5\n-2^31 <= nums[i] <= 2^31 - 1\n0 <= k <= 10^5\nTime: O(N)\nSpace: O(1) auxiliary",
+    "inputFormat": "An array nums and integer k.",
+    "outputFormat": "An array of rotated integers.",
+    "examples": [
+      {
+        "input": "[1, 2, 3, 4, 5, 6, 7], 3",
+        "output": "[5, 6, 7, 1, 2, 3, 4]",
+        "explanation": "Rotated 3 steps to the right."
+      },
+      {
+        "input": "[-1, -100, 3, 99], 2",
+        "output": "[3, 99, -1, -100]",
+        "explanation": "Rotated 2 steps to the right."
+      }
+    ],
+    "explanation": "Normalize k = k % n. Reverse whole array, reverse first k elements, reverse remaining n-k elements.",
+    "starterCode": "function rotate(nums, k) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[1, 2, 3, 4, 5, 6, 7], 3",
+        "expected": "[5, 6, 7, 1, 2, 3, 4]"
+      },
+      {
+        "input": "[-1, -100, 3, 99], 2",
+        "expected": "[3, 99, -1, -100]"
+      },
+      {
+        "input": "[1, 2], 0",
+        "expected": "[1, 2]"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[1], 10",
+        "expected": "[1]"
+      },
+      {
+        "input": "[1, 2, 3, 4], 4",
+        "expected": "[1, 2, 3, 4]"
+      },
+      {
+        "input": "[10, 20, 30], 1",
+        "expected": "[30, 10, 20]"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "tcs-coding-16",
+    "id": "tcs-coding-16",
+    "title": "Two Sum - Indices of Target Pair",
+    "company": "tcs",
+    "difficulty": "Medium",
+    "category": "Arrays",
+    "tags": [
+      "Arrays",
+      "Hash Table"
+    ],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Given an array of integers `nums` and an integer `target`, return indices of the two numbers such that they add up to `target`. You may assume that each input would have exactly one solution, and you may not use the same element twice. Return the indices in increasing order.",
+    "description": "Find [i, j] such that nums[i] + nums[j] == target and i < j.",
+    "constraints": "2 <= nums.length <= 10^4\n-10^9 <= nums[i] <= 10^9\n-10^9 <= target <= 10^9\nTime: O(N)\nSpace: O(N)",
+    "inputFormat": "An array nums and integer target.",
+    "outputFormat": "An array [i, j] of indices.",
+    "examples": [
+      {
+        "input": "[2, 7, 11, 15], 9",
+        "output": "[0, 1]",
+        "explanation": "nums[0] + nums[1] = 2 + 7 = 9."
+      },
+      {
+        "input": "[3, 2, 4], 6",
+        "output": "[1, 2]",
+        "explanation": "nums[1] + nums[2] = 2 + 4 = 6."
+      }
+    ],
+    "explanation": "Store complement (target - nums[i]) in a hash map mapping value to index.",
+    "starterCode": "function twoSum(nums, target) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[2, 7, 11, 15], 9",
+        "expected": "[0, 1]"
+      },
+      {
+        "input": "[3, 2, 4], 6",
+        "expected": "[1, 2]"
+      },
+      {
+        "input": "[3, 3], 6",
+        "expected": "[0, 1]"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[0, 4, 3, 0], 0",
+        "expected": "[0, 3]"
+      },
+      {
+        "input": "[-3, 4, 3, 90], 0",
+        "expected": "[0, 2]"
+      },
+      {
+        "input": "[1, 5, 8, 12, 19], 20",
+        "expected": "[0, 4]"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "tcs-coding-17",
+    "id": "tcs-coding-17",
+    "title": "Valid Parentheses / Balanced Brackets",
+    "company": "tcs",
+    "difficulty": "Medium",
+    "category": "Stack",
+    "tags": [
+      "Stack",
+      "Strings"
+    ],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Given a string `s` containing just the characters `'('`, `')'`, `'{'`, `'}'`, `'['` and `']'`, determine if the input string is valid. Open brackets must be closed by the same type of brackets in the correct order.",
+    "description": "An input string is valid if every open bracket has a corresponding closing bracket of the same type.",
+    "constraints": "1 <= s.length <= 10^4\ns consists of parentheses only '()[]{}'.\nTime: O(N)\nSpace: O(N)",
+    "inputFormat": "A single string s.",
+    "outputFormat": "A boolean true or false.",
+    "examples": [
+      {
+        "input": "\"()\"",
+        "output": "true",
+        "explanation": "Valid matching parentheses."
+      },
+      {
+        "input": "\"()[]{}\"",
+        "output": "true",
+        "explanation": "All bracket types properly closed."
+      },
+      {
+        "input": "\"(]\"",
+        "output": "false",
+        "explanation": "Mismatched closing bracket."
+      }
+    ],
+    "explanation": "Push opening brackets onto a stack. When encountering a closing bracket, pop and ensure match.",
+    "starterCode": "function isValid(s) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "\"()\"",
+        "expected": "true"
+      },
+      {
+        "input": "\"()[]{}\"",
+        "expected": "true"
+      },
+      {
+        "input": "\"(]\"",
+        "expected": "false"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "\"([)]\"",
+        "expected": "false"
+      },
+      {
+        "input": "\"{[]}\"",
+        "expected": "true"
+      },
+      {
+        "input": "\"(\"",
+        "expected": "false"
+      },
+      {
+        "input": "\"]\"",
+        "expected": "false"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "tcs-coding-18",
+    "id": "tcs-coding-18",
+    "title": "Next Permutation",
+    "company": "tcs",
+    "difficulty": "Medium",
+    "category": "Arrays",
+    "tags": [
+      "Arrays",
+      "Two Pointers"
+    ],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "A permutation of an array of integers is an arrangement of its members into a sequence. Given an array of integers `nums`, find the next lexicographically greater permutation of numbers. If no such permutation is possible (it is in descending order), rearrange it to the lowest possible order (sorted in ascending order). Return the modified array.",
+    "description": "Find the next lexicographical permutation in-place or return the transformed array.",
+    "constraints": "1 <= nums.length <= 100\n0 <= nums[i] <= 100\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "An array of integers nums.",
+    "outputFormat": "An array representing the next permutation.",
+    "examples": [
+      {
+        "input": "[1, 2, 3]",
+        "output": "[1, 3, 2]",
+        "explanation": "Next permutation after 1,2,3 is 1,3,2."
+      },
+      {
+        "input": "[3, 2, 1]",
+        "output": "[1, 2, 3]",
+        "explanation": "3,2,1 is the largest, wrapped around to 1,2,3."
+      },
+      {
+        "input": "[1, 1, 5]",
+        "output": "[1, 5, 1]",
+        "explanation": "Next permutation is 1,5,1."
+      }
+    ],
+    "explanation": "1. Find first decreasing element from right (i). 2. Find element just larger than nums[i] from right (j). 3. Swap nums[i] and nums[j]. 4. Reverse subarray from i+1 to end.",
+    "starterCode": "function nextPermutation(nums) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[1, 2, 3]",
+        "expected": "[1, 3, 2]"
+      },
+      {
+        "input": "[3, 2, 1]",
+        "expected": "[1, 2, 3]"
+      },
+      {
+        "input": "[1, 1, 5]",
+        "expected": "[1, 5, 1]"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[1]",
+        "expected": "[1]"
+      },
+      {
+        "input": "[1, 3, 2]",
+        "expected": "[2, 1, 3]"
+      },
+      {
+        "input": "[2, 3, 1]",
+        "expected": "[3, 1, 2]"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "tcs-coding-19",
+    "id": "tcs-coding-19",
+    "title": "Search in Rotated Sorted Array",
+    "company": "tcs",
+    "difficulty": "Medium",
+    "category": "Binary Search",
+    "tags": [
+      "Binary Search",
+      "Arrays"
+    ],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Given the array `nums` after the possible rotation and an integer `target`, return the index of `target` if it is in `nums`, or `-1` if it is not in `nums`. You must write an algorithm with `O(log n)` runtime complexity.",
+    "description": "An array sorted in ascending order is rotated at an unknown pivot. Find target index.",
+    "constraints": "1 <= nums.length <= 5000\n-10^4 <= nums[i] <= 10^4\nAll values of nums are unique.\nTime: O(log N)\nSpace: O(1)",
+    "inputFormat": "An array nums and integer target.",
+    "outputFormat": "A single integer index, or -1.",
+    "examples": [
+      {
+        "input": "[4, 5, 6, 7, 0, 1, 2], 0",
+        "output": "4",
+        "explanation": "0 is at index 4."
+      },
+      {
+        "input": "[4, 5, 6, 7, 0, 1, 2], 3",
+        "output": "-1",
+        "explanation": "3 does not exist in nums."
+      }
+    ],
+    "explanation": "At each step of binary search, one half (left or right) is guaranteed to be sorted. Check if target lies in the sorted half.",
+    "starterCode": "function search(nums, target) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[4, 5, 6, 7, 0, 1, 2], 0",
+        "expected": "4"
+      },
+      {
+        "input": "[4, 5, 6, 7, 0, 1, 2], 3",
+        "expected": "-1"
+      },
+      {
+        "input": "[1], 0",
+        "expected": "-1"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[1], 1",
+        "expected": "0"
+      },
+      {
+        "input": "[3, 1], 1",
+        "expected": "1"
+      },
+      {
+        "input": "[5, 1, 3], 5",
+        "expected": "0"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "tcs-coding-20",
+    "id": "tcs-coding-20",
+    "title": "Merge Overlapping Intervals",
+    "company": "tcs",
+    "difficulty": "Medium",
+    "category": "Intervals",
+    "tags": [
+      "Intervals",
+      "Sorting"
+    ],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Given an array of `intervals` where `intervals[i] = [start_i, end_i]`, merge all overlapping intervals, and return an array of the non-overlapping intervals that cover all the intervals in the input.",
+    "description": "Intervals [a, b] and [c, d] overlap if c <= b.",
+    "constraints": "1 <= intervals.length <= 10^4\nintervals[i].length == 2\n0 <= start_i <= end_i <= 10^4\nTime: O(N log N)\nSpace: O(N)",
+    "inputFormat": "An array of 2D intervals.",
+    "outputFormat": "An array of merged 2D intervals.",
+    "examples": [
+      {
+        "input": "[[1,3],[2,6],[8,10],[15,18]]",
+        "output": "[[1,6],[8,10],[15,18]]",
+        "explanation": "[1,3] and [2,6] overlap into [1,6]."
+      },
+      {
+        "input": "[[1,4],[4,5]]",
+        "output": "[[1,5]]",
+        "explanation": "[1,4] and [4,5] are contiguous."
+      }
+    ],
+    "explanation": "Sort intervals by start time. Iterate through: if current start <= previous end, merge (end = max(prev.end, curr.end)), else add new interval.",
+    "starterCode": "function merge(intervals) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[[1,3],[2,6],[8,10],[15,18]]",
+        "expected": "[[1,6],[8,10],[15,18]]"
+      },
+      {
+        "input": "[[1,4],[4,5]]",
+        "expected": "[[1,5]]"
+      },
+      {
+        "input": "[[1,4]]",
+        "expected": "[[1,4]]"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[[1,4],[2,3]]",
+        "expected": "[[1,4]]"
+      },
+      {
+        "input": "[[1,4],[0,4]]",
+        "expected": "[[0,4]]"
+      },
+      {
+        "input": "[[2,3],[4,5],[6,7],[8,9],[1,10]]",
+        "expected": "[[1,10]]"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "tcs-coding-21",
+    "id": "tcs-coding-21",
+    "title": "Product of Array Except Self",
+    "company": "tcs",
+    "difficulty": "Medium",
+    "category": "Arrays",
+    "tags": [
+      "Arrays",
+      "Prefix Sum"
+    ],
+    "marks": 10,
+    "source": "practice",
+    "problemStatement": "Given an integer array `nums`, return an array `answer` such that `answer[i]` is equal to the product of all the elements of `nums` except `nums[i]`. You must write an algorithm that runs in `O(n)` time and without using the division operation.",
+    "description": "The product of any prefix or suffix of nums fits in a 32-bit integer.",
+    "constraints": "2 <= nums.length <= 10^5\n-30 <= nums[i] <= 30\nTime: O(N)\nSpace: O(1) auxiliary",
+    "inputFormat": "An array of integers nums.",
+    "outputFormat": "An array of integers where answer[i] is product except nums[i].",
+    "examples": [
+      {
+        "input": "[1, 2, 3, 4]",
+        "output": "[24, 12, 8, 6]",
+        "explanation": "Prefix products combined with suffix products."
+      },
+      {
+        "input": "[-1, 1, 0, -3, 3]",
+        "output": "[0, 0, 9, 0, 0]",
+        "explanation": "Zero at index 2 causes other elements to be 0."
+      }
+    ],
+    "explanation": "Construct prefix products in one pass, then compute suffix products in reverse pass multiplying into result.",
+    "starterCode": "function productExceptSelf(nums) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[1, 2, 3, 4]",
+        "expected": "[24, 12, 8, 6]"
+      },
+      {
+        "input": "[-1, 1, 0, -3, 3]",
+        "expected": "[0, 0, 9, 0, 0]"
+      },
+      {
+        "input": "[2, 3]",
+        "expected": "[3, 2]"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[0, 0]",
+        "expected": "[0, 0]"
+      },
+      {
+        "input": "[1, -1]",
+        "expected": "[-1, 1]"
+      },
+      {
+        "input": "[2, 2, 2, 2]",
+        "expected": "[8, 8, 8, 8]"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "tcs-coding-22",
+    "id": "tcs-coding-22",
+    "title": "Group Anagrams",
+    "company": "tcs",
+    "difficulty": "Medium",
+    "category": "Strings",
+    "tags": [
+      "Strings",
+      "Hash Map"
+    ],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Given an array of strings `strs`, group the anagrams together. You can return the answer in any order. Within each group, preserve relative order or sort.",
+    "description": "An Anagram is a word formed by rearranging the letters of a different word.",
+    "constraints": "1 <= strs.length <= 10^4\n0 <= strs[i].length <= 100\nstrs[i] consists of lowercase English letters.\nTime: O(N * K log K)\nSpace: O(N * K)",
+    "inputFormat": "An array of strings.",
+    "outputFormat": "A 2D array of grouped anagram strings.",
+    "examples": [
+      {
+        "input": "[\"eat\",\"tea\",\"tan\",\"ate\",\"nat\",\"bat\"]",
+        "output": "[[\"eat\",\"tea\",\"ate\"],[\"tan\",\"nat\"],[\"bat\"]]",
+        "explanation": "Grouped by identical character distribution."
+      },
+      {
+        "input": "[\"\"]",
+        "output": "[[\"\"]]",
+        "explanation": "Single empty string group."
+      }
+    ],
+    "explanation": "Use the sorted string as the hash map key, grouping original strings as map values.",
+    "starterCode": "function groupAnagrams(strs) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[\"eat\",\"tea\",\"tan\",\"ate\",\"nat\",\"bat\"]",
+        "expected": "[[\"eat\",\"tea\",\"ate\"],[\"tan\",\"nat\"],[\"bat\"]]"
+      },
+      {
+        "input": "[\"\"]",
+        "expected": "[[\"\"]]"
+      },
+      {
+        "input": "[\"a\"]",
+        "expected": "[[\"a\"]]"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[\"abc\",\"bca\",\"cab\",\"xyz\"]",
+        "expected": "[[\"abc\",\"bca\",\"cab\"],[\"xyz\"]]"
+      },
+      {
+        "input": "[\"listen\",\"silent\",\"enlist\"]",
+        "expected": "[[\"listen\",\"silent\",\"enlist\"]]"
+      },
+      {
+        "input": "[\"ab\",\"ba\",\"cd\",\"dc\"]",
+        "expected": "[[\"ab\",\"ba\"],[\"cd\",\"dc\"]]"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "tcs-coding-23",
+    "id": "tcs-coding-23",
+    "title": "Find Kth Largest Element in Array",
+    "company": "tcs",
+    "difficulty": "Medium",
+    "category": "Heap / Quickselect",
+    "tags": [
+      "Heap",
+      "Quickselect",
+      "Sorting"
+    ],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Given an integer array `nums` and an integer `k`, return the `k`th largest element in the array. Note that it is the `k`th largest element in the sorted order, not the `k`th distinct element.",
+    "description": "Can you solve it without sorting in O(N) average time using Quickselect or Min-Heap?",
+    "constraints": "1 <= k <= nums.length <= 10^5\n-10^4 <= nums[i] <= 10^4\nTime: O(N log K) or O(N) avg\nSpace: O(K)",
+    "inputFormat": "An array nums and integer k.",
+    "outputFormat": "A single integer.",
+    "examples": [
+      {
+        "input": "[3, 2, 1, 5, 6, 4], 2",
+        "output": "5",
+        "explanation": "Sorted: [1,2,3,4,5,6]. 2nd largest is 5."
+      },
+      {
+        "input": "[3, 2, 3, 1, 2, 4, 5, 5, 6], 4",
+        "output": "4",
+        "explanation": "Sorted: [1,2,2,3,3,4,5,5,6]. 4th largest is 4."
+      }
+    ],
+    "explanation": "Use a min-heap of size k, or Quickselect partitioning around a pivot.",
+    "starterCode": "function findKthLargest(nums, k) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[3, 2, 1, 5, 6, 4], 2",
+        "expected": "5"
+      },
+      {
+        "input": "[3, 2, 3, 1, 2, 4, 5, 5, 6], 4",
+        "expected": "4"
+      },
+      {
+        "input": "[1], 1",
+        "expected": "1"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[-1, 2, 0], 2",
+        "expected": "0"
+      },
+      {
+        "input": "[7, 10, 4, 3, 20, 15], 3",
+        "expected": "10"
+      },
+      {
+        "input": "[10, 10, 10], 1",
+        "expected": "10"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "tcs-coding-24",
+    "id": "tcs-coding-24",
+    "title": "Trapping Rain Water",
+    "company": "tcs",
+    "difficulty": "Medium",
+    "category": "Two Pointers",
+    "tags": [
+      "Two Pointers",
+      "Dynamic Programming",
+      "Stack"
+    ],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Given `n` non-negative integers representing an elevation map where the width of each bar is `1`, compute how much water it can trap after raining.",
+    "description": "Each bar height determines water bounded between left and right walls.",
+    "constraints": "n == height.length\n1 <= n <= 2 * 10^4\n0 <= height[i] <= 10^5\nTime: O(N)\nSpace: O(1)",
+    "inputFormat": "An array of non-negative integers height.",
+    "outputFormat": "A single integer representing total trapped water units.",
+    "examples": [
+      {
+        "input": "[0,1,0,2,1,0,1,3,2,1,2,1]",
+        "output": "6",
+        "explanation": "6 total units of rain water trapped."
+      },
+      {
+        "input": "[4,2,0,3,2,5]",
+        "output": "9",
+        "explanation": "9 units trapped."
+      }
+    ],
+    "explanation": "Two pointers left=0, right=n-1 with maxLeft and maxRight tracking bounding boundary elevations.",
+    "starterCode": "function trap(height) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[0,1,0,2,1,0,1,3,2,1,2,1]",
+        "expected": "6"
+      },
+      {
+        "input": "[4,2,0,3,2,5]",
+        "expected": "9"
+      },
+      {
+        "input": "[1,2,3,4]",
+        "expected": "0"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[4,3,2,1]",
+        "expected": "0"
+      },
+      {
+        "input": "[3,0,3]",
+        "expected": "3"
+      },
+      {
+        "input": "[0,0,0]",
+        "expected": "0"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "tcs-coding-25",
+    "id": "tcs-coding-25",
+    "title": "Minimum Cost of Connecting Ropes",
+    "company": "tcs",
+    "difficulty": "Medium",
+    "category": "Greedy",
+    "tags": [
+      "Greedy",
+      "Heap",
+      "Priority Queue"
+    ],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Given an array `ropes` representing the lengths of different ropes, connect all ropes into one rope with the minimum total cost. The cost to connect two ropes is equal to the sum of their lengths.",
+    "description": "Always connecting the two shortest available ropes minimizes cumulative cost (Huffman coding principle).",
+    "constraints": "1 <= ropes.length <= 10^5\n1 <= ropes[i] <= 10^4\nTime: O(N log N)\nSpace: O(N)",
+    "inputFormat": "An array of positive integers ropes.",
+    "outputFormat": "A single integer total minimum cost.",
+    "examples": [
+      {
+        "input": "[4, 3, 2, 6]",
+        "output": "29",
+        "explanation": "Connect 2+3=5 (cost 5). Array [4, 5, 6]. Connect 4+5=9 (cost 9). Array [6, 9]. Connect 6+9=15 (cost 15). Total = 5 + 9 + 15 = 29."
+      },
+      {
+        "input": "[1, 2, 3, 4, 5]",
+        "output": "33",
+        "explanation": "Connect 1+2=3 (cost 3), then 3+3=6 (cost 6), 4+5=9 (cost 9), 6+9=15 (cost 15). Total = 33."
+      }
+    ],
+    "explanation": "Insert all rope lengths into a Min-Heap. Repeatedly extract two smallest, sum them, add to total cost, and re-insert the sum.",
+    "starterCode": "function minCost(ropes) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[4, 3, 2, 6]",
+        "expected": "29"
+      },
+      {
+        "input": "[1, 2, 3, 4, 5]",
+        "expected": "33"
+      },
+      {
+        "input": "[5]",
+        "expected": "0"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[2, 2, 2, 2]",
+        "expected": "16"
+      },
+      {
+        "input": "[8, 4, 6, 12]",
+        "expected": "58"
+      },
+      {
+        "input": "[10, 20]",
+        "expected": "30"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "tcs-coding-26",
+    "id": "tcs-coding-26",
+    "title": "Find Longest Common Prefix",
+    "company": "tcs",
+    "difficulty": "Medium",
+    "category": "Strings",
+    "tags": [
+      "Strings",
+      "Trie"
+    ],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Write a function `longestCommonPrefix(strs)` to find the longest common prefix string amongst an array of strings. If there is no common prefix, return an empty string `\"\"`.",
+    "description": "Compare characters at each index across all strings in the array.",
+    "constraints": "1 <= strs.length <= 200\n0 <= strs[i].length <= 200\nstrs[i] consists of lowercase English letters.\nTime: O(S) where S is sum of all chars\nSpace: O(1)",
+    "inputFormat": "An array of strings strs.",
+    "outputFormat": "A single string prefix.",
+    "examples": [
+      {
+        "input": "[\"flower\",\"flow\",\"flight\"]",
+        "output": "\"fl\"",
+        "explanation": "Common prefix is \"fl\"."
+      },
+      {
+        "input": "[\"dog\",\"racecar\",\"car\"]",
+        "output": "\"\"",
+        "explanation": "No common prefix."
+      }
+    ],
+    "explanation": "Take first string as reference, compare char by char across all other strings until mismatch.",
+    "starterCode": "function longestCommonPrefix(strs) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[\"flower\",\"flow\",\"flight\"]",
+        "expected": "\"fl\""
+      },
+      {
+        "input": "[\"dog\",\"racecar\",\"car\"]",
+        "expected": "\"\""
+      },
+      {
+        "input": "[\"interspecies\",\"interstellar\",\"interstate\"]",
+        "expected": "\"inters\""
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[\"a\"]",
+        "expected": "\"a\""
+      },
+      {
+        "input": "[\"throne\",\"throne\"]",
+        "expected": "\"throne\""
+      },
+      {
+        "input": "[\"cir\",\"car\"]",
+        "expected": "\"c\""
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "tcs-coding-27",
+    "id": "tcs-coding-27",
+    "title": "Longest Palindromic Substring",
+    "company": "tcs",
+    "difficulty": "Hard",
+    "category": "Dynamic Programming",
+    "tags": [
+      "Dynamic Programming",
+      "Strings",
+      "Two Pointers"
+    ],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Given a string `s`, return the longest palindromic substring in `s`.",
+    "description": "A string is palindromic if it reads the same forward and backward.",
+    "constraints": "1 <= s.length <= 1000\ns consist of only digits and English letters.\nTime: O(N^2)\nSpace: O(1) auxiliary",
+    "inputFormat": "A single string s.",
+    "outputFormat": "A single string containing the longest palindromic substring.",
+    "examples": [
+      {
+        "input": "\"babad\"",
+        "output": "\"bab\"",
+        "explanation": "\"aba\" is also a valid answer."
+      },
+      {
+        "input": "\"cbbd\"",
+        "output": "\"bb\"",
+        "explanation": "\"bb\" is the longest palindrome."
+      }
+    ],
+    "explanation": "Expand around each possible center (both 1-char center for odd length and 2-char center for even length).",
+    "starterCode": "function longestPalindrome(s) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "\"babad\"",
+        "expected": "\"bab\""
+      },
+      {
+        "input": "\"cbbd\"",
+        "expected": "\"bb\""
+      },
+      {
+        "input": "\"a\"",
+        "expected": "\"a\""
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "\"racecar\"",
+        "expected": "\"racecar\""
+      },
+      {
+        "input": "\"aacabdkalg12321xyz\"",
+        "expected": "\"12321\""
+      },
+      {
+        "input": "\"forgeeksskeegfor\"",
+        "expected": "\"geeksskeeg\""
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "tcs-coding-28",
+    "id": "tcs-coding-28",
+    "title": "0/1 Knapsack Problem",
+    "company": "tcs",
+    "difficulty": "Hard",
+    "category": "Dynamic Programming",
+    "tags": [
+      "Dynamic Programming",
+      "Recursion"
+    ],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Given `W` (maximum capacity of knapsack) and two arrays `values` and `weights` of size `N`, find the maximum total value subset of `values` such that total weight does not exceed `W`. You cannot break items (0/1).",
+    "description": "Classic 0/1 knapsack with weights and values.",
+    "constraints": "1 <= N <= 1000\n1 <= W <= 1000\n1 <= weights[i], values[i] <= 1000\nTime: O(N * W)\nSpace: O(W)",
+    "inputFormat": "An integer W, array values, and array weights.",
+    "outputFormat": "A single integer maximum value.",
+    "examples": [
+      {
+        "input": "50, [60, 100, 120], [10, 20, 30]",
+        "output": "220",
+        "explanation": "Pick items with weights 20 and 30, total value = 100 + 120 = 220."
+      },
+      {
+        "input": "10, [10, 40, 30, 50], [5, 4, 6, 3]",
+        "output": "90",
+        "explanation": "Pick items with weight 4 and 3 (total weight 7 <= 10), value = 40 + 50 = 90."
+      }
+    ],
+    "explanation": "dp[w] = max(dp[w], dp[w - weight[i]] + value[i]) in reverse loop.",
+    "starterCode": "function knapSack(W, values, weights) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "50, [60, 100, 120], [10, 20, 30]",
+        "expected": "220"
+      },
+      {
+        "input": "10, [10, 40, 30, 50], [5, 4, 6, 3]",
+        "expected": "90"
+      },
+      {
+        "input": "4, [1, 2, 3], [4, 5, 1]",
+        "expected": "3"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "0, [10, 20], [5, 10]",
+        "expected": "0"
+      },
+      {
+        "input": "8, [10, 15, 40], [1, 2, 3]",
+        "expected": "65"
+      },
+      {
+        "input": "15, [10, 20, 30, 40], [1, 3, 4, 5]",
+        "expected": "100"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "tcs-coding-29",
+    "id": "tcs-coding-29",
+    "title": "Median of Two Sorted Arrays",
+    "company": "tcs",
+    "difficulty": "Hard",
+    "category": "Binary Search",
+    "tags": [
+      "Binary Search",
+      "Divide and Conquer"
+    ],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Given two sorted arrays `nums1` and `nums2` of size `m` and `n` respectively, return the median of the two sorted arrays. The overall run time complexity should be `O(log (m+n))`.",
+    "description": "Partition both arrays such that left half has equal elements to right half and left elements <= right elements.",
+    "constraints": "nums1.length == m\nnums2.length == n\n0 <= m <= 1000\n0 <= n <= 1000\n1 <= m + n <= 2000\nTime: O(log(min(m, n)))\nSpace: O(1)",
+    "inputFormat": "Two sorted arrays nums1 and nums2.",
+    "outputFormat": "A float/number representing median.",
+    "examples": [
+      {
+        "input": "[1, 3], [2]",
+        "output": "2.0",
+        "explanation": "Merged = [1, 2, 3], median is 2."
+      },
+      {
+        "input": "[1, 2], [3, 4]",
+        "output": "2.5",
+        "explanation": "Merged = [1, 2, 3, 4], median is (2 + 3) / 2 = 2.5."
+      }
+    ],
+    "explanation": "Perform binary search on the shorter array's partition index. Validate left1 <= right2 and left2 <= right1.",
+    "starterCode": "function findMedianSortedArrays(nums1, nums2) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[1, 3], [2]",
+        "expected": "2"
+      },
+      {
+        "input": "[1, 2], [3, 4]",
+        "expected": "2.5"
+      },
+      {
+        "input": "[0, 0], [0, 0]",
+        "expected": "0"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[], [1]",
+        "expected": "1"
+      },
+      {
+        "input": "[2], []",
+        "expected": "2"
+      },
+      {
+        "input": "[1, 3, 8, 9, 15], [7, 11, 18, 19, 21, 25]",
+        "expected": "11"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "tcs-coding-30",
+    "id": "tcs-coding-30",
+    "title": "Coin Change - Minimum Number of Coins",
+    "company": "tcs",
+    "difficulty": "Hard",
+    "category": "Dynamic Programming",
+    "tags": [
+      "Dynamic Programming",
+      "Greedy"
+    ],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "You are given an integer array `coins` representing coins of different denominations and an integer `amount` representing a total amount of money. Return the fewest number of coins that you need to make up that amount. If that amount of money cannot be made up by any combination of the coins, return `-1`.",
+    "description": "You may assume that you have an infinite number of each kind of coin.",
+    "constraints": "1 <= coins.length <= 12\n1 <= coins[i] <= 2^31 - 1\n0 <= amount <= 10^4\nTime: O(amount * |coins|)\nSpace: O(amount)",
+    "inputFormat": "An array coins and integer amount.",
+    "outputFormat": "A single integer count, or -1.",
+    "examples": [
+      {
+        "input": "[1, 2, 5], 11",
+        "output": "3",
+        "explanation": "11 = 5 + 5 + 1 (3 coins)."
+      },
+      {
+        "input": "[2], 3",
+        "output": "-1",
+        "explanation": "Cannot make 3 with only 2s."
+      },
+      {
+        "input": "[1], 0",
+        "output": "0",
+        "explanation": "0 amount requires 0 coins."
+      }
+    ],
+    "explanation": "dp[i] = min(dp[i], dp[i - coin] + 1) for each coin <= i.",
+    "starterCode": "function coinChange(coins, amount) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[1, 2, 5], 11",
+        "expected": "3"
+      },
+      {
+        "input": "[2], 3",
+        "expected": "-1"
+      },
+      {
+        "input": "[1], 0",
+        "expected": "0"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[2, 5, 10, 1], 27",
+        "expected": "4"
+      },
+      {
+        "input": "[186, 419, 83, 408], 6249",
+        "expected": "20"
+      },
+      {
+        "input": "[5, 10], 3",
+        "expected": "-1"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "tcs-coding-31",
+    "id": "tcs-coding-31",
+    "title": "Longest Increasing Subsequence",
+    "company": "tcs",
+    "difficulty": "Hard",
+    "category": "Dynamic Programming",
+    "tags": [
+      "Dynamic Programming",
+      "Binary Search"
+    ],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Given an integer array `nums`, return the length of the longest strictly increasing subsequence.",
+    "description": "A subsequence is a sequence that can be derived from an array by deleting some or no elements without changing the order of the remaining elements.",
+    "constraints": "1 <= nums.length <= 2500\n-10^4 <= nums[i] <= 10^4\nTime: O(N log N) or O(N^2)\nSpace: O(N)",
+    "inputFormat": "An array of integers nums.",
+    "outputFormat": "A single integer length.",
+    "examples": [
+      {
+        "input": "[10, 9, 2, 5, 3, 7, 101, 18]",
+        "output": "4",
+        "explanation": "The longest increasing subsequence is [2, 3, 7, 101], therefore length is 4."
+      },
+      {
+        "input": "[0, 1, 0, 3, 2, 3]",
+        "output": "4",
+        "explanation": "LIS is [0, 1, 2, 3], length is 4."
+      },
+      {
+        "input": "[7, 7, 7, 7, 7]",
+        "output": "1",
+        "explanation": "Strictly increasing LIS length is 1."
+      }
+    ],
+    "explanation": "Use Patience Sorting / Tails array with binary search (O(N log N)).",
+    "starterCode": "function lengthOfLIS(nums) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[10, 9, 2, 5, 3, 7, 101, 18]",
+        "expected": "4"
+      },
+      {
+        "input": "[0, 1, 0, 3, 2, 3]",
+        "expected": "4"
+      },
+      {
+        "input": "[7, 7, 7, 7, 7]",
+        "expected": "1"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[4, 10, 4, 3, 8, 9]",
+        "expected": "3"
+      },
+      {
+        "input": "[1, 3, 6, 7, 9, 4, 10, 5, 6]",
+        "expected": "6"
+      },
+      {
+        "input": "[1]",
+        "expected": "1"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "tcs-coding-32",
+    "id": "tcs-coding-32",
+    "title": "Word Break Problem",
+    "company": "tcs",
+    "difficulty": "Hard",
+    "category": "Dynamic Programming",
+    "tags": [
+      "Dynamic Programming",
+      "Trie",
+      "Hash Map"
+    ],
+    "marks": 10,
+    "source": "practice",
+    "problemStatement": "Given a string `s` and a dictionary of strings `wordDict`, return `true` if `s` can be segmented into a space-separated sequence of one or more dictionary words.",
+    "description": "The same word in the dictionary may be reused multiple times in the segmentation.",
+    "constraints": "1 <= s.length <= 300\n1 <= wordDict.length <= 1000\n1 <= wordDict[i].length <= 20\ns and wordDict[i] consist of only lowercase English letters.\nTime: O(N^2 * M)\nSpace: O(N)",
+    "inputFormat": "A string s and array of strings wordDict.",
+    "outputFormat": "A boolean true or false.",
+    "examples": [
+      {
+        "input": "\"leetcode\", [\"leet\",\"code\"]",
+        "output": "true",
+        "explanation": "Segmented as \"leet code\"."
+      },
+      {
+        "input": "\"applepenapple\", [\"apple\",\"pen\"]",
+        "output": "true",
+        "explanation": "\"apple pen apple\", reusing \"apple\"."
+      },
+      {
+        "input": "\"catsandog\", [\"cats\",\"dog\",\"sand\",\"and\",\"cat\"]",
+        "output": "false",
+        "explanation": "No valid segmentation."
+      }
+    ],
+    "explanation": "dp[i] is true if dp[j] is true and s.substring(j, i) is in wordDict for some j < i.",
+    "starterCode": "function wordBreak(s, wordDict) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "\"leetcode\", [\"leet\",\"code\"]",
+        "expected": "true"
+      },
+      {
+        "input": "\"applepenapple\", [\"apple\",\"pen\"]",
+        "expected": "true"
+      },
+      {
+        "input": "\"catsandog\", [\"cats\",\"dog\",\"sand\",\"and\",\"cat\"]",
+        "expected": "false"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "\"cars\", [\"car\",\"ca\",\"rs\"]",
+        "expected": "true"
+      },
+      {
+        "input": "\"cbca\", [\"bc\",\"ca\"]",
+        "expected": "false"
+      },
+      {
+        "input": "\"a\", [\"a\"]",
+        "expected": "true"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "tcs-coding-33",
+    "id": "tcs-coding-33",
+    "title": "Edit Distance (Levenshtein Distance)",
+    "company": "tcs",
+    "difficulty": "Hard",
+    "category": "Dynamic Programming",
+    "tags": [
+      "Dynamic Programming",
+      "Strings"
+    ],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Given two strings `word1` and `word2`, return the minimum number of operations required to convert `word1` to `word2`. You have three operations permitted on a word: Insert a character, Delete a character, Replace a character.",
+    "description": "Classic Levenshtein minimum edit distance.",
+    "constraints": "0 <= word1.length, word2.length <= 500\nword1 and word2 consist of lowercase English letters.\nTime: O(M * N)\nSpace: O(M * N)",
+    "inputFormat": "Two strings word1 and word2.",
+    "outputFormat": "A single integer operations count.",
+    "examples": [
+      {
+        "input": "\"horse\", \"ros\"",
+        "output": "3",
+        "explanation": "horse -> rorse (replace 'h' with 'r') -> rose (remove 'r') -> ros (remove 'e')."
+      },
+      {
+        "input": "\"intention\", \"execution\"",
+        "output": "5",
+        "explanation": "intention -> inention -> enention -> exention -> exection -> execution."
+      }
+    ],
+    "explanation": "If word1[i-1] == word2[j-1], dp[i][j] = dp[i-1][j-1]. Otherwise 1 + min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]).",
+    "starterCode": "function minDistance(word1, word2) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "\"horse\", \"ros\"",
+        "expected": "3"
+      },
+      {
+        "input": "\"intention\", \"execution\"",
+        "expected": "5"
+      },
+      {
+        "input": "\"\", \"a\"",
+        "expected": "1"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "\"abc\", \"abc\"",
+        "expected": "0"
+      },
+      {
+        "input": "\"kitten\", \"sitting\"",
+        "expected": "3"
+      },
+      {
+        "input": "\"plasma\", \"altruism\"",
+        "expected": "6"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "tcs-coding-34",
+    "id": "tcs-coding-34",
+    "title": "Sliding Window Maximum",
+    "company": "tcs",
+    "difficulty": "Hard",
+    "category": "Sliding Window",
+    "tags": [
+      "Sliding Window",
+      "Monotonic Queue",
+      "Deque"
+    ],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "You are given an array of integers `nums`, there is a sliding window of size `k` which is moving from the very left of the array to the very right. You can only see the `k` numbers in the window. Each time the sliding window moves right by one position. Return the max sliding window array.",
+    "description": "Find the maximum value in every contiguous window of size k.",
+    "constraints": "1 <= nums.length <= 10^5\n-10^4 <= nums[i] <= 10^4\n1 <= k <= nums.length\nTime: O(N)\nSpace: O(K)",
+    "inputFormat": "An array nums and integer k.",
+    "outputFormat": "An array of maximums for each sliding window.",
+    "examples": [
+      {
+        "input": "[1,3,-1,-3,5,3,6,7], 3",
+        "output": "[3, 3, 5, 5, 6, 7]",
+        "explanation": "Windows: [1,3,-1]->3, [3,-1,-3]->3, [-1,-3,5]->5, [-3,5,3]->5, [5,3,6]->6, [3,6,7]->7."
+      },
+      {
+        "input": "[1], 1",
+        "output": "[1]",
+        "explanation": "Single element window."
+      }
+    ],
+    "explanation": "Maintain a monotonic decreasing deque storing indices. Front of deque is always the index of the max element in current window.",
+    "starterCode": "function maxSlidingWindow(nums, k) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "[1,3,-1,-3,5,3,6,7], 3",
+        "expected": "[3, 3, 5, 5, 6, 7]"
+      },
+      {
+        "input": "[1], 1",
+        "expected": "[1]"
+      },
+      {
+        "input": "[1, -1], 1",
+        "expected": "[1, -1]"
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "[9, 11], 2",
+        "expected": "[11]"
+      },
+      {
+        "input": "[4, -2], 2",
+        "expected": "[4]"
+      },
+      {
+        "input": "[1, 3, 1, 2, 0, 5], 3",
+        "expected": "[3, 3, 2, 5]"
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  {
+    "questionId": "tcs-coding-35",
+    "id": "tcs-coding-35",
+    "title": "Minimum Window Substring",
+    "company": "tcs",
+    "difficulty": "Hard",
+    "category": "Sliding Window",
+    "tags": [
+      "Sliding Window",
+      "Hash Map",
+      "Strings"
+    ],
+    "marks": 10,
+    "source": "interview_reported",
+    "problemStatement": "Given two strings `s` and `t` of lengths `m` and `n` respectively, return the minimum window substring of `s` such that every character in `t` (including duplicates) is included in the window. If there is no such substring, return the empty string `\"\"`.",
+    "description": "Find the shortest substring in s that contains all characters of t.",
+    "constraints": "m == s.length\nn == t.length\n1 <= m, n <= 10^5\ns and t consist of uppercase and lowercase English letters.\nTime: O(M + N)\nSpace: O(|Σ|) where Σ is alphabet",
+    "inputFormat": "Two strings s and t.",
+    "outputFormat": "A single string containing the minimum window, or \"\".",
+    "examples": [
+      {
+        "input": "\"ADOBECODEBANC\", \"ABC\"",
+        "output": "\"BANC\"",
+        "explanation": "Minimum window substring \"BANC\" includes 'A', 'B', and 'C' from string t."
+      },
+      {
+        "input": "\"a\", \"a\"",
+        "output": "\"a\"",
+        "explanation": "The entire string s is the minimum window."
+      },
+      {
+        "input": "\"a\", \"aa\"",
+        "output": "\"\"",
+        "explanation": "Both 'a's from t must be included in the window. Since the largest window of s only has one 'a', return empty string."
+      }
+    ],
+    "explanation": "Two pointers sliding window: expand right until window is valid (has all chars of t), then contract left to find minimal length.",
+    "starterCode": "function minWindow(s, t) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "C++"
+    ],
+    "publicTestCases": [
+      {
+        "input": "\"ADOBECODEBANC\", \"ABC\"",
+        "expected": "\"BANC\""
+      },
+      {
+        "input": "\"a\", \"a\"",
+        "expected": "\"a\""
+      },
+      {
+        "input": "\"a\", \"aa\"",
+        "expected": "\"\""
+      }
+    ],
+    "hiddenTestCases": [
+      {
+        "input": "\"ab\", \"b\"",
+        "expected": "\"b\""
+      },
+      {
+        "input": "\"cabwefgewcwaefgcf\", \"cae\"",
+        "expected": "\"cwae\""
+      },
+      {
+        "input": "\"aa\", \"aa\"",
+        "expected": "\"aa\""
+      }
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  }
+]

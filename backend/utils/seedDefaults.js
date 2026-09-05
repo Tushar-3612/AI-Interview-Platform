@@ -19,6 +19,7 @@ export const DEFAULT_COMPANIES = [
   { id: "cognizant", name: "Cognizant", color: "#0A6EB4", difficulty: "Medium", description: "Cognizant — engineering, AI and digital solutions", package: "4 - 7.5 LPA" },
   { id: "deloitte", name: "Deloitte", color: "#86BC25", difficulty: "Hard", description: "Deloitte — audit, consulting, tax and advisory", package: "6 - 12 LPA" },
   { id: "benchmark", name: "Benchmark", color: "#6366F1", difficulty: "Hard", description: "Benchmark — mixed difficulty mock placement drive", package: "Varies" },
+  { id: "celebal", name: "Celebal", color: "#0D9488", difficulty: "Medium", description: "Celebal Technologies — data, analytics and cloud solutions", package: "4 - 8 LPA" },
 ];
 
 export async function seedDefaultCompanies() {

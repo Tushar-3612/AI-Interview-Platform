@@ -1,0 +1,4412 @@
+[
+  {
+    "questionId": "cognizant-mcq-1",
+    "question": "Given a table 'Students' with 5 rows where the 'grade' column contains values: [90, 80, NULL, 70, NULL]. What will the query `SELECT COUNT(grade), COUNT(*) FROM Students;` return?",
+    "options": [
+      "3, 5",
+      "5, 5",
+      "3, 3",
+      "5, 3"
+    ],
+    "correctAnswer": "3, 5",
+    "explanation": "COUNT(column_name) ignores NULL values and counts only the 3 non-null entries, whereas COUNT(*) counts all 5 rows in the table.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "cognizant-mcq-2",
+    "question": "Table A has 4 rows with IDs [1, 2, 3, 4] and Table B has 3 rows with IDs [2, 3, 5]. How many rows will `SELECT * FROM TableA INNER JOIN TableB ON TableA.id = TableB.id;` return?",
+    "options": [
+      "2",
+      "3",
+      "4",
+      "7"
+    ],
+    "correctAnswer": "2",
+    "explanation": "INNER JOIN returns only matching IDs present in both tables, which are IDs 2 and 3 (total 2 rows).",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "cognizant-mcq-3",
+    "question": "What is the primary function of the SQL `DISTINCT` keyword in a SELECT statement?",
+    "options": [
+      "To eliminate duplicate rows from the query result set",
+      "To sort the output in alphabetical order",
+      "To filter out all NULL values automatically",
+      "To group identical rows for aggregate computations"
+    ],
+    "correctAnswer": "To eliminate duplicate rows from the query result set",
+    "explanation": "The DISTINCT keyword removes duplicate rows from the output, returning only unique records.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "cognizant-mcq-4",
+    "question": "What is the output of the following Java code snippet?\n\n```java\nString str = \"Cognizant\";\nstr.concat(\" GenC\");\nSystem.out.println(str);\n```",
+    "options": [
+      "Cognizant",
+      "Cognizant GenC",
+      "GenC",
+      "Compilation Error"
+    ],
+    "correctAnswer": "Cognizant",
+    "explanation": "Strings are immutable in Java. The concat() method returns a new String object, but because it is not reassigned back to 'str', 'str' remains unchanged.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Java"
+  },
+  {
+    "questionId": "cognizant-mcq-5",
+    "question": "In Java, what is the default initial capacity of an `ArrayList` created with the no-argument constructor `new ArrayList<>()` once the first element is added?",
+    "options": [
+      "10",
+      "16",
+      "0",
+      "8"
+    ],
+    "correctAnswer": "10",
+    "explanation": "An ArrayList initialized with the default constructor has an initial internal capacity of 10 upon adding its first element.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Java"
+  },
+  {
+    "questionId": "cognizant-mcq-6",
+    "question": "What will be the output of the following Python expression?\n\n```python\nnums = [10, 20, 30, 40, 50]\nprint(nums[1:4])\n```",
+    "options": [
+      "[20, 30, 40]",
+      "[10, 20, 30, 40]",
+      "[20, 30, 40, 50]",
+      "[20, 30]"
+    ],
+    "correctAnswer": "[20, 30, 40]",
+    "explanation": "Python slice `[1:4]` starts at index 1 (value 20) and goes up to index 4 exclusive (values 20, 30, 40).",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Python"
+  },
+  {
+    "questionId": "cognizant-mcq-7",
+    "question": "Which data structure follows the LIFO (Last In, First Out) principle?",
+    "options": [
+      "Stack",
+      "Queue",
+      "Binary Search Tree",
+      "Array List"
+    ],
+    "correctAnswer": "Stack",
+    "explanation": "A Stack operates on the LIFO principle where the most recently inserted element is the first to be removed.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "cognizant-mcq-8",
+    "question": "Which of the following is an example of Software as a Service (SaaS)?",
+    "options": [
+      "Google Workspace (Gmail/Docs)",
+      "Amazon EC2",
+      "AWS Elastic Beanstalk",
+      "Microsoft Azure Virtual Machines"
+    ],
+    "correctAnswer": "Google Workspace (Gmail/Docs)",
+    "explanation": "Google Workspace is a fully hosted end-user application delivered over the web, representing SaaS. EC2 and Azure VMs are IaaS, while Elastic Beanstalk is PaaS.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Cloud"
+  },
+  {
+    "questionId": "cognizant-mcq-9",
+    "question": "What does the HTTP response status code 404 signify?",
+    "options": [
+      "The server cannot find the requested resource",
+      "The request requires user authentication",
+      "Internal server error occurred",
+      "The server understood the request but refuses to authorize it"
+    ],
+    "correctAnswer": "The server cannot find the requested resource",
+    "explanation": "HTTP 404 Not Found indicates that the origin server could not find a current representation for the target URL resource.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Web"
+  },
+  {
+    "questionId": "cognizant-mcq-10",
+    "question": "On a standard 64-bit operating system architecture, what is the value returned by `sizeof(int*)` in C/C++?",
+    "options": [
+      "8 bytes",
+      "4 bytes",
+      "2 bytes",
+      "16 bytes"
+    ],
+    "correctAnswer": "8 bytes",
+    "explanation": "On a 64-bit system, memory addresses are 64 bits (8 bytes) in length, so any pointer type occupies 8 bytes.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "C/C++"
+  },
+  {
+    "questionId": "cognizant-mcq-11",
+    "question": "Which SQL clause is used to filter records resulting from a `GROUP BY` aggregation?",
+    "options": [
+      "HAVING",
+      "WHERE",
+      "ORDER BY",
+      "FILTER"
+    ],
+    "correctAnswer": "HAVING",
+    "explanation": "The HAVING clause filters aggregated group results produced by GROUP BY, while WHERE filters individual rows prior to grouping.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "cognizant-mcq-12",
+    "question": "What is the output of the query `SELECT 5 + NULL;` in standard SQL?",
+    "options": [
+      "NULL",
+      "5",
+      "0",
+      "Syntax Error"
+    ],
+    "correctAnswer": "NULL",
+    "explanation": "Any arithmetic operation with a NULL value evaluates to NULL in standard SQL three-valued logic.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "cognizant-mcq-13",
+    "question": "Which of the following SQL statements is a Data Definition Language (DDL) command?",
+    "options": [
+      "TRUNCATE",
+      "DELETE",
+      "UPDATE",
+      "INSERT"
+    ],
+    "correctAnswer": "TRUNCATE",
+    "explanation": "TRUNCATE, CREATE, ALTER, and DROP are DDL commands because they modify the database schema structures rather than just row contents.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "cognizant-mcq-14",
+    "question": "What does `SELECT * FROM Employees WHERE name LIKE 'A%m';` match?",
+    "options": [
+      "Names starting with 'A' and ending with 'm'",
+      "Names containing both 'A' and 'm' anywhere",
+      "Names starting with 'A' followed by exactly one character and 'm'",
+      "Names ending with 'A' and starting with 'm'"
+    ],
+    "correctAnswer": "Names starting with 'A' and ending with 'm'",
+    "explanation": "'A%m' requires the string to begin with 'A', have zero or more characters in between (%), and terminate with 'm'.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "cognizant-mcq-15",
+    "question": "Which SQL constraint enforces that all values in a column are distinct and cannot contain NULL values?",
+    "options": [
+      "PRIMARY KEY",
+      "UNIQUE",
+      "FOREIGN KEY",
+      "CHECK"
+    ],
+    "correctAnswer": "PRIMARY KEY",
+    "explanation": "PRIMARY KEY enforces both uniqueness and non-nullability (NOT NULL), whereas UNIQUE constraints permit NULL values in standard SQL.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "cognizant-mcq-16",
+    "question": "What will `SELECT LOWER('Cognizant Technology');` produce in SQL?",
+    "options": [
+      "cognizant technology",
+      "Cognizant Technology",
+      "COGNIZANT TECHNOLOGY",
+      "cognizant_technology"
+    ],
+    "correctAnswer": "cognizant technology",
+    "explanation": "LOWER() converts all uppercase characters in the given string to lowercase.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "cognizant-mcq-17",
+    "question": "Which normal form requires that a relational table is in 1NF and contains no partial functional dependencies?",
+    "options": [
+      "2NF",
+      "3NF",
+      "BCNF",
+      "4NF"
+    ],
+    "correctAnswer": "2NF",
+    "explanation": "Second Normal Form (2NF) mandates 1NF compliance and complete functional dependency of non-prime attributes on the whole primary key.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "DBMS"
+  },
+  {
+    "questionId": "cognizant-mcq-18",
+    "question": "What does the 'A' stand for in the ACID properties of a DBMS transaction?",
+    "options": [
+      "Atomicity",
+      "Availability",
+      "Authentication",
+      "Authorization"
+    ],
+    "correctAnswer": "Atomicity",
+    "explanation": "ACID stands for Atomicity, Consistency, Isolation, and Durability.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "DBMS"
+  },
+  {
+    "questionId": "cognizant-mcq-19",
+    "question": "What is the time complexity of searching an element in a balanced Binary Search Tree (BST) containing N nodes?",
+    "options": [
+      "O(log N)",
+      "O(N)",
+      "O(1)",
+      "O(N log N)"
+    ],
+    "correctAnswer": "O(log N)",
+    "explanation": "A balanced BST divides search candidates in half at each level, leading to logarithmic O(log N) search time.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "cognizant-mcq-20",
+    "question": "Which of the following data structures provides O(1) average time complexity for insertion, deletion, and search by key?",
+    "options": [
+      "Hash Table / HashMap",
+      "Binary Search Tree",
+      "Linked List",
+      "Array"
+    ],
+    "correctAnswer": "Hash Table / HashMap",
+    "explanation": "Hash tables compute array indices via hashing in O(1) average time for lookup, insertion, and deletion.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "cognizant-mcq-21",
+    "question": "What is the worst-case time complexity of QuickSort when a poor pivot (such as always picking the smallest or largest element on sorted input) is chosen?",
+    "options": [
+      "O(N^2)",
+      "O(N log N)",
+      "O(N)",
+      "O(log N)"
+    ],
+    "correctAnswer": "O(N^2)",
+    "explanation": "With unbalanced partitions (e.g. 1 and N-1 elements each step), QuickSort recurses N times with O(N) partitioning, resulting in O(N^2) time.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "cognizant-mcq-22",
+    "question": "Which data structure is primarily used to implement Breadth-First Search (BFS) on a graph?",
+    "options": [
+      "Queue",
+      "Stack",
+      "Priority Queue",
+      "Binary Tree"
+    ],
+    "correctAnswer": "Queue",
+    "explanation": "BFS uses a FIFO Queue to visit all neighbor vertices at the current depth before advancing to deeper levels.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "cognizant-mcq-23",
+    "question": "What is the best-case time complexity of Bubble Sort when an optimized swapped flag is implemented and the input array is already sorted?",
+    "options": [
+      "O(N)",
+      "O(N^2)",
+      "O(N log N)",
+      "O(1)"
+    ],
+    "correctAnswer": "O(N)",
+    "explanation": "With a swapped flag, Bubble Sort stops after one pass if no elements were swapped, running in linear O(N) time.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "cognizant-mcq-24",
+    "question": "Which sorting algorithm is guaranteed to have O(N log N) time complexity in worst, average, and best cases while requiring O(N) auxiliary space?",
+    "options": [
+      "Merge Sort",
+      "Quick Sort",
+      "Bubble Sort",
+      "Insertion Sort"
+    ],
+    "correctAnswer": "Merge Sort",
+    "explanation": "Merge Sort divides arrays recursively in half and merges sorted halves in O(N) time, guaranteeing O(N log N) in all cases.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "cognizant-mcq-25",
+    "question": "What is the time complexity to access an element by index in an Array?",
+    "options": [
+      "O(1)",
+      "O(N)",
+      "O(log N)",
+      "O(N^2)"
+    ],
+    "correctAnswer": "O(1)",
+    "explanation": "Arrays store elements in contiguous memory slots, so `base_address + index * element_size` computes the target address in O(1) constant time.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "cognizant-mcq-26",
+    "question": "Which keyword in Java prevents a class from being inherited or extended by any other class?",
+    "options": [
+      "final",
+      "static",
+      "abstract",
+      "private"
+    ],
+    "correctAnswer": "final",
+    "explanation": "Declaring a class as `final` prohibits any subclass from extending it (e.g., `final class String`).",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Java"
+  },
+  {
+    "questionId": "cognizant-mcq-27",
+    "question": "In Java, what is the output of `System.out.println(10 + 20 + \"Java\" + 30 + 40);`?",
+    "options": [
+      "30Java3040",
+      "1020Java3040",
+      "30Java70",
+      "1020Java70"
+    ],
+    "correctAnswer": "30Java3040",
+    "explanation": "Evaluation proceeds left to right: 10 + 20 = 30; 30 + \"Java\" = \"30Java\"; \"30Java\" + 30 = \"30Java30\"; \"30Java30\" + 40 = \"30Java3040\".",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Java"
+  },
+  {
+    "questionId": "cognizant-mcq-28",
+    "question": "Which Java collection class allows duplicate elements and maintains insertion order?",
+    "options": [
+      "ArrayList",
+      "HashSet",
+      "TreeSet",
+      "HashMap"
+    ],
+    "correctAnswer": "ArrayList",
+    "explanation": "ArrayList implements List, allowing duplicate entries and preserving exact insertion order.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Java"
+  },
+  {
+    "questionId": "cognizant-mcq-29",
+    "question": "What exception is thrown in Java when an application attempts to access an object reference that is `null`?",
+    "options": [
+      "NullPointerException",
+      "ArrayIndexOutOfBoundsException",
+      "IllegalArgumentException",
+      "ClassCastException"
+    ],
+    "correctAnswer": "NullPointerException",
+    "explanation": "Dereferencing a null reference throws `java.lang.NullPointerException` at runtime.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Java"
+  },
+  {
+    "questionId": "cognizant-mcq-30",
+    "question": "Which of the following is NOT a primitive data type in Java?",
+    "options": [
+      "String",
+      "int",
+      "boolean",
+      "double"
+    ],
+    "correctAnswer": "String",
+    "explanation": "String in Java is a reference class (`java.lang.String`), not a primitive data type.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Java"
+  },
+  {
+    "questionId": "cognizant-mcq-31",
+    "question": "What is the output of the following Python code?\n\n```python\na = [1, 2, 3]\nb = a\nb.append(4)\nprint(len(a))\n```",
+    "options": [
+      "4",
+      "3",
+      "1",
+      "Error"
+    ],
+    "correctAnswer": "4",
+    "explanation": "In Python, `b = a` assigns the reference of list `a` to `b`. Appending to `b` modifies the same underlying list object, making `len(a)` equal to 4.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Python"
+  },
+  {
+    "questionId": "cognizant-mcq-32",
+    "question": "Which of the following data types in Python is IMMUTABLE?",
+    "options": [
+      "Tuple",
+      "List",
+      "Dictionary",
+      "Set"
+    ],
+    "correctAnswer": "Tuple",
+    "explanation": "Tuples, Strings, and Integers are immutable in Python; Lists, Dictionaries, and Sets are mutable.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Python"
+  },
+  {
+    "questionId": "cognizant-mcq-33",
+    "question": "What will `print(type({}))` output in Python?",
+    "options": [
+      "<class 'dict'>",
+      "<class 'set'>",
+      "<class 'tuple'>",
+      "<class 'list'>"
+    ],
+    "correctAnswer": "<class 'dict'>",
+    "explanation": "Empty curly braces `{}` define an empty dictionary in Python. To create an empty set, `set()` must be used.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Python"
+  },
+  {
+    "questionId": "cognizant-mcq-34",
+    "question": "What will `print(bool([]), bool([0]))` display in Python?",
+    "options": [
+      "False True",
+      "False False",
+      "True True",
+      "True False"
+    ],
+    "correctAnswer": "False True",
+    "explanation": "An empty list `[]` is falsy (`False`), whereas a non-empty list `[0]` containing an element is truthy (`True`).",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Python"
+  },
+  {
+    "questionId": "cognizant-mcq-35",
+    "question": "In C++, which operator is used to allocate memory dynamically on the heap?",
+    "options": [
+      "new",
+      "malloc",
+      "alloc",
+      "create"
+    ],
+    "correctAnswer": "new",
+    "explanation": "The `new` operator in C++ allocates heap memory and calls the object's constructor.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "C/C++"
+  },
+  {
+    "questionId": "cognizant-mcq-36",
+    "question": "What does the following C code output?\n\n```c\nint x = 10;\nint *ptr = &x;\n*ptr = 20;\nprintf(\"%d\", x);\n```",
+    "options": [
+      "20",
+      "10",
+      "Address of x",
+      "Garbage value"
+    ],
+    "correctAnswer": "20",
+    "explanation": "Dereferencing `*ptr` and assigning 20 alters the value at the memory address of `x`, so `x` becomes 20.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "C/C++"
+  },
+  {
+    "questionId": "cognizant-mcq-37",
+    "question": "Which of the following correctly describes Infrastructure as a Service (IaaS)?",
+    "options": [
+      "Providing virtualized compute instances, raw storage, and networking over the internet",
+      "Delivering managed application runtime platforms where developers only deploy code",
+      "Delivering ready-to-use software applications to end-users via web browsers",
+      "Providing serverless event-driven execution functions only"
+    ],
+    "correctAnswer": "Providing virtualized compute instances, raw storage, and networking over the internet",
+    "explanation": "IaaS offers foundational virtualized computing hardware, networking, and storage components.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Cloud"
+  },
+  {
+    "questionId": "cognizant-mcq-38",
+    "question": "Which AWS service is designed for scalable object storage (such as media files, backups, logs)?",
+    "options": [
+      "AWS S3",
+      "AWS EC2",
+      "AWS RDS",
+      "AWS Lambda"
+    ],
+    "correctAnswer": "AWS S3",
+    "explanation": "AWS Simple Storage Service (S3) provides highly durable object storage organized in buckets.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Cloud"
+  },
+  {
+    "questionId": "cognizant-mcq-39",
+    "question": "In web development, which HTTP method is typically used to create a new resource on the server?",
+    "options": [
+      "POST",
+      "GET",
+      "DELETE",
+      "HEAD"
+    ],
+    "correctAnswer": "POST",
+    "explanation": "POST sends payload data in the HTTP request body to create new resources on the server.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Web"
+  },
+  {
+    "questionId": "cognizant-mcq-40",
+    "question": "What does the HTTP 200 status code indicate?",
+    "options": [
+      "OK - Request Succeeded",
+      "Created",
+      "Bad Request",
+      "Internal Server Error"
+    ],
+    "correctAnswer": "OK - Request Succeeded",
+    "explanation": "HTTP 200 OK indicates standard successful HTTP request processing.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Web"
+  },
+  {
+    "questionId": "cognizant-mcq-41",
+    "question": "What is the output of `typeof null` in JavaScript?",
+    "options": [
+      "\"object\"",
+      "\"null\"",
+      "\"undefined\"",
+      "\"number\""
+    ],
+    "correctAnswer": "\"object\"",
+    "explanation": "In JavaScript, `typeof null` returns 'object' due to a historical legacy bug in the original language implementation.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Web"
+  },
+  {
+    "questionId": "cognizant-mcq-42",
+    "question": "What will `console.log(1 + \"2\" + 3);` output in JavaScript?",
+    "options": [
+      "\"123\"",
+      "\"6\"",
+      "\"15\"",
+      "NaN"
+    ],
+    "correctAnswer": "\"123\"",
+    "explanation": "The expression concatenates sequentially: 1 + \"2\" becomes string \"12\", and \"12\" + 3 becomes \"123\".",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Web"
+  },
+  {
+    "questionId": "cognizant-mcq-43",
+    "question": "Which HTML5 tag is used to embed an independent self-contained piece of content (like a blog post or news story)?",
+    "options": [
+      "<article>",
+      "<section>",
+      "<div>",
+      "<aside>"
+    ],
+    "correctAnswer": "<article>",
+    "explanation": "The `<article>` semantic tag defines independent, self-contained syndicate-able content.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Web"
+  },
+  {
+    "questionId": "cognizant-mcq-44",
+    "question": "What CSS property is used to change the text color of an HTML element?",
+    "options": [
+      "color",
+      "text-color",
+      "font-color",
+      "background-color"
+    ],
+    "correctAnswer": "color",
+    "explanation": "The `color` CSS property sets the foreground color of text content.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Web"
+  },
+  {
+    "questionId": "cognizant-mcq-45",
+    "question": "What does the SQL command `ROLLBACK` do in transaction management?",
+    "options": [
+      "Undoes all database changes made since the transaction started or last savepoint",
+      "Permanently saves all changes to disk",
+      "Deletes all database tables",
+      "Restarts the database server"
+    ],
+    "correctAnswer": "Undoes all database changes made since the transaction started or last savepoint",
+    "explanation": "ROLLBACK restores the database state to the beginning of the transaction or the specified savepoint.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "DBMS"
+  },
+  {
+    "questionId": "cognizant-mcq-46",
+    "question": "What is the time complexity to insert an element at the beginning (head) of a Singly Linked List?",
+    "options": [
+      "O(1)",
+      "O(N)",
+      "O(log N)",
+      "O(N^2)"
+    ],
+    "correctAnswer": "O(1)",
+    "explanation": "Inserting at the head requires creating a new node, pointing its next to head, and updating head pointer in O(1) time.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "cognizant-mcq-47",
+    "question": "In Java, which access modifier allows class members to be accessed within the same package and by subclasses in other packages?",
+    "options": [
+      "protected",
+      "public",
+      "private",
+      "default (package-private)"
+    ],
+    "correctAnswer": "protected",
+    "explanation": "The `protected` modifier grants access within the same package and to subclasses in different packages.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Java"
+  },
+  {
+    "questionId": "cognizant-mcq-48",
+    "question": "What is the return type of the `hashCode()` method in Java's `Object` class?",
+    "options": [
+      "int",
+      "long",
+      "String",
+      "boolean"
+    ],
+    "correctAnswer": "int",
+    "explanation": "The `hashCode()` method defined in `java.lang.Object` returns a 32-bit signed `int` value.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Java"
+  },
+  {
+    "questionId": "cognizant-mcq-49",
+    "question": "What does the Python function `len()` return when applied to a string?",
+    "options": [
+      "The total count of characters in the string",
+      "The byte size of the string in memory",
+      "The count of words in the string",
+      "The number of unique characters"
+    ],
+    "correctAnswer": "The total count of characters in the string",
+    "explanation": "In Python, `len(str)` returns the number of characters present in the string.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Python"
+  },
+  {
+    "questionId": "cognizant-mcq-50",
+    "question": "What does the SQL `IN` operator check?",
+    "options": [
+      "Whether a value matches any value in a given list or subquery",
+      "Whether a value lies within a continuous range",
+      "Whether a string contains a specific character",
+      "Whether a column is not null"
+    ],
+    "correctAnswer": "Whether a value matches any value in a given list or subquery",
+    "explanation": "The `IN` operator matches candidate column values against a discrete set of specified literal values or subquery results.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "cognizant-mcq-51",
+    "question": "Which of the following loop structures in C/C++ is guaranteed to execute at least once?",
+    "options": [
+      "do-while loop",
+      "while loop",
+      "for loop",
+      "nested for loop"
+    ],
+    "correctAnswer": "do-while loop",
+    "explanation": "The do-while loop evaluates its conditional check at the end of the iteration, guaranteeing at least one execution.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "C/C++"
+  },
+  {
+    "questionId": "cognizant-mcq-52",
+    "question": "What is the space complexity of an iterative In-Place Reversal of an array of size N?",
+    "options": [
+      "O(1)",
+      "O(N)",
+      "O(log N)",
+      "O(N^2)"
+    ],
+    "correctAnswer": "O(1)",
+    "explanation": "Iterative two-pointer in-place reversal swaps elements using a single temporary variable without extra array allocations.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "cognizant-mcq-53",
+    "question": "In Python, which keyword is used to handle exceptions in a try block?",
+    "options": [
+      "except",
+      "catch",
+      "throw",
+      "handle"
+    ],
+    "correctAnswer": "except",
+    "explanation": "Python uses `try` and `except` blocks to handle exceptions (unlike Java/C++ which use `catch`).",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Python"
+  },
+  {
+    "questionId": "cognizant-mcq-54",
+    "question": "What is the result of evaluating `10 // 3` in Python 3?",
+    "options": [
+      "3",
+      "3.3333333333333335",
+      "3.0",
+      "4"
+    ],
+    "correctAnswer": "3",
+    "explanation": "The `//` operator performs floor division, truncating the fractional part and returning 3.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Python"
+  },
+  {
+    "questionId": "cognizant-mcq-55",
+    "question": "Which of the following is true regarding Java constructors?",
+    "options": [
+      "Constructors have the same name as the class and do not have a return type",
+      "Constructors can return void explicitly",
+      "Constructors cannot be overloaded",
+      "Constructors must be private in all classes"
+    ],
+    "correctAnswer": "Constructors have the same name as the class and do not have a return type",
+    "explanation": "Constructors share the exact class name and do not declare any return type (not even void).",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Java"
+  },
+  {
+    "questionId": "cognizant-mcq-56",
+    "question": "What does the SQL aggregate function `AVG(salary)` do when some rows have a `NULL` salary?",
+    "options": [
+      "It calculates the average ignoring the NULL rows entirely",
+      "It treats NULL as 0 and includes them in the denominator",
+      "It returns NULL immediately",
+      "It throws a runtime error"
+    ],
+    "correctAnswer": "It calculates the average ignoring the NULL rows entirely",
+    "explanation": "SQL aggregate functions (AVG, SUM, MIN, MAX) automatically ignore NULL values during computation.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "cognizant-mcq-57",
+    "question": "What will `SELECT 10 != NULL;` evaluate to in SQL?",
+    "options": [
+      "UNKNOWN / NULL",
+      "TRUE",
+      "FALSE",
+      "Syntax Error"
+    ],
+    "correctAnswer": "UNKNOWN / NULL",
+    "explanation": "Comparisons with NULL using `=` or `!=` evaluate to UNKNOWN/NULL in standard SQL three-valued logic (`IS NULL` / `IS NOT NULL` must be used).",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "cognizant-mcq-58",
+    "question": "In CSS, what does the selector `.container > p` target?",
+    "options": [
+      "All <p> elements that are DIRECT children of .container",
+      "All <p> elements anywhere inside .container (including nested descendants)",
+      "All .container elements that are children of <p>",
+      "All <p> elements immediately adjacent to .container"
+    ],
+    "correctAnswer": "All <p> elements that are DIRECT children of .container",
+    "explanation": "The child combinator `>` targets only direct, first-level child elements.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Web"
+  },
+  {
+    "questionId": "cognizant-mcq-59",
+    "question": "Which of the following represents an AWS managed relational database service?",
+    "options": [
+      "Amazon RDS",
+      "Amazon DynamoDB",
+      "Amazon Redshift",
+      "Amazon S3"
+    ],
+    "correctAnswer": "Amazon RDS",
+    "explanation": "Amazon Relational Database Service (RDS) manages relational engines like PostgreSQL, MySQL, MariaDB, and Oracle.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Cloud"
+  },
+  {
+    "questionId": "cognizant-mcq-60",
+    "question": "What does the SQL `ORDER BY salary DESC` clause do?",
+    "options": [
+      "Sorts records from highest salary to lowest salary",
+      "Sorts records from lowest salary to highest salary",
+      "Groups records by salary",
+      "Filters salaries greater than average"
+    ],
+    "correctAnswer": "Sorts records from highest salary to lowest salary",
+    "explanation": "The `DESC` keyword specifies descending order (largest to smallest).",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "cognizant-mcq-61",
+    "question": "What will `console.log(2 == \"2\", 2 === \"2\");` output in JavaScript?",
+    "options": [
+      "true false",
+      "true true",
+      "false false",
+      "false true"
+    ],
+    "correctAnswer": "true false",
+    "explanation": "`==` performs loose equality with type coercion (2 == 2 is true); `===` performs strict equality without coercion (number vs string is false).",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Web"
+  },
+  {
+    "questionId": "cognizant-mcq-62",
+    "question": "In Python, what is the output of `\"cognizant\".upper()`?",
+    "options": [
+      "COGNIZANT",
+      "Cognizant",
+      "cognizant",
+      "Error"
+    ],
+    "correctAnswer": "COGNIZANT",
+    "explanation": "`.upper()` converts all characters in a string to uppercase.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Python"
+  },
+  {
+    "questionId": "cognizant-mcq-63",
+    "question": "What is the maximum number of children a node can have in a Binary Tree?",
+    "options": [
+      "2",
+      "1",
+      "3",
+      "Unlimited"
+    ],
+    "correctAnswer": "2",
+    "explanation": "By definition, each node in a binary tree has at most two children (referred to as left and right).",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "cognizant-mcq-64",
+    "question": "In C++, what does the `std::vector` container represent?",
+    "options": [
+      "A dynamically resizable array",
+      "A singly linked list",
+      "A binary search tree",
+      "A fixed-size stack"
+    ],
+    "correctAnswer": "A dynamically resizable array",
+    "explanation": "`std::vector` is a sequence container that encapsulates dynamic arrays in contiguous storage.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "C/C++"
+  },
+  {
+    "questionId": "cognizant-mcq-65",
+    "question": "What is the result of `\"a\" + 1` in Java?",
+    "options": [
+      "\"a1\"",
+      "\"b\"",
+      "98",
+      "Compilation Error"
+    ],
+    "correctAnswer": "\"a1\"",
+    "explanation": "When one operand in a `+` operation is a String, Java converts the other operand to a string and concatenates them.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Java"
+  },
+  {
+    "questionId": "cognizant-mcq-66",
+    "question": "What is the output of the query `SELECT LENGTH('GenC Next');` in MySQL?",
+    "options": [
+      "9",
+      "8",
+      "10",
+      "7"
+    ],
+    "correctAnswer": "9",
+    "explanation": "'GenC Next' contains 4 chars ('GenC') + 1 space + 4 chars ('Next') = 9 characters.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "cognizant-mcq-67",
+    "question": "Which of the following is a key characteristic of RESTful APIs?",
+    "options": [
+      "Stateless communication",
+      "Stateful sessions on server",
+      "Requires SOAP envelope",
+      "Tight coupling with clients"
+    ],
+    "correctAnswer": "Stateless communication",
+    "explanation": "Statelessness is a fundamental REST constraint where every client request contains all necessary context.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Web"
+  },
+  {
+    "questionId": "cognizant-mcq-68",
+    "question": "What is the time complexity of pushing an element onto an array-based Stack when capacity is available?",
+    "options": [
+      "O(1)",
+      "O(N)",
+      "O(log N)",
+      "O(N^2)"
+    ],
+    "correctAnswer": "O(1)",
+    "explanation": "Pushing onto an array stack writes to the current top index and increments top in constant O(1) time.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "cognizant-mcq-69",
+    "question": "Which of the following OOP concepts is demonstrated when a subclass provides a specific implementation of a method defined in its parent class?",
+    "options": [
+      "Method Overriding",
+      "Method Overloading",
+      "Encapsulation",
+      "Multiple Inheritance"
+    ],
+    "correctAnswer": "Method Overriding",
+    "explanation": "Method Overriding is runtime polymorphism where a child class redefines a parent method with identical signature.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "OOP"
+  },
+  {
+    "questionId": "cognizant-mcq-70",
+    "question": "What will `print(\"-\".join([\"Cognizant\", \"GenC\", \"Pro\"]))` output in Python?",
+    "options": [
+      "Cognizant-GenC-Pro",
+      "Cognizant GenC Pro",
+      "-Cognizant-GenC-Pro-",
+      "Error"
+    ],
+    "correctAnswer": "Cognizant-GenC-Pro",
+    "explanation": "The `.join()` string method joins iterable string elements with the separator string `'-'`.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Python"
+  },
+  {
+    "questionId": "cognizant-mcq-71",
+    "question": "Which SQL constraint ensures that all values in a column satisfy a specific boolean condition?",
+    "options": [
+      "CHECK",
+      "DEFAULT",
+      "UNIQUE",
+      "NOT NULL"
+    ],
+    "correctAnswer": "CHECK",
+    "explanation": "The CHECK constraint validates that inserted or updated values satisfy a boolean predicate (e.g., `CHECK (age >= 18)`).",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "cognizant-mcq-72",
+    "question": "What does the `BETWEEN 10 AND 20` operator check in SQL?",
+    "options": [
+      "Values from 10 to 20 inclusive",
+      "Values strictly between 10 and 20 exclusive",
+      "Values equal to 10 or 20 only",
+      "Values less than 10 or greater than 20"
+    ],
+    "correctAnswer": "Values from 10 to 20 inclusive",
+    "explanation": "In SQL, `BETWEEN val1 AND val2` is inclusive of both boundary values (`val >= val1 AND val <= val2`).",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "cognizant-mcq-73",
+    "question": "In Java, what is the default value of an uninitialized instance variable of type `int`?",
+    "options": [
+      "0",
+      "null",
+      "undefined",
+      "1"
+    ],
+    "correctAnswer": "0",
+    "explanation": "Numeric instance primitives in Java are automatically initialized to zero (0).",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Java"
+  },
+  {
+    "questionId": "cognizant-mcq-74",
+    "question": "What does the SQL statement `SELECT CURRENT_DATE;` return?",
+    "options": [
+      "The current system date",
+      "The server installation date",
+      "The database creation date",
+      "The date of last transaction"
+    ],
+    "correctAnswer": "The current system date",
+    "explanation": "`CURRENT_DATE` returns the system's current date according to the database server clock.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "cognizant-mcq-75",
+    "question": "Which of the following data structures is typically used for recursion call management in programming language runtimes?",
+    "options": [
+      "Call Stack",
+      "Circular Queue",
+      "Priority Queue",
+      "B-Tree"
+    ],
+    "correctAnswer": "Call Stack",
+    "explanation": "The runtime call stack manages function activation records and local frames during recursion.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "cognizant-mcq-76",
+    "question": "What is the output of the Python expression `3 * 'ab'`?",
+    "options": [
+      "'ababab'",
+      "'a3b3'",
+      "'ab3'",
+      "Error"
+    ],
+    "correctAnswer": "'ababab'",
+    "explanation": "In Python, multiplying a string by an integer repeats the string that many times.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Python"
+  },
+  {
+    "questionId": "cognizant-mcq-77",
+    "question": "In C++, what does the `break` statement do inside a switch case?",
+    "options": [
+      "Terminates the switch statement, preventing fall-through to subsequent cases",
+      "Restarts the switch evaluation",
+      "Exits the entire enclosing function",
+      "Skips only the current statement"
+    ],
+    "correctAnswer": "Terminates the switch statement, preventing fall-through to subsequent cases",
+    "explanation": "`break` exits the switch block, preventing execution from falling through into succeeding case blocks.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "C/C++"
+  },
+  {
+    "questionId": "cognizant-mcq-78",
+    "question": "What does the SQL `AS` keyword do?",
+    "options": [
+      "Assigns a temporary alias to a column or table",
+      "Specifies an index type",
+      "Sorts column output",
+      "Enforces a primary key constraint"
+    ],
+    "correctAnswer": "Assigns a temporary alias to a column or table",
+    "explanation": "`AS` creates an alias to rename a column or table expression for the duration of query execution.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "cognizant-mcq-79",
+    "question": "Which of the following represents valid JSON data?",
+    "options": [
+      "{\"name\": \"Cognizant\", \"employees\": 300000}",
+      "{name: 'Cognizant', employees: 300000}",
+      "{'name': 'Cognizant', 'employees': 300000}",
+      "<name>Cognizant</name>"
+    ],
+    "correctAnswer": "{\"name\": \"Cognizant\", \"employees\": 300000}",
+    "explanation": "JSON strictly requires double quotes around keys and string values.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Web"
+  },
+  {
+    "questionId": "cognizant-mcq-80",
+    "question": "In Python, which function converts a string representation of an integer `\"42\"` into an integer `42`?",
+    "options": [
+      "int(\"42\")",
+      "str(\"42\")",
+      "parse(\"42\")",
+      "Integer.parseInt(\"42\")"
+    ],
+    "correctAnswer": "int(\"42\")",
+    "explanation": "`int()` in Python casts compatible string and float objects into integer values.",
+    "difficulty": "Easy",
+    "marks": 2,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Python"
+  },
+  {
+    "questionId": "cognizant-mcq-81",
+    "question": "Table A has rows [1, 1, 2] and Table B has rows [1, 1, 3]. How many rows are returned by `SELECT * FROM TableA INNER JOIN TableB ON TableA.id = TableB.id;`?",
+    "options": [
+      "4",
+      "2",
+      "3",
+      "5"
+    ],
+    "correctAnswer": "4",
+    "explanation": "Each of the 2 rows with id=1 in Table A matches both of the 2 rows with id=1 in Table B, generating 2 * 2 = 4 rows. ID 2 and 3 do not match.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "cognizant-mcq-82",
+    "question": "Table Orders has 5 rows (order_id: 1, 2, 3, 4, 5). Table Payments has payment records for order_ids 1, 2, and 3. How many rows are returned by `SELECT o.order_id, p.amount FROM Orders o LEFT JOIN Payments p ON o.order_id = p.order_id WHERE p.amount IS NULL;`?",
+    "options": [
+      "2",
+      "3",
+      "5",
+      "0"
+    ],
+    "correctAnswer": "2",
+    "explanation": "The LEFT JOIN preserves all 5 orders. Orders 4 and 5 have no matching payments, resulting in NULL for p.amount. The WHERE clause filters for those 2 rows.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "cognizant-mcq-83",
+    "question": "Given table Employee (dept_id, salary), what does the query produce?\n\n```sql\nSELECT dept_id, COUNT(*)\nFROM Employee\nGROUP BY dept_id\nHAVING AVG(salary) > 60000;\n```",
+    "options": [
+      "The department ID and employee headcount for departments whose average salary exceeds 60,000",
+      "All employees whose individual salary exceeds 60,000 grouped by department",
+      "The total salary for departments having more than 60,000 employees",
+      "Syntax Error because AVG cannot be in HAVING"
+    ],
+    "correctAnswer": "The department ID and employee headcount for departments whose average salary exceeds 60,000",
+    "explanation": "GROUP BY groups by dept_id, HAVING filters groups with average salary > 60000, and SELECT returns dept_id with its employee count.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "cognizant-mcq-84",
+    "question": "What is the return value of the following Java method?\n\n```java\npublic static int test() {\n    try {\n        return 10;\n    } finally {\n        return 20;\n    }\n}\n```",
+    "options": [
+      "20",
+      "10",
+      "Compilation Error",
+      "Runtime Exception"
+    ],
+    "correctAnswer": "20",
+    "explanation": "The finally block always executes prior to method return. A return statement in a finally block overrides and discards any preceding return in the try block, returning 20.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Java"
+  },
+  {
+    "questionId": "cognizant-mcq-85",
+    "question": "What is the key difference between calling `thread.start()` and `thread.run()` on a Thread object in Java?",
+    "options": [
+      "`start()` spawns a new operating system thread and invokes `run()` asynchronously; `run()` executes synchronously in the caller thread",
+      "`run()` creates a new thread; `start()` runs code in the current thread",
+      "`start()` is deprecated in Java 8 and replaced by `run()`",
+      "Both create and start a new separate worker thread identically"
+    ],
+    "correctAnswer": "`start()` spawns a new operating system thread and invokes `run()` asynchronously; `run()` executes synchronously in the caller thread",
+    "explanation": "Calling `start()` allocates thread stack memory and schedules the new thread; calling `run()` executes the method as a normal method call in the calling thread.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Java"
+  },
+  {
+    "questionId": "cognizant-mcq-86",
+    "question": "What will be the output of the following Python code?\n\n```python\nres = [x * 2 for x in range(5) if x % 2 != 0]\nprint(res)\n```",
+    "options": [
+      "[2, 6]",
+      "[0, 2, 4]",
+      "[2, 4, 6]",
+      "[1, 3]"
+    ],
+    "correctAnswer": "[2, 6]",
+    "explanation": "`range(5)` is [0, 1, 2, 3, 4]. The condition `x % 2 != 0` selects odd numbers: 1 and 3. Multiplying by 2 yields `[2, 6]`.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Python"
+  },
+  {
+    "questionId": "cognizant-mcq-87",
+    "question": "Which traversal of a Binary Search Tree (BST) always outputs the node keys in ascending sorted order?",
+    "options": [
+      "In-order Traversal (Left, Root, Right)",
+      "Pre-order Traversal (Root, Left, Right)",
+      "Post-order Traversal (Left, Right, Root)",
+      "Level-order Traversal"
+    ],
+    "correctAnswer": "In-order Traversal (Left, Root, Right)",
+    "explanation": "Because `left < root < right` in a BST, in-order traversal visits elements in strictly non-decreasing order.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "cognizant-mcq-88",
+    "question": "In AWS Lambda, what is a 'Cold Start'?",
+    "options": [
+      "The initial latency experienced when Lambda initializes a new execution environment (container) to handle an incoming invocation",
+      "The time taken to reboot the physical AWS data center server",
+      "A failed invocation due to sub-zero temperature throttling",
+      "The duration spent waiting for an S3 upload to finish"
+    ],
+    "correctAnswer": "The initial latency experienced when Lambda initializes a new execution environment (container) to handle an incoming invocation",
+    "explanation": "Cold start refers to the provisioning and initialization time needed when a new container runtime is created for an idle Lambda function.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Cloud"
+  },
+  {
+    "questionId": "cognizant-mcq-89",
+    "question": "What is Event Delegation in JavaScript DOM programming and why is it used?",
+    "options": [
+      "Attaching a single event listener to a parent element to handle events for all current and future child elements via event bubbling",
+      "Delegating JavaScript execution to Web Workers on background threads",
+      "Passing callback functions across multiple Promise stages",
+      "Transferring DOM rendering from client browser to backend server"
+    ],
+    "correctAnswer": "Attaching a single event listener to a parent element to handle events for all current and future child elements via event bubbling",
+    "explanation": "Event delegation leverages event bubbling to manage events efficiently with fewer event listeners, supporting dynamically added elements.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Web"
+  },
+  {
+    "questionId": "cognizant-mcq-90",
+    "question": "What is the output of the following C program?\n\n```c\nint arr[] = {10, 20, 30, 40, 50};\nint *p = arr;\nprintf(\"%d \", *(p + 2));\nprintf(\"%d\", *p + 2);\n```",
+    "options": [
+      "30 12",
+      "30 30",
+      "20 12",
+      "Garbage value"
+    ],
+    "correctAnswer": "30 12",
+    "explanation": "`*(p + 2)` accesses element at index 2 (value 30). `*p + 2` dereferences p (value 10) and adds 2, producing 12.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "C/C++"
+  },
+  {
+    "questionId": "cognizant-mcq-91",
+    "question": "What is the output of the SQL query `SELECT COALESCE(NULL, NULL, 'Cognizant', 'Default');`?",
+    "options": [
+      "Cognizant",
+      "NULL",
+      "Default",
+      "Error"
+    ],
+    "correctAnswer": "Cognizant",
+    "explanation": "COALESCE returns the first non-NULL expression from its argument list, which is 'Cognizant'.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "cognizant-mcq-92",
+    "question": "Table Employees has salaries [50000, 60000, 60000, 70000]. What is returned by `SELECT salary, DENSE_RANK() OVER (ORDER BY salary DESC) as rnk FROM Employees;` for salary 60000?",
+    "options": [
+      "Rank 2",
+      "Rank 3",
+      "Rank 1",
+      "Rank 4"
+    ],
+    "correctAnswer": "Rank 2",
+    "explanation": "DENSE_RANK assigns rank 1 to 70000, rank 2 to both 60000 entries, and rank 3 to 50000 without gaps.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "cognizant-mcq-93",
+    "question": "Which type of subquery references columns from the outer query table and must be re-evaluated for each candidate row?",
+    "options": [
+      "Correlated Subquery",
+      "Scalar Subquery",
+      "Non-Correlated Subquery",
+      "Nested Static Subquery"
+    ],
+    "correctAnswer": "Correlated Subquery",
+    "explanation": "A correlated subquery references outer query columns and executes once for each candidate row evaluated by the outer query.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "cognizant-mcq-94",
+    "question": "What is the effect of an SQL `RIGHT JOIN` between Table A and Table B on `TableA.id = TableB.id`?",
+    "options": [
+      "Returns all rows from Table B and matching rows from Table A, filling NULLs for unmatched Table A columns",
+      "Returns all rows from Table A and matching rows from Table B",
+      "Returns only matching rows in both tables",
+      "Returns the cartesian cross product of both tables"
+    ],
+    "correctAnswer": "Returns all rows from Table B and matching rows from Table A, filling NULLs for unmatched Table A columns",
+    "explanation": "RIGHT JOIN guarantees every row of the right-hand table (Table B) is included in the output.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "cognizant-mcq-95",
+    "question": "In relational normalization, a table is in Third Normal Form (3NF) if it is in 2NF and:",
+    "options": [
+      "There are no transitive functional dependencies for non-prime attributes",
+      "Every non-prime attribute is partially dependent on a composite key",
+      "Multi-valued attributes are allowed",
+      "All columns contain non-atomic array values"
+    ],
+    "correctAnswer": "There are no transitive functional dependencies for non-prime attributes",
+    "explanation": "3NF eliminates transitive dependencies (X -> Y and Y -> Z where Z is non-prime).",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "DBMS"
+  },
+  {
+    "questionId": "cognizant-mcq-96",
+    "question": "In transaction concurrency control, what is a 'Dirty Read' anomaly?",
+    "options": [
+      "A transaction reads uncommitted data written by another concurrent transaction that is subsequently rolled back",
+      "A transaction reads two different values for the same row during repeated reads within the same transaction",
+      "A query encounters new phantom rows inserted by another committed transaction",
+      "A transaction accidentally deletes data pages from disk"
+    ],
+    "correctAnswer": "A transaction reads uncommitted data written by another concurrent transaction that is subsequently rolled back",
+    "explanation": "Dirty read occurs when Transaction A reads dirty (uncommitted) modifications from Transaction B which later aborts.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "DBMS"
+  },
+  {
+    "questionId": "cognizant-mcq-97",
+    "question": "Which database isolation level prevents both Dirty Reads and Non-Repeatable Reads, but may still allow Phantom Reads?",
+    "options": [
+      "Repeatable Read",
+      "Read Committed",
+      "Read Uncommitted",
+      "Serializable"
+    ],
+    "correctAnswer": "Repeatable Read",
+    "explanation": "Repeatable Read locks read rows preventing modifications/deletions, but phantom inserts can still occur unless using Serializable isolation.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "DBMS"
+  },
+  {
+    "questionId": "cognizant-mcq-98",
+    "question": "What is the primary difference between a Clustered and Non-Clustered index?",
+    "options": [
+      "A Clustered index physically orders table data rows on disk (max 1 per table); a Non-Clustered index stores key values with pointers to rows (multiple per table)",
+      "A Non-Clustered index alters physical row storage order on disk",
+      "A table can have up to 10 clustered indexes",
+      "Clustered indexes are slower than non-clustered indexes for range queries"
+    ],
+    "correctAnswer": "A Clustered index physically orders table data rows on disk (max 1 per table); a Non-Clustered index stores key values with pointers to rows (multiple per table)",
+    "explanation": "Because physical data can only be sorted in one order on disk, a table can only have one clustered index.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "DBMS"
+  },
+  {
+    "questionId": "cognizant-mcq-99",
+    "question": "In Java 8, when does a bucket in a `HashMap` convert its internal linked list collision chain into a balanced Red-Black Tree?",
+    "options": [
+      "When the bucket chain length reaches 8 and total map capacity is at least 64",
+      "When the bucket chain length reaches 16 regardless of capacity",
+      "Whenever any collision occurs",
+      "When load factor reaches 0.9"
+    ],
+    "correctAnswer": "When the bucket chain length reaches 8 and total map capacity is at least 64",
+    "explanation": "Java 8 HashMap treeifies collision bins when `TREEIFY_THRESHOLD = 8` and `MIN_TREEIFY_CAPACITY = 64`.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Java"
+  },
+  {
+    "questionId": "cognizant-mcq-100",
+    "question": "What is the output of the following Java snippet?\n\n```java\nInteger a = 127;\nInteger b = 127;\nInteger c = 128;\nInteger d = 128;\nSystem.out.println((a == b) + \" \" + (c == d));\n```",
+    "options": [
+      "true false",
+      "true true",
+      "false false",
+      "false true"
+    ],
+    "correctAnswer": "true false",
+    "explanation": "Java caches Integer objects in the range [-128, 127]. `a == b` references the same cached instance (true), while `c == d` references different heap objects (false).",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Java"
+  },
+  {
+    "questionId": "cognizant-mcq-101",
+    "question": "What happens when a class attempts to modify a variable declared inside an enclosing method scope from within an anonymous inner class or lambda in Java?",
+    "options": [
+      "The variable must be effectively final; otherwise, compilation fails",
+      "The variable is automatically cloned into global memory",
+      "It throws a ConcurrentModificationException at runtime",
+      "It compiles and runs without any restrictions"
+    ],
+    "correctAnswer": "The variable must be effectively final; otherwise, compilation fails",
+    "explanation": "Local variables captured by lambdas or anonymous classes in Java must be final or effectively final.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Java"
+  },
+  {
+    "questionId": "cognizant-mcq-102",
+    "question": "Which Java collection provides a thread-safe, lock-free or segment-locked implementation of Map suitable for high-concurrency environments?",
+    "options": [
+      "ConcurrentHashMap",
+      "Hashtable",
+      "SynchronizedMap",
+      "TreeMap"
+    ],
+    "correctAnswer": "ConcurrentHashMap",
+    "explanation": "ConcurrentHashMap provides fine-grained bucket synchronization and CAS operations without locking the entire map.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Java"
+  },
+  {
+    "questionId": "cognizant-mcq-103",
+    "question": "What is the difference between `Comparable` and `Comparator` in Java?",
+    "options": [
+      "`Comparable` defines natural ordering via `compareTo()` inside the domain class; `Comparator` defines custom external ordering via `compare()` in separate classes/lambdas",
+      "`Comparable` is in java.util; `Comparator` is in java.lang",
+      "`Comparable` has `compare()`; `Comparator` has `compareTo()`",
+      "`Comparable` can sort by multiple criteria; `Comparator` can only sort by one"
+    ],
+    "correctAnswer": "`Comparable` defines natural ordering via `compareTo()` inside the domain class; `Comparator` defines custom external ordering via `compare()` in separate classes/lambdas",
+    "explanation": "Comparable is implemented directly on domain models; Comparator represents an external, flexible sorting strategy.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Java"
+  },
+  {
+    "questionId": "cognizant-mcq-104",
+    "question": "What does the `yield` statement do inside a Python function?",
+    "options": [
+      "Turns the function into a generator, pausing execution and returning a value to the caller while maintaining its state",
+      "Terminates the function permanently like return",
+      "Forces multi-threading execution on multiple CPU cores",
+      "Throws a StopIteration exception immediately"
+    ],
+    "correctAnswer": "Turns the function into a generator, pausing execution and returning a value to the caller while maintaining its state",
+    "explanation": "`yield` produces a generator iterator that yields values lazily, preserving local variable stack state between iterations.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Python"
+  },
+  {
+    "questionId": "cognizant-mcq-105",
+    "question": "What is the output of the following Python code?\n\n```python\ndef func(val, lst=[]):\n    lst.append(val)\n    return lst\n\nprint(func(1))\nprint(func(2))\n```",
+    "options": [
+      "[1]\n[1, 2]",
+      "[1]\n[2]",
+      "[1]\n[1]",
+      "[1, 2]\n[1, 2]"
+    ],
+    "correctAnswer": "[1]\n[1, 2]",
+    "explanation": "Default parameter values in Python are evaluated once at function definition time. The same mutable default list is reused across subsequent invocations.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Python"
+  },
+  {
+    "questionId": "cognizant-mcq-106",
+    "question": "What is the Global Interpreter Lock (GIL) in CPython?",
+    "options": [
+      "A mutex that ensures only one native thread executes Python bytecode at any given moment",
+      "A database lock that synchronizes disk writes in SQLite",
+      "A security lock preventing unauthorized imports",
+      "A garbage collection cycle lock"
+    ],
+    "correctAnswer": "A mutex that ensures only one native thread executes Python bytecode at any given moment",
+    "explanation": "The GIL prevents multi-threaded CPU-bound parallelism in CPython by synchronizing bytecode execution.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Python"
+  },
+  {
+    "questionId": "cognizant-mcq-107",
+    "question": "What is the output of the following Python code?\n\n```python\na = (1, 2, [3, 4])\na[2].append(5)\nprint(a)\n```",
+    "options": [
+      "(1, 2, [3, 4, 5])",
+      "TypeError: 'tuple' object does not support item assignment",
+      "(1, 2, [3, 4])",
+      "Error: tuple is immutable"
+    ],
+    "correctAnswer": "(1, 2, [3, 4, 5])",
+    "explanation": "While the tuple container is immutable (its item references cannot be replaced), the mutable list object at index 2 can still be mutated in-place.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Python"
+  },
+  {
+    "questionId": "cognizant-mcq-108",
+    "question": "In C++, what is a 'Virtual Destructor' and why is it declared in base classes?",
+    "options": [
+      "To ensure that the derived class destructor is called when deleting an object through a base class pointer, preventing resource leaks",
+      "To make the class abstract and prohibit instantiation",
+      "To allow destructors to take parameter arguments",
+      "To allocate destructor code on the heap"
+    ],
+    "correctAnswer": "To ensure that the derived class destructor is called when deleting an object through a base class pointer, preventing resource leaks",
+    "explanation": "Without a virtual destructor, deleting a derived object via a base pointer executes only the base destructor, leaking derived class resources.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "C/C++"
+  },
+  {
+    "questionId": "cognizant-mcq-109",
+    "question": "What does the C++ `std::unique_ptr` smart pointer provide?",
+    "options": [
+      "Exclusive ownership of a dynamically allocated object that automatically deallocates when leaving scope",
+      "Shared reference-counted ownership of an object",
+      "A non-owning observer reference to a shared pointer",
+      "A raw pointer with manual garbage collection"
+    ],
+    "correctAnswer": "Exclusive ownership of a dynamically allocated object that automatically deallocates when leaving scope",
+    "explanation": "`std::unique_ptr` enforces strict single ownership and automatically deletes the managed resource when destroyed.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "C/C++"
+  },
+  {
+    "questionId": "cognizant-mcq-110",
+    "question": "What is the time complexity of the Kadane's Algorithm for finding the Maximum Subarray Sum in an array of size N?",
+    "options": [
+      "O(N) time and O(1) space",
+      "O(N^2) time and O(N) space",
+      "O(N log N) time and O(1) space",
+      "O(2^N) time and O(N) space"
+    ],
+    "correctAnswer": "O(N) time and O(1) space",
+    "explanation": "Kadane's algorithm computes max subarray sum in a single linear pass (O(N)) using constant auxiliary space (O(1)).",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "cognizant-mcq-111",
+    "question": "What is the time complexity of building a Binary Heap of N elements from an arbitrary unsorted array using the bottom-up `heapify` procedure?",
+    "options": [
+      "O(N)",
+      "O(N log N)",
+      "O(log N)",
+      "O(N^2)"
+    ],
+    "correctAnswer": "O(N)",
+    "explanation": "Bottom-up heap construction runs in linear O(N) time due to the mathematical summation of node heights across levels.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "cognizant-mcq-112",
+    "question": "In graph theory, what algorithm is used to find the shortest path from a single source to all vertices in a weighted graph with NON-NEGATIVE edge weights?",
+    "options": [
+      "Dijkstra's Algorithm",
+      "Bellman-Ford Algorithm",
+      "Floyd-Warshall Algorithm",
+      "Kruskal's Algorithm"
+    ],
+    "correctAnswer": "Dijkstra's Algorithm",
+    "explanation": "Dijkstra's Algorithm greedily determines single-source shortest paths in O((V + E) log V) time for non-negative weights.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "cognizant-mcq-113",
+    "question": "What is the auxiliary space complexity of a recursive implementation of Depth-First Search (DFS) on a binary tree of height H?",
+    "options": [
+      "O(H) due to recursion call stack",
+      "O(1)",
+      "O(N^2)",
+      "O(2^H)"
+    ],
+    "correctAnswer": "O(H) due to recursion call stack",
+    "explanation": "The maximum number of active stack frames during DFS is proportional to the tree height H (O(log N) balanced, O(N) skewed).",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "cognizant-mcq-114",
+    "question": "In an AVL tree, what is the balance factor allowed for any node to remain balanced?",
+    "options": [
+      "-1, 0, or +1",
+      "Only 0",
+      "-2, -1, 0, 1, or 2",
+      "Any positive integer"
+    ],
+    "correctAnswer": "-1, 0, or +1",
+    "explanation": "An AVL tree requires `|Height(left) - Height(right)| <= 1`, allowing balance factors of -1, 0, or +1.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "cognizant-mcq-115",
+    "question": "What is the time complexity to search, insert, and delete a word of length L in a Trie (Prefix Tree) containing N words?",
+    "options": [
+      "O(L)",
+      "O(N * L)",
+      "O(N)",
+      "O(log N)"
+    ],
+    "correctAnswer": "O(L)",
+    "explanation": "Trie operations depend strictly on the length L of the word being queried/inserted, independent of the total words N.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "cognizant-mcq-116",
+    "question": "In Cloud architectures, what is the role of an Auto Scaling Group (ASG)?",
+    "options": [
+      "Automatically adding or terminating compute instances in response to traffic demand and health checks",
+      "Automatically backing up SQL databases to S3",
+      "Encrypting network packets at wire speed",
+      "Managing DNS records and domain routing"
+    ],
+    "correctAnswer": "Automatically adding or terminating compute instances in response to traffic demand and health checks",
+    "explanation": "Auto Scaling maintains application availability by dynamically scaling EC2 capacity up or down based on defined policies.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Cloud"
+  },
+  {
+    "questionId": "cognizant-mcq-117",
+    "question": "Which cloud service model provides developers with a pre-configured hardware and software runtime environment where they only deploy application code?",
+    "options": [
+      "PaaS (Platform as a Service)",
+      "IaaS (Infrastructure as a Service)",
+      "SaaS (Software as a Service)",
+      "BaaS (Backend as a Service)"
+    ],
+    "correctAnswer": "PaaS (Platform as a Service)",
+    "explanation": "PaaS (e.g. AWS Elastic Beanstalk, Heroku, Google App Engine) abstracts OS and server management, letting developers focus on application code.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Cloud"
+  },
+  {
+    "questionId": "cognizant-mcq-118",
+    "question": "What is the primary difference between synchronous and asynchronous JavaScript execution with Promises?",
+    "options": [
+      "Synchronous code blocks the Call Stack; Promise callbacks execute non-blockingly via the Microtask Queue once the Call Stack is empty",
+      "Promises spawn new operating system background threads directly",
+      "Synchronous code is executed on the GPU",
+      "Promises cannot handle network requests"
+    ],
+    "correctAnswer": "Synchronous code blocks the Call Stack; Promise callbacks execute non-blockingly via the Microtask Queue once the Call Stack is empty",
+    "explanation": "The JavaScript Event Loop processes Promise microtasks asynchronously when the synchronous call stack empties.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Web"
+  },
+  {
+    "questionId": "cognizant-mcq-119",
+    "question": "What is the output of the following JavaScript code?\n\n```javascript\nconsole.log(typeof NaN);\nconsole.log(NaN === NaN);\n```",
+    "options": [
+      "\"number\" false",
+      "\"NaN\" true",
+      "\"undefined\" false",
+      "\"number\" true"
+    ],
+    "correctAnswer": "\"number\" false",
+    "explanation": "`typeof NaN` is 'number', and IEEE 754 floating point standard specifies that `NaN === NaN` evaluates to `false`.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Web"
+  },
+  {
+    "questionId": "cognizant-mcq-120",
+    "question": "What is the purpose of the HTTP header `Access-Control-Allow-Origin` in CORS?",
+    "options": [
+      "To specify which external origins/domains are permitted to access the server's resources from web browsers",
+      "To enable compression on server responses",
+      "To authenticate JWT bearer tokens",
+      "To specify cached content expiration age"
+    ],
+    "correctAnswer": "To specify which external origins/domains are permitted to access the server's resources from web browsers",
+    "explanation": "`Access-Control-Allow-Origin` tells web browsers which cross-origin domains have permission to read response data.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Web"
+  },
+  {
+    "questionId": "cognizant-mcq-121",
+    "question": "What does the SQL window function `LEAD(column, 1)` return?",
+    "options": [
+      "The value of the specified column from the next row in the current partition window",
+      "The value of the column from the previous row",
+      "The first value in the partition window",
+      "The running average of the column"
+    ],
+    "correctAnswer": "The value of the specified column from the next row in the current partition window",
+    "explanation": "LEAD accesses data from subsequent rows without performing a self-join; LAG accesses previous rows.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "cognizant-mcq-122",
+    "question": "What is the output of the SQL query `SELECT SUBSTRING('Cognizant GenC', 1, 9);` in standard SQL?",
+    "options": [
+      "Cognizant",
+      "Cognizan",
+      "ognizant",
+      "Cognizant "
+    ],
+    "correctAnswer": "Cognizant",
+    "explanation": "SQL SUBSTRING is 1-indexed. Starting at index 1 for length 9 extracts 'Cognizant'.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "cognizant-mcq-123",
+    "question": "In OOP, what is the Open/Closed Principle (OCP) in SOLID design?",
+    "options": [
+      "Software entities should be open for extension, but closed for modification",
+      "Classes must have only one single responsibility",
+      "Derived classes must be substitutable for base classes",
+      "Interfaces must be segregated into smaller components"
+    ],
+    "correctAnswer": "Software entities should be open for extension, but closed for modification",
+    "explanation": "OCP states that modules should permit behavior extension without requiring changes to existing, tested source code.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "OOP"
+  },
+  {
+    "questionId": "cognizant-mcq-124",
+    "question": "What is the difference between shallow copy and deep copy in object cloning?",
+    "options": [
+      "Shallow copy duplicates only top-level fields (copying references for nested objects); Deep copy recursively clones all nested objects creating independent copies",
+      "Shallow copy duplicates nested objects; Deep copy copies top-level references only",
+      "Shallow copy is used for immutable objects only",
+      "Deep copy is only supported in C++"
+    ],
+    "correctAnswer": "Shallow copy duplicates only top-level fields (copying references for nested objects); Deep copy recursively clones all nested objects creating independent copies",
+    "explanation": "Deep copy isolates all nested object mutations; shallow copy leaves nested mutable objects shared.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "OOP"
+  },
+  {
+    "questionId": "cognizant-mcq-125",
+    "question": "What does `Promise.allSettled([p1, p2])` do in JavaScript?",
+    "options": [
+      "Waits for all promises to conclude (either fulfilled or rejected) and returns an array of outcome status objects",
+      "Rejects immediately if any single promise rejects",
+      "Resolves as soon as the fastest promise fulfills",
+      "Executes promises sequentially one by one"
+    ],
+    "correctAnswer": "Waits for all promises to conclude (either fulfilled or rejected) and returns an array of outcome status objects",
+    "explanation": "`Promise.allSettled()` never fails fast on rejection, returning status objects (`{status: 'fulfilled'|'rejected', ...}`) for all input promises.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Web"
+  },
+  {
+    "questionId": "cognizant-mcq-126",
+    "question": "What is a Closure in JavaScript?",
+    "options": [
+      "A function that retains access to variables in its outer lexical scope even after the outer function has closed/returned",
+      "A syntax to close browser tabs programmatically",
+      "A method to terminate web workers",
+      "A CSS rule that hides DOM elements"
+    ],
+    "correctAnswer": "A function that retains access to variables in its outer lexical scope even after the outer function has closed/returned",
+    "explanation": "Closures preserve access to outer enclosing variables across asynchronous and callback invocations.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Web"
+  },
+  {
+    "questionId": "cognizant-mcq-127",
+    "question": "In Java 8, which Functional Interface represents an operation that takes a single argument and returns a boolean?",
+    "options": [
+      "Predicate<T>",
+      "Function<T, R>",
+      "Consumer<T>",
+      "Supplier<T>"
+    ],
+    "correctAnswer": "Predicate<T>",
+    "explanation": "`Predicate<T>` has the abstract method `boolean test(T t)` used for filtering conditions.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Java"
+  },
+  {
+    "questionId": "cognizant-mcq-128",
+    "question": "What does the `Optional` class in Java 8 aim to prevent?",
+    "options": [
+      "NullPointerException",
+      "ClassCastException",
+      "StackOverflowError",
+      "OutOfMemoryError"
+    ],
+    "correctAnswer": "NullPointerException",
+    "explanation": "`java.util.Optional` provides a container to explicitly represent the presence or absence of a value without relying on null references.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Java"
+  },
+  {
+    "questionId": "cognizant-mcq-129",
+    "question": "What is the output of the following Python snippet?\n\n```python\nx = [1, 2, 3]\nprint(x * 2)\n```",
+    "options": [
+      "[1, 2, 3, 1, 2, 3]",
+      "[2, 4, 6]",
+      "[[1, 2, 3], [1, 2, 3]]",
+      "Error"
+    ],
+    "correctAnswer": "[1, 2, 3, 1, 2, 3]",
+    "explanation": "Multiplying a list by an integer in Python replicates and concatenates the list elements.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Python"
+  },
+  {
+    "questionId": "cognizant-mcq-130",
+    "question": "What is the purpose of the `__init__` method in a Python class?",
+    "options": [
+      "It acts as the constructor/initializer to set up instance attributes when an object is created",
+      "It destroys the object when deleted",
+      "It converts an object to a string",
+      "It registers static methods"
+    ],
+    "correctAnswer": "It acts as the constructor/initializer to set up instance attributes when an object is created",
+    "explanation": "`__init__` initializes the instance state when an object is instantiated.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Python"
+  },
+  {
+    "questionId": "cognizant-mcq-131",
+    "question": "In C/C++, what is the difference between `malloc()` and `calloc()`?",
+    "options": [
+      "`calloc()` initializes all allocated memory bytes to zero; `malloc()` leaves allocated memory uninitialized with garbage values",
+      "`malloc()` is faster and zeroes memory",
+      "`calloc()` cannot allocate memory for arrays",
+      "`malloc()` deallocates memory automatically"
+    ],
+    "correctAnswer": "`calloc()` initializes all allocated memory bytes to zero; `malloc()` leaves allocated memory uninitialized with garbage values",
+    "explanation": "`calloc(n, size)` allocates and zeroes out all bytes; `malloc(bytes)` leaves memory uninitialized.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "C/C++"
+  },
+  {
+    "questionId": "cognizant-mcq-132",
+    "question": "What is a 'Dangling Pointer' in C/C++?",
+    "options": [
+      "A pointer that points to a memory location that has already been deallocated/freed",
+      "A pointer initialized to NULL",
+      "A pointer pointing to a constant variable",
+      "A pointer that has not yet been declared"
+    ],
+    "correctAnswer": "A pointer that points to a memory location that has already been deallocated/freed",
+    "explanation": "Dangling pointers point to freed heap memory or out-of-scope stack frames, leading to undefined behavior on dereferencing.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "C/C++"
+  },
+  {
+    "questionId": "cognizant-mcq-133",
+    "question": "What is the time complexity to find the median of a sorted array of size N using binary search or direct index access?",
+    "options": [
+      "O(1) with direct index access",
+      "O(log N)",
+      "O(N)",
+      "O(N log N)"
+    ],
+    "correctAnswer": "O(1) with direct index access",
+    "explanation": "In a sorted array, the median resides at index `N/2` (or average of `N/2-1` and `N/2`), accessible in O(1) constant time.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "cognizant-mcq-134",
+    "question": "What data structure is used in Dijkstra's Algorithm to achieve O((V + E) log V) time complexity?",
+    "options": [
+      "Min-Priority Queue / Min-Heap",
+      "Stack",
+      "Circular Queue",
+      "Hash Map"
+    ],
+    "correctAnswer": "Min-Priority Queue / Min-Heap",
+    "explanation": "A Min-Heap allows extracting the minimum unvisited vertex distance in O(log V) time.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "cognizant-mcq-135",
+    "question": "Which of the following algorithms is used to find the Minimum Spanning Tree (MST) of a connected, undirected weighted graph using a greedy edge-selection approach?",
+    "options": [
+      "Kruskal's Algorithm",
+      "Dijkstra's Algorithm",
+      "Floyd-Warshall Algorithm",
+      "Kahn's Algorithm"
+    ],
+    "correctAnswer": "Kruskal's Algorithm",
+    "explanation": "Kruskal's algorithm sorts edges by weight and greedily adds edges using Disjoint Set Union (DSU) to build the MST.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "cognizant-mcq-136",
+    "question": "What does the SQL `CROSS JOIN` between a table with 4 rows and a table with 5 rows produce?",
+    "options": [
+      "20 rows (Cartesian Product)",
+      "9 rows",
+      "4 rows",
+      "5 rows"
+    ],
+    "correctAnswer": "20 rows (Cartesian Product)",
+    "explanation": "CROSS JOIN pairs every row of the first table with every row of the second table (4 * 5 = 20 rows).",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "cognizant-mcq-137",
+    "question": "What is an SQL Common Table Expression (CTE) defined with?",
+    "options": [
+      "WITH clause",
+      "CREATE VIEW statement",
+      "DECLARE keyword",
+      "SET command"
+    ],
+    "correctAnswer": "WITH clause",
+    "explanation": "CTEs are defined using `WITH CTE_Name AS (SELECT ...)` before the main query.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "cognizant-mcq-138",
+    "question": "In Java, what does the `volatile` keyword ensure when applied to a variable?",
+    "options": [
+      "Memory visibility: writes to the variable are immediately flushed to main memory and visible to all threads",
+      "Mutual exclusion locking for atomic compound operations",
+      "That the variable cannot be modified (constant)",
+      "Automatic garbage collection of the variable"
+    ],
+    "correctAnswer": "Memory visibility: writes to the variable are immediately flushed to main memory and visible to all threads",
+    "explanation": "`volatile` establishes a happens-before relationship, guaranteeing direct reads/writes to main memory across threads.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Java"
+  },
+  {
+    "questionId": "cognizant-mcq-139",
+    "question": "What is the difference between `throw` and `throws` keywords in Java?",
+    "options": [
+      "`throw` is used to explicitly throw an exception object; `throws` is used in method signatures to declare exceptions that might be thrown",
+      "`throws` explicitly instantiates an exception",
+      "`throw` is for checked exceptions only; `throws` is for unchecked exceptions",
+      "Both are identical and interchangeable"
+    ],
+    "correctAnswer": "`throw` is used to explicitly throw an exception object; `throws` is used in method signatures to declare exceptions that might be thrown",
+    "explanation": "`throw new CustomException()` throws an exception instance; `void method() throws IOException` declares checked exceptions.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Java"
+  },
+  {
+    "questionId": "cognizant-mcq-140",
+    "question": "In Python, how is a set initialized to contain elements {1, 2, 3}?",
+    "options": [
+      "{1, 2, 3}",
+      "set([1, 2, 3])",
+      "Both {1, 2, 3} and set([1, 2, 3])",
+      "[1, 2, 3]"
+    ],
+    "correctAnswer": "Both {1, 2, 3} and set([1, 2, 3])",
+    "explanation": "Both set literal `{1, 2, 3}` and constructor `set([1, 2, 3])` create valid Python sets.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Python"
+  },
+  {
+    "questionId": "cognizant-mcq-141",
+    "question": "What will `print({x: x**2 for x in (2, 3, 4)})` output in Python?",
+    "options": [
+      "{2: 4, 3: 9, 4: 16}",
+      "[4, 9, 16]",
+      "{4, 9, 16}",
+      "SyntaxError"
+    ],
+    "correctAnswer": "{2: 4, 3: 9, 4: 16}",
+    "explanation": "A dictionary comprehension maps each element in the tuple to its squared value as key:value pairs.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Python"
+  },
+  {
+    "questionId": "cognizant-mcq-142",
+    "question": "What is the time complexity of reversing a Singly Linked List of N nodes iteratively?",
+    "options": [
+      "O(N) time and O(1) space",
+      "O(N^2) time and O(1) space",
+      "O(N) time and O(N) space",
+      "O(log N) time and O(1) space"
+    ],
+    "correctAnswer": "O(N) time and O(1) space",
+    "explanation": "Iterative reversal uses three pointers (`prev`, `curr`, `next`) traversing the list once in O(N) time and O(1) space.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "cognizant-mcq-143",
+    "question": "Which of the following is true about a B-Tree data structure used in database indexing?",
+    "options": [
+      "It is a self-balancing search tree with high fanout (branching factor) designed to minimize disk I/O reads",
+      "It is strictly a binary tree with at most 2 children per node",
+      "It stores all data in memory and cannot be persisted to disk",
+      "It does not support range queries"
+    ],
+    "correctAnswer": "It is a self-balancing search tree with high fanout (branching factor) designed to minimize disk I/O reads",
+    "explanation": "B-Trees have high fanout, keeping tree height low to minimize slow block I/O operations from secondary storage.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "DBMS"
+  },
+  {
+    "questionId": "cognizant-mcq-144",
+    "question": "What is the difference between Authentication and Authorization in web security?",
+    "options": [
+      "Authentication verifies who a user is (identity); Authorization determines what resources the user is allowed to access (permissions)",
+      "Authentication assigns permissions; Authorization verifies passwords",
+      "Authentication is client-side; Authorization is database-only",
+      "Both mean the same thing"
+    ],
+    "correctAnswer": "Authentication verifies who a user is (identity); Authorization determines what resources the user is allowed to access (permissions)",
+    "explanation": "Authentication proves identity (login); Authorization verifies access rights (roles/permissions).",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Web"
+  },
+  {
+    "questionId": "cognizant-mcq-145",
+    "question": "What is JWT (JSON Web Token) and what are its three component parts?",
+    "options": [
+      "Header, Payload, Signature separated by dots",
+      "Username, Password, Salt",
+      "Client, Server, Secret",
+      "Public Key, Private Key, Session ID"
+    ],
+    "correctAnswer": "Header, Payload, Signature separated by dots",
+    "explanation": "A JWT is a base64url-encoded string structured as `header.payload.signature`.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Web"
+  },
+  {
+    "questionId": "cognizant-mcq-146",
+    "question": "In Python, what is a Decorator function?",
+    "options": [
+      "A higher-order function that takes another function as an argument and extends its behavior without modifying its source",
+      "A class that decorates UI components in HTML",
+      "A syntax to delete unused variables",
+      "A tool to format code style according to PEP 8"
+    ],
+    "correctAnswer": "A higher-order function that takes another function as an argument and extends its behavior without modifying its source",
+    "explanation": "Decorators wrap functions to add cross-cutting behavior (logging, timing, auth) via the `@` syntax.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Python"
+  },
+  {
+    "questionId": "cognizant-mcq-147",
+    "question": "In Java, what is the purpose of the `try-with-resources` statement?",
+    "options": [
+      "Automatically closing resources that implement `AutoCloseable` upon block exit, preventing resource leaks",
+      "Catching OutOfMemoryErrors dynamically",
+      "Retrying failed database transactions automatically",
+      "Allocating extra heap space"
+    ],
+    "correctAnswer": "Automatically closing resources that implement `AutoCloseable` upon block exit, preventing resource leaks",
+    "explanation": "`try-with-resources` ensures `.close()` is called on all declared resources without requiring explicit finally blocks.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Java"
+  },
+  {
+    "questionId": "cognizant-mcq-148",
+    "question": "What is the worst-case time complexity of inserting N elements into a Binary Search Tree (BST) when elements arrive in sorted order?",
+    "options": [
+      "O(N^2)",
+      "O(N log N)",
+      "O(N)",
+      "O(log N)"
+    ],
+    "correctAnswer": "O(N^2)",
+    "explanation": "Inserting sorted elements degrades the BST into a skewed linear linked list, requiring 1 + 2 + ... + N = O(N^2) total comparisons.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "cognizant-mcq-149",
+    "question": "Which of the following describes the Factory Design Pattern?",
+    "options": [
+      "Defines an interface for creating objects, allowing subclasses to decide which concrete class to instantiate",
+      "Ensures a class has only one instance and provides global access to it",
+      "Attaches additional responsibilities to an object dynamically",
+      "Defines a one-to-many dependency between objects so that when one object changes state, dependents are notified"
+    ],
+    "correctAnswer": "Defines an interface for creating objects, allowing subclasses to decide which concrete class to instantiate",
+    "explanation": "Factory pattern encapsulates object creation logic, decoupling clients from concrete classes.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "OOP"
+  },
+  {
+    "questionId": "cognizant-mcq-150",
+    "question": "What does the SQL command `EXPLAIN SELECT ...` do?",
+    "options": [
+      "Displays the execution plan chosen by the query optimizer (indexes used, join strategies, estimated cost)",
+      "Provides documentation about table schema",
+      "Executes the query and exports results to CSV",
+      "Explains grammar errors in the query syntax"
+    ],
+    "correctAnswer": "Displays the execution plan chosen by the query optimizer (indexes used, join strategies, estimated cost)",
+    "explanation": "`EXPLAIN` shows query execution plans, revealing table scans and index usage.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "cognizant-mcq-151",
+    "question": "What is the time complexity of Floyd's Cycle Detection Algorithm (Tortoise and Hare) on a linked list with N nodes?",
+    "options": [
+      "O(N) time and O(1) space",
+      "O(N log N) time and O(1) space",
+      "O(N^2) time and O(N) space",
+      "O(1) time and O(N) space"
+    ],
+    "correctAnswer": "O(N) time and O(1) space",
+    "explanation": "Fast and slow pointers traverse the list, meeting within at most 2N steps in linear O(N) time using O(1) pointer storage.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "cognizant-mcq-152",
+    "question": "What is the output of `console.log([1, 2, 3] + [4, 5, 6]);` in JavaScript?",
+    "options": [
+      "\"1,2,34,5,6\"",
+      "[1, 2, 3, 4, 5, 6]",
+      "NaN",
+      "[5, 7, 9]"
+    ],
+    "correctAnswer": "\"1,2,34,5,6\"",
+    "explanation": "The `+` operator coerces arrays to strings (`\"1,2,3\"` and `\"4,5,6\"`) and concatenates them into `\"1,2,34,5,6\"`.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Web"
+  },
+  {
+    "questionId": "cognizant-mcq-153",
+    "question": "In Python, what does `*args` unpack into inside a function body?",
+    "options": [
+      "A tuple of positional arguments",
+      "A dictionary of keyword arguments",
+      "A list of strings",
+      "A set of unique values"
+    ],
+    "correctAnswer": "A tuple of positional arguments",
+    "explanation": "`*args` collects arbitrary non-keyword positional arguments into a `tuple`.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Python"
+  },
+  {
+    "questionId": "cognizant-mcq-154",
+    "question": "In Java, which method on the `Thread` class is called to wait for another thread to complete its execution before proceeding?",
+    "options": [
+      "join()",
+      "sleep()",
+      "wait()",
+      "yield()"
+    ],
+    "correctAnswer": "join()",
+    "explanation": "`thread.join()` blocks the calling thread until the referenced target thread terminates.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Java"
+  },
+  {
+    "questionId": "cognizant-mcq-155",
+    "question": "What is the difference between SQL `UNION` and `UNION ALL`?",
+    "options": [
+      "`UNION` removes duplicate rows from the combined result set; `UNION ALL` retains all duplicates and executes faster",
+      "`UNION ALL` removes duplicates; `UNION` retains them",
+      "`UNION` works only on numeric columns; `UNION ALL` works on strings",
+      "`UNION` joins tables horizontally; `UNION ALL` joins vertically"
+    ],
+    "correctAnswer": "`UNION` removes duplicate rows from the combined result set; `UNION ALL` retains all duplicates and executes faster",
+    "explanation": "`UNION` incurs sorting overhead to eliminate duplicate rows, while `UNION ALL` appends results directly.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "cognizant-mcq-156",
+    "question": "What is the space complexity of an Adjacency Matrix representation of a graph containing V vertices?",
+    "options": [
+      "O(V^2)",
+      "O(V + E)",
+      "O(E^2)",
+      "O(V log V)"
+    ],
+    "correctAnswer": "O(V^2)",
+    "explanation": "An adjacency matrix allocates a 2D array of dimensions V x V, consuming O(V^2) memory regardless of edge count E.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "cognizant-mcq-157",
+    "question": "What does the `box-sizing: border-box` CSS rule do?",
+    "options": [
+      "Includes padding and border within the element's total specified width and height",
+      "Adds extra margins to the border",
+      "Excludes padding from the total box calculation",
+      "Rounds the corners of the box"
+    ],
+    "correctAnswer": "Includes padding and border within the element's total specified width and height",
+    "explanation": "`border-box` ensures padding and borders do not expand an element beyond its defined width.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Web"
+  },
+  {
+    "questionId": "cognizant-mcq-158",
+    "question": "What is the output of `\"10\" - 2` in JavaScript?",
+    "options": [
+      "8",
+      "\"102\"",
+      "\"8\"",
+      "NaN"
+    ],
+    "correctAnswer": "8",
+    "explanation": "The `-` subtraction operator coerces the string `\"10\"` into the number 10, resulting in numeric 8.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Web"
+  },
+  {
+    "questionId": "cognizant-mcq-159",
+    "question": "In Python, which built-in function returns both the index and value when iterating over a sequence?",
+    "options": [
+      "enumerate()",
+      "zip()",
+      "map()",
+      "range()"
+    ],
+    "correctAnswer": "enumerate()",
+    "explanation": "`enumerate(iterable)` yields `(index, item)` tuples during iteration.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Python"
+  },
+  {
+    "questionId": "cognizant-mcq-160",
+    "question": "In Java Collections, what data structure backs a `TreeSet`?",
+    "options": [
+      "Red-Black Tree (TreeMap)",
+      "Array",
+      "Hash Table",
+      "Doubly Linked List"
+    ],
+    "correctAnswer": "Red-Black Tree (TreeMap)",
+    "explanation": "Java's `TreeSet` is backed by a `NavigableMap` (specifically `TreeMap` / Red-Black Tree) providing O(log N) operations.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Java"
+  },
+  {
+    "questionId": "cognizant-mcq-161",
+    "question": "What is the time complexity of finding an element in an unsorted array of N elements using Linear Search?",
+    "options": [
+      "O(N)",
+      "O(log N)",
+      "O(1)",
+      "O(N log N)"
+    ],
+    "correctAnswer": "O(N)",
+    "explanation": "Linear search checks elements one by one until found or array ends, running in O(N) worst-case time.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "cognizant-mcq-162",
+    "question": "What does the SQL command `GRANT SELECT ON Employee TO user_genc;` do?",
+    "options": [
+      "Provides user_genc permission to read data from the Employee table",
+      "Creates a new user named user_genc",
+      "Revokes read permissions",
+      "Gives full administrative rights to user_genc"
+    ],
+    "correctAnswer": "Provides user_genc permission to read data from the Employee table",
+    "explanation": "The `GRANT` DCL command assigns specific privileges to database users/roles.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "cognizant-mcq-163",
+    "question": "In Cloud Computing, what does 'Multi-Tenancy' mean?",
+    "options": [
+      "A single software instance or physical server serves multiple distinct customers/tenants with isolated data and configurations",
+      "A company using multiple cloud providers simultaneously",
+      "A database having multiple backup replicas",
+      "An application running on multiple physical CPU sockets"
+    ],
+    "correctAnswer": "A single software instance or physical server serves multiple distinct customers/tenants with isolated data and configurations",
+    "explanation": "Multi-tenancy shares underlying computing resources among multiple client organizations while maintaining data isolation.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Cloud"
+  },
+  {
+    "questionId": "cognizant-mcq-164",
+    "question": "What is the time complexity of the Two Sum problem using a Hash Map on an unsorted array of size N?",
+    "options": [
+      "O(N) time and O(N) space",
+      "O(N^2) time and O(1) space",
+      "O(N log N) time and O(1) space",
+      "O(1) time and O(N) space"
+    ],
+    "correctAnswer": "O(N) time and O(N) space",
+    "explanation": "Storing seen elements in a hash map allows verifying if `target - num` exists in O(1) time, yielding O(N) overall time and O(N) space.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "cognizant-mcq-165",
+    "question": "What is the output of `bool(\"\")` vs `bool(\" \")` in Python?",
+    "options": [
+      "False True",
+      "False False",
+      "True True",
+      "True False"
+    ],
+    "correctAnswer": "False True",
+    "explanation": "An empty string `\"\"` evaluates to `False`, whereas a string containing a space `\" \"` is non-empty and evaluates to `True`.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Python"
+  },
+  {
+    "questionId": "cognizant-mcq-166",
+    "question": "In Java, what is the purpose of the `transient` keyword?",
+    "options": [
+      "Indicates that a field should NOT be serialized during Java Object Serialization",
+      "Ensures memory visibility across concurrent threads",
+      "Prevents a method from being overridden",
+      "Forces a variable to be stored in the CPU cache"
+    ],
+    "correctAnswer": "Indicates that a field should NOT be serialized during Java Object Serialization",
+    "explanation": "Transient variables are skipped by the serialization mechanism and reset to their default value during deserialization.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Java"
+  },
+  {
+    "questionId": "cognizant-mcq-167",
+    "question": "Which of the following is true about HTTP PUT vs HTTP PATCH?",
+    "options": [
+      "PUT replaces the entire resource representation; PATCH applies partial modifications to an existing resource",
+      "PATCH is idempotent; PUT is never idempotent",
+      "PUT is for reading data; PATCH is for creating data",
+      "Both are identical in semantics"
+    ],
+    "correctAnswer": "PUT replaces the entire resource representation; PATCH applies partial modifications to an existing resource",
+    "explanation": "PUT transmits a complete new representation replacing the target resource; PATCH updates only specified delta fields.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Web"
+  },
+  {
+    "questionId": "cognizant-mcq-168",
+    "question": "What is the output of the query `SELECT 1 WHERE 1 = NULL;`?",
+    "options": [
+      "No rows returned (Empty set)",
+      "1",
+      "NULL",
+      "Syntax Error"
+    ],
+    "correctAnswer": "No rows returned (Empty set)",
+    "explanation": "`1 = NULL` evaluates to UNKNOWN/NULL. In SQL WHERE filtering, only rows evaluating strictly to TRUE are returned.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "cognizant-mcq-169",
+    "question": "What is the time complexity of the Boyer-Moore Majority Voting Algorithm to find an element appearing > N/2 times?",
+    "options": [
+      "O(N) time and O(1) space",
+      "O(N log N) time and O(1) space",
+      "O(N) time and O(N) space",
+      "O(N^2) time and O(1) space"
+    ],
+    "correctAnswer": "O(N) time and O(1) space",
+    "explanation": "Boyer-Moore voting tracks a candidate and count in a single pass in O(N) time and O(1) auxiliary space.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "cognizant-mcq-170",
+    "question": "In C++, what does the `const` keyword on a member function `void display() const;` indicate?",
+    "options": [
+      "The function promises not to modify any non-mutable member variables of the calling object",
+      "The function returns a constant value",
+      "The function can only be called once",
+      "The function is executed at compile time only"
+    ],
+    "correctAnswer": "The function promises not to modify any non-mutable member variables of the calling object",
+    "explanation": "Const member functions cannot alter the object's instance state, allowing them to be invoked on const object instances.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "C/C++"
+  },
+  {
+    "questionId": "cognizant-mcq-171",
+    "question": "What is the role of an API Gateway in Microservices architecture?",
+    "options": [
+      "Acts as a reverse proxy single entry point handling routing, authentication, rate limiting, and SSL termination",
+      "Acts as a database engine for storing user data",
+      "Replaces all frontend web pages",
+      "Compiles backend source code"
+    ],
+    "correctAnswer": "Acts as a reverse proxy single entry point handling routing, authentication, rate limiting, and SSL termination",
+    "explanation": "API Gateways route client requests to appropriate microservices while centralizing security, telemetry, and rate limiting.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Cloud"
+  },
+  {
+    "questionId": "cognizant-mcq-172",
+    "question": "What is the output of `[i for i in range(1, 10, 3)]` in Python?",
+    "options": [
+      "[1, 4, 7]",
+      "[1, 3, 6, 9]",
+      "[3, 6, 9]",
+      "[1, 4, 7, 10]"
+    ],
+    "correctAnswer": "[1, 4, 7]",
+    "explanation": "`range(1, 10, 3)` starts at 1, steps by 3, generating 1, 4, 7 (10 is excluded because upper bound is 10).",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Python"
+  },
+  {
+    "questionId": "cognizant-mcq-173",
+    "question": "In Java, what is the difference between a `Thread` and a `Runnable`?",
+    "options": [
+      "`Thread` is a class that represents an actual execution thread; `Runnable` is a functional interface representing a task to be executed by a thread",
+      "`Runnable` creates a thread directly; `Thread` cannot be extended",
+      "`Thread` is in java.util; `Runnable` is in java.io",
+      "`Runnable` cannot be used with thread pools"
+    ],
+    "correctAnswer": "`Thread` is a class that represents an actual execution thread; `Runnable` is a functional interface representing a task to be executed by a thread",
+    "explanation": "Implementing `Runnable` separates task logic from thread lifecycle management and allows extending other classes.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Java"
+  },
+  {
+    "questionId": "cognizant-mcq-174",
+    "question": "What is the time complexity of Binary Search on a sorted array of N elements?",
+    "options": [
+      "O(log N)",
+      "O(N)",
+      "O(1)",
+      "O(N log N)"
+    ],
+    "correctAnswer": "O(log N)",
+    "explanation": "Binary Search divides the remaining search interval in half at each step, running in logarithmic O(log N) time.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "cognizant-mcq-175",
+    "question": "What is an SQL Index Scan vs Index Seek?",
+    "options": [
+      "Index Seek navigates the B-Tree directly to find specific matching keys in O(log N); Index Scan reads through all leaf nodes in the index sequentially",
+      "Index Scan is always faster than Index Seek",
+      "Index Seek is used only for `SELECT *` without WHERE",
+      "Index Scan cannot be used on primary keys"
+    ],
+    "correctAnswer": "Index Seek navigates the B-Tree directly to find specific matching keys in O(log N); Index Scan reads through all leaf nodes in the index sequentially",
+    "explanation": "Index Seek traverses tree levels directly to matching rows; Index Scan scans an entire index range.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "cognizant-mcq-176",
+    "question": "What is the output of `\"abc\" == new String(\"abc\")` vs `\"abc\".equals(new String(\"abc\"))` in Java?",
+    "options": [
+      "false true",
+      "true true",
+      "true false",
+      "false false"
+    ],
+    "correctAnswer": "false true",
+    "explanation": "`==` compares object heap reference addresses (false); `.equals()` compares string character values (true).",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Java"
+  },
+  {
+    "questionId": "cognizant-mcq-177",
+    "question": "What is the output of the following Python slice: `\"cognizant\"[::-1]`?",
+    "options": [
+      "\"tnazingoc\"",
+      "\"cognizant\"",
+      "\"t\"",
+      "\"c\""
+    ],
+    "correctAnswer": "\"tnazingoc\"",
+    "explanation": "Slice notation `[::-1]` with negative step reverses the string.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Python"
+  },
+  {
+    "questionId": "cognizant-mcq-178",
+    "question": "In Web development, what is Cross-Site Scripting (XSS)?",
+    "options": [
+      "A security vulnerability where malicious scripts are injected into trusted websites and executed in the victim's browser",
+      "Forging unauthorized transactions on behalf of an authenticated user",
+      "Injecting malicious SQL statements into a database query",
+      "Overwhelming a web server with fake traffic"
+    ],
+    "correctAnswer": "A security vulnerability where malicious scripts are injected into trusted websites and executed in the victim's browser",
+    "explanation": "XSS occurs when unescaped user input is rendered in the DOM, executing arbitrary JavaScript in client sessions.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Web"
+  },
+  {
+    "questionId": "cognizant-mcq-179",
+    "question": "What is the result of applying the Bitwise XOR operator `^` on two identical integers `x ^ x`?",
+    "options": [
+      "0",
+      "x",
+      "1",
+      "2x"
+    ],
+    "correctAnswer": "0",
+    "explanation": "XOR of any number with itself produces zero (`x ^ x = 0`) because all corresponding bit pairs cancel out.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "cognizant-mcq-180",
+    "question": "In Cloud storage, what does 'Durability of 99.999999999% (11 9s)' in AWS S3 mean?",
+    "options": [
+      "The probability of not losing stored objects over a given year is virtually 100%",
+      "The service is available 99.999999999% of each hour without downtime",
+      "99.999999999% of all requests return in under 1 millisecond",
+      "Storage space is expanded by 99.999999999% automatically"
+    ],
+    "correctAnswer": "The probability of not losing stored objects over a given year is virtually 100%",
+    "explanation": "Durability measures data preservation against loss/corruption across redundant multi-facility storage clusters.",
+    "difficulty": "Medium",
+    "marks": 3,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Cloud"
+  },
+  {
+    "questionId": "cognizant-mcq-181",
+    "question": "What is the most robust query to retrieve the 2nd highest distinct salary from an Employee table across all relational database engines?",
+    "options": [
+      "SELECT MAX(salary) FROM Employee WHERE salary < (SELECT MAX(salary) FROM Employee);",
+      "SELECT salary FROM Employee ORDER BY salary DESC LIMIT 1 OFFSET 1;",
+      "SELECT DISTINCT salary FROM Employee ORDER BY salary DESC LIMIT 2;",
+      "SELECT TOP 2 salary FROM Employee ORDER BY salary DESC;"
+    ],
+    "correctAnswer": "SELECT MAX(salary) FROM Employee WHERE salary < (SELECT MAX(salary) FROM Employee);",
+    "explanation": "The subquery with MAX() is standard SQL supported on all RDBMS engines and handles duplicate salaries without vendor-specific LIMIT/TOP extensions.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "cognizant-mcq-182",
+    "question": "In the Java Memory Model (JMM), which of the following guarantees a 'happens-before' relationship?",
+    "options": [
+      "An unlock on a monitor lock happens-before every subsequent lock on the same monitor",
+      "Any write to a non-volatile variable in Thread A is immediately visible to Thread B",
+      "Calling `Thread.yield()` guarantees thread synchronization",
+      "Calling `System.gc()` establishes a memory barrier"
+    ],
+    "correctAnswer": "An unlock on a monitor lock happens-before every subsequent lock on the same monitor",
+    "explanation": "Monitor unlock actions, volatile writes, and Thread.start() establish formal happens-before memory visibility relationships in JMM.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Java"
+  },
+  {
+    "questionId": "cognizant-mcq-183",
+    "question": "Which combination of data structures allows implementing an LRU (Least Recently Used) Cache with strict O(1) time complexity for both `get(key)` and `put(key, value)` operations?",
+    "options": [
+      "Hash Map combined with a Doubly Linked List",
+      "Binary Search Tree combined with an Array",
+      "Singly Linked List with a Stack",
+      "Max-Heap with a Queue"
+    ],
+    "correctAnswer": "Hash Map combined with a Doubly Linked List",
+    "explanation": "Hash Map provides O(1) key lookups and direct node pointer access; Doubly Linked List allows O(1) node removal and insertion at head/tail.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "interview_reported",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "cognizant-mcq-184",
+    "question": "What will be the output of the following recursive Python function when called with `mystery(5)`?\n\n```python\ndef mystery(n):\n    if n <= 1:\n        return 1\n    return n * mystery(n - 2)\n\nprint(mystery(5))\n```",
+    "options": [
+      "15",
+      "120",
+      "24",
+      "8"
+    ],
+    "correctAnswer": "15",
+    "explanation": "`mystery(5) = 5 * mystery(3) = 5 * (3 * mystery(1)) = 5 * 3 * 1 = 15` (multiplication of odd numbers).",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Programming"
+  },
+  {
+    "questionId": "cognizant-mcq-185",
+    "question": "In DBMS, what is the key difference between 3NF and Boyce-Codd Normal Form (BCNF)?",
+    "options": [
+      "In BCNF, for every functional dependency X -> Y, X must strictly be a superkey (no exceptions for prime attributes)",
+      "BCNF allows transitive dependencies on non-prime attributes",
+      "3NF is stricter than BCNF",
+      "BCNF deals only with multi-valued dependencies"
+    ],
+    "correctAnswer": "In BCNF, for every functional dependency X -> Y, X must strictly be a superkey (no exceptions for prime attributes)",
+    "explanation": "3NF allows `X -> Y` if Y is a prime attribute even if X is not a superkey; BCNF removes this exception.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "DBMS"
+  },
+  {
+    "questionId": "cognizant-mcq-186",
+    "question": "What is the CAP Theorem trade-off in distributed systems when a network partition (P) occurs?",
+    "options": [
+      "The system must choose between Consistency (returning errors or blocking) or Availability (returning stale data)",
+      "The system can achieve both 100% Consistency and 100% Availability simultaneously",
+      "The partition is ignored by dropping all network traffic",
+      "The database automatically converts from NoSQL to SQL"
+    ],
+    "correctAnswer": "The system must choose between Consistency (returning errors or blocking) or Availability (returning stale data)",
+    "explanation": "Under network partitions, a distributed system must sacrifice either Availability (CP system) or Consistency (AP system).",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Cloud"
+  },
+  {
+    "questionId": "cognizant-mcq-187",
+    "question": "What is the time complexity of Kosaraju's Algorithm for finding all Strongly Connected Components (SCCs) in a directed graph with V vertices and E edges?",
+    "options": [
+      "O(V + E)",
+      "O(V * E)",
+      "O(V^2)",
+      "O(E log V)"
+    ],
+    "correctAnswer": "O(V + E)",
+    "explanation": "Kosaraju's algorithm performs two DFS passes and a graph transposition, each running in linear O(V + E) time.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "cognizant-mcq-188",
+    "question": "In C++, what does Move Semantics (`std::move` and Rvalue references `Type&&`) accomplish?",
+    "options": [
+      "Transfers ownership of internal heap resources from temporary objects in O(1) time, avoiding deep-copy memory allocations",
+      "Copies an object to secondary disk storage",
+      "Forces variables to be allocated in thread-local storage",
+      "Moves class declarations across namespaces"
+    ],
+    "correctAnswer": "Transfers ownership of internal heap resources from temporary objects in O(1) time, avoiding deep-copy memory allocations",
+    "explanation": "Move semantics steals pointers from expiring rvalue objects, eliminating expensive deep copies.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "C/C++"
+  },
+  {
+    "questionId": "cognizant-mcq-189",
+    "question": "What is the result of the following Java stream pipeline?\n\n```java\nList<Integer> list = Arrays.asList(1, 2, 3, 4, 5);\nint sum = list.stream()\n              .filter(n -> n % 2 == 0)\n              .mapToInt(n -> n * n)\n              .sum();\nSystem.out.println(sum);\n```",
+    "options": [
+      "20",
+      "55",
+      "36",
+      "10"
+    ],
+    "correctAnswer": "20",
+    "explanation": "Even numbers are 2 and 4. Squared: 2^2 = 4 and 4^2 = 16. Sum = 4 + 16 = 20.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Java"
+  },
+  {
+    "questionId": "cognizant-mcq-190",
+    "question": "In distributed database systems, what is Two-Phase Commit (2PC)?",
+    "options": [
+      "A consensus protocol where a coordinator manages a Prepare Phase and a Commit Phase to guarantee atomic transaction commits across distributed nodes",
+      "A technique that splits SQL queries into two parallel threads",
+      "A backup protocol that writes data to two separate cloud regions",
+      "A sharding mechanism based on composite keys"
+    ],
+    "correctAnswer": "A consensus protocol where a coordinator manages a Prepare Phase and a Commit Phase to guarantee atomic transaction commits across distributed nodes",
+    "explanation": "2PC ensures atomicity across distributed shards by coordinating Prepare and Commit/Abort voting cycles.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "DBMS"
+  },
+  {
+    "questionId": "cognizant-mcq-191",
+    "question": "What is the time complexity of the Knuth-Morris-Pratt (KMP) string matching algorithm to find occurrences of pattern P (length M) in text T (length N)?",
+    "options": [
+      "O(N + M)",
+      "O(N * M)",
+      "O(N log M)",
+      "O(N^2)"
+    ],
+    "correctAnswer": "O(N + M)",
+    "explanation": "KMP builds an LPS array in O(M) time and scans text in O(N) time without backtracking, achieving O(N + M) total time.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "cognizant-mcq-192",
+    "question": "What is a Write-Ahead Log (WAL) in database engines and how does it guarantee Durability?",
+    "options": [
+      "Changes must be written and flushed to an append-only log on disk BEFORE modified dirty data pages in memory are written to disk",
+      "Queries are logged after they have completely finished updating all indexes",
+      "It compresses database tables into read-only files",
+      "It caches SELECT query results in memory"
+    ],
+    "correctAnswer": "Changes must be written and flushed to an append-only log on disk BEFORE modified dirty data pages in memory are written to disk",
+    "explanation": "WAL ensures that in the event of a sudden crash, uncommitted pages can be rolled back and committed changes can be replayed from the log.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "DBMS"
+  },
+  {
+    "questionId": "cognizant-mcq-193",
+    "question": "What is the output of the following JavaScript asynchronous code snippet?\n\n```javascript\nconsole.log('1');\nsetTimeout(() => console.log('2'), 0);\nPromise.resolve().then(() => console.log('3'));\nconsole.log('4');\n```",
+    "options": [
+      "1 4 3 2",
+      "1 2 3 4",
+      "1 4 2 3",
+      "1 3 4 2"
+    ],
+    "correctAnswer": "1 4 3 2",
+    "explanation": "Synchronous code runs first ('1', '4'). Next, the microtask queue is drained ('3'). Finally, the macrotask setTimeout runs ('2').",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Web"
+  },
+  {
+    "questionId": "cognizant-mcq-194",
+    "question": "What is Consistent Hashing and why is it preferred over simple modulo hashing `hash(key) % N` in distributed caching clusters?",
+    "options": [
+      "It maps keys and nodes onto a circular ring, minimizing data remapping (only K/N keys moved) when nodes are added or removed",
+      "It ensures that all keys are encrypted using AES-256",
+      "It guarantees strict serializability in SQL databases",
+      "It prevents collisions by expanding the hash table infinitely"
+    ],
+    "correctAnswer": "It maps keys and nodes onto a circular ring, minimizing data remapping (only K/N keys moved) when nodes are added or removed",
+    "explanation": "Consistent hashing avoids massive cache stampedes by remapping only adjacent neighbor keys upon node scaling.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Cloud"
+  },
+  {
+    "questionId": "cognizant-mcq-195",
+    "question": "In Python, how does the `@property` decorator change method access?",
+    "options": [
+      "It allows a method to be accessed as an attribute getter without explicit parentheses `()`",
+      "It makes the method static",
+      "It converts the method into a private C-level function",
+      "It prevents the method from being called in subclasses"
+    ],
+    "correctAnswer": "It allows a method to be accessed as an attribute getter without explicit parentheses `()`",
+    "explanation": "`@property` enables pythonic getter/setter encapsulation with attribute-style access (`obj.attr`).",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Python"
+  },
+  {
+    "questionId": "cognizant-mcq-196",
+    "question": "What is the time and space complexity of the 0/1 Knapsack problem using Dynamic Programming with N items and weight capacity W?",
+    "options": [
+      "O(N * W) time and O(W) space",
+      "O(2^N) time and O(N) space",
+      "O(N log W) time and O(1) space",
+      "O(N + W) time and O(N * W) space"
+    ],
+    "correctAnswer": "O(N * W) time and O(W) space",
+    "explanation": "0/1 Knapsack is pseudo-polynomial, solving the subproblem grid in O(N*W) time and optimizable to a 1D DP array of size O(W).",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "cognizant-mcq-197",
+    "question": "In C++, what is Structure Padding / Memory Alignment?",
+    "options": [
+      "Compiler insertion of unused bytes between structure members to align data with CPU hardware memory boundaries for performance",
+      "Dynamic allocation of extra array elements during buffer overflow",
+      "Compressing struct members into bitfields",
+      "Converting class pointers into smart pointers"
+    ],
+    "correctAnswer": "Compiler insertion of unused bytes between structure members to align data with CPU hardware memory boundaries for performance",
+    "explanation": "Processors access aligned memory words much faster, so compilers insert padding between struct fields.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "C/C++"
+  },
+  {
+    "questionId": "cognizant-mcq-198",
+    "question": "What is the purpose of OAuth 2.0 PKCE (Proof Key for Code Exchange)?",
+    "options": [
+      "Prevents authorization code interception attacks on public clients (Single Page Apps / Mobile Apps) by verifying a cryptographic challenge",
+      "Encrypts SQL databases automatically",
+      "Replaces HTTPS with symmetric encryption",
+      "Generates database user passwords"
+    ],
+    "correctAnswer": "Prevents authorization code interception attacks on public clients (Single Page Apps / Mobile Apps) by verifying a cryptographic challenge",
+    "explanation": "PKCE dynamically verifies that the client exchanging the authorization code is the same client that initiated the auth request.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Web"
+  },
+  {
+    "questionId": "cognizant-mcq-199",
+    "question": "What is the time complexity of the Bellman-Ford algorithm to find shortest paths in a graph with V vertices and E edges?",
+    "options": [
+      "O(V * E)",
+      "O(V + E)",
+      "O(V log E)",
+      "O(E^2)"
+    ],
+    "correctAnswer": "O(V * E)",
+    "explanation": "Bellman-Ford relaxes all E edges V-1 times, resulting in O(V * E) time complexity.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "cognizant-mcq-200",
+    "question": "In Java multithreading, what does the `ReentrantLock` class provide over standard `synchronized` blocks?",
+    "options": [
+      "Fairness policies, timed lock attempts (`tryLock`), interruptible locks, and multiple Condition objects",
+      "Automatic execution on GPU",
+      "Lock-free execution without blocking",
+      "Thread creation without JVM overhead"
+    ],
+    "correctAnswer": "Fairness policies, timed lock attempts (`tryLock`), interruptible locks, and multiple Condition objects",
+    "explanation": "`ReentrantLock` offers advanced concurrency control including non-blocking `tryLock()`, fair queuing, and interruptible locking.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Java"
+  },
+  {
+    "questionId": "cognizant-mcq-201",
+    "question": "In SQL, what is a Recursive Common Table Expression (CTE)?",
+    "options": [
+      "A CTE that references its own name in an `UNION ALL` query to traverse hierarchical data (like org charts or graphs)",
+      "A stored procedure that calls itself infinitely",
+      "A table trigger that invokes another trigger",
+      "A subquery that executes in O(N^2) time"
+    ],
+    "correctAnswer": "A CTE that references its own name in an `UNION ALL` query to traverse hierarchical data (like org charts or graphs)",
+    "explanation": "Recursive CTEs have an anchor member and a recursive member joined by UNION ALL to traverse trees and graphs.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "cognizant-mcq-202",
+    "question": "What is the purpose of Escape Analysis in the JVM Just-In-Time (JIT) Compiler?",
+    "options": [
+      "Determining if an object's lifetime is confined to the declaring thread/method, allowing it to be allocated on the Stack instead of the Heap",
+      "Escaping special characters in SQL queries",
+      "Detecting memory leaks in native C++ libraries",
+      "Handling thread interrupt signals"
+    ],
+    "correctAnswer": "Determining if an object's lifetime is confined to the declaring thread/method, allowing it to be allocated on the Stack instead of the Heap",
+    "explanation": "Escape analysis optimizes non-escaping objects through scalar replacement and stack allocation, eliminating GC pressure.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Java"
+  },
+  {
+    "questionId": "cognizant-mcq-203",
+    "question": "In Python, what is the method resolution order (MRO) algorithm used for multiple inheritance?",
+    "options": [
+      "C3 Linearization algorithm",
+      "Depth-First Search",
+      "Breadth-First Search",
+      "Binary Search Order"
+    ],
+    "correctAnswer": "C3 Linearization algorithm",
+    "explanation": "Python uses the C3 Linearization algorithm (`ClassName.__mro__`) to guarantee monotonic method inheritance order.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Python"
+  },
+  {
+    "questionId": "cognizant-mcq-204",
+    "question": "What is the time complexity of the Floyd-Warshall Algorithm for finding all-pairs shortest paths in a graph with V vertices?",
+    "options": [
+      "O(V^3)",
+      "O(V^2)",
+      "O(V * E)",
+      "O(V log V)"
+    ],
+    "correctAnswer": "O(V^3)",
+    "explanation": "Floyd-Warshall uses three nested loops over vertices V, resulting in cubic O(V^3) time complexity.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "cognizant-mcq-205",
+    "question": "In C++, what does a `std::weak_ptr` do?",
+    "options": [
+      "Holds a non-owning reference to an object managed by `std::shared_ptr`, preventing circular reference memory leaks",
+      "Provides exclusive ownership of a resource",
+      "Allocates uninitialized memory on the stack",
+      "Acts as a raw pointer that bypasses compiler checks"
+    ],
+    "correctAnswer": "Holds a non-owning reference to an object managed by `std::shared_ptr`, preventing circular reference memory leaks",
+    "explanation": "`std::weak_ptr` observes a `shared_ptr` without incrementing its reference count, breaking reference cycles.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "C/C++"
+  },
+  {
+    "questionId": "cognizant-mcq-206",
+    "question": "In Cloud Computing, what does 'Zero-Downtime Deployment' with Blue/Green Deployments entail?",
+    "options": [
+      "Running two identical production environments (Blue and Green) and switching router/load-balancer traffic seamlessly once the new version is verified",
+      "Shutting down servers at midnight for database migrations",
+      "Using multiple availability zones without load balancers",
+      "Deploying updates directly to live running processes"
+    ],
+    "correctAnswer": "Running two identical production environments (Blue and Green) and switching router/load-balancer traffic seamlessly once the new version is verified",
+    "explanation": "Blue/Green deployment eliminates downtime and allows instantaneous rollbacks by switching router endpoints between environments.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Cloud"
+  },
+  {
+    "questionId": "cognizant-mcq-207",
+    "question": "What is the time complexity of finding the Longest Common Subsequence (LCS) of two strings of lengths M and N using Dynamic Programming?",
+    "options": [
+      "O(M * N) time and O(M * N) space",
+      "O(2^(M+N)) time",
+      "O(M + N) time",
+      "O(M log N) time"
+    ],
+    "correctAnswer": "O(M * N) time and O(M * N) space",
+    "explanation": "LCS evaluates a 2D DP matrix of dimensions (M+1) x (N+1), taking O(M * N) time and space.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "DSA"
+  },
+  {
+    "questionId": "cognizant-mcq-208",
+    "question": "What is the primary difference between WebSockets and standard HTTP/1.1 communication?",
+    "options": [
+      "WebSockets provide full-duplex, bidirectional persistent TCP communication over a single connection; HTTP/1.1 is request-response based",
+      "WebSockets only work over UDP",
+      "HTTP/1.1 is faster than WebSockets for high-frequency trading data",
+      "WebSockets do not support JSON payloads"
+    ],
+    "correctAnswer": "WebSockets provide full-duplex, bidirectional persistent TCP communication over a single connection; HTTP/1.1 is request-response based",
+    "explanation": "After an initial HTTP handshake upgrade, WebSockets enable low-latency two-way communication without polling.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Web"
+  },
+  {
+    "questionId": "cognizant-mcq-209",
+    "question": "What does the SQL statement `SELECT NTILE(4) OVER (ORDER BY score DESC) as quartile FROM StudentScores;` do?",
+    "options": [
+      "Divides ordered student score rows into 4 roughly equal-sized quartile buckets numbered 1 to 4",
+      "Filters for top 4 scores only",
+      "Multiplies scores by 4",
+      "Assigns rank skipping ties"
+    ],
+    "correctAnswer": "Divides ordered student score rows into 4 roughly equal-sized quartile buckets numbered 1 to 4",
+    "explanation": "`NTILE(N)` distributes ordered partition rows into N equal-sized buckets (e.g., quartiles for N=4, deciles for N=10).",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "SQL"
+  },
+  {
+    "questionId": "cognizant-mcq-210",
+    "question": "In Distributed Systems, what is the Raft consensus algorithm designed to achieve?",
+    "options": [
+      "Understandable consensus for replicated state machines through leader election, log replication, and safety invariants",
+      "High-speed video streaming compression",
+      "Hardware memory alignment on GPUs",
+      "Client-side DOM rendering optimization"
+    ],
+    "correctAnswer": "Understandable consensus for replicated state machines through leader election, log replication, and safety invariants",
+    "explanation": "Raft provides distributed consensus equivalent to Paxos with simpler leader election and state machine replication.",
+    "difficulty": "Hard",
+    "marks": 5,
+    "questionType": "MCQ",
+    "source": "practice",
+    "companyId": "cognizant",
+    "companyIds": [
+      "cognizant"
+    ],
+    "topic": "Cloud"
+  }
+]

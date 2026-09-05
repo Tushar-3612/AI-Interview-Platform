@@ -5,7 +5,7 @@
 
 export const ALL_COMPANIES = [
   "tcs", "infosys", "wipro", "accenture",
-  "capgemini", "cognizant", "deloitte", "benchmark",
+  "capgemini", "cognizant", "deloitte", "benchmark", "celebal",
 ];
 
 export const TECHNICAL_QUESTIONS = [

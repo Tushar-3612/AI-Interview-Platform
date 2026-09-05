@@ -1,0 +1,4202 @@
+[
+  {
+    "questionId": "tcs-mcq-001",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "C Programming",
+    "subtopic": "Pointers & Memory",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What will be the output of `sizeof(char*)` on a standard 64-bit operating system?",
+    "options": [
+      "1 byte",
+      "4 bytes",
+      "8 bytes",
+      "Depends on the character value"
+    ],
+    "correctAnswer": "8 bytes",
+    "expectedAnswer": "",
+    "explanation": "On a 64-bit architecture, all memory pointers occupy 8 bytes regardless of the underlying data type they point to.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-002",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "C Programming",
+    "subtopic": "Pointers & Arrays",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Given `int arr[] = {10, 20, 30, 40}; int *ptr = arr;`, what is the value of `*(ptr + 2)`?",
+    "options": [
+      "10",
+      "20",
+      "30",
+      "40"
+    ],
+    "correctAnswer": "30",
+    "expectedAnswer": "",
+    "explanation": "Pointer arithmetic `ptr + 2` advances the pointer by 2 element sizes, pointing to `arr[2]` which is 30. Dereferencing yields 30.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-003",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "C Programming",
+    "subtopic": "Dynamic Memory",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Which C standard library function is used to allocate memory and initialize all bytes to zero?",
+    "options": [
+      "malloc()",
+      "calloc()",
+      "realloc()",
+      "alloc()"
+    ],
+    "correctAnswer": "calloc()",
+    "expectedAnswer": "",
+    "explanation": "`calloc(num, size)` allocates contiguous memory for `num` elements of size `size` and initializes all allocated bytes to zero, unlike `malloc()` which leaves memory uninitialized.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-004",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "C Programming",
+    "subtopic": "Storage Classes",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the scope and lifetime of a variable declared with the `static` keyword inside a function in C?",
+    "options": [
+      "Local scope, function lifetime",
+      "Local scope, program lifetime",
+      "Global scope, program lifetime",
+      "Global scope, function lifetime"
+    ],
+    "correctAnswer": "Local scope, program lifetime",
+    "expectedAnswer": "",
+    "explanation": "A static local variable inside a function is only accessible within that function (local scope), but its value persists across function invocations until the program terminates (program lifetime).",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-005",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "C Programming",
+    "subtopic": "Preprocessors",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What stage of C compilation handles `#define`, `#include`, and `#ifdef` directives?",
+    "options": [
+      "Assembler",
+      "Preprocessor",
+      "Compiler",
+      "Linker"
+    ],
+    "correctAnswer": "Preprocessor",
+    "expectedAnswer": "",
+    "explanation": "The preprocessor scans the source code before actual compilation, expanding macros, including header files, and resolving conditional compilation directives.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-006",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "C Programming",
+    "subtopic": "Bitwise Operations",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the result of evaluating the bitwise expression `12 & 10` in C?",
+    "options": [
+      "8",
+      "14",
+      "2",
+      "12"
+    ],
+    "correctAnswer": "8",
+    "expectedAnswer": "",
+    "explanation": "In binary: 12 = 1100 and 10 = 1010. Bitwise AND (1100 & 1010) produces 1000 in binary, which is decimal 8.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-007",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "C Programming",
+    "subtopic": "Strings",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is the fundamental requirement for a valid C-style string representation?",
+    "options": [
+      "Must start with uppercase letter",
+      "Must be terminated by a null character '\\0'",
+      "Must have fixed length of 256 bytes",
+      "Must contain only ASCII printable characters"
+    ],
+    "correctAnswer": "Must be terminated by a null character '\\0'",
+    "expectedAnswer": "",
+    "explanation": "In C, strings are character arrays terminated by a null character '\\0', which signifies the end of the string to standard library string functions.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-008",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "C Programming",
+    "subtopic": "Structures & Unions",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "How does a `union` differ from a `struct` in C regarding memory allocation?",
+    "options": [
+      "A union allocates separate memory for each member, while a struct shares memory",
+      "A union allocates memory equal to the largest member, while a struct allocates the sum of all members (plus padding)",
+      "A union cannot contain pointers, while a struct can",
+      "A union is dynamically allocated, while a struct is stack allocated"
+    ],
+    "correctAnswer": "A union allocates memory equal to the largest member, while a struct allocates the sum of all members (plus padding)",
+    "expectedAnswer": "",
+    "explanation": "In a union, all members share the same memory location, so sizeof(union) equals the size of its largest member. In a struct, each member has its own distinct offset.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-009",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "C Programming",
+    "subtopic": "Pointers",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What does the declaration `int (*fp)(char, double);` represent in C?",
+    "options": [
+      "A function returning a pointer to int",
+      "A pointer to a function taking char and double and returning int",
+      "An array of function pointers",
+      "A pointer to an integer cast to a function"
+    ],
+    "correctAnswer": "A pointer to a function taking char and double and returning int",
+    "expectedAnswer": "",
+    "explanation": "The parentheses around `(*fp)` bind the pointer to the identifier, indicating `fp` is a pointer to a function that accepts `char` and `double` arguments and returns an `int`.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-010",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "C Programming",
+    "subtopic": "Operators",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the output of the following C snippet: `int a = 5; int b = a++ + ++a; printf(\"%d\", b);`?",
+    "options": [
+      "10",
+      "12",
+      "14",
+      "Undefined Behavior"
+    ],
+    "correctAnswer": "Undefined Behavior",
+    "expectedAnswer": "",
+    "explanation": "Modifying a variable more than once between sequence points (or in unsequenced operations in modern C standards) causes Undefined Behavior.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-011",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "C Programming",
+    "subtopic": "Memory Management",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What happens when a pointer to dynamically allocated memory is passed to `free()`, but the pointer is not set to `NULL` afterwards?",
+    "options": [
+      "Memory leak",
+      "Dangling pointer",
+      "Stack overflow",
+      "Segmentation fault immediately"
+    ],
+    "correctAnswer": "Dangling pointer",
+    "expectedAnswer": "",
+    "explanation": "Freeing the memory deallocates the heap block, but the pointer still holds the old address. Accessing it subsequently leads to dangling pointer bugs and undefined behavior.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-012",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "C Programming",
+    "subtopic": "Recursion",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What condition is essential in a recursive function to prevent infinite execution and stack overflow?",
+    "options": [
+      "Dynamic memory allocation",
+      "Base case",
+      "Static variable",
+      "Loop counter"
+    ],
+    "correctAnswer": "Base case",
+    "expectedAnswer": "",
+    "explanation": "A base case provides the stopping condition that terminates recursion, allowing the call stack to unwind without exhausting stack memory.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-013",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "C Programming",
+    "subtopic": "Constants",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is the effect of declaring `const int *ptr = &x;` in C?",
+    "options": [
+      "The pointer ptr cannot point to any other memory location",
+      "The integer value pointed to by ptr cannot be modified through ptr",
+      "Both the pointer address and the pointed value are immutable",
+      "x is moved to read-only register memory"
+    ],
+    "correctAnswer": "The integer value pointed to by ptr cannot be modified through ptr",
+    "expectedAnswer": "",
+    "explanation": "`const int *ptr` means `ptr` is a pointer to a constant integer. You cannot modify `*ptr`, but you can reassign `ptr` to point elsewhere.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-014",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "C Programming",
+    "subtopic": "File Handling",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Which mode should be passed to `fopen()` in C to open a file for appending binary data without overwriting existing content?",
+    "options": [
+      "\"r+\"",
+      "\"w+\"",
+      "\"ab\"",
+      "\"wb\""
+    ],
+    "correctAnswer": "\"ab\"",
+    "expectedAnswer": "",
+    "explanation": "Mode `\"ab\"` opens an existing binary file or creates a new one for appending, placing the file write pointer at the end of the file.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-015",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "C Programming",
+    "subtopic": "Bitwise Operations",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "Which bitwise operation efficiently checks if a positive integer `n` is an exact power of two?",
+    "options": [
+      "(n | (n - 1)) == 0",
+      "(n & (n - 1)) == 0",
+      "(n ^ (n + 1)) == 0",
+      "(n << 1) == n"
+    ],
+    "correctAnswer": "(n & (n - 1)) == 0",
+    "expectedAnswer": "",
+    "explanation": "Powers of two have exactly one bit set in binary (e.g., 8 = 1000). `n - 1` flips all bits up to that set bit (7 = 0111). `n & (n - 1)` equals 0 exclusively for powers of two.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-016",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "C++",
+    "subtopic": "Polymorphism",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Which keyword enables runtime (dynamic) polymorphism in C++ member functions?",
+    "options": [
+      "inline",
+      "virtual",
+      "static",
+      "friend"
+    ],
+    "correctAnswer": "virtual",
+    "expectedAnswer": "",
+    "explanation": "Declaring a member function with the `virtual` keyword allows derived classes to override it, enabling dynamic dispatch via the virtual method table (vtable) at runtime.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-017",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "C++",
+    "subtopic": "Constructors",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Why must base class destructors be declared `virtual` in C++ when deleting a derived object via a base pointer?",
+    "options": [
+      "To prevent memory allocation on stack",
+      "To ensure the derived class destructor is invoked properly",
+      "To speed up compilation",
+      "To make the base class abstract"
+    ],
+    "correctAnswer": "To ensure the derived class destructor is invoked properly",
+    "expectedAnswer": "",
+    "explanation": "If a base class destructor is non-virtual, deleting a derived object via a base class pointer causes undefined behavior because only the base destructor executes, leaking derived resources.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-018",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "C++",
+    "subtopic": "Smart Pointers",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Which C++ smart pointer provides exclusive ownership of a dynamically allocated resource without reference count overhead?",
+    "options": [
+      "std::shared_ptr",
+      "std::weak_ptr",
+      "std::unique_ptr",
+      "std::auto_ptr"
+    ],
+    "correctAnswer": "std::unique_ptr",
+    "expectedAnswer": "",
+    "explanation": "`std::unique_ptr` implements zero-overhead unique ownership semantics; it cannot be copied, only moved, and automatically frees its owned resource when it goes out of scope.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-019",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "C++",
+    "subtopic": "Memory Management",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is RAII (Resource Acquisition Is Initialization) in C++?",
+    "options": [
+      "A design pattern where resources are bound to object lifetime via constructors and destructors",
+      "A technique to allocate memory exclusively in CPU registers",
+      "A compiler optimization to inline all constructor calls",
+      "A garbage collection algorithm in modern C++"
+    ],
+    "correctAnswer": "A design pattern where resources are bound to object lifetime via constructors and destructors",
+    "expectedAnswer": "",
+    "explanation": "RAII ties resource lifecycle (heap memory, file handles, mutex locks) to object lifetime, acquiring resources during initialization (constructor) and releasing them during destruction (destructor).",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-020",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "C++",
+    "subtopic": "OOP Principles",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What problem does virtual inheritance solve in C++?",
+    "options": [
+      "Slow execution of inline functions",
+      "The diamond problem with duplicate base class subobjects",
+      "Circular references in shared_ptr",
+      "Stack overflow in deep recursion"
+    ],
+    "correctAnswer": "The diamond problem with duplicate base class subobjects",
+    "expectedAnswer": "",
+    "explanation": "In multiple inheritance where a class derives from two classes that share a common base, virtual inheritance ensures only a single shared instance of the common base class subobject exists.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-021",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "C++",
+    "subtopic": "STL Containers",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is the average time complexity of element lookup by key in a `std::unordered_map` in C++?",
+    "options": [
+      "O(1)",
+      "O(log N)",
+      "O(N)",
+      "O(N log N)"
+    ],
+    "correctAnswer": "O(1)",
+    "expectedAnswer": "",
+    "explanation": "`std::unordered_map` is implemented using a hash table, providing average O(1) time complexity for lookup, insertion, and deletion.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-022",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "C++",
+    "subtopic": "STL Containers",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What underlying data structure is used to implement `std::map` in the C++ Standard Template Library?",
+    "options": [
+      "Hash Table",
+      "Red-Black Tree",
+      "Doubly Linked List",
+      "Dynamic Array"
+    ],
+    "correctAnswer": "Red-Black Tree",
+    "expectedAnswer": "",
+    "explanation": "`std::map` is an ordered associative container typically implemented as a self-balancing Red-Black binary search tree, providing O(log N) operations and sorted iteration.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-023",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "C++",
+    "subtopic": "Move Semantics",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is the primary purpose of `std::move()` in C++11 and later?",
+    "options": [
+      "It physically moves data across memory addresses",
+      "It casts an lvalue to an rvalue reference to enable move semantics",
+      "It deletes the source object immediately",
+      "It creates a multi-threaded asynchronous task"
+    ],
+    "correctAnswer": "It casts an lvalue to an rvalue reference to enable move semantics",
+    "expectedAnswer": "",
+    "explanation": "`std::move()` does not move anything at runtime; it performs an unconditional cast of its argument to an rvalue reference (T&&), enabling the selection of move constructors or move assignment operators.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-024",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "C++",
+    "subtopic": "Templates",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "When are C++ template functions and classes compiled?",
+    "options": [
+      "At runtime when the function is first invoked",
+      "During preprocessing before syntax analysis",
+      "At compile time when the template is instantiated with concrete types",
+      "During linking when object files are combined"
+    ],
+    "correctAnswer": "At compile time when the template is instantiated with concrete types",
+    "expectedAnswer": "",
+    "explanation": "C++ templates are instantiated and type-checked by the compiler at compile time for each unique set of template arguments used in the codebase.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-025",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "C++",
+    "subtopic": "Friend Functions",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What access privileges does a `friend` function have in a C++ class?",
+    "options": [
+      "Can access only public members",
+      "Can access only protected members",
+      "Can access private, protected, and public members",
+      "Has no access to class members"
+    ],
+    "correctAnswer": "Can access private, protected, and public members",
+    "expectedAnswer": "",
+    "explanation": "A friend function or class is granted full access to all private and protected members of the class declaring the friendship, while not being a member itself.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-026",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "C++",
+    "subtopic": "Abstract Classes",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "How is an abstract class defined in C++?",
+    "options": [
+      "By prefixing the class with the `abstract` keyword",
+      "By defining at least one pure virtual function (`= 0`)",
+      "By making all member variables private",
+      "By declaring a static constructor"
+    ],
+    "correctAnswer": "By defining at least one pure virtual function (`= 0`)",
+    "expectedAnswer": "",
+    "explanation": "A class containing at least one pure virtual function (e.g. `virtual void draw() = 0;`) is an abstract class and cannot be instantiated directly.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-027",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "C++",
+    "subtopic": "Exception Handling",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What happens in C++ if an exception is thrown inside a destructor during stack unwinding?",
+    "options": [
+      "The compiler ignores the second exception",
+      "The program calls `std::terminate()` immediately",
+      "The exception is automatically converted to a warning",
+      "The destructor is re-executed"
+    ],
+    "correctAnswer": "The program calls `std::terminate()` immediately",
+    "expectedAnswer": "",
+    "explanation": "If an exception escapes a destructor while stack unwinding is already in progress from another active exception, C++ calls `std::terminate()` to abort the program because two active exceptions cannot be processed simultaneously.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-028",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "C++",
+    "subtopic": "Const Correctness",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What does the trailing `const` in `int getValue() const;` signify?",
+    "options": [
+      "The return value cannot be modified",
+      "The function cannot modify any non-mutable member variables of the calling object",
+      "The function can only be called on temporary objects",
+      "The function executes in constant O(1) time"
+    ],
+    "correctAnswer": "The function cannot modify any non-mutable member variables of the calling object",
+    "expectedAnswer": "",
+    "explanation": "A `const` member function guarantees that it will not modify the state of the object on which it is called (except for members explicitly marked `mutable`).",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-029",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "C++",
+    "subtopic": "Namespaces",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Why are namespaces used in C++?",
+    "options": [
+      "To speed up code execution",
+      "To prevent identifier naming collisions in large projects",
+      "To force heap allocation of objects",
+      "To automatically export functions to DLLs"
+    ],
+    "correctAnswer": "To prevent identifier naming collisions in large projects",
+    "expectedAnswer": "",
+    "explanation": "Namespaces group related identifiers (classes, functions, variables) into named scopes, preventing naming collisions between different libraries and modules.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-030",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "C++",
+    "subtopic": "Operator Overloading",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "Which of the following operators CANNOT be overloaded in C++?",
+    "options": [
+      "`+`",
+      "`[]`",
+      "`.` (member access)",
+      "`()`"
+    ],
+    "correctAnswer": "`.` (member access)",
+    "expectedAnswer": "",
+    "explanation": "In C++, operators `.` (dot), `.*` (pointer to member), `::` (scope resolution), `?:` (ternary), and `sizeof` cannot be overloaded to preserve language syntax integrity.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-031",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Java",
+    "subtopic": "JVM Architecture",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Which JVM component is responsible for loading `.class` files into memory during execution?",
+    "options": [
+      "Execution Engine",
+      "ClassLoader",
+      "Garbage Collector",
+      "JIT Compiler"
+    ],
+    "correctAnswer": "ClassLoader",
+    "expectedAnswer": "",
+    "explanation": "The JVM ClassLoader subsystem dynamically loads, links, and initializes Java class files into the JVM memory space during program execution.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-032",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Java",
+    "subtopic": "Strings",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Why are `String` objects immutable in Java?",
+    "options": [
+      "For security, thread safety, and string pool caching efficiency",
+      "Because Java lacks dynamic memory allocation",
+      "To prevent recursion in string concatenation",
+      "Because strings are stored as primitives"
+    ],
+    "correctAnswer": "For security, thread safety, and string pool caching efficiency",
+    "expectedAnswer": "",
+    "explanation": "String immutability ensures secure parameter passing (network/database connections), safe sharing across threads without synchronization, and hash code caching for collections like HashMap.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-033",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Java",
+    "subtopic": "Object Equality",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the difference between `==` and `.equals()` when comparing two objects in Java?",
+    "options": [
+      "`==` compares object content, while `.equals()` compares memory references",
+      "`==` compares memory references, while `.equals()` compares logical equivalence/values (if overridden)",
+      "Both perform identical reference checks always",
+      "`==` works only on strings, `.equals()` works on all objects"
+    ],
+    "correctAnswer": "`==` compares memory references, while `.equals()` compares logical equivalence/values (if overridden)",
+    "expectedAnswer": "",
+    "explanation": "`==` checks whether two references point to the exact same memory address. `.equals()` evaluates value/state equivalence when overridden (as in String, Integer, etc.).",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-034",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Java",
+    "subtopic": "Collections",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "How does `HashMap` in Java resolve hash collisions internally in Java 8 and later?",
+    "options": [
+      "Using separate chaining with linked lists, converting to balanced Red-Black trees when bucket length exceeds 8",
+      "By discarding the old value",
+      "Using linear probing across open addresses exclusively",
+      "By resizing the entire table immediately on every collision"
+    ],
+    "correctAnswer": "Using separate chaining with linked lists, converting to balanced Red-Black trees when bucket length exceeds 8",
+    "expectedAnswer": "",
+    "explanation": "Java 8+ uses linked list chaining for bucket collisions, and when bucket size exceeds `TREEIFY_THRESHOLD` (8) and table capacity >= 64, converts the list to a Red-Black tree to maintain O(log N) worst-case lookup.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-035",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Java",
+    "subtopic": "Collections",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is the key difference between `ArrayList` and `Vector` in Java?",
+    "options": [
+      "ArrayList is synchronized, Vector is not",
+      "Vector is thread-safe (synchronized), ArrayList is unsynchronized and faster for single-threaded usage",
+      "ArrayList has fixed size, Vector is dynamic",
+      "Vector cannot store null values"
+    ],
+    "correctAnswer": "Vector is thread-safe (synchronized), ArrayList is unsynchronized and faster for single-threaded usage",
+    "expectedAnswer": "",
+    "explanation": "`Vector` synchronizes its methods for legacy thread-safety at the cost of performance. `ArrayList` is unsynchronized and preferred for non-concurrent operations.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-036",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Java",
+    "subtopic": "Garbage Collection",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What makes an object in Java eligible for garbage collection?",
+    "options": [
+      "When its memory usage exceeds 1 MB",
+      "When it is no longer reachable by any live reference from GC roots",
+      "When the `finalize()` method is called",
+      "When the variable goes out of scope in an if block"
+    ],
+    "correctAnswer": "When it is no longer reachable by any live reference from GC roots",
+    "expectedAnswer": "",
+    "explanation": "An object becomes eligible for garbage collection when no active chain of strong references exists connecting it to GC Roots (running threads, static variables, local stack variables).",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-037",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Java",
+    "subtopic": "Multithreading",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is the purpose of the `volatile` keyword in Java?",
+    "options": [
+      "It makes variable operations atomic",
+      "It guarantees visibility of variable updates across threads by reading/writing directly from main memory",
+      "It locks the object monitor like synchronized",
+      "It serializes the object to disk"
+    ],
+    "correctAnswer": "It guarantees visibility of variable updates across threads by reading/writing directly from main memory",
+    "expectedAnswer": "",
+    "explanation": "`volatile` guarantees memory visibility by establishing a happens-before relationship: all reads and writes go directly to main memory rather than CPU thread-local caches, preventing stale cached reads without locking.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-038",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Java",
+    "subtopic": "Exceptions",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Which of the following is a checked exception in Java?",
+    "options": [
+      "NullPointerException",
+      "ArithmeticException",
+      "IOException",
+      "ArrayIndexOutOfBoundsException"
+    ],
+    "correctAnswer": "IOException",
+    "expectedAnswer": "",
+    "explanation": "`IOException` extends `java.lang.Exception` directly (not `RuntimeException`) and must be handled via a `try-catch` block or declared in a `throws` clause at compile time.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-039",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Java",
+    "subtopic": "Java 8 Features",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is a Functional Interface in Java?",
+    "options": [
+      "An interface containing only private methods",
+      "An interface with exactly one abstract method (SAM)",
+      "An interface that cannot be implemented",
+      "An interface with all methods implemented as default"
+    ],
+    "correctAnswer": "An interface with exactly one abstract method (SAM)",
+    "expectedAnswer": "",
+    "explanation": "A Functional Interface has exactly one abstract method and can be annotated with `@FunctionalInterface`. It serves as the target type for lambda expressions and method references.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-040",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Java",
+    "subtopic": "OOP & Interfaces",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Can an interface in Java 8 contain concrete method implementations?",
+    "options": [
+      "No, interfaces can never contain method bodies",
+      "Yes, using `default` and `static` method declarations",
+      "Yes, but only if all variables are declared transient",
+      "No, concrete methods are restricted to abstract classes"
+    ],
+    "correctAnswer": "Yes, using `default` and `static` method declarations",
+    "expectedAnswer": "",
+    "explanation": "Java 8 introduced `default` and `static` methods with concrete bodies inside interfaces to enable API evolution without breaking existing implementing classes.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-041",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Java",
+    "subtopic": "Memory",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "Where are Java object instances and their primitive instance variables allocated?",
+    "options": [
+      "Object instances on the Heap; their primitive fields inside the object on the Heap",
+      "Object instances on Stack; primitives on Heap",
+      "All objects in Metaspace",
+      "Static objects on Stack; local objects on Heap"
+    ],
+    "correctAnswer": "Object instances on the Heap; their primitive fields inside the object on the Heap",
+    "expectedAnswer": "",
+    "explanation": "All object instances reside on the Heap. The primitive fields belonging to an object are stored inline within that object's heap memory allocation.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-042",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Java",
+    "subtopic": "Inheritance & Modifiers",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is the effect of declaring a class `final` in Java?",
+    "options": [
+      "The class cannot be instantiated",
+      "The class cannot be subclassed (inherited from)",
+      "All methods of the class become static",
+      "The class is stored in read-only memory"
+    ],
+    "correctAnswer": "The class cannot be subclassed (inherited from)",
+    "expectedAnswer": "",
+    "explanation": "Declaring a class `final` prevents other classes from extending it (e.g., `java.lang.String` and `java.lang.Math` are final).",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-043",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Java",
+    "subtopic": "Constructors",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Which statement must be the very first line inside a constructor in Java if calling another constructor?",
+    "options": [
+      "`this()` or `super()`",
+      "`return`",
+      "`init()`",
+      "`finalize()`"
+    ],
+    "correctAnswer": "`this()` or `super()`",
+    "expectedAnswer": "",
+    "explanation": "Explicit constructor invocation via `this(...)` (to call an overloaded constructor) or `super(...)` (to call a superclass constructor) must be the first statement in a constructor body.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-044",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Java",
+    "subtopic": "Serialization",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the purpose of the `transient` keyword in Java?",
+    "options": [
+      "To mark a variable as thread-safe",
+      "To prevent a field from being serialized during object serialization",
+      "To ensure the variable is stored in Metaspace",
+      "To make a variable accessible across packages"
+    ],
+    "correctAnswer": "To prevent a field from being serialized during object serialization",
+    "expectedAnswer": "",
+    "explanation": "The `transient` modifier indicates that a member variable should not be included when the object is serialized into a byte stream.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-045",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Java",
+    "subtopic": "Collections",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Why must `hashCode()` be overridden whenever `equals()` is overridden in Java?",
+    "options": [
+      "To speed up garbage collection",
+      "To maintain the contract that equal objects must produce equal hash codes in hash-based collections",
+      "To prevent compilation errors",
+      "To allow sorting in ArrayList"
+    ],
+    "correctAnswer": "To maintain the contract that equal objects must produce equal hash codes in hash-based collections",
+    "expectedAnswer": "",
+    "explanation": "If two objects are equal according to `equals()`, they must produce identical `hashCode()` values; otherwise, hash collections like `HashSet` and `HashMap` will fail to find or de-duplicate elements.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-046",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Java",
+    "subtopic": "Streams",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "In Java 8 Streams, what is the difference between intermediate and terminal operations?",
+    "options": [
+      "Intermediate operations return a new Stream and are lazy; terminal operations produce a non-stream result and trigger pipeline execution",
+      "Intermediate operations execute immediately; terminal operations execute lazily",
+      "Intermediate operations run in parallel; terminal operations run sequentially",
+      "There is no functional difference"
+    ],
+    "correctAnswer": "Intermediate operations return a new Stream and are lazy; terminal operations produce a non-stream result and trigger pipeline execution",
+    "expectedAnswer": "",
+    "explanation": "Intermediate operations (`filter`, `map`) configure the pipeline and execute only when a terminal operation (`collect`, `forEach`, `count`) is invoked.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-047",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Java",
+    "subtopic": "Generics",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is Type Erasure in Java Generics?",
+    "options": [
+      "The removal of unused classes by the garbage collector",
+      "The compiler process of enforcing type constraints at compile time and replacing generic types with raw types (or bounds) in bytecode",
+      "The conversion of primitive types to wrapper objects",
+      "The dynamic casting of objects at runtime"
+    ],
+    "correctAnswer": "The compiler process of enforcing type constraints at compile time and replacing generic types with raw types (or bounds) in bytecode",
+    "expectedAnswer": "",
+    "explanation": "Type erasure ensures backward compatibility with older JVM versions by stripping generic type metadata during compilation and inserting necessary type casts in bytecode.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-048",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Java",
+    "subtopic": "Concurrency",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is a deadlock condition in Java multithreading?",
+    "options": [
+      "A thread executing in an infinite loop consuming 100% CPU",
+      "A situation where two or more threads are permanently blocked, each waiting for a lock held by the other",
+      "A thread terminating prematurely due to an uncaught exception",
+      "Memory exhaustion in the Java heap"
+    ],
+    "correctAnswer": "A situation where two or more threads are permanently blocked, each waiting for a lock held by the other",
+    "expectedAnswer": "",
+    "explanation": "Deadlock occurs when Thread 1 holds Lock A and waits for Lock B, while Thread 2 holds Lock B and waits for Lock A, resulting in circular wait where neither thread can proceed.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-049",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Java",
+    "subtopic": "Keywords",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What does the `finally` block in Java guarantee?",
+    "options": [
+      "It executes only when no exception is thrown",
+      "It executes regardless of whether an exception is caught or unhandled (except for JVM termination)",
+      "It restarts the try block on error",
+      "It forces garbage collection"
+    ],
+    "correctAnswer": "It executes regardless of whether an exception is caught or unhandled (except for JVM termination)",
+    "expectedAnswer": "",
+    "explanation": "The `finally` block always executes after `try` and `catch` blocks finish, ensuring cleanup of resources, unless `System.exit(0)` is called or the JVM crashes.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-050",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Java",
+    "subtopic": "String Pool",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What does `String s = new String(\"TCS\");` do regarding object creation in Java?",
+    "options": [
+      "Creates exactly 1 object on the stack",
+      "Creates 1 object in the String Constant Pool (if not present) and 1 distinct object on the Heap",
+      "Creates 0 objects if String already exists",
+      "Creates 3 objects for each character"
+    ],
+    "correctAnswer": "Creates 1 object in the String Constant Pool (if not present) and 1 distinct object on the Heap",
+    "expectedAnswer": "",
+    "explanation": "The literal `\"TCS\"` is placed in the String Constant Pool (if not already there), and `new String(...)` explicitly constructs a new separate String object on the standard Heap.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-051",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Python",
+    "subtopic": "Memory Management",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the primary memory management and garbage collection mechanism in CPython?",
+    "options": [
+      "Generational mark-and-sweep exclusively",
+      "Reference counting combined with a cyclic garbage collector",
+      "Manual pointer deallocation",
+      "Stop-the-world compaction"
+    ],
+    "correctAnswer": "Reference counting combined with a cyclic garbage collector",
+    "expectedAnswer": "",
+    "explanation": "CPython primarily relies on reference counting to immediately reclaim memory when an object's reference count drops to 0, supplemented by a cyclic garbage collector for circular references.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-052",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Python",
+    "subtopic": "Concurrency",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the Global Interpreter Lock (GIL) in CPython?",
+    "options": [
+      "A lock that prevents file read/write conflicts",
+      "A mutex that prevents multiple native threads from executing Python bytecodes concurrently in a single process",
+      "A security mechanism against SQL injection",
+      "A database connection pool lock"
+    ],
+    "correctAnswer": "A mutex that prevents multiple native threads from executing Python bytecodes concurrently in a single process",
+    "expectedAnswer": "",
+    "explanation": "The GIL is a mutex in CPython that protects access to Python objects, ensuring only one thread executes Python bytecode at a time, limiting pure CPU-bound multi-threading to single-core execution.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-053",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Python",
+    "subtopic": "Data Structures",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is the key difference between a Python list and a Python tuple?",
+    "options": [
+      "Lists are immutable; tuples are mutable",
+      "Lists are mutable; tuples are immutable",
+      "Tuples cannot store integers",
+      "Lists cannot contain mixed data types"
+    ],
+    "correctAnswer": "Lists are mutable; tuples are immutable",
+    "expectedAnswer": "",
+    "explanation": "Lists can be modified (elements added, removed, or changed) after creation. Tuples are immutable; their elements cannot be changed once initialized.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-054",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Python",
+    "subtopic": "Functions",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the danger of using a mutable object (like a list `[]`) as a default argument in a Python function definition?",
+    "options": [
+      "It throws a SyntaxError at compile time",
+      "The default object is evaluated once at function definition time and shared across all subsequent invocations",
+      "It causes a memory leak on every call",
+      "The list becomes read-only"
+    ],
+    "correctAnswer": "The default object is evaluated once at function definition time and shared across all subsequent invocations",
+    "expectedAnswer": "",
+    "explanation": "Default arguments in Python are evaluated once when the function is defined. If a mutable default is modified inside the function, those changes persist across subsequent function calls.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-055",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Python",
+    "subtopic": "Generators",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What does the `yield` keyword do in a Python function?",
+    "options": [
+      "Terminates the function and returns a final value",
+      "Pauses function execution, returns an intermediate value, and preserves local state for subsequent iteration",
+      "Converts the function to an asynchronous coroutine",
+      "Deletes all local variables from memory"
+    ],
+    "correctAnswer": "Pauses function execution, returns an intermediate value, and preserves local state for subsequent iteration",
+    "expectedAnswer": "",
+    "explanation": "`yield` turns a standard function into a generator. It emits a value, freezes the execution state, and resumes from that point on the next call to `next()`.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-056",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Python",
+    "subtopic": "Decorators",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is a Python decorator fundamentally?",
+    "options": [
+      "A built-in GUI styling component",
+      "A callable that takes another function/class as input, extends or modifies its behavior, and returns a callable",
+      "A special class destructor",
+      "A syntax error handler"
+    ],
+    "correctAnswer": "A callable that takes another function/class as input, extends or modifies its behavior, and returns a callable",
+    "expectedAnswer": "",
+    "explanation": "A decorator is a higher-order function that wraps another function to augment its behavior without altering its source code directly.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-057",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Python",
+    "subtopic": "Data Types",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Which of the following data types in Python is hashable and can be used as a dictionary key?",
+    "options": [
+      "List",
+      "Dictionary",
+      "Tuple of immutable elements",
+      "Set"
+    ],
+    "correctAnswer": "Tuple of immutable elements",
+    "expectedAnswer": "",
+    "explanation": "Dictionary keys must be hashable and immutable. A tuple containing only immutable elements (integers, strings, floats) is hashable, unlike lists, dictionaries, or sets.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-058",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Python",
+    "subtopic": "OOP",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the difference between `__init__` and `__new__` in Python class instantiation?",
+    "options": [
+      "`__new__` creates and returns the new instance, while `__init__` initializes the created instance",
+      "`__init__` allocates memory; `__new__` is the destructor",
+      "`__new__` is only for primitive types",
+      "There is no difference; they are aliases"
+    ],
+    "correctAnswer": "`__new__` creates and returns the new instance, while `__init__` initializes the created instance",
+    "expectedAnswer": "",
+    "explanation": "`__new__` is the static constructor that creates and returns a new object instance, while `__init__` is the initializer that configures attributes on that instance.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-059",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Python",
+    "subtopic": "List Comprehension",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is the output of `[x**2 for x in range(5) if x % 2 == 0]` in Python?",
+    "options": [
+      "[0, 4, 16]",
+      "[1, 9]",
+      "[0, 1, 4, 9, 16]",
+      "[4, 16]"
+    ],
+    "correctAnswer": "[0, 4, 16]",
+    "expectedAnswer": "",
+    "explanation": "For x in [0, 1, 2, 3, 4], even numbers are 0, 2, 4. Squaring them yields [0, 4, 16].",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-060",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Python",
+    "subtopic": "Arguments",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "In a Python function signature `def func(*args, **kwargs):`, what do `*args` and `**kwargs` capture?",
+    "options": [
+      "*args captures positional arguments as a tuple; **kwargs captures keyword arguments as a dictionary",
+      "*args captures keyword arguments; **kwargs captures positional arguments",
+      "Both capture lists",
+      "*args captures types; **kwargs captures values"
+    ],
+    "correctAnswer": "*args captures positional arguments as a tuple; **kwargs captures keyword arguments as a dictionary",
+    "expectedAnswer": "",
+    "explanation": "`*args` collects arbitrary positional arguments into a tuple, while `**kwargs` collects arbitrary keyword arguments into a dictionary.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-061",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Python",
+    "subtopic": "Copying",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the difference between `copy.copy()` (shallow copy) and `copy.deepcopy()` in Python?",
+    "options": [
+      "Shallow copy duplicates nested objects recursively; deep copy copies only outer references",
+      "Shallow copy creates a new compound object but inserts references to objects found in original; deep copy recursively duplicates all nested objects",
+      "Deep copy is for primitive types only",
+      "Shallow copy converts lists to tuples"
+    ],
+    "correctAnswer": "Shallow copy creates a new compound object but inserts references to objects found in original; deep copy recursively duplicates all nested objects",
+    "expectedAnswer": "",
+    "explanation": "A shallow copy constructs a new container but populates it with references to the original child objects. A deep copy recursively duplicates the container and all nested objects.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-062",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Python",
+    "subtopic": "Scope",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is the LEGB rule for variable resolution in Python?",
+    "options": [
+      "Local -> Enclosing -> Global -> Built-in",
+      "Local -> Extended -> Global -> Base",
+      "Library -> Enclosing -> Global -> Binary",
+      "Loop -> Function -> Class -> Module"
+    ],
+    "correctAnswer": "Local -> Enclosing -> Global -> Built-in",
+    "expectedAnswer": "",
+    "explanation": "Python resolves names in the order: Local (inside current function) -> Enclosing (nested functions) -> Global (module level) -> Built-in (predefined Python names).",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-063",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Python",
+    "subtopic": "Magic Methods",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Which special method in Python is invoked when evaluating `str(obj)` or `print(obj)`?",
+    "options": [
+      "`__repr__`",
+      "`__str__`",
+      "`__print__`",
+      "`__format__`"
+    ],
+    "correctAnswer": "`__str__`",
+    "expectedAnswer": "",
+    "explanation": "`__str__` is intended to return a user-friendly, readable string representation of an object when `str(obj)` or `print(obj)` is called.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-064",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Python",
+    "subtopic": "Slicing",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What does `lst[::-1]` do to a Python list `lst`?",
+    "options": [
+      "Removes the first element",
+      "Returns a reversed copy of the list",
+      "Sorts the list in ascending order",
+      "Empties the list"
+    ],
+    "correctAnswer": "Returns a reversed copy of the list",
+    "expectedAnswer": "",
+    "explanation": "Extended slicing with a step of `-1` (`[start:stop:step]`) iterates over the list in reverse order, returning a reversed copy.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-065",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Python",
+    "subtopic": "Context Managers",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Which two dunder methods must a Python class implement to support the `with` statement (Context Manager)?",
+    "options": [
+      "`__start__` and `__end__`",
+      "`__enter__` and `__exit__`",
+      "`__open__` and `__close__`",
+      "`__init__` and `__del__`"
+    ],
+    "correctAnswer": "`__enter__` and `__exit__`",
+    "expectedAnswer": "",
+    "explanation": "The context management protocol requires `__enter__()` (executed before entering the with-block) and `__exit__()` (executed after leaving the block, handling cleanup and exceptions).",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-066",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "OOP",
+    "subtopic": "Pillars",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Which OOP pillar focuses on hiding internal implementation details and exposing only the necessary interface?",
+    "options": [
+      "Inheritance",
+      "Abstraction",
+      "Polymorphism",
+      "Coupling"
+    ],
+    "correctAnswer": "Abstraction",
+    "expectedAnswer": "",
+    "explanation": "Abstraction hides complex implementation details and shows only the essential features and public interface to the user.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-067",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "OOP",
+    "subtopic": "Pillars",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Which OOP principle binds data members and member functions together inside a single unit while restricting direct external access?",
+    "options": [
+      "Encapsulation",
+      "Inheritance",
+      "Polymorphism",
+      "Dynamic Binding"
+    ],
+    "correctAnswer": "Encapsulation",
+    "expectedAnswer": "",
+    "explanation": "Encapsulation bundles data and the methods that operate on that data into a single class while restricting direct access using access specifiers (private, protected).",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-068",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "OOP",
+    "subtopic": "Polymorphism",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the difference between method overloading and method overriding?",
+    "options": [
+      "Overloading is resolved at runtime (same method name, same parameters); overriding is compile-time",
+      "Overloading is compile-time polymorphism (same name, different parameters); overriding is runtime polymorphism (redefining superclass method in subclass)",
+      "Overloading requires abstract classes; overriding requires interfaces",
+      "There is no difference"
+    ],
+    "correctAnswer": "Overloading is compile-time polymorphism (same name, different parameters); overriding is runtime polymorphism (redefining superclass method in subclass)",
+    "expectedAnswer": "",
+    "explanation": "Method overloading occurs within the same class with different parameter lists (compile-time). Method overriding occurs across parent-child classes with the identical method signature (runtime).",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-069",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "OOP",
+    "subtopic": "SOLID Principles",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "According to the Single Responsibility Principle (SRP) in SOLID, a class should have:",
+    "options": [
+      "Only one public method",
+      "Only one reason to change",
+      "Only one subclass",
+      "Zero dependencies"
+    ],
+    "correctAnswer": "Only one reason to change",
+    "expectedAnswer": "",
+    "explanation": "The Single Responsibility Principle states that a class should have one, and only one, reason to change, meaning it should perform a single cohesive responsibility.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-070",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "OOP",
+    "subtopic": "SOLID Principles",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What does the Liskov Substitution Principle (LSP) state?",
+    "options": [
+      "Derived classes must be private",
+      "Objects of a superclass should be replaceable with objects of its subclasses without breaking program correctness",
+      "Interfaces must contain only one method",
+      "High-level modules should depend directly on concrete classes"
+    ],
+    "correctAnswer": "Objects of a superclass should be replaceable with objects of its subclasses without breaking program correctness",
+    "expectedAnswer": "",
+    "explanation": "LSP asserts that subclasses must be substitutable for their base classes without altering the desirable properties (correctness, behavior) of the system.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-071",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "OOP",
+    "subtopic": "SOLID Principles",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What does the Open/Closed Principle (OCP) advocate in software design?",
+    "options": [
+      "Software entities should be open for extension, but closed for modification",
+      "Classes must have open public fields and closed private methods",
+      "Code must be open source and closed to commercial use",
+      "Modules should be closed to inheritance"
+    ],
+    "correctAnswer": "Software entities should be open for extension, but closed for modification",
+    "expectedAnswer": "",
+    "explanation": "OCP states that systems should be designed so that new functionality can be added by adding new code (extending), rather than modifying existing tested code.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-072",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "OOP",
+    "subtopic": "Design Patterns",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Which creational design pattern ensures that a class has only one instance and provides a global access point to it?",
+    "options": [
+      "Factory Pattern",
+      "Singleton Pattern",
+      "Observer Pattern",
+      "Adapter Pattern"
+    ],
+    "correctAnswer": "Singleton Pattern",
+    "expectedAnswer": "",
+    "explanation": "The Singleton pattern restricts class instantiation to a single object instance, typically with a private constructor and a static instance getter.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-073",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "OOP",
+    "subtopic": "Design Patterns",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Which design pattern defines a one-to-many dependency between objects so that when one object changes state, all its dependents are notified automatically?",
+    "options": [
+      "Strategy Pattern",
+      "Observer Pattern",
+      "Decorator Pattern",
+      "Facade Pattern"
+    ],
+    "correctAnswer": "Observer Pattern",
+    "expectedAnswer": "",
+    "explanation": "The Observer pattern (Publish-Subscribe) maintains a list of dependents (observers) that are automatically notified and updated whenever the subject's state changes.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-074",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "OOP",
+    "subtopic": "Design Patterns",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Which design pattern converts the interface of a class into another interface clients expect, allowing incompatible classes to work together?",
+    "options": [
+      "Adapter Pattern",
+      "Proxy Pattern",
+      "Builder Pattern",
+      "Composite Pattern"
+    ],
+    "correctAnswer": "Adapter Pattern",
+    "expectedAnswer": "",
+    "explanation": "The Adapter pattern acts as a wrapper between two incompatible interfaces, translating calls from one interface into format expected by the adaptee.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-075",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "OOP",
+    "subtopic": "Design Patterns",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "Which design pattern separates an algorithm from the object structure on which it operates, allowing new operations to be added without modifying the structure classes?",
+    "options": [
+      "Visitor Pattern",
+      "Strategy Pattern",
+      "State Pattern",
+      "Template Method Pattern"
+    ],
+    "correctAnswer": "Visitor Pattern",
+    "expectedAnswer": "",
+    "explanation": "The Visitor design pattern allows adding new virtual operations to a group of classes without modifying the source code of the element classes themselves.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-076",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "OOP",
+    "subtopic": "Relationships",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is the difference between Composition and Aggregation in OOP?",
+    "options": [
+      "Composition represents a weak 'has-a' relationship where child can exist independently; Aggregation represents strong ownership where child dies with parent",
+      "Composition represents a strong 'has-a' relationship where child lifetime is strictly tied to parent; Aggregation represents a loose 'has-a' where child can exist independently",
+      "Composition is inheritance; Aggregation is polymorphism",
+      "Both are identical"
+    ],
+    "correctAnswer": "Composition represents a strong 'has-a' relationship where child lifetime is strictly tied to parent; Aggregation represents a loose 'has-a' where child can exist independently",
+    "expectedAnswer": "",
+    "explanation": "Composition is death-bound ownership (e.g. House and Room - room cannot exist without house). Aggregation is independent relationship (e.g. Department and Teacher - teacher exists if department closes).",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-077",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "OOP",
+    "subtopic": "Coupling & Cohesion",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "In good software engineering, what is the recommended balance between coupling and cohesion?",
+    "options": [
+      "High coupling and high cohesion",
+      "Low coupling and high cohesion",
+      "High coupling and low cohesion",
+      "Low coupling and low cohesion"
+    ],
+    "correctAnswer": "Low coupling and high cohesion",
+    "expectedAnswer": "",
+    "explanation": "High cohesion means elements inside a module belong together and perform a focused task. Low coupling means modules are minimally dependent on each other, improving modularity and testability.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-078",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "OOP",
+    "subtopic": "Design Patterns",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Which design pattern encapsulates a family of algorithms, making them interchangeable at runtime based on client needs?",
+    "options": [
+      "Strategy Pattern",
+      "Command Pattern",
+      "Memento Pattern",
+      "Prototype Pattern"
+    ],
+    "correctAnswer": "Strategy Pattern",
+    "expectedAnswer": "",
+    "explanation": "The Strategy pattern defines a family of algorithms, encapsulates each one into a separate class, and makes them interchangeable at runtime.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-079",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "OOP",
+    "subtopic": "Design Patterns",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "Which creational design pattern separates the construction of a complex object from its representation, allowing the same construction process to create various representations?",
+    "options": [
+      "Builder Pattern",
+      "Abstract Factory Pattern",
+      "Decorator Pattern",
+      "Chain of Responsibility"
+    ],
+    "correctAnswer": "Builder Pattern",
+    "expectedAnswer": "",
+    "explanation": "The Builder pattern constructs complex objects step by step, avoiding large parameter-heavy constructors (telescoping constructors).",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-080",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "OOP",
+    "subtopic": "Polymorphism",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Which of the following is an example of compile-time (static) polymorphism?",
+    "options": [
+      "Virtual function overriding",
+      "Method overloading and operator overloading",
+      "Dynamic method dispatch",
+      "Interface implementation"
+    ],
+    "correctAnswer": "Method overloading and operator overloading",
+    "expectedAnswer": "",
+    "explanation": "Compile-time polymorphism is resolved during compilation based on method signatures and parameter types (e.g., function/method overloading).",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-081",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Data Structures",
+    "subtopic": "Arrays",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What makes array element access by index O(1) in constant time?",
+    "options": [
+      "Binary search indexing",
+      "Contiguous memory layout enabling direct address computation: `Base_Address + (Index * Element_Size)`",
+      "Hash table indexing inside CPU",
+      "Linked pointer navigation"
+    ],
+    "correctAnswer": "Contiguous memory layout enabling direct address computation: `Base_Address + (Index * Element_Size)`",
+    "expectedAnswer": "",
+    "explanation": "Because array elements are stored in contiguous memory cells of identical size, the exact memory address of element `i` is computed instantaneously with a single multiplication and addition.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-082",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Data Structures",
+    "subtopic": "Linked Lists",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is the time complexity to insert a new node at the beginning of a Singly Linked List with a known head pointer?",
+    "options": [
+      "O(1)",
+      "O(N)",
+      "O(log N)",
+      "O(N^2)"
+    ],
+    "correctAnswer": "O(1)",
+    "expectedAnswer": "",
+    "explanation": "Inserting at the head requires updating the new node's next pointer to point to the current head and updating the head pointer, taking constant O(1) time.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-083",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Data Structures",
+    "subtopic": "Linked Lists",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Which algorithm is used to detect a cycle in a linked list using O(1) auxiliary space?",
+    "options": [
+      "Breadth First Search",
+      "Floyd's Tortoise and Hare (Two Pointer) algorithm",
+      "Dijkstra's Algorithm",
+      "Binary Search"
+    ],
+    "correctAnswer": "Floyd's Tortoise and Hare (Two Pointer) algorithm",
+    "expectedAnswer": "",
+    "explanation": "Floyd's algorithm uses a slow pointer (moving 1 step) and a fast pointer (moving 2 steps). If a cycle exists, the fast pointer will inevitably meet the slow pointer within the cycle in O(N) time and O(1) space.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-084",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Data Structures",
+    "subtopic": "Stacks",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Which data structure operates strictly on the Last-In, First-Out (LIFO) principle?",
+    "options": [
+      "Queue",
+      "Stack",
+      "Priority Queue",
+      "Circular Buffer"
+    ],
+    "correctAnswer": "Stack",
+    "expectedAnswer": "",
+    "explanation": "A Stack enforces LIFO access: the most recently pushed element is the first one popped from the top.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-085",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Data Structures",
+    "subtopic": "Stacks",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What data structure is standardly used for evaluating postfix arithmetic expressions and parsing matching parentheses?",
+    "options": [
+      "Queue",
+      "Stack",
+      "Binary Heap",
+      "Hash Map"
+    ],
+    "correctAnswer": "Stack",
+    "expectedAnswer": "",
+    "explanation": "A Stack is used to parse matching brackets and evaluate postfix/Reverse Polish Notation expressions by pushing operands and popping when operators appear.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-086",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Data Structures",
+    "subtopic": "Queues",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "In a standard FIFO (First-In, First-Out) Queue, where do insertion and deletion operations occur?",
+    "options": [
+      "Insertion at front, deletion at rear",
+      "Insertion at rear (enqueue), deletion at front (dequeue)",
+      "Both insertion and deletion at front",
+      "Both insertion and deletion at rear"
+    ],
+    "correctAnswer": "Insertion at rear (enqueue), deletion at front (dequeue)",
+    "expectedAnswer": "",
+    "explanation": "In a FIFO queue, elements enter at the rear (enqueue) and exit from the front (dequeue).",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-087",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Data Structures",
+    "subtopic": "Binary Search Trees",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What traversal of a Binary Search Tree (BST) produces nodes in strictly ascending sorted order?",
+    "options": [
+      "Pre-order traversal",
+      "In-order traversal",
+      "Post-order traversal",
+      "Level-order traversal"
+    ],
+    "correctAnswer": "In-order traversal",
+    "expectedAnswer": "",
+    "explanation": "In-order traversal visits Left subtree -> Root -> Right subtree. In a valid BST where left < root < right, this sequence visits values in sorted ascending order.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-088",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Data Structures",
+    "subtopic": "Binary Search Trees",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is the worst-case time complexity of searching in an unbalanced degenerate Binary Search Tree of N elements?",
+    "options": [
+      "O(1)",
+      "O(log N)",
+      "O(N)",
+      "O(N log N)"
+    ],
+    "correctAnswer": "O(N)",
+    "expectedAnswer": "",
+    "explanation": "When elements are inserted in strictly sorted order, a standard BST degenerates into a linear linked list where tree height is N, leading to O(N) worst-case search time.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-089",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Data Structures",
+    "subtopic": "Balanced Trees",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "In an AVL Tree, what is the maximum permissible absolute difference between the heights of the left and right subtrees for every node (Balance Factor)?",
+    "options": [
+      "0",
+      "1",
+      "2",
+      "log N"
+    ],
+    "correctAnswer": "1",
+    "expectedAnswer": "",
+    "explanation": "An AVL tree is a self-balancing BST where the balance factor (height(left) - height(right)) for every node must be in the range {-1, 0, +1}.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-090",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Data Structures",
+    "subtopic": "Heaps",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the time complexity to build a Binary Heap from an arbitrary array of N elements using the bottom-up `heapify` procedure?",
+    "options": [
+      "O(N log N)",
+      "O(N)",
+      "O(log N)",
+      "O(N^2)"
+    ],
+    "correctAnswer": "O(N)",
+    "expectedAnswer": "",
+    "explanation": "Bottom-up heap construction runs in linear O(N) time because the sum of heights across all nodes forms a converging geometric progression `N * sum(h / 2^h) = O(N)`.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-091",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Data Structures",
+    "subtopic": "Heaps",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "In a Max-Heap containing N elements, where is the largest element always located?",
+    "options": [
+      "At the leftmost leaf",
+      "At the root node",
+      "At the rightmost leaf",
+      "At index N-1"
+    ],
+    "correctAnswer": "At the root node",
+    "expectedAnswer": "",
+    "explanation": "By heap property definition, every parent node in a Max-Heap is greater than or equal to its children, making the root node the maximum value in the heap.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-092",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Data Structures",
+    "subtopic": "Hash Tables",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is open addressing linear probing in hash tables?",
+    "options": [
+      "Chaining collided elements in a linked list",
+      "Sequentially probing the next hash table slots `(hash + i) % Table_Size` when a collision occurs",
+      "Rehashing with a second hash function",
+      "Allocating a new tree bucket"
+    ],
+    "correctAnswer": "Sequentially probing the next hash table slots `(hash + i) % Table_Size` when a collision occurs",
+    "expectedAnswer": "",
+    "explanation": "Linear probing is an open addressing collision resolution technique that checks subsequent table slots linearly `(index + 1, index + 2, ...)` until an empty bucket is found.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-093",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Data Structures",
+    "subtopic": "Trie",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is the primary advantage of a Trie (Prefix Tree) over a Hash Table for string storage?",
+    "options": [
+      "Requires less memory for random numbers",
+      "Supports efficient prefix matching (autocomplete) and lexicographical ordering in O(L) time where L is string length",
+      "Provides O(1) space complexity",
+      "Faster CPU register access"
+    ],
+    "correctAnswer": "Supports efficient prefix matching (autocomplete) and lexicographical ordering in O(L) time where L is string length",
+    "expectedAnswer": "",
+    "explanation": "A Trie stores common prefixes once, enabling instant prefix searches (e.g. auto-complete, spell-check) in O(L) time independent of the total number of stored strings N.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-094",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Data Structures",
+    "subtopic": "Graphs",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the space complexity of representing a graph with V vertices and E edges using an Adjacency Matrix vs Adjacency List?",
+    "options": [
+      "Adjacency Matrix: O(V^2); Adjacency List: O(V + E)",
+      "Adjacency Matrix: O(V + E); Adjacency List: O(V^2)",
+      "Both require O(V * E)",
+      "Both require O(V)"
+    ],
+    "correctAnswer": "Adjacency Matrix: O(V^2); Adjacency List: O(V + E)",
+    "expectedAnswer": "",
+    "explanation": "An adjacency matrix uses a V x V 2D array taking O(V^2) space regardless of edges. An adjacency list stores only actual edges, requiring O(V + E) space, making it efficient for sparse graphs.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-095",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Data Structures",
+    "subtopic": "Queues",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "How does a Circular Queue resolve the limitation of a standard Linear Array-based Queue?",
+    "options": [
+      "By doubling memory capacity dynamically",
+      "By using modulo arithmetic to reuse empty slots at the beginning after front elements are dequeued",
+      "By converting to a linked list automatically",
+      "By reversing element order"
+    ],
+    "correctAnswer": "By using modulo arithmetic to reuse empty slots at the beginning after front elements are dequeued",
+    "expectedAnswer": "",
+    "explanation": "A circular queue connects the end of the array back to the start using `(rear + 1) % Capacity`, preventing false queue overflow when spaces exist at the front after dequeues.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-096",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Algorithms",
+    "subtopic": "Sorting",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Which sorting algorithm has a guaranteed worst-case time complexity of O(N log N) and is stable?",
+    "options": [
+      "Quick Sort",
+      "Merge Sort",
+      "Heap Sort",
+      "Selection Sort"
+    ],
+    "correctAnswer": "Merge Sort",
+    "expectedAnswer": "",
+    "explanation": "Merge Sort divides the array in half recursively and merges in linear time, guaranteeing O(N log N) in all cases (best, average, worst) while maintaining stability.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-097",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Algorithms",
+    "subtopic": "Sorting",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What causes Quick Sort to degrade to its worst-case time complexity of O(N^2)?",
+    "options": [
+      "When the array has negative numbers",
+      "When the pivot chosen is consistently the smallest or largest element (e.g. already sorted array with first/last pivot)",
+      "When array length is a power of two",
+      "When duplicates are present"
+    ],
+    "correctAnswer": "When the pivot chosen is consistently the smallest or largest element (e.g. already sorted array with first/last pivot)",
+    "expectedAnswer": "",
+    "explanation": "Unbalanced partitioning (1 element on one side, N-1 on the other) leads to N recursive levels of O(N) work, yielding O(N^2) worst-case complexity.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-098",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Algorithms",
+    "subtopic": "Searching",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What prerequisite condition MUST be satisfied before Binary Search can be applied to an array?",
+    "options": [
+      "Array must contain only unique elements",
+      "Array elements must be sorted in ascending or descending order",
+      "Array size must be a power of two",
+      "Array must be allocated dynamically"
+    ],
+    "correctAnswer": "Array elements must be sorted in ascending or descending order",
+    "expectedAnswer": "",
+    "explanation": "Binary Search relies on comparing the target with the middle element to eliminate half of the search space, requiring sorted data.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-099",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Algorithms",
+    "subtopic": "Graph Algorithms",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Which algorithm is used to find the shortest path from a single source node to all other nodes in a weighted graph with NON-NEGATIVE edge weights?",
+    "options": [
+      "Kruskal's Algorithm",
+      "Dijkstra's Algorithm",
+      "Floyd-Warshall Algorithm",
+      "Kosaraju's Algorithm"
+    ],
+    "correctAnswer": "Dijkstra's Algorithm",
+    "expectedAnswer": "",
+    "explanation": "Dijkstra's algorithm uses a priority queue/min-heap to greedily expand the shortest path to all reachable vertices in O((V + E) log V) time for non-negative edge weights.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-100",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Algorithms",
+    "subtopic": "Graph Algorithms",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "Which algorithm can detect negative weight cycles in a directed weighted graph?",
+    "options": [
+      "Dijkstra's Algorithm",
+      "Bellman-Ford Algorithm",
+      "Prim's Algorithm",
+      "Breadth First Search"
+    ],
+    "correctAnswer": "Bellman-Ford Algorithm",
+    "expectedAnswer": "",
+    "explanation": "Bellman-Ford relaxes all edges V-1 times. If a further relaxation on the V-th pass reduces any shortest distance, a negative weight cycle exists.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-101",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Algorithms",
+    "subtopic": "Dynamic Programming",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What two key properties must a problem exhibit to be solvable using Dynamic Programming?",
+    "options": [
+      "Greedy choice property and linear memory",
+      "Optimal Substructure and Overlapping Subproblems",
+      "Sorted input and divide-and-conquer",
+      "Binary branching and recursion"
+    ],
+    "correctAnswer": "Optimal Substructure and Overlapping Subproblems",
+    "expectedAnswer": "",
+    "explanation": "Dynamic Programming is applicable when optimal solutions to subproblems combine to solve the main problem (Optimal Substructure) and the same subproblems are computed repeatedly (Overlapping Subproblems).",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-102",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Algorithms",
+    "subtopic": "Greedy",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is the difference between the Fractional Knapsack problem and the 0/1 Knapsack problem regarding greedy approach?",
+    "options": [
+      "Fractional Knapsack can be solved greedily by sorting value/weight ratio; 0/1 Knapsack requires Dynamic Programming",
+      "0/1 Knapsack is greedy; Fractional is DP",
+      "Both are solved in O(1) time",
+      "Neither can be solved in polynomial time"
+    ],
+    "correctAnswer": "Fractional Knapsack can be solved greedily by sorting value/weight ratio; 0/1 Knapsack requires Dynamic Programming",
+    "expectedAnswer": "",
+    "explanation": "In Fractional Knapsack, taking items with highest value-to-weight ratio yields the global optimal solution. In 0/1 Knapsack, items cannot be split, so the greedy heuristic fails and DP is required.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-103",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Algorithms",
+    "subtopic": "Complexity",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is the time complexity of the following code loop: `for (int i = 1; i < n; i *= 2) { ... }`?",
+    "options": [
+      "O(N)",
+      "O(log N)",
+      "O(N^2)",
+      "O(1)"
+    ],
+    "correctAnswer": "O(log N)",
+    "expectedAnswer": "",
+    "explanation": "Since the loop variable `i` doubles in each iteration (1, 2, 4, 8, ...), the loop executes `log2(N)` times, giving logarithmic O(log N) complexity.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-104",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Algorithms",
+    "subtopic": "Sorting",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "Why can non-comparison-based sorting algorithms like Counting Sort and Radix Sort achieve O(N) linear time complexity?",
+    "options": [
+      "They use multithreading",
+      "They exploit discrete integer range properties rather than pairwise element comparisons, bypassing the Omega(N log N) comparison sort lower bound",
+      "They require O(1) space",
+      "They sort only unique elements"
+    ],
+    "correctAnswer": "They exploit discrete integer range properties rather than pairwise element comparisons, bypassing the Omega(N log N) comparison sort lower bound",
+    "expectedAnswer": "",
+    "explanation": "The theoretical lower bound of Omega(N log N) applies strictly to comparison sorts. Counting and Radix Sort use direct bucket indexing on key digits, achieving linear O(N + K) time.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-105",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Algorithms",
+    "subtopic": "Dynamic Programming",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is Kadane's Algorithm used for?",
+    "options": [
+      "Finding the shortest path in a DAG",
+      "Finding the Maximum Subarray Sum in a 1D array in O(N) time",
+      "Sorting numbers in linear time",
+      "Detecting cycles in a graph"
+    ],
+    "correctAnswer": "Finding the Maximum Subarray Sum in a 1D array in O(N) time",
+    "expectedAnswer": "",
+    "explanation": "Kadane's algorithm computes the maximum subarray sum in a single pass O(N) by tracking the current maximum ending at each position and the global maximum.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-106",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Algorithms",
+    "subtopic": "Graph Traversal",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Which graph traversal algorithm uses a FIFO Queue and explores all neighbor vertices at the present depth level before moving to the next level?",
+    "options": [
+      "Depth First Search (DFS)",
+      "Breadth First Search (BFS)",
+      "Topological Sort",
+      "Binary Search"
+    ],
+    "correctAnswer": "Breadth First Search (BFS)",
+    "expectedAnswer": "",
+    "explanation": "BFS explores vertices level by level using a queue, finding the shortest path in unweighted graphs.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-107",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Algorithms",
+    "subtopic": "Graph Traversal",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What algorithm can be used to order tasks with prerequisite dependencies (Directed Acyclic Graph)?",
+    "options": [
+      "Topological Sort",
+      "Kruskal's Algorithm",
+      "Binary Search",
+      "Kadane's Algorithm"
+    ],
+    "correctAnswer": "Topological Sort",
+    "expectedAnswer": "",
+    "explanation": "Topological sorting provides a linear ordering of vertices in a Directed Acyclic Graph (DAG) such that for every directed edge u -> v, vertex u comes before v.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-108",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Algorithms",
+    "subtopic": "Minimum Spanning Tree",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What data structure is used in Kruskal's algorithm to efficiently detect cycles when adding edges?",
+    "options": [
+      "Stack",
+      "Disjoint Set Union (Union-Find)",
+      "Binary Search Tree",
+      "Hash Map"
+    ],
+    "correctAnswer": "Disjoint Set Union (Union-Find)",
+    "expectedAnswer": "",
+    "explanation": "Kruskal's algorithm sorts edges by weight and uses Disjoint Set Union (DSU) with union-by-rank and path compression to check whether two vertices belong to the same component in near O(1) time.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-109",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Algorithms",
+    "subtopic": "Complexity",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the space complexity of solving the Tower of Hanoi problem for N disks?",
+    "options": [
+      "O(1)",
+      "O(N) auxiliary stack space",
+      "O(2^N)",
+      "O(N^2)"
+    ],
+    "correctAnswer": "O(N) auxiliary stack space",
+    "expectedAnswer": "",
+    "explanation": "Although the time complexity is O(2^N) due to 2^N - 1 recursive calls, the maximum depth of the call stack at any point is N, giving O(N) auxiliary space complexity.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-110",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Algorithms",
+    "subtopic": "Divide & Conquer",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "According to the Master Theorem, what is the time complexity of a recurrence relation `T(N) = 2T(N/2) + O(N)`?",
+    "options": [
+      "O(N)",
+      "O(N log N)",
+      "O(N^2)",
+      "O(log N)"
+    ],
+    "correctAnswer": "O(N log N)",
+    "expectedAnswer": "",
+    "explanation": "Here a=2, b=2, and f(n)=O(n). Since log_b(a) = log_2(2) = 1, f(n) matches Theta(n^(log_b(a))) = Theta(n). By Case 2 of Master Theorem, T(N) = O(N log N).",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-111",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "DBMS",
+    "subtopic": "ACID Properties",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "In the ACID properties of database transactions, what does Atomicity guarantee?",
+    "options": [
+      "Data is replicated to secondary servers",
+      "All operations in a transaction execute completely or none are executed ('All or Nothing')",
+      "Transactions execute in complete isolation",
+      "Data types are preserved"
+    ],
+    "correctAnswer": "All operations in a transaction execute completely or none are executed ('All or Nothing')",
+    "expectedAnswer": "",
+    "explanation": "Atomicity guarantees that a transaction is treated as a single atomic unit of work: if any statement fails, the entire transaction is rolled back leaving the database in its prior state.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-112",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "DBMS",
+    "subtopic": "Normalization",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "A relation is in Third Normal Form (3NF) if it is in 2NF and:",
+    "options": [
+      "It has no multi-valued dependencies",
+      "There are no transitive functional dependencies for non-prime attributes on the candidate key",
+      "All attributes are composite",
+      "Every attribute is a primary key"
+    ],
+    "correctAnswer": "There are no transitive functional dependencies for non-prime attributes on the candidate key",
+    "expectedAnswer": "",
+    "explanation": "3NF requires that the relation is in 2NF and no non-prime attribute is transitively dependent on any candidate key (X -> Y where Y is non-prime implies X is a superkey).",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-113",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "DBMS",
+    "subtopic": "Normalization",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is the primary objective of database normalization?",
+    "options": [
+      "To maximize disk storage usage",
+      "To eliminate data redundancy and prevent insert, update, and delete anomalies",
+      "To remove all foreign keys",
+      "To combine all tables into a single table"
+    ],
+    "correctAnswer": "To eliminate data redundancy and prevent insert, update, and delete anomalies",
+    "expectedAnswer": "",
+    "explanation": "Normalization organizes tables and columns to reduce duplicate data and eliminate anomalies during INSERT, UPDATE, and DELETE operations.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-114",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "DBMS",
+    "subtopic": "Indexing",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "Why are B+ Trees preferred over B Trees for database indexes?",
+    "options": [
+      "B+ Trees use less memory than arrays",
+      "All actual data records/pointers are stored exclusively at leaf nodes, which are linked sequentially for efficient range queries",
+      "B+ Trees do not require rebalancing",
+      "B+ Trees allow duplicate primary keys"
+    ],
+    "correctAnswer": "All actual data records/pointers are stored exclusively at leaf nodes, which are linked sequentially for efficient range queries",
+    "expectedAnswer": "",
+    "explanation": "In B+ Trees, internal nodes store only routing keys, allowing high fan-out. Leaf nodes contain all data pointers and form a doubly-linked list, enabling fast sequential range scans.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-115",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "DBMS",
+    "subtopic": "SQL Joins",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Which SQL join returns all rows from the left table and matched rows from the right table (with NULLs for unmatched right rows)?",
+    "options": [
+      "INNER JOIN",
+      "LEFT OUTER JOIN",
+      "RIGHT OUTER JOIN",
+      "CROSS JOIN"
+    ],
+    "correctAnswer": "LEFT OUTER JOIN",
+    "expectedAnswer": "",
+    "explanation": "`LEFT JOIN` returns every record from the left table, along with matching columns from the right table. Where no match exists, NULL values are returned for right-side columns.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-116",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "DBMS",
+    "subtopic": "SQL Clauses",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is the difference between `WHERE` and `HAVING` clauses in SQL?",
+    "options": [
+      "`WHERE` filters rows before grouping/aggregation; `HAVING` filters aggregated groups after `GROUP BY`",
+      "`WHERE` works only on text; `HAVING` works on numbers",
+      "`HAVING` is executed before `WHERE`",
+      "They are completely interchangeable"
+    ],
+    "correctAnswer": "`WHERE` filters rows before grouping/aggregation; `HAVING` filters aggregated groups after `GROUP BY`",
+    "expectedAnswer": "",
+    "explanation": "`WHERE` filters individual rows before grouping. `HAVING` filters aggregated data results created by `GROUP BY` and can include aggregate functions (`COUNT`, `SUM`, `AVG`).",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-117",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "DBMS",
+    "subtopic": "Transactions",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is a 'Dirty Read' in database concurrency?",
+    "options": [
+      "A query reading corrupted disk sectors",
+      "A transaction reading uncommitted data modified by another concurrent transaction that might subsequently roll back",
+      "A transaction updating a row twice",
+      "A query reading data without an index"
+    ],
+    "correctAnswer": "A transaction reading uncommitted data modified by another concurrent transaction that might subsequently roll back",
+    "expectedAnswer": "",
+    "explanation": "A dirty read occurs at the `READ UNCOMMITTED` isolation level when Transaction 1 reads data modified by Transaction 2 before Transaction 2 commits. If Transaction 2 aborts/rolls back, Transaction 1 holds invalid data.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-118",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "DBMS",
+    "subtopic": "Transactions",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Which transaction isolation level provides the highest degree of data consistency, preventing dirty reads, non-repeatable reads, and phantom reads?",
+    "options": [
+      "Read Uncommitted",
+      "Read Committed",
+      "Repeatable Read",
+      "Serializable"
+    ],
+    "correctAnswer": "Serializable",
+    "expectedAnswer": "",
+    "explanation": "`SERIALIZABLE` is the highest ANSI SQL isolation level. It executes transactions as if they occurred serially one after another, completely eliminating dirty reads, non-repeatable reads, and phantom reads.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-119",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "DBMS",
+    "subtopic": "Keys",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is a Foreign Key in a relational database?",
+    "options": [
+      "A key that must be encrypted",
+      "A column or set of columns in one table that references the Primary Key of another table, enforcing referential integrity",
+      "A secondary index on temporary tables",
+      "A primary key imported from a foreign database server"
+    ],
+    "correctAnswer": "A column or set of columns in one table that references the Primary Key of another table, enforcing referential integrity",
+    "expectedAnswer": "",
+    "explanation": "A foreign key establishes a link between data in two tables, ensuring referential integrity by ensuring the referenced primary key value exists in the parent table.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-120",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "DBMS",
+    "subtopic": "SQL Query",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Which SQL query correctly finds the second highest salary from an `Employees` table?",
+    "options": [
+      "`SELECT MAX(salary) FROM Employees WHERE salary < (SELECT MAX(salary) FROM Employees);`",
+      "`SELECT salary FROM Employees ORDER BY salary DESC LIMIT 1;`",
+      "`SELECT SECOND(salary) FROM Employees;`",
+      "`SELECT salary FROM Employees WHERE salary = 2;`"
+    ],
+    "correctAnswer": "`SELECT MAX(salary) FROM Employees WHERE salary < (SELECT MAX(salary) FROM Employees);`",
+    "expectedAnswer": "",
+    "explanation": "The subquery `(SELECT MAX(salary) FROM Employees)` finds the absolute highest salary. The outer query finds the maximum salary strictly less than that, which is the second highest.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-121",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "DBMS",
+    "subtopic": "Indexing",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the difference between a Clustered Index and a Non-Clustered Index?",
+    "options": [
+      "A table can have multiple clustered indexes, but only one non-clustered index",
+      "A Clustered Index determines the physical order of data rows on disk (only one per table); a Non-Clustered Index stores pointers to data rows (multiple allowed)",
+      "Clustered indexes are stored in RAM; non-clustered are on disk",
+      "Non-clustered indexes cannot have duplicate keys"
+    ],
+    "correctAnswer": "A Clustered Index determines the physical order of data rows on disk (only one per table); a Non-Clustered Index stores pointers to data rows (multiple allowed)",
+    "expectedAnswer": "",
+    "explanation": "A table can have only one clustered index because rows can only be physically sorted on disk in one order (typically primary key). Non-clustered indexes create separate lookup structures with pointers to the data rows.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-122",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "DBMS",
+    "subtopic": "SQL Aggregation",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What does `COUNT(*)` return in SQL compared to `COUNT(column_name)`?",
+    "options": [
+      "`COUNT(*)` counts all rows including NULLs; `COUNT(column_name)` counts only rows where column_name is NOT NULL",
+      "`COUNT(*)` ignores duplicate rows; `COUNT(column_name)` includes duplicates",
+      "Both are always identical",
+      "`COUNT(*)` counts only unique values"
+    ],
+    "correctAnswer": "`COUNT(*)` counts all rows including NULLs; `COUNT(column_name)` counts only rows where column_name is NOT NULL",
+    "expectedAnswer": "",
+    "explanation": "`COUNT(*)` returns the total count of rows in the table/result set. `COUNT(column)` evaluates and excludes rows where `column` contains `NULL`.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-123",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "DBMS",
+    "subtopic": "Views",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is a Database View?",
+    "options": [
+      "A physical table copied on disk",
+      "A virtual table based on the result-set of an underlying SQL query",
+      "A database backup snapshot",
+      "A graphical user interface tool"
+    ],
+    "correctAnswer": "A virtual table based on the result-set of an underlying SQL query",
+    "expectedAnswer": "",
+    "explanation": "A View contains no data physically of its own; it is a stored query definition that generates a virtual table dynamically whenever queried.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-124",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "DBMS",
+    "subtopic": "Architecture",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is the purpose of Write-Ahead Logging (WAL) in database management systems?",
+    "options": [
+      "To log all user read queries for security analytics",
+      "To ensure transaction changes are written to persistent log disk before they are flushed to the actual database pages, guaranteeing durability and crash recovery",
+      "To compress historical table partitions",
+      "To cache SQL execution plans in RAM"
+    ],
+    "correctAnswer": "To ensure transaction changes are written to persistent log disk before they are flushed to the actual database pages, guaranteeing durability and crash recovery",
+    "expectedAnswer": "",
+    "explanation": "WAL ensures that all modifications are logged sequentially to non-volatile log storage before dirty buffer pool pages are written to data files, enabling REDO/UNDO operations during crash recovery.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-125",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "DBMS",
+    "subtopic": "Stored Procedures",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is a primary benefit of using Stored Procedures in relational databases?",
+    "options": [
+      "Pre-compiled execution on the database server, reduced network traffic, and enhanced security",
+      "They eliminate the need for primary keys",
+      "They allow running C++ code inside the browser",
+      "They convert relational databases to NoSQL"
+    ],
+    "correctAnswer": "Pre-compiled execution on the database server, reduced network traffic, and enhanced security",
+    "expectedAnswer": "",
+    "explanation": "Stored procedures are pre-compiled and stored directly on the database engine, reducing network overhead and preventing SQL injection by enforcing parameterized query execution.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-126",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Operating Systems",
+    "subtopic": "Processes & Threads",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is the primary difference between a Process and a Thread?",
+    "options": [
+      "A thread has its own separate virtual address space; a process shares memory",
+      "A process is an executing program with its own address space; a thread is a lightweight unit of execution sharing the process memory",
+      "Processes cannot run in parallel on multi-core CPUs",
+      "Threads cannot share variables"
+    ],
+    "correctAnswer": "A process is an executing program with its own address space; a thread is a lightweight unit of execution sharing the process memory",
+    "expectedAnswer": "",
+    "explanation": "A process possesses its own dedicated address space, file handles, and memory map. Threads within the same process share code, data, and heap, but maintain separate stacks and register contexts.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-127",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Operating Systems",
+    "subtopic": "CPU Scheduling",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Which CPU scheduling algorithm is non-preemptive and selects the process with the shortest burst time first?",
+    "options": [
+      "Round Robin",
+      "Shortest Job First (SJF) non-preemptive",
+      "Priority Preemptive",
+      "Multi-Level Feedback Queue"
+    ],
+    "correctAnswer": "Shortest Job First (SJF) non-preemptive",
+    "expectedAnswer": "",
+    "explanation": "SJF non-preemptive assigns the CPU to the process with the smallest CPU burst time and allows it to run to completion, minimizing average waiting time.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-128",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Operating Systems",
+    "subtopic": "CPU Scheduling",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Which CPU scheduling algorithm uses time-slicing (quantum) to ensure fair sharing of CPU among all active processes?",
+    "options": [
+      "First Come First Served (FCFS)",
+      "Round Robin (RR)",
+      "Shortest Remaining Time First (SRTF)",
+      "Priority Scheduling"
+    ],
+    "correctAnswer": "Round Robin (RR)",
+    "expectedAnswer": "",
+    "explanation": "Round Robin assigns a fixed time quantum to each process in circular order, preempting when the quantum expires to achieve fair time-sharing.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-129",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Operating Systems",
+    "subtopic": "Deadlocks",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Which of the following is NOT one of Coffman's four necessary conditions for deadlock?",
+    "options": [
+      "Mutual Exclusion",
+      "Hold and Wait",
+      "Preemption Allowed",
+      "Circular Wait"
+    ],
+    "correctAnswer": "Preemption Allowed",
+    "expectedAnswer": "",
+    "explanation": "The 4 necessary conditions for deadlock are: Mutual Exclusion, Hold and Wait, No Preemption, and Circular Wait. If resources can be preempted, deadlock cannot occur.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-130",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Operating Systems",
+    "subtopic": "Deadlocks",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is Banker's Algorithm used for in operating systems?",
+    "options": [
+      "CPU process scheduling",
+      "Deadlock avoidance by testing for a safe state before granting resource allocation",
+      "Virtual memory paging replacement",
+      "Disk defragmentation"
+    ],
+    "correctAnswer": "Deadlock avoidance by testing for a safe state before granting resource allocation",
+    "expectedAnswer": "",
+    "explanation": "Banker's Algorithm simulates resource allocation for maximum possible claims and ensures the system remains in a 'safe state' where all processes can eventually complete without deadlocking.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-131",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Operating Systems",
+    "subtopic": "Process Synchronization",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the difference between a Mutex and a Counting Semaphore?",
+    "options": [
+      "A Mutex is a binary lock with ownership (only the locking thread can unlock); a Semaphore is a signaling mechanism with an integer counter (any thread can signal)",
+      "A Mutex works only in kernel space; a Semaphore is for user space",
+      "Semaphores cannot protect shared resources",
+      "They are identical in all operating systems"
+    ],
+    "correctAnswer": "A Mutex is a binary lock with ownership (only the locking thread can unlock); a Semaphore is a signaling mechanism with an integer counter (any thread can signal)",
+    "expectedAnswer": "",
+    "explanation": "A Mutex enforces exclusive locking with ownership semantics. A Semaphore maintains an integer count and acts as a signaling mechanism allowing up to N concurrent accessors.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-132",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Operating Systems",
+    "subtopic": "Memory Management",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is Paging in operating system memory management?",
+    "options": [
+      "Dividing physical memory into fixed-size frames and virtual memory into fixed-size pages to eliminate external fragmentation",
+      "Compressing files on hard disk",
+      "Loading all programs into CPU cache",
+      "Splitting programs into variable-sized logical segments"
+    ],
+    "correctAnswer": "Dividing physical memory into fixed-size frames and virtual memory into fixed-size pages to eliminate external fragmentation",
+    "expectedAnswer": "",
+    "explanation": "Paging divides logical memory into fixed-size blocks (pages) and physical memory into identical frames, mapped via a Page Table, completely preventing external fragmentation.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-133",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Operating Systems",
+    "subtopic": "Virtual Memory",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is a Page Fault in an operating system?",
+    "options": [
+      "A hardware failure in RAM chips",
+      "An interrupt raised when a program accesses a virtual page that is not currently mapped into physical RAM frames",
+      "A syntax error in C pointer syntax",
+      "A stack overflow exception"
+    ],
+    "correctAnswer": "An interrupt raised when a program accesses a virtual page that is not currently mapped into physical RAM frames",
+    "expectedAnswer": "",
+    "explanation": "When a referenced page is marked invalid/absent in the Page Table, the MMU raises a Page Fault interrupt, prompting the OS to fetch the page from secondary storage (swap) into RAM.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-134",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Operating Systems",
+    "subtopic": "Virtual Memory",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is 'Thrashing' in an operating system?",
+    "options": [
+      "Hard drive mechanical disk head damage",
+      "A condition where the OS spends more time swapping pages in and out of disk than executing actual process instructions",
+      "A process consuming 100% CPU in an infinite loop",
+      "A network buffer overflow"
+    ],
+    "correctAnswer": "A condition where the OS spends more time swapping pages in and out of disk than executing actual process instructions",
+    "expectedAnswer": "",
+    "explanation": "Thrashing occurs when the sum of active processes' working sets exceeds physical RAM, causing constant page faults and continuous disk I/O, reducing CPU throughput to near zero.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-135",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Operating Systems",
+    "subtopic": "Page Replacement",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "Which page replacement algorithm replaces the page that has not been used for the longest period of time?",
+    "options": [
+      "First In First Out (FIFO)",
+      "Least Recently Used (LRU)",
+      "Optimal Page Replacement (OPT)",
+      "Least Frequently Used (LFU)"
+    ],
+    "correctAnswer": "Least Recently Used (LRU)",
+    "expectedAnswer": "",
+    "explanation": "LRU tracks page access history and evicts the page whose last access timestamp is oldest, approximating optimal replacement based on the principle of temporal locality.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-136",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Operating Systems",
+    "subtopic": "System Calls",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "How does a user-space application request privileged services (e.g. file I/O, network access) from the OS kernel?",
+    "options": [
+      "By modifying kernel memory directly",
+      "Via System Calls (using software interrupts / trap instructions)",
+      "By compiling the application as static library",
+      "Through browser cookies"
+    ],
+    "correctAnswer": "Via System Calls (using software interrupts / trap instructions)",
+    "expectedAnswer": "",
+    "explanation": "System calls (`read()`, `write()`, `fork()`) trigger a software trap switching the CPU from unprivileged user mode to privileged kernel mode to execute OS services.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-137",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Operating Systems",
+    "subtopic": "Process Management",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is a 'Zombie Process' in Unix/Linux operating systems?",
+    "options": [
+      "A process that has finished execution but still has an entry in the process table because its parent hasn't read its exit status via `wait()`",
+      "A process running with root privileges silently",
+      "A process that consumes infinite CPU",
+      "A process whose parent was killed"
+    ],
+    "correctAnswer": "A process that has finished execution but still has an entry in the process table because its parent hasn't read its exit status via `wait()`",
+    "expectedAnswer": "",
+    "explanation": "A zombie process has completed execution (`exit()`), but its Process Control Block (PCB) remains in the process table until the parent process reads its exit status using the `wait()` system call.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-138",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Operating Systems",
+    "subtopic": "Process Management",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is an 'Orphan Process' in Unix/Linux?",
+    "options": [
+      "A process whose parent process terminated before it, which is then adopted by the init / systemd process (PID 1)",
+      "A process that cannot allocate memory",
+      "A thread with no stack",
+      "A process killed by the kernel OOM killer"
+    ],
+    "correctAnswer": "A process whose parent process terminated before it, which is then adopted by the init / systemd process (PID 1)",
+    "expectedAnswer": "",
+    "explanation": "When a parent process terminates while its child continues running, the child becomes an orphan and is automatically adopted by the system's root process `init` (PID 1).",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-139",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Operating Systems",
+    "subtopic": "Storage",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is the difference between Internal and External Fragmentation?",
+    "options": [
+      "Internal is wasted space inside allocated fixed-size partitions; External is unusable free space scattered outside allocated blocks",
+      "Internal is caused by dynamic memory; External is caused by paging",
+      "Internal occurs only on SSDs; External on HDDs",
+      "Both terms describe the exact same phenomenon"
+    ],
+    "correctAnswer": "Internal is wasted space inside allocated fixed-size partitions; External is unusable free space scattered outside allocated blocks",
+    "expectedAnswer": "",
+    "explanation": "Internal fragmentation occurs when allocated memory blocks are larger than requested data (unused space inside block). External fragmentation occurs when total free memory exists but is fragmented into non-contiguous slices.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-140",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Operating Systems",
+    "subtopic": "Context Switching",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is a Context Switch in an operating system?",
+    "options": [
+      "Changing the monitor screen resolution",
+      "Saving the state of a currently running process/thread and restoring the state of another so execution can resume",
+      "Switching from 32-bit to 64-bit mode",
+      "Compiling high-level code to assembly"
+    ],
+    "correctAnswer": "Saving the state of a currently running process/thread and restoring the state of another so execution can resume",
+    "expectedAnswer": "",
+    "explanation": "Context switching saves the current process CPU registers, program counter, and stack pointer into its PCB, and loads the corresponding state of the next scheduled process.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-141",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Computer Networks",
+    "subtopic": "OSI Model",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Which layer of the 7-layer OSI model is responsible for end-to-end reliable transmission, error recovery, and flow control?",
+    "options": [
+      "Network Layer",
+      "Transport Layer",
+      "Data Link Layer",
+      "Session Layer"
+    ],
+    "correctAnswer": "Transport Layer",
+    "expectedAnswer": "",
+    "explanation": "The Transport Layer (Layer 4, e.g. TCP/UDP) handles process-to-process communication, segmentation, flow control, and end-to-end reliability.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-142",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Computer Networks",
+    "subtopic": "Protocols",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is the primary difference between TCP and UDP protocols?",
+    "options": [
+      "TCP is connectionless and fast; UDP is connection-oriented and reliable",
+      "TCP is connection-oriented, reliable (guaranteed delivery and ordering); UDP is connectionless, lightweight, and best-effort",
+      "TCP works only on local networks; UDP works on the internet",
+      "TCP does not use IP addresses"
+    ],
+    "correctAnswer": "TCP is connection-oriented, reliable (guaranteed delivery and ordering); UDP is connectionless, lightweight, and best-effort",
+    "expectedAnswer": "",
+    "explanation": "TCP establishes a connection (3-way handshake) and provides error checking, acknowledgments, and retransmissions. UDP transmits packets without handshakes or retransmission guarantees (ideal for streaming/gaming).",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-143",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Computer Networks",
+    "subtopic": "TCP/IP",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What packets are exchanged during the TCP 3-way connection handshake?",
+    "options": [
+      "SYN -> SYN-ACK -> ACK",
+      "ACK -> SYN -> ACK",
+      "FIN -> ACK -> FIN-ACK",
+      "PING -> PONG -> ACK"
+    ],
+    "correctAnswer": "SYN -> SYN-ACK -> ACK",
+    "expectedAnswer": "",
+    "explanation": "Client sends SYN (synchronize sequence numbers), Server replies with SYN-ACK (acknowledge client and send server sequence), Client sends ACK to establish the connection.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-144",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Computer Networks",
+    "subtopic": "IP Addressing",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "How many bits are in an IPv4 address and an IPv6 address respectively?",
+    "options": [
+      "IPv4: 16 bits; IPv6: 64 bits",
+      "IPv4: 32 bits; IPv6: 128 bits",
+      "IPv4: 64 bits; IPv6: 256 bits",
+      "IPv4: 128 bits; IPv6: 512 bits"
+    ],
+    "correctAnswer": "IPv4: 32 bits; IPv6: 128 bits",
+    "expectedAnswer": "",
+    "explanation": "IPv4 uses a 32-bit address space (approx. 4.3 billion addresses), while IPv6 uses a 128-bit address space represented in hexadecimal notation.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-145",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Computer Networks",
+    "subtopic": "DNS",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the function of the Domain Name System (DNS)?",
+    "options": [
+      "Encrypts web traffic between browser and server",
+      "Translates human-readable domain names (e.g. www.tcs.com) into machine-routable IP addresses",
+      "Allocates dynamic IP addresses to home routers",
+      "Prevents DDoS attacks"
+    ],
+    "correctAnswer": "Translates human-readable domain names (e.g. www.tcs.com) into machine-routable IP addresses",
+    "expectedAnswer": "",
+    "explanation": "DNS operates as the hierarchical distributed directory of the internet, mapping domain names to IP addresses (A records, AAAA records).",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-146",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Computer Networks",
+    "subtopic": "HTTP & Security",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is the difference between HTTP and HTTPS?",
+    "options": [
+      "HTTPS uses UDP instead of TCP",
+      "HTTPS encrypts all client-server communication using SSL/TLS over port 443; HTTP transmits in plain text over port 80",
+      "HTTP is faster because it encrypts on hardware",
+      "HTTPS works only on mobile devices"
+    ],
+    "correctAnswer": "HTTPS encrypts all client-server communication using SSL/TLS over port 443; HTTP transmits in plain text over port 80",
+    "expectedAnswer": "",
+    "explanation": "HTTPS (HTTP Secure) layers HTTP on top of SSL/TLS encryption, ensuring confidentiality, data integrity, and server authentication over TCP port 443.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-147",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Computer Networks",
+    "subtopic": "Subnetting",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "For the CIDR IP block `192.168.1.0/24`, what is the default subnet mask and total number of usable host addresses?",
+    "options": [
+      "Subnet mask 255.255.255.0; 254 usable hosts",
+      "Subnet mask 255.255.0.0; 65534 usable hosts",
+      "Subnet mask 255.255.255.128; 126 usable hosts",
+      "Subnet mask 255.0.0.0; 256 usable hosts"
+    ],
+    "correctAnswer": "Subnet mask 255.255.255.0; 254 usable hosts",
+    "expectedAnswer": "",
+    "explanation": "A `/24` prefix has 24 network bits and 8 host bits (mask `255.255.255.0`). Total addresses = 2^8 = 256. Subtracting network address (.0) and broadcast address (.255) leaves 254 usable host addresses.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-148",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Computer Networks",
+    "subtopic": "Protocols",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the Address Resolution Protocol (ARP) used for?",
+    "options": [
+      "Resolving domain names to IP addresses",
+      "Mapping an IP address (Logical Layer 3) to a physical MAC address (Data Link Layer 2) on a local network",
+      "Routing packets across wide area networks",
+      "Translating IPv4 to IPv6"
+    ],
+    "correctAnswer": "Mapping an IP address (Logical Layer 3) to a physical MAC address (Data Link Layer 2) on a local network",
+    "expectedAnswer": "",
+    "explanation": "ARP broadcasts an IP query on a local network segment to obtain the corresponding hardware MAC address required for frame delivery at Layer 2.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-149",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Computer Networks",
+    "subtopic": "Congestion Control",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "How does TCP respond when a packet loss is detected via duplicate ACKs or retransmission timeout?",
+    "options": [
+      "Increases transmission rate to clear network buffers",
+      "Reduces congestion window size (cwnd) and enters multiplicative decrease / congestion avoidance",
+      "Switches automatically to UDP protocol",
+      "Terminates the TCP connection immediately"
+    ],
+    "correctAnswer": "Reduces congestion window size (cwnd) and enters multiplicative decrease / congestion avoidance",
+    "expectedAnswer": "",
+    "explanation": "TCP interprets packet loss as a sign of network buffer congestion, cutting its congestion window size (`cwnd`) and backing off transmission rate to prevent congestion collapse.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-150",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Computer Networks",
+    "subtopic": "Routing",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What routing algorithm metric is used by the Routing Information Protocol (RIP)?",
+    "options": [
+      "Bandwidth and link latency",
+      "Hop count (maximum 15 hops)",
+      "Cost based on interface speed",
+      "Packet loss ratio"
+    ],
+    "correctAnswer": "Hop count (maximum 15 hops)",
+    "expectedAnswer": "",
+    "explanation": "RIP is a distance-vector routing protocol that uses hop count as its metric, with a maximum limit of 15 hops (16 signifies unreachable destination).",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-151",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Computer Networks",
+    "subtopic": "Network Devices",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "At which layer of the OSI model does a standard network Router operate?",
+    "options": [
+      "Layer 1 (Physical)",
+      "Layer 2 (Data Link)",
+      "Layer 3 (Network)",
+      "Layer 4 (Transport)"
+    ],
+    "correctAnswer": "Layer 3 (Network)",
+    "expectedAnswer": "",
+    "explanation": "Routers examine Layer 3 IP headers in network packets to determine the optimal forwarding path across interconnected networks.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-152",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Computer Networks",
+    "subtopic": "Protocols",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "Which protocol dynamically assigns IP addresses, default gateways, and DNS servers to client devices on a local network?",
+    "options": [
+      "DNS",
+      "DHCP",
+      "SNMP",
+      "SMTP"
+    ],
+    "correctAnswer": "DHCP",
+    "expectedAnswer": "",
+    "explanation": "Dynamic Host Configuration Protocol (DHCP) automatically provides network configuration (IP address, subnet mask, gateway, DNS) to connecting client devices.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-153",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Computer Networks",
+    "subtopic": "Firewalls",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the difference between a Stateless Firewall and a Stateful Firewall?",
+    "options": [
+      "Stateless inspects individual packets in isolation against static rules; Stateful tracks active connection states and sessions",
+      "Stateless firewalls are software-only; Stateful are hardware-only",
+      "Stateless inspects HTTP payload; Stateful inspects IP only",
+      "There is no difference"
+    ],
+    "correctAnswer": "Stateless inspects individual packets in isolation against static rules; Stateful tracks active connection states and sessions",
+    "expectedAnswer": "",
+    "explanation": "A stateful firewall maintains a state table of established TCP/UDP sessions and validates whether incoming packets belong to legitimate ongoing conversations.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-154",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Computer Networks",
+    "subtopic": "NAT",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is Network Address Translation (NAT) and why is it widely used?",
+    "options": [
+      "To speed up optical fiber cables",
+      "To map multiple private IP addresses in a LAN to a single public IP address, conserving IPv4 addresses",
+      "To convert TCP packets into UDP",
+      "To prevent all virus downloads"
+    ],
+    "correctAnswer": "To map multiple private IP addresses in a LAN to a single public IP address, conserving IPv4 addresses",
+    "expectedAnswer": "",
+    "explanation": "NAT (and NAPT/PAT) enables private networks (RFC 1918) to share a single public routable IP address, slowing IPv4 address exhaustion and providing boundary security.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-155",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Computer Networks",
+    "subtopic": "Transport Layer",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is the purpose of the TCP 'Sliding Window' flow control mechanism?",
+    "options": [
+      "To prevent network routers from crashing",
+      "To prevent a fast sender from overwhelming a slow receiver's buffer by advertising available receiver window size (rwnd)",
+      "To encrypt data frames before transmission",
+      "To calculate packet checksums"
+    ],
+    "correctAnswer": "To prevent a fast sender from overwhelming a slow receiver's buffer by advertising available receiver window size (rwnd)",
+    "expectedAnswer": "",
+    "explanation": "Flow control in TCP uses the receiver advertised window (`rwnd`) in packet headers to inform the sender how much buffer capacity is free, throttling transmission accordingly.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-156",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Software Engineering",
+    "subtopic": "SDLC",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "In the Agile Scrum framework, what is a 'Sprint'?",
+    "options": [
+      "A test run of server hardware",
+      "A time-boxed iteration (typically 1-4 weeks) in which the team delivers a working, potentially shippable product increment",
+      "An emergency bug fix release",
+      "A one-day coding hackathon"
+    ],
+    "correctAnswer": "A time-boxed iteration (typically 1-4 weeks) in which the team delivers a working, potentially shippable product increment",
+    "expectedAnswer": "",
+    "explanation": "A Sprint is a fixed-duration development cycle in Scrum where cross-functional teams plan, build, test, and deliver a discrete set of product backlog items.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-157",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Software Engineering",
+    "subtopic": "Version Control",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is the difference between `git merge` and `git rebase`?",
+    "options": [
+      "`git merge` creates a new merge commit combining histories; `git rebase` rewrites commit history by replaying commits sequentially on top of the target branch",
+      "`git rebase` deletes all remote branches",
+      "`git merge` works only on local repositories",
+      "They produce identical git commit graph history"
+    ],
+    "correctAnswer": "`git merge` creates a new merge commit combining histories; `git rebase` rewrites commit history by replaying commits sequentially on top of the target branch",
+    "expectedAnswer": "",
+    "explanation": "`git merge` preserves full branching history with a merge commit. `git rebase` creates a linear history by reapplying commits one by one on top of the base branch.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-158",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Software Engineering",
+    "subtopic": "Testing",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is Regression Testing in software engineering?",
+    "options": [
+      "Testing newly built features for the first time",
+      "Re-running existing test suites after code modifications to ensure prior functionality has not broken",
+      "Testing database load capacity under stress",
+      "Decompiling binaries to find security flaws"
+    ],
+    "correctAnswer": "Re-running existing test suites after code modifications to ensure prior functionality has not broken",
+    "expectedAnswer": "",
+    "explanation": "Regression testing verifies that recent code changes, bug fixes, or optimizations have not introduced new bugs into existing functional areas.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-159",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Software Engineering",
+    "subtopic": "REST APIs",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "According to RESTful architecture principles, which HTTP methods are defined as 'Idempotent'?",
+    "options": [
+      "POST and PATCH",
+      "GET, PUT, DELETE, HEAD, and OPTIONS",
+      "Only POST",
+      "Only DELETE"
+    ],
+    "correctAnswer": "GET, PUT, DELETE, HEAD, and OPTIONS",
+    "expectedAnswer": "",
+    "explanation": "An HTTP method is idempotent if executing it multiple times consecutively produces the same side-effects on the server as executing it once (e.g., PUT replaces a resource, GET only reads).",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-160",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Software Engineering",
+    "subtopic": "Web Security",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "How does Cross-Site Scripting (XSS) attack a web application and how is it mitigated?",
+    "options": [
+      "Attackers flood the server with SYN packets; mitigated by firewalls",
+      "Attackers inject malicious JavaScript into web pages viewed by other users; mitigated by input sanitization and output encoding (escaping)",
+      "Attackers guess database passwords; mitigated by MFA",
+      "Attackers eavesdrop on unencrypted Wi-Fi"
+    ],
+    "correctAnswer": "Attackers inject malicious JavaScript into web pages viewed by other users; mitigated by input sanitization and output encoding (escaping)",
+    "expectedAnswer": "",
+    "explanation": "XSS occurs when unescaped user input is rendered in a browser as executable script. Mitigation involves strict context-aware output encoding, sanitization, and Content Security Policy (CSP).",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-161",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Software Engineering",
+    "subtopic": "Web Security",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is Cross-Site Request Forgery (CSRF) and how is it prevented?",
+    "options": [
+      "An attack that tricks an authenticated user's browser into sending unauthorized requests to a trusted site; mitigated using anti-CSRF synchronization tokens and SameSite cookie attributes",
+      "Direct extraction of database records via URL parameters",
+      "Buffer overflow on web servers",
+      "Stealing local storage tokens via DNS poisoning"
+    ],
+    "correctAnswer": "An attack that tricks an authenticated user's browser into sending unauthorized requests to a trusted site; mitigated using anti-CSRF synchronization tokens and SameSite cookie attributes",
+    "expectedAnswer": "",
+    "explanation": "CSRF abuses ambient credentials (session cookies) sent automatically by browsers. Defenses include unique unpredictable Anti-CSRF tokens per session/form and `SameSite=Strict/Lax` cookie flags.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-162",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Software Engineering",
+    "subtopic": "Web Fundamentals",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is the difference between Cookies, LocalStorage, and SessionStorage in browser storage?",
+    "options": [
+      "LocalStorage data persists indefinitely; SessionStorage clears when the tab/browser closes; Cookies are smaller (4KB) and sent with every HTTP request",
+      "Cookies store unlimited data; LocalStorage is limited to 10 bytes",
+      "SessionStorage is shared across all browser tabs permanently",
+      "All three send data automatically to the backend on every request"
+    ],
+    "correctAnswer": "LocalStorage data persists indefinitely; SessionStorage clears when the tab/browser closes; Cookies are smaller (4KB) and sent with every HTTP request",
+    "expectedAnswer": "",
+    "explanation": "LocalStorage offers ~5-10MB persistent storage. SessionStorage lasts for the browser tab lifetime. Cookies (~4KB) store session tokens and are automatically attached to HTTP headers.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-163",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Software Engineering",
+    "subtopic": "Architecture",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is the CAP Theorem in distributed database systems?",
+    "options": [
+      "A distributed system can simultaneously guarantee at most two of: Consistency, Availability, and Partition Tolerance",
+      "Databases must always prioritize performance over reliability",
+      "Transactions must be completed in under 1 second",
+      "Security requires Cloud, Authentication, and Permissions"
+    ],
+    "correctAnswer": "A distributed system can simultaneously guarantee at most two of: Consistency, Availability, and Partition Tolerance",
+    "expectedAnswer": "",
+    "explanation": "The CAP theorem states that in the event of a network partition (P), a distributed data store must choose between Consistency (all nodes see same data) and Availability (every request receives a non-error response).",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-164",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Software Engineering",
+    "subtopic": "CI/CD",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is the primary goal of Continuous Integration (CI) in modern DevOps pipelines?",
+    "options": [
+      "Deploying code to production without testing",
+      "Automatically building and running automated tests whenever developers commit code changes to a shared repository",
+      "Replacing all software developers with AI",
+      "Backing up server databases daily"
+    ],
+    "correctAnswer": "Automatically building and running automated tests whenever developers commit code changes to a shared repository",
+    "expectedAnswer": "",
+    "explanation": "Continuous Integration automatically validates code changes via automated builds and test suites upon commit, catching integration defects early in the development lifecycle.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-165",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Software Engineering",
+    "subtopic": "Microservices",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is a major advantage of Microservices Architecture compared to a Monolithic Architecture?",
+    "options": [
+      "Zero network latency between components",
+      "Independent deployability, technology diversity per service, and isolated fault domains",
+      "Simpler debugging and single database transactions across all features",
+      "Elimination of API gateways"
+    ],
+    "correctAnswer": "Independent deployability, technology diversity per service, and isolated fault domains",
+    "expectedAnswer": "",
+    "explanation": "Microservices allow independent deployment and scaling of individual bounded contexts, preventing single-service failures from bringing down the entire system.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-166",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Debugging & Output",
+    "subtopic": "C Output",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the output of the following C code?\n```c\n#include <stdio.h>\nint main() {\n    int x = 10;\n    int *p = &x;\n    *p += 5;\n    printf(\"%d\", x);\n    return 0;\n}\n```",
+    "options": [
+      "10",
+      "15",
+      "5",
+      "Garbage value"
+    ],
+    "correctAnswer": "15",
+    "expectedAnswer": "",
+    "explanation": "Pointer `p` points to variable `x`. The operation `*p += 5` dereferences `p` and adds 5 to `x`, making `x` equal to 15.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-167",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Debugging & Output",
+    "subtopic": "Java Output",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the output of the following Java snippet?\n```java\nString s1 = \"TCS\";\nString s2 = \"TCS\";\nString s3 = new String(\"TCS\");\nSystem.out.println((s1 == s2) + \" \" + (s1 == s3));\n```",
+    "options": [
+      "true true",
+      "true false",
+      "false false",
+      "false true"
+    ],
+    "correctAnswer": "true false",
+    "expectedAnswer": "",
+    "explanation": "`s1` and `s2` refer to the same pooled literal in the String Constant Pool (`s1 == s2` is true). `s3` is an explicitly allocated heap object, so `s1 == s3` evaluates to false.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-168",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Debugging & Output",
+    "subtopic": "Python Output",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is the output of the following Python code?\n```python\na = [1, 2, 3]\nb = a\nb.append(4)\nprint(len(a))\n```",
+    "options": [
+      "3",
+      "4",
+      "Error",
+      "None"
+    ],
+    "correctAnswer": "4",
+    "expectedAnswer": "",
+    "explanation": "`b = a` creates an alias pointing to the same list object in memory. Appending to `b` modifies the list referenced by `a`, so `len(a)` is 4.",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-169",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Debugging & Output",
+    "subtopic": "C++ Output",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is the output of the following C++ snippet?\n```cpp\n#include <iostream>\nusing namespace std;\nvoid counter() {\n    static int c = 0;\n    cout << ++c << \" \";\n}\nint main() {\n    counter();\n    counter();\n    counter();\n    return 0;\n}\n```",
+    "options": [
+      "1 1 1 ",
+      "1 2 3 ",
+      "0 1 2 ",
+      "0 0 0 "
+    ],
+    "correctAnswer": "1 2 3 ",
+    "expectedAnswer": "",
+    "explanation": "The static local variable `c` is initialized to 0 once and persists across function calls. Each call increments and prints `c`, outputting `1 2 3 `.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-170",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Debugging & Output",
+    "subtopic": "C Output",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the output of the following C code?\n```c\n#include <stdio.h>\nint main() {\n    int a = 0;\n    if (a = 5)\n        printf(\"True %d\", a);\n    else\n        printf(\"False\");\n    return 0;\n}\n```",
+    "options": [
+      "False",
+      "True 5",
+      "True 0",
+      "Compilation Error"
+    ],
+    "correctAnswer": "True 5",
+    "expectedAnswer": "",
+    "explanation": "The condition uses assignment `a = 5` instead of equality comparison `==`. The expression evaluates to 5 (non-zero / true), so the if-block executes and prints `True 5`.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-171",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Debugging & Output",
+    "subtopic": "Java Output",
+    "difficulty": "Easy",
+    "questionType": "MCQ",
+    "question": "What is the output of `System.out.println(10 + 20 + \"TCS\" + 10 + 20);` in Java?",
+    "options": [
+      "30TCS1020",
+      "30TCS30",
+      "1020TCS1020",
+      "Compilation Error"
+    ],
+    "correctAnswer": "30TCS1020",
+    "expectedAnswer": "",
+    "explanation": "Evaluated left to right: `10 + 20` is arithmetic addition (`30`). `30 + \"TCS\"` becomes string concatenation (`\"30TCS\"`). Subsequent additions concatenate as strings (`\"30TCS10\" + 20` -> `\"30TCS1020\"`).",
+    "marks": 2,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-172",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Debugging & Output",
+    "subtopic": "Python Output",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the output of `print(bool([]) == bool([0]))` in Python?",
+    "options": [
+      "True",
+      "False",
+      "TypeError",
+      "None"
+    ],
+    "correctAnswer": "False",
+    "expectedAnswer": "",
+    "explanation": "An empty list `[]` is falsy (`bool([])` is `False`). A non-empty list `[0]` has 1 element and is truthy (`bool([0])` is `True`). Therefore, `False == True` evaluates to `False`.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-173",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Debugging & Output",
+    "subtopic": "C Output",
+    "difficulty": "Hard",
+    "questionType": "MCQ",
+    "question": "What is the output of the following C snippet?\n```c\n#include <stdio.h>\nint main() {\n    int arr[] = {10, 20, 30};\n    int *ptr = arr;\n    printf(\"%d \", *ptr++);\n    printf(\"%d\", *ptr);\n    return 0;\n}\n```",
+    "options": [
+      "10 10",
+      "10 20",
+      "20 20",
+      "20 30"
+    ],
+    "correctAnswer": "10 20",
+    "expectedAnswer": "",
+    "explanation": "`*ptr++` dereferences current pointer value (10) and then increments pointer `ptr` to point to `arr[1]`. The second printf prints `*ptr` which is 20.",
+    "marks": 5,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-174",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Debugging & Output",
+    "subtopic": "Java Output",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the output of the following Java snippet?\n```java\ntry {\n    int x = 10 / 0;\n} catch (Exception e) {\n    System.out.print(\"Catch \");\n} finally {\n    System.out.print(\"Finally\");\n}\n```",
+    "options": [
+      "Catch ",
+      "Finally",
+      "Catch Finally",
+      "ArithmeticException"
+    ],
+    "correctAnswer": "Catch Finally",
+    "expectedAnswer": "",
+    "explanation": "The division by zero throws an `ArithmeticException` caught by the catch block (prints `Catch `). The `finally` block then unconditionally executes (prints `Finally`).",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  },
+  {
+    "questionId": "tcs-mcq-175",
+    "companyIds": [
+      "tcs"
+    ],
+    "companyId": "tcs",
+    "topic": "Debugging & Output",
+    "subtopic": "Python Output",
+    "difficulty": "Medium",
+    "questionType": "MCQ",
+    "question": "What is the output of the following Python list manipulation?\n```python\nx = [1, 2, 3]\ny = x\nx = x + [4]\nprint(y)\n```",
+    "options": [
+      "[1, 2, 3, 4]",
+      "[1, 2, 3]",
+      "[4]",
+      "Error"
+    ],
+    "correctAnswer": "[1, 2, 3]",
+    "expectedAnswer": "",
+    "explanation": "`x = x + [4]` creates a brand new list and reassigns `x` to it. `y` continues pointing to the original unaltered list `[1, 2, 3]`.",
+    "marks": 3,
+    "questionStatus": "practice",
+    "source": "tcs_mcq"
+  }
+]

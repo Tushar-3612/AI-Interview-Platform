@@ -137,6 +137,39 @@
   },
   {
     "id": "wipro-coding-5",
+    "title": "Longest Palindromic Substring",
+    "company": "wipro",
+    "difficulty": "Medium",
+    "category": "Strings",
+    "tags": ["String", "Dynamic Programming"],
+    "marks": 20,
+    "problemStatement": "Given a string `s`, find and return the longest palindromic substring in `s`.",
+    "description": "You may assume that there is always one unique longest palindrome.",
+    "constraints": "1 <= s.length <= 1000\ns consist of only digits and English letters.",
+    "inputFormat": "A single string.",
+    "outputFormat": "The longest palindromic substring.",
+    "examples": [
+      {"input": "\"babad\"", "output": "\"bab\"", "explanation": "\"aba\" is also valid."},
+      {"input": "\"cbbd\"", "output": "\"bb\""}
+    ],
+    "explanation": "Expand around each character and check for palindromes.",
+    "starterCode": "function longestPalindrome(s) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      {"input": "\"babad\"", "expected": "\"bab\""},
+      {"input": "\"cbbd\"", "expected": "\"bb\""},
+      {"input": "\"a\"", "expected": "\"a\""}
+    ],
+    "hiddenTestCases": [
+      {"input": "\"ac\"", "expected": "\"a\""},
+      {"input": "\"racecar\"", "expected": "\"racecar\""}
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "interview_reported"
+  },
+  {
+    "id": "wipro-coding-6",
     "title": "Binary Search",
     "company": "wipro",
     "difficulty": "Easy",
@@ -169,7 +202,7 @@
     "source": "interview_reported"
   },
   {
-    "id": "wipro-coding-6",
+    "id": "wipro-coding-7",
     "title": "Array Rotation",
     "company": "wipro",
     "difficulty": "Easy",
@@ -201,7 +234,7 @@
     "source": "interview_reported"
   },
   {
-    "id": "wipro-coding-7",
+    "id": "wipro-coding-8",
     "title": "Matrix Transpose",
     "company": "wipro",
     "difficulty": "Easy",
@@ -232,7 +265,7 @@
     "source": "interview_reported"
   },
   {
-    "id": "wipro-coding-8",
+    "id": "wipro-coding-9",
     "title": "Balanced Parentheses",
     "company": "wipro",
     "difficulty": "Medium",
@@ -266,7 +299,7 @@
     "source": "interview_reported"
   },
   {
-    "id": "wipro-coding-9",
+    "id": "wipro-coding-10",
     "title": "GCD of Two Numbers",
     "company": "wipro",
     "difficulty": "Easy",
@@ -299,547 +332,7 @@
     "source": "interview_reported"
   },
   {
-    "id": "wipro-coding-10",
-    "title": "Two Sum",
-    "company": "wipro",
-    "difficulty": "Easy",
-    "category": "Arrays",
-    "tags": ["Array", "Hashing"],
-    "marks": 10,
-    "problemStatement": "Given an array of integers `nums` and an integer `target`, return indices of the two numbers that add up to target.",
-    "description": "You may assume each input has exactly one solution, and you may not use the same element twice.",
-    "constraints": "2 <= nums.length <= 10^4\n-10^9 <= nums[i] <= 10^9",
-    "inputFormat": "An array and target integer.",
-    "outputFormat": "Array of two indices.",
-    "examples": [
-      {"input": "[2,7,11,15], 9", "output": "[0,1]"},
-      {"input": "[3,2,4], 6", "output": "[1,2]"}
-    ],
-    "explanation": "Use a hash map to store complements and their indices.",
-    "starterCode": "function twoSum(nums, target) {\n  // Write your code here\n  \n}",
-    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
-    "publicTestCases": [
-      {"input": "[2,7,11,15], 9", "expected": "[0,1]"},
-      {"input": "[3,2,4], 6", "expected": "[1,2]"},
-      {"input": "[3,3], 6", "expected": "[0,1]"}
-    ],
-    "hiddenTestCases": [
-      {"input": "[1,2,3,4,5], 9", "expected": "[3,4]"}
-    ],
-    "timeLimit": 1000,
-    "memoryLimit": 256,
-    "source": "interview_reported"
-  },
-  {
     "id": "wipro-coding-11",
-    "title": "Pattern Problem - Diamond",
-    "company": "wipro",
-    "difficulty": "Medium",
-    "category": "Pattern",
-    "tags": ["Pattern", "Output"],
-    "marks": 15,
-    "problemStatement": "Print a diamond pattern of stars for a given odd integer n.",
-    "description": "The pattern has n rows with stars and spaces forming a diamond shape.",
-    "constraints": "1 <= n <= 99 (odd only)",
-    "inputFormat": "An odd integer n.",
-    "outputFormat": "The diamond pattern as a string.",
-    "examples": [
-      {"input": "3", "output": " * \\n***\\n * "},
-      {"input": "5", "output": "  *  \\n *** \\n*****\\n *** \\n  *  "}
-    ],
-    "explanation": "Upper half: print stars from 1 to n. Lower half: print stars from n-2 to 1.",
-    "starterCode": "function printDiamond(n) {\n  // Write your code here\n  \n}",
-    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
-    "publicTestCases": [
-      {"input": "3", "expected": " * \\n***\\n * "},
-      {"input": "5", "expected": "  *  \\n *** \\n*****\\n *** \\n  *  "}
-    ],
-    "hiddenTestCases": [
-      {"input": "1", "expected": "*"}
-    ],
-    "timeLimit": 1000,
-    "memoryLimit": 256,
-    "source": "interview_reported"
-  },
-  {
-    "id": "wipro-coding-12",
-    "title": "Recursion - Factorial",
-    "company": "wipro",
-    "difficulty": "Easy",
-    "category": "Recursion",
-    "tags": ["Recursion", "Math"],
-    "marks": 10,
-    "problemStatement": "Write a recursive function to calculate the factorial of a non-negative integer n.",
-    "description": "Factorial of n (n!) = n * (n-1) * (n-2) * ... * 1. Factorial of 0 is 1.",
-    "constraints": "0 <= n <= 20",
-    "inputFormat": "A non-negative integer.",
-    "outputFormat": "The factorial of n.",
-    "examples": [
-      {"input": "5", "output": "120"},
-      {"input": "0", "output": "1"}
-    ],
-    "explanation": "Base case: factorial(0) = 1. Recursive: factorial(n) = n * factorial(n-1).",
-    "starterCode": "function factorial(n) {\n  // Write your code here\n  \n}",
-    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
-    "publicTestCases": [
-      {"input": "5", "expected": "120"},
-      {"input": "0", "expected": "1"},
-      {"input": "10", "expected": "3628800"}
-    ],
-    "hiddenTestCases": [
-      {"input": "1", "expected": "1"},
-      {"input": "20", "expected": "2432902008176640000"}
-    ],
-    "timeLimit": 1000,
-    "memoryLimit": 256,
-    "source": "interview_reported"
-  },
-  {
-    "id": "wipro-coding-13",
-    "title": "Merge Two Sorted Arrays",
-    "company": "wipro",
-    "difficulty": "Easy",
-    "category": "Arrays",
-    "tags": ["Array", "Two Pointers"],
-    "marks": 10,
-    "problemStatement": "Given two sorted integer arrays nums1 and nums2, merge them into a single sorted array.",
-    "description": "Return the merged sorted array.",
-    "constraints": "nums1.length == m, nums2.length == n\n0 <= m, n <= 10^3",
-    "inputFormat": "Two sorted arrays.",
-    "outputFormat": "Merged sorted array.",
-    "examples": [
-      {"input": "[1,2,3], [2,5,6]", "output": "[1,2,2,3,5,6]"},
-      {"input": "[], [1]", "output": "[1]"}
-    ],
-    "explanation": "Use two pointers to compare elements from both arrays.",
-    "starterCode": "function merge(nums1, nums2) {\n  // Write your code here\n  \n}",
-    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
-    "publicTestCases": [
-      {"input": "[1,2,3], [2,5,6]", "expected": "[1,2,2,3,5,6]"},
-      {"input": "[], [1]", "expected": "[1]"},
-      {"input": "[1], []", "expected": "[1]"}
-    ],
-    "hiddenTestCases": [
-      {"input": "[1,3,5], [2,4,6]", "expected": "[1,2,3,4,5,6]"}
-    ],
-    "timeLimit": 1000,
-    "memoryLimit": 256,
-    "source": "interview_reported"
-  },
-  {
-    "id": "wipro-coding-14",
-    "title": "Check for Anagram",
-    "company": "wipro",
-    "difficulty": "Easy",
-    "category": "Strings",
-    "tags": ["String", "Hashing"],
-    "marks": 10,
-    "problemStatement": "Given two strings s and t, return true if t is an anagram of s, and false otherwise.",
-    "description": "An anagram is a word formed by rearranging the letters of another word.",
-    "constraints": "1 <= s.length, t.length <= 5 * 10^4",
-    "inputFormat": "Two strings.",
-    "outputFormat": "Boolean true or false.",
-    "examples": [
-      {"input": "\"anagram\", \"nagaram\"", "output": "true"},
-      {"input": "\"rat\", \"car\"", "output": "false"}
-    ],
-    "explanation": "Count character frequencies and compare.",
-    "starterCode": "function isAnagram(s, t) {\n  // Write your code here\n  \n}",
-    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
-    "publicTestCases": [
-      {"input": "\"anagram\", \"nagaram\"", "expected": "true"},
-      {"input": "\"rat\", \"car\"", "expected": "false"},
-      {"input": "\"a\", \"a\"", "expected": "true"}
-    ],
-    "hiddenTestCases": [
-      {"input": "\"ab\", \"a\"", "expected": "false"}
-    ],
-    "timeLimit": 1000,
-    "memoryLimit": 256,
-    "source": "interview_reported"
-  },
-  {
-    "id": "wipro-coding-15",
-    "title": "Find Duplicates in Array",
-    "company": "wipro",
-    "difficulty": "Easy",
-    "category": "Arrays",
-    "tags": ["Array", "Hashing"],
-    "marks": 10,
-    "problemStatement": "Given an integer array nums, return true if any value appears at least twice, false if every element is distinct.",
-    "description": "Solve with O(n) time complexity.",
-    "constraints": "1 <= nums.length <= 10^5\n-10^9 <= nums[i] <= 10^9",
-    "inputFormat": "An array of integers.",
-    "outputFormat": "Boolean true or false.",
-    "examples": [
-      {"input": "[1,2,3,1]", "output": "true"},
-      {"input": "[1,2,3,4]", "output": "false"}
-    ],
-    "explanation": "Use a HashSet to track seen elements.",
-    "starterCode": "function containsDuplicate(nums) {\n  // Write your code here\n  \n}",
-    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
-    "publicTestCases": [
-      {"input": "[1,2,3,1]", "expected": "true"},
-      {"input": "[1,2,3,4]", "expected": "false"},
-      {"input": "[1,1,1,3,3,4,3,2,4,2]", "expected": "true"}
-    ],
-    "hiddenTestCases": [
-      {"input": "[1]", "expected": "false"}
-    ],
-    "timeLimit": 1000,
-    "memoryLimit": 256,
-    "source": "interview_reported"
-  },
-  {
-    "id": "wipro-coding-16",
-    "title": "Detect Cycle in Linked List",
-    "company": "wipro",
-    "difficulty": "Medium",
-    "category": "Linked Lists",
-    "tags": ["Linked List", "Two Pointers"],
-    "marks": 15,
-    "problemStatement": "Given head, the head of a linked list, determine if the linked list has a cycle.",
-    "description": "Return true if there is a cycle, false otherwise.",
-    "constraints": "0 <= Number of nodes <= 10^4\n-10^5 <= Node.val <= 10^5",
-    "inputFormat": "Head of linked list.",
-    "outputFormat": "Boolean true or false.",
-    "examples": [
-      {"input": "[3,2,0,-4], pos=1", "output": "true"},
-      {"input": "[1], pos=-1", "output": "false"}
-    ],
-    "explanation": "Use Floyd's cycle detection algorithm (slow and fast pointers).",
-    "starterCode": "function hasCycle(head) {\n  // Write your code here\n  \n}",
-    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
-    "publicTestCases": [
-      {"input": "[3,2,0,-4], pos=1", "expected": "true"},
-      {"input": "[1], pos=-1", "expected": "false"}
-    ],
-    "hiddenTestCases": [
-      {"input": "[1,2], pos=0", "expected": "true"},
-      {"input": "[1], pos=0", "expected": "true"}
-    ],
-    "timeLimit": 1000,
-    "memoryLimit": 256,
-    "source": "interview_reported"
-  },
-  {
-    "id": "wipro-coding-17",
-    "title": "Longest Palindromic Substring",
-    "company": "wipro",
-    "difficulty": "Medium",
-    "category": "Strings",
-    "tags": ["String", "Dynamic Programming"],
-    "marks": 20,
-    "problemStatement": "Given a string `s`, find and return the longest palindromic substring in `s`.",
-    "description": "You may assume that there is always one unique longest palindrome.",
-    "constraints": "1 <= s.length <= 1000\ns consist of only digits and English letters.",
-    "inputFormat": "A single string.",
-    "outputFormat": "The longest palindromic substring.",
-    "examples": [
-      {"input": "\"babad\"", "output": "\"bab\"", "explanation": "\"aba\" is also valid."},
-      {"input": "\"cbbd\"", "output": "\"bb\""}
-    ],
-    "explanation": "Expand around each character and check for palindromes.",
-    "starterCode": "function longestPalindrome(s) {\n  // Write your code here\n  \n}",
-    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
-    "publicTestCases": [
-      {"input": "\"babad\"", "expected": "\"bab\""},
-      {"input": "\"cbbd\"", "expected": "\"bb\""},
-      {"input": "\"a\"", "expected": "\"a\""}
-    ],
-    "hiddenTestCases": [
-      {"input": "\"ac\"", "expected": "\"a\""},
-      {"input": "\"racecar\"", "expected": "\"racecar\""}
-    ],
-    "timeLimit": 1000,
-    "memoryLimit": 256,
-    "source": "interview_reported"
-  },
-  {
-    "id": "wipro-coding-18",
-    "title": "Climbing Stairs",
-    "company": "wipro",
-    "difficulty": "Easy",
-    "category": "Dynamic Programming",
-    "tags": ["DP", "Math"],
-    "marks": 10,
-    "problemStatement": "You are climbing a staircase with n steps. Each time you can climb 1 or 2 steps. In how many distinct ways can you climb to the top?",
-    "description": "This is essentially a Fibonacci sequence problem.",
-    "constraints": "1 <= n <= 45",
-    "inputFormat": "Number of steps n.",
-    "outputFormat": "Number of distinct ways.",
-    "examples": [
-      {"input": "2", "output": "2"},
-      {"input": "3", "output": "3"}
-    ],
-    "explanation": "ways(n) = ways(n-1) + ways(n-2).",
-    "starterCode": "function climbStairs(n) {\n  // Write your code here\n  \n}",
-    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
-    "publicTestCases": [
-      {"input": "2", "expected": "2"},
-      {"input": "3", "expected": "3"},
-      {"input": "5", "expected": "8"}
-    ],
-    "hiddenTestCases": [
-      {"input": "1", "expected": "1"},
-      {"input": "10", "expected": "89"}
-    ],
-    "timeLimit": 1000,
-    "memoryLimit": 256,
-    "source": "interview_reported"
-  },
-  {
-    "id": "wipro-coding-19",
-    "title": "Dynamic Programming - Fibonacci",
-    "company": "wipro",
-    "difficulty": "Easy",
-    "category": "Dynamic Programming",
-    "tags": ["DP", "Recursion"],
-    "marks": 10,
-    "problemStatement": "Write a function to find the nth Fibonacci number using dynamic programming.",
-    "description": "Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, ...",
-    "constraints": "0 <= n <= 30",
-    "inputFormat": "A non-negative integer n.",
-    "outputFormat": "The nth Fibonacci number.",
-    "examples": [
-      {"input": "2", "output": "1"},
-      {"input": "5", "output": "5"}
-    ],
-    "explanation": "Use memoization or tabulation to avoid redundant calculations.",
-    "starterCode": "function fibonacci(n) {\n  // Write your code here\n  \n}",
-    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
-    "publicTestCases": [
-      {"input": "0", "expected": "0"},
-      {"input": "1", "expected": "1"},
-      {"input": "10", "expected": "55"}
-    ],
-    "hiddenTestCases": [
-      {"input": "30", "expected": "832040"}
-    ],
-    "timeLimit": 1000,
-    "memoryLimit": 256,
-    "source": "interview_reported"
-  },
-  {
-    "id": "wipro-coding-20",
-    "title": "Matrix Spiral Order",
-    "company": "wipro",
-    "difficulty": "Medium",
-    "category": "Matrix",
-    "tags": ["Matrix", "Simulation"],
-    "marks": 20,
-    "problemStatement": "Given an m x n matrix, return all elements in spiral order.",
-    "description": "Traverse the matrix in a spiral pattern.",
-    "constraints": "1 <= m, n <= 10\n-100 <= matrix[i][j] <= 100",
-    "inputFormat": "A 2D matrix.",
-    "outputFormat": "Array of elements in spiral order.",
-    "examples": [
-      {"input": "[[1,2,3],[4,5,6],[7,8,9]]", "output": "[1,2,3,6,9,8,7,4,5]"},
-      {"input": "[[1,2,3,4],[5,6,7,8],[9,10,11,12]]", "output": "[1,2,3,4,8,12,11,10,9,5,6,7]"}
-    ],
-    "explanation": "Use four boundaries (top, bottom, left, right) and traverse layer by layer.",
-    "starterCode": "function spiralOrder(matrix) {\n  // Write your code here\n  \n}",
-    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
-    "publicTestCases": [
-      {"input": "[[1,2,3],[4,5,6],[7,8,9]]", "expected": "[1,2,3,6,9,8,7,4,5]"}
-    ],
-    "hiddenTestCases": [
-      {"input": "[[1]]", "expected": "[1]"},
-      {"input": "[[1,2],[3,4]]", "expected": "[1,2,4,3]"}
-    ],
-    "timeLimit": 1000,
-    "memoryLimit": 256,
-    "source": "interview_reported"
-  },
-  {
-    "id": "wipro-coding-21",
-    "title": "Sliding Window Maximum",
-    "company": "wipro",
-    "difficulty": "Hard",
-    "category": "Sliding Window",
-    "tags": ["Sliding Window", "Deque"],
-    "marks": 25,
-    "problemStatement": "Given an array nums and a sliding window of size k moving from left to right, return the max value in each window.",
-    "description": "The window slides one position at a time.",
-    "constraints": "1 <= nums.length <= 10^5\n1 <= k <= nums.length",
-    "inputFormat": "An array and window size k.",
-    "outputFormat": "Array of maximum values.",
-    "examples": [
-      {"input": "[1,3,-1,-3,5,3,6,7], 3", "output": "[3,3,5,5,6,7]"},
-      {"input": "[1], 1", "output": "[1]"}
-    ],
-    "explanation": "Use a deque to maintain indices of useful elements in current window.",
-    "starterCode": "function maxSlidingWindow(nums, k) {\n  // Write your code here\n  \n}",
-    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
-    "publicTestCases": [
-      {"input": "[1,3,-1,-3,5,3,6,7], 3", "expected": "[3,3,5,5,6,7]"},
-      {"input": "[1], 1", "expected": "[1]"}
-    ],
-    "hiddenTestCases": [
-      {"input": "[9,11], 2", "expected": "[11]"},
-      {"input": "[4,3,2,1], 2", "expected": "[4,3,2]"}
-    ],
-    "timeLimit": 1000,
-    "memoryLimit": 256,
-    "source": "interview_reported"
-  },
-  {
-    "id": "wipro-coding-22",
-    "title": "Two Pointers - Container With Most Water",
-    "company": "wipro",
-    "difficulty": "Medium",
-    "category": "Two Pointers",
-    "tags": ["Two Pointers", "Array"],
-    "marks": 20,
-    "problemStatement": "Given n non-negative integers a1, a2, ..., an, find two lines that together with the x-axis form a container that holds the most water.",
-    "description": "Return the maximum amount of water a container can store.",
-    "constraints": "n == height.length\n2 <= n <= 10^5",
-    "inputFormat": "Array of heights.",
-    "outputFormat": "Maximum area.",
-    "examples": [
-      {"input": "[1,8,6,2,5,4,8,3,7]", "output": "49"},
-      {"input": "[1,1]", "output": "1"}
-    ],
-    "explanation": "Use two pointers from both ends, move the shorter line inward.",
-    "starterCode": "function maxArea(height) {\n  // Write your code here\n  \n}",
-    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
-    "publicTestCases": [
-      {"input": "[1,8,6,2,5,4,8,3,7]", "expected": "49"},
-      {"input": "[1,1]", "expected": "1"}
-    ],
-    "hiddenTestCases": [
-      {"input": "[4,3,2,1,4]", "expected": "16"},
-      {"input": "[1,2,1]", "expected": "2"}
-    ],
-    "timeLimit": 1000,
-    "memoryLimit": 256,
-    "source": "interview_reported"
-  },
-  {
-    "id": "wipro-coding-23",
-    "title": "Tree Level Order Traversal",
-    "company": "wipro",
-    "difficulty": "Medium",
-    "category": "Trees",
-    "tags": ["Tree", "BFS"],
-    "marks": 20,
-    "problemStatement": "Given the root of a binary tree, return the level order traversal of its nodes' values.",
-    "description": "Use BFS approach.",
-    "constraints": "0 <= Number of nodes <= 2000\n-1000 <= Node.val <= 1000",
-    "inputFormat": "Root of binary tree.",
-    "outputFormat": "2D array of level order values.",
-    "examples": [
-      {"input": "[3,9,20,null,null,15,7]", "output": "[[3],[9,20],[15,7]]"},
-      {"input": "[1]", "output": "[[1]]"}
-    ],
-    "explanation": "Use a queue for BFS, processing one level at a time.",
-    "starterCode": "function levelOrder(root) {\n  // Write your code here\n  \n}",
-    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
-    "publicTestCases": [
-      {"input": "[3,9,20,null,null,15,7]", "expected": "[[3],[9,20],[15,7]]"},
-      {"input": "[1]", "expected": "[[1]]"}
-    ],
-    "hiddenTestCases": [
-      {"input": "[]", "expected": "[]"}
-    ],
-    "timeLimit": 1000,
-    "memoryLimit": 256,
-    "source": "interview_reported"
-  },
-  {
-    "id": "wipro-coding-24",
-    "title": "Graph BFS",
-    "company": "wipro",
-    "difficulty": "Medium",
-    "category": "Graphs",
-    "tags": ["Graph", "BFS"],
-    "marks": 20,
-    "problemStatement": "Implement BFS traversal of a graph given as an adjacency list.",
-    "description": "Start from vertex 0 and return the traversal order.",
-    "constraints": "1 <= Number of vertices <= 10^4",
-    "inputFormat": "Adjacency list representation.",
-    "outputFormat": "BFS traversal order.",
-    "examples": [
-      {"input": "[[],[0],[0],[0]]", "output": "[0,1,2,3]"},
-      {"input": "[[],[]", "output": "[0]"}
-    ],
-    "explanation": "Use a queue and visited array.",
-    "starterCode": "function bfs(adj) {\n  // Write your code here\n  \n}",
-    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
-    "publicTestCases": [
-      {"input": "[[],[0],[0],[0]]", "expected": "[0,1,2,3]"},
-      {"input": "[[],[]", "expected": "[0]"}
-    ],
-    "hiddenTestCases": [
-      {"input": "[[1,2],[0],[0]]", "expected": "[0,1,2]"}
-    ],
-    "timeLimit": 1000,
-    "memoryLimit": 256,
-    "source": "interview_reported"
-  },
-  {
-    "id": "wipro-coding-25",
-    "title": "Valid Sudoku",
-    "company": "wipro",
-    "difficulty": "Medium",
-    "category": "Matrix",
-    "tags": ["Matrix", "Hashing"],
-    "marks": 20,
-    "problemStatement": "Determine if a 9x9 Sudoku board is valid according to Sudoku rules.",
-    "description": "Only the filled cells need to be validated. Each row, column, and 3x3 box must contain digits 1-9 without repetition.",
-    "constraints": "board.length == 9\nboard[i].length == 9",
-    "inputFormat": "A 9x9 2D array.",
-    "outputFormat": "Boolean true or false.",
-    "examples": [
-      {"input": "[[\"5\",\"3\",\".\",\".\",\"7\",\".\",\".\",\".\",\".\"],[\"6\",\".\",\".\",\"1\",\"9\",\"5\",\".\",\".\",\".\"],[\".\",\"9\",\"8\",\".\",\".\",\".\",\".\",\"6\",\".\"],[\"8\",\".\",\".\",\".\",\"6\",\".\",\".\",\".\",\"3\"],[\"4\",\".\",\".\",\"8\",\".\",\"3\",\".\",\".\",\"1\"],[\"7\",\".\",\".\",\".\",\"2\",\".\",\".\",\".\",\"6\"],[\".\",\"6\",\".\",\".\",\".\",\".\",\"2\",\"8\",\".\"],[\".\",\".\",\".\",\"4\",\"1\",\"9\",\".\",\".\",\"5\"],[\".\",\".\",\".\",\".\",\"8\",\".\",\".\",\"7\",\"9\"]]", "output": "true"}
-    ],
-    "explanation": "Check each row, column, and 3x3 box for duplicate digits.",
-    "starterCode": "function isValidSudoku(board) {\n  // Write your code here\n  \n}",
-    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
-    "publicTestCases": [
-      {"input": "[[\"5\",\"3\",\".\",\".\",\"7\",\".\",\".\",\".\",\".\"],[\"6\",\".\",\".\",\"1\",\"9\",\"5\",\".\",\".\",\".\"],[\".\",\"9\",\"8\",\".\",\".\",\".\",\".\",\"6\",\".\"],[\"8\",\".\",\".\",\".\",\"6\",\".\",\".\",\".\",\"3\"],[\"4\",\".\",\".\",\"8\",\".\",\"3\",\".\",\".\",\"1\"],[\"7\",\".\",\".\",\".\",\"2\",\".\",\".\",\".\",\"6\"],[\".\",\"6\",\".\",\".\",\".\",\".\",\"2\",\"8\",\".\"],[\".\",\".\",\".\",\"4\",\"1\",\"9\",\".\",\".\",\"5\"],[\".\",\".\",\".\",\".\",\"8\",\".\",\".\",\"7\",\"9\"]]", "expected": "true"}
-    ],
-    "hiddenTestCases": [
-      {"input": "[[\"8\",\"3\",\".\",\".\",\"7\",\".\",\".\",\".\",\".\"],[\"6\",\".\",\".\",\"1\",\"9\",\"5\",\".\",\".\",\".\"],[\".\",\"9\",\"8\",\".\",\".\",\".\",\".\",\"6\",\".\"],[\"8\",\".\",\".\",\".\",\"6\",\".\",\".\",\".\",\"3\"],[\"4\",\".\",\".\",\"8\",\".\",\"3\",\".\",\".\",\"1\"],[\"7\",\".\",\".\",\".\",\"2\",\".\",\".\",\".\",\"6\"],[\".\",\"6\",\".\",\".\",\".\",\".\",\"2\",\"8\",\".\"],[\".\",\".\",\".\",\"4\",\"1\",\"9\",\".\",\".\",\"5\"],[\".\",\".\",\".\",\".\",\"8\",\".\",\".\",\"7\",\"9\"]]", "expected": "false"}
-    ],
-    "timeLimit": 1000,
-    "memoryLimit": 256,
-    "source": "interview_reported"
-  },
-  {
-    "id": "wipro-coding-26",
-    "title": "Linear Linked List Search",
-    "company": "wipro",
-    "difficulty": "Easy",
-    "category": "Linked Lists",
-    "tags": ["Linked List", "Search"],
-    "marks": 10,
-    "problemStatement": "Given the head of a linked list and an integer value, return true if the value exists in the linked list, false otherwise.",
-    "description": "Traverse the linked list and check each node.",
-    "constraints": "1 <= Number of nodes <= 10^4\n1 <= Node.val <= 10^4",
-    "inputFormat": "Head of linked list and value to search.",
-    "outputFormat": "Boolean true or false.",
-    "examples": [
-      {"input": "[1,2,3,4,5], 3", "output": "true"},
-      {"input": "[1,2,3,4,5], 6", "output": "false"}
-    ],
-    "explanation": "Traverse the list and compare each node's value.",
-    "starterCode": "function search(head, val) {\n  // Write your code here\n  \n}",
-    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
-    "publicTestCases": [
-      {"input": "[1,2,3,4,5], 3", "expected": "true"},
-      {"input": "[1,2,3,4,5], 6", "expected": "false"},
-      {"input": "[1], 1", "expected": "true"}
-    ],
-    "hiddenTestCases": [
-      {"input": "[1], 2", "expected": "false"}
-    ],
-    "timeLimit": 1000,
-    "memoryLimit": 256,
-    "source": "interview_reported"
-  },
-  {
-    "id": "wipro-coding-27",
     "title": "String Concatenation",
     "company": "wipro",
     "difficulty": "Easy",
@@ -872,7 +365,199 @@
     "source": "practice"
   },
   {
-    "id": "wipro-coding-28",
+    "id": "wipro-coding-12",
+    "title": "Pattern Problem - Diamond",
+    "company": "wipro",
+    "difficulty": "Medium",
+    "category": "Pattern",
+    "tags": ["Pattern", "Output"],
+    "marks": 15,
+    "problemStatement": "Print a diamond pattern of stars for a given odd integer n.",
+    "description": "The pattern has n rows with stars and spaces forming a diamond shape.",
+    "constraints": "1 <= n <= 99 (odd only)",
+    "inputFormat": "An odd integer n.",
+    "outputFormat": "The diamond pattern as a string.",
+    "examples": [
+      {"input": "3", "output": " * \\n***\\n * "},
+      {"input": "5", "output": "  *  \\n *** \\n*****\\n *** \\n  *  "}
+    ],
+    "explanation": "Upper half: print stars from 1 to n. Lower half: print stars from n-2 to 1.",
+    "starterCode": "function printDiamond(n) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      {"input": "3", "expected": " * \\n***\\n * "},
+      {"input": "5", "expected": "  *  \\n *** \\n*****\\n *** \\n  *  "}
+    ],
+    "hiddenTestCases": [
+      {"input": "1", "expected": "*"}
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "interview_reported"
+  },
+  {
+    "id": "wipro-coding-13",
+    "title": "Recursion - Factorial",
+    "company": "wipro",
+    "difficulty": "Easy",
+    "category": "Recursion",
+    "tags": ["Recursion", "Math"],
+    "marks": 10,
+    "problemStatement": "Write a recursive function to calculate the factorial of a non-negative integer n.",
+    "description": "Factorial of n (n!) = n * (n-1) * (n-2) * ... * 1. Factorial of 0 is 1.",
+    "constraints": "0 <= n <= 20",
+    "inputFormat": "A non-negative integer.",
+    "outputFormat": "The factorial of n.",
+    "examples": [
+      {"input": "5", "output": "120"},
+      {"input": "0", "output": "1"}
+    ],
+    "explanation": "Base case: factorial(0) = 1. Recursive: factorial(n) = n * factorial(n-1).",
+    "starterCode": "function factorial(n) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      {"input": "5", "expected": "120"},
+      {"input": "0", "expected": "1"},
+      {"input": "10", "expected": "3628800"}
+    ],
+    "hiddenTestCases": [
+      {"input": "1", "expected": "1"},
+      {"input": "20", "expected": "2432902008176640000"}
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "interview_reported"
+  },
+  {
+    "id": "wipro-coding-14",
+    "title": "Two Sum",
+    "company": "wipro",
+    "difficulty": "Easy",
+    "category": "Arrays",
+    "tags": ["Array", "Hashing"],
+    "marks": 10,
+    "problemStatement": "Given an array of integers `nums` and an integer `target`, return indices of the two numbers that add up to target.",
+    "description": "You may assume each input has exactly one solution, and you may not use the same element twice.",
+    "constraints": "2 <= nums.length <= 10^4\n-10^9 <= nums[i] <= 10^9",
+    "inputFormat": "An array and target integer.",
+    "outputFormat": "Array of two indices.",
+    "examples": [
+      {"input": "[2,7,11,15], 9", "output": "[0,1]"},
+      {"input": "[3,2,4], 6", "output": "[1,2]"}
+    ],
+    "explanation": "Use a hash map to store complements and their indices.",
+    "starterCode": "function twoSum(nums, target) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      {"input": "[2,7,11,15], 9", "expected": "[0,1]"},
+      {"input": "[3,2,4], 6", "expected": "[1,2]"},
+      {"input": "[3,3], 6", "expected": "[0,1]"}
+    ],
+    "hiddenTestCases": [
+      {"input": "[1,2,3,4,5], 9", "expected": "[3,4]"}
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "interview_reported"
+  },
+  {
+    "id": "wipro-coding-15",
+    "title": "Linear Linked List Search",
+    "company": "wipro",
+    "difficulty": "Easy",
+    "category": "Linked Lists",
+    "tags": ["Linked List", "Search"],
+    "marks": 10,
+    "problemStatement": "Given the head of a linked list and an integer value, return true if the value exists in the linked list, false otherwise.",
+    "description": "Traverse the linked list and check each node.",
+    "constraints": "1 <= Number of nodes <= 10^4\n1 <= Node.val <= 10^4",
+    "inputFormat": "Head of linked list and value to search.",
+    "outputFormat": "Boolean true or false.",
+    "examples": [
+      {"input": "[1,2,3,4,5], 3", "output": "true"},
+      {"input": "[1,2,3,4,5], 6", "output": "false"}
+    ],
+    "explanation": "Traverse the list and compare each node's value.",
+    "starterCode": "function search(head, val) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      {"input": "[1,2,3,4,5], 3", "expected": "true"},
+      {"input": "[1,2,3,4,5], 6", "expected": "false"},
+      {"input": "[1], 1", "expected": "true"}
+    ],
+    "hiddenTestCases": [
+      {"input": "[1], 2", "expected": "false"}
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "interview_reported"
+  },
+  {
+    "id": "wipro-coding-16",
+    "title": "Sliding Window Maximum",
+    "company": "wipro",
+    "difficulty": "Hard",
+    "category": "Sliding Window",
+    "tags": ["Sliding Window", "Deque"],
+    "marks": 25,
+    "problemStatement": "Given an array nums and a sliding window of size k moving from left to right, return the max value in each window.",
+    "description": "The window slides one position at a time.",
+    "constraints": "1 <= nums.length <= 10^5\n1 <= k <= nums.length",
+    "inputFormat": "An array and window size k.",
+    "outputFormat": "Array of maximum values.",
+    "examples": [
+      {"input": "[1,3,-1,-3,5,3,6,7], 3", "output": "[3,3,5,5,6,7]"},
+      {"input": "[1], 1", "output": "[1]"}
+    ],
+    "explanation": "Use a deque to maintain indices of useful elements in current window.",
+    "starterCode": "function maxSlidingWindow(nums, k) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      {"input": "[1,3,-1,-3,5,3,6,7], 3", "expected": "[3,3,5,5,6,7]"},
+      {"input": "[1], 1", "expected": "[1]"}
+    ],
+    "hiddenTestCases": [
+      {"input": "[9,11], 2", "expected": "[11]"},
+      {"input": "[4,3,2,1], 2", "expected": "[4,3,2]"}
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "interview_reported"
+  },
+  {
+    "id": "wipro-coding-17",
+    "title": "Merge Two Sorted Arrays",
+    "company": "wipro",
+    "difficulty": "Easy",
+    "category": "Arrays",
+    "tags": ["Array", "Two Pointers"],
+    "marks": 10,
+    "problemStatement": "Given two sorted integer arrays nums1 and nums2, merge them into a single sorted array.",
+    "description": "Return the merged sorted array.",
+    "constraints": "nums1.length == m, nums2.length == n\n0 <= m, n <= 10^3",
+    "inputFormat": "Two sorted arrays.",
+    "outputFormat": "Merged sorted array.",
+    "examples": [
+      {"input": "[1,2,3], [2,5,6]", "output": "[1,2,2,3,5,6]"},
+      {"input": "[], [1]", "output": "[1]"}
+    ],
+    "explanation": "Use two pointers to compare elements from both arrays.",
+    "starterCode": "function merge(nums1, nums2) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      {"input": "[1,2,3], [2,5,6]", "expected": "[1,2,2,3,5,6]"},
+      {"input": "[], [1]", "expected": "[1]"},
+      {"input": "[1], []", "expected": "[1]"}
+    ],
+    "hiddenTestCases": [
+      {"input": "[1,3,5], [2,4,6]", "expected": "[1,2,3,4,5,6]"}
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "interview_reported"
+  },
+  {
+    "id": "wipro-coding-18",
     "title": "Stack Implementation",
     "company": "wipro",
     "difficulty": "Easy",
@@ -903,7 +588,132 @@
     "source": "interview_reported"
   },
   {
-    "id": "wipro-coding-29",
+    "id": "wipro-coding-19",
+    "title": "Hash Map Implementation",
+    "company": "wipro",
+    "difficulty": "Medium",
+    "category": "Hashing",
+    "tags": ["Hashing", "Design"],
+    "marks": 20,
+    "problemStatement": "Implement a hash map from scratch with put, get, and remove operations.",
+    "description": "Handle collisions using chaining.",
+    "constraints": "1 <= number of operations <= 10^4\n-10^5 <= key, value <= 10^5",
+    "inputFormat": "Series of operations.",
+    "outputFormat": "Results of get operations.",
+    "examples": [
+      {"input": "put(1,1), put(2,2), get(1), get(3)", "output": "null, null, 1, -1"}
+    ],
+    "explanation": "Use an array of linked lists for chaining.",
+    "starterCode": "class HashMap {\n  constructor() {\n    // Initialize\n  }\n  put(key, value) {\n    // Add key-value pair\n  }\n  get(key) {\n    // Get value by key\n  }\n  remove(key) {\n    // Remove key-value pair\n  }\n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      {"input": "put(1,1), get(1)", "expected": "1"},
+      {"input": "put(1,1), put(1,2), get(1)", "expected": "2"}
+    ],
+    "hiddenTestCases": [
+      {"input": "get(1)", "expected": "-1"},
+      {"input": "put(1,1), remove(1), get(1)", "expected": "-1"}
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "practice"
+  },
+  {
+    "id": "wipro-coding-20",
+    "title": "Tree Level Order Traversal",
+    "company": "wipro",
+    "difficulty": "Medium",
+    "category": "Trees",
+    "tags": ["Tree", "BFS"],
+    "marks": 20,
+    "problemStatement": "Given the root of a binary tree, return the level order traversal of its nodes' values (left to right, level by level).",
+    "description": "Use BFS approach.",
+    "constraints": "0 <= Number of nodes <= 2000\n-1000 <= Node.val <= 1000",
+    "inputFormat": "Root of binary tree.",
+    "outputFormat": "2D array of level order values.",
+    "examples": [
+      {"input": "[3,9,20,null,null,15,7]", "output": "[[3],[9,20],[15,7]]"},
+      {"input": "[1]", "output": "[[1]]"}
+    ],
+    "explanation": "Use a queue for BFS, processing one level at a time.",
+    "starterCode": "function levelOrder(root) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      {"input": "[3,9,20,null,null,15,7]", "expected": "[[3],[9,20],[15,7]]"},
+      {"input": "[1]", "expected": "[[1]]"}
+    ],
+    "hiddenTestCases": [
+      {"input": "[]", "expected": "[]"}
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "interview_reported"
+  },
+  {
+    "id": "wipro-coding-21",
+    "title": "Graph BFS",
+    "company": "wipro",
+    "difficulty": "Medium",
+    "category": "Graphs",
+    "tags": ["Graph", "BFS"],
+    "marks": 20,
+    "problemStatement": "Implement BFS traversal of a graph given as an adjacency list.",
+    "description": "Start from vertex 0 and return the traversal order.",
+    "constraints": "1 <= Number of vertices <= 10^4",
+    "inputFormat": "Adjacency list representation.",
+    "outputFormat": "BFS traversal order.",
+    "examples": [
+      {"input": "[[],[0],[0],[0]]", "output": "[0,1,2,3]"},
+      {"input": "[[],[]", "output": "[0]"}
+    ],
+    "explanation": "Use a queue and visited array.",
+    "starterCode": "function bfs(adj) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      {"input": "[[],[0],[0],[0]]", "expected": "[0,1,2,3]"},
+      {"input": "[[],[]", "expected": "[0]"}
+    ],
+    "hiddenTestCases": [
+      {"input": "[[1,2],[0],[0]]", "expected": "[0,1,2]"}
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "interview_reported"
+  },
+  {
+    "id": "wipro-coding-22",
+    "title": "Dynamic Programming - Fibonacci",
+    "company": "wipro",
+    "difficulty": "Easy",
+    "category": "Dynamic Programming",
+    "tags": ["DP", "Recursion"],
+    "marks": 10,
+    "problemStatement": "Write a function to find the nth Fibonacci number using dynamic programming.",
+    "description": "Fibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, ...",
+    "constraints": "0 <= n <= 30",
+    "inputFormat": "A non-negative integer n.",
+    "outputFormat": "The nth Fibonacci number.",
+    "examples": [
+      {"input": "2", "output": "1"},
+      {"input": "5", "output": "5"}
+    ],
+    "explanation": "Use memoization or tabulation to avoid redundant calculations.",
+    "starterCode": "function fibonacci(n) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      {"input": "0", "expected": "0"},
+      {"input": "1", "expected": "1"},
+      {"input": "10", "expected": "55"}
+    ],
+    "hiddenTestCases": [
+      {"input": "30", "expected": "832040"}
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "interview_reported"
+  },
+  {
+    "id": "wipro-coding-23",
     "title": "Queue Implementation",
     "company": "wipro",
     "difficulty": "Easy",
@@ -933,34 +743,224 @@
     "source": "interview_reported"
   },
   {
-    "id": "wipro-coding-30",
-    "title": "Hash Map Implementation",
+    "id": "wipro-coding-24",
+    "title": "Two Pointers - Container With Most Water",
     "company": "wipro",
     "difficulty": "Medium",
-    "category": "Hashing",
-    "tags": ["Hashing", "Design"],
+    "category": "Two Pointers",
+    "tags": ["Two Pointers", "Array"],
     "marks": 20,
-    "problemStatement": "Implement a hash map from scratch with put, get, and remove operations.",
-    "description": "Handle collisions using chaining.",
-    "constraints": "1 <= number of operations <= 10^4\n-10^5 <= key, value <= 10^5",
-    "inputFormat": "Series of operations.",
-    "outputFormat": "Results of get operations.",
+    "problemStatement": "Given n non-negative integers a1, a2, ..., an, find two lines that together with the x-axis form a container that holds the most water.",
+    "description": "Return the maximum amount of water a container can store.",
+    "constraints": "n == height.length\n2 <= n <= 10^5",
+    "inputFormat": "Array of heights.",
+    "outputFormat": "Maximum area.",
     "examples": [
-      {"input": "put(1,1), put(2,2), get(1), get(3)", "output": "null, null, 1, -1"}
+      {"input": "[1,8,6,2,5,4,8,3,7]", "output": "49"},
+      {"input": "[1,1]", "output": "1"}
     ],
-    "explanation": "Use an array of linked lists for chaining.",
-    "starterCode": "class HashMap {\n  constructor() {\n    // Initialize\n  }\n  put(key, value) {\n    // Add key-value pair\n  }\n  get(key) {\n    // Get value by key\n  }\n  remove(key) {\n    // Remove key-value pair\n  }\n}",
+    "explanation": "Use two pointers from both ends, move the shorter line inward.",
+    "starterCode": "function maxArea(height) {\n  // Write your code here\n  \n}",
     "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
     "publicTestCases": [
-      {"input": "put(1,1), get(1)", "expected": "1"},
-      {"input": "put(1,1), put(1,2), get(1)", "expected": "2"}
+      {"input": "[1,8,6,2,5,4,8,3,7]", "expected": "49"},
+      {"input": "[1,1]", "expected": "1"}
     ],
     "hiddenTestCases": [
-      {"input": "get(1)", "expected": "-1"},
-      {"input": "put(1,1), remove(1), get(1)", "expected": "-1"}
+      {"input": "[4,3,2,1,4]", "expected": "16"},
+      {"input": "[1,2,1]", "expected": "2"}
     ],
     "timeLimit": 1000,
     "memoryLimit": 256,
-    "source": "practice"
+    "source": "interview_reported"
+  },
+  {
+    "id": "wipro-coding-25",
+    "title": "Check for Anagram",
+    "company": "wipro",
+    "difficulty": "Easy",
+    "category": "Strings",
+    "tags": ["String", "Hashing"],
+    "marks": 10,
+    "problemStatement": "Given two strings s and t, return true if t is an anagram of s, and false otherwise.",
+    "description": "An anagram is a word formed by rearranging the letters of another word.",
+    "constraints": "1 <= s.length, t.length <= 5 * 10^4",
+    "inputFormat": "Two strings.",
+    "outputFormat": "Boolean true or false.",
+    "examples": [
+      {"input": "\"anagram\", \"nagaram\"", "output": "true"},
+      {"input": "\"rat\", \"car\"", "output": "false"}
+    ],
+    "explanation": "Count character frequencies and compare.",
+    "starterCode": "function isAnagram(s, t) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      {"input": "\"anagram\", \"nagaram\"", "expected": "true"},
+      {"input": "\"rat\", \"car\"", "expected": "false"},
+      {"input": "\"a\", \"a\"", "expected": "true"}
+    ],
+    "hiddenTestCases": [
+      {"input": "\"ab\", \"a\"", "expected": "false"}
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "interview_reported"
+  },
+  {
+    "id": "wipro-coding-26",
+    "title": "Find Duplicates in Array",
+    "company": "wipro",
+    "difficulty": "Easy",
+    "category": "Arrays",
+    "tags": ["Array", "Hashing"],
+    "marks": 10,
+    "problemStatement": "Given an integer array nums, return true if any value appears at least twice, false if every element is distinct.",
+    "description": "Solve with O(n) time complexity.",
+    "constraints": "1 <= nums.length <= 10^5\n-10^9 <= nums[i] <= 10^9",
+    "inputFormat": "An array of integers.",
+    "outputFormat": "Boolean true or false.",
+    "examples": [
+      {"input": "[1,2,3,1]", "output": "true"},
+      {"input": "[1,2,3,4]", "output": "false"}
+    ],
+    "explanation": "Use a HashSet to track seen elements.",
+    "starterCode": "function containsDuplicate(nums) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      {"input": "[1,2,3,1]", "expected": "true"},
+      {"input": "[1,2,3,4]", "expected": "false"},
+      {"input": "[1,1,1,3,3,4,3,2,4,2]", "expected": "true"}
+    ],
+    "hiddenTestCases": [
+      {"input": "[1]", "expected": "false"}
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "interview_reported"
+  },
+  {
+    "id": "wipro-coding-27",
+    "title": "Matrix Spiral Order",
+    "company": "wipro",
+    "difficulty": "Medium",
+    "category": "Matrix",
+    "tags": ["Matrix", "Simulation"],
+    "marks": 20,
+    "problemStatement": "Given an m x n matrix, return all elements in spiral order.",
+    "description": "Traverse the matrix in a spiral pattern.",
+    "constraints": "1 <= m, n <= 10\n-100 <= matrix[i][j] <= 100",
+    "inputFormat": "A 2D matrix.",
+    "outputFormat": "Array of elements in spiral order.",
+    "examples": [
+      {"input": "[[1,2,3],[4,5,6],[7,8,9]]", "output": "[1,2,3,6,9,8,7,4,5]"},
+      {"input": "[[1,2,3,4],[5,6,7,8],[9,10,11,12]]", "output": "[1,2,3,4,8,12,11,10,9,5,6,7]"}
+    ],
+    "explanation": "Use four boundaries (top, bottom, left, right) and traverse layer by layer.",
+    "starterCode": "function spiralOrder(matrix) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      {"input": "[[1,2,3],[4,5,6],[7,8,9]]", "expected": "[1,2,3,6,9,8,7,4,5]"}
+    ],
+    "hiddenTestCases": [
+      {"input": "[[1]]", "expected": "[1]"},
+      {"input": "[[1,2],[3,4]]", "expected": "[1,2,4,3]"}
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "interview_reported"
+  },
+  {
+    "id": "wipro-coding-28",
+    "title": "Detect Cycle in Linked List",
+    "company": "wipro",
+    "difficulty": "Medium",
+    "category": "Linked Lists",
+    "tags": ["Linked List", "Two Pointers"],
+    "marks": 15,
+    "problemStatement": "Given head, the head of a linked list, determine if the linked list has a cycle.",
+    "description": "Return true if there is a cycle, false otherwise.",
+    "constraints": "0 <= Number of nodes <= 10^4\n-10^5 <= Node.val <= 10^5",
+    "inputFormat": "Head of linked list.",
+    "outputFormat": "Boolean true or false.",
+    "examples": [
+      {"input": "[3,2,0,-4], pos=1", "output": "true"},
+      {"input": "[1], pos=-1", "output": "false"}
+    ],
+    "explanation": "Use Floyd's cycle detection algorithm (slow and fast pointers).",
+    "starterCode": "function hasCycle(head) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      {"input": "[3,2,0,-4], pos=1", "expected": "true"},
+      {"input": "[1], pos=-1", "expected": "false"}
+    ],
+    "hiddenTestCases": [
+      {"input": "[1,2], pos=0", "expected": "true"},
+      {"input": "[1], pos=0", "expected": "true"}
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "interview_reported"
+  },
+  {
+    "id": "wipro-coding-29",
+    "title": "Climbing Stairs",
+    "company": "wipro",
+    "difficulty": "Easy",
+    "category": "Dynamic Programming",
+    "tags": ["DP", "Math"],
+    "marks": 10,
+    "problemStatement": "You are climbing a staircase with n steps. Each time you can climb 1 or 2 steps. In how many distinct ways can you climb to the top?",
+    "description": "This is essentially a Fibonacci sequence problem.",
+    "constraints": "1 <= n <= 45",
+    "inputFormat": "Number of steps n.",
+    "outputFormat": "Number of distinct ways.",
+    "examples": [
+      {"input": "2", "output": "2"},
+      {"input": "3", "output": "3"}
+    ],
+    "explanation": "ways(n) = ways(n-1) + ways(n-2).",
+    "starterCode": "function climbStairs(n) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      {"input": "2", "expected": "2"},
+      {"input": "3", "expected": "3"},
+      {"input": "5", "expected": "8"}
+    ],
+    "hiddenTestCases": [
+      {"input": "1", "expected": "1"},
+      {"input": "10", "expected": "89"}
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "interview_reported"
+  },
+  {
+    "id": "wipro-coding-30",
+    "title": "Valid Sudoku",
+    "company": "wipro",
+    "difficulty": "Medium",
+    "category": "Matrix",
+    "tags": ["Matrix", "Hashing"],
+    "marks": 20,
+    "problemStatement": "Determine if a 9x9 Sudoku board is valid according to Sudoku rules.",
+    "description": "Only the filled cells need to be validated. Each row, column, and 3x3 box must contain digits 1-9 without repetition.",
+    "constraints": "board.length == 9\nboard[i].length == 9",
+    "inputFormat": "A 9x9 2D array.",
+    "outputFormat": "Boolean true or false.",
+    "examples": [
+      {"input": "[[\"5\",\"3\",\".\",\".\",\"7\",\".\",\".\",\".\",\".\"],[\"6\",\".\",\".\",\"1\",\"9\",\"5\",\".\",\".\",\".\"],[\".\",\"9\",\"8\",\".\",\".\",\".\",\".\",\"6\",\".\"],[\"8\",\".\",\".\",\".\",\"6\",\".\",\".\",\".\",\"3\"],[\"4\",\".\",\".\",\"8\",\".\",\"3\",\".\",\".\",\"1\"],[\"7\",\".\",\".\",\".\",\"2\",\".\",\".\",\".\",\"6\"],[\".\",\"6\",\".\",\".\",\".\",\".\",\"2\",\"8\",\".\"],[\".\",\".\",\".\",\"4\",\"1\",\"9\",\".\",\".\",\"5\"],[\".\",\".\",\".\",\".\",\"8\",\".\",\".\",\"7\",\"9\"]]", "output": "true"}
+    ],
+    "explanation": "Check each row, column, and 3x3 box for duplicate digits.",
+    "starterCode": "function isValidSudoku(board) {\n  // Write your code here\n  \n}",
+    "supportedLanguages": ["JavaScript", "Python", "Java", "C++"],
+    "publicTestCases": [
+      {"input": "[[\"5\",\"3\",\".\",\".\",\"7\",\".\",\".\",\".\",\".\"],[\"6\",\".\",\".\",\"1\",\"9\",\"5\",\".\",\".\",\".\"],[\".\",\"9\",\"8\",\".\",\".\",\".\",\".\",\"6\",\".\"],[\"8\",\".\",\".\",\".\",\"6\",\".\",\".\",\".\",\"3\"],[\"4\",\".\",\".\",\"8\",\".\",\"3\",\".\",\".\",\"1\"],[\"7\",\".\",\".\",\".\",\"2\",\".\",\".\",\".\",\"6\"],[\".\",\"6\",\".\",\".\",\".\",\".\",\"2\",\"8\",\".\"],[\".\",\".\",\".\",\"4\",\"1\",\"9\",\".\",\".\",\"5\"],[\".\",\".\",\".\",\".\",\"8\",\".\",\".\",\"7\",\"9\"]]", "expected": "true"}
+    ],
+    "hiddenTestCases": [
+      {"input": "[[\"8\",\"3\",\".\",\".\",\"7\",\".\",\".\",\".\",\".\"],[\"6\",\".\",\".\",\"1\",\"9\",\"5\",\".\",\".\",\".\"],[\".\",\"9\",\"8\",\".\",\".\",\".\",\".\",\"6\",\".\"],[\"8\",\".\",\".\",\".\",\"6\",\".\",\".\",\".\",\"3\"],[\"4\",\".\",\".\",\"8\",\".\",\"3\",\".\",\".\",\"1\"],[\"7\",\".\",\".\",\".\",\"2\",\".\",\".\",\".\",\"6\"],[\".\",\"6\",\".\",\".\",\".\",\".\",\"2\",\"8\",\".\"],[\".\",\".\",\".\",\"4\",\"1\",\"9\",\".\",\".\",\"5\"],[\".\",\".\",\".\",\".\",\"8\",\".\",\".\",\"7\",\"9\"]]", "expected": "false"}
+    ],
+    "timeLimit": 1000,
+    "memoryLimit": 256,
+    "source": "interview_reported"
   }
 ]

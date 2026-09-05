@@ -67,14 +67,27 @@ const companyMockAttemptSchema = new mongoose.Schema(
         timeTakenMs: Number,
       },
     ],
-    // Answers - Technical (MCQ)
+    // Answers - Technical (MCQ or AI-evaluated free-text)
     technicalAnswers: [
       {
         questionId: String,
-        answer: String, // selected option text (MCQ)
+        answer: String, // selected option text (MCQ) or free-text answer
         selectedOption: String,
         isCorrect: Boolean,
         timeTakenMs: Number,
+        // AI evaluation fields (for free-text/descriptive questions)
+        aiScore: { type: Number, default: null },
+        aiMaxMarks: { type: Number, default: null },
+        aiEvaluation: { type: String, default: "" },
+        aiStrengths: { type: [String], default: [] },
+        aiWeaknesses: { type: [String], default: [] },
+        aiBetterAnswer: { type: String, default: "" },
+        expectedAnswer: { type: String, default: "" },
+        evaluationStatus: {
+          type: String,
+          enum: ["pending", "ai_evaluated", "fallback", "not_evaluated"],
+          default: "pending",
+        },
       },
     ],
     // Answers - Coding

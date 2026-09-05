@@ -101,6 +101,15 @@ export default function CompanyMockInterview() {
   const lastTabSwitchAtRef = useRef(0);
   const saveProgressRef = useRef(null);
 
+  // ── Save serialization: prevent overlapping autosaves ──
+  const saveInProgressRef = useRef(false);
+  const pendingSaveRef = useRef(false);
+  const saveDebounceTimerRef = useRef(null);
+
+  // ── Duplicate-submission guard: only ONE final submission may execute ──
+  const submittingRef = useRef(false);
+  const [submitting, setSubmitting] = useState(false);
+
   // ── Fullscreen ──
   const [fullscreenExited, setFullscreenExited] = useState(false);
   const everEnteredFs = useRef(false);
@@ -291,6 +300,13 @@ export default function CompanyMockInterview() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 
+  // Cleanup debounce timer on unmount.
+  useEffect(() => {
+    return () => {
+      if (saveDebounceTimerRef.current) clearTimeout(saveDebounceTimerRef.current);
+    };
+  }, []);
+
   // Timer countdown. Decrements the remaining active time every second from the
   // current saved value, stopping at 00:00 (auto-finalization is triggered below).
   useEffect(() => {
@@ -452,16 +468,37 @@ export default function CompanyMockInterview() {
     };
   };
 
-  const saveProgress = useCallback(({ skipGuard = false } = {}) => {
+  // Debounced, serialized progress save — prevents overlapping requests.
+  // If a save is in-flight when another is triggered, the latest state is
+  // saved automatically once the in-flight request completes.
+  const executeSave = useCallback(() => {
     const st = stateRef.current;
     if (!st.attempt || !st.attempt.attemptId) return;
-    saveProgressRef.current = saveProgress;
+    if (saveInProgressRef.current) {
+      pendingSaveRef.current = true;
+      return;
+    }
+    saveInProgressRef.current = true;
+    pendingSaveRef.current = false;
     const payload = buildSavePayload();
     api
       .post("/api/mock-interview/save", payload, { headers: authHeaders })
-      .then(() => {})
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => {
+        saveInProgressRef.current = false;
+        if (pendingSaveRef.current) {
+          pendingSaveRef.current = false;
+          executeSave();
+        }
+      });
   }, [authHeaders]);
+
+  const saveProgress = useCallback(({ skipGuard = false } = {}) => {
+    saveProgressRef.current = saveProgress;
+    // Debounce: coalesce rapid-fire saves into a single request
+    if (saveDebounceTimerRef.current) clearTimeout(saveDebounceTimerRef.current);
+    saveDebounceTimerRef.current = setTimeout(executeSave, 300);
+  }, [executeSave]);
 
   const fireAndForgetSave = useCallback(() => {
     const st = stateRef.current;
@@ -615,6 +652,14 @@ export default function CompanyMockInterview() {
     }));
   };
 
+  const updateTechnicalText = (qid, text) => {
+    setAnswers((prev) => ({
+      ...prev,
+      technical: { ...prev.technical, [qid]: text },
+    }));
+    setTimeout(() => saveProgress({ skipGuard: true }), 250);
+  };
+
   // ── Navigation ──
   const goNext = () => {
     saveProgress({ skipGuard: true });
@@ -691,15 +736,35 @@ export default function CompanyMockInterview() {
 
   // ── End Mock Interview ──
   const submitFinal = async () => {
+    if (submittingRef.current) {
+      console.warn("[COMPANY MOCK] Blocked duplicate final submission.");
+      return;
+    }
+    submittingRef.current = true;
+    setSubmitting(true);
     setLoading(true);
+    console.log("[COMPANY MOCK] FINAL SUBMIT CLICKED");
+    console.log("[COMPANY MOCK] ATTEMPT ID:", attempt?.attemptId);
+    console.log("[COMPANY MOCK] CALLING /api/mock-interview/submit");
     try {
       setConfirmEnd(false);
       const aptitudeAnswers = Object.entries(answers.aptitude)
         .map(([qid, v]) => ({ questionId: qid, selectedOption: v }))
         .filter((a) => (a.selectedOption || "").toString().trim() !== "");
       const technicalAnswers = Object.entries(answers.technical)
-        .map(([qid, v]) => ({ questionId: qid, selectedOption: v }))
-        .filter((a) => (a.selectedOption || "").toString().trim() !== "");
+        .map(([qid, v]) => {
+          const q = (questions.technical || []).find((tq) => tq._id === qid || tq.questionId === qid);
+          const isFreeText = q && (!q.options || q.options.length === 0);
+          return {
+            questionId: qid,
+            selectedOption: isFreeText ? null : v,
+            answer: isFreeText ? v : v,
+          };
+        })
+        .filter((a) => {
+          const val = a.answer || a.selectedOption || "";
+          return val.toString().trim() !== "";
+        });
       const codingAnswers = Object.entries(answers.coding)
         .map(([qid, code]) => {
           const sub = codingSubmissions.find((c) => String(c.questionId) === String(qid));
@@ -719,12 +784,26 @@ export default function CompanyMockInterview() {
         { attemptId: attempt.attemptId, aptitudeAnswers, technicalAnswers, codingAnswers },
         { headers: authHeaders }
       );
+      console.log("[COMPANY MOCK] RESPONSE:", data?.result?.status || data?.message);
       if (isFullscreenActive()) exitFullscreenAPI().catch(() => {});
       navigate(`/company-mock/result/${data.result?.attemptId || attempt.attemptId}`, { replace: true });
     } catch (error) {
-      console.error(error);
-      toast.error(error.response?.data?.message || "Failed to submit mock interview");
+      console.error("[COMPANY MOCK] SUBMIT ERROR:", error?.response?.data || error.message);
+      const msg = error?.response?.status === 400
+        ? (error.response.data?.message || "Bad request")
+        : error?.response?.status === 401
+          ? "Authentication error — please sign in again."
+          : error?.response?.status === 404
+            ? "Attempt not found."
+            : error?.response?.status >= 500
+              ? "Server error — please try again."
+              : !error?.response
+                ? "Network error — check your connection and retry."
+                : "Failed to submit mock interview";
+      toast.error(msg);
     } finally {
+      submittingRef.current = false;
+      setSubmitting(false);
       setLoading(false);
     }
   };
@@ -870,8 +949,7 @@ export default function CompanyMockInterview() {
               style={{ background: "linear-gradient(135deg, #EF4444 0%, #DC2626 100%)" }}
             >
               End Mock Interview
-            </button>
-          </div>
+            </button>          </div>
         </div>
 
         {/* Section tabs */}
@@ -950,31 +1028,82 @@ export default function CompanyMockInterview() {
           </div>
         ) : (
           <div className="rounded-xl border p-6 md:p-8 mb-6" style={{ background: "var(--card-bg)", borderColor: "var(--card-border)" }}>
-            <h2 className="text-xl font-semibold mb-6">{question.text || question.question || question.title}</h2>
-            <div className="space-y-3">
-              {question.options.map((opt, i) => {
-                const isSelected = answers[currentSection][question._id] === opt;
-                return (
-                  <label
-                    key={i}
-                    className="flex items-start gap-3 p-4 border rounded-lg cursor-pointer transition-colors"
-                    style={{
-                      background: isSelected ? `color-mix(in srgb, ${meta.color} 14%, transparent)` : "transparent",
-                      borderColor: isSelected ? meta.color : "var(--card-border)",
-                      color: "var(--text-primary)",
-                    }}
-                  >
-                    <input type="radio" name={`q-${question._id}`} value={opt} checked={isSelected} onChange={() => selectOption(question._id, opt)} className="hidden" />
-                    {isSelected ? (
-                      <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5" style={{ color: meta.color }} />
-                    ) : (
-                      <Circle className="w-5 h-5 shrink-0 mt-0.5" style={{ color: "var(--text-muted)" }} />
-                    )}
-                    <span>{opt}</span>
-                  </label>
-                );
-              })}
+            {/* Question Details Bar */}
+            <div className="flex flex-wrap items-center gap-2 mb-4">
+              <span className="text-xs font-bold uppercase tracking-wide" style={{ color: meta.color }}>
+                {question.questionType === "MCQ" ? "MCQ" : "Technical"}
+              </span>
+              {question.difficulty && (
+                <span className="text-[10px] px-2 py-0.5 rounded-full font-bold" style={{
+                  background: question.difficulty === "Hard" ? "rgba(239,68,68,0.12)" : question.difficulty === "Easy" ? "rgba(16,185,129,0.12)" : "rgba(234,179,8,0.12)",
+                  color: question.difficulty === "Hard" ? "var(--error)" : question.difficulty === "Easy" ? "var(--success)" : "var(--warning)",
+                }}>
+                  {question.difficulty}
+                </span>
+              )}
+              {question.marks != null && (
+                <span className="text-[10px] px-2 py-0.5 rounded-full font-bold" style={{ background: "rgba(99,102,241,0.12)", color: "#6366f1" }}>
+                  {question.marks} Marks
+                </span>
+              )}
+              {question.questionStatus && (
+                <span className="text-[10px] px-2 py-0.5 rounded-full font-bold" style={{
+                  background: question.questionStatus === "interview_reported" ? "rgba(245,158,11,0.12)" : "rgba(107,114,128,0.12)",
+                  color: question.questionStatus === "interview_reported" ? "#F59E0B" : "#6B7280",
+                }}>
+                  {question.questionStatus === "interview_reported" ? "Interview Reported" : "Practice"}
+                </span>
+              )}
             </div>
+            <h2 className="text-xl font-semibold mb-6">{question.text || question.question || question.title}</h2>
+            {question.options && question.options.length > 0 ? (
+              <div className="space-y-3">
+                {question.options.map((opt, i) => {
+                  const isSelected = answers[currentSection][question._id] === opt;
+                  return (
+                    <label
+                      key={i}
+                      className="flex items-start gap-3 p-4 border rounded-lg cursor-pointer transition-colors"
+                      style={{
+                        background: isSelected ? `color-mix(in srgb, ${meta.color} 14%, transparent)` : "transparent",
+                        borderColor: isSelected ? meta.color : "var(--card-border)",
+                        color: "var(--text-primary)",
+                      }}
+                    >
+                      <input type="radio" name={`q-${question._id}`} value={opt} checked={isSelected} onChange={() => selectOption(question._id, opt)} className="hidden" />
+                      {isSelected ? (
+                        <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5" style={{ color: meta.color }} />
+                      ) : (
+                        <Circle className="w-5 h-5 shrink-0 mt-0.5" style={{ color: "var(--text-muted)" }} />
+                      )}
+                      <span>{opt}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            ) : (
+              <div>
+                <p className="text-sm mb-3" style={{ color: "var(--text-secondary)" }}>
+                  Type your answer below. It will be evaluated by AI for correctness and completeness.
+                </p>
+                <textarea
+                  value={answers[currentSection][question._id] || ""}
+                  onChange={(e) => updateTechnicalText(question._id, e.target.value)}
+                  placeholder="Write your answer here..."
+                  rows={8}
+                  className="w-full p-4 border rounded-lg resize-y focus:outline-none focus:ring-2"
+                  style={{
+                    background: "var(--input-bg, var(--card-bg))",
+                    borderColor: "var(--card-border)",
+                    color: "var(--text-primary)",
+                    focusRingColor: meta.color,
+                  }}
+                />
+                <p className="text-xs mt-2" style={{ color: "var(--text-muted)" }}>
+                  {(answers[currentSection][question._id] || "").length} characters
+                </p>
+              </div>
+            )}
           </div>
         )}
 
@@ -991,10 +1120,12 @@ export default function CompanyMockInterview() {
           {isLastQuestion ? (
             <button
               onClick={() => setConfirmEnd(true)}
-              className="flex items-center gap-2 px-8 py-2 text-white rounded-lg font-semibold hover:opacity-90"
+              disabled={submitting}
+              className="flex items-center gap-2 px-8 py-2 text-white rounded-lg font-semibold hover:opacity-90 disabled:opacity-50"
               style={{ background: "linear-gradient(135deg, #10B981 0%, #059669 100%)" }}
             >
-              End &amp; Submit Mock Interview
+              {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+              {submitting ? "Submitting..." : "End & Submit Mock Interview"}
             </button>
           ) : (
             <button
@@ -1075,11 +1206,11 @@ export default function CompanyMockInterview() {
               </button>
               <button
                 onClick={submitFinal}
-                disabled={loading}
+                disabled={loading || submitting}
                 className="flex-1 py-3 px-4 rounded-xl text-sm font-bold text-white hover:opacity-90 disabled:opacity-50"
                 style={{ background: "linear-gradient(135deg,#EF4444 0%,#DC2626 100%)" }}
               >
-                {loading ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : "End & Submit"}
+                {loading || submitting ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : "End & Submit"}
               </button>
             </div>
           </div>

@@ -8,6 +8,15 @@ import QuestionExposure from "../models/QuestionExposure.js";
 import { shuffleArray, selectRandomQuestions } from "../services/questionBank.js";
 import { TECHNICAL_QUESTIONS } from "../data/technicalBank.mjs";
 import { loadCodingBank, normalizeCodingQuestion } from "../services/codingQuestionBank.js";
+import {
+  loadCompanyMockTechnical,
+  loadCompanyMockCoding,
+} from "../services/companyMockBank.js";
+import {
+  evaluateSingleAnswer,
+  getRecentPerformance,
+  pickAdaptiveTechnicalWithCycleReset,
+} from "../services/companyMock/index.js";
 
 const shuffle = (arr = []) => shuffleArray(arr);
 
@@ -36,17 +45,30 @@ const toClientAptitude = (q) => ({
   marks: q.marks,
 });
 
-const toClientTechnical = (q) => ({
-  _id: q._id,
-  questionId: q.questionId || String(q._id),
-  question: q.question,
-  text: q.question,
-  options: Array.isArray(q.options) ? q.options : [],
-  topic: q.topic || q.subtopic || "Technical Fundamentals",
-  questionType: q.questionType || "Conceptual",
-  difficulty: q.difficulty,
-  marks: q.marks,
-});
+const toClientTechnical = (q) => {
+  // Normalize questionType: "Descriptive" → "Technical", MCQ stays as-is
+  let qType = q.questionType || "Technical";
+  if (qType === "Descriptive") qType = "Technical";
+  if (qType === "Conceptual") qType = Array.isArray(q.options) && q.options.length > 0 ? "MCQ" : "Technical";
+  const isAi = q.isAiEvaluated ?? !(Array.isArray(q.options) && q.options.length > 0);
+  if (isAi && qType === "MCQ") qType = "Technical";
+
+  return {
+    _id: q._id,
+    questionId: q.questionId || String(q._id),
+    question: q.question,
+    text: q.question,
+    options: Array.isArray(q.options) ? q.options : [],
+    topic: q.topic || q.subtopic || "Technical Fundamentals",
+    questionType: qType,
+    difficulty: q.difficulty,
+    marks: q.marks,
+    expectedAnswer: q.expectedAnswer || "",
+    source: q.source || "company_mock",
+    questionStatus: q.questionStatus || null,
+    isAiEvaluated: isAi,
+  };
+};
 
 // Resolve a list of stored question ids (ObjectId hex OR legacy `questionId`
 // strings) back into their live DB documents, preserving the stored order.
@@ -215,74 +237,110 @@ export const startMockInterview = async (req, res) => {
       durationMinutes: 60,
     };
 
-    // Previously exposed questions for this (student, company) so repeats are avoided.
+    /* ── Exposure-aware question selection with automatic cycle reset ──
+       For each question type (aptitude, technical, coding):
+       1. Load the full company-specific pool.
+       2. Load previously exposed question IDs for this (student, company, type).
+       3. Try to pick unused questions from the pool.
+       4. If the pool is exhausted (unused < required), reset the student's
+          exposure for that type and re-pick from the full pool.
+       5. No question repeats inside the same mock.
+       6. Different companies have independent exposure pools. ── */
+
+    // Load all previously exposed question IDs for this (student, company).
     const exposures = await QuestionExposure.find({ studentId: userId, companyId: company.id });
     const seenIdsFor = (type) =>
       new Set(exposures.filter((e) => e.questionType === type).map((e) => String(e.questionId)));
-    const seenAptitude = seenIdsFor("aptitude");
-    const seenTechnical = seenIdsFor("technical");
-    const seenCoding = seenIdsFor("coding");
+
+    // Helper: pick questions with automatic cycle reset when pool is exhausted.
+    // Returns { questions, resetType } where resetType is the type that was reset (if any).
+    async function pickWithCycleReset(pool, seenIds, count, type, companyId) {
+      const used = new Set(seenIds);
+      let picked = pickFromPool(pool, used, count);
+
+      // If pool is exhausted and we don't have enough unused questions,
+      // reset this student's exposure for this type and re-pick.
+      if (picked.length < count && pool.length >= count) {
+        // Delete all exposure records for this student+company+type
+        await QuestionExposure.deleteMany({ studentId: userId, companyId, questionType: type });
+        // Re-pick from the full pool with a clean slate
+        const freshUsed = new Set();
+        picked = pickFromPool(pool, freshUsed, count);
+        return { questions: picked, resetType: type };
+      }
+
+      return { questions: picked, resetType: null };
+    }
 
     /* ── 1) APTITUDE — existing local DB bank, topped up from the in-memory bank ── */
-    const aptitudeUsed = seenAptitude;
-    let aptitudeQuestions = pickFromPool(
-      await AptitudeQuestion.find({ isActive: true, isDeleted: false }).lean(),
-      aptitudeUsed,
-      config.aptitudeCount
+    const aptitudePool = (
+      await AptitudeQuestion.find({ isActive: true, isDeleted: false }).lean()
+    ).map((q) => ({ ...q, _id: String(q._id || q.questionId) }));
+    let { questions: aptitudeQuestions, resetType: aptitudeReset } = await pickWithCycleReset(
+      aptitudePool, seenIdsFor("aptitude"), config.aptitudeCount, "aptitude", company.id
     );
+    // Top up from the in-memory bank if needed
     if (aptitudeQuestions.length < config.aptitudeCount) {
       const bankPool = selectRandomQuestions({ count: config.aptitudeCount }).map((q) => ({
         ...q,
         _id: q.questionId,
       }));
       aptitudeQuestions = aptitudeQuestions.concat(
-        pickFromPool(bankPool, aptitudeUsed, config.aptitudeCount - aptitudeQuestions.length)
+        pickFromPool(bankPool, new Set(aptitudeQuestions.map((q) => String(q._id))), config.aptitudeCount - aptitudeQuestions.length)
       );
     }
 
-    /* ── 2) TECHNICAL — existing local DB MCQs (company-tagged), then curated technical bank ── */
-    const technicalUsed = seenTechnical;
-    let technicalQuestions = pickFromPool(
-      await TechnicalQuestion.find({
-        isDeleted: false,
-        isActive: true,
-        options: { $ne: [] },
-        $or: [{ companyIds: company.id }, { companyId: company.id }, { companyId: "all" }],
-      }).lean(),
-      technicalUsed,
-      config.technicalCount
+    /* ── 2) TECHNICAL — Adaptive difficulty question selection from company-specific pool.
+           Difficulty distribution is tailored to student's recent performance on this company.
+           No questions are repeated while unused ones remain in the pool.
+           When the entire bank is exhausted, a new cycle starts. ── */
+    const perf = await getRecentPerformance(userId, company.id);
+    const accuracyLabel = perf.accuracy !== null ? `${Math.round(perf.accuracy * 100)}%` : "none";
+    console.log(`[Adaptive] student=${userId} company=${company.id} accuracy=${accuracyLabel} target=${perf.tier}`);
+
+    const allCompanyTechnical = loadCompanyMockTechnical(company.id).map((q) => ({ ...q, _id: q.questionId }));
+    const { questions: technicalQuestions, resetType: technicalReset } = await pickAdaptiveTechnicalWithCycleReset(
+      allCompanyTechnical,
+      seenIdsFor("technical"),
+      config.technicalCount,
+      company.id,
+      userId,
+      perf.distribution,
+      perf.tier
     );
+    // Safety: if after reset we still can't fill (shouldn't happen if bank >= count)
     if (technicalQuestions.length < config.technicalCount) {
-      technicalQuestions = technicalQuestions.concat(
-        pickFromPool(
-          await TechnicalQuestion.find({ isDeleted: false, isActive: true, options: { $ne: [] } }).lean(),
-          technicalUsed,
-          config.technicalCount - technicalQuestions.length
-        )
-      );
-    }
-    if (technicalQuestions.length < config.technicalCount) {
-      technicalQuestions = technicalQuestions.concat(
-        pickFromPool(
-          TECHNICAL_QUESTIONS.map((q) => ({ ...q, _id: q.questionId })),
-          technicalUsed,
-          config.technicalCount - technicalQuestions.length
-        )
-      );
+      return res.status(400).json({
+        message: `Not enough technical questions for ${company.name}. Available: ${allCompanyTechnical.length}, Required: ${config.technicalCount}.`,
+        insufficientQuestions: true,
+        available: allCompanyTechnical.length,
+        required: config.technicalCount,
+      });
     }
 
-    /* ── 3) CODING — existing local DB coding questions (company-first), then local coding bank ── */
-    const codingUsed = seenCoding;
-    let codingQuestions = pickFromPool(
-      await CodingQuestion.find({ isDeleted: { $ne: true }, isActive: true, companyId: company.id }).lean(),
-      codingUsed,
-      config.codingCount
+    /* ── 3) CODING — Company-specific companyMock pool, then DB coding questions, then local bank.
+           Only the selected company's pool is used — coding questions are NEVER mixed between companies. ── */
+    const codingPool = loadCompanyMockCoding(company.id).map((q) => ({ ...q, _id: q.questionId }));
+    let { questions: codingQuestions, resetType: codingReset } = await pickWithCycleReset(
+      codingPool, seenIdsFor("coding"), config.codingCount, "coding", company.id
     );
+    // Top up from DB and bank if needed
     if (codingQuestions.length < config.codingCount) {
+      const usedIds = new Set(codingQuestions.map((q) => String(q._id)));
+      codingQuestions = codingQuestions.concat(
+        pickFromPool(
+          await CodingQuestion.find({ isDeleted: { $ne: true }, isActive: true, companyId: company.id }).lean(),
+          usedIds,
+          config.codingCount - codingQuestions.length
+        )
+      );
+    }
+    if (codingQuestions.length < config.codingCount) {
+      const usedIds = new Set(codingQuestions.map((q) => String(q._id)));
       codingQuestions = codingQuestions.concat(
         pickFromPool(
           await CodingQuestion.find({ isDeleted: { $ne: true }, isActive: true }).lean(),
-          codingUsed,
+          usedIds,
           config.codingCount - codingQuestions.length
         )
       );
@@ -297,8 +355,9 @@ export const startMockInterview = async (req, res) => {
           }
         }
       }
+      const usedIds = new Set(codingQuestions.map((q) => String(q._id)));
       codingQuestions = codingQuestions.concat(
-        pickFromPool(bankQuestions, codingUsed, config.codingCount - codingQuestions.length)
+        pickFromPool(bankQuestions, usedIds, config.codingCount - codingQuestions.length)
       );
     }
 
@@ -401,10 +460,23 @@ async function gradeAndFinalizeMock(attempt, { status = "completed" } = {}) {
     return map;
   };
 
-  const [aptitudeById, technicalById] = await Promise.all([
+  const [aptitudeById, technicalDbById] = await Promise.all([
     resolveGradingDocs(AptitudeQuestion, aptitudeIds),
     resolveGradingDocs(TechnicalQuestion, technicalIds),
   ]);
+
+  // Also load company-specific JSON questions (MCQ + free-text) into the grading map.
+  // JSON questions have string IDs (questionId), not MongoDB ObjectIds.
+  const technicalById = new Map(technicalDbById);
+  if (attempt.companyId) {
+    const companyJsonQuestions = loadCompanyMockTechnical(attempt.companyId);
+    for (const q of companyJsonQuestions) {
+      const qid = String(q.questionId);
+      if (technicalIds.includes(qid)) {
+        technicalById.set(qid, q);
+      }
+    }
+  }
 
   // ── Aptitude grading: correct MCQ = 1, wrong / unanswered = 0 ──
   let aptitudeCorrect = 0;
@@ -414,16 +486,92 @@ async function gradeAndFinalizeMock(attempt, { status = "completed" } = {}) {
     if (a.isCorrect) aptitudeCorrect++;
   });
 
-  // ── Technical grading: correct MCQ = 1; subjective / free-text questions are
-  //    only auto-corrected when a matching correctAnswer exists (they are never
-  //    awarded marks for merely being attempted). ──
+  // ── Technical grading: MCQ = correct/wrong; free-text = AI evaluation. ──
   let technicalCorrect = 0;
-  (attempt.technicalAnswers || []).forEach((a) => {
+  let technicalMcqMarks = 0;
+  let technicalAiMarks = 0;
+  let technicalAiMaxMarks = 0;
+  let technicalTotalMarks = 0;
+  const freeTextAnswers = [];
+
+  for (const a of attempt.technicalAnswers || []) {
     const q = technicalById.get(String(a.questionId));
     const hasOptions = Array.isArray(q?.options) && q.options.length > 0;
-    a.isCorrect = !!(hasOptions && q && a.selectedOption && a.selectedOption === q.correctAnswer);
-    if (a.isCorrect) technicalCorrect++;
-  });
+    const qMarks = q?.marks || 3;
+
+    if (hasOptions) {
+      // MCQ: traditional correct/wrong grading — each MCQ worth its question's marks
+      a.isCorrect = !!(q && a.selectedOption && a.selectedOption === q.correctAnswer);
+      if (a.isCorrect) {
+        technicalCorrect++;
+        technicalMcqMarks += qMarks;
+      }
+      a.evaluationStatus = "not_evaluated";
+    } else {
+      // Free-text: queue for AI evaluation
+      freeTextAnswers.push({ answer: a, question: q });
+    }
+  }
+
+  // Evaluate free-text answers with AI (sequentially to avoid rate limits)
+  for (const { answer: a, question: q } of freeTextAnswers) {
+    if (!a.answer || !String(a.answer).trim()) {
+      // No answer submitted
+      a.aiScore = 0;
+      a.aiMaxMarks = q?.marks || 3;
+      a.aiEvaluation = "No answer provided.";
+      a.aiStrengths = [];
+      a.aiWeaknesses = ["No answer was submitted."];
+      a.aiBetterAnswer = q?.expectedAnswer || "";
+      a.expectedAnswer = q?.expectedAnswer || "";
+      a.evaluationStatus = "fallback";
+      a.isCorrect = false;
+    } else {
+      try {
+        const evalResult = await evaluateSingleAnswer({
+          companyId: attempt.companyId,
+          question: q?.question || "",
+          topic: q?.topic || "",
+          difficulty: q?.difficulty || "Medium",
+          candidateAnswer: String(a.answer),
+          expectedAnswer: q?.expectedAnswer || "",
+          explanation: q?.explanation || "",
+          betterAnswer: q?.betterAnswer || "",
+          marks: q?.marks || 3,
+        });
+        a.aiScore = evalResult.score;
+        a.aiMaxMarks = evalResult.maxMarks;
+        a.aiEvaluation = evalResult.evaluation;
+        a.aiStrengths = evalResult.strengths;
+        a.aiWeaknesses = evalResult.weaknesses;
+        a.aiBetterAnswer = evalResult.betterAnswer;
+        a.expectedAnswer = q?.expectedAnswer || "";
+        a.evaluationStatus = evalResult.status;
+        a.isCorrect = evalResult.status === "ai_evaluated" && evalResult.score > 0;
+      } catch (err) {
+        console.error(`[COMPANY MOCK] AI eval failed for ${a.questionId}:`, err.message);
+        a.aiScore = null;
+        a.aiMaxMarks = q?.marks || 3;
+        a.aiEvaluation = "AI evaluation temporarily unavailable.";
+        a.aiStrengths = [];
+        a.aiWeaknesses = [];
+        a.aiBetterAnswer = q?.expectedAnswer || "";
+        a.expectedAnswer = q?.expectedAnswer || "";
+        a.evaluationStatus = "fallback";
+        a.isCorrect = false;
+      }
+    }
+    if (typeof a.aiScore === "number" && a.aiScore !== null) {
+      technicalAiMarks += a.aiScore;
+    }
+    technicalAiMaxMarks += a.aiMaxMarks || q?.marks || 3;
+  }
+
+  // Calculate total marks for ALL selected technical questions (not just answered ones)
+  for (const qid of technicalIds) {
+    const q = technicalById.get(qid);
+    technicalTotalMarks += q?.marks || 3;
+  }
 
   // ── Coding grading: exactly 1 point per problem, awarded ONLY when ALL judge
   //    test cases pass (accepted). Partial (7/10), Wrong Answer, Compiler Error,
@@ -442,7 +590,7 @@ async function gradeAndFinalizeMock(attempt, { status = "completed" } = {}) {
   const codingMarks = codingAccepted; // integer — never fractional/partial credit
 
   const aptitudeTotal = (attempt.selectedQuestions?.aptitude || []).length || aptitudeIds.length || 15;
-  const technicalTotal = (attempt.selectedQuestions?.technical || []).length || technicalIds.length || 15;
+  const technicalTotal = technicalTotalMarks || (attempt.selectedQuestions?.technical || []).length || technicalIds.length || 15;
   const codingTotal = (attempt.selectedQuestions?.coding || []).length || codingIds.length || 3;
 
   const aptitudeAttempted = (attempt.aptitudeAnswers || []).length;
@@ -450,7 +598,8 @@ async function gradeAndFinalizeMock(attempt, { status = "completed" } = {}) {
   const codingAttempted = (attempt.codingAnswers || []).filter((c) => c.code && c.code.trim()).length;
 
   const aptitudeMarks = aptitudeCorrect;
-  const technicalMarks = technicalCorrect;
+  // Technical marks: MCQ marks (per-question value) + AI-evaluated free-text marks
+  const technicalMarks = technicalMcqMarks + technicalAiMarks;
 
   const totalScore = aptitudeMarks + technicalMarks + codingMarks;
   const maxScore = aptitudeTotal + technicalTotal + codingTotal;
@@ -474,11 +623,16 @@ async function gradeAndFinalizeMock(attempt, { status = "completed" } = {}) {
       attempted: technicalAttempted,
       correct: technicalCorrect,
       wrong: Math.max(0, technicalAttempted - technicalCorrect),
-      unanswered: Math.max(0, technicalTotal - technicalAttempted),
-      skipped: Math.max(0, technicalTotal - technicalAttempted),
-      percentage: technicalTotal ? Math.round((technicalCorrect / technicalTotal) * 100) : 0,
+      unanswered: Math.max(0, (attempt.selectedQuestions?.technical || []).length - technicalAttempted),
+      skipped: Math.max(0, (attempt.selectedQuestions?.technical || []).length - technicalAttempted),
+      percentage: technicalTotal ? Math.round((technicalMarks / technicalTotal) * 100) : 0,
       marksObtained: technicalMarks,
       totalMarks: technicalTotal,
+      mcqMarks: technicalMcqMarks,
+      aiEvaluatedMarks: technicalAiMarks,
+      aiMaxMarks: technicalAiMaxMarks,
+      // Also store correct count for backward compatibility
+      correctCount: technicalCorrect,
     },
     coding: {
       attempted: codingAttempted,
@@ -496,7 +650,24 @@ async function gradeAndFinalizeMock(attempt, { status = "completed" } = {}) {
   attempt.status = status;
   attempt.submittedAt = attempt.submittedAt || Date.now();
   attempt.pausedAt = null;
-  await attempt.save();
+
+  // Atomic final save — only transition from "completing" to final status.
+  // This prevents any concurrent progress save from overwriting the result.
+  await CompanyMockAttempt.findOneAndUpdate(
+    { _id: attempt._id, status: "completing" },
+    {
+      $set: {
+        status,
+        submittedAt: attempt.submittedAt,
+        pausedAt: null,
+        scores: attempt.scores,
+        aptitudeAnswers: attempt.aptitudeAnswers,
+        technicalAnswers: attempt.technicalAnswers,
+        codingAnswers: attempt.codingAnswers,
+      },
+    }
+  );
+
   return attempt;
 }
 
@@ -505,13 +676,37 @@ export const submitMockInterview = async (req, res) => {
     const { attemptId, aptitudeAnswers, technicalAnswers, codingAnswers } = req.body;
     const userId = req.user.id;
 
-    const attempt = await CompanyMockAttempt.findOne({ _id: attemptId, userId });
-    if (!attempt) {
-      return res.status(404).json({ message: "Attempt not found" });
+    // ── Atomic claim: only one submission can win ──
+    // Use findOneAndUpdate to atomically transition status from non-completed
+    // to "completing". This prevents double-submission races.
+    const claimed = await CompanyMockAttempt.findOneAndUpdate(
+      {
+        _id: attemptId,
+        userId,
+        status: { $nin: ["completed", "auto_submitted", "expired"] },
+      },
+      { $set: { status: "completing" } },
+      { new: true }
+    );
+
+    if (!claimed) {
+      // Check if already completed (idempotent response)
+      const existing = await CompanyMockAttempt.findOne({ _id: attemptId, userId })
+        .select("status scores companyId companyName submittedAt selectedQuestions")
+        .lean();
+      if (!existing) return res.status(404).json({ message: "Attempt not found" });
+      if (["completed", "auto_submitted", "expired"].includes(existing.status)) {
+        return res.status(200).json({ message: "Already submitted", completed: true, result: existing });
+      }
+      return res.status(400).json({ message: "Cannot submit at this time" });
     }
-    if (["completed", "auto_submitted", "expired"].includes(attempt.status)) {
-      // Already graded — return the stored result without changing anything.
-      return res.status(200).json({ message: "Already submitted", completed: true, result: attempt });
+
+    // We own the attempt now — proceed with grading using the claimed document.
+    // Reload full document for grading (atomic update returned minimal fields).
+    const attempt = await CompanyMockAttempt.findById(claimed._id);
+    if (!attempt) {
+      // Should never happen — we just claimed it
+      return res.status(500).json({ message: "Internal error" });
     }
 
     // Normalize incoming answers into the schema shape (preserve everything).
@@ -521,8 +716,8 @@ export const submitMockInterview = async (req, res) => {
     }));
     attempt.technicalAnswers = (technicalAnswers || []).map((a) => ({
       questionId: a.questionId,
-      selectedOption: a.selectedOption,
-      answer: a.selectedOption,
+      selectedOption: a.selectedOption || null,
+      answer: a.answer || a.selectedOption || "",
     }));
 
     // Merge coding answers from the incoming submit payload with the results
@@ -551,9 +746,7 @@ export const submitMockInterview = async (req, res) => {
     });
     attempt.codingAnswers = Array.from(mergedCoding.values());
 
-    // Grade the attempt with the SINGLE authoritative scoring function. This is
-    // the exact same final-scoring logic used by automatic timer expiry, so a
-    // manual "End Mock Interview" and a timed-out submission can never diverge.
+    // Grade the attempt with the SINGLE authoritative scoring function.
     await gradeAndFinalizeMock(attempt, { status: "completed" });
 
     res.status(200).json({
@@ -593,30 +786,19 @@ export const saveMockInterviewProgress = async (req, res) => {
       securityEvents = [],
     } = req.body;
 
-    const attempt = await CompanyMockAttempt.findOne({ _id: attemptId, userId });
-    if (!attempt) {
-      return res.status(404).json({ message: "Attempt not found" });
-    }
-    if (attempt.status === "completed") {
-      return res.status(400).json({ message: "Attempt already completed" });
-    }
-
-    if (currentSection) attempt.currentSection = currentSection;
-    if (typeof currentQuestionIndex === "number") attempt.currentQuestionIndex = currentQuestionIndex;
-
-    // Replace apt/tech answers (keyed by questionId) into schema arrays.
+    // ── Build answer arrays ──
     const aptArr = [];
     for (const [qid, opt] of Object.entries(aptitudeAnswers || {})) {
       if (opt === undefined || opt === null) continue;
       aptArr.push({ questionId: qid, selectedOption: opt });
     }
     const techArr = [];
-    for (const [qid, opt] of Object.entries(technicalAnswers || {})) {
-      if (opt === undefined || opt === null) continue;
-      techArr.push({ questionId: qid, selectedOption: opt, answer: opt });
+    for (const [qid, val] of Object.entries(technicalAnswers || {})) {
+      if (val === undefined || val === null) continue;
+      const answerText = typeof val === "object" && val !== null ? (val.answer || "") : String(val);
+      const selectedOption = typeof val === "object" && val !== null ? (val.selectedOption || answerText) : String(val);
+      techArr.push({ questionId: qid, selectedOption, answer: answerText });
     }
-    attempt.aptitudeAnswers = aptArr;
-    attempt.technicalAnswers = techArr;
 
     // Coding answers (keyed by questionId).
     const codingArr = [];
@@ -628,7 +810,6 @@ export const saveMockInterviewProgress = async (req, res) => {
         code: entry.code || "",
       });
     }
-    // Merge in any coding submission results.
     const codingByQid = new Map(codingArr.map((c) => [String(c.questionId), c]));
     for (const sub of codingSubmissions || []) {
       const existing = codingByQid.get(String(sub.questionId));
@@ -640,17 +821,25 @@ export const saveMockInterviewProgress = async (req, res) => {
         existing.submittedAt = sub.submittedAt || new Date();
       }
     }
-    attempt.codingAnswers = Array.from(codingByQid.values());
-    if (selectedCodingLanguage) attempt.selectedCodingLanguage = selectedCodingLanguage;
 
-    // Server-authoritative pause timing so remaining time is preserved.
-    if (!attempt.startedAt) attempt.startedAt = new Date();
-    if (attempt.pausedAt == null) attempt.pausedAt = new Date();
-    attempt.lastActiveAt = new Date();
-    attempt.status = "paused";
+    // ── Build atomic $set update ──
+    const now = new Date();
+    const $set = {
+      lastActiveAt: now,
+      status: "paused",
+      aptitudeAnswers: aptArr,
+      technicalAnswers: techArr,
+      codingAnswers: Array.from(codingByQid.values()),
+    };
+    if (currentSection) $set.currentSection = currentSection;
+    if (typeof currentQuestionIndex === "number") $set.currentQuestionIndex = currentQuestionIndex;
+    if (selectedCodingLanguage) $set.selectedCodingLanguage = selectedCodingLanguage;
+    // Server-authoritative pause timing
+    $set.pausedAt = now;
+    // startedAt only set once — use $setOnInsert handled separately if needed
 
-    // Persist anti-cheat security events (tab switch / copy / cut / right-click).
-    // Each event is appended to the raw log and reflected in the counters.
+    // ── Build $push operations for security events ──
+    const securityPushOps = {};
     const counterKey = {
       TAB_SWITCH: "tabSwitchCount",
       COPY_ATTEMPT: "copyAttempts",
@@ -658,21 +847,27 @@ export const saveMockInterviewProgress = async (req, res) => {
       CONTEXT_MENU: "rightClickAttempts",
       PASTE_ATTEMPT: "pasteAttempts",
     };
+    const counterInc = {};
+    const tabSwitchesToPush = [];
+
     for (const ev of securityEvents || []) {
       if (!ev || !ev.type) continue;
-      const ts = ev.timestamp ? new Date(ev.timestamp) : new Date();
-      attempt.securityEvents.push({
-        type: ev.type,
-        timestamp: ts,
-        section: ev.section || attempt.currentSection || null,
-        questionId: ev.questionId || null,
-        metadata: ev.metadata || {},
-      });
+      const ts = ev.timestamp ? new Date(ev.timestamp) : now;
+      if (!securityPushOps.$push) securityPushOps.$push = {};
+      securityPushOps.$push.securityEvents = {
+        $each: [{
+          type: ev.type,
+          timestamp: ts,
+          section: ev.section || currentSection || null,
+          questionId: ev.questionId || null,
+          metadata: ev.metadata || {},
+        }],
+      };
       const key = counterKey[ev.type];
       if (key) {
-        attempt.security[key] = (attempt.security[key] || 0) + 1;
+        counterInc[`security.${key}`] = (counterInc[`security.${key}`] || 0) + 1;
         if (ev.type === "TAB_SWITCH") {
-          attempt.security.tabSwitches.push({
+          tabSwitchesToPush.push({
             timestamp: ts,
             questionId: ev.questionId || null,
             remainingTime: ev.metadata?.remainingSeconds ?? null,
@@ -680,12 +875,37 @@ export const saveMockInterviewProgress = async (req, res) => {
         }
       }
     }
+    if (tabSwitchesToPush.length > 0) {
+      if (!securityPushOps.$push) securityPushOps.$push = {};
+      securityPushOps.$push.security.tabSwitches = { $each: tabSwitchesToPush };
+    }
 
-    await attempt.save();
+    // ── Atomic update: only if NOT completed ──
+    const updateOps = { $set };
+    if (Object.keys(counterInc).length > 0) updateOps.$inc = counterInc;
+    if (securityPushOps.$push) updateOps.$push = securityPushOps.$push;
+    // Set startedAt only if not already set
+    updateOps.$setOnInsert = { startedAt: now };
+
+    const attempt = await CompanyMockAttempt.findOneAndUpdate(
+      { _id: attemptId, userId, status: { $ne: "completed" } },
+      updateOps,
+      { new: true }
+    );
+
+    if (!attempt) {
+      // Either not found, or already completed — check which
+      const exists = await CompanyMockAttempt.findOne({ _id: attemptId, userId }).select("status").lean();
+      if (!exists) return res.status(404).json({ message: "Attempt not found" });
+      if (exists.status === "completed") {
+        return res.status(400).json({ message: "Attempt already completed" });
+      }
+      return res.status(400).json({ message: "Cannot save progress" });
+    }
 
     // Return the remaining ACTIVE time so the client can render it.
-    const now = Date.now();
-    const remainingMs = Math.max(0, (attempt.expiresAt ? attempt.expiresAt.getTime() : 0) - now);
+    const nowMs = Date.now();
+    const remainingMs = Math.max(0, (attempt.expiresAt ? attempt.expiresAt.getTime() : 0) - nowMs);
     res.status(200).json({ saved: true, status: "paused", remainingSeconds: Math.floor(remainingMs / 1000) });
   } catch (error) {
     console.error("Save mock interview progress error:", error);
@@ -740,6 +960,19 @@ export const resumeMockInterview = async (req, res) => {
     // result. The stored (persisted) result is returned so the UI can show it
     // instead of continuing an already-finished attempt.
     if (attempt.expiresAt && now.getTime() >= attempt.expiresAt.getTime()) {
+      // Atomically claim the attempt to prevent double-finalization.
+      const claimed = await CompanyMockAttempt.findOneAndUpdate(
+        { _id: attempt._id, userId, status: { $nin: ["completed", "auto_submitted", "expired"] } },
+        { $set: { status: "completing" } },
+        { new: true }
+      );
+      if (!claimed) {
+        // Already finalized by another request — return existing result
+        const existing = await CompanyMockAttempt.findById(attempt._id)
+          .select("companyId companyName status submittedAt selectedQuestions scores")
+          .lean();
+        return res.status(200).json({ completed: true, result: existing });
+      }
       const finalized = await gradeAndFinalizeMock(attempt, { status: "auto_submitted" });
       return res.status(200).json({
         completed: true,
@@ -769,10 +1002,21 @@ export const resumeMockInterview = async (req, res) => {
 
     // Normalize the stored ids to the resolved live-DB ids so grading and any
     // later resume resolve cleanly (never stale/dummy references).
-    if (qMap.aptitudeIds?.length) attempt.selectedQuestions.aptitude = qMap.aptitudeIds;
-    if (qMap.technicalIds?.length) attempt.selectedQuestions.technical = qMap.technicalIds;
-    if (qMap.codingIds?.length) attempt.selectedQuestions.coding = qMap.codingIds;
-    await attempt.save();
+    const $setUpdate = {
+      status: "in_progress",
+      lastActiveAt: now,
+      pausedAt: null,
+    };
+    if (qMap.aptitudeIds?.length) $setUpdate["selectedQuestions.aptitude"] = qMap.aptitudeIds;
+    if (qMap.technicalIds?.length) $setUpdate["selectedQuestions.technical"] = qMap.technicalIds;
+    if (qMap.codingIds?.length) $setUpdate["selectedQuestions.coding"] = qMap.codingIds;
+    if (attempt.totalPausedMs) $setUpdate.totalPausedMs = attempt.totalPausedMs;
+    if (attempt.expiresAt) $setUpdate.expiresAt = attempt.expiresAt;
+
+    await CompanyMockAttempt.findOneAndUpdate(
+      { _id: attempt._id, userId, status: { $nin: ["completed", "auto_submitted", "expired"] } },
+      { $set: $setUpdate }
+    );
 
     const remainingMs = Math.max(0, (attempt.expiresAt ? attempt.expiresAt.getTime() : 0) - now.getTime());
     const roundAnswer = (arr, field = "selectedOption") =>
@@ -1125,8 +1369,21 @@ async function buildMockReviewData(attempt) {
   };
 
   const aptitudeMap = await resolve(AptitudeQuestion, idsOf(attempt.selectedQuestions?.aptitude));
-  const technicalMap = await resolve(TechnicalQuestion, idsOf(attempt.selectedQuestions?.technical));
+  const technicalDbMap = await resolve(TechnicalQuestion, idsOf(attempt.selectedQuestions?.technical));
   const codingMap = await resolve(CodingQuestion, idsOf(attempt.selectedQuestions?.coding));
+
+  // Also load company-specific JSON questions (MCQ + free-text) into the review map.
+  const technicalMap = new Map(technicalDbMap);
+  if (attempt.companyId) {
+    const companyJsonQuestions = loadCompanyMockTechnical(attempt.companyId);
+    for (const q of companyJsonQuestions) {
+      const qid = String(q.questionId);
+      const selectedIds = (attempt.selectedQuestions?.technical || []).map(String);
+      if (selectedIds.includes(qid)) {
+        technicalMap.set(qid, q);
+      }
+    }
+  }
 
   const answerByKey = (answers) => {
     const m = new Map();
@@ -1161,7 +1418,7 @@ async function buildMockReviewData(attempt) {
     };
   });
 
-  // Technical review — MCQ for the mock; free-text answers render as text.
+  // Technical review — MCQ or AI-evaluated free-text.
   const technical = (attempt.selectedQuestions?.technical || []).map((rawKey, i) => {
     const key = String(rawKey);
     const doc = technicalMap.get(key);
@@ -1171,15 +1428,34 @@ async function buildMockReviewData(attempt) {
     const hasOptions = Array.isArray(doc?.options) && doc.options.length > 0;
     const isCorrect = !!(answer && answer.isCorrect);
     const attempted = !!(answer && selectedOption !== undefined && selectedOption !== null && String(selectedOption).trim() !== "");
+    const evalStatus = answer?.evaluationStatus || (hasOptions ? "not_evaluated" : "pending");
+    // Normalize questionType
+    let qType = doc?.questionType || "Technical";
+    if (qType === "Descriptive") qType = "Technical";
+    if (qType === "Conceptual") qType = hasOptions ? "MCQ" : "Technical";
+    if (!hasOptions && qType === "MCQ") qType = "Technical";
     return {
       qn: i + 1,
       question: doc ? doc.question || "" : "",
       options: hasOptions ? doc.options : [],
-      questionType: doc ? doc.questionType || "Conceptual" : "Conceptual",
+      questionType: qType,
+      difficulty: doc?.difficulty || "Medium",
+      marks: doc?.marks || 3,
+      questionStatus: doc?.questionStatus || null,
       correctAnswer: doc ? doc.correctAnswer || doc.expectedAnswer || "" : "",
       selectedOption: attempted ? selectedOption : null,
       status: attempted ? (isCorrect ? "correct" : "wrong") : "skipped",
       answerKey: docKey || key,
+      isAiEvaluated: !hasOptions,
+      candidateAnswer: answer?.answer || "",
+      aiScore: answer?.aiScore ?? null,
+      aiMaxMarks: answer?.aiMaxMarks ?? doc?.marks ?? null,
+      aiEvaluation: answer?.aiEvaluation || "",
+      aiStrengths: answer?.aiStrengths || [],
+      aiWeaknesses: answer?.aiWeaknesses || [],
+      aiBetterAnswer: answer?.aiBetterAnswer || "",
+      expectedAnswer: answer?.expectedAnswer || doc?.expectedAnswer || "",
+      evaluationStatus: evalStatus,
     };
   });
 

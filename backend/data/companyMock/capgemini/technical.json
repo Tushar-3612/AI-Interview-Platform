@@ -1,0 +1,2882 @@
+[
+  {
+    "questionId": "capgemini-tech-001",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Pseudocode / Code Analysis",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What is the output of the following pseudocode?\n\nx = 5\ny = 10\nz = x + y\nprint(z)",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "The output is 15. The variable x is assigned 5, y is assigned 10, and z stores their sum which is 5 + 10 = 15.",
+    "explanation": "This is a basic variable assignment and addition operation in pseudocode.",
+    "betterAnswer": "The output is 15. The pseudocode assigns 5 to x, 10 to y, computes z = x + y = 5 + 10 = 15, and prints z.",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-002",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Pseudocode / Code Analysis",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What is the output of the following pseudocode?\n\nfor i = 1 to 5\n    if i mod 2 == 0\n        print(i, end=\" \")",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "The output is 2 4. The loop iterates from 1 to 5, and the if condition checks whether i is even. Only 2 and 4 satisfy this condition.",
+    "explanation": "The mod operator returns the remainder of division.",
+    "betterAnswer": "The output is 2 4. The for loop runs with i taking values 1, 2, 3, 4, 5. The condition i mod 2 == 0 is true only for i = 2 and i = 4.",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-003",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Pseudocode / Code Analysis",
+    "difficulty": "Hard",
+    "questionType": "Technical",
+    "question": "What is the output of the following pseudocode?\n\nx = 1\nwhile x < 100\n    x = x * 2\nprint(x)",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "The output is 128. Starting with x = 1, the values double each iteration: 1, 2, 4, 8, 16, 32, 64, 128.",
+    "explanation": "This traces a geometric progression where each term doubles until it exceeds 100.",
+    "betterAnswer": "The output is 128. The while loop doubles x in each iteration: 1 -> 2 -> 4 -> 8 -> 16 -> 32 -> 64 -> 128. When x becomes 128, the condition x < 100 is false and the loop exits.",
+    "marks": 5,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-004",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Pseudocode / Code Analysis",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What is the output of the following pseudocode?\n\na = 10\nb = 3\nprint(a / b)",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "The output is approximately 3.333. The pseudocode divides 10 by 3, which gives a floating-point result.",
+    "explanation": "The division operator produces a floating-point result when operands do not divide evenly.",
+    "betterAnswer": "The output is approximately 3.333. The pseudocode divides 10 by 3, giving a floating-point result of 3.333. If integer division is assumed, the output would be 3.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "capgemini-tech-005",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Pseudocode / Code Analysis",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What is the output of the following pseudocode?\n\narr = [10, 20, 30, 40, 50]\nsum = 0\nfor each element in arr\n    if element > 25\n        sum = sum + element\nprint(sum)",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "The output is 120. The loop filters elements greater than 25 (30, 40, 50) and sums them: 30 + 40 + 50 = 120.",
+    "explanation": "This pseudocode demonstrates conditional summation over an array.",
+    "betterAnswer": "The output is 120. The for-each loop iterates through [10, 20, 30, 40, 50]. The condition element > 25 is true for 30, 40, and 50. Their sum is 30 + 40 + 50 = 120.",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-006",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Pseudocode / Code Analysis",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "What is the output of the following pseudocode?\n\nx = 10\ny = 0\nfor i = 1 to 4\n    y = y + x\n    x = x - 2\nprint(y)",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "The output is 28. Tracing: i=1: y=0+10=10, x=8; i=2: y=10+8=18, x=6; i=3: y=18+6=24, x=4; i=4: y=24+4=28, x=2.",
+    "explanation": "This requires careful step-by-step tracing of two variables that change in each iteration.",
+    "betterAnswer": "The output is 28. Tracing each iteration: i=1: y=0+10=10, x becomes 8; i=2: y=10+8=18, x becomes 6; i=3: y=18+6=24, x becomes 4; i=4: y=24+4=28, x becomes 2.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-007",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Pseudocode / Code Analysis",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What is the output of the following pseudocode?\n\nstr = \"Hello\"\nprint(str + \" World\")",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "The output is \"Hello World\". The + operator concatenates the string variable str with the literal string \" World\".",
+    "explanation": "String concatenation joins two strings together to form a single string.",
+    "betterAnswer": "The output is \"Hello World\". The + operator performs string concatenation, appending \" World\" to the value of str (\"Hello\"), resulting in \"Hello World\".",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "capgemini-tech-008",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Pseudocode / Code Analysis",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What is the output of the following pseudocode?\n\nn = 5\nfact = 1\nfor i = 1 to n\n    fact = fact * i\nprint(fact)",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "The output is 120. This computes factorial of 5: 1 * 1 * 2 * 3 * 4 * 5 = 120.",
+    "explanation": "Factorial of n (n!) is the product of all positive integers from 1 to n.",
+    "betterAnswer": "The output is 120. The loop computes 5! = 1 x 2 x 3 x 4 x 5 = 120. Initially fact=1, then it becomes 1, 2, 6, 24, 120 after each iteration.",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-009",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Pseudocode / Code Analysis",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "What is the output of the following pseudocode?\n\na = 5\nb = 3\nc = a XOR b\nprint(c)",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "The output is 6. XOR compares bits: 5 in binary is 101, 3 is 011. XOR gives 110 which is 6 in decimal.",
+    "explanation": "XOR operation compares each bit position: result is 1 if bits differ, 0 if they are the same.",
+    "betterAnswer": "The output is 6. Converting to binary: 5 = 101, 3 = 011. XOR compares bit by bit: 1 XOR 0=1, 0 XOR 1=1, 1 XOR 1=0, giving 110 in binary which equals 6.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-010",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Pseudocode / Code Analysis",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What is the output of the following pseudocode?\n\nflag = True\nif flag:\n    print(\"Yes\")\nelse:\n    print(\"No\")",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "The output is \"Yes\". Since flag is True, the if block executes and prints \"Yes\".",
+    "explanation": "A simple conditional check on a boolean variable.",
+    "betterAnswer": "The output is \"Yes\". The boolean variable flag is set to True, so the if condition evaluates to true and the code inside the if block runs, printing \"Yes\".",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "capgemini-tech-011",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Pseudocode / Code Analysis",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What is the output of the following pseudocode?\n\narr = [5, 3, 8, 1, 2]\nfor i = 0 to length(arr)-2\n    for j = 0 to length(arr)-2-i\n        if arr[j] > arr[j+1]\n            swap(arr[j], arr[j+1])\nprint(arr)",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "The output is [1, 2, 3, 5, 8]. This is bubble sort which repeatedly swaps adjacent elements if they are in wrong order.",
+    "explanation": "Bubble sort works by repeatedly stepping through the list, comparing adjacent elements and swapping them if needed.",
+    "betterAnswer": "The output is [1, 2, 3, 5, 8]. This pseudocode implements bubble sort. It makes multiple passes through the array, swapping adjacent elements when arr[j] > arr[j+1], until sorted.",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-012",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Pseudocode / Code Analysis",
+    "difficulty": "Hard",
+    "questionType": "Technical",
+    "question": "What is the output of the following pseudocode?\n\nfunction fib(n)\n    if n <= 1\n        return n\n    return fib(n-1) + fib(n-2)\nprint(fib(6))",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "The output is 8. Fibonacci sequence: fib(0)=0, fib(1)=1, fib(2)=1, fib(3)=2, fib(4)=3, fib(5)=5, fib(6)=8.",
+    "explanation": "This is a recursive implementation of the Fibonacci sequence.",
+    "betterAnswer": "The output is 8. The recursive function computes: fib(6) = fib(5) + fib(4) = 5 + 3 = 8. The base cases are fib(0) = 0 and fib(1) = 1.",
+    "marks": 5,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-013",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Pseudocode / Code Analysis",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What is the output of the following pseudocode?\n\nx = 15\nif x > 10\n    print(\"Greater than 10\")\nelse if x > 5\n    print(\"Greater than 5\")\nelse\n    print(\"Small\")",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "The output is \"Greater than 10\". Since x = 15 is greater than 10, the first condition is true.",
+    "explanation": "In an if-else if-else chain, once a condition is true, its block runs and the rest are skipped.",
+    "betterAnswer": "The output is \"Greater than 10\". The first condition x > 10 evaluates to true (15 > 10), so the first block executes. The remaining blocks are skipped.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "capgemini-tech-014",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Pseudocode / Code Analysis",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What is the output of the following pseudocode?\n\nstack = []\npush(stack, 10)\npush(stack, 20)\npush(stack, 30)\nprint(pop(stack))\nprint(pop(stack))",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "The output is 30 followed by 20. Stack is LIFO (Last In First Out). The last pushed element (30) is popped first, then 20.",
+    "explanation": "A stack follows the Last-In-First-Out (LIFO) principle.",
+    "betterAnswer": "The output is: 30 then 20. Stack follows LIFO order. After pushes: [10, 20, 30] (top=30). First pop returns 30, second pop returns 20.",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-015",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Pseudocode / Code Analysis",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "What is the output of the following pseudocode?\n\narr = [1, 2, 3, 4, 5]\nresult = 0\nfor i = 0 to length(arr)-1\n    result = result XOR arr[i]\nprint(result)",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "The output is 1. XOR of all elements: 1 XOR 2 XOR 3 XOR 4 XOR 5 = 1.",
+    "explanation": "XOR all elements together. Since XOR of a number with itself is 0, pairs cancel out.",
+    "betterAnswer": "The output is 1. Computing step by step: 1 XOR 2 = 3, 3 XOR 3 = 0, 0 XOR 4 = 4, 4 XOR 5 = 1.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-016",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Pseudocode / Code Analysis",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What is the output of the following pseudocode?\n\nx = 7\ny = x >> 1\nprint(y)",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "The output is 3. The right shift operator shifts bits right by 1. 7 in binary is 111, shifting right gives 11 which is 3.",
+    "explanation": "Right shift by 1 is equivalent to integer division by 2.",
+    "betterAnswer": "The output is 3. The >> operator performs a right bitwise shift. 7 in binary is 111, shifting right by 1 gives 011 which is 3.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "capgemini-tech-017",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Pseudocode / Code Analysis",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What is the output of the following pseudocode?\n\nmatrix = [[1, 2], [3, 4]]\nfor i = 0 to 1\n    for j = 0 to 1\n        print(matrix[i][j], end=\" \")\n    print()",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "The output is: 1 2 on first line and 3 4 on second line. Nested loops iterate through each row and column.",
+    "explanation": "Nested loops are used to traverse 2D arrays/matrices element by element.",
+    "betterAnswer": "The output is: 1 2 then 3 4. The outer loop iterates over rows (i=0,1), inner loop over columns (j=0,1).",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-018",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Pseudocode / Code Analysis",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "What is the output of the following pseudocode?\n\nx = 256\nwhile x > 1\n    x = x / 2\nprint(x)",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "The output is 1. Starting from 256: 256->128->64->32->16->8->4->2->1. Loop stops when x equals 1.",
+    "explanation": "This traces repeated halving demonstrating logarithmic behavior.",
+    "betterAnswer": "The output is 1. The while loop repeatedly divides x by 2: 256 -> 128 -> 64 -> 32 -> 16 -> 8 -> 4 -> 2 -> 1.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-019",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Pseudocode / Code Analysis",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What is the output of the following pseudocode?\n\ns = \"Programming\"\nprint(s[0])\nprint(s[length(s)-1])",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "The output is P followed by g. s[0] gives the first character and s[length(s)-1] gives the last character.",
+    "explanation": "String indexing: index 0 is the first character, length-1 is the last.",
+    "betterAnswer": "The output is: P then g. String indexing starts at 0, so s[0] is P. The last character is accessed with index length(s)-1 giving g.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "capgemini-tech-020",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Pseudocode / Code Analysis",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "What is the output of the following pseudocode?\n\nqueue = []\nenqueue(queue, 10)\nenqueue(queue, 20)\nenqueue(queue, 30)\nprint(dequeue(queue))\nprint(dequeue(queue))",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "The output is 10 followed by 20. Queue is FIFO (First In First Out). The first enqueued element (10) is dequeued first.",
+    "explanation": "A queue follows the First-In-First-Out (FIFO) principle.",
+    "betterAnswer": "The output is: 10 then 20. Queue follows FIFO order. After enqueues: [10, 20, 30]. First dequeue returns 10, second returns 20.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-021",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Pseudocode / Code Analysis",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "What is the output of the following pseudocode?\n\narr = [3, 7, 1, 9, 4]\nmax_val = arr[0]\nfor i = 1 to length(arr)-1\n    if arr[i] > max_val\n        max_val = arr[i]\nprint(max_val)",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "The output is 9. The algorithm finds the maximum value by comparing each element with the current maximum.",
+    "explanation": "This is a linear search for the maximum element in an unsorted array.",
+    "betterAnswer": "The output is 9. The algorithm initializes max_val with 3, then: 7>3 so max=7, 1<7 no change, 9>7 so max=9, 4<9 no change. Final max is 9.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-022",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Pseudocode / Code Analysis",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What is the output of the following pseudocode?\n\nfor i = 1 to 5\n    print(i * i, end=\" \")",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "The output is 1 4 9 16 25. The loop prints the square of each number from 1 to 5.",
+    "explanation": "This prints the squares of consecutive integers.",
+    "betterAnswer": "The output is 1 4 9 16 25. For each iteration, i takes values 1 through 5 and the square (i*i) is printed.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "capgemini-tech-023",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Pseudocode / Code Analysis",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "What is the output of the following pseudocode?\n\nn = 10\nfor i = 1 to n\n    if n mod i == 0\n        print(i, end=\" \")",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "The output is 1 2 5 10. The program finds all divisors of 10 by checking if n mod i equals 0.",
+    "explanation": "A divisor of n is any number that divides n evenly (remainder is 0).",
+    "betterAnswer": "The output is 1 2 5 10. The loop checks which numbers from 1 to 10 divide 10 evenly. 10 mod 1=0, 10 mod 2=0, 10 mod 5=0, 10 mod 10=0.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-024",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Pseudocode / Code Analysis",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "What is the output of the following pseudocode?\n\nfunction power(base, exp)\n    if exp == 0\n        return 1\n    if exp mod 2 == 0\n        half = power(base, exp/2)\n        return half * half\n    else\n        return base * power(base, exp-1)\nprint(power(2, 5))",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "The output is 32. This is fast exponentiation using divide and conquer. 2^5 = 2 * (2^2)^2 = 2 * 16 = 32.",
+    "explanation": "This uses exponentiation by squaring, an efficient algorithm for computing powers.",
+    "betterAnswer": "The output is 32. The function uses exponentiation by squaring: power(2,5) = 2 * power(2,4) = 2 * (power(2,2))^2 = 2 * 4^2 = 2 * 16 = 32. Time complexity is O(log n).",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-025",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Pseudocode / Code Analysis",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What is the output of the following pseudocode?\n\ncount = 0\nfor i = 1 to 10\n    if i mod 3 == 0\n        count = count + 1\nprint(count)",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "The output is 3. Numbers from 1 to 10 divisible by 3 are 3, 6, 9. So count becomes 3.",
+    "explanation": "This counts how many numbers in a range are divisible by 3.",
+    "betterAnswer": "The output is 3. The loop checks each number from 1 to 10 for divisibility by 3. The matching numbers are 3, 6, and 9, so count increments to 3.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "capgemini-tech-026",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Pseudocode / Code Analysis",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "What is the output of the following pseudocode?\n\nstr = \"ABCDEF\"\nfor i = 0 to length(str)-1\n    if i mod 2 == 0\n        print(str[i], end=\"\")",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "The output is ACE. The loop prints characters at even indices (0, 2, 4): A, C, E.",
+    "explanation": "String indexing starts at 0. Even indices are 0, 2, 4.",
+    "betterAnswer": "The output is ACE. The for loop iterates with i = 0, 1, 2, 3, 4, 5. When i mod 2 == 0 (i = 0, 2, 4), the characters at those positions are printed: A, C, E.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-027",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Pseudocode / Code Analysis",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "What is the output of the following pseudocode?\n\nx = 0\nfor i = 1 to 4\n    for j = 1 to 4\n        if i == j\n            x = x + 1\nprint(x)",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "The output is 4. The condition i == j is true when both indices are equal: (1,1), (2,2), (3,3), (4,4).",
+    "explanation": "This counts the diagonal elements of a 4x4 matrix.",
+    "betterAnswer": "The output is 4. In a 4x4 iteration space, i==j is true for pairs (1,1), (2,2), (3,3), (4,4). x increments once for each.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-028",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Pseudocode / Code Analysis",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What is the output of the following pseudocode?\n\na = 5\nb = a++\nprint(b)\nprint(a)",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "The output is 5 followed by 6. The post-increment operator returns the current value before incrementing.",
+    "explanation": "Post-increment (a++) returns the original value and then increments.",
+    "betterAnswer": "The output is: 5 then 6. With post-increment (a++), the original value (5) is assigned to b first, then a is incremented to 6.",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-029",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Pseudocode / Code Analysis",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "What is the output of the following pseudocode?\n\narr = [1, 2, 3, 4, 5]\nfor i = 0 to length(arr)-2\n    arr[i] = arr[i] + arr[i+1]\nprint(arr)",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "The output is [3, 5, 7, 9, 5]. Each element is replaced by the sum of itself and the next element.",
+    "explanation": "This requires careful tracing since array elements are modified in place during iteration.",
+    "betterAnswer": "The output is [3, 5, 7, 9, 5]. Tracing: arr[0]=1+2=3, arr[1]=2+3=5, arr[2]=3+4=7, arr[3]=4+5=9, arr[4] remains 5.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-030",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Pseudocode / Code Analysis",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "What is the output of the following pseudocode?\n\narr = [1, 2, 3, 4, 5]\nleft = 0\nright = length(arr) - 1\nwhile left < right\n    swap(arr[left], arr[right])\n    left = left + 1\n    right = right - 1\nprint(arr)",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "The output is [5, 4, 3, 2, 1]. This reverses the array by swapping elements from both ends.",
+    "explanation": "Two-pointer technique: one pointer starts from the beginning and another from the end.",
+    "betterAnswer": "The output is [5, 4, 3, 2, 1]. The two pointers start at both ends and swap: swap(1,5) then swap(2,4). When left meets right, the loop stops.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-031",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Pseudocode / Code Analysis",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What is the output of the following pseudocode?\n\nx = 10\nx = x + 5\nx = x - 3\nprint(x)",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "The output is 12. Starting with x=10, add 5 to get 15, subtract 3 to get 12.",
+    "explanation": "Sequential arithmetic operations on a variable.",
+    "betterAnswer": "The output is 12. The variable x undergoes: 10 -> 10+5=15 -> 15-3=12.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "capgemini-tech-032",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Pseudocode / Code Analysis",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "What is the output of the following pseudocode?\n\nn = 7\nbinary = \"\"\nwhile n > 0\n    binary = (n mod 2) + binary\n    n = n / 2\nprint(binary)",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "The output is 111. Converting 7 to binary: 7/2=3 r1, 3/2=1 r1, 1/2=0 r1. Reading remainders in reverse gives 111.",
+    "explanation": "This implements decimal to binary conversion using repeated division by 2.",
+    "betterAnswer": "The output is 111. The algorithm repeatedly divides by 2 and prepends the remainder: 7%2=1, 3%2=1, 1%2=1. Reading remainders from last to first gives 111.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-033",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Pseudocode / Code Analysis",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "What is the output of the following pseudocode?\n\nx = 1\ny = 1\nfor i = 1 to 5\n    temp = x + y\n    x = y\n    y = temp\nprint(y)",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "The output is 13. This iteratively computes Fibonacci numbers. After 5 iterations with x=1, y=1: y becomes 13.",
+    "explanation": "This is an iterative approach to computing Fibonacci numbers.",
+    "betterAnswer": "The output is 13. The loop computes: i=1: temp=2,x=1,y=2; i=2: temp=3,x=2,y=3; i=3: temp=5,x=3,y=5; i=4: temp=8,x=5,y=8; i=5: temp=13,x=8,y=13.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-034",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Pseudocode / Code Analysis",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What is the output of the following pseudocode?\n\nfruits = [\"apple\", \"banana\", \"cherry\"]\nfor fruit in fruits\n    print(fruit)",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "The output is: apple, banana, cherry on separate lines. The for-each loop iterates over each element and prints it.",
+    "explanation": "A for-each loop provides a clean way to iterate over all elements.",
+    "betterAnswer": "The output is apple, banana, cherry on separate lines. The for-each loop iterates through the list, printing each element.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "capgemini-tech-035",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Pseudocode / Code Analysis",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "What is the output of the following pseudocode?\n\nfunction reverse(str)\n    result = \"\"\n    for i = length(str)-1 to 0\n        result = result + str[i]\n    return result\nprint(reverse(\"HELLO\"))",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "The output is OLLEH. The function iterates from the last character to the first, building a reversed copy.",
+    "explanation": "String reversal by iterating from end to start.",
+    "betterAnswer": "The output is OLLEH. The function builds the reversed string starting from index length-1 (4) down to 0, appending each character: O, L, L, E, H.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-036",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Pseudocode / Code Analysis",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "What is the time complexity of the following pseudocode?\n\nfor i = 1 to n\n    for j = 1 to n\n        print(i + j)",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "The time complexity is O(n^2). The outer loop runs n times, and for each, the inner loop runs n times.",
+    "explanation": "Nested loops where both iterate to n result in quadratic time complexity.",
+    "betterAnswer": "The time complexity is O(n^2). Two nested loops each running n times produce n^2 iterations total.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-037",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Pseudocode / Code Analysis",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What is the output of the following pseudocode?\n\ntemperature = 30\nif temperature > 35\n    print(\"Hot\")\nelif temperature > 25\n    print(\"Warm\")\nelse\n    print(\"Cold\")",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "The output is \"Warm\". Since 30 is not greater than 35 but is greater than 25, the elif condition is true.",
+    "explanation": "elif is checked only when the preceding if condition is false.",
+    "betterAnswer": "The output is \"Warm\". The first condition (30 > 35) is false, so it checks the elif: 30 > 25 is true, so \"Warm\" is printed.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "capgemini-tech-038",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Pseudocode / Code Analysis",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "What is the output of the following pseudocode?\n\nstack = []\npush(stack, 5)\npush(stack, 10)\npush(stack, 15)\nprint(peek(stack))\nprint(pop(stack))\nprint(peek(stack))",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "The output is 15, 15, 10. Peek returns the top element without removing it. Pop removes and returns the top.",
+    "explanation": "Peek reads the top element without modification; pop removes and returns it.",
+    "betterAnswer": "The output is: 15, 15, 10. After pushes: [5, 10, 15]. peek returns 15. pop removes and returns 15. peek now returns 10 (new top).",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-039",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Pseudocode / Code Analysis",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "What is the output of the following pseudocode?\n\narr = [4, 2, 7, 1, 3]\nfor i = 1 to length(arr)-1\n    key = arr[i]\n    j = i - 1\n    while j >= 0 and arr[j] > key\n        arr[j+1] = arr[j]\n        j = j - 1\n    arr[j+1] = key\nprint(arr)",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "The output is [1, 2, 3, 4, 7]. This is insertion sort which builds the sorted array one element at a time.",
+    "explanation": "Insertion sort works similarly to sorting playing cards in your hand.",
+    "betterAnswer": "The output is [1, 2, 3, 4, 7]. This is insertion sort. It takes each element and shifts larger elements to the right, then inserts the key in its correct position.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-040",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Pseudocode / Code Analysis",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What is the output of the following pseudocode?\n\ni = 0\nwhile i < 5\n    print(i, end=\" \")\n    i = i + 1",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "The output is 0 1 2 3 4. The while loop prints the current value of i and increments it until i reaches 5.",
+    "explanation": "A basic while loop that prints and increments a counter.",
+    "betterAnswer": "The output is 0 1 2 3 4. The while loop starts with i=0, prints i, then increments. Stops when i=5.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "capgemini-tech-041",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Data Structures & Algorithms",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "Explain the difference between an array and a linked list.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "An array stores elements in contiguous memory locations, providing O(1) random access but requiring fixed size and costly insertions/deletions. A linked list stores elements in nodes with pointers, allowing dynamic size and O(1) insertions/deletions at known positions, but O(n) access time.",
+    "explanation": "Arrays and linked lists are fundamental data structures with different trade-offs.",
+    "betterAnswer": "Arrays use contiguous memory, enabling O(1) random access via indexing, but have fixed size and O(n) insertions/deletions. Linked lists use nodes with pointers, enabling dynamic sizing and O(1) insertions/deletions at a given position, but require O(n) traversal for access.",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-042",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Data Structures & Algorithms",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Explain how a hash table handles collisions. What are the two main collision resolution techniques?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Two main techniques are chaining and open addressing. Chaining stores colliding elements in a linked list at the hashed index. Open addressing finds another empty slot using probing (linear, quadratic, or double hashing).",
+    "explanation": "Collisions occur when two keys hash to the same index.",
+    "betterAnswer": "Chaining: Each bucket contains a linked list; colliding elements are appended to the list. Open addressing: When a collision occurs, the algorithm probes for the next empty slot using techniques like linear probing, quadratic probing, or double hashing.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-043",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Data Structures & Algorithms",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Explain the difference between BFS and DFS. In what scenarios is each preferred?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "BFS explores all neighbors at the current depth before moving deeper, using a queue. DFS explores as deep as possible before backtracking, using a stack (or recursion). BFS is preferred for shortest path in unweighted graphs and level-order traversal. DFS is preferred for topological sorting, cycle detection, and deep graph traversal.",
+    "explanation": "Both are graph traversal algorithms with different exploration strategies.",
+    "betterAnswer": "BFS uses a queue and explores level by level, guaranteeing shortest path in unweighted graphs. DFS uses a stack (or recursion) and explores deeply before backtracking. DFS can be implemented as pre-order, in-order, or post-order for trees.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-044",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Data Structures & Algorithms",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What is the time complexity of binary search? What are its prerequisites?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Binary search has O(log n) time complexity. The prerequisite is that the array must be sorted. It works by repeatedly dividing the search interval in half.",
+    "explanation": "Binary search is one of the most efficient searching algorithms for sorted data.",
+    "betterAnswer": "Binary search runs in O(log n) time by halving the search space each step. The data must be sorted. It compares the target with the middle element: if equal, found; if smaller, search left; otherwise search right.",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-045",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Data Structures & Algorithms",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Explain the concept of a Binary Search Tree (BST). What operations can be performed on it?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "A BST is a binary tree where each node has at most two children, with left subtree containing smaller values and right subtree containing larger values. Operations: Search O(log n), Insert O(log n), Delete O(log n) on average. Worst case is O(n) for a skewed tree.",
+    "explanation": "BSTs maintain sorted order and support efficient search, insert, and delete operations.",
+    "betterAnswer": "A BST is a hierarchical data structure where each node left child has a smaller value and right child has a larger value. Key operations: Search, Insert, Delete all O(log n) average. In-order traversal gives sorted output. Self-balancing BSTs (AVL, Red-Black) guarantee O(log n).",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-046",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Data Structures & Algorithms",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Explain the merge sort algorithm. What is its time complexity and why is it preferred over quicksort in certain scenarios?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Merge sort divides the array into two halves, recursively sorts each half, then merges the sorted halves. Time complexity is O(n log n) in all cases. It is preferred when stable sorting is needed, when worst-case guarantee is important, or for linked lists.",
+    "explanation": "Merge sort is a divide-and-conquer algorithm with guaranteed O(n log n) performance.",
+    "betterAnswer": "Merge sort: Divide array into two halves, recursively sort each, merge sorted halves. Time: O(n log n) always. Space: O(n). Stable sort. Preferred over quicksort when: stable sort is needed, worst-case O(n) of quicksort is unacceptable, sorting linked lists, or external sorting.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-047",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Data Structures & Algorithms",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What is a stack? Give two real-world applications of a stack.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "A stack is a LIFO (Last In First Out) data structure where elements are added and removed from the same end (top). Applications include undo/redo functionality in text editors and function call stack in program execution.",
+    "explanation": "Stacks are fundamental data structures used wherever the most recent item needs to be accessed first.",
+    "betterAnswer": "A stack is a linear data structure following LIFO principle. Real-world applications: (1) Undo/Redo in editors, (2) Function call stack, (3) Expression evaluation, (4) Browser back button history.",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-048",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Data Structures & Algorithms",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Explain the three types of tree traversals (inorder, preorder, postorder) with an example.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Inorder (Left, Root, Right): visits left subtree, then root, then right subtree. Preorder (Root, Left, Right): visits root first. Postorder (Left, Right, Root): visits children before root.",
+    "explanation": "Tree traversal methods define the order in which nodes are visited.",
+    "betterAnswer": "Inorder (L-Root-R): Gives sorted order for BST. Preorder (Root-L-R): Useful for creating copies of trees. Postorder (L-R-Root): Useful for deletion and expression evaluation. Example: root=5, left=3, right=8. Inorder: 3,5,8. Preorder: 5,3,8. Postorder: 3,8,5.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-049",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Data Structures & Algorithms",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Explain Dijkstra algorithm for finding shortest paths. What are its limitations?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Dijkstra algorithm finds shortest paths from a source to all vertices in a weighted graph with non-negative edge weights. It uses a priority queue. Limitations: does not work with negative edge weights, has O((V+E) log V) complexity.",
+    "explanation": "Dijkstra is the most well-known single-source shortest path algorithm.",
+    "betterAnswer": "Dijkstra: Initialize distances to infinity (source=0). Use min-priority queue. Extract min, relax edges. Repeat. Limitations: (1) Fails with negative edge weights, (2) Bellman-Ford handles negatives but is slower O(VE), (3) O((V+E) log V) with binary heap.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-050",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Data Structures & Algorithms",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What is the difference between a stack and a queue?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "A stack is LIFO where elements are added/removed from the top. A queue is FIFO where elements are added at the rear and removed from the front.",
+    "explanation": "These are the two fundamental linear data structures with opposite access patterns.",
+    "betterAnswer": "Stack: LIFO, last element pushed is first popped. Operations: push, pop, peek. Queue: FIFO, first element enqueued is first dequeued. Operations: enqueue, dequeue, front.",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-051",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Data Structures & Algorithms",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Explain the concept of a priority queue. How is it different from a regular queue?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "A priority queue serves elements based on priority rather than insertion order. Unlike a regular queue (FIFO), the highest-priority element is dequeued first. Implemented using heaps. Applications: Dijkstra algorithm, task scheduling.",
+    "explanation": "Priority queues extend the queue concept by adding priority-based ordering.",
+    "betterAnswer": "A priority queue serves elements based on priority, not arrival order. Implementation: typically using a binary min-heap or max-heap for O(log n) insert and extract. Applications: (1) Dijkstra shortest path, (2) OS process scheduling, (3) Event-driven simulations.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-052",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Data Structures & Algorithms",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Explain the concept of dynamic programming. How is it different from recursion and greedy algorithms?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Dynamic programming solves problems by breaking them into overlapping subproblems and storing results to avoid redundant computation. Unlike plain recursion, it avoids recomputation via memoization or tabulation. Unlike greedy algorithms, it considers all possibilities for the global optimum.",
+    "explanation": "DP is an optimization technique for problems with overlapping subproblems and optimal substructure.",
+    "betterAnswer": "DP: (1) Breaking into overlapping subproblems, (2) Solving each once, (3) Storing results. vs Recursion: plain recursion recomputes exponentially; DP stores and reuses. vs Greedy: greedy makes locally optimal choices; DP explores all possibilities for guaranteed optimal solution.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-053",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Data Structures & Algorithms",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What is the difference between a singly linked list and a doubly linked list?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "A singly linked list has nodes with only a next pointer, allowing traversal in one direction. A doubly linked list has nodes with both next and previous pointers, allowing traversal in both directions. Doubly linked lists use more memory but support efficient deletion.",
+    "explanation": "Linked lists come in different variants based on pointer configurations.",
+    "betterAnswer": "Singly linked list: Each node has data + next pointer. Traversal only forward. Doubly linked list: Each node has data + next + prev pointers. Traversal both directions. Easier deletion but uses extra memory for the prev pointer.",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-054",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Data Structures & Algorithms",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Explain the concept of a heap data structure. What are the two types?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "A heap is a complete binary tree satisfying the heap property. Max-heap: parent node is greater than or equal to children. Min-heap: parent is less than or equal to children. Used for: priority queues, heap sort, finding kth largest/smallest element.",
+    "explanation": "Heaps are specialized tree-based data structures for priority-based operations.",
+    "betterAnswer": "A heap is a complete binary tree with the heap property. Max-heap: every parent >= children (root is maximum). Min-heap: every parent <= children (root is minimum). Implemented as an array. Uses: Priority queues, Heap sort O(n log n), finding kth element.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-055",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Data Structures & Algorithms",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Explain the Bellman-Ford algorithm. How does it handle negative weights?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Bellman-Ford finds shortest paths from a single source in graphs with negative edge weights. It relaxes all edges V-1 times. Time complexity: O(V x E). It can detect negative weight cycles by checking for further relaxation after V-1 iterations.",
+    "explanation": "Bellman-Ford extends Dijkstra to handle negative weights at the cost of higher complexity.",
+    "betterAnswer": "Bellman-Ford: Initialize distances (source=0, others=infinity). Repeat V-1 times: for each edge (u,v,w), if dist[u]+w < dist[v], update. After V-1 iterations, check for negative cycles. Time: O(V*E). Handles negative weights. Detects negative cycles.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-056",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Data Structures & Algorithms",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What is the difference between linear search and binary search?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Linear search checks each element sequentially, works on unsorted arrays, and has O(n) time complexity. Binary search divides the search space in half each step, requires a sorted array, and has O(log n) time complexity.",
+    "explanation": "These are the two fundamental searching algorithms with different efficiency.",
+    "betterAnswer": "Linear search: Checks each element one by one. Works on any array. Time: O(n). Binary search: Compares target with middle element, eliminates half each step. Requires sorted array. Time: O(log n).",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-057",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Data Structures & Algorithms",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Explain BFS vs DFS for graph traversal. What data structures does each use?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "BFS uses a queue and explores all neighbors at the current depth before going deeper. DFS uses a stack (or recursion) and explores as deep as possible before backtracking. BFS is better for shortest path in unweighted graphs; DFS uses less memory for deep graphs.",
+    "explanation": "BFS and DFS are complementary graph traversal strategies.",
+    "betterAnswer": "BFS: Uses a queue. Visits all nodes at distance d before distance d+1. Space: O(w) where w is max width. DFS: Uses a stack (or recursion). Goes deep along one branch before backtracking. Space: O(h) where h is height.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-058",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Data Structures & Algorithms",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Explain amortized analysis. Give an example where amortized cost differs from average cost.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Amortized analysis averages the cost of operations over a sequence, proving the average cost per operation is bounded. Example: dynamic array resizing, most insertions are O(1), but occasionally an O(n) resize occurs. Amortized cost is O(1) per insertion.",
+    "explanation": "Amortized analysis provides a tighter bound than worst-case analysis for sequences.",
+    "betterAnswer": "Amortized analysis: Analyzes a sequence of n operations to find average cost per operation. Example: Dynamic array insertions. Individual O(1), resize O(n). Over n inserts, total work O(n), so amortized cost O(1) per insertion. Proven using aggregate, accounting, or potential method.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-059",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Data Structures & Algorithms",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What is an algorithm? What are the properties of a good algorithm?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "An algorithm is a finite sequence of well-defined instructions to solve a problem. Properties: correctness, efficiency, clarity, and finiteness.",
+    "explanation": "Understanding algorithm properties is fundamental to computer science.",
+    "betterAnswer": "An algorithm is a step-by-step procedure for solving a problem. Properties: (1) Correctness, (2) Efficiency (minimal time and space), (3) Finiteness, (4) Definiteness, (5) Input/Output specification, (6) Generality.",
+    "marks": 2,
+    "source": "practice"
+  },
+  {
+    "questionId": "capgemini-tech-060",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Data Structures & Algorithms",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Explain the concept of a graph. What are directed and undirected graphs?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "A graph is a collection of vertices connected by edges. Directed graph: edges have direction. Application: web page links. Undirected graph: edges have no direction. Application: social networks.",
+    "explanation": "Graphs model relationships between objects.",
+    "betterAnswer": "A graph G = (V, E) consists of vertices V and edges E. Directed: edges have direction (A->B not implying B->A). Applications: web links, dependency graphs. Undirected: edges are bidirectional. Applications: social networks, road maps.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-061",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Data Structures & Algorithms",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Explain balancing in AVL trees. Why is it necessary and how does rotation work?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "AVL trees maintain balance by ensuring the height difference between left and right subtrees is at most 1. This guarantees O(log n) operations. Rotations (LL, RR, LR, RL) restore balance after insertion or deletion.",
+    "explanation": "AVL trees are self-balancing BSTs preventing degradation to linked-list performance.",
+    "betterAnswer": "AVL: |height(left) - height(right)| <= 1 for every node. Rotations: LL (right rotation for left-heavy), RR (left rotation for right-heavy), LR (left then right), RL (right then left). All operations O(log n) guaranteed.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-062",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Data Structures & Algorithms",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What is a circular queue? What advantage does it have over a linear queue?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "A circular queue connects the last position back to the first, forming a circle. In a linear queue, after dequeueing, the front space is wasted. Circular queue reuses that space by wrapping around.",
+    "explanation": "Circular queues solve the space wastage problem of linear queues.",
+    "betterAnswer": "A circular queue wraps around using modulo arithmetic. Advantage: In a linear array-based queue, dequeued space is permanently lost. Circular queue reuses freed space. O(1) enqueue and dequeue without memory wastage.",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-063",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Data Structures & Algorithms",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "What is the worst-case time complexity of bubble sort, merge sort, and quicksort?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Bubble sort: O(n^2). Merge sort: O(n log n). Quicksort: O(n^2) worst case but O(n log n) average case.",
+    "explanation": "Understanding worst-case complexity helps choose the right algorithm.",
+    "betterAnswer": "Bubble sort: O(n^2) worst and average, O(n) best. Merge sort: O(n log n) in all cases, O(n) space. Quicksort: O(n^2) worst (sorted input with bad pivot), O(n log n) average. Quicksort often faster in practice due to cache efficiency.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-064",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Data Structures & Algorithms",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Explain the concept of a trie (prefix tree). What are its applications?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "A trie is a tree-like data structure where each node represents a character. Search time is O(m) where m is the key length. Applications: autocomplete, spell checkers, IP routing, word games.",
+    "explanation": "Tries optimize prefix-based operations by exploiting common prefixes.",
+    "betterAnswer": "A trie stores strings character-by-character. Search: O(m) where m = key length. Insert: O(m). Applications: (1) Autocomplete/prefix search, (2) Spell checkers, (3) IP routing (longest prefix match), (4) Word games. Optimized with compressed tries (radix trees).",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-065",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Data Structures & Algorithms",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What is recursion? Give an example of a recursive function.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Recursion is a technique where a function calls itself to solve smaller instances of the same problem. Each call must have a base case. Example: factorial(n) = n * factorial(n-1) with base case factorial(0) = 1.",
+    "explanation": "Recursion provides an elegant way to solve problems that break into similar subproblems.",
+    "betterAnswer": "Recursion: A function calls itself with a modified parameter. Two essential parts: (1) Base case, (2) Recursive case. Example: factorial(5) = 5 * 4 * 3 * 2 * 1 * 1 = 120. Uses the call stack.",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-066",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Data Structures & Algorithms",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Explain the concept of a hash map. How does it achieve O(1) average-case lookup?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "A hash map stores key-value pairs using a hash function that converts keys into array indices. On average, each key maps to a unique position, enabling O(1) lookup. Collisions are handled via chaining or open addressing.",
+    "explanation": "Hash maps are among the most important data structures for fast key-value lookups.",
+    "betterAnswer": "Hash map: Uses a hash function h(key) -> index to store values. Lookup: compute hash, access array at index -> O(1) average. Collisions handled by chaining or open addressing. Load factor affects performance. Average O(1) for search, insert, delete.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-067",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Data Structures & Algorithms",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Explain the Red-Black tree. How does it compare to AVL trees?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Red-Black trees are self-balancing BSTs with nodes colored red or black. Properties: root is black, red nodes have black children, all paths have same number of black nodes. Less strictly balanced than AVL, so fewer rotations on insert/delete.",
+    "explanation": "Red-Black trees are used in many standard library implementations.",
+    "betterAnswer": "Red-Black tree properties: Every node is red or black, root is black, NIL nodes are black, red children must be black, all paths have same black count. Height <= 2*log2(n+1). AVL is more strictly balanced, better for lookups. Red-Black allows more flexibility, better for insert/delete-heavy workloads.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-068",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Data Structures & Algorithms",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What is a complete binary tree? How is it related to a heap?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "A complete binary tree has all levels filled except possibly the last, filled from left to right. Heaps are always complete binary trees, allowing efficient array-based storage.",
+    "explanation": "The complete binary tree property enables efficient array-based heap implementation.",
+    "betterAnswer": "Complete binary tree: All levels fully filled except possibly the last, filled left to right. Heaps are complete binary trees with the heap property. Array representation: for node at index i, left child at 2i+1, right child at 2i+2.",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-069",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Data Structures & Algorithms",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "What is the difference between a minimum spanning tree and a shortest path tree?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "A minimum spanning tree connects all vertices with minimum total edge weight. A shortest path tree gives minimum cost paths from a single source. Kruskal: sort edges, add smallest non-cycle edge. Prim: grow tree from a vertex.",
+    "explanation": "MST connects all nodes with minimum total cost; shortest path tree minimizes individual path costs.",
+    "betterAnswer": "MST: Connects all vertices with minimum total edge weight. Shortest path tree: Minimizes individual paths from source. Kruskal: Sort edges, greedily add non-cycle edges using Union-Find. O(E log E). Prim: Start from vertex, add cheapest connecting edge. O(E log V).",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-070",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Data Structures & Algorithms",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Explain amortized analysis with a dynamic array example.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "When a dynamic array is full, doubling allocates and copies O(n) elements. But this happens every n insertions. Total cost for n inserts is ~3n. Amortized cost per insert is O(1).",
+    "explanation": "The doubling strategy ensures expensive resizes are rare enough for O(1) amortized cost.",
+    "betterAnswer": "Dynamic array: When full, allocate double size and copy. Cost: O(n). After n inserts, total copies = n + n/2 + n/4 + ... <= 2n. Total cost: O(n) + O(n) copies = O(n). Amortized cost per insert: O(n)/n = O(1). Accounting method: charge 3 units per insert.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-071",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Programming Concepts",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "Explain the four pillars of Object-Oriented Programming (OOP).",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "The four pillars are: (1) Encapsulation, (2) Inheritance, (3) Polymorphism, (4) Abstraction.",
+    "explanation": "OOP is a programming paradigm organized around objects.",
+    "betterAnswer": "1. Encapsulation: Bundling data and methods in a class, controlling access via modifiers. 2. Inheritance: Child class inherits from parent, enabling code reuse. 3. Polymorphism: Same interface, different implementations. 4. Abstraction: Hiding implementation details via abstract classes and interfaces.",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-072",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Programming Concepts",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Explain the difference between method overloading and method overriding.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Method overloading: Same name with different parameters, resolved at compile-time. Method overriding: Child class redefines parent method with same signature, resolved at runtime.",
+    "explanation": "Overloading is compile-time polymorphism; overriding is runtime polymorphism.",
+    "betterAnswer": "Overloading (same class, different params): void print(int x) and void print(String s). Overriding (child class, same signature): Parent has speak(), Child overrides speak(). Key differences: Overloading changes parameter list; overriding maintains exact same signature.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-073",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Programming Concepts",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Explain the SOLID principles in OOP.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "SOLID: (S) Single Responsibility, (O) Open/Closed, (L) Liskov Substitution, (I) Interface Segregation, (D) Dependency Inversion. They promote maintainable, flexible, and testable code.",
+    "explanation": "SOLID principles guide maintainable and scalable OOP design.",
+    "betterAnswer": "S-SRP: One class = one responsibility. O-OCP: Open for extension, closed for modification. L-LSP: Subtypes must be substitutable for base types. I-ISP: Many specific interfaces > one fat interface. D-DIP: Depend on abstractions, not concretions.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-074",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Programming Concepts",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What is the difference between a class and an object?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "A class is a blueprint that defines attributes and behaviors. An object is an instance of a class with actual values. Multiple objects can be created from one class.",
+    "explanation": "Classes and objects are the building blocks of OOP.",
+    "betterAnswer": "Class: A blueprint defining attributes and methods. No memory allocated at definition. Object: An instance of a class with actual values. Memory allocated when created.",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-075",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Programming Concepts",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Explain the difference between abstract classes and interfaces in Java.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Abstract class: Can have constructors, instance variables, and both abstract and concrete methods. Single inheritance. Interface: Can have constants and abstract methods (Java 8+ allows default methods). Multiple implementation.",
+    "explanation": "Both are used for abstraction but serve different design purposes.",
+    "betterAnswer": "Abstract class: Constructors, instance variables, any access modifiers. Single inheritance. Interface: Only public constants, abstract methods. Multiple implementation. Example: Animal abstract class, Flyable/Swimmable interfaces.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-076",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Programming Concepts",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Explain exception handling. What is the difference between checked and unchecked exceptions?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Exception handling uses try-catch-finally blocks. Checked exceptions (compile-time): must be declared or caught (IOException). Unchecked (runtime): extend RuntimeException, no explicit handling needed (NullPointerException).",
+    "explanation": "Exception handling ensures programs recover from errors gracefully.",
+    "betterAnswer": "try block contains risky code, catch handles exceptions, finally executes always. Checked: Compiler enforces handling (IOException, FileNotFoundException). Unchecked: Extend RuntimeException (NullPointerException, IllegalArgumentException). Errors: JVM errors, unrecoverable (OutOfMemoryError).",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-077",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Programming Concepts",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What is the difference between pass by value and pass by reference? Which does Java use?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Pass by value: A copy is passed; changes don't affect original. Pass by reference: A reference is passed; changes affect original. Java uses pass by value (primitives: value copied; objects: reference copied).",
+    "explanation": "Understanding parameter passing is crucial for predicting function behavior.",
+    "betterAnswer": "Java always uses pass by value. Primitives: value copied. Objects: reference copied (method can modify object fields but cannot reassign original reference). Common misconception: Java does NOT pass objects by reference.",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-078",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Programming Concepts",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Explain the difference between a constructor and a method.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "A constructor is called when an object is created, has no return type, and shares the class name. A method performs operations, has a return type, and any valid name.",
+    "explanation": "Constructors and methods serve fundamentally different purposes.",
+    "betterAnswer": "Constructor: Called with new. No return type. Same name as class. Initializes object. Method: Called on an object. Has return type. Any name. Performs operations. Constructors cannot be static/abstract/final. Methods can.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-079",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Programming Concepts",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Explain garbage collection in Java vs manual memory management in C/C++.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "GC automatically reclaims memory of unreferenced objects. C/C++ requires manual deallocation with new/delete. Java GC prevents memory leaks but adds overhead; C/C++ offers more control but risks leaks.",
+    "explanation": "GC simplifies memory management in managed languages.",
+    "betterAnswer": "Java GC: Automatic. Pros: No leaks, no dangling pointers. Cons: Unpredictable pauses, less control. C/C++: Manual. Pros: Deterministic cleanup, no GC overhead. Cons: Memory leaks, dangling pointers, double free errors. Java trades control for safety.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-080",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Programming Concepts",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What is a pointer? In which languages are pointers commonly used?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "A pointer stores the memory address of another variable. Commonly used in C, C++, and assembly. They enable dynamic memory allocation but require careful management.",
+    "explanation": "Pointers are powerful but dangerous tools for direct memory access.",
+    "betterAnswer": "A pointer stores a memory address. Languages: C, C++ extensively. Java does not have explicit pointers. Uses: Dynamic memory, data structures, function pointers. Dangers: Dangling pointers, null dereference, memory leaks.",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-081",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Programming Concepts",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Explain polymorphism with examples in Java.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Compile-time polymorphism: method overloading, resolved by compiler. Runtime polymorphism: method overriding, resolved at runtime via dynamic dispatch. Example: Animal a = new Dog(); a.speak() calls Dog's speak().",
+    "explanation": "Polymorphism enables flexible and extensible code.",
+    "betterAnswer": "Compile-time (overloading): Multiple methods same name, different signatures. Runtime (overriding): Child redefines parent method. JVM determines at runtime. Example: Animal animal = new Cat(); animal.makeSound() calls Cat's version.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-082",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Programming Concepts",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Explain design patterns. Name three creational patterns.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Design patterns are reusable solutions. Creational: (1) Singleton ensures one instance. (2) Factory Method creates objects without specifying class. (3) Builder constructs complex objects step by step.",
+    "explanation": "Design patterns improve code maintainability.",
+    "betterAnswer": "1. Singleton: Private constructor + static instance. Thread safety considerations. 2. Factory Method: Define interface for creating objects, let subclasses decide. 3. Builder: Separates construction from representation. Useful for objects with many optional parameters.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-083",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Programming Concepts",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What is the difference between a compiler and an interpreter?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "A compiler translates entire source code to machine code before execution (C, C++). An interpreter translates and executes line by line at runtime (Python, JavaScript).",
+    "explanation": "The choice affects program performance and development workflow.",
+    "betterAnswer": "Compiler: Translates entire source to machine code before running. Faster execution. Interpreter: Reads and executes line by line. No separate compilation. Easier debugging. Hybrid: Java compiles to bytecode, JVM interprets/JIT-compiles.",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-084",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Programming Concepts",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Explain closures in programming. Give an example.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "A closure is a function that captures variables from its enclosing scope, even after the outer function has finished executing. Example: def outer(x): return lambda: x * 2.",
+    "explanation": "Closures enable functions to access variables from their lexical scope.",
+    "betterAnswer": "A closure bundles a function with its lexical environment. Example: def make_counter(): count = 0; def increment(): nonlocal count; count += 1; return count; return increment. Uses: callbacks, event handlers, data privacy, memoization.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-085",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Programming Concepts",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Explain concurrency vs parallelism. How do they relate to multithreading?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Concurrency: Dealing with multiple tasks at once (interleaving). Parallelism: Actually executing multiple tasks simultaneously (requires multiple cores). In multithreading: concurrency via time-slicing; parallelism by running on separate cores.",
+    "explanation": "Understanding concurrency vs parallelism is crucial for multi-threaded applications.",
+    "betterAnswer": "Concurrency: Multiple tasks making progress over same period. About managing multiple tasks. Parallelism: Multiple tasks executing at the same time. About doing multiple things simultaneously. Concurrency is about structure; parallelism is about execution.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-086",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Programming Concepts",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What is a macro? How does it differ from a function?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "A macro performs text substitution before compilation. Functions are compiled and called at runtime. Macros have no type checking; functions are type safe and debuggable.",
+    "explanation": "Macros are a C/C++ preprocessor feature.",
+    "betterAnswer": "Macro: Text substitution by preprocessor. #define DOUBLE(x) ((x)*2). No type checking. Function: Proper code block with parameters. Type checked, debuggable. Modern C++ alternatives: constexpr, templates, inline functions.",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-087",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Programming Concepts",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Explain deep copy vs shallow copy.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Shallow copy: Copies object fields but references to nested objects are shared. Deep copy: Recursively copies all nested objects. No shared references.",
+    "explanation": "The choice depends on whether shared references are acceptable.",
+    "betterAnswer": "Shallow copy: Creates new object but copies references. Example: list_b = list_a.copy(); modifying nested objects affects both. Deep copy: Creates new object AND recursively copies all nested objects. Example: import copy; list_b = copy.deepcopy(list_a). Use deep for mutable nested objects.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-088",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Programming Concepts",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Explain virtual functions in C++. How does dynamic dispatch work?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "A virtual function is declared with virtual in base class and can be overridden. Dynamic dispatch: When called through a base class pointer, the actual function is determined at runtime using a virtual table (vtable).",
+    "explanation": "Virtual functions enable runtime polymorphism in C++.",
+    "betterAnswer": "Virtual function: Declared with virtual keyword. Derived classes override with override. Dynamic dispatch: Each class has a vtable. Object contains vptr pointing to its vtable. Function call: dereference vptr, look up in vtable, call. Cost: One indirection per virtual call.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-089",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Programming Concepts",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What is the difference between a static and an instance variable in Java?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Static variable: Belongs to the class, shared across all instances. One copy. Instance variable: Belongs to each object. Each object has its own copy.",
+    "explanation": "Static vs instance variables determine memory allocation and scope.",
+    "betterAnswer": "Static: One copy shared by all. Declared with static. Memory when class loads. Instance: Each object gets its own copy. Declared without static. Memory when object created. Static methods can only access static variables.",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-090",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Programming Concepts",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Explain functional programming vs imperative programming.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Functional programming treats computation as evaluation of functions, avoiding mutable state. Imperative programming focuses on step-by-step instructions that change state.",
+    "explanation": "Functional emphasizes expressions over statements.",
+    "betterAnswer": "Functional: Pure functions, immutable data, higher-order functions (map, filter, reduce), recursion over loops. Imperative: Step-by-step instructions, mutable variables, loops. FP avoids shared state, easier testing. Imperative more intuitive for beginners.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-091",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Programming Concepts",
+    "difficulty": "Hard",
+    "questionType": "Technical",
+    "question": "Explain memory management. What are memory leaks and how can they be prevented?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Memory management allocates and deallocates memory. Leaks occur when allocated memory loses all references but is not freed. Prevention: smart pointers (C++), garbage collection (Java/Python), RAII pattern.",
+    "explanation": "Proper memory management prevents resource exhaustion.",
+    "betterAnswer": "Memory management: Allocation, usage, deallocation. Leaks: Allocated memory not freed. Causes: Forgotten deallocation, circular references. Prevention: (1) RAII, (2) Smart pointers, (3) GC, (4) Valgrind/AddressSanitizer. Best practice: who allocates, deallocates.",
+    "marks": 5,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-092",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "DBMS / SQL",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "Write a SQL query to find all employees with a salary greater than 50000.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "SELECT * FROM employees WHERE salary > 50000;",
+    "explanation": "A basic SELECT query with a WHERE clause.",
+    "betterAnswer": "SELECT * FROM employees WHERE salary > 50000; This retrieves all columns for employees whose salary exceeds 50000.",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-093",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "DBMS / SQL",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Explain the different types of SQL JOINs.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "INNER JOIN: Only matching rows. LEFT JOIN: All left + matching right. RIGHT JOIN: All right + matching left. FULL JOIN: All rows from both.",
+    "explanation": "JOINs combine rows from multiple tables.",
+    "betterAnswer": "INNER JOIN: SELECT * FROM employees e INNER JOIN departments d ON e.dept_id = d.dept_id; LEFT JOIN: All employees even without department. FULL JOIN: all records from both. CROSS JOIN: Cartesian product. SELF JOIN: table joined with itself.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-094",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "DBMS / SQL",
+    "difficulty": "Hard",
+    "questionType": "Technical",
+    "question": "Explain database normalization. What are 1NF, 2NF, and 3NF?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Normalization reduces redundancy. 1NF: Atomic values, no repeating groups. 2NF: 1NF + no partial dependencies. 3NF: 2NF + no transitive dependencies. Prevents insertion, update, and deletion anomalies.",
+    "explanation": "Normalization is a systematic approach to minimize redundancy.",
+    "betterAnswer": "1NF: Atomic values in cells. 2NF: 1NF + all non-key attributes depend on entire primary key. 3NF: 2NF + no non-key depends on non-key. Benefits: Less redundancy, easier updates. Trade-off: More joins. Denormalization for read-heavy systems.",
+    "marks": 5,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-095",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "DBMS / SQL",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What is the difference between WHERE and HAVING?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "WHERE filters rows before grouping. HAVING filters groups after GROUP BY. WHERE cannot use aggregate functions; HAVING can.",
+    "explanation": "They operate at different stages of query processing.",
+    "betterAnswer": "WHERE: Filters rows BEFORE grouping. Cannot use aggregates. HAVING: Filters groups AFTER GROUP BY. Can use aggregates. Execution order: FROM, WHERE, GROUP BY, HAVING, SELECT, ORDER BY.",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-096",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "DBMS / SQL",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Write a SQL query to find the second highest salary.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Approach 1: SELECT DISTINCT salary FROM employees ORDER BY salary DESC LIMIT 1 OFFSET 1; Approach 2: SELECT MAX(salary) FROM employees WHERE salary < (SELECT MAX(salary) FROM employees);",
+    "explanation": "Finding the Nth highest salary is a common interview question.",
+    "betterAnswer": "Approach 1 (LIMIT/OFFSET): SELECT DISTINCT salary FROM employees ORDER BY salary DESC LIMIT 1 OFFSET 1; Approach 2 (Subquery): SELECT MAX(salary) FROM employees WHERE salary < (SELECT MAX(salary) FROM employees); Approach 3 (DENSE_RANK): Uses window function for ties.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-097",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "DBMS / SQL",
+    "difficulty": "Hard",
+    "questionType": "Technical",
+    "question": "Explain ACID properties in database transactions.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "ACID: (A) Atomicity: all-or-nothing. (C) Consistency: valid state to valid state. (I) Isolation: concurrent transactions don't interfere. (D) Durability: committed changes persist after failure.",
+    "explanation": "ACID properties ensure reliable transaction processing.",
+    "betterAnswer": "Atomicity: Bank transfer: both debit and credit succeed or both fail. Consistency: All constraints satisfied. Isolation: Concurrent transfers see consistent state. Durability: Committed changes survive crashes via write-ahead logging.",
+    "marks": 5,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-098",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "DBMS / SQL",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "Write a SQL query to count employees in each department.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "SELECT dept_id, COUNT(*) AS employee_count FROM employees GROUP BY dept_id;",
+    "explanation": "GROUP BY groups rows, COUNT(*) counts each group.",
+    "betterAnswer": "SELECT dept_id, COUNT(*) AS employee_count FROM employees GROUP BY dept_id; To include department name, JOIN with departments table.",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-099",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "DBMS / SQL",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Explain database indexing. Types and when to use them?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Indexing creates a data structure (B-tree) that speeds up retrieval. Types: Single-column, Composite, Unique, Full-text. Use for frequently queried columns. Don't use for small or write-heavy tables.",
+    "explanation": "Indexes improve read performance but add write overhead.",
+    "betterAnswer": "B-tree (default, range queries), Hash (equality only), Bitmap (low-cardinality), Full-text. Use when: column in WHERE/JOIN/ORDER BY. Avoid when: small tables, write-heavy. Composite index: column order matters (leftmost prefix).",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-100",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "DBMS / SQL",
+    "difficulty": "Hard",
+    "questionType": "Technical",
+    "question": "Write a SQL query to find employees earning more than their department average.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "SELECT e.name, e.salary, e.dept_id FROM employees e WHERE e.salary > (SELECT AVG(salary) FROM employees WHERE dept_id = e.dept_id);",
+    "explanation": "This uses a correlated subquery referencing the outer query.",
+    "betterAnswer": "Approach 1 (correlated subquery): SELECT name, salary FROM employees e1 WHERE salary > (SELECT AVG(salary) FROM employees e2 WHERE e2.dept_id = e1.dept_id); Approach 2 (window function): SELECT ... AVG(salary) OVER (PARTITION BY dept_id) as avg_dept_salary ... WHERE salary > avg_dept_salary.",
+    "marks": 5,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-101",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "DBMS / SQL",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What is a primary key? What are its properties?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "A primary key uniquely identifies each row. Properties: Must be unique, cannot be NULL, only one per table, creates a unique index.",
+    "explanation": "Primary keys are fundamental to relational database design.",
+    "betterAnswer": "Primary key: UNIQUE, NOT NULL, single per table, creates implicit index. Example: CREATE TABLE employees (emp_id INT PRIMARY KEY, name VARCHAR(50)); Composite: PRIMARY KEY (emp_id, dept_id).",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-102",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "DBMS / SQL",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Explain DELETE, TRUNCATE, and DROP in SQL.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "DELETE: DML, removes specific rows with WHERE, can be rolled back. TRUNCATE: DDL, removes all rows, faster, minimal logging. DROP: DDL, removes entire table structure and data.",
+    "explanation": "These differ in scope, logging, and rollback capability.",
+    "betterAnswer": "DELETE: DML. Row-by-row logging. Triggers fire. TRUNCATE: DDL. Minimal logging. Resets identity counter. DROP: DDL. Table ceases to exist. DELETE for selective removal, TRUNCATE for clearing all data, DROP for removing table entirely.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-103",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "DBMS / SQL",
+    "difficulty": "Hard",
+    "questionType": "Technical",
+    "question": "Explain query optimization techniques in SQL.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Techniques: (1) Use indexes. (2) Avoid SELECT *. (3) Use EXPLAIN. (4) Avoid functions on indexed columns. (5) Use JOINs over subqueries. (6) Limit results.",
+    "explanation": "Optimizing queries is crucial for database performance.",
+    "betterAnswer": "(1) Indexes on WHERE/JOIN/ORDER BY. Covering indexes. (2) Replace OR with IN, avoid SELECT *. (3) EXPLAIN ANALYZE shows cost. (4) Join on indexed columns. (5) Statistics updated for optimizer. (6) Partitioning, materialized views, connection pooling.",
+    "marks": 5,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-104",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "DBMS / SQL",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "Write a SQL query to find duplicate records.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "SELECT column, COUNT(*) FROM table GROUP BY column HAVING COUNT(*) > 1;",
+    "explanation": "Finding duplicates is a common data cleaning task.",
+    "betterAnswer": "Find duplicates: SELECT name, email, COUNT(*) FROM employees GROUP BY name, email HAVING COUNT(*) > 1; Delete keeping one: DELETE FROM employees WHERE id NOT IN (SELECT MIN(id) FROM employees GROUP BY name, email);",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-105",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "DBMS / SQL",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "What is the difference between candidate key, primary key, and foreign key?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Candidate key: Minimal set uniquely identifying a row (multiple possible). Primary key: Chosen candidate key, one per table. Foreign key: References another table's primary key.",
+    "explanation": "Keys are fundamental to relational database design.",
+    "betterAnswer": "Candidate key: Any minimal unique identifier. Primary key: Selected candidate key, NOT NULL, one per table. Foreign key: References another table's PK, enforces referential integrity, can be NULL, multiple per table.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-106",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "DBMS / SQL",
+    "difficulty": "Hard",
+    "questionType": "Technical",
+    "question": "Explain normalization levels and when to denormalize.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Normalization: 1NF-3NF reduce redundancy. BCNF stricter 3NF. Denormalization: Intentionally add redundancy for read performance. Used in data warehousing, read-heavy systems.",
+    "explanation": "Understanding when to normalize and denormalize is key to database design.",
+    "betterAnswer": "Normalization reduces redundancy (better writes). Denormalization improves reads (faster queries, more storage). Use denormalization when: read performance critical, complex joins hurt performance, data warehouse/reporting. Mixed approach common in practice.",
+    "marks": 5,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-107",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "DBMS / SQL",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What is a view in SQL? What are its advantages?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "A view is a virtual table based on a SELECT query. Advantages: security (restrict column access), simplification (hide complex joins), logical data independence.",
+    "explanation": "Views simplify and secure data access.",
+    "betterAnswer": "View: Virtual table defined by a query. CREATE VIEW emp_summary AS SELECT name, dept FROM employees; Advantages: Security, Simpularity, Logical independence, Consistency. Disadvantages: Performance, update restrictions on complex views.",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-108",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "DBMS / SQL",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Explain stored procedures vs triggers.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Stored procedures: Precompiled SQL code, callable by applications. Triggers: Automatically executed on table events (INSERT, UPDATE, DELETE). Procedures are called explicitly; triggers fire automatically.",
+    "explanation": "Both extend SQL functionality but serve different purposes.",
+    "betterAnswer": "Stored procedure: Named collection of SQL, stored in DB. Can have parameters, return values. Trigger: Automatic response to table events. Use: Auditing, validation. Differences: Explicit vs automatic. Procedures reusable; triggers tied to tables/events.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-109",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "DBMS / SQL",
+    "difficulty": "Hard",
+    "questionType": "Technical",
+    "question": "Explain transaction isolation levels and their impact.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Isolation levels: Read Uncommitted (dirty reads), Read Committed (no dirty reads), Repeatable Read (no non-repeatable reads), Serializable (full isolation). Each trades isolation for concurrency.",
+    "explanation": "Isolation levels determine how transactions interact.",
+    "betterAnswer": "Read Uncommitted: Lowest isolation, dirty reads possible. Read Committed: Only committed data. Repeatable Read: Same query returns same results. Serializable: Full isolation, serialized execution. Trade-off: Higher isolation = more locking = less concurrency.",
+    "marks": 5,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-110",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "DBMS / SQL",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "Write a SQL query to list all tables in a database (MySQL).",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "SHOW TABLES; or SELECT table_name FROM information_schema.tables WHERE table_schema = 'database_name';",
+    "explanation": "Metadata queries help discover database structure.",
+    "betterAnswer": "MySQL: SHOW TABLES; PostgreSQL: SELECT tablename FROM pg_tables WHERE schemaname = 'public'; SQL Server: SELECT * FROM INFORMATION_SCHEMA.TABLES;",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-111",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "DBMS / SQL",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Explain correlated vs non-correlated subqueries.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Non-correlated: Executes independently of outer query. Correlated: References columns from outer query, executes once for each outer row.",
+    "explanation": "The key difference is whether the inner query depends on the outer.",
+    "betterAnswer": "Non-correlated: Inner runs once, result used by outer. Correlated: Inner references outer columns, runs for each outer row. Non-correlated is generally faster (executed once).",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-112",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "DBMS / SQL",
+    "difficulty": "Hard",
+    "questionType": "Technical",
+    "question": "Explain database sharding. Benefits and challenges?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Sharding: Distributing data across multiple servers. Benefits: Horizontal scalability, improved performance, fault isolation. Challenges: Complex cross-shard queries, data distribution, rebalancing.",
+    "explanation": "Sharding is key for horizontal database scaling.",
+    "betterAnswer": "Benefits: (1) Scale beyond single server, (2) Better query performance, (3) Fault isolation. Challenges: (1) Cross-shard queries complex, (2) Choosing shard key, (3) Rebalancing, (4) Distributed transactions, (5) Global indexes, (6) Schema changes.",
+    "marks": 5,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-113",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Operating Systems",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "Explain the difference between a process and a thread.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "A process is an instance of a program with its own memory space. A thread is a lightweight unit of execution within a process, sharing the process's memory.",
+    "explanation": "Understanding processes and threads is fundamental to OS concepts.",
+    "betterAnswer": "Process: Independent execution unit with own memory. Thread: Lightweight unit within a process. Shares memory. Benefits of multithreading: Parallelism, Responsiveness, Resource sharing, Economy.",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-114",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Operating Systems",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Explain deadlock. What are the four necessary conditions?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Deadlock: Two or more processes unable to proceed, each waiting for a resource held by another. Conditions: (1) Mutual exclusion, (2) Hold and wait, (3) No preemption, (4) Circular wait.",
+    "explanation": "Deadlock is a critical problem in concurrent systems.",
+    "betterAnswer": "Conditions: 1. Mutual exclusion: Resources cannot be shared. 2. Hold and wait: Hold resources while waiting. 3. No preemption: Resources cannot be forcibly taken. 4. Circular wait: Circular chain of waiting. Prevention: Break any one condition.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-115",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Operating Systems",
+    "difficulty": "Hard",
+    "questionType": "Technical",
+    "question": "Explain the Banker's algorithm for deadlock avoidance.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Banker's algorithm simulates resource allocation to determine if a state is safe. It checks if there exists a safe sequence where all processes can complete.",
+    "explanation": "Banker's algorithm is a classic deadlock avoidance strategy.",
+    "betterAnswer": "Maintains Available, Max, Allocation, Need matrices. Safety algorithm: Find process whose Need <= Available, simulate completion, repeat. If all complete, state is safe. Resource request: Check Request <= Need and Request <= Available, then safety check. Complexity: O(m * n^2).",
+    "marks": 5,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-116",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Operating Systems",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What is virtual memory? What is its purpose?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Virtual memory gives processes the illusion of a large contiguous address space, even if physical memory is smaller. Uses disk as extension of RAM.",
+    "explanation": "Virtual memory is one of the most important OS concepts.",
+    "betterAnswer": "Virtual memory: Separates logical from physical address. Each process gets its own virtual address space mapped to physical frames. Purpose: Run large programs, Process isolation, Efficient memory use, Shared memory.",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-117",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Operating Systems",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Explain paging vs segmentation.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Paging: Fixed-size blocks (pages/frames). No external fragmentation. Segmentation: Variable-size segments based on logical divisions. Can cause external fragmentation.",
+    "explanation": "Both are memory management techniques with different trade-offs.",
+    "betterAnswer": "Paging: Fixed-size pages. Page table maps pages to frames. No external fragmentation, possible internal. Segmentation: Variable-size segments. Segment table with base and limit. Reflects program structure, can have external fragmentation.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-118",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Operating Systems",
+    "difficulty": "Hard",
+    "questionType": "Technical",
+    "question": "Explain CPU scheduling algorithms: FCFS, SJF, Round Robin, Priority.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "FCFS: Simple, arrival order. Can cause convoy effect. SJF: Optimal average waiting time, needs burst time. Round Robin: Time quantum, fair sharing. Priority: Higher priority first, can cause starvation.",
+    "explanation": "CPU scheduling determines which process gets the CPU.",
+    "betterAnswer": "FCFS: Non-preemptive, convoy effect possible. SJF: Minimum avg waiting time, starvation of long processes. Round Robin: Fair, good response time. Quantum too small = overhead; too large = FCFS. Priority: Can cause starvation. Solution: aging.",
+    "marks": 5,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-119",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Operating Systems",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What is a context switch? Why is it necessary?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "A context switch saves the state of the current process and restores the next process state when the CPU switches. Necessary for multitasking.",
+    "explanation": "Context switching enables concurrent execution on a single processor.",
+    "betterAnswer": "Save current process state (registers, PC, stack pointer) to PCB. Load next process state. Necessary because: Time sharing, Higher priority arrives, Process blocks, Interrupt occurs. Overhead: Save/restore time, cache invalidation.",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-120",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Operating Systems",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Explain user mode vs kernel mode.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "User mode: Restricted mode for applications. Kernel mode: Privileged mode for OS kernel with full hardware access. Both needed to protect the system while allowing controlled resource access.",
+    "explanation": "Mode switching is fundamental to OS protection.",
+    "betterAnswer": "User mode: Limited instructions, no direct hardware access. System calls for privileged operations. Kernel mode: Full hardware access, all instructions. Transition: User to kernel via system call, interrupt, or exception.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-121",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Operating Systems",
+    "difficulty": "Hard",
+    "questionType": "Technical",
+    "question": "Explain inter-process communication (IPC) mechanisms.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "IPC allows processes to communicate. Mechanisms: Pipes, Message queues, Shared memory, Sockets, Signals, Semaphores.",
+    "explanation": "IPC is essential for cooperation between concurrent processes.",
+    "betterAnswer": "1. Pipes: Unidirectional, parent-child. 2. Message queues: Structured, asynchronous. 3. Shared memory: Fastest, requires synchronization. 4. Sockets: Network communication. 5. Signals: Async notifications. 6. Semaphores: Synchronization primitive.",
+    "marks": 5,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-122",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Operating Systems",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What is thrashing? How can it be prevented?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Thrashing: System spends more time swapping pages than executing. Caused by insufficient memory for active processes working sets. Prevented by reducing multiprogramming degree or adding memory.",
+    "explanation": "Thrashing severely degrades system performance.",
+    "betterAnswer": "CPU utilization drops due to excessive page faults. Total working set exceeds physical memory. Prevention: (1) Reduce active processes, (2) Add physical memory, (3) Working set model, (4) Page fault frequency monitoring.",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-123",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Operating Systems",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Explain page replacement algorithms: FIFO, LRU, Optimal.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "FIFO: Replace oldest page, simple but can cause Belady's anomaly. LRU: Replace least recently used, good performance. Optimal: Replace page not needed longest, best but impossible to implement.",
+    "explanation": "Page replacement algorithms determine which page to evict.",
+    "betterAnswer": "FIFO: Replace oldest. Simple. Belady's anomaly possible. LRU: Replace least recently used. Good approximation of optimal. Clock (second chance): LRU approximation using reference bit. Optimal: Theoretical best, used as benchmark.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-124",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Operating Systems",
+    "difficulty": "Hard",
+    "questionType": "Technical",
+    "question": "Explain semaphores. How do they solve synchronization problems?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "A semaphore is an integer variable for synchronization. Two operations: wait (decrement, blocks if < 0) and signal (increment, wakes blocked process). Binary semaphore (mutex) or counting semaphore.",
+    "explanation": "Semaphores are fundamental synchronization primitives.",
+    "betterAnswer": "Binary semaphore: values 0 or 1. Counting: 0 to N. Solves: mutual exclusion (S=1), producer-consumer (empty/full semaphores + mutex), readers-writers. Can cause: priority inversion, deadlock if misused. Alternatives: monitors, condition variables.",
+    "marks": 5,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-125",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Operating Systems",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What is a deadlock? Give a simple example.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Deadlock: Two or more processes blocked forever, each waiting for a resource held by another. Example: Process A holds Resource 1 and waits for Resource 2. Process B holds Resource 2 and waits for Resource 1.",
+    "explanation": "Deadlock is a state where no process can make progress.",
+    "betterAnswer": "Two processes, two resources. P1 locks R1, P2 locks R2. P1 tries to lock R2 (blocked). P2 tries to lock R1 (blocked). Both wait forever. Real-world: Two cars at a narrow intersection.",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-126",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Operating Systems",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Explain preemptive vs non-preemptive scheduling.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Preemptive: CPU can be taken away before process finishes (Round Robin, preemptive priority). Non-preemptive: Process keeps CPU until it voluntarily releases (FCFS, non-preemptive SJF).",
+    "explanation": "Scheduling policy determines when the OS can interrupt a running process.",
+    "betterAnswer": "Preemptive: Better response time, fair sharing, but context switch overhead. Non-preemptive: Simpler, no race conditions from preemption, but convoy effect and poor response time possible.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-127",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Operating Systems",
+    "difficulty": "Hard",
+    "questionType": "Technical",
+    "question": "Explain real-time operating systems (RTOS). Hard vs soft real-time.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "RTOS: Designed for time-critical applications with guaranteed response times. Hard real-time: Must meet deadlines always (failure is catastrophic). Soft real-time: Deadlines should be met but occasional misses tolerable.",
+    "explanation": "RTOS is critical for safety-critical and time-sensitive applications.",
+    "betterAnswer": "RTOS: Deterministic behavior, minimal interrupt latency, priority-based scheduling. Hard: Absolute deadline (pacemaker, flight control). Soft: Preferred deadline (video streaming, gaming). Scheduling: Rate Monotonic, Earliest Deadline First.",
+    "marks": 5,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-128",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Operating Systems",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What is a system call? Give examples.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "A system call is the interface between a running program and the OS kernel, allowing programs to request privileged operations. Categories: Process control, File management, Device management.",
+    "explanation": "System calls are the primary mechanism for user programs to interact with the OS.",
+    "betterAnswer": "Transition from user mode to kernel mode. Categories: 1. Process: fork(), exec(), exit(). 2. File: open(), read(), write(). 3. Device: ioctl(). 4. Information: getpid(). 5. Communication: pipe(), socket(). 6. Protection: chmod().",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-129",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Operating Systems",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Explain internal vs external memory fragmentation.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Internal: Wasted space within allocated blocks (allocated block larger than needed). External: Free memory in small non-contiguous blocks, insufficient for large allocation even though total free is enough.",
+    "explanation": "Fragmentation reduces memory utilization efficiency.",
+    "betterAnswer": "Internal: Occurs with fixed-size blocks (paging). Example: 4KB page, 3KB used, 1KB wasted. External: Free memory scattered in small chunks. Solutions: Paging eliminates external fragmentation. Compaction consolidates free space.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-130",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Operating Systems",
+    "difficulty": "Hard",
+    "questionType": "Technical",
+    "question": "Explain kernel types: monolithic, microkernel, hybrid.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Kernel: Core of OS managing hardware and resources. Monolithic: All services in kernel space (Linux). Microkernel: Only essentials in kernel (QNX). Hybrid: Combination (Windows NT, macOS).",
+    "explanation": "The kernel architecture determines design philosophy and trade-offs.",
+    "betterAnswer": "Monolithic: All services in kernel mode. Fast but bug in any module crashes system. Linux. Microkernel: Only IPC, scheduling, memory in kernel. More reliable but slower (message passing). QNX. Hybrid: Core in kernel, some services in user space. Windows NT, macOS.",
+    "marks": 5,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-131",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Operating Systems",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What is the difference between multitasking and multiprocessing?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Multitasking: Multiple tasks sharing a single CPU through time-slicing. Multiprocessing: Multiple CPUs/cores executing simultaneously. Multithreading: Multiple threads within a process.",
+    "explanation": "These describe different levels of concurrency.",
+    "betterAnswer": "Multitasking: Rapid switching between processes. One CPU, one process at a time. Multiprocessing: Multiple CPUs. True parallel execution. Multithreading: Threads within a process, shared memory.",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-132",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Operating Systems",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Explain race conditions. How can they be prevented?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "A race condition occurs when the outcome depends on the timing of interleaved execution. Example: Two threads incrementing a shared counter may lose updates. Prevented by mutual exclusion (mutex/semaphore), atomic operations.",
+    "explanation": "Race conditions lead to unpredictable behavior in concurrent programs.",
+    "betterAnswer": "Multiple threads access shared data concurrently with at least one modification. Example: count++ (read, increment, write). Prevention: (1) Mutex/Lock, (2) Semaphore, (3) Atomic operations (compare_and_swap), (4) Monitors, (5) Message passing.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-133",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Operating Systems",
+    "difficulty": "Hard",
+    "questionType": "Technical",
+    "question": "Explain virtualization. Types?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Virtualization: Creating virtual versions of resources. Types: (1) Hardware virtualization (VMs via hypervisor), (2) OS-level (containers), (3) Application virtualization, (4) Network virtualization.",
+    "explanation": "Virtualization enables multiple isolated environments on one physical system.",
+    "betterAnswer": "Hardware: Hypervisor creates VMs. Type 1 (bare-metal: VMware ESXi) vs Type 2 (hosted: VirtualBox). OS-level: Containers share kernel (Docker, LXC). Lightweight, fast startup. Benefits: Resource utilization, isolation, snapshots, migration.",
+    "marks": 5,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-134",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Operating Systems",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What is a process control block (PCB)?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "A PCB is a data structure storing all information about a process: state, program counter, CPU registers, memory management info, I/O status, scheduling info. The OS uses PCBs to manage processes.",
+    "explanation": "PCBs are essential for the OS to track and manage processes.",
+    "betterAnswer": "PCB contains: Process ID, state (ready/running/blocked), program counter, CPU registers, page tables, I/O status, scheduling info. Used during context switch, scheduling, resource allocation. One PCB per process.",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-135",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Operating Systems",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Explain logical vs physical address spaces.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Logical address: Generated by CPU during execution (virtual). Physical address: Actual location in RAM. Managed by MMU which maps logical to physical using page tables.",
+    "explanation": "Address translation is fundamental to virtual memory systems.",
+    "betterAnswer": "Logical: Process view of memory. Each process has own logical space starting from 0. Physical: Actual memory hardware address. MMU translates using page table. Benefits: Process isolation, Memory protection, Efficient memory use.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-136",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Operating Systems",
+    "difficulty": "Hard",
+    "questionType": "Technical",
+    "question": "Explain file systems: FAT, NTFS, ext4.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "File system: Organizes and stores files. FAT: Simple, widely compatible, no permissions (FAT32). NTFS: Windows, permissions, encryption, journaling. ext4: Linux, journaling, extents, large file support.",
+    "explanation": "File systems define how data is stored and organized on storage.",
+    "betterAnswer": "FAT32: Simple, max 4GB file, no security. NTFS: MFT metadata, ACLs, EFS encryption, compression, journaling. ext4: Extent-based, journaling, max 16TB file, delayed allocation. NTFS most feature-rich, ext4 most flexible, FAT32 most compatible.",
+    "marks": 5,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-137",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Computer Networks",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What are the 7 layers of the OSI model?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "7 layers: (1) Physical: Bit transmission. (2) Data Link: Framing, MAC addressing. (3) Network: Routing, IP addressing. (4) Transport: TCP/UDP. (5) Session. (6) Presentation. (7) Application.",
+    "explanation": "The OSI model provides a conceptual framework for network communication.",
+    "betterAnswer": "Physical: Cables, hubs. Data Link: Switches, frames, MAC. Network: Routers, packets, IP. Transport: TCP (reliable) and UDP (fast), ports. Session: Dialog control. Presentation: Data formatting, encryption. Application: HTTP, FTP, DNS.",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-138",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Computer Networks",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Explain TCP vs UDP. When would you use each?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "TCP: Connection-oriented, reliable, ordered, flow control. UDP: Connectionless, unreliable, faster. TCP for web browsing, email. UDP for video streaming, gaming, DNS.",
+    "explanation": "TCP and UDP are the two main transport layer protocols.",
+    "betterAnswer": "TCP: Three-way handshake, acknowledgments, retransmission, sequence numbers, flow control. 20-byte header. UDP: No connection, best-effort, 8-byte header. TCP for HTTP, FTP, SMTP. UDP for DNS, DHCP, VoIP, gaming.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-139",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Computer Networks",
+    "difficulty": "Hard",
+    "questionType": "Technical",
+    "question": "Explain TCP three-way handshake and four-way termination.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Three-way: (1) Client SYN, (2) Server SYN-ACK, (3) Client ACK. Connection established. Four-way: (1) FIN, (2) ACK, (3) FIN, (4) ACK. TIME_WAIT ensures cleanup.",
+    "explanation": "These establish and cleanly terminate TCP connections.",
+    "betterAnswer": "Three-way handshake: SYN -> SYN-ACK -> ACK. Uses ISN for security. Four-way termination: FIN -> ACK -> FIN -> ACK. TIME_WAIT: 2MSL to ensure last ACK received and old segments discarded.",
+    "marks": 5,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-140",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Computer Networks",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What is the difference between HTTP and HTTPS?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "HTTP: Plaintext data transmission. HTTPS: HTTP over SSL/TLS, encrypted. HTTPS provides confidentiality, integrity, authentication. Port 443 vs 80.",
+    "explanation": "HTTPS is the secure version of HTTP.",
+    "betterAnswer": "HTTP: Plaintext, vulnerable to eavesdropping. Port 80. HTTPS: SSL/TLS adds encryption, authentication (certificate), integrity. Port 443. TLS handshake establishes symmetric key for faster encryption.",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-141",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Computer Networks",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Explain IPv4 vs IPv6.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "IPv4: 32-bit addresses (~4.3 billion), uses subnet masks. IPv6: 128-bit addresses (3.4x10^38), no subnet masks, uses prefix length. IPv6 has built-in IPsec, simpler header.",
+    "explanation": "IP addressing is fundamental to network routing.",
+    "betterAnswer": "IPv4: 32-bit dotted decimal. ~4.3B addresses (exhausted). Uses NAT. IPv6: 128-bit hexadecimal. 3.4x10^38 addresses. Fixed 40-byte header. No NAT. IPsec mandatory. Flow labels for QoS. Transition: dual stack, tunneling.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-142",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Computer Networks",
+    "difficulty": "Hard",
+    "questionType": "Technical",
+    "question": "Explain the DNS resolution process.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "DNS: (1) Browser cache, (2) OS cache/hosts file, (3) Recursive resolver, (4) Root server, (5) TLD server (.com), (6) Authoritative server, (7) Response cached at each level.",
+    "explanation": "DNS is the phonebook of the internet, translating domain names to IPs.",
+    "betterAnswer": "Steps: Browser -> OS cache -> Recursive resolver (8.8.8.8) -> Root server -> TLD server -> Authoritative -> Response. Record types: A (IPv4), AAAA (IPv6), CNAME (alias), MX (mail), NS (name server). Uses UDP port 53. TTL determines cache duration.",
+    "marks": 5,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-143",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Computer Networks",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What is the difference between a hub, switch, and router?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Hub: Physical layer, broadcasts to all ports. Switch: Data Link layer, forwards by MAC address. Router: Network layer, routes by IP address, connects different networks.",
+    "explanation": "These are the three fundamental network devices.",
+    "betterAnswer": "Hub: Layer 1, repeats to all ports, no filtering. Switch: Layer 2, learns MAC addresses, selective forwarding, separate collision domains. Router: Layer 3, routes between networks, NAT, firewall, connects LAN to WAN.",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-144",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Computer Networks",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Explain subnetting. Why is it used?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Subnetting divides a network into smaller subnets using subnet masks. Improves performance (reduces broadcast domains), enhances security (isolate segments), optimizes IP usage.",
+    "explanation": "Subnetting is essential for efficient network design.",
+    "betterAnswer": "Borrow host bits to create subnets. /24 = 256 addresses. /26 = 64 addresses. Benefits: Reduce broadcast traffic, Security isolation, Efficient IP allocation, Easier management. VLSM: Different subnet sizes in same network.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-145",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Computer Networks",
+    "difficulty": "Hard",
+    "questionType": "Technical",
+    "question": "Explain network security: common attacks and prevention.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Attacks: DDoS, Man-in-the-middle, Phishing, SQL injection, XSS. Prevention: Firewalls, IDS/IPS, encryption, authentication, network segmentation.",
+    "explanation": "Network security protects data integrity and availability.",
+    "betterAnswer": "DDoS: Rate limiting, CDN. MitM: TLS/SSL, certificate pinning. Phishing: User training, MFA. SQL Injection: Parameterized queries, WAF. XSS: Input sanitization, CSP. Brute force: Account lockout, rate limiting. Defense in depth: Multiple security layers.",
+    "marks": 5,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-146",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Computer Networks",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What is the difference between LAN and WAN?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "LAN: Small area (building), high speed, low cost, private. WAN: Large area (cities/countries), lower speed, higher cost, public infrastructure.",
+    "explanation": "LANs and WANs differ in scope, speed, and ownership.",
+    "betterAnswer": "LAN: Small area, high bandwidth (100 Mbps to 10 Gbps), Ethernet/Wi-Fi. WAN: Large area, lower bandwidth, MPLS/VPN/Internet. MAN: City-wide. LAN is faster, cheaper, more secure. WAN connects geographically dispersed LANs.",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-147",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Computer Networks",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Explain NAT (Network Address Translation).",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "NAT translates private IPs to public IPs, allowing multiple devices to share one public IP. Types: Static (1:1), Dynamic (pool), PAT (port-based, many-to-one). Benefits: Conserves IPs, adds security.",
+    "explanation": "NAT is essential for connecting private networks to the internet.",
+    "betterAnswer": "PAT (most common): Multiple private IPs share one public IP using different ports. Benefits: IPv4 conservation, Security (internal hidden), Flexibility. Limitations: Breaks end-to-end principle, complicates P2P.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-148",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Computer Networks",
+    "difficulty": "Hard",
+    "questionType": "Technical",
+    "question": "Explain load balancing. Algorithms and types?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Load balancing distributes traffic across servers. Algorithms: Round Robin, Least Connections, IP Hash, Weighted. Types: DNS, hardware (F5), software (Nginx), cloud (AWS ALB). Benefits: High availability, scalability.",
+    "explanation": "Load balancing enables scalable and reliable web applications.",
+    "betterAnswer": "Round Robin: Equal distribution. Least Connections: Fewest active connections. IP Hash: Session persistence. Layer 4 (transport) vs Layer 7 (application). Hardware: F5 BIG-IP. Software: Nginx, HAProxy. Cloud: AWS ALB/NLB.",
+    "marks": 5,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-149",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Cloud Computing",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "Explain IaaS, PaaS, and SaaS.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "IaaS: Virtualized computing resources (VMs, storage). PaaS: Platform for developing/deploying apps. SaaS: Ready-to-use applications over internet. Each differs in what the user manages.",
+    "explanation": "Cloud service models define the level of control and responsibility.",
+    "betterAnswer": "IaaS: You manage OS, apps. Provider: hardware. Example: AWS EC2. PaaS: You manage apps. Provider: OS, runtime. Example: Heroku. SaaS: Provider manages everything. Example: Gmail, Salesforce.",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-150",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Cloud Computing",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "What are the different cloud deployment models?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Public cloud: Shared resources, third-party managed (AWS). Private cloud: Dedicated to one organization. Hybrid: Combination of public and private. Multi-cloud: Multiple providers.",
+    "explanation": "Deployment models determine who controls the infrastructure.",
+    "betterAnswer": "Public: Shared, pay-as-you-go, scalable, no capital expenditure. Private: Dedicated, full control, compliance, higher cost. Hybrid: Sensitive data on private, burst on public. Multi-cloud: Multiple providers, avoid vendor lock-in, complexity.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-151",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Cloud Computing",
+    "difficulty": "Hard",
+    "questionType": "Technical",
+    "question": "Explain serverless computing. Benefits and limitations?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Serverless: Cloud provider dynamically manages server allocation. Developer writes functions, provider handles scaling. Benefits: No server management, auto-scaling, pay-per-use. Limitations: Cold starts, vendor lock-in, time limits.",
+    "explanation": "Serverless represents the next evolution in cloud abstraction.",
+    "betterAnswer": "FaaS: AWS Lambda, Azure Functions. Benefits: No infrastructure management, scale to zero, pay per invocation, built-in HA. Limitations: Cold start latency, execution time limits (5-15 min), vendor lock-in, debugging challenges, stateless functions.",
+    "marks": 5,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-152",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Cloud Computing",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What is virtualization? Benefits?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Virtualization: Creating virtual versions of hardware, OS, storage, or network resources. A hypervisor runs multiple VMs on one server. Benefits: Better resource utilization, isolation, easy provisioning.",
+    "explanation": "Virtualization is the foundation of cloud computing.",
+    "betterAnswer": "Hypervisor layer allows multiple VMs to share physical hardware. Benefits: Resource utilization, Isolation, Snapshots, Live migration, Cost savings, Testing. Types: Full virtualization, Paravirtualization, OS-level (containers).",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-153",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Cloud Computing",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Explain auto-scaling. Types?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Auto-scaling: Automatically adjusts computing resources based on demand. Horizontal: Adding more instances. Vertical: Adding more power to existing instance. Triggers: CPU, memory, request count.",
+    "explanation": "Auto-scaling ensures applications handle varying loads efficiently.",
+    "betterAnswer": "Horizontal (scale out/in): Add/remove instances. Vertical (scale up/down): Increase/decrease instance size. Policies: Target tracking, Step scaling, Scheduled, Predictive. Benefits: Cost optimization, Performance, Availability.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-154",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Cloud Computing",
+    "difficulty": "Hard",
+    "questionType": "Technical",
+    "question": "Explain microservices vs monolithic architecture.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Microservices: Application decomposed into small independent services communicating via APIs. Monolithic: All components in a single unit. Microservices: Independent deployment, fault isolation, per-service scaling.",
+    "explanation": "Microservices has become the standard for modern applications.",
+    "betterAnswer": "Microservices: Small focused services, each with own database/deployment. Monolithic: Single codebase, single deployment. Benefits of microservices: Independent deploy, technology diversity, fault isolation. Challenges: Distributed complexity, eventual consistency, debugging.",
+    "marks": 5,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-155",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Cloud Computing",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What is cloud computing? Main characteristics?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Cloud computing: On-demand delivery of computing resources over the internet with pay-as-you-go pricing. Characteristics: On-demand self-service, broad network access, resource pooling, rapid elasticity, measured service.",
+    "explanation": "Cloud computing has transformed how organizations deploy IT resources.",
+    "betterAnswer": "NIST 5 characteristics: (1) On-demand self-service, (2) Broad network access, (3) Resource pooling, (4) Rapid elasticity, (5) Measured service. Benefits: Cost savings, scalability, global reach, reliability, speed.",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-156",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Cloud Computing",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Explain the shared responsibility model in cloud computing.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Shared responsibility: Provider manages security OF the cloud; customer manages security IN the cloud. IaaS: Customer manages OS, apps. PaaS: Customer manages apps. SaaS: Provider manages everything.",
+    "explanation": "Understanding shared responsibility is crucial for cloud security.",
+    "betterAnswer": "IaaS (EC2): Customer handles OS, firewall, apps. Provider: hardware, network. PaaS (Heroku): Customer handles apps, data. Provider: OS, runtime. SaaS (Gmail): Provider handles everything. Customer always responsible for data classification, access management.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-157",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Cloud Computing",
+    "difficulty": "Hard",
+    "questionType": "Technical",
+    "question": "Explain cloud security: IAM, encryption, network security groups.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "IAM: Controls who can access what via policies, roles, users. Encryption: Data at rest (AES-256), in transit (TLS), key management (KMS). Network security groups: Virtual firewalls for cloud resources.",
+    "explanation": "Cloud security requires a multi-layered approach.",
+    "betterAnswer": "IAM: Users, Groups, Roles, Policies. Principle of least privilege. MFA. Encryption: At rest with AES-256 (S3, EBS). In transit with TLS/SSL. KMS for key management. Security groups: Stateful firewalls controlling inbound/outbound traffic to instances.",
+    "marks": 5,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-158",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Cloud Computing",
+    "difficulty": "Easy",
+    "questionType": "Technical",
+    "question": "What are the benefits of cloud computing?",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Benefits: (1) Cost savings (no upfront investment), (2) Scalability (scale up/down on demand), (3) Global reach (deploy worldwide), (4) Reliability (redundancy, backup), (5) Speed and agility.",
+    "explanation": "Cloud computing offers numerous advantages over traditional IT.",
+    "betterAnswer": "Benefits: (1) Cost: Pay-as-you-go, no CapEx. (2) Scalability: Elastic scaling. (3) Global: Deploy in multiple regions. (4) Reliability: Built-in redundancy. (5) Agility: Deploy in minutes vs weeks. (6) Security: Provider expertise. (7) Focus: Business, not infrastructure.",
+    "marks": 2,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-159",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Cloud Computing",
+    "difficulty": "Medium",
+    "questionType": "Technical",
+    "question": "Explain the different types of cloud storage.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Cloud storage types: (1) Object storage (S3, Azure Blob) for unstructured data. (2) Block storage (EBS, Azure Disk) for databases/VMs. (3) File storage (EFS, Azure Files) for shared file systems.",
+    "explanation": "Different storage types serve different use cases.",
+    "betterAnswer": "Object: REST API access, unlimited scaling, metadata. S3, Azure Blob. Use: backups, media, data lakes. Block: Fixed-size blocks, mounted as drives. EBS, Azure Disk. Use: databases, boot volumes. File: NFS/SMB protocol, shared access. EFS, Azure Files. Use: shared data, content management.",
+    "marks": 3,
+    "source": "interview_reported"
+  },
+  {
+    "questionId": "capgemini-tech-160",
+    "companyIds": [
+      "capgemini"
+    ],
+    "companyId": "capgemini",
+    "topic": "Cloud Computing",
+    "difficulty": "Hard",
+    "questionType": "Technical",
+    "question": "Explain cloud-native development and the 12-factor app methodology.",
+    "options": [],
+    "correctAnswer": "",
+    "expectedAnswer": "Cloud-native: Building and running applications using cloud computing advantages. 12-factor app: Codebase, Dependencies, Config, Backing services, Build/release/run, Processes, Port binding, Concurrency, Disposability, Dev/prod parity, Logs, Admin processes.",
+    "explanation": "Cloud-native development optimizes for cloud environments.",
+    "betterAnswer": "12-factor app: (1) One codebase in version control, (2) Explicitly declare dependencies, (3) Store config in environment, (4) Treat backing services as attached resources, (5) Strictly separate build and run stages, (6) Execute as stateless processes, (7) Export services via port binding, (8) Scale out via process model, (9) Maximize robustness with fast startup/graceful shutdown, (10) Keep dev/prod as similar as possible, (11) Treat logs as event streams, (12) Run admin/management tasks as one-off processes.",
+    "marks": 5,
+    "source": "interview_reported"
+  }
+]
