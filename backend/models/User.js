@@ -61,6 +61,22 @@ const userSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.Mixed,
       default: {},
     },
+    projects: {
+      type: mongoose.Schema.Types.Mixed,
+      default: [],
+    },
+    experience: {
+      type: mongoose.Schema.Types.Mixed,
+      default: [],
+    },
+    education: {
+      type: mongoose.Schema.Types.Mixed,
+      default: [],
+    },
+    certifications: {
+      type: mongoose.Schema.Types.Mixed,
+      default: [],
+    },
     profilePicture: {
       type: String,
       default: "",

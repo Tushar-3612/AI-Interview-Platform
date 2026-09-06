@@ -46,7 +46,7 @@ function Results() {
 
         if (activeId) {
           try {
-            const { data } = await api.get(`/api/interview/${activeId}/result`, { headers });
+            const { data } = await api.get(`/api/student/interviews/${activeId}`, { headers });
             setResult(data);
           } catch {
             // Fallback
@@ -59,7 +59,7 @@ function Results() {
           // If first item has an interviewId, fetch its full result with answerKey
           if (allResults[0].interviewId) {
             try {
-              const { data: fullFirstResult } = await api.get(`/api/interview/${allResults[0].interviewId}/result`, { headers });
+              const { data: fullFirstResult } = await api.get(`/api/student/interviews/${allResults[0].interviewId}`, { headers });
               setResult(fullFirstResult);
             } catch {
               setResult(allResults[0]);
@@ -81,8 +81,9 @@ function Results() {
 
   const categories = activeResult
     ? [
-        { label: "Aptitude Round", score: activeResult.sections?.aptitude?.percentage ?? activeResult.aptitudeScore ?? 0, total: "25 Qs", icon: Target, color: "#f59e0b" },
-        { label: "Technical Stack Round", score: activeResult.sections?.technical?.percentage ?? activeResult.technicalScore ?? 0, total: "25 Qs", icon: BrainCircuit, color: "#3b82f6" },
+        { label: "Aptitude Round", score: activeResult.sections?.aptitude?.percentage ?? activeResult.aptitudeScore ?? 0, total: "15 Qs", icon: Target, color: "#f59e0b" },
+        { label: "Resume / Project Round", score: activeResult.sections?.resume_project?.percentage ?? activeResult.projectScore ?? 0, total: "10 Qs", icon: FileText, color: "#06b6d4" },
+        { label: "Technical Stack Round", score: activeResult.sections?.technical?.percentage ?? activeResult.technicalScore ?? 0, total: "20 Qs", icon: BrainCircuit, color: "#3b82f6" },
         { label: "Coding IDE Round", score: activeResult.sections?.coding?.percentage ?? activeResult.codingScore ?? 0, total: "3 Qs", icon: Code2, color: "#10b981" },
         { label: "HR Behavioral Round", score: activeResult.sections?.hr?.percentage ?? activeResult.hrScore ?? 0, total: "5 Qs", icon: UserCheck, color: "#a855f7" },
       ]

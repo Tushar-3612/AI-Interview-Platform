@@ -278,7 +278,7 @@ function StudentDashboard() {
       if (sessionId) {
         toast.success("Interview Session created!", { id: toastId });
         setShowInterviewModeModal(false);
-        window.open(`/interview/${sessionId}`, "_blank");
+        window.open(`/interview/${sessionId}`, "_blank", "noopener,noreferrer");
       } else {
         throw new Error("No session ID returned");
       }

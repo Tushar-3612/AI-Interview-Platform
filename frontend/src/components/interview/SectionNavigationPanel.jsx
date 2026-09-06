@@ -21,7 +21,7 @@ function SectionNavigationPanel({
       name: "Aptitude",
       icon: Target,
       color: "amber",
-      total: 25,
+      total: 15,
       description: "Quantitative & Logical MCQs",
       accentBg: "rgba(245, 158, 11, 0.15)",
       accentBorder: "rgba(245, 158, 11, 0.4)",
@@ -83,7 +83,7 @@ function SectionNavigationPanel({
     : (sectionProgress.totalCompleted || 0);
 
   const totalQuestions = isIndividualMode
-    ? (sectionProgress[normalizedTarget]?.total || targetSecObj?.total || 25)
+    ? (sectionProgress[normalizedTarget]?.total || targetSecObj?.total || 15)
     : SECTIONS.reduce(
         (sum, sec) => sum + (sectionProgress[sec.id]?.total || sec.total),
         0

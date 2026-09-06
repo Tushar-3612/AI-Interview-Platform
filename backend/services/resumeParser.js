@@ -208,6 +208,131 @@ export function extractSkillsFromTextRegex(text) {
 }
 
 /**
+ * 3b. Deterministic Section Extractor for Projects, Experience, Education & Certifications
+ */
+export function extractProjectsFromText(text) {
+  if (!text) return [];
+
+  const projects = [];
+  const projectSectionMatch = text.match(/(?:^|\n)\s*(?:Projects|Personal Projects|Key Projects|Academic Projects|Relevant Projects|Project Details)\b([\s\S]*?)(?=(?:\n\s*(?:Experience|Work Experience|Internships|Technical Skills|Skills|Education|Certifications|Achievements|Research Work|Publications|Declaration)\b)|$)/i);
+
+  if (!projectSectionMatch || !projectSectionMatch[1]) return [];
+
+  const sectionText = projectSectionMatch[1].trim();
+  const lines = sectionText.split("\n").map(l => l.trim()).filter(Boolean);
+
+  let currentProject = null;
+
+  for (const line of lines) {
+    const isBullet = line.startsWith("•") || line.startsWith("-") || line.startsWith("*") || line.startsWith("–");
+    const isContinuation = line.endsWith(".") || line.endsWith(",") || /^[a-z]/.test(line) || line.length < 15;
+
+    // Check if line looks like a project header (e.g. "Title | Tech1, Tech2" or "Title : Tech1, Tech2")
+    const headerWithDelimiter = line.match(/^([^|:–]+?)\s*(?:[|:]|–)\s*(.+)$/);
+    const headerMatch = headerWithDelimiter;
+
+    if (!isBullet && !isContinuation && (headerMatch || line.length < 80)) {
+      if (currentProject && currentProject.name) {
+        projects.push(currentProject);
+      }
+
+      let projName = line;
+      let techList = [];
+
+      if (headerMatch) {
+        projName = headerMatch[1].trim();
+        const techStr = headerMatch[2].trim();
+        techList = techStr.split(/[,|;]/).map(t => normalizeSkill(t.trim())).filter(Boolean);
+      }
+
+      projName = projName.replace(/^[^a-zA-Z0-9]+/, "").replace(/[^a-zA-Z0-9)]+$/, "").trim();
+
+      currentProject = {
+        name: projName || "Project",
+        description: "",
+        technologies: techList
+      };
+    } else if (currentProject) {
+      const lineClean = line.replace(/^[•\-*–\s]+/, "").trim();
+      if (currentProject.description) {
+        currentProject.description += " " + lineClean;
+      } else {
+        currentProject.description = lineClean;
+      }
+
+      // Also extract any technologies mentioned in the line text
+      const extractedTechs = extractSkillsFromTextRegex(lineClean);
+      Object.values(extractedTechs).forEach(arr => {
+        if (Array.isArray(arr)) {
+          arr.forEach(t => {
+            if (!currentProject.technologies.includes(t)) {
+              currentProject.technologies.push(t);
+            }
+          });
+        }
+      });
+    }
+  }
+
+  if (currentProject && currentProject.name) {
+    projects.push(currentProject);
+  }
+
+  // Filter out any invalid / dummy project entries (e.g. name < 2 chars or generic words)
+  const validProjects = projects.filter(p => p.name && p.name.length > 2 && !["dashboard", "dashboard.", "project", "details"].includes(p.name.toLowerCase()));
+
+  return validProjects;
+}
+
+export function extractExperienceFromText(text) {
+  if (!text) return [];
+  const expMatch = text.match(/(?:^|\n)\s*(?:Experience|Work Experience|Internships|Employment|Professional Experience)\b([\s\S]*?)(?=(?:\n\s*(?:Projects|Personal Projects|Technical Skills|Skills|Education|Certifications|Achievements|Research Work|Declaration)\b)|$)/i);
+  if (!expMatch || !expMatch[1]) return [];
+
+  const lines = expMatch[1].trim().split("\n").map(l => l.trim()).filter(Boolean);
+  const experience = [];
+  let currentExp = null;
+
+  for (const line of lines) {
+    const isBullet = line.startsWith("•") || line.startsWith("-") || line.startsWith("*");
+    if (!isBullet && line.length < 80) {
+      if (currentExp) experience.push(currentExp);
+      currentExp = { role: line, company: "", duration: "" };
+    } else if (currentExp && isBullet) {
+      const content = line.replace(/^[•\-*\s]+/, "").trim();
+      currentExp.company = currentExp.company ? currentExp.company + " " + content : content;
+    }
+  }
+  if (currentExp) experience.push(currentExp);
+  return experience;
+}
+
+export function extractEducationFromText(text) {
+  if (!text) return [];
+  const eduMatch = text.match(/(?:^|\n)\s*(?:Education|Academic Background|Qualifications)\b([\s\S]*?)(?=(?:\n\s*(?:Projects|Experience|Technical Skills|Skills|Certifications|Achievements|Declaration)\b)|$)/i);
+  if (!eduMatch || !eduMatch[1]) return [];
+
+  const lines = eduMatch[1].trim().split("\n").map(l => l.trim()).filter(Boolean);
+  const education = [];
+  for (let i = 0; i < lines.length; i += 2) {
+    education.push({
+      degree: lines[i] || "Degree",
+      institution: lines[i + 1] || "University / College"
+    });
+  }
+  return education;
+}
+
+export function extractCertificationsFromText(text) {
+  if (!text) return [];
+  const certMatch = text.match(/(?:^|\n)\s*(?:Certifications|Certificates|Licenses)\b([\s\S]*?)(?=(?:\n\s*(?:Projects|Experience|Education|Technical Skills|Skills|Achievements|Declaration)\b)|$)/i);
+  if (!certMatch || !certMatch[1]) return [];
+
+  const lines = certMatch[1].trim().split("\n").map(l => l.trim()).filter(Boolean);
+  return lines.map(l => l.replace(/^[•\-*\s]+/, "").trim()).filter(l => l.length > 3 && l.length < 120);
+}
+
+/**
  * 4. Master Resume Parser Function
  */
 export async function parseResumeComplete(fileBuffer, mimeType, studentData = {}) {
@@ -352,15 +477,21 @@ Return ONLY valid JSON matching this exact structure:
   });
   const all_skills = normalizeSkills(allSkillsList);
 
+  const extractedProjects = parsedResult?.projects?.length ? parsedResult.projects : extractProjectsFromText(rawText);
+  const extractedExperience = parsedResult?.experience?.length ? parsedResult.experience : extractExperienceFromText(rawText);
+  const extractedEducation = parsedResult?.education?.length ? parsedResult.education : extractEducationFromText(rawText);
+  const extractedCertifications = parsedResult?.certifications?.length ? parsedResult.certifications : extractCertificationsFromText(rawText);
+
   const atsScore = typeof parsedResult?.atsScore === "number" ? parsedResult.atsScore : 82;
   const candidateName = parsedResult?.candidateName || studentData.name || "Candidate";
 
-  console.log("\n[RESUME] Skills detected:");
+  console.log("\n[RESUME] Skills & Sections detected:");
   for (const [cat, list] of Object.entries(sanitizedCategories)) {
     if (list.length > 0) {
       console.log(`  ${cat.replace(/_/g, " ").toUpperCase()}: ${list.join(", ")}`);
     }
   }
+  console.log(`[RESUME] Projects Extracted: ${extractedProjects.length} (${extractedProjects.map(p => p.name).join(", ")})`);
   console.log(`[RESUME] Total Unique Skills: ${all_skills.length}\n`);
 
   return {
@@ -369,9 +500,9 @@ Return ONLY valid JSON matching this exact structure:
     skills: sanitizedCategories,
     categorizedSkills: sanitizedCategories,
     all_skills,
-    projects: parsedResult?.projects || [],
-    experience: parsedResult?.experience || [],
-    education: parsedResult?.education || [],
-    certifications: parsedResult?.certifications || []
+    projects: extractedProjects,
+    experience: extractedExperience,
+    education: extractedEducation,
+    certifications: extractedCertifications
   };
 }

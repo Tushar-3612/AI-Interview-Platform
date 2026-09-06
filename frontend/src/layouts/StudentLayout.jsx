@@ -31,7 +31,7 @@ function StudentLayout() {
     });
     setInterviewModalOpen(false);
     toast.success("Launching Interview session in a new tab...");
-    window.open("/interview", "_blank");
+    window.open("/interview", "_blank", "noopener,noreferrer");
   };
 
   return (

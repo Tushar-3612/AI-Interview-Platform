@@ -7,15 +7,6 @@ import {
   uploadResumeAndAnalyze,
   downloadResume,
   viewResume,
-  startInterview,
-  submitAnswer,
-  completeInterview,
-  getInterview,
-  getInterviewRound,
-  generateRound,
-  evaluateRoundHandler,
-  getInterviews,
-  getResults,
   updateTargetCompany,
 } from "../controllers/studentController.js";
 import {
@@ -32,6 +23,15 @@ import {
   getStudentResultByAttempt,
 } from "../controllers/resultController.js";
 import { getDashboardStats } from "../controllers/dashboardStatsController.js";
+
+import {
+  createInterviewSession,
+  getInterviewSession,
+  completeInterviewSession,
+  getStudentInterviews,
+  saveInterviewAnswer,
+  saveInterviewIntegrityEvent,
+} from "../controllers/studentInterviewController.js";
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -51,21 +51,16 @@ router.post("/resume/upload", upload.single("resume"), uploadResumeAndAnalyze);
 router.get("/resume/download", downloadResume);
 router.get("/resume/view", viewResume);
 
-// Interview management
-router.post("/interviews", startInterview);
-router.post("/interviews/answer", submitAnswer);
-router.post("/interviews/:interviewId/complete", completeInterview);
-router.get("/interviews/:interviewId/round/:roundName", getInterviewRound);
-router.post("/interviews/:interviewId/round/:roundName/generate", generateRound);
-router.post("/interviews/:interviewId/round/:roundName/evaluate", evaluateRoundHandler);
-router.get("/interviews/:interviewId", getInterview);
-
-// Fetching history
-router.get("/interviews", getInterviews);
-router.get("/results", getResults);
-
 // Dashboard statistics
 router.get("/dashboard-stats", getDashboardStats);
+
+// ─── Real Interview Sessions ───
+router.post("/interviews", createInterviewSession);
+router.get("/interviews", getStudentInterviews);
+router.get("/interviews/:sessionId", getInterviewSession);
+router.post("/interviews/:sessionId/answer", saveInterviewAnswer);
+router.post("/interviews/:sessionId/integrity-event", saveInterviewIntegrityEvent);
+router.post("/interviews/:sessionId/complete", completeInterviewSession);
 
 // ─── Test Engine ───
 router.get("/tests", getAssignedTests);
@@ -77,6 +72,7 @@ router.post("/tests/attempt/:attemptId/submit", submitTest);
 router.get("/tests/attempt/:attemptId/result", getTestResult);
 
 // ─── Test Results (Student) ───
+router.get("/results", getStudentResults);
 router.get("/tests/results", getStudentResults);
 router.get("/tests/results/:attemptId", getStudentResultByAttempt);
 

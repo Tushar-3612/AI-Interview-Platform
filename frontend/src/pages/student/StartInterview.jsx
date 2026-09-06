@@ -22,6 +22,8 @@ import CompletionScreen from "../../components/interview/CompletionScreen";
 import SectionNavigationPanel from "../../components/interview/SectionNavigationPanel";
 import FullscreenExitOverlay from "../../components/interview/FullscreenExitOverlay";
 import InterviewSettingsModal from "../../components/interview/InterviewSettingsModal";
+import RealInterviewPreparationScreen from "../../components/interview/RealInterviewPreparationScreen";
+import EvaluationLoadingScreen from "../../components/interview/EvaluationLoadingScreen";
 
 // Import Monaco editor & Output panel for Coding questions
 import MonacoCodeEditor from "../../components/coding/MonacoCodeEditor";
@@ -64,13 +66,22 @@ function StartInterview() {
   const { profile } = useStudentProfile();
   const token = getAuthToken();
 
-  const activeInterviewId = paramSessionId || routerState.interviewId || routerState.sessionId || profile.interviewId;
+  // Canonical Session ID State & Ref (Single Source of Truth)
+  const initialSessionId = paramSessionId || routerState.sessionId || routerState.interviewId || profile?.interviewId || null;
+  const [sessionId, setSessionId] = useState(initialSessionId);
+  const sessionIdRef = useRef(sessionId);
+
+  useEffect(() => {
+    sessionIdRef.current = sessionId;
+  }, [sessionId]);
 
   // Session State
   const [questions, setQuestions] = useState(routerState.generatedQuestions || []);
   const [currentIndex, setCurrentIndex] = useState(1); // 1-indexed
   const [isPaused, setIsPaused] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [isEvaluating, setIsEvaluating] = useState(false);
+  const [finalResultDoc, setFinalResultDoc] = useState(null);
   const [showConfirmExit, setShowConfirmExit] = useState(false);
   const [isGeneratingQuestion, setIsGeneratingQuestion] = useState(false);
   const [aiStatus, setAiStatus] = useState("SPEAKING"); // "SPEAKING" | "LISTENING" | "THINKING" | "READY"
@@ -123,6 +134,25 @@ function StartInterview() {
     difficulty: "Adaptive",
     totalTimeMinutes: 150,
   });
+
+  const memoizedCandidateProfile = useMemo(() => {
+    const cats = profile?.categorizedSkills || {};
+    return {
+      fullName: candidateInfo.name,
+      resumeName: candidateInfo.resumeName,
+      skills: profile?.skills || profile?.all_skills || [],
+      categorizedSkills: cats,
+      programmingLanguages: cats.programming_languages || profile?.programmingLanguages || [],
+      frameworks: cats.frameworks || profile?.frameworks || [],
+      databases: cats.databases || profile?.databases || [],
+      cloud: cats.cloud || profile?.cloud || [],
+      tools: cats.tools || profile?.tools || [],
+      projects: profile?.projects || [],
+      experience: profile?.experience || [],
+      certifications: profile?.certifications || [],
+      education: profile?.education || [],
+    };
+  }, [candidateInfo.name, candidateInfo.resumeName, profile]);
 
   const [isLoadingInterview, setIsLoadingInterview] = useState(true);
   const [sessionError, setSessionError] = useState(null);
@@ -201,9 +231,10 @@ function StartInterview() {
 
   // ─── PHASE 2E: LOG INTEGRITY EVENT TO BACKEND ───
   const logIntegrityEvent = useCallback(async (eventType, details = "") => {
-    if (!activeInterviewId) return;
+    const currentSessionId = sessionIdRef.current || sessionId;
+    if (!currentSessionId) return;
     try {
-      await api.post(`/api/interview/${activeInterviewId}/integrity-event`, {
+      await api.post(`/api/student/interviews/${currentSessionId}/integrity-event`, {
         eventType,
         questionId: currentQuestion.id || currentQuestion.questionId || "",
         questionIndex: currentIndex,
@@ -213,7 +244,7 @@ function StartInterview() {
     } catch (err) {
       console.warn("Failed to log integrity event:", err);
     }
-  }, [activeInterviewId, currentQuestion, currentIndex, currentSection, token]);
+  }, [sessionId, currentQuestion, currentIndex, currentSection, token]);
 
   // ─── PHASE 2E: FULLSCREEN ENFORCEMENT & PAUSE OVERLAY ───
   const handleReenterFullscreen = useCallback(() => {
@@ -359,9 +390,17 @@ function StartInterview() {
   }, [ttsStop]);
 
   // ─── Webcam acquisition ───
+  const hasAttemptedWebcamRef = useRef(false);
+  const webcamDeniedRef = useRef(false);
+
   const startWebcam = useCallback(async () => {
+    if (webcamDeniedRef.current || hasAttemptedWebcamRef.current) {
+      return;
+    }
+    hasAttemptedWebcamRef.current = true;
     try {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        setIsCameraOn(false);
         return;
       }
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -380,7 +419,9 @@ function StartInterview() {
         };
       }
     } catch (err) {
-      console.warn("Webcam access warning:", err);
+      webcamDeniedRef.current = true;
+      setIsCameraOn(false);
+      console.warn("Webcam access warning (permission denied or unavailable):", err?.name || err);
     }
   }, [logIntegrityEvent]);
 
@@ -421,6 +462,10 @@ function StartInterview() {
   }, []);
 
   const handleToggleCamera = useCallback(() => {
+    if (webcamDeniedRef.current) {
+      toast("Camera permission was denied in browser settings", { id: "camera-denied-toast", icon: "📷" });
+      return;
+    }
     setIsCameraOn((prev) => {
       const next = !prev;
       if (webcamStreamRef.current) {
@@ -457,7 +502,9 @@ function StartInterview() {
   }, [stopSpeechRecognition]);
 
   useEffect(() => {
-    startWebcam();
+    if (!hasAttemptedWebcamRef.current && !webcamDeniedRef.current) {
+      startWebcam();
+    }
     return () => {
       stopWebcam();
       stopSpeechRecognition();
@@ -475,132 +522,161 @@ function StartInterview() {
   }, [isCompleted, stopWebcam, stopSpeechRecognition]);
 
   // ─── FETCH & RECOVER SESSION DATA FROM BACKEND ───
-  useEffect(() => {
-    const loadSession = async () => {
-      setIsLoadingInterview(true);
+  const fetchSessionData = useCallback(async () => {
+    try {
+      let storedSessionId = "";
       try {
-        let targetId = activeInterviewId;
+        storedSessionId = localStorage.getItem("active_real_interview_session_id") || "";
+      } catch (e) {}
 
-        if (!targetId) {
-          const { data: newSession } = await api.post(
-            "/api/student/interviews",
-            { interviewType: "actual" },
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
-          targetId = newSession.sessionId || newSession.interviewId || newSession._id;
-        }
+      let targetId = sessionIdRef.current || sessionId || paramSessionId || routerState.sessionId || routerState.interviewId || storedSessionId || profile?.interviewId;
 
-        if (!targetId) {
-          throw new Error("Could not initialize interview session ID");
-        }
-
-        const { data } = await api.get(`/api/student/interviews/${targetId}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-
-        const activeTarget = data.targetRound || initialTargetRound || "all";
-        setTargetRound(activeTarget);
-
-        const durMin = data.durationMinutes || (activeTarget === "aptitude" ? 20 : activeTarget === "technical" ? 30 : activeTarget === "coding" ? 35 : activeTarget === "hr" ? 20 : 105);
-        setInterviewDurationMin(durMin);
-
-        let loadedQs = data.generatedQuestions || [];
-
-        // If no questions generated yet, automatically generate Question 1 via real-time AI
-        if (!loadedQs || loadedQs.length === 0) {
+      if (!targetId || targetId === "undefined" || targetId === "null") {
+        const { data: newSession } = await api.post(
+          "/api/student/interviews",
+          { interviewType: "actual" },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        targetId = newSession.sessionId || newSession.interviewId || newSession._id;
+        if (targetId) {
+          setSessionId(targetId);
+          sessionIdRef.current = targetId;
           try {
-            const fetchRoundName = activeTarget !== "all" ? activeTarget : "technical";
-            const { data: qGenData } = await api.post(
-              `/api/interview/${targetId}/generate-question`,
-              {
-                round: fetchRoundName,
-                questionNumber: 1,
-                totalQuestions: activeTarget === "coding" ? 3 : activeTarget === "hr" ? 5 : 10,
-              },
-              { headers: { Authorization: `Bearer ${token}` } }
-            );
-            if (qGenData && qGenData.question) {
-              loadedQs = [qGenData.question];
-            }
-          } catch (genErr) {
-            console.warn("Dynamic Question #1 auto-generation notice:", genErr.message);
-          }
+            localStorage.setItem("active_real_interview_session_id", targetId);
+          } catch (e) {}
         }
+      } else {
+        setSessionId(targetId);
+        sessionIdRef.current = targetId;
+        try {
+          localStorage.setItem("active_real_interview_session_id", targetId);
+        } catch (e) {}
+      }
 
-        if (loadedQs && loadedQs.length > 0) {
-          setQuestions(loadedQs);
-        } else {
-          setQuestions(MOCK_QUESTIONS);
-        }
+      if (!targetId || targetId === "undefined" || targetId === "null") {
+        throw new Error("Could not initialize interview session ID");
+      }
 
-        if (data.answers && Array.isArray(data.answers)) {
-          setSavedAnswers(data.answers);
-        }
+      const { data } = await api.get(`/api/student/interviews/${targetId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
 
-        if (data.currentQuestionIndex) {
-          setCurrentIndex(Number(data.currentQuestionIndex) || 1);
-        }
+      const isDbCompleted = (data.status === "completed" || data.status === "COMPLETED");
+      if (isDbCompleted) {
+        setIsCompleted(true);
+        try {
+          localStorage.removeItem("active_real_interview_session_id");
+        } catch (e) {}
+      } else {
+        setIsCompleted(false);
+      }
 
-        const roundTitles = {
-          all: "Real AI Interview Room (All 5 Rounds)",
-          aptitude: "Aptitude Round (MCQs)",
-          resume_project: "Resume / Project Round (AI)",
-          technical: "Technical Stack Round (Alex)",
-          coding: "Coding IDE Round (Compiler)",
-          hr: "HR & Behavioral Round (Sarah)"
-        };
+      const activeTarget = data.targetRound || initialTargetRound || "all";
+      setTargetRound(activeTarget);
 
-        if (data.candidateProfile) {
-          setCandidateInfo({
-            name: data.candidateProfile.candidateName || profile.name || MOCK_CANDIDATE.name,
-            resumeName: data.resumeFileName || profile.resumeFileName || "Uploaded_Resume.pdf",
-            interviewType: roundTitles[activeTarget] || "Real AI Interview Room",
-            difficulty: "Adaptive",
-            totalTimeMinutes: durMin,
-          });
-        }
+      const durMin = data.durationMinutes || (activeTarget === "aptitude" ? 20 : activeTarget === "technical" ? 30 : activeTarget === "coding" ? 35 : activeTarget === "hr" ? 20 : 105);
+      setInterviewDurationMin(durMin);
 
-        // Session-based timer: derive remaining time from the backend session
-        // start so a page refresh does NOT reset the countdown.
-        if (data.startedAt) {
-          const startTs = new Date(data.startedAt).getTime();
-          sessionEndTimeRef.current = startTs + durMin * 60000;
-          const remaining = Math.max(0, Math.round((sessionEndTimeRef.current - Date.now()) / 1000));
-          setTimerSeconds(remaining);
-        } else {
-          setTimerSeconds(durMin * 60);
-        }
-      } catch (err) {
-        console.error("Session load error:", err);
-        const d = err.response?.data || {};
-        const safeMsg =
-          d.message || err.message || "Failed to initialize interview questions";
-        const errType = d.errorType || "AI_GENERATION_FAILED";
-        const provider = d.provider || "groq";
-        setSessionError(`${safeMsg}\n[Provider: ${provider}] [${errType}]`);
-        toast.error(safeMsg, { duration: 8000, id: "session-load-error" });
-      } finally {
+      let loadedQs = data.generatedQuestions || [];
+
+      if (loadedQs && loadedQs.length > 0) {
+        setQuestions(loadedQs);
+      }
+
+      if (data.answers && Array.isArray(data.answers)) {
+        setSavedAnswers(data.answers);
+      }
+
+      if (data.currentQuestionIndex) {
+        setCurrentIndex(Number(data.currentQuestionIndex) || 1);
+      }
+
+      const roundTitles = {
+        all: "Real AI Interview Room (All 5 Rounds)",
+        aptitude: "Aptitude Round (MCQs)",
+        resume_project: "Resume / Project Round (AI)",
+        technical: "Technical Stack Round (Alex)",
+        coding: "Coding IDE Round (Compiler)",
+        hr: "HR & Behavioral Round (Sarah)"
+      };
+
+      if (data.candidateProfile) {
+        setCandidateInfo({
+          name: data.candidateProfile.candidateName || profile.name || MOCK_CANDIDATE.name,
+          resumeName: data.resumeFileName || profile.resumeFileName || "Uploaded_Resume.pdf",
+          interviewType: roundTitles[activeTarget] || "Real AI Interview Room",
+          difficulty: "Adaptive",
+          totalTimeMinutes: durMin,
+        });
+      }
+
+      if (isDbCompleted && data.startedAt) {
+        const startTs = new Date(data.startedAt).getTime();
+        sessionEndTimeRef.current = startTs + durMin * 60000;
+        const remaining = Math.max(0, Math.round((sessionEndTimeRef.current - Date.now()) / 1000));
+        setTimerSeconds(remaining);
+      } else {
+        setTimerSeconds(durMin * 60);
+      }
+      return data;
+    } catch (err) {
+      console.error("Session load error:", err);
+      const d = err.response?.data || {};
+      const safeMsg =
+        d.message || err.message || "Failed to initialize interview questions";
+      const errType = d.errorType || "AI_GENERATION_FAILED";
+      const provider = d.provider || "groq";
+      setSessionError(`${safeMsg}\n[Provider: ${provider}] [${errType}]`);
+      toast.error(safeMsg, { duration: 8000, id: "session-load-error" });
+      return null;
+    }
+  }, [sessionId, paramSessionId, token, initialTargetRound, profile]);
+
+  useEffect(() => {
+    const initSession = async () => {
+      const data = await fetchSessionData();
+      const st = String(data?.status || "").toUpperCase();
+      const isDbCompleted = (st === "COMPLETED");
+      const isDbEvaluating = (st === "SUBMITTED" || st.startsWith("EVALUATING_") || st === "CALCULATING_RESULT");
+
+      if (isDbCompleted) {
         setIsLoadingInterview(false);
+        setIsEvaluating(false);
+        setIsCompleted(true);
+      } else if (isDbEvaluating) {
+        setIsLoadingInterview(false);
+        setIsEvaluating(true);
+        setIsCompleted(false);
+      } else if (data?.generatedQuestions && data.generatedQuestions.length >= 53) {
+        // Active session with questions already prepared (e.g. page refresh)
+        setIsLoadingInterview(false);
+        setIsEvaluating(false);
+        setIsCompleted(false);
+      } else {
+        // Preparation needed
+        setIsLoadingInterview(true);
+        setIsEvaluating(false);
+        setIsCompleted(false);
       }
     };
+    initSession();
+  }, [paramSessionId, fetchSessionData]);
 
-    loadSession();
-  }, [paramSessionId]);
 
   // ─── SINGLE SOURCE OF TRUTH: SESSION PROGRESS ───
   // Every progress readout (sidebar, overall, section headers, completion
   // stats) is derived from this one memoized object so no UI shows a
   // different number. Progress = actually-submitted (non-empty) answers only.
-  const SECTION_TOTALS = { APTITUDE: 25, RESUME_PROJECT: 10, TECHNICAL: 20, CODING: 3, HR: 5 };
+  const SECTION_TOTALS = { APTITUDE: 15, RESUME_PROJECT: 10, TECHNICAL: 20, CODING: 3, HR: 5 };
   const sessionProgress = useMemo(() => {
     const counts = {
-      APTITUDE: { completed: 0, total: 25 },
+      APTITUDE: { completed: 0, total: 15 },
       RESUME_PROJECT: { completed: 0, total: 10 },
       TECHNICAL: { completed: 0, total: 20 },
       CODING: { completed: 0, total: 3 },
       HR: { completed: 0, total: 5 },
       totalCompleted: 0,
-      totalQuestions: 63,
+      totalQuestions: 53,
     };
 
     const answeredIds = new Set(
@@ -623,16 +699,132 @@ function StartInterview() {
     return counts;
   }, [questions, savedAnswers]);
 
+  // ─── CONTEXTUAL AI FOLLOW-UP (backend-only, no keys exposed) ───
+  const triggerFollowUp = useCallback(async (section, baseQuestion, answerText) => {
+    try {
+      const previousQuestions = (questions || [])
+        .filter((q) => q.section === section)
+        .map((q) => q.question);
+      const currentSessionId = sessionIdRef.current || sessionId;
+      const { data } = await api.post(
+        `/api/interview/${currentSessionId}/follow-up`,
+        {
+          section,
+          currentQuestion: baseQuestion?.question || "",
+          answer: answerText,
+          previousQuestions,
+          topicsCovered: [],
+          interviewContext: "Live interview round",
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (data && data.shouldFollowUp && data.question && String(data.question).trim()) {
+        const followUpQ = {
+          id: `FU-${Date.now()}`,
+          questionId: `FU-${Date.now()}`,
+          questionNumber: (questions?.length || 0) + 1,
+          section,
+          topic: data.topic || section,
+          difficulty: "medium",
+          type: section.toLowerCase(),
+          questionType: section.toLowerCase(),
+          category: section.toLowerCase(),
+          question: data.question,
+          aiSpeechText: data.question,
+          source: "ai_followup",
+          _isFollowUp: true,
+        };
+        setQuestions((prev) => {
+          const idx = prev.findIndex(
+            (q) => (q.id || q.questionId) === (baseQuestion?.id || baseQuestion?.questionId)
+          );
+          const insertAt = idx === -1 ? prev.length : idx + 1;
+          const copy = [...prev];
+          copy.splice(insertAt, 0, followUpQ);
+          return copy;
+        });
+      }
+    } catch (e) {
+      // Follow-up is best-effort; never break the interview on failure.
+    }
+  }, [sessionId, questions, token]);
+
+  // ─── SAVE ANSWER TO BACKEND ───
+  const handleSaveAnswer = useCallback(async (statusType = "answered", customAns = null) => {
+    stopSpeechRecognition();
+    const section = currentQuestion.section || "APTITUDE";
+    const finalAnswerText = customAns !== null ? customAns : (section === "CODING" ? currentCode : typedResponse);
+
+    const qId = String(currentQuestion.id || currentQuestion.questionId || `Q-${currentIndex}`);
+    const actualStatus = (finalAnswerText && String(finalAnswerText).trim().length > 0) ? "answered" : statusType;
+
+    const answerRecord = {
+      questionId: qId,
+      questionText: currentQuestion.question,
+      category: currentQuestion.category || section.toLowerCase(),
+      section,
+      answer: finalAnswerText,
+      transcript: finalAnswerText,
+      inputMethod: inputMode === "speak" ? "VOICE" : "TEXT",
+      status: actualStatus
+    };
+
+    const currentSessionId = sessionIdRef.current || sessionId;
+    if (currentSessionId) {
+      try {
+        await api.post(`/api/student/interviews/${currentSessionId}/answer`, {
+          questionId: qId,
+          question: currentQuestion.question,
+          category: currentQuestion.category || section.toLowerCase(),
+          section,
+          answer: finalAnswerText,
+          transcript: finalAnswerText,
+          inputMethod: inputMode === "speak" ? "VOICE" : "TEXT",
+          mode: inputMode === "speak" ? "voice" : "text",
+          status: actualStatus,
+          currentQuestionIndex: currentIndex,
+        }, { headers: { Authorization: `Bearer ${token}` } });
+      } catch (err) {
+        console.error("Save answer error:", err);
+      }
+    }
+
+    setSavedAnswers((prev) => {
+      const filtered = prev.filter((ans) => String(ans.questionId) !== qId && String(ans.questionId) !== String(currentQuestion.id) && String(ans.questionId) !== String(currentQuestion.questionId));
+      return [...filtered, answerRecord];
+    });
+
+    if (finalAnswerText && inputMode === "speak") {
+      const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      setDialogueLogs((prev) => [
+        ...prev,
+        { sender: "YOU", text: finalAnswerText, time: timeNow }
+      ]);
+    }
+
+    // Trigger a contextual AI follow-up for spoken/typed answers on AI sections.
+    if (
+      finalAnswerText &&
+      finalAnswerText.trim().length > 15 &&
+      (section === "TECHNICAL" || section === "HR" || section === "RESUME_PROJECT") &&
+      !currentQuestion._isFollowUp
+    ) {
+      triggerFollowUp(section, currentQuestion, finalAnswerText);
+    }
+  }, [stopSpeechRecognition, currentQuestion, currentIndex, currentCode, typedResponse, inputMode, sessionId, token, triggerFollowUp]);
+
   // ─── SECTION NAVIGATION & ON-DEMAND LAZY LOAD HANDLER ───
   const handleSelectSection = async (targetSection) => {
     let currentQuestions = [...questions];
     let sectionQuestions = currentQuestions.filter((q) => q.section === targetSection);
 
-    if (!sectionQuestions.length && activeInterviewId) {
+    const currentSessionId = sessionIdRef.current || sessionId;
+    if (!sectionQuestions.length && currentSessionId) {
       const toastId = toast.loading(`Preparing ${targetSection} round questions…`);
       try {
         const normSec = targetSection.toLowerCase();
-        const { data } = await api.get(`/api/interview/${activeInterviewId}/round/${normSec}`, {
+        const { data } = await api.get(`/api/interview/${currentSessionId}/round/${normSec}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const newRoundQs = data.questions || [];
@@ -702,13 +894,39 @@ function StartInterview() {
     return () => clearInterval(interval);
   }, [isPaused, isCompleted, isGeneratingQuestion, timerSeconds, isFullscreenExited, isLoadingInterview, isInFullscreen]);
 
+  // ─── FINAL SUBMIT INTERVIEW HANDLER ───
+  const handleFinalSubmitInterview = useCallback(async () => {
+    stopSpeechRecognition();
+    window.speechSynthesis?.cancel();
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(() => null);
+    }
+    await handleSaveAnswer("answered");
+    const currentSessionId = sessionIdRef.current || sessionId;
+    setIsEvaluating(true);
+
+    if (currentSessionId) {
+      try {
+        await api.post("/api/real-interview/submit", { sessionId: currentSessionId }, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        try {
+          localStorage.removeItem("active_real_interview_session_id");
+        } catch (e) {}
+      } catch (err) {
+        console.warn("[StartInterview] Submit pipeline notice:", err.message);
+      }
+    }
+  }, [sessionId, token, handleSaveAnswer, stopSpeechRecognition]);
+
   // ─── AUTO-SUBMIT WHEN TIME EXPIRES ───
   useEffect(() => {
-    if (timerSeconds === 0 && !isCompleted && !isLoadingInterview) {
+    if (timerSeconds === 0 && !isCompleted && !isEvaluating && !isLoadingInterview) {
       logIntegrityEvent("TIME_UP", "Interview duration elapsed — auto-submitting");
-      setIsCompleted(true);
+      handleFinalSubmitInterview();
     }
-  }, [timerSeconds, isCompleted, isLoadingInterview, logIntegrityEvent]);
+  }, [timerSeconds, isCompleted, isEvaluating, isLoadingInterview, logIntegrityEvent, handleFinalSubmitInterview]);
+
 
   // ─── AI INTERVIEWER SPEECH PLAYBACK LAYER ───
   const speakCurrentQuestion = useCallback((text, section, topic) => {
@@ -1032,119 +1250,6 @@ function StartInterview() {
     startSpeechRecognitionRef.current = startSpeechRecognition;
   }, [startSpeechRecognition]);
 
-  // ─── CONTEXTUAL AI FOLLOW-UP (backend-only, no keys exposed) ───
-  const triggerFollowUp = useCallback(async (section, baseQuestion, answerText) => {
-    try {
-      const previousQuestions = (questions || [])
-        .filter((q) => q.section === section)
-        .map((q) => q.question);
-      const { data } = await api.post(
-        `/api/interview/${activeInterviewId}/follow-up`,
-        {
-          section,
-          currentQuestion: baseQuestion?.question || "",
-          answer: answerText,
-          previousQuestions,
-          topicsCovered: [],
-          interviewContext: "Live interview round",
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      if (data && data.shouldFollowUp && data.question && String(data.question).trim()) {
-        const followUpQ = {
-          id: `FU-${Date.now()}`,
-          questionId: `FU-${Date.now()}`,
-          questionNumber: (questions?.length || 0) + 1,
-          section,
-          topic: data.topic || section,
-          difficulty: "medium",
-          type: section.toLowerCase(),
-          questionType: section.toLowerCase(),
-          category: section.toLowerCase(),
-          question: data.question,
-          aiSpeechText: data.question,
-          source: "ai_followup",
-          _isFollowUp: true,
-        };
-        setQuestions((prev) => {
-          const idx = prev.findIndex(
-            (q) => (q.id || q.questionId) === (baseQuestion?.id || baseQuestion?.questionId)
-          );
-          const insertAt = idx === -1 ? prev.length : idx + 1;
-          const copy = [...prev];
-          copy.splice(insertAt, 0, followUpQ);
-          return copy;
-        });
-      }
-    } catch (e) {
-      // Follow-up is best-effort; never break the interview on failure.
-    }
-  }, [activeInterviewId, questions, token]);
-
-  // ─── SAVE ANSWER TO BACKEND ───
-  const handleSaveAnswer = async (statusType = "answered", customAns = null) => {
-    stopSpeechRecognition();
-    const section = currentQuestion.section || "APTITUDE";
-    const finalAnswerText = customAns !== null ? customAns : (section === "CODING" ? currentCode : typedResponse);
-
-    const qId = String(currentQuestion.id || currentQuestion.questionId || `Q-${currentIndex}`);
-    const actualStatus = (finalAnswerText && String(finalAnswerText).trim().length > 0) ? "answered" : statusType;
-
-    const answerRecord = {
-      questionId: qId,
-      questionText: currentQuestion.question,
-      category: currentQuestion.category || section.toLowerCase(),
-      section,
-      answer: finalAnswerText,
-      transcript: finalAnswerText,
-      inputMethod: inputMode === "speak" ? "VOICE" : "TEXT",
-      status: actualStatus
-    };
-
-    if (activeInterviewId) {
-      try {
-        await api.post(`/api/interview/${activeInterviewId}/answer`, {
-          questionId: qId,
-          question: currentQuestion.question,
-          category: currentQuestion.category || section.toLowerCase(),
-          section,
-          answer: finalAnswerText,
-          transcript: finalAnswerText,
-          inputMethod: inputMode === "speak" ? "VOICE" : "TEXT",
-          mode: inputMode === "speak" ? "voice" : "text",
-          status: actualStatus,
-          currentQuestionIndex: currentIndex,
-        }, { headers: { Authorization: `Bearer ${token}` } });
-      } catch (err) {
-        console.error("Save answer error:", err);
-      }
-    }
-
-    setSavedAnswers((prev) => {
-      const filtered = prev.filter((ans) => String(ans.questionId) !== qId && String(ans.questionId) !== String(currentQuestion.id) && String(ans.questionId) !== String(currentQuestion.questionId));
-      return [...filtered, answerRecord];
-    });
-
-    if (finalAnswerText && inputMode === "speak") {
-      const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      setDialogueLogs((prev) => [
-        ...prev,
-        { sender: "YOU", text: finalAnswerText, time: timeNow }
-      ]);
-    }
-
-    // Trigger a contextual AI follow-up for spoken/typed answers on AI sections.
-    if (
-      finalAnswerText &&
-      finalAnswerText.trim().length > 15 &&
-      (section === "TECHNICAL" || section === "HR" || section === "RESUME_PROJECT") &&
-      !currentQuestion._isFollowUp
-    ) {
-      triggerFollowUp(section, currentQuestion, finalAnswerText);
-    }
-  };
-
   // ─── CODING COMPILER RUN (Judge0 Hosted Runner) ───
   const handleRunCoding = async () => {
     if (!currentCode || !currentCode.trim()) {
@@ -1231,7 +1336,7 @@ function StartInterview() {
         {
           language: codingLanguage,
           code: currentCode,
-          interviewId: activeInterviewId,
+          interviewId: sessionId,
           roundId: "coding",
           questionId: currentQuestion.id || currentQuestion.questionId || `Q-${currentIndex}`,
           directTestCases: qTestCases,
@@ -1273,40 +1378,8 @@ function StartInterview() {
         setCurrentIndex((prev) => prev + 1);
         setTypedResponse("");
       }, 700);
-    } else if (
-      activeInterviewId &&
-      questions.length < (targetRound === "coding" ? 3 : targetRound === "hr" ? 5 : targetRound === "aptitude" ? 25 : 58)
-    ) {
-      // Dynamic real-time next question generation
-      setIsGeneratingQuestion(true);
-      setAiStatus("THINKING");
-      try {
-        const nextRound = (currentSection || "technical").toLowerCase();
-        const { data: newQData } = await api.post(
-          `/api/interview/${activeInterviewId}/generate-question`,
-          {
-            round: nextRound,
-            questionNumber: currentIndex + 1,
-            totalQuestions: targetRound === "coding" ? 3 : targetRound === "hr" ? 5 : 10,
-          },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-
-        if (newQData && newQData.question) {
-          setQuestions((prev) => [...prev, newQData.question]);
-          setCurrentIndex((prev) => prev + 1);
-          setTypedResponse("");
-        } else {
-          setIsCompleted(true);
-        }
-      } catch (err) {
-        console.warn("Dynamic next question generation notice:", err);
-        setIsCompleted(true);
-      } finally {
-        setIsGeneratingQuestion(false);
-      }
     } else {
-      setIsCompleted(true);
+      setShowConfirmExit(true);
     }
   };
 
@@ -1320,6 +1393,7 @@ function StartInterview() {
     stopSpeechRecognition();
     window.speechSynthesis?.cancel();
     await handleSaveAnswer("skipped");
+
     if (currentIndex < questions.length) {
       setIsGeneratingQuestion(true);
       setAiStatus("THINKING");
@@ -1330,7 +1404,7 @@ function StartInterview() {
         setTypedResponse("");
       }, 700);
     } else {
-      setIsCompleted(true);
+      setShowConfirmExit(true);
     }
   };
 
@@ -1604,13 +1678,20 @@ function StartInterview() {
             <p className="text-xs font-bold text-amber-400 uppercase tracking-wider">Select Correct Answer:</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {(currentQuestion.options || []).map((opt, idx) => {
-                const isSelected = typedResponse === opt;
+                const optText = typeof opt === "object" && opt !== null ? (opt.text || opt.optionText || opt.value || "") : String(opt || "");
+                const optLabel = typeof opt === "object" && opt !== null && opt.label ? opt.label : String.fromCharCode(65 + idx);
+                const optFormatted = `Option ${optLabel}: ${optText}`;
+                const isSelected =
+                  typedResponse === optText ||
+                  typedResponse === optLabel ||
+                  typedResponse === optFormatted ||
+                  typedResponse === opt;
                 return (
                   <button
                     key={idx}
                     onClick={() => {
-                      setTypedResponse(opt);
-                      handleSaveAnswer("answered", opt);
+                      setTypedResponse(optFormatted);
+                      handleSaveAnswer("answered", optFormatted);
                     }}
                     className={`p-3.5 rounded-xl border text-left text-xs font-semibold cursor-pointer transition-all flex items-start gap-2.5 ${
                       isSelected
@@ -1619,9 +1700,9 @@ function StartInterview() {
                     }`}
                   >
                     <span className="w-5 h-5 rounded-full border flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5 border-white/20">
-                      {String.fromCharCode(65 + idx)}
+                      {optLabel}
                     </span>
-                    <span>{opt}</span>
+                    <span>{optText}</span>
                   </button>
                 );
               })}
@@ -1889,28 +1970,36 @@ function StartInterview() {
     </div>
   );
 
-  if (isLoadingInterview) {
+  if (isEvaluating) {
+    const currentSessionId = sessionIdRef.current || sessionId;
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-950 text-white">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="w-10 h-10 animate-spin text-blue-500" />
-          <h2 className="text-xl font-bold">Initializing AI Interview Session...</h2>
-          <p className="text-xs text-slate-400">Loading candidate resume & blueprint questions</p>
-        </div>
-      </div>
+      <EvaluationLoadingScreen
+        sessionId={currentSessionId}
+        onCompleted={(resultDoc) => {
+          setFinalResultDoc(resultDoc);
+          setIsEvaluating(false);
+          setIsCompleted(true);
+        }}
+      />
     );
   }
 
   if (isCompleted) {
+    console.log(`[REAL-INTERVIEW] sessionId=${sessionId} isCompleted=true isSubmitted=true currentQuestionIndex=${currentIndex}`);
+    console.log(`[REAL-INTERVIEW] showing component=COMPLETION`);
     const stats = getCompletedStats();
     return (
       <CompletionScreen
-        interviewId={activeInterviewId}
+        interviewId={sessionIdRef.current || sessionId}
         candidateName={candidateInfo.name}
         answeredCount={stats.answeredCount}
         skippedCount={stats.skippedCount}
         timeTakenText={stats.timeTaken}
+        questions={questions}
+        savedAnswers={savedAnswers}
+        initialResultData={finalResultDoc}
         onReturnDashboard={() => {
+
           stopWebcam();
           stopSpeechRecognition();
           window.speechSynthesis?.cancel();
@@ -1934,13 +2023,59 @@ function StartInterview() {
           setSavedAnswers([]);
           setDialogueLogs([]);
           setTypedResponse("");
-          setCurrentCode("");
           hasIntroducedRef.current = false;
           setIsCompleted(false);
         }}
       />
     );
   }
+
+  if (isLoadingInterview) {
+    if (!sessionId) {
+      console.log(`[REAL-INTERVIEW] showing component=INITIALIZING_SESSION`);
+      return (
+        <div className="min-h-screen bg-[#0B0F19] text-white flex flex-col items-center justify-center p-6 select-none">
+          <div className="text-center space-y-4 max-w-md">
+            <div className="w-12 h-12 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center mx-auto">
+              <Sparkles className="w-6 h-6 text-blue-400 animate-pulse" />
+            </div>
+            <h2 className="text-xl font-bold bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
+              Initializing Interview Room...
+            </h2>
+            <p className="text-xs text-slate-400">
+              Setting up your secure AI interview environment and session.
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    console.log(`[REAL-INTERVIEW] showing component=PREPARATION`);
+    return (
+      <RealInterviewPreparationScreen
+        sessionId={sessionId}
+        candidateProfile={memoizedCandidateProfile}
+        token={token}
+        onPreparationSuccess={async () => {
+          console.log(`[REAL-INTERVIEW] preparation success sessionId=${sessionId}`);
+          await fetchSessionData();
+          setIsCompleted(false);
+          setIsLoadingInterview(false);
+        }}
+        onReturnToPlatform={() => {
+          if (window.opener && !window.opener.closed) {
+            try { window.opener.focus(); } catch (e) {}
+          }
+          try { window.close(); } catch (e) {}
+          navigate("/dashboard");
+        }}
+        onPracticeMock={() => navigate("/interview-practice")}
+      />
+    );
+  }
+
+  console.log(`[REAL-INTERVIEW] sessionId=${sessionId} isCompleted=false isSubmitted=false currentQuestionIndex=${currentIndex}`);
+  console.log(`[REAL-INTERVIEW] showing component=ACTIVE_INTERVIEW`);
 
   return (
     <div className="relative bg-slate-950 min-h-screen text-white select-none">
@@ -2028,24 +2163,10 @@ function StartInterview() {
         onClose={() => setShowConfirmExit(false)}
         onConfirm={async () => {
           setShowConfirmExit(false);
-          stopSpeechRecognition();
-          window.speechSynthesis?.cancel();
-          if (document.fullscreenElement) {
-            document.exitFullscreen().catch(() => null);
-          }
-          handleSaveAnswer("answered");
-          if (activeInterviewId) {
-            try {
-              await api.post(`/api/student/interviews/${activeInterviewId}/complete`, {}, {
-                headers: { Authorization: `Bearer ${token}` }
-              });
-            } catch (err) {
-              console.warn("Interview completion API notice:", err);
-            }
-          }
-          setIsCompleted(true);
+          await handleFinalSubmitInterview();
         }}
       />
+
 
       <InterviewSettingsModal
         isOpen={showSettingsModal}

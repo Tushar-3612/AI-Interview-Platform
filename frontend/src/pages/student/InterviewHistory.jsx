@@ -40,29 +40,28 @@ function InterviewHistory() {
     const fetchHistory = async () => {
       try {
         const headers = { Authorization: `Bearer ${token}` };
-        const { data } = await api.get("/api/interview/history", { headers });
-        setHistoryList(data.history || []);
-      } catch (err) {
-        console.warn("Fetch history notice:", err.message);
-        // Fallback to legacy endpoint if history endpoint is buffering
-        try {
-          const headers = { Authorization: `Bearer ${token}` };
-          const { data: legacyInterviews } = await api.get("/api/student/interviews", { headers });
-          const { data: legacyResults } = await api.get("/api/student/results", { headers });
-          
-          const resultMap = {};
-          (legacyResults || []).forEach((r) => { resultMap[r.interviewId] = r; });
+        const [interviewsRes, resultsRes] = await Promise.all([
+          api.get("/api/student/interviews", { headers }).catch(() => ({ data: [] })),
+          api.get("/api/student/results", { headers }).catch(() => ({ data: [] })),
+        ]);
 
-          const fallbackList = (legacyInterviews || []).map((item, idx) => ({
-            id: item._id,
-            interviewId: item._id,
-            attemptNumber: legacyInterviews.length - idx,
-            startedAt: item.createdAt,
-            completedAt: item.completedAt,
-            status: item.status,
-            isEndedEarly: false,
-            overallScore: resultMap[item._id]?.overallScore || 0,
-            scores: {
+        const legacyInterviews = interviewsRes.data || [];
+        const legacyResults = resultsRes.data || [];
+
+        const resultMap = {};
+        (legacyResults || []).forEach((r) => { resultMap[r.interviewId] = r; });
+
+        const historyData = (legacyInterviews || []).map((item, idx) => ({
+          id: item._id,
+          interviewId: item._id,
+          attemptNumber: legacyInterviews.length - idx,
+          startedAt: item.startedAt || item.createdAt,
+          completedAt: item.completedAt,
+          status: item.status,
+          isEndedEarly: false,
+          overallScore: item.overallScore != null ? item.overallScore : (resultMap[item._id]?.overallScore || 0),
+          targetRound: item.targetRound || "all",
+          scores: {
               aptitude: resultMap[item._id]?.aptitudeScore || 0,
               technical: resultMap[item._id]?.technicalScore || 0,
               coding: resultMap[item._id]?.codingScore || 0,
@@ -70,12 +69,11 @@ function InterviewHistory() {
             },
             emailStatus: resultMap[item._id]?.email?.status || "SIMULATED",
             result: resultMap[item._id] || null,
-          }));
+        }));
 
-          setHistoryList(fallbackList);
-        } catch (fallbackErr) {
-          console.error("Fallback history error:", fallbackErr);
-        }
+        setHistoryList(historyData);
+      } catch (err) {
+        console.error("History fetch error:", err);
       } finally {
         setLoading(false);
       }

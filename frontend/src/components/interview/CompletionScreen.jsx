@@ -33,153 +33,138 @@ function CompletionScreen({
   timeTakenText = "00:00",
   questions = [],
   savedAnswers = [],
+  initialResultData = null,
   onReturnDashboard,
 }) {
   const token = getAuthToken();
-  const [result, setResult] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [resultData, setResultData] = useState(initialResultData);
+  const [loading, setLoading] = useState(!initialResultData);
   const [selectedSectionFilter, setSelectedSectionFilter] = useState("ALL");
   const [selectedStatusFilter, setSelectedStatusFilter] = useState("ALL");
   const [expandedQuestions, setExpandedQuestions] = useState({});
 
   useEffect(() => {
     const fetchResult = async () => {
-      if (!interviewId) {
+      if (!interviewId || initialResultData) {
         setLoading(false);
         return;
       }
       try {
         const headers = { Authorization: `Bearer ${token}` };
-        const { data } = await api.get(`/api/interview/${interviewId}/result`, { headers });
-        setResult(data);
+        const { data } = await api.get(`/api/real-interview/result/${interviewId}`, { headers });
+        if (data.success && data.result) {
+          setResultData(data.result);
+        }
       } catch (err) {
-        console.warn("CompletionScreen fetch result notice:", err.message);
+        console.warn("[CompletionScreen] fetch result warning:", err.message);
       } finally {
         setLoading(false);
       }
     };
     fetchResult();
-  }, [interviewId, token]);
+  }, [interviewId, token, initialResultData]);
 
-  const targetRound = String(result?.targetRound || "all").toLowerCase();
-  const overallScore = typeof result?.overallScore === "number"
-    ? result.overallScore
-    : (answeredCount + skippedCount > 0 ? Math.round((answeredCount / (answeredCount + skippedCount)) * 100) : 0);
-  
-  const recommendation = result?.recommendation || (overallScore >= 70 ? "Highly Recommended" : overallScore >= 50 ? "Recommended with Practice" : "Needs Practice");
+  // Read authoritative backend scores
+  const totalObtained = resultData?.overallScore ?? 0;
+  const maxMarksTotal = resultData?.maxScore ?? 450;
+  const percentageScore = typeof resultData?.percentage === "number" ? resultData.percentage : Number(((totalObtained / maxMarksTotal) * 100).toFixed(2));
+  const recommendation = resultData?.recommendation || (percentageScore >= 75 ? "Recommended for Placement" : percentageScore >= 55 ? "Borderline — Mentorship Advised" : "Needs Improvement");
 
-  const allCategories = [
+  const roundScores = resultData?.roundScores || {};
+  const aptitudeScore = roundScores.aptitude?.score ?? 0;
+  const aptitudeMax = roundScores.aptitude?.maxScore ?? 50;
+  const technicalScore = roundScores.technical?.score ?? 0;
+  const technicalMax = roundScores.technical?.maxScore ?? 100;
+  const projectScore = roundScores.project?.score ?? 0;
+  const projectMax = roundScores.project?.maxScore ?? 100;
+  const hrScore = roundScores.hr?.score ?? 0;
+  const hrMax = roundScores.hr?.maxScore ?? 100;
+  const codingScore = roundScores.coding?.score ?? 0;
+  const codingMax = roundScores.coding?.maxScore ?? 100;
+
+  const displayCategories = [
     {
       key: "aptitude",
       label: "Aptitude Round",
-      score: result?.sections?.aptitude?.percentage ?? result?.aptitudeScore ?? 0,
-      total: result?.sections?.aptitude?.total ? `${result.sections.aptitude.total} Qs` : (result?.sections?.aptitude?.completed ? `${result.sections.aptitude.completed} Qs` : "0 Qs"),
-      count: result?.sections?.aptitude?.total || result?.sections?.aptitude?.completed || 0,
+      score: aptitudeScore,
+      maxScore: aptitudeMax,
+      percentage: Math.round((aptitudeScore / aptitudeMax) * 100),
       icon: Target,
       color: "#f59e0b",
     },
     {
       key: "technical",
       label: "Technical Stack Round",
-      score: result?.sections?.technical?.percentage ?? result?.technicalScore ?? 0,
-      total: result?.sections?.technical?.total ? `${result.sections.technical.total} Qs` : (result?.sections?.technical?.completed ? `${result.sections.technical.completed} Qs` : "0 Qs"),
-      count: result?.sections?.technical?.total || result?.sections?.technical?.completed || 0,
+      score: technicalScore,
+      maxScore: technicalMax,
+      percentage: Math.round((technicalScore / technicalMax) * 100),
       icon: BrainCircuit,
       color: "#3b82f6",
     },
     {
-      key: "coding",
-      label: "Coding IDE Round",
-      score: result?.sections?.coding?.percentage ?? result?.codingScore ?? 0,
-      total: result?.sections?.coding?.total ? `${result.sections.coding.total} Qs` : (result?.sections?.coding?.completed ? `${result.sections.coding.completed} Qs` : "0 Qs"),
-      count: result?.sections?.coding?.total || result?.sections?.coding?.completed || 0,
-      icon: Code2,
-      color: "#10b981",
+      key: "project",
+      label: "Project / Resume Round",
+      score: projectScore,
+      maxScore: projectMax,
+      percentage: Math.round((projectScore / projectMax) * 100),
+      icon: Sparkles,
+      color: "#ec4899",
     },
     {
       key: "hr",
       label: "HR Behavioral Round",
-      score: result?.sections?.hr?.percentage ?? result?.hrScore ?? 0,
-      total: result?.sections?.hr?.total ? `${result.sections.hr.total} Qs` : (result?.sections?.hr?.completed ? `${result.sections.hr.completed} Qs` : "0 Qs"),
-      count: result?.sections?.hr?.total || result?.sections?.hr?.completed || 0,
+      score: hrScore,
+      maxScore: hrMax,
+      percentage: Math.round((hrScore / hrMax) * 100),
       icon: UserCheck,
       color: "#a855f7",
     },
+    {
+      key: "coding",
+      label: "Coding IDE Round",
+      score: codingScore,
+      maxScore: codingMax,
+      percentage: Math.round((codingScore / codingMax) * 100),
+      icon: Code2,
+      color: "#10b981",
+    },
   ];
 
-  const categories = targetRound === "all"
-    ? allCategories.filter(c => c.count > 0 || c.score > 0)
-    : allCategories.filter(c => c.key === targetRound);
-
-  const displayCategories = categories.length > 0 ? categories : allCategories;
-
-  const strengths = result?.strengths || [
-    "Conceptual understanding & analytical approach",
-    "Clear communication and structured responses",
+  const strengths = resultData?.strengths || [
+    "Completed all 5 interview rounds under adaptive camera/mic monitoring",
+    "Preserved authentic response submission",
   ];
 
-  const weaknesses = result?.weaknesses || [
-    "Improve speed and accuracy in Aptitude round",
-    "Structure behavioral answers using the STAR method",
+  const weaknesses = resultData?.weaknesses || [
+    "Focus on unattempted questions and core domain concepts",
   ];
 
-  // ─── COMPILE DETAILED ANSWER KEY ───
+  // ─── COMPILE QUESTION-WISE LIST FROM STORED RESULT ───
   const answerKeyList = useMemo(() => {
-    // 1. If backend provided answerKey, use it
-    if (Array.isArray(result?.answerKey) && result.answerKey.length > 0) {
-      return result.answerKey;
+    if (Array.isArray(resultData?.questionResults) && resultData.questionResults.length > 0) {
+      return resultData.questionResults.map((item, idx) => {
+        const isNotAttempted = item.status === "NOT_ATTEMPTED";
+        return {
+          questionId: item.questionId || `q_${idx}`,
+          questionText: item.question,
+          section: item.roundType || "TECHNICAL",
+          candidateAnswer: item.candidateAnswer || (item.roundType === "CODING" ? "Not Submitted" : "Not Answered"),
+          correctAnswer: item.correctAnswer || item.expectedAnswer || "",
+          score: item.score || 0,
+          maxScore: item.maxScore || 5,
+          status: item.status,
+          evaluationMode: item.evaluationMode || "DETERMINISTIC",
+          feedback: item.feedback || (isNotAttempted ? "Question was not attempted." : "Evaluated"),
+          missingPoints: item.missingPoints || [],
+          improvedAnswer: item.improvedAnswer || "",
+          submission: item.submission || null,
+        };
+      });
     }
-    if (Array.isArray(result?.questions) && result.questions.length > 0) {
-      return result.questions;
-    }
 
-    // 2. Fallback to combining props `questions` and `savedAnswers`
-    const answerMap = new Map();
-    (savedAnswers || []).forEach((ans) => {
-      const qKey = String(ans.questionId || ans.id || "");
-      answerMap.set(qKey, ans);
-    });
-
-    return (questions || []).map((q, idx) => {
-      const qKey = String(q.id || q.questionId || `q_${idx}`);
-      const ans = answerMap.get(qKey) || (savedAnswers || []).find(a => a.questionText === q.question || a.question === q.question) || null;
-      
-      const candidateAnswer = ans ? (ans.answer || ans.transcript || "") : "";
-      const isSkipped = !candidateAnswer || candidateAnswer.trim() === "" || ans?.status === "skipped";
-
-      let correctAnswer = q.correctAnswer || q.expectedAnswer || q.sampleOutput || q.solution || "";
-      if (!correctAnswer && Array.isArray(q.options) && typeof q.correctOptionIndex === "number") {
-        correctAnswer = q.options[q.correctOptionIndex] || "";
-      }
-      if (!correctAnswer && q.type === "coding") {
-        correctAnswer = q.solution || "Passes all required automated test cases";
-      }
-
-      const score = ans ? (ans.score != null ? ans.score : (ans.evaluation?.score ?? (candidateAnswer ? 75 : 0))) : 0;
-      
-      let status = "skipped";
-      if (!isSkipped) {
-        if (score >= 70) status = "correct";
-        else if (score >= 40) status = "partially_correct";
-        else status = "incorrect";
-      }
-
-      return {
-        questionId: qKey,
-        questionText: q.question || q.title || `Question ${idx + 1}`,
-        section: q.section || q.category || "TECHNICAL",
-        type: q.type || (q.options?.length ? "mcq" : "text"),
-        options: q.options || [],
-        candidateAnswer: isSkipped ? "No answer provided / Skipped" : candidateAnswer,
-        correctAnswer: correctAnswer || "Valid technical explanation matching question criteria",
-        score: isSkipped ? 0 : score,
-        maxScore: 100,
-        status,
-        feedback: ans?.feedback || ans?.evaluation?.feedback || (isSkipped ? "Question was skipped during interview." : "Answer evaluated."),
-        explanation: q.explanation || q.solutionExplanation || "",
-      };
-    });
-  }, [result, questions, savedAnswers]);
+    // Fallback if resultData not yet populated
+    return [];
+  }, [resultData]);
 
   // Filter questions
   const filteredAnswerKey = useMemo(() => {
@@ -190,9 +175,10 @@ function CompletionScreen({
 
       const matchStatus =
         selectedStatusFilter === "ALL" ||
-        (selectedStatusFilter === "CORRECT" && item.status === "correct") ||
-        (selectedStatusFilter === "PARTIAL" && item.status === "partially_correct") ||
-        (selectedStatusFilter === "INCORRECT" && (item.status === "incorrect" || item.status === "skipped"));
+        (selectedStatusFilter === "CORRECT" && item.status === "CORRECT") ||
+        (selectedStatusFilter === "PARTIAL" && item.status === "PARTIALLY_CORRECT") ||
+        (selectedStatusFilter === "INCORRECT" && item.status === "INCORRECT") ||
+        (selectedStatusFilter === "NOT_ATTEMPTED" && item.status === "NOT_ATTEMPTED");
 
       return matchSection && matchStatus;
     });
@@ -222,7 +208,7 @@ function CompletionScreen({
         transition={{ duration: 0.35 }}
         className="max-w-4xl w-full bg-slate-900/95 rounded-3xl border border-white/10 p-6 sm:p-8 shadow-2xl space-y-6 my-8"
       >
-        {/* TOP BRANDING & STATUS HEADER */}
+        {/* TOP BRANDING & HEADER */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-white/10 pb-5">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 to-cyan-400 flex items-center justify-center text-white shadow-lg">
@@ -230,10 +216,10 @@ function CompletionScreen({
             </div>
             <div>
               <h2 className="text-lg font-black tracking-wider uppercase text-white">
-                AI Interview Evaluation Scorecard
+                REAL INTERVIEW SCORECARD
               </h2>
               <p className="text-xs text-white/50">
-                Single Source of Truth Evaluation • Candidate: {candidateName}
+                Authoritative Backend Result • Candidate: {candidateName}
               </p>
             </div>
           </div>
@@ -241,12 +227,7 @@ function CompletionScreen({
           <div className="flex items-center gap-2 flex-wrap">
             <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5">
               <CheckCircle2 className="w-3.5 h-3.5" />
-              {result?.isEndedEarly ? "ENDED EARLY" : "COMPLETED"}
-            </span>
-
-            <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-blue-500/15 text-blue-400 border border-blue-500/30 flex items-center gap-1.5">
-              <Mail className="w-3.5 h-3.5" />
-              EMAIL: {result?.email?.status || "SENT"}
+              COMPLETED
             </span>
           </div>
         </div>
@@ -254,27 +235,35 @@ function CompletionScreen({
         {/* HERO SCORE & OVERVIEW CARD */}
         <div className="p-6 rounded-2xl bg-gradient-to-b from-slate-950 to-slate-900 border border-white/10 text-center relative overflow-hidden space-y-2">
           <p className="text-[10px] font-black uppercase tracking-widest text-white/40">
-            Overall Placement Score
+            Overall Interview Score
           </p>
-          <div
-            className="text-5xl sm:text-6xl font-black font-mono tracking-wider my-1"
-            style={{ color: overallScore >= 70 ? "#34d399" : overallScore >= 50 ? "#38bdf8" : "#f59e0b" }}
-          >
-            {overallScore}%
+          <div className="flex items-baseline justify-center gap-2 my-1">
+            <span
+              className="text-5xl sm:text-6xl font-black font-mono tracking-wider"
+              style={{ color: percentageScore >= 75 ? "#34d399" : percentageScore >= 55 ? "#38bdf8" : "#f59e0b" }}
+            >
+              {totalObtained}
+            </span>
+            <span className="text-2xl font-bold text-white/40 font-mono">/ {maxMarksTotal}</span>
           </div>
+
+          <div className="text-lg font-extrabold text-emerald-400 font-mono">
+            {percentageScore}%
+          </div>
+
           <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider bg-white/5 border border-white/10 text-white/80">
             <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
             <span>{recommendation}</span>
           </div>
         </div>
 
-        {/* 4 ROUND SCORE BREAKDOWN GRID */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+        {/* 5 ROUND SCORE BREAKDOWN GRID */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
           {displayCategories.map((cat) => {
             const Icon = cat.icon;
             return (
               <div
-                key={cat.label}
+                key={cat.key}
                 className="p-4 rounded-xl bg-white/[0.03] border border-white/5 space-y-2.5"
               >
                 <div className="flex items-center justify-between">
@@ -282,15 +271,20 @@ function CompletionScreen({
                     <Icon className="w-4 h-4 text-white/70" />
                     <span className="text-xs font-bold text-white">{cat.label}</span>
                   </div>
-                  <span className="font-mono text-sm font-black text-amber-400">
-                    {cat.score}%
-                  </span>
+                  <div className="text-right">
+                    <span className="font-mono text-sm font-black text-amber-400 block">
+                      {cat.score} / {cat.maxScore}
+                    </span>
+                    <span className="text-[10px] font-mono text-slate-400">
+                      ({cat.percentage}%)
+                    </span>
+                  </div>
                 </div>
 
                 <div className="w-full h-1.5 rounded-full bg-white/10 overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all duration-700"
-                    style={{ width: `${Math.min(Math.max(cat.score, 0), 100)}%`, backgroundColor: cat.color }}
+                    style={{ width: `${Math.min(Math.max(cat.percentage, 0), 100)}%`, backgroundColor: cat.color }}
                   />
                 </div>
               </div>
@@ -325,32 +319,16 @@ function CompletionScreen({
           </div>
         </div>
 
-        {/* METRICS & QUICK SUMMARY */}
-        <div className="grid grid-cols-3 gap-3 p-3.5 rounded-xl bg-white/5 border border-white/10 text-center text-xs font-bold">
-          <div>
-            <span className="text-[10px] text-white/40 uppercase block">Answered</span>
-            <span className="text-emerald-400 font-mono font-black text-sm">{answeredCount}</span>
-          </div>
-          <div>
-            <span className="text-[10px] text-white/40 uppercase block">Skipped</span>
-            <span className="text-amber-400 font-mono font-black text-sm">{skippedCount}</span>
-          </div>
-          <div>
-            <span className="text-[10px] text-white/40 uppercase block">Duration</span>
-            <span className="text-blue-400 font-mono font-black text-sm">{timeTakenText}</span>
-          </div>
-        </div>
-
-        {/* ─── 📋 DETAILED ANSWER KEY & QUESTION ANALYSIS SECTION ─── */}
+        {/* ─── 📋 DETAILED QUESTION-WISE REVIEW SECTION ─── */}
         <div className="rounded-2xl border border-white/10 bg-slate-950/90 p-5 sm:p-6 space-y-5">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-white/10 pb-4">
             <div>
               <h3 className="text-base font-extrabold text-white flex items-center gap-2">
                 <FileText className="w-4 h-4 text-blue-400" />
-                Detailed Answer Key & Evaluation
+                Question-Wise Review ({answerKeyList.length} Questions)
               </h3>
               <p className="text-xs text-white/50">
-                Review your responses, correct answers, awarded marks, and AI explanations
+                Preserved candidate answers, awarded marks out of round maximums, and expected solutions
               </p>
             </div>
 
@@ -376,7 +354,7 @@ function CompletionScreen({
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
             {/* Section Filter Tabs */}
             <div className="flex items-center gap-1.5 flex-wrap">
-              {["ALL", "APTITUDE", "TECHNICAL", "CODING", "HR"].map((sec) => (
+              {["ALL", "APTITUDE", "TECHNICAL", "RESUME_PROJECT", "HR", "CODING"].map((sec) => (
                 <button
                   key={sec}
                   type="button"
@@ -387,18 +365,19 @@ function CompletionScreen({
                       : "bg-white/5 text-slate-400 hover:text-white hover:bg-white/10 border border-white/5"
                   }`}
                 >
-                  {sec}
+                  {sec === "RESUME_PROJECT" ? "PROJECT" : sec}
                 </button>
               ))}
             </div>
 
             {/* Status Filter Tabs */}
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 flex-wrap">
               {[
                 { id: "ALL", label: "All" },
                 { id: "CORRECT", label: "Correct" },
                 { id: "PARTIAL", label: "Partial" },
-                { id: "INCORRECT", label: "Incorrect / Skipped" },
+                { id: "INCORRECT", label: "Incorrect" },
+                { id: "NOT_ATTEMPTED", label: "Not Attempted" },
               ].map((st) => (
                 <button
                   key={st.id}
@@ -422,15 +401,17 @@ function CompletionScreen({
               filteredAnswerKey.map((item, idx) => {
                 const qKey = item.questionId || idx;
                 const isExpanded = expandedQuestions[qKey] ?? (idx === 0);
-                const isCorrect = item.status === "correct";
-                const isPartial = item.status === "partially_correct";
-                const isSkipped = item.status === "skipped";
+                const isCorrect = item.status === "CORRECT";
+                const isPartial = item.status === "PARTIALLY_CORRECT";
+                const isNotAttempted = item.status === "NOT_ATTEMPTED";
 
-                const statusColor = isCorrect ? "#10b981" : isPartial ? "#f59e0b" : "#ef4444";
+                const statusColor = isCorrect ? "#10b981" : isPartial ? "#f59e0b" : isNotAttempted ? "#64748b" : "#ef4444";
                 const statusBadgeBg = isCorrect
                   ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
                   : isPartial
                   ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                  : isNotAttempted
+                  ? "bg-slate-500/10 text-slate-400 border-slate-500/20"
                   : "bg-red-500/10 text-red-400 border-red-500/20";
 
                 return (
@@ -438,7 +419,7 @@ function CompletionScreen({
                     key={qKey}
                     className="rounded-2xl border transition-all overflow-hidden"
                     style={{
-                      borderColor: isCorrect ? "rgba(16,185,129,0.25)" : isPartial ? "rgba(245,158,11,0.25)" : "rgba(239,68,68,0.25)",
+                      borderColor: isCorrect ? "rgba(16,185,129,0.25)" : isPartial ? "rgba(245,158,11,0.25)" : isNotAttempted ? "rgba(100,116,139,0.25)" : "rgba(239,68,68,0.25)",
                       background: "rgba(255,255,255,0.02)",
                     }}
                   >
@@ -462,11 +443,16 @@ function CompletionScreen({
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2 flex-wrap mb-1">
                             <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-white/5 border border-white/10 text-slate-300">
-                              {item.section}
+                              {item.section === "RESUME_PROJECT" ? "PROJECT" : item.section}
                             </span>
                             <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${statusBadgeBg}`}>
-                              {isCorrect ? "Correct (+100%)" : isPartial ? "Partial Marks" : isSkipped ? "Skipped (0%)" : "Incorrect (0%)"}
+                              {isCorrect ? "Correct" : isPartial ? "Partial Marks" : isNotAttempted ? "Not Attempted" : "Incorrect"}
                             </span>
+                            {item.evaluationMode === "FALLBACK" && (
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-300 border border-amber-500/20">
+                                Fallback
+                              </span>
+                            )}
                           </div>
                           <p className="text-xs font-bold text-white truncate">
                             {item.questionText}
@@ -480,7 +466,7 @@ function CompletionScreen({
                             className="font-mono text-xs font-black"
                             style={{ color: statusColor }}
                           >
-                            {item.score} / {item.maxScore || 100} Marks
+                            {item.score} / {item.maxScore} Marks
                           </span>
                         </div>
                         {isExpanded ? (
@@ -511,70 +497,14 @@ function CompletionScreen({
                             </p>
                           </div>
 
-                          {/* MCQ Options Display (If Options Exist) */}
-                          {Array.isArray(item.options) && item.options.length > 0 && (
-                            <div className="space-y-1.5">
-                              <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block mb-1">
-                                Options:
-                              </span>
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                {item.options.map((opt, optIdx) => {
-                                  const isSelectedByUser = String(item.candidateAnswer).trim() === String(opt).trim();
-                                  const isTheCorrectAnswer = String(item.correctAnswer).trim() === String(opt).trim();
-
-                                  let optBorder = "border-white/10";
-                                  let optBg = "bg-white/[0.02]";
-                                  let optText = "text-slate-300";
-
-                                  if (isTheCorrectAnswer) {
-                                    optBorder = "border-emerald-500/50";
-                                    optBg = "bg-emerald-500/10";
-                                    optText = "text-emerald-300 font-bold";
-                                  } else if (isSelectedByUser && !isTheCorrectAnswer) {
-                                    optBorder = "border-red-500/50";
-                                    optBg = "bg-red-500/10";
-                                    optText = "text-red-300 line-through";
-                                  }
-
-                                  return (
-                                    <div
-                                      key={optIdx}
-                                      className={`p-2.5 rounded-xl border text-xs flex items-center justify-between gap-2 ${optBorder} ${optBg} ${optText}`}
-                                    >
-                                      <div className="flex items-center gap-2">
-                                        <span className="w-5 h-5 rounded-lg bg-white/5 flex items-center justify-center text-[10px] font-bold">
-                                          {String.fromCharCode(65 + optIdx)}
-                                        </span>
-                                        <span>{opt}</span>
-                                      </div>
-
-                                      <div className="flex items-center gap-1">
-                                        {isSelectedByUser && (
-                                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300">
-                                            Your Pick
-                                          </span>
-                                        )}
-                                        {isTheCorrectAnswer && (
-                                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 flex items-center gap-1">
-                                            <Check className="w-3 h-3" /> Correct
-                                          </span>
-                                        )}
-                                      </div>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          )}
-
                           {/* Candidate's Answer vs Correct Answer Grid */}
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                             {/* Candidate's Answer */}
                             <div
                               className="p-3.5 rounded-xl border space-y-1.5"
                               style={{
-                                borderColor: isCorrect ? "rgba(16,185,129,0.3)" : isPartial ? "rgba(245,158,11,0.3)" : "rgba(239,68,68,0.3)",
-                                background: isCorrect ? "rgba(16,185,129,0.04)" : isPartial ? "rgba(245,158,11,0.04)" : "rgba(239,68,68,0.04)",
+                                borderColor: isCorrect ? "rgba(16,185,129,0.3)" : isPartial ? "rgba(245,158,11,0.3)" : isNotAttempted ? "rgba(100,116,139,0.3)" : "rgba(239,68,68,0.3)",
+                                background: isCorrect ? "rgba(16,185,129,0.04)" : isPartial ? "rgba(245,158,11,0.04)" : isNotAttempted ? "rgba(100,116,139,0.04)" : "rgba(239,68,68,0.04)",
                               }}
                             >
                               <div className="flex items-center justify-between">
@@ -586,11 +516,11 @@ function CompletionScreen({
                                   className="text-[11px] font-black font-mono"
                                   style={{ color: statusColor }}
                                 >
-                                  {item.score} / {item.maxScore || 100} Marks
+                                  {item.score} / {item.maxScore} Marks
                                 </span>
                               </div>
-                              <p className="text-xs text-white/90 whitespace-pre-wrap font-sans">
-                                {item.candidateAnswer || "No answer provided / Skipped"}
+                              <p className="text-xs text-white/90 whitespace-pre-wrap font-mono bg-black/30 p-2.5 rounded-lg border border-white/5">
+                                {item.candidateAnswer || (item.section === "CODING" ? "Not Submitted" : "Not Answered")}
                               </p>
                             </div>
 
@@ -598,7 +528,7 @@ function CompletionScreen({
                             <div className="p-3.5 rounded-xl border border-emerald-500/30 bg-emerald-500/5 space-y-1.5">
                               <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-400 flex items-center gap-1.5">
                                 <CheckCircle2 className="w-3.5 h-3.5" />
-                                Correct / Expected Answer
+                                {item.section === "APTITUDE" ? "Correct Option / Answer" : "Expected / Ideal Answer"}
                               </span>
                               <p className="text-xs text-emerald-200 font-medium whitespace-pre-wrap font-sans">
                                 {item.correctAnswer || "Full marks awarded for comprehensive technical explanation"}
@@ -606,15 +536,51 @@ function CompletionScreen({
                             </div>
                           </div>
 
-                          {/* AI Evaluation / Explanation Feedback */}
-                          {(item.feedback || item.explanation) && (
+                          {/* Coding Execution Details */}
+                          {item.submission && (
+                            <div className="p-3 rounded-xl bg-slate-900 border border-white/10 text-xs space-y-1 font-mono">
+                              <div className="flex justify-between text-slate-400 text-[10px] font-bold uppercase">
+                                <span>Passed Test Cases: {item.submission.passedTests} / {item.submission.totalTests}</span>
+                                <span>Execution Status: {item.submission.executionStatus || "Evaluated"}</span>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Evaluation & Feedback */}
+                          {item.feedback && (
                             <div className="p-3 rounded-xl bg-blue-500/5 border border-blue-500/20 text-xs text-blue-200 space-y-1">
                               <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400 flex items-center gap-1.5">
                                 <Sparkles className="w-3 h-3" />
-                                AI Evaluation & Solution Feedback:
+                                Evaluation Feedback:
                               </span>
-                              <p className="text-xs text-slate-300 leading-relaxed">
-                                {item.feedback || item.explanation}
+                              <p className="text-xs text-slate-300 leading-relaxed font-sans">
+                                {item.feedback}
+                              </p>
+                            </div>
+                          )}
+
+                          {/* Missing Points */}
+                          {Array.isArray(item.missingPoints) && item.missingPoints.length > 0 && (
+                            <div className="p-3 rounded-xl bg-amber-500/5 border border-amber-500/20 text-xs text-amber-200 space-y-1">
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400">
+                                Missing Points / Suggestions:
+                              </span>
+                              <ul className="list-disc pl-4 space-y-0.5 text-slate-300">
+                                {item.missingPoints.map((mp, mpIdx) => (
+                                  <li key={mpIdx}>{mp}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+
+                          {/* Improved Answer */}
+                          {item.improvedAnswer && (
+                            <div className="p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/20 text-xs text-emerald-200 space-y-1">
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">
+                                Recommended / Improved Answer:
+                              </span>
+                              <p className="text-xs text-slate-300 leading-relaxed font-sans">
+                                {item.improvedAnswer}
                               </p>
                             </div>
                           )}
