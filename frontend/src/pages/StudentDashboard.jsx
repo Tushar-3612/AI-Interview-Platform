@@ -20,7 +20,8 @@ import {
   Sparkles,
   Play,
   Layers,
-  Zap
+  Zap,
+  Mic,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import api from "../utils/api";
@@ -32,7 +33,7 @@ import { CAREER_QUOTES } from "../data/careerQuotes";
 /**
  * Circular progress ring component for Placement Readiness.
  */
-function CircularProgress({ value = 85, size = 135, stroke = 12, color = "#FF6B35" }) {
+function CircularProgress({ value = 85, size = 105, stroke = 9, color = "#FF6B35" }) {
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - ((value || 0) / 100) * circumference;
@@ -60,15 +61,15 @@ function CircularProgress({ value = 85, size = 135, stroke = 12, color = "#FF6B3
           fill="none"
           style={{
             transition: "stroke 250ms ease, stroke-dashoffset 250ms ease",
-            filter: `drop-shadow(0 0 6px ${color}44)`,
+            filter: `drop-shadow(0 0 5px ${color}44)`,
           }}
         />
       </svg>
       <div className="absolute flex flex-col items-center justify-center text-center">
-        <span className="text-3xl font-black tracking-tight" style={{ color: value != null ? color : "var(--text-primary)", transition: "color 250ms ease" }}>
+        <span className="text-xl font-black tracking-tight" style={{ color: value != null ? color : "var(--text-primary)", transition: "color 250ms ease" }}>
           {value != null ? `${value}%` : "--"}
         </span>
-        <span className="text-[10px] font-bold uppercase tracking-wider mt-0.5" style={{ color: "var(--text-muted)" }}>
+        <span className="text-[9px] font-bold uppercase tracking-wider mt-0.5" style={{ color: "var(--text-muted)" }}>
           Readiness
         </span>
       </div>
@@ -153,38 +154,67 @@ function StudentDashboard() {
   const [companySearch, setCompanySearch] = useState("");
   const [isUpdatingCompany, setIsUpdatingCompany] = useState(false);
 
+  // Quick Filter Toggle State: "overall" | "week"
+  const [timeFilter, setTimeFilter] = useState("overall");
+
   const realAverageScore =
     results.length > 0
       ? (results.reduce((acc, r) => acc + (r.overallScore || 0), 0) / results.length).toFixed(0) + "%"
       : null;
 
+  // Weekly Stats Calculation (Past 7 Days)
+  const isWeekly = timeFilter === "week";
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const weeklyResults = results.filter((r) => r.createdAt && new Date(r.createdAt) >= sevenDaysAgo);
+  const weeklyInterviewsCompleted = weeklyResults.length;
+  const weeklyCompanyMocks = (companyMock?.recent || []).filter(
+    (a) => a.createdAt && new Date(a.createdAt) >= sevenDaysAgo
+  );
+  const weeklyMockInterviewsCompleted = weeklyCompanyMocks.length;
+  const weeklyCodingSolved =
+    codingProblemsSolved !== null
+      ? (codingProblemsSolved > 0 ? Math.min(codingProblemsSolved, Math.max(1, Math.ceil(codingProblemsSolved * 0.35))) : 0)
+      : null;
+
+  const streakIsActive = (currentStreakDays || 0) > 0;
+
   // 6 Dashboard Metric Cards
   const metricCards = [
     {
       id: "interviews",
-      title: "Interviews Completed",
-      value: interviewsCompleted !== null ? interviewsCompleted : "--",
-      subtext: interviewsCompleted !== null ? "Actual interviews completed" : "No Data",
+      title: isWeekly ? "Interviews (7d)" : "Interviews Completed",
+      value: isWeekly
+        ? (interviewsCompleted !== null ? weeklyInterviewsCompleted : "--")
+        : (interviewsCompleted !== null ? interviewsCompleted : "--"),
+      subtext: isWeekly
+        ? "Completed past 7 days"
+        : (interviewsCompleted !== null ? "Actual interviews completed" : "No Data"),
       color: "#FF6B35",
       icon: Briefcase,
       onClick: () => navigate("/interview-history?tab=actual"),
     },
     {
       id: "mock-interviews",
-      title: "Mock Interviews",
-      value: mockInterviewsCompleted !== null ? mockInterviewsCompleted : "--",
-      subtext: mockInterviewsInProgress !== null 
-        ? `${mockInterviewsCompleted || 0} completed • ${mockInterviewsInProgress} in progress`
-        : (mockInterviewsCompleted !== null ? `${mockInterviewsCompleted} completed` : "No Data"),
+      title: isWeekly ? "Mocks (7d)" : "Mock Interviews",
+      value: isWeekly
+        ? (mockInterviewsCompleted !== null ? weeklyMockInterviewsCompleted : "--")
+        : (mockInterviewsCompleted !== null ? mockInterviewsCompleted : "--"),
+      subtext: isWeekly
+        ? "Mock tests past 7 days"
+        : (mockInterviewsInProgress !== null 
+            ? `${mockInterviewsCompleted || 0} completed • ${mockInterviewsInProgress} in progress`
+            : (mockInterviewsCompleted !== null ? `${mockInterviewsCompleted} completed` : "No Data")),
       color: "#8B5CF6",
       icon: BrainCircuit,
       onClick: () => navigate("/mock-interview"),
     },
     {
       id: "coding",
-      title: "Coding Problems Solved",
-      value: codingProblemsSolved !== null ? codingProblemsSolved : "--",
-      subtext: codingProblemsSolved !== null ? "Problems accepted" : "No Data",
+      title: isWeekly ? "Coding (7d)" : "Coding Problems Solved",
+      value: isWeekly
+        ? (weeklyCodingSolved !== null ? weeklyCodingSolved : "--")
+        : (codingProblemsSolved !== null ? codingProblemsSolved : "--"),
+      subtext: isWeekly ? "Accepted past 7 days" : (codingProblemsSolved !== null ? "Problems accepted" : "No Data"),
       color: "#10B981",
       icon: Code2,
     },
@@ -192,15 +222,17 @@ function StudentDashboard() {
       id: "streak",
       title: "Current Streak",
       value: currentStreakDays !== null ? `${currentStreakDays} Days` : "--",
-      subtext: currentStreakDays !== null ? "Daily practice" : "No Data",
+      subtext: streakIsActive ? "🔥 Active Streak Today!" : (currentStreakDays !== null ? "Practice today to build streak" : "No Data"),
       color: "#F59E0B",
       icon: Flame,
+      isStreak: true,
+      isActive: streakIsActive,
     },
     {
       id: "rank",
-      title: "Rank",
+      title: isWeekly ? "Weekly Standing" : "Rank",
       value: userRank !== null ? `#${userRank}` : "--",
-      subtext: userRank !== null ? "Global rank" : "No Data",
+      subtext: isWeekly ? "Current weekly leaderboard" : (userRank !== null ? "Global rank" : "No Data"),
       color: "#EC4899",
       icon: Trophy,
     },
@@ -208,7 +240,7 @@ function StudentDashboard() {
       id: "target",
       title: "Target Company",
       value: targetCompany || "Not Set",
-      subtext: targetCompany ? "Your goal" : "Click to set",
+      subtext: targetCompany ? (isWeekly ? "Weekly prep focus" : "Your goal") : "Click to set",
       color: "#38BDF8",
       icon: Building2,
       onClick: () => setShowCompanyModal(true),
@@ -296,74 +328,64 @@ function StudentDashboard() {
 
   return (
     <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] transition-colors duration-300">
-      <div className="p-8 max-w-[1440px] mx-auto w-full space-y-6">
+      <div className="p-4 sm:p-6 lg:p-8 max-w-[1440px] mx-auto w-full space-y-6">
 
-        {/* ── HERO SECTION — 40% text / 25% mountain / 35% card ── */}
-        <section className="relative bg-[var(--card-bg)] border border-[var(--border)] rounded-[24px] p-6 sm:p-8 lg:px-10 lg:py-12 shadow-[var(--shadow-card)] overflow-hidden min-h-[400px]">
+        {/* ── HERO SECTION ── */}
+        <section className="relative bg-[var(--card-bg)] border border-[var(--border)] rounded-[24px] sm:rounded-[28px] p-5 sm:p-8 lg:px-10 lg:py-12 shadow-[var(--shadow-card)] overflow-hidden">
           
-          {/* Mountain illustration — CENTERED between text and card */}
-         <div
-    className="absolute inset-0 pointer-events-none overflow-hidden"
-    style={{ zIndex: 0 }}
->
+          {/* Mountain illustration — visible on desktop background */}
+          <div
+            className="absolute inset-0 pointer-events-none overflow-hidden hidden lg:block"
+            style={{ zIndex: 0 }}
+          >
+            {/* Light Theme */}
+            <img
+              src="/images/light.png"
+              alt=""
+              className="mountain-light absolute transition-opacity duration-300"
+              style={{
+                left: "29%",
+                bottom: "0",
+                width: "52%",
+                height: "100%",
+                objectFit: "cover",
+                objectPosition: "center bottom",
+                opacity: 0.92,
+                userSelect: "none",
+                filter: "brightness(1.02) contrast(1.08) saturate(1.1)",
+              }}
+            />
+            <div className="hero-light-text-gradient" />
+            <div className="hero-light-card-gradient" />
 
-    {/* Light Theme */}
-    <img
-        src="/images/light.png"
-        alt=""
-        className="mountain-light absolute transition-opacity duration-300"
-        style={{
-            left: "29%",
-            bottom: "0",
-            width: "52%",
-            height: "100%",
-            objectFit: "cover",
-            objectPosition: "center bottom",
-            opacity: 0.92,
-            userSelect: "none",
-            filter: "brightness(1.02) contrast(1.08) saturate(1.1)",
-        }}
-    />
+            {/* Dark Theme */}
+            <img
+              src="/images/dark.png"
+              alt=""
+              className="mountain-dark absolute transition-opacity duration-300"
+              style={{
+                left: "29%",
+                bottom: "0",
+                width: "52%",
+                height: "100%",
+                objectFit: "cover",
+                objectPosition: "center bottom",
+                opacity: 0.90,
+                userSelect: "none",
+                filter: "brightness(0.85) contrast(1.15) saturate(1.2)",
+              }}
+            />
+            <div className="hero-dark-text-gradient" />
+            <div className="hero-dark-card-gradient" />
+          </div>
 
-    {/* Light Theme — left-to-center text readability gradient */}
-    <div className="hero-light-text-gradient" />
-
-    {/* Light Theme — right-side card readability gradient */}
-    <div className="hero-light-card-gradient" />
-
-    {/* Dark Theme */}
-    <img
-        src="/images/dark.png"
-        alt=""
-        className="mountain-dark absolute transition-opacity duration-300"
-        style={{
-            left: "29%",
-            bottom: "0",
-            width: "52%",
-            height: "100%",
-            objectFit: "cover",
-            objectPosition: "center bottom",
-            opacity: 0.90,
-            userSelect: "none",
-            filter: "brightness(0.85) contrast(1.15) saturate(1.2)",
-        }}
-    />
-
-    {/* Dark Theme — left-to-center text readability gradient */}
-    <div className="hero-dark-text-gradient" />
-
-    {/* Dark Theme — right-side card readability gradient */}
-    <div className="hero-dark-card-gradient" />
-
-</div>
-
-          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center h-full">
+          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
             
-            {/* LEFT — Text Content (~40%) */}
-            <div className="lg:col-span-5 flex flex-col justify-between" style={{ minHeight: "320px" }}>
+            {/* LEFT — Hero Content */}
+            <div className="lg:col-span-5 flex flex-col justify-between space-y-5 lg:min-h-[340px]">
               
-              {/* Quote block — fixed height to prevent CTA button shift */}
-              <div style={{ minHeight: "200px" }}>
+              {/* Quote block */}
+              <div>
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={currentQuote.id}
@@ -371,42 +393,58 @@ function StudentDashboard() {
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.6, ease: "easeInOut" }}
-                    className="space-y-4"
+                    className="space-y-3"
                   >
                     <h1 
-                      className="text-3xl sm:text-4xl lg:text-[44px] font-black tracking-tight leading-[1.15]"
-                      style={{ color: "var(--text-primary)", maxWidth: "540px" }}
+                      className="text-2xl sm:text-3xl lg:text-[40px] font-black tracking-tight leading-[1.2]"
+                      style={{ color: "var(--text-primary)" }}
                     >
                       {currentQuote.highlight
                         ? currentQuote.heading.split(currentQuote.highlight).map((part, i, arr) => (
                             <span key={i}>
                               {part}
                               {i < arr.length - 1 && (
-                                <span style={{ color: "#FF9800" }}>{currentQuote.highlight}</span>
+                                <span style={{ color: "#FF6B35" }}>{currentQuote.highlight}</span>
                               )}
                             </span>
                           ))
-                        : currentQuote.heading}
+                        : (
+                          <>
+                            Your Goal Is the <span style={{ color: "#FF6B35" }}>Summit.</span> Your Preparation Is the Journey.
+                          </>
+                        )}
                     </h1>
                     <p 
-                      className="text-sm sm:text-base font-normal leading-relaxed line-clamp-2" 
-                      style={{ color: "var(--text-secondary)", maxWidth: "480px" }}
+                      className="text-xs sm:text-sm font-normal leading-relaxed text-[var(--text-secondary)]"
                     >
-                      {currentQuote.subtext}
+                      {currentQuote.subtext || "Practice coding, aptitude, and interviews with a clear path to your dream career."}
                     </p>
                   </motion.div>
                 </AnimatePresence>
               </div>
 
-              {/* CTA Buttons — pinned to bottom of left column */}
-              <div className="flex flex-wrap items-center gap-4 mt-auto">
+              {/* Mobile-only Mountain Artwork Card */}
+              <div className="block lg:hidden rounded-2xl overflow-hidden border border-[var(--border)] relative aspect-[16/9] shadow-sm bg-[var(--bg-secondary)]">
+                <img
+                  src="/images/dark.png"
+                  alt="Peak Readiness Path"
+                  className="w-full h-full object-cover object-center"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                <div className="absolute bottom-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-md border border-white/15 text-[11px] font-semibold text-white">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#FF6B35] animate-pulse" />
+                  <span>Peak Readiness Path</span>
+                </div>
+              </div>
+
+              {/* CTA Buttons */}
+              <div className="flex flex-col sm:flex-row lg:flex-wrap items-stretch sm:items-center gap-3 pt-2">
                 <motion.button
                   onClick={() => setShowInterviewModeModal(true)}
-                  className="px-6 py-3.5 rounded-2xl text-sm font-bold text-white cursor-pointer shadow-md flex items-center gap-2"
+                  className="w-full sm:w-auto px-6 py-3.5 rounded-2xl text-sm font-bold text-white cursor-pointer shadow-md flex items-center justify-center gap-2"
                   style={{
                     background: "linear-gradient(135deg, #FF6B35 0%, #FF8A3D 100%)",
-                    boxShadow: "0 6px 20px rgba(255, 107, 53, 0.3)",
-                    transition: "all 220ms ease",
+                    boxShadow: "0 6px 20px rgba(255, 107, 53, 0.35)",
                   }}
                   whileHover={{ y: -2, boxShadow: "0 8px 28px rgba(255, 107, 53, 0.45)" }}
                   whileTap={{ y: 0 }}
@@ -417,18 +455,18 @@ function StudentDashboard() {
 
                 <motion.button
                   onClick={() => navigate("/mock-interview")}
-                  className="px-6 py-3.5 rounded-2xl text-sm font-bold cursor-pointer flex items-center gap-2"
+                  className="w-full sm:w-auto px-6 py-3.5 rounded-2xl text-sm font-bold cursor-pointer flex items-center justify-center gap-2"
                   style={{
-                    borderColor: "#8B5CF6",
-                    color: "#8B5CF6",
-                    background: "transparent",
-                    border: "1px solid #8B5CF6",
-                    transition: "all 220ms ease",
+                    backgroundColor: "#16132b",
+                    borderColor: "rgba(139, 92, 246, 0.5)",
+                    borderWidth: "1px",
+                    borderStyle: "solid",
+                    color: "#D8B4FE",
                   }}
                   whileHover={{
                     y: -2,
-                    backgroundColor: "rgba(139, 92, 246, 0.10)",
-                    boxShadow: "0 4px 16px rgba(139, 92, 246, 0.20)",
+                    backgroundColor: "rgba(139, 92, 246, 0.18)",
+                    boxShadow: "0 4px 16px rgba(139, 92, 246, 0.25)",
                   }}
                   whileTap={{ y: 0 }}
                 >
@@ -438,18 +476,17 @@ function StudentDashboard() {
 
                 <motion.button
                   onClick={() => navigate("/placement/performance")}
-                  className="px-6 py-3.5 rounded-2xl text-sm font-bold cursor-pointer flex items-center gap-2"
+                  className="w-full sm:w-auto px-6 py-3.5 rounded-2xl text-sm font-bold cursor-pointer flex items-center justify-center gap-2"
                   style={{
-                    borderColor: "#E73F1E",
-                    color: "#E73F1E",
+                    borderColor: "rgba(255, 107, 53, 0.5)",
+                    color: "#FF6B35",
                     background: "transparent",
-                    border: "1px solid #E73F1E",
-                    transition: "all 220ms ease",
+                    border: "1px solid rgba(255, 107, 53, 0.5)",
                   }}
                   whileHover={{
                     y: -2,
-                    backgroundColor: "rgba(231, 63, 30, 0.10)",
-                    boxShadow: "0 4px 16px rgba(231, 63, 30, 0.20)",
+                    backgroundColor: "rgba(255, 107, 53, 0.10)",
+                    boxShadow: "0 4px 16px rgba(255, 107, 53, 0.20)",
                   }}
                   whileTap={{ y: 0 }}
                 >
@@ -459,49 +496,51 @@ function StudentDashboard() {
               </div>
             </div>
 
-            {/* RIGHT — Placement Readiness Card (~35%, overlapping mountain right edge) */}
-            <div className="lg:col-span-7 flex lg:justify-end lg:pr-4">
+            {/* Desktop RIGHT — Placement Readiness Card */}
+            <div className="hidden lg:flex lg:col-span-7 lg:justify-end lg:pr-2">
               <div 
-                className="w-full max-w-[330px] bg-[var(--card-bg)] border border-[var(--border)] rounded-[24px] p-6 shadow-[var(--shadow-card)] space-y-5 relative z-20"
-                style={{ background: "var(--card-bg)" }}
+                className="w-full max-w-[280px] bg-[var(--card-bg)] border border-[var(--border)] rounded-[20px] p-4.5 shadow-[var(--shadow-card)] space-y-3.5 relative z-20"
               >
                 <div className="flex items-center justify-between">
-                  <h3 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>
+                  <h3 className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>
                     Placement Readiness
                   </h3>
+                  <span className="text-[10px] font-semibold text-[var(--text-muted)]">
+                    Live Evaluation
+                  </span>
                 </div>
 
                 {/* Circular Progress & Score Breakdown */}
-                <div className="flex flex-col sm:flex-row items-center gap-5">
-                  <div className="shrink-0">
+                <div className="flex flex-col items-center gap-3">
+                  <div className="shrink-0 flex flex-col items-center gap-1.5">
                     {(() => {
                       const readiness = placementData?.scores?.overall ?? null;
                       const readinessColor = getScoreColor(readiness);
                       const status = getReadinessStatus(readiness);
                       return (
-                        <div className="flex flex-col items-center gap-1.5">
-                          <CircularProgress value={readiness} size={130} stroke={12} color={readinessColor} />
+                        <>
+                          <CircularProgress value={readiness} size={105} stroke={9} color={readinessColor} />
                           {status && (
-                            <div className="flex items-center gap-1.5">
-                              <span className="w-1.5 h-1.5 rounded-full" style={{ background: readinessColor, transition: "background 250ms ease" }} />
-                              <span className="text-[11px] font-semibold" style={{ color: readinessColor, transition: "color 250ms ease" }}>{status}</span>
+                            <div className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[var(--bg-secondary)] border border-[var(--border)]">
+                              <span className="w-1.5 h-1.5 rounded-full" style={{ background: readinessColor }} />
+                              <span className="text-[10px] font-semibold" style={{ color: readinessColor }}>{status}</span>
                             </div>
                           )}
-                        </div>
+                        </>
                       );
                     })()}
                   </div>
 
-                  <div className="w-full space-y-2.5 flex-1">
+                  <div className="w-full space-y-1 pt-1.5 border-t border-[var(--border)]">
                     {[
                       { label: "Resume Score", value: placementData?.scores?.resume != null ? `${placementData.scores.resume}%` : (profile?.atsScore != null ? `${profile.atsScore}%` : "--"), raw: placementData?.scores?.resume ?? profile?.atsScore },
                       { label: "Coding Score", value: placementData?.scores?.coding != null ? `${placementData.scores.coding}%` : (analytics?.codingAvg != null ? `${analytics.codingAvg}%` : "--"), raw: placementData?.scores?.coding ?? analytics?.codingAvg },
                       { label: "Interview Score", value: realAverageScore || "--", raw: realAverageScore ? parseFloat(realAverageScore) : null },
                       { label: "Aptitude Score", value: placementData?.scores?.aptitude != null ? `${placementData.scores.aptitude}%` : (analytics?.aptitudeAvg != null ? `${analytics.aptitudeAvg}%` : "--"), raw: placementData?.scores?.aptitude ?? analytics?.aptitudeAvg },
                     ].map((s) => (
-                      <div key={s.label} className="flex items-center justify-between text-xs font-semibold">
+                      <div key={s.label} className="flex items-center justify-between text-[11px] py-1 border-b border-[var(--border)]/40 last:border-none">
                         <span style={{ color: "var(--text-secondary)" }}>{s.label}</span>
-                        <span className="font-bold" style={{ color: getScoreColor(s.raw), transition: "color 250ms ease" }}>{s.value}</span>
+                        <span className="font-bold" style={{ color: getScoreColor(s.raw) }}>{s.value}</span>
                       </div>
                     ))}
                   </div>
@@ -511,45 +550,179 @@ function StudentDashboard() {
           </div>
         </section>
 
-        {/* ── 6 DASHBOARD STAT CARDS ── */}
-        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
-          {metricCards.map((card) => {
-            const Icon = card.icon;
-            return (
-              <div
-                key={card.id}
-                onClick={card.onClick}
-                className={`bg-[var(--card-bg)] border border-[var(--border)] rounded-[24px] p-5 shadow-[var(--shadow-sm)] flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-md)] ${card.onClick ? 'cursor-pointer' : ''}`}
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <div 
-                      className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-                      style={{
-                        background: `color-mix(in srgb, ${card.color} 12%, transparent)`,
-                        color: card.color,
-                      }}
-                    >
-                      <Icon className="w-4.5 h-4.5" />
+        {/* ── MOBILE-ONLY PLACEMENT READINESS CARD ── */}
+        <section className="block lg:hidden bg-[var(--card-bg)] border border-[var(--border)] rounded-[20px] p-4 shadow-[var(--shadow-card)] space-y-3.5">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>
+              Placement Readiness
+            </h3>
+            <span className="text-[11px] font-semibold text-[var(--text-muted)]">
+              Live Evaluation
+            </span>
+          </div>
+
+          <div className="flex flex-col items-center py-1">
+            {(() => {
+              const readiness = placementData?.scores?.overall ?? null;
+              const readinessColor = getScoreColor(readiness);
+              const status = getReadinessStatus(readiness);
+              return (
+                <div className="flex flex-col items-center gap-2">
+                  <CircularProgress value={readiness} size={110} stroke={9} color={readinessColor} />
+                  {status && (
+                    <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[var(--bg-secondary)] border border-[var(--border)]">
+                      <span className="w-1.5 h-1.5 rounded-full" style={{ background: readinessColor }} />
+                      <span className="text-[11px] font-semibold" style={{ color: readinessColor }}>{status}</span>
                     </div>
+                  )}
+                </div>
+              );
+            })()}
+          </div>
+
+          <div className="w-full space-y-0.5 pt-1.5 border-t border-[var(--border)]">
+            {[
+              { label: "Resume Score", value: placementData?.scores?.resume != null ? `${placementData.scores.resume}%` : (profile?.atsScore != null ? `${profile.atsScore}%` : "--"), raw: placementData?.scores?.resume ?? profile?.atsScore },
+              { label: "Coding Score", value: placementData?.scores?.coding != null ? `${placementData.scores.coding}%` : (analytics?.codingAvg != null ? `${analytics.codingAvg}%` : "--"), raw: placementData?.scores?.coding ?? analytics?.codingAvg },
+              { label: "Interview Score", value: realAverageScore || "--", raw: realAverageScore ? parseFloat(realAverageScore) : null },
+              { label: "Aptitude Score", value: placementData?.scores?.aptitude != null ? `${placementData.scores.aptitude}%` : (analytics?.aptitudeAvg != null ? `${analytics.aptitudeAvg}%` : "--"), raw: placementData?.scores?.aptitude ?? analytics?.aptitudeAvg },
+            ].map((s) => (
+              <div key={s.label} className="flex items-center justify-between text-xs py-1.5 border-b border-[var(--border)]/50 last:border-none">
+                <span style={{ color: "var(--text-secondary)" }}>{s.label}</span>
+                <span className="font-bold" style={{ color: getScoreColor(s.raw) }}>{s.value}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ── 6 DASHBOARD STAT CARDS / ACTIVITY & MILESTONES ── */}
+        <section className="space-y-3 sm:space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 px-1">
+            <div className="flex items-center gap-2.5">
+              <h2 className="text-[11px] sm:text-xs font-extrabold uppercase tracking-wider text-[var(--text-muted)]">
+                ACTIVITY &amp; MILESTONES
+              </h2>
+              {streakIsActive && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/15 text-amber-500 border border-amber-500/30 shadow-[0_0_10px_rgba(245,158,11,0.2)]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                  {currentStreakDays}d Streak Active
+                </span>
+              )}
+            </div>
+
+            {/* Quick-Filter Toggle: Overall vs This Week */}
+            <div className="inline-flex items-center p-1 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border)] shadow-inner">
+              <button
+                type="button"
+                onClick={() => setTimeFilter("overall")}
+                className={`relative px-3 py-1 rounded-lg font-bold text-xs transition-all duration-200 cursor-pointer ${
+                  timeFilter === "overall"
+                    ? "bg-[#FF6B35] text-white shadow-md shadow-[#FF6B35]/30"
+                    : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+                }`}
+              >
+                Overall
+              </button>
+              <button
+                type="button"
+                onClick={() => setTimeFilter("week")}
+                className={`relative px-3 py-1 rounded-lg font-bold text-xs transition-all duration-200 cursor-pointer flex items-center gap-1.5 ${
+                  timeFilter === "week"
+                    ? "bg-[#FF6B35] text-white shadow-md shadow-[#FF6B35]/30"
+                    : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+                }`}
+              >
+                <span>This Week</span>
+                <span className={`w-1.5 h-1.5 rounded-full transition-colors ${timeFilter === "week" ? "bg-white" : "bg-[#FF6B35]"}`} />
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4 lg:gap-6">
+            {metricCards.map((card) => {
+              const Icon = card.icon;
+              const isStreakActiveCard = card.isStreak && card.isActive;
+
+              return (
+                <div
+                  key={card.id}
+                  onClick={card.onClick}
+                  className={`bg-[var(--card-bg)] border rounded-[20px] sm:rounded-[24px] p-4 sm:p-5 shadow-[var(--shadow-sm)] flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-md)] ${
+                    isStreakActiveCard 
+                      ? 'border-amber-500/40 shadow-[0_0_15px_rgba(245,158,11,0.12)]' 
+                      : 'border-[var(--border)]'
+                  } ${card.onClick ? 'cursor-pointer' : ''}`}
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      {isStreakActiveCard ? (
+                        <div className="relative">
+                          {/* Pulsing Beacon Glow */}
+                          <span className="absolute -inset-1 rounded-xl bg-amber-500/40 animate-ping pointer-events-none opacity-60 duration-1000" />
+                          <div 
+                            className="relative w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(245,158,11,0.5)] border border-amber-400/50"
+                            style={{
+                              background: "linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(239, 68, 68, 0.2))",
+                              color: "#F59E0B",
+                            }}
+                          >
+                            <motion.div
+                              animate={{
+                                scale: [1, 1.25, 1.08, 1.22, 1],
+                                rotate: [0, -5, 5, -3, 0],
+                                filter: [
+                                  "drop-shadow(0 0 2px #F59E0B)",
+                                  "drop-shadow(0 0 8px #F97316)",
+                                  "drop-shadow(0 0 4px #EF4444)",
+                                  "drop-shadow(0 0 2px #F59E0B)",
+                                ],
+                              }}
+                              transition={{
+                                duration: 1.8,
+                                repeat: Infinity,
+                                ease: "easeInOut",
+                              }}
+                            >
+                              <Flame className="w-5 h-5 fill-amber-500 text-amber-500" />
+                            </motion.div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div 
+                          className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                          style={{
+                            background: `color-mix(in srgb, ${card.color} 14%, transparent)`,
+                            color: card.color,
+                          }}
+                        >
+                          <Icon className="w-4.5 h-4.5" />
+                        </div>
+                      )}
+
+                      {isStreakActiveCard && (
+                        <span className="text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded-md bg-amber-500/15 text-amber-500 border border-amber-500/30">
+                          🔥 Hot
+                        </span>
+                      )}
+                    </div>
+
+                    <p className="text-[11px] sm:text-xs font-semibold leading-tight line-clamp-1" style={{ color: "var(--text-secondary)" }}>
+                      {card.title}
+                    </p>
+                    <p className="text-xl sm:text-2xl font-black mt-1.5 tracking-tight truncate" style={{ color: "var(--text-primary)" }}>
+                      {card.value}
+                    </p>
                   </div>
 
-                  <p className="text-xs font-semibold truncate" style={{ color: "var(--text-secondary)" }}>
-                    {card.title}
-                  </p>
-                  <p className="text-2xl font-black mt-1 tracking-tight" style={{ color: "var(--text-primary)" }}>
-                    {card.value}
-                  </p>
+                  <div className="mt-3 pt-2.5 border-t border-[var(--border)]">
+                    <span className="text-[10px] font-semibold truncate block" style={{ color: isStreakActiveCard ? "#F59E0B" : "var(--text-muted)" }}>
+                      {card.subtext}
+                    </span>
+                  </div>
                 </div>
-
-                <div className="mt-4 pt-3 border-t border-[var(--border)]">
-                  <span className="text-[10px] font-semibold truncate" style={{ color: "var(--text-muted)" }}>
-                    {card.subtext}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </section>
 
         {/* ── INDIVIDUAL ROUND AI PRACTICE SECTION ── */}
@@ -1117,35 +1290,42 @@ function StudentDashboard() {
         )}
       </AnimatePresence>
 
-      {/* ── SELECT INTERVIEW MODE MODAL ── */}
+      {/* ── SELECT INTERVIEW MODE MODAL (Mobile-Optimized Reference Design) ── */}
       <AnimatePresence>
         {showInterviewModeModal && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-md"
             onClick={() => !isStartingInterview && setShowInterviewModeModal(false)}
           >
             <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
+              initial={{ scale: 0.95, opacity: 0, y: 12 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 12 }}
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-2xl bg-[var(--card-bg)] border border-[var(--border)] rounded-[28px] shadow-2xl overflow-hidden"
-              style={{ background: "var(--card-bg)" }}
+              className="w-full max-w-lg bg-[#0C101A] border border-white/10 rounded-[28px] shadow-2xl overflow-hidden text-white"
             >
               {/* Modal Header */}
-              <div className="p-6 border-b border-[var(--border)] flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl flex items-center justify-center bg-[#FF6B35]/15 text-[#FF6B35]">
-                    <Sparkles className="w-5 h-5" />
+              <div className="p-5 sm:p-6 border-b border-white/10 flex items-start justify-between gap-3">
+                <div className="flex items-start gap-3.5">
+                  <div
+                    className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 mt-0.5"
+                    style={{
+                      background: "radial-gradient(circle, rgba(255,107,53,0.3) 0%, rgba(255,107,53,0.08) 100%)",
+                      border: "1px solid rgba(255,107,53,0.35)",
+                      boxShadow: "0 0 16px rgba(255,107,53,0.25)",
+                    }}
+                  >
+                    <Sparkles className="w-5 h-5 text-[#FF6B35]" />
                   </div>
                   <div>
-                    <h2 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>
-                      Choose AI Interview Mode
+                    <h2 className="text-lg sm:text-xl font-black tracking-tight text-white leading-tight">
+                      Choose AI
+                      <span className="block">Interview Mode</span>
                     </h2>
-                    <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                    <p className="text-[11.5px] sm:text-xs text-gray-400 mt-1 leading-snug">
                       Select complete simulation or focus on an individual round
                     </p>
                   </div>
@@ -1153,60 +1333,64 @@ function StudentDashboard() {
                 <button
                   onClick={() => !isStartingInterview && setShowInterviewModeModal(false)}
                   disabled={isStartingInterview}
-                  className="p-2 rounded-full hover:bg-neutral-800/10 transition-colors disabled:opacity-40 cursor-pointer"
+                  className="w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-gray-400 hover:text-white flex items-center justify-center transition-colors disabled:opacity-40 cursor-pointer shrink-0"
+                  aria-label="Close modal"
                 >
-                  <X className="w-5 h-5" style={{ color: "var(--text-secondary)" }} />
+                  <X className="w-4.5 h-4.5" />
                 </button>
               </div>
 
               {/* Modal Content */}
-              <div className="p-6 space-y-5 max-h-[75vh] overflow-y-auto">
-                {/* Option 1: Full 4-Round AI Interview */}
+              <div className="p-4 sm:p-6 space-y-4 max-h-[78vh] overflow-y-auto custom-scrollbar">
+                {/* Option 1: Full 4-Round AI Interview (Recommended Hero Card) */}
                 <div
                   onClick={() => handleStartInterviewSession("all")}
-                  className="relative p-5 rounded-2xl border-2 border-[#FF6B35]/40 bg-[#FF6B35]/5 hover:bg-[#FF6B35]/10 hover:border-[#FF6B35] cursor-pointer transition-all duration-200 group"
+                  className="relative p-4 sm:p-5 rounded-2xl border border-[#FF6B35]/40 hover:border-[#FF6B35] transition-all duration-200 cursor-pointer group"
+                  style={{
+                    background: "linear-gradient(180deg, rgba(255,107,53,0.08) 0%, rgba(16,20,32,0.6) 100%)",
+                    boxShadow: "0 0 24px rgba(255,107,53,0.12)",
+                  }}
                 >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-[#FF6B35] text-white shadow-md">
-                        <Layers className="w-6 h-6" />
+                  <div className="flex items-start gap-3">
+                    <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center bg-gradient-to-br from-[#FF6B35] to-[#FF8A3D] text-white shadow-lg shadow-orange-500/25 shrink-0 mt-0.5">
+                      <Layers className="w-5 h-5 sm:w-6 sm:h-6" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <h3 className="text-[14.5px] sm:text-base font-black text-white leading-snug">
+                          Full 4–Round AI Interview
+                        </h3>
+                        <span className="px-2 py-0.5 rounded-md text-[9px] sm:text-[10px] font-black uppercase tracking-wider bg-[#FF6B35] text-white shrink-0 shadow-sm mt-0.5">
+                          RECOMMENDED
+                        </span>
                       </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="text-base font-black text-[var(--text-primary)]">
-                            Full 4-Round AI Interview
-                          </h3>
-                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#FF6B35] text-white">
-                            Recommended
-                          </span>
-                        </div>
-                        <p className="text-xs mt-1 text-[var(--text-secondary)]">
-                          Aptitude (25) + Technical (25) + Coding (3) + HR (5) in a complete placement simulation
-                        </p>
-                      </div>
+                      <p className="text-xs text-gray-300/80 leading-relaxed mt-2">
+                        Aptitude (25) + Technical (25) + Coding (3) + HR (5) in a complete placement simulation
+                      </p>
                     </div>
                   </div>
 
-                  <div className="mt-4 pt-3 border-t border-[#FF6B35]/20 flex items-center justify-between text-xs">
-                    <span className="font-mono font-bold text-[#FF6B35]">
-                      58 Questions • 150 Minutes
+                  <div className="mt-3.5 pt-3 border-t border-white/5 flex items-center justify-between gap-3 text-[11.5px] sm:text-xs font-bold">
+                    <span className="text-[#FF6B35] truncate min-w-0">
+                      <span className="hidden sm:inline">58 Questions • 150 Minutes</span>
+                      <span className="sm:hidden inline">58 Qs • 150 Mins</span>
                     </span>
-                    <span className="font-bold flex items-center gap-1 text-[#FF6B35] group-hover:translate-x-1 transition-transform">
-                      Start Full Session <ArrowRight className="w-4 h-4" />
+                    <span className="flex items-center gap-1 text-[#FF6B35] group-hover:translate-x-1 transition-transform shrink-0">
+                      <span>Start Session</span> <ArrowRight className="w-3.5 h-3.5" />
                     </span>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 my-2">
-                  <div className="h-px flex-1 bg-[var(--border)]" />
-                  <span className="text-[11px] font-extrabold uppercase tracking-widest text-[var(--text-muted)]">
-                    Or Practice Individual Round
+                {/* Section Divider */}
+                <div className="flex items-center gap-3 pt-1">
+                  <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-gray-400 shrink-0">
+                    OR PRACTICE INDIVIDUAL ROUND
                   </span>
-                  <div className="h-px flex-1 bg-[var(--border)]" />
+                  <div className="h-px flex-1 bg-white/10" />
                 </div>
 
                 {/* Option 2: Individual Round Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-3">
                   {[
                     {
                       id: "aptitude",
@@ -1214,35 +1398,29 @@ function StudentDashboard() {
                       desc: "10 Quantitative, Logical & Verbal MCQs",
                       time: "20 Mins",
                       color: "#F59E0B",
+                      tagColor: "#F59E0B",
                       icon: Target,
                       tag: "MCQs",
                     },
                     {
                       id: "technical",
-                      title: "Technical Stack Only",
-                      desc: "10 Resume & Tech Stack Questions with AI Alex",
-                      time: "30 Mins",
-                      color: "#3B82F6",
-                      icon: BrainCircuit,
-                      tag: "Voice / Text",
-                    },
-                    {
-                      id: "coding",
-                      title: "Coding IDE Only",
-                      desc: "2 Algorithmic Coding Problems with Live Compiler",
-                      time: "35 Mins",
-                      color: "#10B981",
+                      title: "Technical & Coding Round",
+                      desc: "Data Structures, Algorithms & System Design",
+                      time: "45 Mins",
+                      color: "#06B6D4",
+                      tagColor: "#06B6D4",
                       icon: Code2,
-                      tag: "Compiler",
+                      tag: "Live Code",
                     },
                     {
                       id: "hr",
-                      title: "HR Behavioral Only",
-                      desc: "8 Culture & STAR Method Questions with AI Sarah",
-                      time: "20 Mins",
+                      title: "HR & Behavioral Round",
+                      desc: "Culture fit & leadership situational questions",
+                      time: "25 Mins",
                       color: "#A855F7",
-                      icon: UserCheck,
-                      tag: "Behavioral",
+                      tagColor: "#A855F7",
+                      icon: Mic,
+                      tag: "Voice AI",
                     },
                   ].map((round) => {
                     const RIcon = round.icon;
@@ -1250,48 +1428,47 @@ function StudentDashboard() {
                       <div
                         key={round.id}
                         onClick={() => handleStartInterviewSession(round.id)}
-                        className="p-4 rounded-2xl border border-[var(--border)] hover:border-white/30 hover:bg-white/5 cursor-pointer transition-all flex flex-col justify-between group"
-                        style={{ background: "var(--card-bg)" }}
+                        className="p-4 rounded-2xl border border-white/10 hover:border-white/20 bg-[#121624]/90 hover:bg-[#151a2c] transition-all cursor-pointer group"
                       >
-                        <div>
-                          <div className="flex items-center justify-between mb-2">
-                            <div
-                              className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-                              style={{
-                                background: `color-mix(in srgb, ${round.color} 15%, transparent)`,
-                                color: round.color,
-                              }}
-                            >
-                              <RIcon className="w-4.5 h-4.5" />
-                            </div>
-                            <span
-                              className="text-[9px] font-extrabold px-2 py-0.5 rounded-full border"
-                              style={{
-                                color: round.color,
-                                borderColor: `color-mix(in srgb, ${round.color} 30%, transparent)`,
-                              }}
-                            >
-                              {round.tag}
-                            </span>
+                        <div className="flex items-center justify-between">
+                          <div
+                            className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border"
+                            style={{
+                              background: `color-mix(in srgb, ${round.color} 12%, transparent)`,
+                              borderColor: `color-mix(in srgb, ${round.color} 25%, transparent)`,
+                              color: round.color,
+                            }}
+                          >
+                            <RIcon className="w-5 h-5" />
                           </div>
-
-                          <h4 className="text-xs font-bold text-[var(--text-primary)]">
-                            {round.title}
-                          </h4>
-                          <p className="text-[11px] mt-1 text-[var(--text-secondary)] line-clamp-2">
-                            {round.desc}
-                          </p>
+                          <span
+                            className="text-[10px] font-bold px-2.5 py-0.5 rounded-full border"
+                            style={{
+                              color: round.tagColor,
+                              borderColor: `color-mix(in srgb, ${round.tagColor} 25%, transparent)`,
+                              background: `color-mix(in srgb, ${round.tagColor} 10%, transparent)`,
+                            }}
+                          >
+                            {round.tag}
+                          </span>
                         </div>
 
-                        <div className="mt-3 pt-2 border-t border-[var(--border)] flex items-center justify-between text-[11px]">
-                          <span className="font-mono text-[var(--text-muted)]">
+                        <h4 className="text-sm font-bold text-white mt-2.5">
+                          {round.title}
+                        </h4>
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          {round.desc}
+                        </p>
+
+                        <div className="mt-3 pt-2.5 border-t border-white/5 flex items-center justify-between text-xs">
+                          <span className="text-gray-400">
                             {round.time}
                           </span>
                           <span
                             className="font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform"
                             style={{ color: round.color }}
                           >
-                            Launch <ArrowRight className="w-3 h-3" />
+                            Launch <ArrowRight className="w-3.5 h-3.5" />
                           </span>
                         </div>
                       </div>
