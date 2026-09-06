@@ -156,7 +156,7 @@ function Signup() {
         />
 
         {/* Department & Year side-by-side to save vertical space */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="flex flex-col">
           <InputField
             label="Department"
             name="department"
@@ -183,7 +183,7 @@ function Signup() {
         </div>
 
         {/* Password & Confirm Password side-by-side to save vertical space */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="flex flex-col">
           <InputField
             label="Password"
             type="password"
