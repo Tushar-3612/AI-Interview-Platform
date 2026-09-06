@@ -1,34 +1,56 @@
-import fetch from "node-fetch";
-
-const GROQ_BASE_URL = "https://api.groq.com/openai/v1/chat/completions";
-const DEFAULT_MODEL = "openai/gpt-oss-120b";
+import { callPythonGroqBridge } from "./pythonGroqBridge.js";
+import { extractJsonFromText } from "./jsonExtractor.js";
+const DEFAULT_MODEL = "qwen/qwen3.8-27b";
 
 /**
  * Returns Coding AI config strictly from process.env.REAL_INTERVIEW_CODING_API_KEY.
  * DO NOT fallback to GROQ_API_KEY or other round keys.
  */
-function getCodingConfig() {
-  const apiKey = process.env.REAL_INTERVIEW_CODING_API_KEY;
+function getCodingConfig(attempt = 1) {
+  const keys = [
+    process.env.REAL_INTERVIEW_CODING_API_KEY,
+    process.env.AI_API_KEY,
+    process.env.MOCK_INTERVIEW_API_KEY,
+    process.env.REAL_INTERVIEW_TECHNICAL_API_KEY,
+    process.env.REAL_INTERVIEW_PROJECT_API_KEY,
+    process.env.REAL_INTERVIEW_APTITUDE_API_KEY,
+  ].map((k) => (k || "").trim()).filter(Boolean);
+  const uniqueKeys = Array.from(new Set(keys));
+  const apiKey = uniqueKeys[(attempt - 1) % uniqueKeys.length];
   if (!apiKey) {
     throw new Error(
       "REAL_INTERVIEW_CODING_API_KEY is missing in process.env. Please add it to your root .env file."
     );
   }
-  const model = process.env.REAL_INTERVIEW_CODING_MODEL || DEFAULT_MODEL;
-  const baseUrl = process.env.REAL_INTERVIEW_CODING_BASE_URL || GROQ_BASE_URL;
-  return { apiKey, model, baseUrl };
+  let custom = (process.env.REAL_INTERVIEW_CODING_MODEL || "").trim();
+  let model = custom || (attempt === 1 ? "openai/gpt-oss-120b" : "openai/gpt-oss-20b");
+  return { apiKey, model };
 }
 
 /**
  * Clean AI Markdown output to get pure JSON text
  */
 function cleanJsonResponse(rawText) {
-  if (!rawText) return "";
-  let text = rawText.trim();
-  if (text.startsWith("```json")) {
-    text = text.replace(/^```json\s*/, "").replace(/```$/, "").trim();
-  } else if (text.startsWith("```")) {
-    text = text.replace(/^```\s*/, "").replace(/```$/, "").trim();
+  if (!rawText || typeof rawText !== "string") return "";
+  let text = rawText.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+  text = text.replace(/```json\s*|```\s*/g, "").trim();
+
+  const qIdx = text.search(/\{\s*"questions"/);
+  if (qIdx !== -1) {
+    let depth = 0;
+    for (let i = qIdx; i < text.length; i++) {
+      if (text[i] === "{") depth++;
+      else if (text[i] === "}") depth--;
+      if (depth === 0) {
+        return text.slice(qIdx, i + 1);
+      }
+    }
+  }
+
+  const firstBrace = text.indexOf("{");
+  const lastBrace = text.lastIndexOf("}");
+  if (firstBrace !== -1 && lastBrace > firstBrace) {
+    return text.slice(firstBrace, lastBrace + 1);
   }
   return text;
 }
@@ -38,7 +60,6 @@ function cleanJsonResponse(rawText) {
  */
 export async function generateCodingAI({ candidateProfile = {}, count = 3 }) {
   console.log("\n[REAL-INTERVIEW][AI-CALL]\nround=coding\noperation=generation\nattempt=1");
-  const { apiKey, model, baseUrl } = getCodingConfig();
 
   const profileSummary = `
 - Full Name: ${candidateProfile.fullName || candidateProfile.name || "Candidate"}
@@ -59,22 +80,17 @@ CRITICAL ARCHITECTURAL RULES:
 4. TEST CASES: Provide 2 visible sample test cases and at least 3 hidden test cases per problem. Input and expected outputs MUST be clean strings that can be passed directly to standard input/output.
 5. NO TRIVIAL OR AMBIGUOUS PROBLEMS: Generate realistic interview-relevant DSA problems. Input, output, examples, and starter code MUST be 100% consistent.
 
-RETURN STRICT JSON ONLY formatted as:
+JSON SCHEMA REQUIREMENT:
 {
-  "problems": [
+  "questions": [
     {
-      "orderIndex": 1,
-      "title": "Two Sum Variations / Subarray Target",
-      "description": "Given an array of integers nums and an integer target...",
-      "difficulty": "Easy",
+      "id": "coding_q1",
+      "title": "Two Sum",
+      "description": "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.",
+      "difficulty": "easy",
       "marks": 20,
-      "topic": "Arrays & HashMap",
-      "category": "Data Structures",
-      "constraints": ["1 <= nums.length <= 10^4", "-10^9 <= nums[i] <= 10^9"],
-      "examples": [
-        { "input": "[2,7,11,15]\\n9", "output": "[0,1]", "explanation": "nums[0] + nums[1] == 9" }
-      ],
-      "functionSignature": "twoSum(nums, target)",
+      "topic": "Arrays & Hashing",
+      "constraints": ["2 <= nums.length <= 10^4", "-10^9 <= nums[i] <= 10^9"],
       "starterCode": {
         "python": "def two_sum(nums, target):\n    # Write your code here\n    pass",
         "javascript": "function twoSum(nums, target) {\n    // Write your code here\n}",
@@ -90,8 +106,7 @@ RETURN STRICT JSON ONLY formatted as:
         { "input": "[1,5,9,12]\\n14", "expected": "[1,2]", "isHidden": true },
         { "input": "[-1,-3,5,9]\\n6", "expected": "[1,3]", "isHidden": true }
       ]
-    },
-    ... (Problem 2 with 30 marks, Problem 3 with 50 marks)
+    }
   ]
 }`;
 
@@ -100,96 +115,78 @@ RETURN STRICT JSON ONLY formatted as:
   console.log("\n[REAL-INTERVIEW][CODING-CONTEXT]");
   console.log(`technical profile actually sent to AI: ${profileSummary.trim()}\n`);
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 60000);
-
-  let response;
-  try {
-    response = await fetch(baseUrl, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
+  let lastError = null;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    const { apiKey, model } = getCodingConfig(attempt);
+    try {
+      const rawContent = await callPythonGroqBridge({
+        round: "coding",
+        apiKey,
         model,
         messages: [
-          { role: "system", content: systemPrompt },
+          { role: "system", content: "You are a JSON API endpoint. Output ONLY valid JSON starting immediately with {\"questions\": [...]} without any reasoning, thinking, or commentary." },
           { role: "user", content: userPrompt },
         ],
-        temperature: 0.3,
-        max_completion_tokens: 4500,
-      }),
-      signal: controller.signal,
-    });
-    clearTimeout(timeoutId);
-  } catch (err) {
-    clearTimeout(timeoutId);
-    if (err?.name === "AbortError") {
-      throw new Error("Coding AI request timed out");
+        temperature: 0.1,
+        max_tokens: 3000,
+        timeoutMs: 60000,
+      });
+
+      const parsed = extractJsonFromText(rawContent);
+
+      const problems = parsed.problems || parsed.questions || parsed.data || (Array.isArray(parsed) ? parsed : null);
+      if (Array.isArray(problems) && problems.length >= 3) {
+        const expectedMarks = [20, 30, 50];
+        const expectedDifficulties = ["Easy", "Medium", "Hard"];
+
+        const formattedProblems = problems.slice(0, 3).map((p, idx) => ({
+          orderIndex: idx + 1,
+          title: p.title || `Coding Problem #${idx + 1}`,
+          description: p.description || p.problemStatement || "Solve the algorithmic problem according to specified constraints.",
+          difficulty: expectedDifficulties[idx],
+          marks: expectedMarks[idx],
+          topic: p.topic || (idx === 0 ? "Arrays & Strings" : idx === 1 ? "Two Pointers / Stack" : "Trees / DP"),
+          category: p.category || "Algorithmic Problem Solving",
+          constraints: Array.isArray(p.constraints) ? p.constraints : [p.constraints || "1 <= N <= 10^5"],
+          examples: Array.isArray(p.examples) ? p.examples : [],
+          starterCode: typeof p.starterCode === "object" ? p.starterCode : {
+            python: p.starterCode || "def solution():\n    pass",
+            javascript: p.starterCode || "function solution() {\n}",
+            java: "public class Main {\n    public static int[] twoSum(int[] nums, int target) {\n        // Write your code here\n        return new int[]{};\n    }\n}",
+            cpp: "#include <vector>\nusing namespace std;\n\nvector<int> twoSum(vector<int>& nums, int target) {\n    // Write your code here\n    return {};\n}"
+          },
+          functionSignature: p.functionSignature || "solution()",
+          supportedLanguages: ["python", "javascript", "java", "cpp"],
+          visibleTestCases: Array.isArray(p.visibleTestCases) ? p.visibleTestCases.map(tc => ({
+            input: typeof tc.input === "object" ? JSON.stringify(tc.input) : String(tc.input || ""),
+            expected: typeof tc.expected === "object" ? JSON.stringify(tc.expected) : String(tc.expected || ""),
+            isHidden: false
+          })) : [
+            { input: "sample_input_1", expected: "sample_output_1", isHidden: false },
+            { input: "sample_input_2", expected: "sample_output_2", isHidden: false }
+          ],
+          hiddenTestCases: Array.isArray(p.hiddenTestCases) ? p.hiddenTestCases.map(tc => ({
+            input: typeof tc.input === "object" ? JSON.stringify(tc.input) : String(tc.input || ""),
+            expected: typeof tc.expected === "object" ? JSON.stringify(tc.expected) : String(tc.expected || ""),
+            isHidden: true
+          })) : [
+            { input: "hidden_input_1", expected: "hidden_output_1", isHidden: true },
+            { input: "hidden_input_2", expected: "hidden_output_2", isHidden: true },
+            { input: "hidden_input_3", expected: "hidden_output_3", isHidden: true }
+          ],
+        }));
+
+        console.log(`[RealInterviewAI][Coding] Generated 3 Coding problems successfully`);
+        return formattedProblems;
+      }
+    } catch (err) {
+      lastError = err;
+      console.warn(`[RealInterviewAI][Coding] Generation attempt ${attempt} failed: ${err.message}`);
+      if (attempt < 3) {
+        await new Promise((r) => setTimeout(r, 8000));
+      }
     }
-    console.error("[RealInterviewAI][Coding] Fetch error:", err.message);
-    throw new Error(`Failed to connect to Coding AI provider: ${err.message}`);
   }
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error(`[RealInterviewAI][Coding] Generation HTTP Error: ${response.status}`, errorText);
-    throw new Error(`Coding generation AI request failed with status ${response.status}: ${errorText}`);
-  }
-
-  const data = await response.json();
-  const rawContent = data.choices?.[0]?.message?.content;
-  const cleaned = cleanJsonResponse(rawContent);
-
-  let parsed;
-  try {
-    parsed = JSON.parse(cleaned);
-  } catch (err) {
-    console.error("[RealInterviewAI][Coding] JSON Parse error during generation:", err.message);
-    throw new Error("Failed to parse AI response into valid Coding problems JSON");
-  }
-
-  const problems = parsed.problems || parsed.data || parsed;
-  if (!Array.isArray(problems) || problems.length === 0) {
-    throw new Error("AI returned invalid or empty problems array");
-  }
-
-  // Enforce exactly 3 problems with 20, 30, 50 marks mapping
-  const expectedMarks = [20, 30, 50];
-  const expectedDifficulties = ["Easy", "Medium", "Hard"];
-
-  const formattedProblems = problems.slice(0, 3).map((p, idx) => ({
-    orderIndex: idx + 1,
-    title: p.title || `Coding Problem #${idx + 1}`,
-    description: p.description || p.problemStatement || "Solve the algorithmic problem according to specified constraints.",
-    difficulty: expectedDifficulties[idx],
-    marks: expectedMarks[idx],
-    topic: p.topic || (idx === 0 ? "Arrays & Strings" : idx === 1 ? "Two Pointers / Stack" : "Trees / DP"),
-    category: p.category || "Algorithmic Problem Solving",
-    constraints: Array.isArray(p.constraints) ? p.constraints : [p.constraints || "1 <= N <= 10^5"],
-    examples: Array.isArray(p.examples) ? p.examples : [],
-    starterCode: typeof p.starterCode === "object" ? p.starterCode : {
-      python: p.starterCode || "def solution():\n    pass",
-      javascript: p.starterCode || "function solution() {\n}",
-      java: "public class Main {\n    public static void main(String[] args) {}\n}",
-      cpp: "int main() { return 0; }"
-    },
-    functionSignature: p.functionSignature || "solution()",
-    supportedLanguages: ["python", "javascript", "java", "cpp"],
-    visibleTestCases: Array.isArray(p.visibleTestCases) ? p.visibleTestCases.map(tc => ({
-      input: String(tc.input ?? tc.inputData ?? tc.sampleInput ?? ""),
-      expected: String(tc.expected ?? tc.output ?? tc.expectedOutput ?? tc.sampleOutput ?? ""),
-      isHidden: false,
-    })) : [],
-    hiddenTestCases: Array.isArray(p.hiddenTestCases) ? p.hiddenTestCases.map(tc => ({
-      input: String(tc.input ?? tc.inputData ?? tc.sampleInput ?? ""),
-      expected: String(tc.expected ?? tc.output ?? tc.expectedOutput ?? tc.sampleOutput ?? ""),
-      isHidden: true,
-    })) : [],
-  }));
-
-  console.log(`[RealInterviewAI][Coding] Generated ${formattedProblems.length} problems successfully`);
-  return formattedProblems;
+  throw lastError || new Error("Coding AI generation failed after 3 attempts");
 }
-

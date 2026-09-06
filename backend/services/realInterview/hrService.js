@@ -12,144 +12,6 @@ import {
 /**
  * Fallback static set of 5 deep HR questions if AI generation API fails (e.g. HTTP 429).
  */
-const STATIC_FALLBACK_HR_QUESTIONS = [
-  {
-    questionIndex: 1,
-    question: "You are in a team meeting where everyone supports a project approach that you believe has a major flaw. You are not 100% certain your alternative is perfect. Would you challenge the decision? How would you approach the situation?",
-    category: "Self-Awareness & Confidence",
-    difficulty: "easy",
-    maxMarks: 20,
-    behavioralDimensions: ["confidence", "selfAwareness", "communicationClarity"],
-    resumeReference: "General Workplace Scenario",
-  },
-  {
-    questionIndex: 2,
-    question: "You discover a mistake in your recent work that no one else has noticed yet. Fixing it properly will delay your team's upcoming deadline. What would you do, and why?",
-    category: "Accountability & Ownership",
-    difficulty: "easy",
-    maxMarks: 20,
-    behavioralDimensions: ["accountability", "ownership", "integrity"],
-    resumeReference: "Workplace Responsibility Scenario",
-  },
-  {
-    questionIndex: 3,
-    question: "A teammate publicly challenges your decision in front of others, claiming your approach caused unnecessary delay for their work. How would you respond in that moment, and what would you do afterward?",
-    category: "Conflict Handling & Emotional Control",
-    difficulty: "medium",
-    maxMarks: 20,
-    behavioralDimensions: ["conflictHandling", "emotionalControl", "professionalMaturity"],
-    resumeReference: "Team Dynamics Scenario",
-  },
-  {
-    questionIndex: 4,
-    question: "Your manager unexpectedly changes the project's direction one day before implementation, rendering two weeks of your hard work obsolete. How would you handle this change?",
-    category: "Adaptability & Resilience",
-    difficulty: "medium",
-    maxMarks: 20,
-    behavioralDimensions: ["adaptability", "resilience", "professionalMaturity"],
-    resumeReference: "Agile Workplace Scenario",
-  },
-  {
-    questionIndex: 5,
-    question: "You receive three urgent tasks from different stakeholders, but you only have time to complete two before the deadline. Explain your decision-making process, how you communicate with stakeholders, and what trade-offs you accept.",
-    category: "Prioritization & Complex Decision Making",
-    difficulty: "hard",
-    maxMarks: 20,
-    behavioralDimensions: ["prioritization", "decisionMaking", "judgment"],
-    resumeReference: "Stakeholder Management Scenario",
-  },
-  {
-    questionIndex: 6,
-    question: "Describe a time when you received constructive criticism that you initially disagreed with. How did you digest the feedback, and what changes did you make?",
-    category: "Professional Growth & Feedback Acceptance",
-    difficulty: "easy",
-    maxMarks: 20,
-    behavioralDimensions: ["selfAwareness", "adaptability", "growthMindset"],
-    resumeReference: "Performance Review Scenario",
-  },
-  {
-    questionIndex: 7,
-    question: "How do you build trust with new team members or cross-functional stakeholders when joining a project with high delivery pressure?",
-    category: "Team Collaboration & Relationship Building",
-    difficulty: "easy",
-    maxMarks: 20,
-    behavioralDimensions: ["teamwork", "communicationClarity", "trustBuilding"],
-    resumeReference: "Cross-Functional Collaboration",
-  },
-  {
-    questionIndex: 8,
-    question: "Tell me about a situation where a project failed to meet its objective despite your best efforts. What was your personal takeaway, and how did you apply it to future projects?",
-    category: "Resilience & Post-Mortem Learning",
-    difficulty: "medium",
-    maxMarks: 20,
-    behavioralDimensions: ["resilience", "accountability", "learningAgility"],
-    resumeReference: "Project Retrospective Scenario",
-  },
-  {
-    questionIndex: 9,
-    question: "When working under tight deadlines, how do you ensure code/work quality is not compromised while managing stress and preventing burnout?",
-    category: "Workplace Stress & Quality Management",
-    difficulty: "medium",
-    maxMarks: 20,
-    behavioralDimensions: ["stressManagement", "qualityFocus", "ownership"],
-    resumeReference: "High-Pressure Delivery Scenario",
-  },
-  {
-    questionIndex: 10,
-    question: "Explain a situation where you had to lead an initiative or mentor a junior team member without having formal authority.",
-    category: "Leadership & Mentorship",
-    difficulty: "medium",
-    maxMarks: 20,
-    behavioralDimensions: ["leadership", "influence", "mentorship"],
-    resumeReference: "Peer Leadership Scenario",
-  },
-  {
-    questionIndex: 11,
-    question: "Describe a scenario where technical trade-offs had to be communicated to non-technical business leaders. How did you tailor your communication?",
-    category: "Business Acumen & Stakeholder Alignment",
-    difficulty: "hard",
-    maxMarks: 20,
-    behavioralDimensions: ["businessAcumen", "communicationClarity", "stakeholderAlignment"],
-    resumeReference: "Technical Leadership Scenario",
-  },
-  {
-    questionIndex: 12,
-    question: "How do you navigate working with a team member who consistently delivers below expectations and impacts your team's velocity?",
-    category: "Peer Accountability & Team Dynamics",
-    difficulty: "hard",
-    maxMarks: 20,
-    behavioralDimensions: ["peerAccountability", "professionalMaturity", "conflictHandling"],
-    resumeReference: "Team Performance Scenario",
-  },
-  {
-    questionIndex: 13,
-    question: "Tell me about a time when you had to advocate for ethical considerations or user security over a requested product feature.",
-    category: "Integrity & Professional Standards",
-    difficulty: "hard",
-    maxMarks: 20,
-    behavioralDimensions: ["integrity", "ethics", "courage"],
-    resumeReference: "Engineering Ethics Scenario",
-  },
-  {
-    questionIndex: 14,
-    question: "What motivates you to perform at your best, and how do you align your personal career goals with the company's long-term objectives?",
-    category: "Career Vision & Alignment",
-    difficulty: "easy",
-    maxMarks: 20,
-    behavioralDimensions: ["motivation", "careerVision", "alignment"],
-    resumeReference: "Career Growth Scenario",
-  },
-  {
-    questionIndex: 15,
-    question: "Describe a project where requirements were highly ambiguous. How did you drive clarity and establish milestones?",
-    category: "Ambiguity & Problem Solving",
-    difficulty: "medium",
-    maxMarks: 20,
-    behavioralDimensions: ["initiative", "problemSolving", "clarity"],
-    resumeReference: "Product Scoping Scenario",
-  }
-];
-
 /**
  * 1. Generate & Process HR Questions (AI CALL #1)
  * Enforces EXACTLY 5 questions, 20 maxMarks each (Total 100 marks).
@@ -162,13 +24,14 @@ export async function generateAndProcessHRQuestions({ userId = null, sessionId, 
 
   const lockKey = `hr:${sessionId}`;
   return withInFlightLock(lockKey, async () => {
-    // Check if session exists
+    // 1. Session lookup & idempotency check
     let session = await RealInterviewHRSession.findOne({ sessionId });
+    console.log(`[HR-DIAGNOSTIC] sessionId=${sessionId} sessionLookup=${Boolean(session)} generationStatus=${session?.generationStatus || "NONE"}`);
 
     if (session && (session.generationStatus === "GENERATED" || session.aiGenerationCalls >= 1)) {
       const existingQuestions = await RealInterviewHRQuestion.find({ sessionId }).sort({ orderIndex: 1 });
       if (existingQuestions.length === 5) {
-        console.log(`[HRService] Session ${sessionId} already generated (5 questions, aiGenerationCalls: ${session.aiGenerationCalls}). Reusing existing questions.`);
+        console.log(`[HR-DIAGNOSTIC] Session ${sessionId} already has 5 valid HR questions. Reusing without re-generation.`);
         return {
           success: true,
           sessionId,
@@ -179,100 +42,97 @@ export async function generateAndProcessHRQuestions({ userId = null, sessionId, 
       }
     }
 
-  if (!session) {
-    session = new RealInterviewHRSession({
-      sessionId,
-      userId,
-      candidateProfile,
-      generationStatus: "GENERATING",
-    });
-  } else {
-    session.generationStatus = "GENERATING";
-  }
-
-  session.aiGenerationCalls += 1;
-  await session.save();
-
-  console.log(`[HRService] Making AI CALL #1 for session ${sessionId}...`);
-
-  let questionsData = [];
-  let fallbackUsed = false;
-  const userHistorySet = await getUserQuestionHistorySet(userId);
-
-  try {
-    const res = await generateHRAI({ candidateProfile, count: 5 });
-    if (res && Array.isArray(res)) {
-      questionsData = filterUniqueQuestions(res, userHistorySet);
+    if (!session) {
+      session = new RealInterviewHRSession({
+        sessionId,
+        userId,
+        candidateProfile,
+        generationStatus: "GENERATING",
+      });
+    } else {
+      session.generationStatus = "GENERATING";
     }
-  } catch (err) {
-    console.warn(`[HRService] AI generation call failed (${err.message}). Checking unique fallback pool.`);
-  }
 
-  if (questionsData.length < 5) {
-    const currentHRSet = new Set(questionsData.map(q => (q.question || "").toLowerCase().trim()));
-    const fallbackUnique = filterUniqueQuestions(STATIC_FALLBACK_HR_QUESTIONS, userHistorySet);
-    for (const fbQ of fallbackUnique) {
-      if (questionsData.length >= 5) break;
-      const norm = (fbQ.question || "").toLowerCase().trim();
-      currentHRSet.add(norm);
-      questionsData.push(fbQ);
-    }
-    if (questionsData.length < 5) {
-      for (const fbQ of STATIC_FALLBACK_HR_QUESTIONS) {
-        if (questionsData.length >= 5) break;
-        const norm = (fbQ.question || "").toLowerCase().trim();
-        if (!currentHRSet.has(norm)) {
-          currentHRSet.add(norm);
-          questionsData.push(fbQ);
+    session.aiGenerationCalls += 1;
+    await session.save();
+
+    const requestId = `hr_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+    const modelName = process.env.REAL_INTERVIEW_HR_MODEL || "openai/gpt-oss-120b";
+    const hasKey = Boolean(process.env.REAL_INTERVIEW_HR_API_KEY?.trim());
+
+    console.log(`[HR-DIAGNOSTIC] resumeContextRetrieved=true candidateName=${candidateProfile.fullName || candidateProfile.name || "Candidate"} education=${candidateProfile.education || "N/A"}`);
+    console.log(`[HR-DIAGNOSTIC] apiKeyPresent=${hasKey} (key hidden) model=${modelName} requestId=${requestId}`);
+
+    let questionsData = [];
+    const userHistorySet = await getUserQuestionHistorySet(userId);
+
+    try {
+      console.log(`[HR-DIAGNOSTIC] Invoking generateHRAI...`);
+      const res = await generateHRAI({ candidateProfile, count: 5 });
+      if (res && Array.isArray(res)) {
+        console.log(`[HR-DIAGNOSTIC] rawQuestionsReceived=${res.length}`);
+        questionsData = filterUniqueQuestions(res, userHistorySet);
+        if (questionsData.length < 5) {
+          questionsData = res.slice(0, 5);
         }
+      } else {
+        throw new Error(`HR AI returned empty or invalid response`);
       }
+    } catch (err) {
+      console.error(`\n[AI-REQUEST-FAILED]\nround=hr\nprovider=groq\nrequestId=${requestId}\nerror=${err.message}`);
+      throw new Error(`HR AI generation failed: ${err.message}`);
     }
-    fallbackUsed = true;
-  }
 
-  // Ensure exactly 5 questions
-  const finalQuestionsData = questionsData.slice(0, 5);
+    if (questionsData.length < 5) {
+      console.error(`\n[AI-REQUEST-FAILED]\nround=hr\nprovider=groq\nrequestId=${requestId}\nerror=Insufficient AI questions returned (${questionsData.length}/5)`);
+      throw new Error(`Insufficient HR AI questions generated (${questionsData.length}/5)`);
+    }
 
-  // Clear existing questions for session if re-attempting
-  await RealInterviewHRQuestion.deleteMany({ sessionId });
+    console.log(`\n[AI-REQUEST-SUCCESS]\nround=hr\nprovider=groq\nrequestId=${requestId}\nquestionsReturned=${questionsData.length}`);
+    console.log(`\n[QUESTION-SOURCE]\nround=hr\nsource=AI_PROVIDER\ncount=${questionsData.length}\n`);
 
-  const createdQuestions = [];
-  for (let i = 0; i < finalQuestionsData.length; i++) {
-    const item = finalQuestionsData[i];
-    const qDoc = new RealInterviewHRQuestion({
+    const finalQuestionsData = questionsData.slice(0, 5);
+    await RealInterviewHRQuestion.deleteMany({ sessionId });
+
+    const createdQuestions = [];
+    for (let i = 0; i < finalQuestionsData.length; i++) {
+      const item = finalQuestionsData[i];
+      const qDoc = new RealInterviewHRQuestion({
+        sessionId,
+        userId,
+        orderIndex: i + 1,
+        question: item.question,
+        category: item.category || "Behavioral",
+        difficulty: i < 2 ? "easy" : i < 4 ? "medium" : "hard",
+        maxMarks: 20,
+        behavioralDimensions: item.behavioralDimensions || ["decisionMaking", "ownership"],
+        resumeReference: item.resumeReference || "General Workplace Scenario",
+        source: "AI_PROVIDER",
+      });
+      await qDoc.save();
+      createdQuestions.push(qDoc);
+    }
+
+    console.log(`[HR-DIAGNOSTIC] dbSaveSuccess=true savedQuestionsCount=${createdQuestions.length}`);
+
+    if (userId && sessionId) {
+      await recordUserQuestionHistory({ userId, sessionId, round: "hr", questions: createdQuestions });
+    }
+
+    session.generationStatus = "GENERATED";
+    session.fallbackUsed = false;
+    await session.save();
+
+    return {
+      success: true,
       sessionId,
-      userId,
-      orderIndex: i + 1,
-      question: item.question,
-      category: item.category || "Behavioral",
-      difficulty: i < 2 ? "easy" : i < 4 ? "medium" : "hard",
-      maxMarks: 20,
-      behavioralDimensions: item.behavioralDimensions || ["decisionMaking", "ownership"],
-      resumeReference: item.resumeReference || "",
-      source: fallbackUsed ? "static_fallback" : "ai_generated",
-    });
-    const saved = await qDoc.save();
-    createdQuestions.push(saved);
-  }
-
-  if (userId && sessionId) {
-    await recordUserQuestionHistory({ userId, sessionId, round: "hr", questions: createdQuestions });
-  }
-
-  session.generationStatus = "GENERATED";
-  session.fallbackUsed = fallbackUsed;
-  await session.save();
-
-  return {
-    success: true,
-    sessionId,
-    count: createdQuestions.length,
-    questions: createdQuestions,
-    reused: false,
-    fallbackUsed,
-    aiGenerationCalls: session.aiGenerationCalls,
-  };
- });
+      count: createdQuestions.length,
+      questions: createdQuestions,
+      reused: false,
+      fallbackUsed: false,
+      aiGenerationCalls: session.aiGenerationCalls,
+    };
+  });
 }
 
 /**

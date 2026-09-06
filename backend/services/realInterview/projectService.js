@@ -80,188 +80,39 @@ export async function generateAndProcessProjectQuestions({
   }
 
   // AI CALL #1: Generate 10 deep project questions
-  console.log(`[ProjectService] Making AI CALL #1 for session ${sessionId}...`);
   const effectiveProfile = await getOrBuildCandidateResumeContext(userId, candidateProfile);
-  let aiResult;
   const userHistorySet = await getUserQuestionHistorySet(userId);
 
+  const requestId = `proj_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+  const modelName = process.env.REAL_INTERVIEW_PROJECT_MODEL || "openai/gpt-oss-120b";
+  const hasKey = Boolean(process.env.REAL_INTERVIEW_PROJECT_API_KEY?.trim());
+
+  console.log(`\n[AI-REQUEST-START]\nround=project\nprovider=groq\nmodel=${modelName}\nkeyPresent=${hasKey}\nrequestId=${requestId}`);
+  console.log(`\n[REAL-INTERVIEW][PROJECT-CONTEXT]\nprojects=${JSON.stringify((effectiveProfile.projects || []).map(p => ({ name: p.name, technologies: p.technologies })))}\n`);
+
+  let aiResult;
   try {
     aiResult = await generateProjectAI(effectiveProfile);
   } catch (genErr) {
-    console.warn(`[ProjectService] AI generation failed (${genErr.message}). Using fault-tolerant project question pool.`);
-    aiResult = { questions: [] };
+    console.error(`\n[AI-REQUEST-FAILED]\nround=project\nprovider=groq\nrequestId=${requestId}\nerror=${genErr.message}`);
+    throw new Error(`Project AI generation failed: ${genErr.message}`);
   }
 
-  const currentPoolSet = new Set();
-  const rawAiQuestions = (aiResult?.questions || []).filter((q) => isQuestionGroundedInResume(q, "project", effectiveProfile));
-  const userProjects = Array.isArray(effectiveProfile.projects) && effectiveProfile.projects.length > 0
-    ? effectiveProfile.projects
-    : [];
-  let rawQuestions = filterUniqueQuestions(rawAiQuestions, userHistorySet, currentPoolSet);
-  rawQuestions.forEach((q) => { q.source = q.source || "ai_generated"; });
+  const rawAiQuestions = aiResult?.questions || [];
+  let rawQuestions = filterUniqueQuestions(rawAiQuestions, userHistorySet);
+  if (rawQuestions.length < 10) {
+    rawQuestions = rawAiQuestions.slice(0, 10);
+  }
 
   if (rawQuestions.length < 10) {
-    console.log(`[ProjectService] AI returned ${rawQuestions.length}/10 questions. Using static fallback pool for remainder.`);
-
-    const buildGroundedFallbackQuestions = (projects) => {
-      const fallbacks = [];
-      if (!projects || projects.length === 0) {
-        const openEndedList = [
-          "Can you describe the primary software engineering project you worked on recently and its key technical objectives?",
-          "What was the most challenging technical roadblock you encountered during project development, and how did you resolve it?",
-          "How did you structure your components and modularize source code for maintainability?",
-          "What was your approach to testing, debugging, and verifying functionality in your software projects?",
-          "How did you handle environment variables, configuration parameters, and sensitive credentials safely?",
-          "What trade-offs did you consider when selecting programming languages and framework technologies for your project?",
-          "How did you handle error logging, exception boundaries, and user feedback in your application?",
-          "If you were to refactor your recent project today, what architectural decisions or tooling would you change and why?",
-          "Describe how you collaborated, managed version control, and tracked technical tasks during project development.",
-          "What key software engineering practices or lessons did you learn from completing your software projects?"
-        ];
-        openEndedList.forEach((qText, idx) => {
-          fallbacks.push({
-            question: qText,
-            difficulty: idx < 4 ? "easy" : idx < 8 ? "medium" : "hard",
-            category: "resume_project",
-            topic: "Project Engineering",
-            projectName: "Software Project",
-            expectedKnowledge: "Clean software engineering practices, problem solving, and architecture reasoning."
-          });
-        });
-        return fallbacks;
-      }
-
-      projects.forEach((proj) => {
-        const name = proj.name || proj.title || "Project";
-        const desc = proj.description || "";
-        const techs = Array.isArray(proj.technologies) ? proj.technologies : [];
-        const techStr = techs.length > 0 ? techs.join(", ") : "the core technologies listed";
-
-        fallbacks.push({
-          question: `Can you explain the high-level architecture of your "${name}" project and the rationale behind using ${techStr}?`,
-          difficulty: "easy",
-          category: "resume_project",
-          topic: "System Architecture",
-          projectName: name,
-          expectedKnowledge: "Component hierarchy, tech selection rationale, and system workflow."
-        });
-
-        fallbacks.push({
-          question: `What was the most challenging technical problem you encountered while developing "${name}", and how did you resolve it?`,
-          difficulty: "easy",
-          category: "resume_project",
-          topic: "Problem Solving",
-          projectName: name,
-          expectedKnowledge: "Debugging workflow, root cause investigation, and structural resolution."
-        });
-
-        if (techs.length > 0) {
-          fallbacks.push({
-            question: `How did you integrate and utilize ${techs.slice(0, 2).join(" and ")} within your "${name}" project?`,
-            difficulty: "medium",
-            category: "resume_project",
-            topic: "Technology Integration",
-            projectName: name,
-            expectedKnowledge: "Framework usage, API flow, and data handling details."
-          });
-        }
-
-        fallbacks.push({
-          question: `Reflecting on "${name}", what technical trade-offs did you make during development, and what would you change if rebuilding it today?`,
-          difficulty: "hard",
-          category: "resume_project",
-          topic: "Architecture Trade-offs",
-          projectName: name,
-          expectedKnowledge: "Technical debt evaluation, modern tool adoption rationale, and engineering maturity."
-        });
-      });
-
-      const defaultProj = projects[0]?.name || projects[0]?.title || "your project";
-      const extraList = [
-        `How did you structure your source code directories and module boundaries in "${defaultProj}"?`,
-        `What strategy did you use for input validation and error handling across components in "${defaultProj}"?`,
-        `How did you test and verify functionality before completing "${defaultProj}"?`,
-        `Describe the data flow when a user initiates a main action or request in "${defaultProj}".`
-      ];
-      extraList.forEach((qText, idx) => {
-        fallbacks.push({
-          question: qText,
-          difficulty: idx % 2 === 0 ? "medium" : "hard",
-          category: "resume_project",
-          topic: "Code Architecture",
-          projectName: defaultProj,
-          expectedKnowledge: "Clean code structure and validation."
-        });
-      });
-
-      return fallbacks;
-    };
-
-    const STATIC_PROJECT_FALLBACK = buildGroundedFallbackQuestions(userProjects);
-
-    const fallbackUnique = filterUniqueQuestions(STATIC_PROJECT_FALLBACK, userHistorySet, currentPoolSet);
-    for (const fbQ of fallbackUnique) {
-      if (rawQuestions.length >= 10) break;
-      currentPoolSet.add(normalizeQuestionText(fbQ.question));
-      rawQuestions.push({ ...fbQ, source: "static_fallback" });
-    }
-
-    if (rawQuestions.length < 10) {
-      for (const fbQ of STATIC_PROJECT_FALLBACK) {
-        if (rawQuestions.length >= 10) break;
-        const norm = normalizeQuestionText(fbQ.question);
-        if (!currentPoolSet.has(norm)) {
-          currentPoolSet.add(norm);
-          rawQuestions.push({ ...fbQ, source: "static_fallback" });
-        }
-      }
-    }
+    console.error(`\n[AI-REQUEST-FAILED]\nround=project\nprovider=groq\nrequestId=${requestId}\nerror=Insufficient AI questions returned (${rawQuestions.length}/10)`);
+    throw new Error(`Insufficient Project AI questions generated (${rawQuestions.length}/10)`);
   }
 
-  // Ensure rawQuestions has at least 10 unique valid entries
-  if (rawQuestions.length < 10) {
-    const defaultProjName = userProjects.length > 0 ? (userProjects[0].title || userProjects[0].name || "your project") : "your project";
-    const backupList = [
-      `Walk through your project directory structure for "${defaultProjName}" and explain how you modularized your code.`,
-      `How did you handle environment variables and sensitive configuration credentials in "${defaultProjName}"?`,
-      `What technical challenges or responsive layout issues did you solve in "${defaultProjName}"?`,
-      `Describe how you optimized database or data processing response times in "${defaultProjName}".`,
-      `How did you handle error logging and debugging in "${defaultProjName}"?`
-    ];
-    for (const bText of backupList) {
-      if (rawQuestions.length >= 10) break;
-      const norm = normalizeQuestionText(bText);
-      if (!currentPoolSet.has(norm)) {
-        currentPoolSet.add(norm);
-        rawQuestions.push({
-          question: bText,
-          difficulty: rawQuestions.length < 4 ? "easy" : rawQuestions.length < 8 ? "medium" : "hard",
-          category: "resume_project",
-          topic: "Project Engineering",
-          projectName: defaultProjName,
-          expectedKnowledge: "Clean code structure, security, and optimization.",
-          source: "static_fallback"
-        });
-      }
-    }
-  }
+  console.log(`\n[AI-REQUEST-SUCCESS]\nround=project\nprovider=groq\nrequestId=${requestId}\nquestionsReturned=${rawQuestions.length}`);
+  console.log(`\n[QUESTION-SOURCE]\nround=project\nsource=AI_PROVIDER\ncount=${rawQuestions.length}\n`);
 
-  // Sort raw questions by difficulty preference ("easy" -> "medium" -> "hard")
-  const easyPool = rawQuestions.filter((q) => String(q.difficulty).toLowerCase() === "easy");
-  const mediumPool = rawQuestions.filter((q) => String(q.difficulty).toLowerCase() === "medium");
-  const hardPool = rawQuestions.filter((q) => String(q.difficulty).toLowerCase() === "hard");
-  const otherPool = rawQuestions.filter(
-    (q) => !["easy", "medium", "hard"].includes(String(q.difficulty).toLowerCase())
-  );
-
-  const poolCombined = [...easyPool, ...mediumPool, ...hardPool, ...otherPool];
-  const selectedQuestions = poolCombined.slice(0, 10);
-  const fallbackUsed = selectedQuestions.some((q) => q.source === "static_fallback");
-  const aiCount = selectedQuestions.filter((q) => q.source === "ai_generated").length;
-
-  console.log(
-    `\n[REAL-INTERVIEW][QUESTION-SOURCE]\nround=project\nsource=${fallbackUsed ? (aiCount > 0 ? "partial_static_fallback" : "static_fallback") : "ai_generated"}\nresumeContext=${Boolean(effectiveProfile && effectiveProfile.projects?.length > 0)}\nreason=${fallbackUsed ? `AI generated ${aiCount}/10 grounded questions` : "AI generated 10 grounded questions successfully"}\n`
-  );
+  const selectedQuestions = rawQuestions.slice(0, 10);
 
   // Enforce EXACTLY 4 Easy (5m), 4 Medium (10m), 2 Hard (20m) -> Total = 100 Marks
   const validatedDocs = selectedQuestions.map((q, idx) => {
@@ -278,12 +129,8 @@ export async function generateAndProcessProjectQuestions({
     ).trim();
 
     // Assign difficulty strictly based on index slot to guarantee 100 max marks (4 Easy, 4 Medium, 2 Hard)
-    const validDiff = idx < 4 ? "easy" : idx < 8 ? "medium" : "hard";
-    const maxMarks = validDiff === "easy" ? 5 : validDiff === "hard" ? 20 : 10;
-
-    const topic = String(q.topic || "Project Workflow & Architecture").trim();
-    const category = String(q.category || "Architecture").trim();
-    const projectName = String(q.projectName || "").trim();
+    const slotDiff = idx < 4 ? "easy" : idx < 8 ? "medium" : "hard";
+    const maxMarks = slotDiff === "easy" ? 5 : slotDiff === "hard" ? 20 : 10;
 
     return {
       sessionId,
@@ -291,12 +138,12 @@ export async function generateAndProcessProjectQuestions({
       orderIndex: idx,
       question: questionText,
       expectedKnowledge,
-      difficulty: validDiff,
+      difficulty: slotDiff,
       maxMarks,
-      topic,
-      category,
-      projectName,
-      source: "resume_project",
+      topic: String(q.topic || "Project Engineering").trim(),
+      category: "resume_project",
+      projectName: String(q.projectName || "Software Project").trim(),
+      source: "AI_PROVIDER",
     };
   });
 

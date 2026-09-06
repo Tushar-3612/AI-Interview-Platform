@@ -30,7 +30,7 @@ const realInterviewCodingSessionSchema = new mongoose.Schema(
       enum: ["NOT_STARTED", "GENERATING", "GENERATED", "FAILED"],
       default: "NOT_STARTED",
     },
-    aiGenerationCalls: { type: Number, default: 0, max: 1 },
+    aiGenerationCalls: { type: Number, default: 0 },
     evaluationCompleted: { type: Boolean, default: false },
 
     totalScore: { type: Number, default: 0 },

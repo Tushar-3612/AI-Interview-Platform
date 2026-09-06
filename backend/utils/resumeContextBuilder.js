@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import User from "../models/User.js";
 import { parseResumeComplete, normalizeSkill } from "../services/resumeParser.js";
 
@@ -48,6 +49,34 @@ export async function getOrBuildCandidateResumeContext(userId = null, bodyProfil
   let certifications = Array.isArray(student?.certifications) && student.certifications.length > 0
     ? student.certifications
     : (Array.isArray(bodyProfile?.certifications) ? bodyProfile.certifications : []);
+
+  // Lookup from Interview model's resumeSnapshot if skills or projects are missing
+  if ((!projects.length || !skills.length) && (bodyProfile?.sessionId || bodyProfile?.interviewId || userId)) {
+    try {
+      const interviewId = bodyProfile?.sessionId || bodyProfile?.interviewId;
+      const Interview = mongoose.models.Interview;
+      if (Interview) {
+        const interview = interviewId
+          ? await Interview.findById(interviewId).lean()
+          : await Interview.findOne({ userId }).sort({ createdAt: -1 }).lean();
+
+        if (interview?.resumeSnapshot) {
+          const snap = interview.resumeSnapshot;
+          if (!skills.length && (snap.skills?.length || snap.all_skills?.length)) {
+            skills = snap.skills || snap.all_skills;
+          }
+          if (!projects.length && (snap.projects?.length || snap.parsedProjects?.length)) {
+            projects = snap.projects || snap.parsedProjects;
+          }
+          if (!Object.keys(categorizedSkills).length && snap.categorizedSkills) {
+            categorizedSkills = snap.categorizedSkills;
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("[RESUME-CONTEXT] Interview snapshot lookup warning:", e.message);
+    }
+  }
 
   // Fallback: If projects or categorizedSkills are missing, but resumeBase64 is available, perform local parsing
   if ((!projects.length || !skills.length) && student?.resumeBase64) {
@@ -179,25 +208,47 @@ export function isQuestionGroundedInResume(questionObj, roundType, resumeContext
   const qTopic = String(questionObj.topic || "").toLowerCase();
   const qSkill = String(questionObj.relatedSkill || "").toLowerCase();
 
+  // Sort KNOWN_TECH_KEYWORDS by length descending so longer keywords (e.g. C++, React.js) match before shorter substrings (e.g. C, React)
+  const sortedKeywords = [...KNOWN_TECH_KEYWORDS].sort((a, b) => b.length - a.length);
+
   // 1. Technical Round Grounding Check
   if (roundType === "technical") {
-    // If candidate has empty skills context, general CS fundamentals (OS, OOP, Networks, DSA) are allowed
     if (candidateTechSet.size === 0) return true;
 
-    // Detect if the question explicitly asks about a known technology
-    for (const kw of KNOWN_TECH_KEYWORDS) {
+    // Check implementation claim wording: if question says "How did you implement..." without explicit project feature detail
+    const claimsImplementation = /\bhow did you (?:implement|build|design|handle|develop|create)\b/i.test(qLower) &&
+      !/\bhow (?:would|could|can|do) you\b/i.test(qLower);
+
+    for (const kw of sortedKeywords) {
       const kwLower = kw.toLowerCase();
-      // Match technology keyword as a whole word in question, topic, or relatedSkill
-      const regex = new RegExp(`\\b${kwLower.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i");
+      // Handle single-letter / special boundary keywords like "C", "R", "C++", "C#"
+      let regex;
+      if (kwLower === "c" || kwLower === "r") {
+        regex = new RegExp(`(^|[^a-zA-Z0-9+#])${kwLower}($|[^a-zA-Z0-9+#])`, "i");
+      } else {
+        regex = new RegExp(`\\b${kwLower.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i");
+      }
+
       if (regex.test(qLower) || regex.test(qTopic) || regex.test(qSkill)) {
-        // If keyword is found in question, check if it's in candidate's tech stack
         if (!candidateTechSet.has(kwLower)) {
-          // Special exception for core CS fundamental topics (e.g. Operating Systems, Computer Networks)
           if (["operating systems", "computer networks", "data structures", "software engineering", "object-oriented programming"].includes(kwLower)) {
             continue;
           }
           console.warn(`[GROUNDING-GATE][TECHNICAL] REJECTED question (unmentioned technology '${kw}'): "${qText.slice(0, 80)}..."`);
           return false;
+        }
+
+        // If technology IS in tech stack, but question claims "How did you implement [feature] in your project..." when only technology is listed
+        if (claimsImplementation && !qText.toLowerCase().includes("how would you") && !qText.toLowerCase().includes("how could you")) {
+          // Check if candidate resume has explicit project feature detail for this
+          const hasProjectDetail = (resumeContext.projects || []).some((p) => {
+            const desc = (p.description || "").toLowerCase();
+            return desc.includes(kwLower);
+          });
+          if (!hasProjectDetail) {
+            console.warn(`[GROUNDING-GATE][TECHNICAL] REJECTED implementation claim wording for '${kw}' (no explicit feature detail): "${qText.slice(0, 80)}..."`);
+            return false;
+          }
         }
       }
     }
@@ -278,11 +329,16 @@ export function isQuestionGroundedInResume(questionObj, roundType, resumeContext
     }
 
     // Claim: Check if question mentions any technology NOT explicitly in the project's tech stack or description
-    for (const kw of KNOWN_TECH_KEYWORDS) {
+    for (const kw of sortedKeywords) {
       const kwLower = kw.toLowerCase();
-      const regex = new RegExp(`\\b${kwLower.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i");
+      let regex;
+      if (kwLower === "c" || kwLower === "r") {
+        regex = new RegExp(`(^|[^a-zA-Z0-9+#])${kwLower}($|[^a-zA-Z0-9+#])`, "i");
+      } else {
+        regex = new RegExp(`\\b${kwLower.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i");
+      }
+
       if (regex.test(qLower) || regex.test(qTopic)) {
-        // Must be in project's explicit tech stack / description
         const inProjTech = projTechSet.has(kwLower) || projDesc.includes(kwLower);
         const isCoreEngWord = ["project", "software", "code", "architecture", "system", "testing", "design", "performance"].includes(kwLower);
         if (!inProjTech && !isCoreEngWord) {

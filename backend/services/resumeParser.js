@@ -4,6 +4,18 @@ import dotenv from "dotenv";
 dotenv.config();
 
 /**
+ * Helper to normalize multi-spaces and tabs line-by-line while preserving structural line breaks
+ */
+export function normalizeTextWhitespace(text) {
+  if (!text || typeof text !== "string") return "";
+  return text
+    .split("\n")
+    .map((line) => line.replace(/[ \t]+/g, " ").trim())
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n");
+}
+
+/**
  * 1. Extract raw text from PDF buffer
  */
 export async function extractPDFText(buffer) {
@@ -32,7 +44,7 @@ export async function extractPDFText(buffer) {
       fullText += pageText + "\n\n";
     }
 
-    return fullText.trim();
+    return normalizeTextWhitespace(fullText.trim());
   } catch (err) {
     console.warn("⚠️ PDF text extraction warning:", err.message);
     return "";
@@ -213,35 +225,58 @@ export function extractSkillsFromTextRegex(text) {
 export function extractProjectsFromText(text) {
   if (!text) return [];
 
+  const normalized = normalizeTextWhitespace(text);
   const projects = [];
-  const projectSectionMatch = text.match(/(?:^|\n)\s*(?:Projects|Personal Projects|Key Projects|Academic Projects|Relevant Projects|Project Details)\b([\s\S]*?)(?=(?:\n\s*(?:Experience|Work Experience|Internships|Technical Skills|Skills|Education|Certifications|Achievements|Research Work|Publications|Declaration)\b)|$)/i);
 
-  if (!projectSectionMatch || !projectSectionMatch[1]) return [];
+  // Match any variation of Project section headers
+  const projectSectionMatch = normalized.match(
+    /(?:^|\n)\s*(?:Projects|Personal Projects|Key Projects|Academic Projects|Relevant Projects|Project Details|Featured Projects|Projects & Experience|Project Experience|Projects Worked On|Technical Projects|Selected Projects)\b[:\-]*([\s\S]*?)(?=(?:\n\s*(?:Experience|Work Experience|Internships|Technical Skills|Skills|Education|Certifications|Achievements|Research Work|Publications|Declaration|Languages|Interests|Honors)\b[:\-]*)|$)/i
+  );
 
-  const sectionText = projectSectionMatch[1].trim();
+  let sectionText = "";
+  if (projectSectionMatch && projectSectionMatch[1]) {
+    sectionText = projectSectionMatch[1].trim();
+  } else {
+    // Fallback: look for "Project" lines in the full text if no explicit section header match
+    const altMatch = normalized.match(/(?:^|\n)(.*Project[\s\S]*?)(?=(?:\n\s*(?:Experience|Education|Skills|Certifications)\b)|$)/i);
+    if (altMatch && altMatch[1]) {
+      sectionText = altMatch[1].trim();
+    }
+  }
+
+  if (!sectionText) return [];
+
   const lines = sectionText.split("\n").map(l => l.trim()).filter(Boolean);
-
   let currentProject = null;
 
   for (const line of lines) {
-    const isBullet = line.startsWith("•") || line.startsWith("-") || line.startsWith("*") || line.startsWith("–");
-    const isContinuation = line.endsWith(".") || line.endsWith(",") || /^[a-z]/.test(line) || line.length < 15;
+    const isBulletPoint = line.startsWith("•") || line.startsWith("-") || line.startsWith("*") || line.startsWith("–") || line.startsWith("▪") || line.startsWith("►");
+    const isNumberedTitle = /^\d+[\.\)]\s+[A-Z0-9]/.test(line);
+    const isTechStackLine = /^(?:Tech Stack|Technologies|Technologies Used|Stack)\s*[:\-]/i.test(line);
 
-    // Check if line looks like a project header (e.g. "Title | Tech1, Tech2" or "Title : Tech1, Tech2")
-    const headerWithDelimiter = line.match(/^([^|:–]+?)\s*(?:[|:]|–)\s*(.+)$/);
-    const headerMatch = headerWithDelimiter;
+    // Header formats: "Title | Tech1, Tech2" or "1. Project Title" or "Title (Tech1, Tech2)"
+    const headerWithDelimiter = line.match(/^([^|:–()]+?)\s*(?:[|:]|–|\(|\busing\b|\bwith\b)\s*(.+)$/i);
+    const isHeaderLine = (isNumberedTitle || (!isBulletPoint && !isTechStackLine && line.length < 110));
 
-    if (!isBullet && !isContinuation && (headerMatch || line.length < 80)) {
+    if (isTechStackLine && currentProject) {
+      const techStr = line.replace(/^(?:Tech Stack|Technologies|Technologies Used|Stack)\s*[:\-]/i, "").trim();
+      const techList = techStr.split(/[,|;]/).map(t => normalizeSkill(t.trim())).filter(Boolean);
+      techList.forEach(t => {
+        if (!currentProject.technologies.includes(t)) {
+          currentProject.technologies.push(t);
+        }
+      });
+    } else if (isHeaderLine) {
       if (currentProject && currentProject.name) {
         projects.push(currentProject);
       }
 
-      let projName = line;
+      let projName = line.replace(/^\d+[\.\)]\s*/, "").trim();
       let techList = [];
 
-      if (headerMatch) {
-        projName = headerMatch[1].trim();
-        const techStr = headerMatch[2].trim();
+      if (headerWithDelimiter && !isNumberedTitle) {
+        projName = headerWithDelimiter[1].replace(/^\d+[\.\)]\s*/, "").trim();
+        const techStr = headerWithDelimiter[2].replace(/\)$/, "").trim();
         techList = techStr.split(/[,|;]/).map(t => normalizeSkill(t.trim())).filter(Boolean);
       }
 
@@ -253,14 +288,13 @@ export function extractProjectsFromText(text) {
         technologies: techList
       };
     } else if (currentProject) {
-      const lineClean = line.replace(/^[•\-*–\s]+/, "").trim();
+      const lineClean = line.replace(/^[•\-*–▪►\s\d\.\)]+/, "").trim();
       if (currentProject.description) {
         currentProject.description += " " + lineClean;
       } else {
         currentProject.description = lineClean;
       }
 
-      // Also extract any technologies mentioned in the line text
       const extractedTechs = extractSkillsFromTextRegex(lineClean);
       Object.values(extractedTechs).forEach(arr => {
         if (Array.isArray(arr)) {
@@ -278,8 +312,11 @@ export function extractProjectsFromText(text) {
     projects.push(currentProject);
   }
 
-  // Filter out any invalid / dummy project entries (e.g. name < 2 chars or generic words)
-  const validProjects = projects.filter(p => p.name && p.name.length > 2 && !["dashboard", "dashboard.", "project", "details"].includes(p.name.toLowerCase()));
+  const validProjects = projects.filter(
+    p => p.name &&
+    p.name.length > 2 &&
+    !["dashboard", "dashboard.", "project", "details", "projects", "key projects", "tech stack", "technologies"].includes(p.name.toLowerCase())
+  );
 
   return validProjects;
 }
@@ -506,3 +543,48 @@ Return ONLY valid JSON matching this exact structure:
     certifications: extractedCertifications
   };
 }
+
+export function parseResumeText(rawText) {
+  if (!rawText || typeof rawText !== "string") {
+    return {
+      candidateName: "Candidate",
+      atsScore: 0,
+      skills: {},
+      categorizedSkills: {},
+      all_skills: [],
+      projects: [],
+      experience: [],
+      education: [],
+      certifications: []
+    };
+  }
+
+  const normalized = normalizeTextWhitespace(rawText);
+  const regexSkills = extractSkillsFromTextRegex(normalized);
+
+  const allSkillsList = [];
+  Object.values(regexSkills).forEach(arr => {
+    if (Array.isArray(arr)) allSkillsList.push(...arr);
+  });
+  const all_skills = normalizeSkills(allSkillsList);
+
+  const projects = extractProjectsFromText(normalized);
+  const experience = extractExperienceFromText(normalized);
+  const education = extractEducationFromText(normalized);
+  const certifications = extractCertificationsFromText(normalized);
+
+  console.log("\n[RESUME] Projects Extracted:", projects.length, `(${projects.map(p => p.name || p.title).join(", ")})`);
+
+  return {
+    candidateName: "Candidate",
+    atsScore: 85,
+    skills: regexSkills,
+    categorizedSkills: regexSkills,
+    all_skills,
+    projects,
+    experience,
+    education,
+    certifications
+  };
+}
+

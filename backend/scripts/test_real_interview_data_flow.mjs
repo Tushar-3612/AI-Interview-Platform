@@ -8,17 +8,23 @@ const __dirname = path.dirname(__filename);
 
 dotenv.config({ path: path.join(__dirname, "../../.env") });
 
+import mongoose from "mongoose";
+import User from "../models/User.js";
+
 const BASE_URL = "http://localhost:5000";
 const secret = process.env.JWT_SECRET || "fallback_secret_key";
-const testUserId = "66d92a1b9c9e1f0011223344";
-
-const token = jwt.sign({ id: testUserId, role: "student" }, secret, { expiresIn: "1h" });
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
 async function runTest() {
   console.log("=================================================");
   console.log("🧪 TESTING FRESH REAL INTERVIEW SESSION & DATA FLOW");
   console.log("=================================================\n");
+
+  await mongoose.connect(process.env.MONGO_URI);
+  let user = await User.findOne({ email: "tusharnagare2006@gmail.com" });
+  if (!user) user = await User.findOne();
+  const token = jwt.sign({ id: user._id, role: user.role || "student" }, secret, { expiresIn: "1h" });
+  console.log(`Using User: ${user._id} (${user.email})`);
 
   const headers = {
     "Content-Type": "application/json",
@@ -112,8 +118,10 @@ async function runTest() {
     qs.length === 53 &&
     !invalidAptitude
   ) {
+    await mongoose.disconnect();
     console.log("\n🎉 SUCCESS: All 53 Real Interview questions generated and validated with a single canonical sessionId!");
   } else {
+    await mongoose.disconnect();
     console.error("\n❌ FAILED: Session validation did not meet expectations.");
     process.exit(1);
   }

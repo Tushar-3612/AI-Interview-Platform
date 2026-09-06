@@ -302,25 +302,31 @@ export const generateHR = async (req, res) => {
   try {
     const userId = req.user?.id || req.user?._id;
     const sessionId = req.body?.sessionId || `hr_session_${Date.now()}`;
-    const candidateProfile = await getOrBuildCandidateResumeContext(userId, req.body?.candidateProfile || req.body?.resume || {});
+    console.log(`[HR-DIAGNOSTIC] Incoming POST /api/real-interview/hr/generate sessionId=${sessionId} userId=${userId || "ANONYMOUS"}`);
 
-    console.log(`[REAL INTERVIEW AI] round=hr keyPresent=${Boolean((process.env.REAL_INTERVIEW_HR_API_KEY || "").trim())} provider=groq requestStarted=true`);
+    const candidateProfile = await getOrBuildCandidateResumeContext(userId, req.body?.candidateProfile || req.body?.resume || {});
+    console.log(`[HR-DIAGNOSTIC] Resume context retrieved: name=${candidateProfile.fullName || candidateProfile.name || "Candidate"}, skillsCount=${(candidateProfile.skills || []).length}, projectsCount=${(candidateProfile.projects || []).length}`);
+
+    const hasKey = Boolean((process.env.REAL_INTERVIEW_HR_API_KEY || "").trim());
+    console.log(`[HR-DIAGNOSTIC] REAL_INTERVIEW_HR_API_KEY present: ${hasKey} (key value hidden)`);
+
     const result = await generateAndProcessHRQuestions({
       userId,
       sessionId,
       candidateProfile,
     });
-    console.log(`[REAL INTERVIEW AI] round=hr requestCompleted=true count=${result.questions?.length || 5}`);
+    console.log(`[HR-DIAGNOSTIC] HR generation successfully completed count=${result.questions?.length || result.count || 5}`);
 
     res.status(201).json({
       sessionId,
       ...result,
     });
   } catch (error) {
-    console.error("[RealInterviewController] HR Generation Error:", error.message);
+    console.error("[RealInterviewController] HR Generation Error:", error.message, error.stack);
     res.status(500).json({
       success: false,
       message: error.message || "Failed to generate Real Interview HR Questions",
+      error: error.message,
     });
   }
 };

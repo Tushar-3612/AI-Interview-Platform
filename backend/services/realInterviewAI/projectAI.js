@@ -6,23 +6,36 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.join(__dirname, "../../../.env") });
 
-const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
+import { callPythonGroqBridge } from "./pythonGroqBridge.js";
 
-function getProjectApiKey() {
-  const apiKey = (process.env.REAL_INTERVIEW_PROJECT_API_KEY || "").trim();
+function getProjectApiKey(attempt = 1) {
+  const keys = [
+    process.env.REAL_INTERVIEW_PROJECT_API_KEY,
+    process.env.AI_API_KEY,
+    process.env.MOCK_INTERVIEW_API_KEY,
+    process.env.REAL_INTERVIEW_TECHNICAL_API_KEY,
+    process.env.REAL_INTERVIEW_CODING_API_KEY,
+    process.env.REAL_INTERVIEW_APTITUDE_API_KEY,
+  ].map((k) => (k || "").trim()).filter(Boolean);
+  const uniqueKeys = Array.from(new Set(keys));
+  const apiKey = uniqueKeys[(attempt - 1) % uniqueKeys.length];
 
   if (!apiKey) {
-    console.error("[RealInterviewAI][Project] Missing REAL_INTERVIEW_PROJECT_API_KEY");
+    console.error("[RealInterviewAI][Project] Missing API key");
     throw new Error("REAL_INTERVIEW_PROJECT_API_KEY is not configured in environment");
   }
   return apiKey;
 }
 
-function getProjectModel() {
+function getProjectModel(attempt = 1) {
   const custom = (process.env.REAL_INTERVIEW_PROJECT_MODEL || "").trim();
   if (custom) return custom;
+  if (attempt === 1) return "openai/gpt-oss-120b";
+  if (attempt === 2) return "openai/gpt-oss-20b";
   return "openai/gpt-oss-120b";
 }
+
+import { extractJsonFromText } from "./jsonExtractor.js";
 
 /**
  * Generates EXACTLY 10 deep Project/Resume questions in ONE AI API Request (AI CALL #1).
@@ -30,13 +43,15 @@ function getProjectModel() {
  * @param {Object} candidateProfile 
  * @returns {Promise<{ questions: Array }>}
  */
+
 export async function generateProjectAI(candidateProfile = {}) {
   console.log("\n[REAL-INTERVIEW][AI-CALL]\nround=project\noperation=generation\nattempt=1");
+
   const apiKey = getProjectApiKey();
   const model = getProjectModel();
 
-  const rawProjects = candidateProfile.projects || [];
-  let normalizedProjects = rawProjects.map((p) => {
+  const projects = candidateProfile.resumeProjects || candidateProfile.projects || [];
+  let normalizedProjects = projects.map((p) => {
     if (typeof p === "string") {
       return {
         name: p.trim(),
@@ -48,7 +63,7 @@ export async function generateProjectAI(candidateProfile = {}) {
     return {
       name: p.name || p.title || "Project",
       description: p.description || p.summary || "",
-      technologies: p.technologies || p.techStack || [],
+      technologies: Array.isArray(p.technologies) ? p.technologies : p.techStack ? [p.techStack] : [],
       role: p.role || "Developer",
     };
   }).filter(p => Boolean(p.name && p.name !== "Project"));
@@ -59,36 +74,48 @@ export async function generateProjectAI(candidateProfile = {}) {
     console.log(`\n[REAL-INTERVIEW][PROJECT-CONTEXT]\nprojects=[] (Resume context unavailable)\n`);
   }
 
-  const projectContextStr = normalizedProjects.length > 0
-    ? `CANDIDATE PROJECTS & PROFILE:\n${JSON.stringify({ projects: normalizedProjects, skills: candidateProfile.skills || [] }, null, 2)}`
-    : `CANDIDATE SKILLS & PROFILE (0 explicit projects in resume):\n${JSON.stringify({ skills: candidateProfile.skills || [] }, null, 2)}`;
+  let projectsContext = "";
+  if (normalizedProjects.length > 0) {
+    projectsContext = normalizedProjects
+      .map(
+        (p, idx) =>
+          `Project #${idx + 1}: ${p.name}\n- Technologies: ${
+            Array.isArray(p.technologies) ? p.technologies.join(", ") : p.technologies || "General Software"
+          }\n- Description: ${p.description || "Project implementation."}`
+      )
+      .join("\n\n");
+  } else {
+    projectsContext = "Candidate has general software engineering experience building full stack web & backend applications.";
+  }
 
-  const defaultProjName = normalizedProjects.length > 0 ? normalizedProjects[0].name : "Project Experience";
+  const defaultProjName = normalizedProjects[0]?.name || "Full Stack Application";
 
-  const prompt = `You are interviewing this candidate based ONLY on the supplied resume context.
-Do NOT invent unmentioned database schemas, authentication workflows, JWT, Redis caching, Docker, or cloud deployment features unless explicitly listed in that project's resume evidence.
-If implementation details are omitted from the resume, ask open-ended problem solving and architecture questions (e.g. "What was the most challenging technical roadblock in project X and how did you solve it?").
-${normalizedProjects.length > 0 ? `Every project question MUST reference an actual project name from the profile (${normalizedProjects.map(p => `"${p.name}"`).join(", ")}) and actual technologies listed for that project.` : `Do NOT invent synthetic project names or unmentioned technologies. Ask open-ended questions about project workflows and software engineering experience.`}
+  const prompt = `Generate a JSON object with key "questions" containing EXACTLY 10 deep project interview questions based on candidate's project portfolio:
 
-Generate a JSON object with key "questions" containing EXACTLY 10 deep, technical project-focused interview questions based ONLY on the project details provided.
+CANDIDATE PROJECTS:
+${projectsContext}
 
-${projectContextStr}
+DIFFICULTY BREAKDOWN (EXACTLY 10 QUESTIONS):
+- Questions 1 to 4: "difficulty": "easy" (5 marks each)
+- Questions 5 to 8: "difficulty": "medium" (10 marks each)
+- Questions 9 to 10: "difficulty": "hard" (20 marks each)
 
-STRICT QUESTION DISTRIBUTION (EXACTLY 10 QUESTIONS | 100 MARKS TOTAL):
-- 2 Easy questions (5 marks each = 10 marks): High-level architecture, project purpose, core user flow.
-- 6 Medium questions (10 marks each = 60 marks): Deep dive into technical implementation, technology integration, problem solving.
-- 2 Hard questions (15 marks each = 30 marks): Edge cases, scaling bottlenecks, technical trade-off decisions.
+CRITICAL GROUNDING CONSTRAINTS:
+1. "questions" MUST be an array of EXACTLY 10 objects.
+2. Ask about actual technologies, architecture, data flow, trade-offs, and challenges mentioned in candidate projects.
+3. "question": Grounded project question.
+4. "expectedKnowledge": Key architectural and technical points expected.
+5. "topic": Project domain or component.
+6. "projectName": Project name associated with question.
 
-JSON SCHEMA ONLY:
+JSON OUTPUT ONLY:
 {
   "questions": [
     {
-      "question": "Deep technical question about the candidate's project",
-      "expectedKnowledge": "Key implementation details and trade-offs expected",
-      "difficulty": "medium",
-      "maxMarks": 10,
+      "question": "Deep architectural or technical question on candidate project",
+      "expectedKnowledge": "Key implementation details expected",
+      "difficulty": "easy",
       "topic": "Architecture & API Flow",
-      "category": "Project Implementation",
       "projectName": "${defaultProjName}"
     }
   ]
@@ -99,69 +126,46 @@ JSON SCHEMA ONLY:
     messages: [
       {
         role: "system",
-        content:
-          "You are a technical project interviewer. Output ONLY a valid JSON object matching schema with EXACTLY 10 questions based on candidate projects.",
+        content: "You are a JSON API endpoint. Output ONLY valid JSON starting immediately with {\"questions\": [...]} without any reasoning, thinking, or commentary.",
       },
       { role: "user", content: prompt },
     ],
-    temperature: 0.2,
-    max_tokens: 2500,
-    max_completion_tokens: 2500,
-    response_format: { type: "json_object" },
+    temperature: 0.1,
+    max_tokens: 3500,
   };
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 60000);
+  let lastError = null;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    const currentApiKey = getProjectApiKey(attempt);
+    const currentModel = getProjectModel(attempt);
+    try {
+      const rawText = await callPythonGroqBridge({
+        round: "project",
+        apiKey: currentApiKey,
+        model: currentModel,
+        messages: requestBody.messages,
+        temperature: requestBody.temperature,
+        max_tokens: requestBody.max_tokens,
+        timeoutMs: 60000,
+      });
 
-  let response;
-  try {
-    response = await fetch(GROQ_URL, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(requestBody),
-      signal: controller.signal,
-    });
-    clearTimeout(timeoutId);
-  } catch (err) {
-    clearTimeout(timeoutId);
-    if (err?.name === "AbortError") {
-      throw new Error("Project AI request timed out");
+      const parsed = extractJsonFromText(rawText);
+
+      if (parsed && Array.isArray(parsed.questions) && parsed.questions.length >= 10) {
+        console.log(`[RealInterviewAI][Project] Generated ${parsed.questions.length} questions successfully`);
+        return parsed;
+      }
+      throw new Error(`AI returned ${parsed?.questions?.length || 0} questions (expected 10)`);
+    } catch (err) {
+      lastError = err;
+      console.warn(`[RealInterviewAI][Project] Generation attempt ${attempt} failed: ${err.message}`);
+      if (attempt < 3) {
+        await new Promise((r) => setTimeout(r, 12000));
+      }
     }
-    console.error("[RealInterviewAI][Project] Fetch error:", err.message);
-    throw new Error(`Failed to connect to Project AI provider: ${err.message}`);
   }
 
-  if (!response.ok) {
-    const errorText = await response.text().catch(() => "");
-    console.error("[RealInterviewAI][Project] HTTP Error:", response.status, errorText);
-    throw new Error(`Project AI request failed with status ${response.status}: ${errorText}`);
-  }
-
-  const responseData = await response.json();
-  const rawText = responseData?.choices?.[0]?.message?.content || "";
-
-  if (!rawText.trim()) {
-    throw new Error("Project AI returned an empty response");
-  }
-
-  let parsed;
-  try {
-    const cleanJson = rawText.replace(/```json\s*|\s*```/g, "").trim();
-    parsed = JSON.parse(cleanJson);
-  } catch (parseErr) {
-    console.error("[RealInterviewAI][Project] JSON Parse error:", parseErr.message);
-    throw new Error("Project AI returned invalid JSON format");
-  }
-
-  if (!parsed || !Array.isArray(parsed.questions)) {
-    throw new Error("Project AI response missing 'questions' array");
-  }
-
-  console.log(`[RealInterviewAI][Project] Generated ${parsed.questions.length} questions successfully`);
-  return parsed;
+  throw lastError || new Error("Project AI generation failed after 3 attempts");
 }
 
 /**
@@ -247,55 +251,20 @@ JSON SCHEMA ONLY:
       { role: "user", content: prompt },
     ],
     temperature: 0.2,
-    max_completion_tokens: 2560,
-    response_format: { type: "json_object" },
+    max_tokens: 2560,
   };
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 90000);
+  const rawText = await callPythonGroqBridge({
+    round: "project",
+    apiKey,
+    model,
+    messages: requestBody.messages,
+    temperature: requestBody.temperature,
+    max_tokens: requestBody.max_tokens,
+    timeoutMs: 90000,
+  });
 
-  let response;
-  try {
-    response = await fetch(GROQ_URL, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(requestBody),
-      signal: controller.signal,
-    });
-    clearTimeout(timeoutId);
-  } catch (err) {
-    clearTimeout(timeoutId);
-    if (err?.name === "AbortError") {
-      throw new Error("Project evaluation AI request timed out");
-    }
-    console.error("[RealInterviewAI][Project] Evaluation fetch error:", err.message);
-    throw new Error(`Failed to connect to Project Evaluation AI provider: ${err.message}`);
-  }
-
-  if (!response.ok) {
-    const errorText = await response.text().catch(() => "");
-    console.error("[RealInterviewAI][Project] Evaluation HTTP Error:", response.status, errorText);
-    throw new Error(`Project evaluation AI request failed with status ${response.status}: ${errorText}`);
-  }
-
-  const responseData = await response.json();
-  const rawText = responseData?.choices?.[0]?.message?.content || "";
-
-  if (!rawText.trim()) {
-    throw new Error("Project evaluation AI returned empty response");
-  }
-
-  let parsed;
-  try {
-    const cleanJson = rawText.replace(/```json\s*|\s*```/g, "").trim();
-    parsed = JSON.parse(cleanJson);
-  } catch (parseErr) {
-    console.error("[RealInterviewAI][Project] JSON Parse error:", parseErr.message);
-    throw new Error("Project evaluation AI returned invalid JSON format");
-  }
+  const parsed = extractJsonFromText(rawText);
 
   if (!parsed || !Array.isArray(parsed.evaluations)) {
     throw new Error("Project evaluation AI response missing 'evaluations' array");

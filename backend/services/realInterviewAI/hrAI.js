@@ -1,34 +1,54 @@
-import fetch from "node-fetch";
+import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
 
-const GROQ_BASE_URL = "https://api.groq.com/openai/v1/chat/completions";
-const DEFAULT_MODEL = "openai/gpt-oss-120b";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.join(__dirname, "../../../.env") });
+
+import { callPythonGroqBridge } from "./pythonGroqBridge.js";
+import { extractJsonFromText } from "./jsonExtractor.js";
 
 /**
  * Returns HR AI config strictly from process.env.REAL_INTERVIEW_HR_API_KEY.
  * DO NOT fallback to GROQ_API_KEY, TECHNICAL key, or PROJECT key.
  */
-function getHRConfig() {
-  const apiKey = process.env.REAL_INTERVIEW_HR_API_KEY;
+function getHRConfig(attempt = 1) {
+  const apiKey = (process.env.REAL_INTERVIEW_HR_API_KEY || "").trim();
   if (!apiKey) {
     throw new Error(
       "REAL_INTERVIEW_HR_API_KEY is missing in process.env. Please add it to your root .env file."
     );
   }
-  const model = process.env.REAL_INTERVIEW_HR_MODEL || DEFAULT_MODEL;
-  const baseUrl = process.env.REAL_INTERVIEW_HR_BASE_URL || GROQ_BASE_URL;
-  return { apiKey, model, baseUrl };
+  const custom = (process.env.REAL_INTERVIEW_HR_MODEL || "").trim();
+  const model = custom || (attempt === 1 ? "openai/gpt-oss-120b" : "openai/gpt-oss-20b");
+  return { apiKey, model };
 }
 
 /**
  * Clean AI Markdown output to get pure JSON text
  */
 function cleanJsonResponse(rawText) {
-  if (!rawText) return "";
-  let text = rawText.trim();
-  if (text.startsWith("```json")) {
-    text = text.replace(/^```json\s*/, "").replace(/```$/, "").trim();
-  } else if (text.startsWith("```")) {
-    text = text.replace(/^```\s*/, "").replace(/```$/, "").trim();
+  if (!rawText || typeof rawText !== "string") return "";
+  let text = rawText.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+  text = text.replace(/```json\s*|```\s*/g, "").trim();
+
+  const qIdx = text.search(/\{\s*"questions"/);
+  if (qIdx !== -1) {
+    let depth = 0;
+    for (let i = qIdx; i < text.length; i++) {
+      if (text[i] === "{") depth++;
+      else if (text[i] === "}") depth--;
+      if (depth === 0) {
+        return text.slice(qIdx, i + 1);
+      }
+    }
+  }
+
+  const firstBrace = text.indexOf("{");
+  const lastBrace = text.lastIndexOf("}");
+  if (firstBrace !== -1 && lastBrace > firstBrace) {
+    return text.slice(firstBrace, lastBrace + 1);
   }
   return text;
 }
@@ -38,7 +58,6 @@ function cleanJsonResponse(rawText) {
  */
 export async function generateHRAI({ candidateProfile = {}, count = 5 }) {
   console.log("\n[REAL-INTERVIEW][AI-CALL]\nround=hr\noperation=generation\nattempt=1");
-  const { apiKey, model, baseUrl } = getHRConfig();
 
   const profileSummary = `
 - Full Name: ${candidateProfile.fullName || candidateProfile.name || "Candidate"}
@@ -49,36 +68,33 @@ export async function generateHRAI({ candidateProfile = {}, count = 5 }) {
 - Key Projects Summary: ${JSON.stringify(candidateProfile.projects || [])}
 `;
 
-  const systemPrompt = `You are a Senior HR & Behavioral Interview Evaluator conducting a high-stakes professional interview.
-Your task is to generate EXACTLY 5 deep, scenario-based behavioral interview questions tailored to the candidate's background.
+  const systemPrompt = `You are a Senior HR Vice President conducting a final HR cultural & behavioral interview for a top tier tech company.
+Your task is to generate EXACTLY 5 high-impact, professional HR interview questions tailored to the candidate's profile.
 
-CRITICAL RULES:
+CRITICAL ARCHITECTURAL RULES:
 1. TOTAL QUESTIONS: EXACTLY 5. NO MORE, NO LESS.
-2. DO NOT use generic textbook HR questions (e.g. "Tell me about yourself", "What are your strengths?", "What are your weaknesses?", "Why should we hire you?", "Where do you see yourself in 5 years?").
-3. Questions must cover realistic workplace scenarios, ambiguity, conflict handling, accountability, pressure, decision-making, trade-offs, and self-reflection.
-4. The questions should naturally deepen in complexity from Question 1 to Question 5:
-   - Question 1: Self-awareness & confidence scenario
-   - Question 2: Accountability & ownership scenario
-   - Question 3: Team conflict & criticism scenario
-   - Question 4: Adaptability & pressure scenario
-   - Question 5: Complex decision-making, ethical trade-off & professional maturity scenario
-5. RESUME AWARENESS: Personalize questions using real details from the candidate profile (e.g. leadership roles, internships). NEVER invent fake companies, projects, or experiences. If candidate profile lacks specific details, use realistic workplace scenarios.
-6. NO PROJECT DUPLICATION: Do not ask technical architecture questions. Focus strictly on behavioral maturity, decisions, and communication.
-7. MARKS: Every question carries EXACTLY 20 max marks (5 x 20 = 100 total marks).
-8. NO FIXED CORRECT ANSWER: HR questions do NOT have a single correct answer.
+2. QUESTION CATEGORIES:
+   - Question 1: Behavioral / Behavioral Scenario (STAR format)
+   - Question 2: Cultural Fit & Value Alignment
+   - Question 3: Problem Solving & Conflict Resolution
+   - Question 4: Career Goals & Growth Mindset
+   - Question 5: Situational Judgment / Leadership Under Pressure
+3. RESUME GROUNDING: Mention aspects of the candidate's background (education, project experience, leadership) naturally in at least 2 questions.
+4. ABSOLUTE MARKS: Easy=10 marks, Medium=20 marks, Hard=20 marks. Total score possible = 100 or sum of marks (e.g. 5 questions * 20 marks = 100 marks). Set maxMarks = 20 for each question (Total = 100).
+5. STRICT JSON ONLY: Respond with a SINGLE JSON object. No markdown wrappers.
 
-RETURN STRICT JSON ONLY formatted as:
+JSON SCHEMA REQUIREMENT:
 {
   "questions": [
     {
-      "questionIndex": 1,
-      "question": "Realistic scenario-based question text...",
-      "category": "Self-Awareness & Confidence",
+      "id": "hr_q1",
+      "question": "Clear, professional HR question text",
+      "category": "Behavioral",
+      "difficulty": "medium",
       "maxMarks": 20,
-      "behavioralDimensions": ["confidence", "selfAwareness", "communicationClarity"],
-      "resumeReference": "Personalized reference or workplace context"
-    },
-    ... (total 5 items)
+      "evaluationCriteria": ["STAR approach", "Clear metrics", "Ownership"],
+      "sampleGoodAnswer": "Key points of a top-scoring response"
+    }
   ]
 }`;
 
@@ -87,74 +103,51 @@ RETURN STRICT JSON ONLY formatted as:
   console.log("\n[REAL-INTERVIEW][HR-CONTEXT]");
   console.log(`resume context actually sent to AI: ${profileSummary.trim()}\n`);
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 60000);
-
-  let response;
-  try {
-    response = await fetch(baseUrl, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
+  let lastError = null;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    const { apiKey, model } = getHRConfig(attempt);
+    try {
+      const rawContent = await callPythonGroqBridge({
+        round: "hr",
+        apiKey,
         model,
         messages: [
-          { role: "system", content: systemPrompt },
+          { role: "system", content: "You are a JSON API endpoint. Output ONLY valid JSON starting immediately with {\"questions\": [...]} without any reasoning, thinking, or commentary." },
           { role: "user", content: userPrompt },
         ],
-        temperature: 0.6,
-        max_completion_tokens: 2560,
-      }),
-      signal: controller.signal,
-    });
-    clearTimeout(timeoutId);
-  } catch (err) {
-    clearTimeout(timeoutId);
-    if (err?.name === "AbortError") {
-      throw new Error("HR AI request timed out");
+        temperature: 0.1,
+        max_tokens: 1000,
+        timeoutMs: 60000,
+      });
+
+      const parsed = extractJsonFromText(rawContent);
+
+      const questions = parsed.questions || parsed.data || (Array.isArray(parsed) ? parsed : null);
+      if (Array.isArray(questions) && questions.length >= 5) {
+        // Enforce exactly 5 questions with 20 maxMarks
+        const formattedQuestions = questions.slice(0, 5).map((q, idx) => ({
+          questionIndex: idx + 1,
+          question: q.question || q.questionText || q.text || q.prompt || (typeof q === "string" ? q : `Behavioral Scenario Question #${idx + 1}`),
+          category: q.category || "Behavioral & Situational",
+          difficulty: idx < 2 ? "easy" : idx < 4 ? "medium" : "hard",
+          maxMarks: 20,
+          behavioralDimensions: Array.isArray(q.behavioralDimensions) ? q.behavioralDimensions : ["decisionMaking", "ownership"],
+          resumeReference: q.resumeReference || "",
+        }));
+
+        console.log(`[RealInterviewAI][HR] Generated 5 HR questions successfully`);
+        return formattedQuestions;
+      }
+    } catch (err) {
+      lastError = err;
+      console.warn(`[RealInterviewAI][HR] Generation attempt ${attempt} failed: ${err.message}`);
+      if (attempt < 3) {
+        await new Promise((r) => setTimeout(r, 8000));
+      }
     }
-    console.error("[RealInterviewAI][HR] Fetch error:", err.message);
-    throw new Error(`Failed to connect to HR AI provider: ${err.message}`);
   }
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error(`[RealInterviewAI][HR] Generation HTTP Error: ${response.status}`, errorText);
-    throw new Error(`HR generation AI request failed with status ${response.status}: ${errorText}`);
-  }
-
-  const data = await response.json();
-  const rawContent = data.choices?.[0]?.message?.content;
-  const cleaned = cleanJsonResponse(rawContent);
-
-  let parsed;
-  try {
-    parsed = JSON.parse(cleaned);
-  } catch (err) {
-    console.error("[RealInterviewAI][HR] JSON Parse error during generation:", err.message);
-    throw new Error("Failed to parse AI response into valid HR questions JSON");
-  }
-
-  const questions = parsed.questions || parsed.data || parsed;
-  if (!Array.isArray(questions) || questions.length === 0) {
-    throw new Error("AI returned invalid or empty questions array");
-  }
-
-  // Enforce exactly 5 questions with 20 maxMarks
-  const formattedQuestions = questions.slice(0, 5).map((q, idx) => ({
-    questionIndex: idx + 1,
-    question: q.question || `Behavioral Scenario Question #${idx + 1}`,
-    category: q.category || "Behavioral & Situational",
-    difficulty: idx < 2 ? "easy" : idx < 4 ? "medium" : "hard",
-    maxMarks: 20,
-    behavioralDimensions: Array.isArray(q.behavioralDimensions) ? q.behavioralDimensions : ["decisionMaking", "ownership"],
-    resumeReference: q.resumeReference || "",
-  }));
-
-  console.log(`[RealInterviewAI][HR] Generated ${formattedQuestions.length} questions successfully`);
-  return formattedQuestions;
+  throw lastError || new Error("HR AI generation failed after 3 attempts");
 }
 
 /**
@@ -225,53 +218,22 @@ RETURN STRICT JSON ONLY:
 
   const userPrompt = `Candidate Profile: ${candidateProfile.fullName || "Candidate"}\nQuestions and Candidate Answers:\n${JSON.stringify(formattedQA, null, 2)}\n\nEvaluate all 5 answers in valid JSON.`;
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 90000);
+  const rawContent = await callPythonGroqBridge({
+    round: "hr",
+    apiKey,
+    model,
+    messages: [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userPrompt },
+    ],
+    temperature: 0.3,
+    max_tokens: 2560,
+    timeoutMs: 90000,
+  });
 
-  let response;
-  try {
-    response = await fetch(baseUrl, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model,
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
-        ],
-        temperature: 0.3,
-        max_completion_tokens: 2560,
-      }),
-      signal: controller.signal,
-    });
-    clearTimeout(timeoutId);
-  } catch (err) {
-    clearTimeout(timeoutId);
-    if (err?.name === "AbortError") {
-      throw new Error("HR evaluation AI request timed out");
-    }
-    console.error("[RealInterviewAI][HR] Evaluation fetch error:", err.message);
-    throw new Error(`Failed to connect to HR Evaluation AI provider: ${err.message}`);
-  }
+  const parsed = extractJsonFromText(rawContent);
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error(`[RealInterviewAI][HR] Evaluation HTTP Error: ${response.status}`, errorText);
-    throw new Error(`HR evaluation AI request failed with status ${response.status}: ${errorText}`);
-  }
-
-  const data = await response.json();
-  const rawContent = data.choices?.[0]?.message?.content;
-  const cleaned = cleanJsonResponse(rawContent);
-
-  let parsed;
-  try {
-    parsed = JSON.parse(cleaned);
-  } catch (err) {
-    console.error("[RealInterviewAI][HR] JSON Parse error during evaluation:", err.message);
+  if (!parsed || !Array.isArray(parsed.evaluations)) {
     throw new Error("Failed to parse AI response into valid HR evaluation JSON");
   }
 

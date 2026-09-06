@@ -6,20 +6,32 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.join(__dirname, "../../../.env") });
 
-const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
+import { callPythonGroqBridge } from "./pythonGroqBridge.js";
+import { extractJsonFromText } from "./jsonExtractor.js";
 
-function getTechnicalApiKey() {
-  const apiKey = (process.env.REAL_INTERVIEW_TECHNICAL_API_KEY || "").trim();
+function getTechnicalApiKey(attempt = 1) {
+  const keys = [
+    process.env.REAL_INTERVIEW_TECHNICAL_API_KEY,
+    process.env.AI_API_KEY,
+    process.env.MOCK_INTERVIEW_API_KEY,
+    process.env.REAL_INTERVIEW_PROJECT_API_KEY,
+    process.env.REAL_INTERVIEW_CODING_API_KEY,
+    process.env.REAL_INTERVIEW_APTITUDE_API_KEY,
+  ].map((k) => (k || "").trim()).filter(Boolean);
+  const uniqueKeys = Array.from(new Set(keys));
+  const apiKey = uniqueKeys[(attempt - 1) % uniqueKeys.length];
   if (!apiKey) {
-    console.error("[RealInterviewAI][Technical] Missing REAL_INTERVIEW_TECHNICAL_API_KEY");
+    console.error("[RealInterviewAI][Technical] Missing API Key");
     throw new Error("REAL_INTERVIEW_TECHNICAL_API_KEY is not configured in environment");
   }
   return apiKey;
 }
 
-function getTechnicalModel() {
+function getTechnicalModel(attempt = 1) {
   const custom = (process.env.REAL_INTERVIEW_TECHNICAL_MODEL || "").trim();
   if (custom) return custom;
+  if (attempt === 1) return "openai/gpt-oss-120b";
+  if (attempt === 2) return "openai/gpt-oss-20b";
   return "openai/gpt-oss-120b";
 }
 
@@ -79,13 +91,10 @@ JSON SCHEMA ONLY:
   "questions": [
     {
       "question": "Clear deep technical question testing a skill",
-      "expectedKnowledge": "Key technical concepts expected",
-      "difficulty": "medium",
-      "maxMarks": 5,
-      "topic": "React / State Management",
-      "category": "Technology Specific",
-      "source": "resume",
-      "relatedSkill": "React"
+      "expectedKnowledge": "Clear evaluation criteria",
+      "difficulty": "easy",
+      "topic": "Backend Architecture",
+      "skillsTested": ["Node.js", "Express.js"]
     }
   ]
 }`;
@@ -95,69 +104,46 @@ JSON SCHEMA ONLY:
     messages: [
       {
         role: "system",
-        content:
-          "You are a technical interviewer. Output ONLY a valid JSON object matching schema with EXACTLY 20 questions based on candidate profile.",
+        content: "You are a JSON API endpoint. Output ONLY valid JSON starting immediately with {\"questions\": [...]} without any reasoning, thinking, or commentary.",
       },
       { role: "user", content: prompt },
     ],
-    temperature: 0.2,
+    temperature: 0.1,
     max_tokens: 3800,
-    max_completion_tokens: 3800,
-    response_format: { type: "json_object" },
   };
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 60000);
+  let lastError = null;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    const currentApiKey = getTechnicalApiKey(attempt);
+    const currentModel = getTechnicalModel(attempt);
+    try {
+      const rawText = await callPythonGroqBridge({
+        round: "technical",
+        apiKey: currentApiKey,
+        model: currentModel,
+        messages: requestBody.messages,
+        temperature: requestBody.temperature,
+        max_tokens: requestBody.max_tokens,
+        timeoutMs: 60000,
+      });
 
-  let response;
-  try {
-    response = await fetch(GROQ_URL, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(requestBody),
-      signal: controller.signal,
-    });
-    clearTimeout(timeoutId);
-  } catch (err) {
-    clearTimeout(timeoutId);
-    if (err?.name === "AbortError") {
-      throw new Error("Technical AI request timed out");
+      const parsed = extractJsonFromText(rawText);
+
+      if (parsed && Array.isArray(parsed.questions) && parsed.questions.length >= 20) {
+        console.log(`[RealInterviewAI][Technical] Generated ${parsed.questions.length} questions successfully`);
+        return parsed;
+      }
+      throw new Error(`AI returned ${parsed?.questions?.length || 0} questions (expected 20)`);
+    } catch (err) {
+      lastError = err;
+      console.warn(`[RealInterviewAI][Technical] Generation attempt ${attempt} failed: ${err.message}`);
+      if (attempt < 3) {
+        await new Promise((r) => setTimeout(r, 12000));
+      }
     }
-    console.error("[RealInterviewAI][Technical] Fetch error:", err.message);
-    throw new Error(`Failed to connect to Technical AI provider: ${err.message}`);
   }
 
-  if (!response.ok) {
-    const errorText = await response.text().catch(() => "");
-    console.error("[RealInterviewAI][Technical] HTTP Error:", response.status, errorText);
-    throw new Error(`Technical AI request failed with status ${response.status}: ${errorText}`);
-  }
-
-  const responseData = await response.json();
-  const rawText = responseData?.choices?.[0]?.message?.content || "";
-
-  if (!rawText.trim()) {
-    throw new Error("Technical AI returned an empty response");
-  }
-
-  let parsed;
-  try {
-    const cleanJson = rawText.replace(/```json\s*|\s*```/g, "").trim();
-    parsed = JSON.parse(cleanJson);
-  } catch (parseErr) {
-    console.error("[RealInterviewAI][Technical] JSON Parse error:", parseErr.message);
-    throw new Error("Technical AI returned invalid JSON format");
-  }
-
-  if (!parsed || !Array.isArray(parsed.questions)) {
-    throw new Error("Technical AI response missing 'questions' array");
-  }
-
-  console.log(`[RealInterviewAI][Technical] Generated ${parsed.questions.length} questions successfully`);
-  return parsed;
+  throw lastError || new Error("Technical AI generation failed after 3 attempts");
 }
 
 /**
@@ -236,55 +222,20 @@ JSON SCHEMA ONLY:
       { role: "user", content: prompt },
     ],
     temperature: 0.2,
-    max_completion_tokens: 2560,
-    response_format: { type: "json_object" },
+    max_tokens: 2560,
   };
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 90000);
+  const rawText = await callPythonGroqBridge({
+    round: "technical",
+    apiKey,
+    model,
+    messages: requestBody.messages,
+    temperature: requestBody.temperature,
+    max_tokens: requestBody.max_tokens,
+    timeoutMs: 90000,
+  });
 
-  let response;
-  try {
-    response = await fetch(GROQ_URL, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(requestBody),
-      signal: controller.signal,
-    });
-    clearTimeout(timeoutId);
-  } catch (err) {
-    clearTimeout(timeoutId);
-    if (err?.name === "AbortError") {
-      throw new Error("Technical evaluation AI request timed out");
-    }
-    console.error("[RealInterviewAI][Technical] Evaluation fetch error:", err.message);
-    throw new Error(`Failed to connect to Technical Evaluation AI provider: ${err.message}`);
-  }
-
-  if (!response.ok) {
-    const errorText = await response.text().catch(() => "");
-    console.error("[RealInterviewAI][Technical] Evaluation HTTP Error:", response.status, errorText);
-    throw new Error(`Technical evaluation AI request failed with status ${response.status}: ${errorText}`);
-  }
-
-  const responseData = await response.json();
-  const rawText = responseData?.choices?.[0]?.message?.content || "";
-
-  if (!rawText.trim()) {
-    throw new Error("Technical evaluation AI returned empty response");
-  }
-
-  let parsed;
-  try {
-    const cleanJson = rawText.replace(/```json\s*|\s*```/g, "").trim();
-    parsed = JSON.parse(cleanJson);
-  } catch (parseErr) {
-    console.error("[RealInterviewAI][Technical] Evaluation JSON Parse error:", parseErr.message);
-    throw new Error("Technical evaluation AI returned invalid JSON format");
-  }
+  const parsed = extractJsonFromText(rawText);
 
   if (!parsed || !Array.isArray(parsed.evaluations)) {
     throw new Error("Technical evaluation AI response missing 'evaluations' array");

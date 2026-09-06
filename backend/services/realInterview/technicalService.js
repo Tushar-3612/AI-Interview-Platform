@@ -14,44 +14,6 @@ import {
 } from "./questionHistoryService.js";
 import { isQuestionGroundedInResume, getOrBuildCandidateResumeContext } from "../../utils/resumeContextBuilder.js";
 
-const STATIC_TECHNICAL_FALLBACK = [
-  { question: "Explain the difference between process and thread in operating systems, including memory sharing and context switching overhead.", expectedKnowledge: "Process has separate virtual memory space; threads share process heap and code segment with lower context switch cost.", difficulty: "easy", maxMarks: 3, topic: "Operating Systems", category: "Core Fundamentals", relatedSkill: "Operating Systems" },
-  { question: "What is the Virtual DOM in React, and how does the reconciliation algorithm compute UI updates efficiently?", expectedKnowledge: "In-memory JS representation of real DOM; diffing algorithm compares trees and batches minimal real DOM mutations.", difficulty: "easy", maxMarks: 3, topic: "Frontend Development", category: "Frameworks", relatedSkill: "React" },
-  { question: "Describe how indexing works in relational databases and MongoDB, specifically B-Tree vs Hash indexes.", expectedKnowledge: "B-Trees support range queries and order lookups; Hash indexes provide O(1) exact match lookups.", difficulty: "easy", maxMarks: 3, topic: "Databases", category: "Data Storage", relatedSkill: "MongoDB" },
-  { question: "Explain the HTTP protocol lifecycle for a GET request from DNS resolution, TCP/TLS handshake, to response parsing.", expectedKnowledge: "DNS maps domain to IP; TCP 3-way handshake; TLS negotiation; HTTP GET sent and parsed by browser renderer.", difficulty: "easy", maxMarks: 3, topic: "Computer Networks", category: "Web Architecture", relatedSkill: "Networking" },
-  { question: "How does asynchronous event loop execution work in Node.js? Detail call stack, event loop phases, and microtask queues.", expectedKnowledge: "Single thread stack; libuv handles I/O callbacks; process.nextTick and Promise microtasks run before timer/poll phases.", difficulty: "medium", maxMarks: 5, topic: "Node.js Architecture", category: "Backend Engineering", relatedSkill: "Node.js" },
-  { question: "What are SOLID design principles? Explain Dependency Inversion and Single Responsibility with real code structure examples.", expectedKnowledge: "SRP: class has 1 reason to change; DIP: high-level modules depend on abstractions, not concrete implementations.", difficulty: "medium", maxMarks: 5, topic: "Software Design", category: "System Design", relatedSkill: "Software Architecture" },
-  { question: "Explain the difference between SQL transactions (ACID properties) and eventual consistency in NoSQL systems (BASE).", expectedKnowledge: "ACID guarantees immediate strict consistency; BASE prioritizes availability and partition tolerance (CAP theorem).", difficulty: "medium", maxMarks: 5, topic: "Databases", category: "Data Storage", relatedSkill: "SQL" },
-  { question: "How does JWT authentication work securely, and how do you mitigate XSS and CSRF risks when storing tokens?", expectedKnowledge: "Signed JSON tokens; store in HttpOnly SameSite cookies to mitigate XSS/CSRF theft; handle token expiration.", difficulty: "medium", maxMarks: 5, topic: "Web Security", category: "Security", relatedSkill: "Security" },
-  { question: "Describe the memoization pattern in React using useMemo and useCallback. When does over-memoization hurt performance?", expectedKnowledge: "Caches calculated values and function references between re-renders; overhead exceeds benefits for cheap operations.", difficulty: "medium", maxMarks: 5, topic: "React Performance", category: "Frontend Engineering", relatedSkill: "React" },
-  { question: "Explain database deadlock conditions and how transaction isolation levels (Read Committed vs Serializable) affect concurrency.", expectedKnowledge: "Deadlock occurs with cyclic lock wait; higher isolation levels prevent anomalies like phantom reads but reduce concurrency.", difficulty: "medium", maxMarks: 5, topic: "Databases", category: "Data Storage", relatedSkill: "Databases" },
-  { question: "How do garbage collection algorithms (Generational Mark-and-Sweep) work in V8 JavaScript engine?", expectedKnowledge: "Scavenger collector handles short-lived young generation; Mark-Sweep-Compact handles old generation.", difficulty: "medium", maxMarks: 5, topic: "JavaScript Engine", category: "Language Mechanics", relatedSkill: "JavaScript" },
-  { question: "What is CORS (Cross-Origin Resource Sharing), and why do browsers send preflight OPTIONS requests?", expectedKnowledge: "Browser security mechanism; preflight OPTIONS check permissions before non-simple HTTP requests across origins.", difficulty: "medium", maxMarks: 5, topic: "Web Security", category: "Networking", relatedSkill: "Web Architecture" },
-  { question: "Explain Docker containerization vs Virtual Machines, highlighting OS kernel sharing and resource isolation mechanisms.", expectedKnowledge: "Containers share host OS kernel using cgroups/namespaces; VMs run full guest OS on hypervisor.", difficulty: "medium", maxMarks: 5, topic: "DevOps & Cloud", category: "Infrastructure", relatedSkill: "Docker" },
-  { question: "Describe Redis caching strategies: Cache-Aside, Write-Through, and Write-Behind, along with cache eviction policies.", expectedKnowledge: "Cache-Aside checks cache first then DB; LRU/LFU evict keys when memory cap is reached.", difficulty: "medium", maxMarks: 5, topic: "System Architecture", category: "Caching", relatedSkill: "Redis" },
-  { question: "How do WebSocket connections establish and maintain bidirectional real-time communication over HTTP Upgrade headers?", expectedKnowledge: "Starts with standard HTTP GET with Upgrade: websocket header; switches to full-duplex TCP framing.", difficulty: "medium", maxMarks: 5, topic: "Web Protocols", category: "Networking", relatedSkill: "Node.js" },
-  { question: "Explain optimistic concurrency control vs pessimistic locking in high-throughput concurrent database operations.", expectedKnowledge: "Pessimistic locks resources on read; Optimistic uses version numbers/timestamps and validates before commit.", difficulty: "medium", maxMarks: 5, topic: "Databases", category: "Concurrency", relatedSkill: "Databases" },
-  { question: "How do microservices implement distributed transaction management using the Saga Pattern (Choreography vs Orchestration)?", expectedKnowledge: "Local transactions with compensating events; Orchestration uses central coordinator; Choreography relies on event pub-sub.", difficulty: "hard", maxMarks: 13, topic: "Distributed Systems", category: "Architecture", relatedSkill: "System Design" },
-  { question: "Design a rate-limiting algorithm for an API Gateway. Compare Token Bucket, Leaky Bucket, and Fixed/Sliding Window Log.", expectedKnowledge: "Token Bucket handles bursts; Leaky Bucket smooths rate; Sliding Window Log accurately limits requests per time window.", difficulty: "hard", maxMarks: 13, topic: "System Design", category: "API Gateway", relatedSkill: "System Design" },
-  { question: "Explain how Message Queues (Kafka vs RabbitMQ) achieve message delivery guarantees (At-least-once, Exactly-once).", expectedKnowledge: "Kafka uses persistent append log with offset tracking and idempotent producers; RabbitMQ uses acknowledgments.", difficulty: "hard", maxMarks: 13, topic: "Messaging Systems", category: "Distributed Systems", relatedSkill: "Backend Engineering" },
-  { question: "How do CDN edge networks optimize global latency using Anycast routing, SSL termination, and cache invalidation strategies?", expectedKnowledge: "Anycast routes request to geographically nearest POP; SSL terminated at edge; purge requests invalidate stale assets.", difficulty: "hard", maxMarks: 13, topic: "Cloud Architecture", category: "Performance", relatedSkill: "Cloud" },
-  { question: "Explain Java Memory Model (JMM), Heap vs Stack allocation, and how volatile keyword guarantees visibility and ordering.", expectedKnowledge: "Stack holds thread execution frames; Heap holds object instances; volatile prevents instruction reordering.", difficulty: "easy", maxMarks: 3, topic: "Java Fundamentals", category: "Language Mechanics", relatedSkill: "Java" },
-  { question: "How does HashMap work internally in Java? Detail bucket array, hashing collision resolution, and treeification in Java 8.", expectedKnowledge: "Uses hash() modulo capacity; collisions handled via linked list, converted to Red-Black tree when threshold exceeded.", difficulty: "medium", maxMarks: 5, topic: "Java Collections", category: "Data Structures", relatedSkill: "Java" },
-  { question: "Describe React Server Components (RSC) vs Client Components. How does streaming SSR reduce Time-to-Interactive?", expectedKnowledge: "RSC render exclusively on server sending zero JS bundle to client; streaming SSR sends HTML chunks early.", difficulty: "medium", maxMarks: 5, topic: "React Architecture", category: "Frontend Engineering", relatedSkill: "React" },
-  { question: "Explain PostgreSQL MVCC (Multi-Version Concurrency Control) and how tuple versioning prevents read locks during writes.", expectedKnowledge: "Writes create new row versions (tuples) with xmin/xmax timestamps, allowing concurrent reads without blocking.", difficulty: "medium", maxMarks: 5, topic: "Relational Databases", category: "Data Storage", relatedSkill: "SQL" },
-  { question: "How do Python GIL (Global Interpreter Lock) constraints affect multithreading vs multiprocessing for CPU-bound tasks?", expectedKnowledge: "GIL allows only 1 OS thread to execute Python bytecode at once; CPU tasks require multiprocessing or C extensions.", difficulty: "medium", maxMarks: 5, topic: "Python Core", category: "Language Mechanics", relatedSkill: "Python" },
-  { question: "Explain GraphQL query execution, resolver functions, and N+1 query problem resolution using DataLoader caching.", expectedKnowledge: "Resolvers evaluate fields hierarchically; DataLoader batches individual ID queries into single SQL IN clause.", difficulty: "medium", maxMarks: 5, topic: "API Architecture", category: "Backend Engineering", relatedSkill: "API Design" },
-  { question: "How do CSS Layout engines compute Flexbox vs Grid containers, and when would you choose CSS Grid over Flexbox?", expectedKnowledge: "Flexbox is 1-dimensional content-driven layout; CSS Grid is 2-dimensional structural layout.", difficulty: "easy", maxMarks: 3, topic: "Frontend Layout", category: "Frameworks", relatedSkill: "React" },
-  { question: "Explain OAuth 2.0 Authorization Code Flow with PKCE (Proof Key for Code Exchange) for public single-page applications.", expectedKnowledge: "SPAs generate code_verifier and code_challenge; authorization server exchanges code + verifier for tokens.", difficulty: "hard", maxMarks: 13, topic: "Web Security", category: "Security", relatedSkill: "Security" },
-  { question: "How does Connection Pooling (e.g. HikariCP / Mongoose Connection Pool) optimize database socket reuse under high load?", expectedKnowledge: "Maintains pre-allocated DB sockets; eliminates TCP 3-way handshake overhead per HTTP request.", difficulty: "medium", maxMarks: 5, topic: "Database Optimization", category: "Performance", relatedSkill: "MongoDB" },
-  { question: "Describe MongoDB Aggregation Pipeline stages ($match, $group, $lookup, $unwind) and indexing requirements for pipeline performance.", expectedKnowledge: "$match should be first stage to utilize indexes; $lookup performs left outer joins across collections.", difficulty: "medium", maxMarks: 5, topic: "MongoDB Data Analytics", category: "Data Storage", relatedSkill: "MongoDB" },
-  { question: "Explain C++ RAII (Resource Acquisition Is Initialization) and how smart pointers (std::unique_ptr, std::shared_ptr) prevent memory leaks.", expectedKnowledge: "Object lifecycle binds resource cleanup to destructor invocation; shared_ptr uses reference counting.", difficulty: "medium", maxMarks: 5, topic: "C++ Memory Management", category: "Core Fundamentals", relatedSkill: "C++" },
-  { question: "How do Kubernetes Pods implement sidecar pattern containers for logging, metrics collection, and proxying?", expectedKnowledge: "Sidecar containers share network namespace and storage volumes with main application container in same Pod.", difficulty: "hard", maxMarks: 13, topic: "Cloud Native Architecture", category: "Infrastructure", relatedSkill: "DevOps" },
-  { question: "Design an Idempotent API endpoint for payment processing. How do client-provided Idempotency Keys prevent double charges?", expectedKnowledge: "Client sends unique key header; server records key state in Redis/DB; retried requests return cached response.", difficulty: "hard", maxMarks: 13, topic: "API Design", category: "System Design", relatedSkill: "System Design" },
-  { question: "Explain browser critical rendering path: DOM, CSSOM, Render Tree, Layout, and Paint steps for optimizing FPS.", expectedKnowledge: "HTML creates DOM; CSS creates CSSOM; combined into Render Tree; Layout calculates geometry; Paint draws pixels.", difficulty: "easy", maxMarks: 3, topic: "Browser Performance", category: "Frontend Engineering", relatedSkill: "React" },
-  { question: "How do TLS 1.3 handshakes complete in 1-RTT compared to 2-RTT in TLS 1.2, and how does 0-RTT resumption work?", expectedKnowledge: "TLS 1.3 combines key exchange parameters into initial ClientHello, cutting round-trip latency in half.", difficulty: "hard", maxMarks: 13, topic: "Networking & Security", category: "Web Architecture", relatedSkill: "Networking" }
-];
-
 /**
  * Generates or retrieves existing 20 Technical questions for a Real Interview session (AI CALL #1).
  * Enforces IDEMPOTENCY: Does NOT re-generate questions if aiGenerationCalls >= 1 or 20 questions already exist for sessionId.
@@ -103,7 +65,7 @@ export async function generateAndProcessTechnicalQuestions({
       maxMarks: q.maxMarks || (q.difficulty === "easy" ? 3 : q.difficulty === "hard" ? 13 : 5),
       topic: q.topic,
       category: q.category,
-      source: q.source,
+      source: q.source || "AI_PROVIDER",
       relatedSkill: q.relatedSkill,
       relatedProject: q.relatedProject,
     }));
@@ -118,115 +80,39 @@ export async function generateAndProcessTechnicalQuestions({
     };
   }
 
-  console.log(`[TechnicalService] Making AI CALL #1 for session ${sessionId}...`);
   const effectiveProfile = await getOrBuildCandidateResumeContext(userId, candidateProfile);
-  let aiResult;
   const userHistorySet = await getUserQuestionHistorySet(userId);
 
+  const requestId = `tech_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+  const modelName = process.env.REAL_INTERVIEW_TECHNICAL_MODEL || process.env.GROQ_MODEL || "qwen/qwen3.8-27b";
+  const hasKey = Boolean((process.env.REAL_INTERVIEW_TECHNICAL_API_KEY || process.env.GROQ_API_KEY)?.trim());
+
+  console.log(`\n[AI-REQUEST-START]\nround=technical\nprovider=groq\nmodel=${modelName}\nkeyPresent=${hasKey}\nrequestId=${requestId}`);
+  console.log(`\n[REAL-INTERVIEW][TECHNICAL-CONTEXT]\nskills=[${(effectiveProfile.skills || []).join(", ")}]\n`);
+
+  let aiResult;
   try {
     aiResult = await generateTechnicalAI(effectiveProfile);
   } catch (genErr) {
-    console.warn(`[TechnicalService] AI generation call warning (${genErr.message}). Using fault-tolerant technical question pool.`);
-    aiResult = { questions: [] };
+    console.error(`\n[AI-REQUEST-FAILED]\nround=technical\nprovider=groq\nrequestId=${requestId}\nerror=${genErr.message}`);
+    throw new Error(`Technical AI generation failed: ${genErr.message}`);
   }
 
-  const currentPoolSet = new Set();
-  const rawAiQuestions = (aiResult?.questions || []).filter((q) => isQuestionGroundedInResume(q, "technical", effectiveProfile));
-  let rawQuestions = filterUniqueQuestions(rawAiQuestions, userHistorySet, currentPoolSet);
-  rawQuestions.forEach((q) => { q.source = q.source || "ai_generated"; });
+  const rawAiQuestions = aiResult?.questions || [];
+  let rawQuestions = filterUniqueQuestions(rawAiQuestions, userHistorySet);
+  if (rawQuestions.length < 20) {
+    rawQuestions = rawAiQuestions.slice(0, 20);
+  }
 
   if (rawQuestions.length < 20) {
-    console.log(`[TechnicalService] AI returned ${rawQuestions.length}/20 grounded unique questions. Using static fallback pool for remainder.`);
-
-    const fallbackGrounded = STATIC_TECHNICAL_FALLBACK.filter((fbQ) => isQuestionGroundedInResume(fbQ, "technical", effectiveProfile));
-    const fallbackUnique = filterUniqueQuestions(fallbackGrounded, userHistorySet, currentPoolSet);
-
-    // Pass 1: Try non-historical grounded fallbacks
-    for (const fbQ of fallbackUnique) {
-      if (rawQuestions.length >= 20) break;
-      currentPoolSet.add(normalizeQuestionText(fbQ.question));
-      rawQuestions.push({ ...fbQ, source: "static_fallback" });
-    }
-
-    // Pass 2: If still < 20, fill from static pool ignoring history (only current session unique)
-    if (rawQuestions.length < 20) {
-      for (const fbQ of STATIC_TECHNICAL_FALLBACK) {
-        if (rawQuestions.length >= 20) break;
-        const norm = normalizeQuestionText(fbQ.question);
-        if (!currentPoolSet.has(norm)) {
-          currentPoolSet.add(norm);
-          rawQuestions.push({ ...fbQ, source: "static_fallback" });
-        }
-      }
-    }
-
-    // Pass 3: Dynamic templates for candidate skills
-    if (rawQuestions.length < 20) {
-      const candidateSkillsList = effectiveProfile.skills?.length
-        ? effectiveProfile.skills
-        : ["Python", "JavaScript", "SQL", "React", "Node.js"];
-
-      const DYNAMIC_SKILL_TEMPLATES = [
-        (s) => ({
-          question: `What are the primary use cases, core features, and practical implementation patterns when working with ${s}?`,
-          expectedKnowledge: `Explain the core concepts of ${s}, its main use cases, code organization, and integration into modern applications.`,
-          difficulty: "medium",
-          topic: s,
-          category: "Technology Specific",
-          relatedSkill: s,
-          source: "static_fallback"
-        }),
-        (s) => ({
-          question: `What are the best practices for performance optimization, testing, and debugging when building with ${s}?`,
-          expectedKnowledge: `Cover performance bottlenecks, resource management, unit/integration testing strategies, and standard debugging techniques for ${s}.`,
-          difficulty: "medium",
-          topic: s,
-          category: "Debugging",
-          relatedSkill: s,
-          source: "static_fallback"
-        }),
-        (s) => ({
-          question: `How do you handle error management, state or data consistency, and edge cases when utilizing ${s}?`,
-          expectedKnowledge: `Detail error boundaries/handlers, data validation mechanisms, edge case management, and maintainability for ${s}.`,
-          difficulty: "medium",
-          topic: s,
-          category: "Project Implementation",
-          relatedSkill: s,
-          source: "static_fallback"
-        }),
-        (s) => ({
-          question: `What are the key advantages, potential trade-offs, and alternative choices when using ${s}?`,
-          expectedKnowledge: `Compare ${s} with alternative tools/libraries, detailing trade-offs in performance, developer productivity, and ecosystem fit.`,
-          difficulty: "medium",
-          topic: s,
-          category: "Architecture",
-          relatedSkill: s,
-          source: "static_fallback"
-        }),
-      ];
-
-      for (const skill of candidateSkillsList) {
-        if (rawQuestions.length >= 20) break;
-        for (const templateFn of DYNAMIC_SKILL_TEMPLATES) {
-          if (rawQuestions.length >= 20) break;
-          const qObj = templateFn(skill);
-          const norm = normalizeQuestionText(qObj.question);
-          if (!currentPoolSet.has(norm)) {
-            currentPoolSet.add(norm);
-            rawQuestions.push(qObj);
-          }
-        }
-      }
-    }
+    console.error(`\n[AI-REQUEST-FAILED]\nround=technical\nprovider=groq\nrequestId=${requestId}\nerror=Insufficient AI questions returned (${rawQuestions.length}/20)`);
+    throw new Error(`Insufficient Technical AI questions generated (${rawQuestions.length}/20)`);
   }
 
-  const selectedQuestions = rawQuestions.slice(0, 20);
-  const fallbackUsed = selectedQuestions.some((q) => q.source === "static_fallback");
-  const aiCount = selectedQuestions.filter((q) => q.source === "ai_generated").length;
+  console.log(`\n[AI-REQUEST-SUCCESS]\nround=technical\nprovider=groq\nrequestId=${requestId}\nquestionsReturned=${rawQuestions.length}`);
+  console.log(`\n[QUESTION-SOURCE]\nround=technical\nsource=AI_PROVIDER\ncount=${rawQuestions.length}\n`);
 
-  console.log(
-    `\n[REAL-INTERVIEW][QUESTION-SOURCE]\nround=technical\nsource=${fallbackUsed ? (aiCount > 0 ? "partial_static_fallback" : "static_fallback") : "ai_generated"}\nresumeContext=${Boolean(effectiveProfile && (effectiveProfile.skills?.length > 0 || effectiveProfile.projects?.length > 0))}\nreason=${fallbackUsed ? `AI generated ${aiCount}/20 grounded questions` : "AI generated 20 grounded questions successfully"}\n`
-  );
+  const selectedQuestions = rawQuestions.slice(0, 20);
 
   const validatedDocs = selectedQuestions.map((q, idx) => {
     const questionText = String(q.question || "").trim();
@@ -275,7 +161,7 @@ export async function generateAndProcessTechnicalQuestions({
       maxMarks,
       topic,
       category,
-      source: "resume",
+      source: "AI_PROVIDER",
       relatedSkill: String(q.relatedSkill || "").trim(),
       relatedProject: String(q.relatedProject || "").trim(),
     };

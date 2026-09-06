@@ -30,8 +30,7 @@ import MonacoCodeEditor from "../../components/coding/MonacoCodeEditor";
 import OutputPanel from "../../components/coding/OutputPanel";
 import { getStarterCode } from "../../utils/coding/starterGenerator";
 
-// Import mock fallback data if session fails
-import { MOCK_QUESTIONS, MOCK_CANDIDATE } from "../../data/interviewMockData";
+
 
 /**
  * SignalRow — compact live signal indicator (used in the right-side context).
