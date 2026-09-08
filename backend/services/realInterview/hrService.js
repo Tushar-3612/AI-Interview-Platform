@@ -8,6 +8,8 @@ import {
   recordUserQuestionHistory,
   filterUniqueQuestions,
 } from "./questionHistoryService.js";
+import { preprocessAnswerBatch } from "../realInterviewAI/answerPreprocessor.js";
+import { resolveCandidateAnswer } from "./answerResolver.js";
 
 /**
  * Fallback static set of 5 deep HR questions if AI generation API fails (e.g. HTTP 429).
@@ -270,8 +272,8 @@ export async function evaluateHRInterviewSession({ sessionId, candidateProfile =
     throw new Error(`HR Session not found for ID: ${sessionId}`);
   }
 
-  if (session.evaluationCompleted || session.evaluationStatus === "COMPLETED" || session.aiEvaluationCalls >= 1) {
-    console.log(`[HRService] Session ${sessionId} already evaluated (aiEvaluationCalls: ${session.aiEvaluationCalls}). Reusing stored evaluation.`);
+  if (session.evaluationCompleted || session.evaluationStatus === "COMPLETED") {
+    console.log(`[HRService] Session ${sessionId} already evaluated cleanly (aiEvaluationCalls: ${session.aiEvaluationCalls}). Reusing stored evaluation.`);
     return {
       success: true,
       sessionId,
@@ -299,113 +301,202 @@ export async function evaluateHRInterviewSession({ sessionId, candidateProfile =
   const mainInterviewDoc = await Interview.findById(sessionId).lean().catch(() => null);
   const mainInterviewAnswers = mainInterviewDoc?.answers || [];
 
-  const qaPairs = questionsWithAnswers.map((q) => {
+  const qaPairs = questionsWithAnswers.map((q, idx) => {
     const qIdStr = q._id.toString();
-    const ansObj = session.answers.find((a) => String(a.questionId) === qIdStr);
-    const mainAnsMatch = mainInterviewAnswers.find((a) => String(a.questionId) === qIdStr);
-    const rawAns = (ansObj?.candidateAnswer || mainAnsMatch?.answer || mainAnsMatch?.transcript || "").trim();
-    const finalAnsText = rawAns.length > 0 ? rawAns : "(No answer provided)";
+    const resolved = resolveCandidateAnswer({
+      roundType: "HR",
+      questionId: qIdStr,
+      questionIndex: idx + 1,
+      questionText: q.question,
+      roundSessionAnswers: session.answers || [],
+      mainInterviewAnswers,
+    });
+
+    if (resolved.answerPresent) {
+      const existingAnsIndex = (session.answers || []).findIndex(
+        (a) => String(a.questionId) === qIdStr
+      );
+      if (existingAnsIndex === -1) {
+        session.answers.push({
+          questionId: q._id,
+          question: q.question,
+          difficulty: q.difficulty || "medium",
+          maxScore: 20,
+          category: q.category,
+          behavioralDimensions: q.behavioralDimensions,
+          resumeReference: q.resumeReference,
+          candidateAnswer: resolved.answer,
+          submittedAt: new Date(),
+        });
+      } else if (!session.answers[existingAnsIndex].candidateAnswer || session.answers[existingAnsIndex].candidateAnswer === "(No answer provided)") {
+        session.answers[existingAnsIndex].candidateAnswer = resolved.answer;
+      }
+    }
 
     return {
       questionId: q._id,
       question: q.question,
       category: q.category,
       behavioralDimensions: q.behavioralDimensions,
-      candidateAnswer: finalAnsText,
+      candidateAnswer: resolved.answer,
+      answerPresent: resolved.answerPresent,
     };
   });
+
+  const attemptedPairs = qaPairs.filter((p) => p.answerPresent);
+
+  // If ZERO questions were attempted, skip AI call completely
+  if (attemptedPairs.length === 0) {
+    console.log(`[HRService] 0 candidate answers submitted for HR session ${sessionId}. Skipping AI evaluation call.`);
+
+    for (const q of questionsWithAnswers) {
+      const qIdStr = q._id.toString();
+      const existingAnsIndex = session.answers.findIndex((a) => String(a.questionId) === qIdStr);
+
+      const answerData = {
+        questionId: q._id,
+        question: q.question,
+        difficulty: q.difficulty || "medium",
+        category: q.category,
+        candidateAnswer: "(No answer provided)",
+        score: 0,
+        maxScore: 20,
+        rating: "Weak",
+        reasoningStrengths: [],
+        concerns: ["Question was not attempted"],
+        feedback: "Question was not attempted.",
+        betterAnswer: "Provide a structured behavioral response using the STAR method.",
+        submittedAt: existingAnsIndex !== -1 ? session.answers[existingAnsIndex].submittedAt : new Date(),
+      };
+
+      if (existingAnsIndex !== -1) {
+        session.answers[existingAnsIndex] = answerData;
+      } else {
+        session.answers.push(answerData);
+      }
+    }
+
+    session.totalScore = 0;
+    session.maxScore = 100;
+    session.percentage = 0;
+    session.overallRating = "Weak";
+    session.strengths = [];
+    session.areasForImprovement = ["No questions attempted"];
+    session.finalFeedback = "No HR behavioral questions were attempted during the interview.";
+    session.evaluationCompleted = true;
+    session.evaluationStatus = "COMPLETED";
+    session.status = "completed";
+    session.fallbackUsed = false;
+    session.evaluationCompletedAt = new Date();
+
+    await session.save();
+
+    return {
+      success: true,
+      sessionId,
+      totalScore: 0,
+      maxScore: 100,
+      percentage: 0,
+      overallRating: "Weak",
+      behavioralProfile: session.behavioralProfile || {},
+      consistencyObservations: [],
+      strengths: [],
+      areasForImprovement: session.areasForImprovement,
+      finalFeedback: session.finalFeedback,
+      evaluations: session.answers,
+      reused: false,
+      fallbackUsed: false,
+      aiEvaluationCalls: session.aiEvaluationCalls,
+    };
+  }
 
   session.evaluationStatus = "EVALUATING";
   session.aiEvaluationCalls += 1;
   session.evaluationStartedAt = new Date();
   await session.save();
 
-  console.log(`[HRService] Making AI CALL #2 (complete evaluation) for session ${sessionId}...`);
+  console.log(`[HRService] Making AI CALL #2 (evaluation of ${attemptedPairs.length} attempted questions) for session ${sessionId}...`);
+
+  // Preprocess attempted HR answers
+  const preprocessMap = await preprocessAnswerBatch(
+    attemptedPairs.map((p) => ({ questionId: String(p.questionId), answer: p.candidateAnswer, round: "hr" })),
+    250
+  );
+
+  const qaPairsForAI = attemptedPairs.map((p) => {
+    const pre = preprocessMap.get(String(p.questionId));
+    if (pre && pre.reductionPercent > 0) {
+      console.log(`[EVAL-NLP] round=hr questionId=${p.questionId} originalTokens=${pre.tokenCountBefore} compactTokens=${pre.tokenCountAfter} reductionPercent=${pre.reductionPercent}`);
+    }
+    return { ...p, candidateAnswer: pre?.compactAnswer || p.candidateAnswer };
+  });
 
   let evalResult;
-  let fallbackUsed = false;
 
   try {
     evalResult = await evaluateHRAI({
       candidateProfile: candidateProfile && Object.keys(candidateProfile).length ? candidateProfile : session.candidateProfile,
-      questionsWithAnswers: qaPairs,
+      questionsWithAnswers: qaPairsForAI,
     });
   } catch (err) {
-    console.warn(`[HRService] AI evaluation call failed (${err.message}). Applying deterministic application-level fallback evaluation.`);
-    fallbackUsed = true;
-    
-    console.log(`\n[REAL-INTERVIEW][EVALUATION-FALLBACK]\nround=hr\nreason=${err.message}\nevaluationSource=deterministic_fallback\n`);
-
-    // Deterministic Application-level Fallback
-    const fallbackEvals = qaPairs.map((pair) => {
-      const ans = String(pair.candidateAnswer || "").trim();
-      const isUnanswered = !ans || ans === "(No answer provided)" || ans.toLowerCase() === "not answered";
-
-      return {
-        questionId: pair.questionId,
-        score: 0,
-        maxScore: 20,
-        evaluationSource: "deterministic_fallback",
-        behavioralDimensions: { ownership: 0, decisionMaking: 0, professionalMaturity: 0 },
-        reasoningStrengths: [],
-        concerns: isUnanswered ? ["Question was not attempted"] : ["Automated AI evaluation was unavailable for this response"],
-        feedback: isUnanswered
-          ? "Question was not attempted."
-          : "Automated detailed evaluation was unavailable for this response. Answer preserved for review.",
-        betterAnswer: "Structured behavioral response addressing the scenario with decision reasoning and trade-offs.",
-      };
-    });
-
-    evalResult = {
-      evaluations: fallbackEvals,
-      overallRating: "Unverified",
-      behavioralProfile: { ownership: 0, decisionMaking: 0, professionalMaturity: 0 },
-      consistencyObservations: [],
-      strengths: ["Candidate HR answers preserved in session"],
-      areasForImprovement: ["Automated AI evaluation service was unavailable"],
-      finalFeedback: "Completed HR assessment with deterministic fallback because AI evaluation was unavailable.",
-    };
+    console.error(`[HRService] HR AI evaluation call failed for session ${sessionId}: ${err.message}`);
+    session.evaluationStatus = "FAILED";
+    await session.save();
+    throw new Error(`HR AI evaluation failed: ${err.message}`);
   }
 
   // BACKEND VALIDATION & CALCULATION:
-  // Validate individual question scores (0-20) and compute totalScore strictly on backend
   let totalScore = 0;
   const rawEvaluations = Array.isArray(evalResult.evaluations) ? evalResult.evaluations : [];
 
   qaPairs.forEach((pair) => {
     const matchingEval = rawEvaluations.find((e) => String(e.questionId) === String(pair.questionId)) || {};
-    let score = typeof matchingEval.score === "number" ? matchingEval.score : 10;
-    if (score < 0) score = 0;
-    if (score > 20) score = 20;
+
+    let score = 0;
+    let rating = "Weak";
+    let feedback = "Question was not attempted.";
+    let reasoningStrengths = [];
+    let concerns = ["Question was not attempted"];
+    let betterAnswer = "Provide a structured behavioral response using the STAR method.";
+
+    if (pair.answerPresent) {
+      const rawScore = Number(matchingEval.score);
+      score = isNaN(rawScore) ? 0 : Math.max(0, Math.min(20, Math.round(rawScore)));
+      rating = score >= 16 ? "Exceptional" : score >= 11 ? "Strong" : "Average";
+      feedback = matchingEval.feedback || "Evaluation complete.";
+      reasoningStrengths = matchingEval.reasoningStrengths || [];
+      concerns = matchingEval.concerns || [];
+      if (matchingEval.betterAnswer) betterAnswer = matchingEval.betterAnswer;
+    }
 
     totalScore += score;
 
     const ansIdx = session.answers.findIndex((a) => String(a.questionId) === String(pair.questionId));
+    const persistedAnswer = pair.answerPresent ? pair.candidateAnswer : "(No answer provided)";
+
     if (ansIdx >= 0) {
-      session.answers[ansIdx].candidateAnswer = (session.answers[ansIdx].candidateAnswer && session.answers[ansIdx].candidateAnswer !== "(No answer provided)")
-        ? session.answers[ansIdx].candidateAnswer
-        : pair.candidateAnswer;
+      session.answers[ansIdx].candidateAnswer = persistedAnswer;
       session.answers[ansIdx].score = score;
       session.answers[ansIdx].maxScore = 20;
-      session.answers[ansIdx].rating = score >= 16 ? "Exceptional" : score >= 11 ? "Strong" : "Average";
-      session.answers[ansIdx].reasoningStrengths = matchingEval.reasoningStrengths || [];
-      session.answers[ansIdx].concerns = matchingEval.concerns || [];
-      session.answers[ansIdx].feedback = matchingEval.feedback || "";
-      session.answers[ansIdx].betterAnswer = matchingEval.betterAnswer || "";
+      session.answers[ansIdx].rating = rating;
+      session.answers[ansIdx].reasoningStrengths = reasoningStrengths;
+      session.answers[ansIdx].concerns = concerns;
+      session.answers[ansIdx].feedback = feedback;
+      session.answers[ansIdx].betterAnswer = betterAnswer;
     } else {
       session.answers.push({
         questionId: pair.questionId,
         question: pair.question,
         difficulty: pair.difficulty || "medium",
         category: pair.category,
-        candidateAnswer: pair.candidateAnswer,
+        candidateAnswer: persistedAnswer,
         score,
         maxScore: 20,
-        rating: score >= 16 ? "Exceptional" : score >= 11 ? "Strong" : "Average",
-        reasoningStrengths: matchingEval.reasoningStrengths || [],
-        concerns: matchingEval.concerns || [],
-        feedback: matchingEval.feedback || "",
-        betterAnswer: matchingEval.betterAnswer || "",
+        rating,
+        reasoningStrengths,
+        concerns,
+        feedback,
+        betterAnswer,
       });
     }
   });
@@ -426,12 +517,12 @@ export async function evaluateHRInterviewSession({ sessionId, candidateProfile =
   session.evaluationCompleted = true;
   session.evaluationStatus = "COMPLETED";
   session.status = "completed";
-  session.fallbackUsed = fallbackUsed;
+  session.fallbackUsed = false;
   session.evaluationCompletedAt = new Date();
 
   await session.save();
 
-  console.log(`[HRService] Evaluation complete for session ${sessionId}. Total score: ${totalScore}/100 (${percentage}%). Fallback used: ${fallbackUsed}`);
+  console.log(`[HRService] Evaluation complete for session ${sessionId}. Total score: ${totalScore}/100 (${percentage}%).`);
 
   return {
     success: true,
@@ -447,7 +538,7 @@ export async function evaluateHRInterviewSession({ sessionId, candidateProfile =
     finalFeedback: session.finalFeedback,
     evaluations: session.answers,
     reused: false,
-    fallbackUsed,
+    fallbackUsed: false,
     aiEvaluationCalls: session.aiEvaluationCalls,
   };
 }

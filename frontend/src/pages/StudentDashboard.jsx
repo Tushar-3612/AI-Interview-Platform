@@ -290,33 +290,29 @@ function StudentDashboard() {
     }
   };
 
-  const handleStartInterviewSession = async (selectedTargetRound = "all") => {
+  const handleStartRealInterview = async () => {
     setIsStartingInterview(true);
-    const roundNameMap = {
-      all: "Full 4-Round AI",
-      aptitude: "Aptitude Round",
-      technical: "Technical Stack Round",
-      coding: "Coding IDE Round",
-      hr: "HR Behavioral Round"
-    };
-    const toastId = toast.loading(`Creating ${roundNameMap[selectedTargetRound] || "Interview"} Session...`);
+    const toastId = toast.loading("Initializing Real Interview Session...");
     try {
+      const activeToken = token || getAuthToken();
+      const headers = activeToken ? { Authorization: `Bearer ${activeToken}` } : {};
+
       const { data } = await api.post(
         "/api/student/interviews",
-        { interviewType: "actual", targetRound: selectedTargetRound },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { interviewType: "actual", targetRound: "all" },
+        { headers }
       );
       const sessionId = data.sessionId || data.interviewId || data._id;
       if (sessionId) {
-        toast.success("Interview Session created!", { id: toastId });
+        toast.success("Real Interview session ready!", { id: toastId });
         setShowInterviewModeModal(false);
-        window.open(`/interview/${sessionId}`, "_blank", "noopener,noreferrer");
+        navigate(`/interview/${sessionId}`);
       } else {
         throw new Error("No session ID returned");
       }
     } catch (err) {
-      console.error("Start interview error:", err);
-      toast.error(err.response?.data?.message || "Failed to start interview session", { id: toastId });
+      console.error("Start Real Interview error:", err);
+      toast.error(err.response?.data?.message || "Failed to start Real Interview session", { id: toastId });
     } finally {
       setIsStartingInterview(false);
     }
@@ -1306,6 +1302,9 @@ function StudentDashboard() {
               exit={{ scale: 0.95, opacity: 0, y: 12 }}
               onClick={(e) => e.stopPropagation()}
               className="w-full max-w-lg bg-[#0C101A] border border-white/10 rounded-[28px] shadow-2xl overflow-hidden text-white"
+              style={{
+                boxShadow: "0 20px 60px rgba(0,0,0,0.8), 0 0 30px rgba(255,107,53,0.15)",
+              }}
             >
               {/* Modal Header */}
               <div className="p-5 sm:p-6 border-b border-white/10 flex items-start justify-between gap-3">
@@ -1318,15 +1317,14 @@ function StudentDashboard() {
                       boxShadow: "0 0 16px rgba(255,107,53,0.25)",
                     }}
                   >
-                    <Sparkles className="w-5 h-5 text-[#FF6B35]" />
+                    <BrainCircuit className="w-5 h-5 text-[#FF6B35]" />
                   </div>
                   <div>
                     <h2 className="text-lg sm:text-xl font-black tracking-tight text-white leading-tight">
-                      Choose AI
-                      <span className="block">Interview Mode</span>
+                      AI Real Interview
                     </h2>
-                    <p className="text-[11.5px] sm:text-xs text-gray-400 mt-1 leading-snug">
-                      Select complete simulation or focus on an individual round
+                    <p className="text-[11.5px] sm:text-xs text-gray-400 mt-1 leading-relaxed">
+                      Complete AI-powered placement interview based on your resume, technical skills, projects, behavioral responses and coding ability.
                     </p>
                   </div>
                 </div>
@@ -1341,140 +1339,93 @@ function StudentDashboard() {
               </div>
 
               {/* Modal Content */}
-              <div className="p-4 sm:p-6 space-y-4 max-h-[78vh] overflow-y-auto custom-scrollbar">
-                {/* Option 1: Full 4-Round AI Interview (Recommended Hero Card) */}
-                <div
-                  onClick={() => handleStartInterviewSession("all")}
-                  className="relative p-4 sm:p-5 rounded-2xl border border-[#FF6B35]/40 hover:border-[#FF6B35] transition-all duration-200 cursor-pointer group"
-                  style={{
-                    background: "linear-gradient(180deg, rgba(255,107,53,0.08) 0%, rgba(16,20,32,0.6) 100%)",
-                    boxShadow: "0 0 24px rgba(255,107,53,0.12)",
-                  }}
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center bg-gradient-to-br from-[#FF6B35] to-[#FF8A3D] text-white shadow-lg shadow-orange-500/25 shrink-0 mt-0.5">
-                      <Layers className="w-5 h-5 sm:w-6 sm:h-6" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2">
-                        <h3 className="text-[14.5px] sm:text-base font-black text-white leading-snug">
-                          Full 4–Round AI Interview
-                        </h3>
-                        <span className="px-2 py-0.5 rounded-md text-[9px] sm:text-[10px] font-black uppercase tracking-wider bg-[#FF6B35] text-white shrink-0 shadow-sm mt-0.5">
-                          RECOMMENDED
-                        </span>
-                      </div>
-                      <p className="text-xs text-gray-300/80 leading-relaxed mt-2">
-                        Aptitude (25) + Technical (25) + Coding (3) + HR (5) in a complete placement simulation
-                      </p>
-                    </div>
+              <div className="p-5 sm:p-6 space-y-5 max-h-[78vh] overflow-y-auto custom-scrollbar">
+                {/* Stats Summary Bar */}
+                <div className="grid grid-cols-3 gap-2.5 p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 text-center">
+                  <div className="space-y-0.5">
+                    <span className="text-lg font-black text-white block">53</span>
+                    <span className="text-[10.5px] font-bold text-gray-400 uppercase tracking-wider block">Questions</span>
                   </div>
-
-                  <div className="mt-3.5 pt-3 border-t border-white/5 flex items-center justify-between gap-3 text-[11.5px] sm:text-xs font-bold">
-                    <span className="text-[#FF6B35] truncate min-w-0">
-                      <span className="hidden sm:inline">58 Questions • 150 Minutes</span>
-                      <span className="sm:hidden inline">58 Qs • 150 Mins</span>
-                    </span>
-                    <span className="flex items-center gap-1 text-[#FF6B35] group-hover:translate-x-1 transition-transform shrink-0">
-                      <span>Start Session</span> <ArrowRight className="w-3.5 h-3.5" />
-                    </span>
+                  <div className="space-y-0.5 border-x border-white/10">
+                    <span className="text-lg font-black text-[#FF6B35] block">5</span>
+                    <span className="text-[10.5px] font-bold text-gray-400 uppercase tracking-wider block">Rounds</span>
+                  </div>
+                  <div className="space-y-0.5">
+                    <span className="text-lg font-black text-amber-400 block">450</span>
+                    <span className="text-[10.5px] font-bold text-gray-400 uppercase tracking-wider block">Total Marks</span>
                   </div>
                 </div>
 
-                {/* Section Divider */}
-                <div className="flex items-center gap-3 pt-1">
-                  <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-gray-400 shrink-0">
-                    OR PRACTICE INDIVIDUAL ROUND
+                {/* Round Breakdown */}
+                <div className="space-y-2">
+                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-gray-400 block px-1">
+                    Interview Structure & Marks
                   </span>
-                  <div className="h-px flex-1 bg-white/10" />
-                </div>
 
-                {/* Option 2: Individual Round Cards */}
-                <div className="space-y-3">
-                  {[
-                    {
-                      id: "aptitude",
-                      title: "Aptitude Round Only",
-                      desc: "10 Quantitative, Logical & Verbal MCQs",
-                      time: "20 Mins",
-                      color: "#F59E0B",
-                      tagColor: "#F59E0B",
-                      icon: Target,
-                      tag: "MCQs",
-                    },
-                    {
-                      id: "technical",
-                      title: "Technical & Coding Round",
-                      desc: "Data Structures, Algorithms & System Design",
-                      time: "45 Mins",
-                      color: "#06B6D4",
-                      tagColor: "#06B6D4",
-                      icon: Code2,
-                      tag: "Live Code",
-                    },
-                    {
-                      id: "hr",
-                      title: "HR & Behavioral Round",
-                      desc: "Culture fit & leadership situational questions",
-                      time: "25 Mins",
-                      color: "#A855F7",
-                      tagColor: "#A855F7",
-                      icon: Mic,
-                      tag: "Voice AI",
-                    },
-                  ].map((round) => {
-                    const RIcon = round.icon;
-                    return (
-                      <div
-                        key={round.id}
-                        onClick={() => handleStartInterviewSession(round.id)}
-                        className="p-4 rounded-2xl border border-white/10 hover:border-white/20 bg-[#121624]/90 hover:bg-[#151a2c] transition-all cursor-pointer group"
-                      >
-                        <div className="flex items-center justify-between">
-                          <div
-                            className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border"
-                            style={{
-                              background: `color-mix(in srgb, ${round.color} 12%, transparent)`,
-                              borderColor: `color-mix(in srgb, ${round.color} 25%, transparent)`,
-                              color: round.color,
-                            }}
-                          >
-                            <RIcon className="w-5 h-5" />
+                  <div className="space-y-2">
+                    {[
+                      { name: "Aptitude", count: "15 Questions", marks: "/50 Marks", color: "#F59E0B", icon: Target },
+                      { name: "Technical", count: "20 Questions", marks: "/100 Marks", color: "#06B6D4", icon: Code2 },
+                      { name: "Project/Resume", count: "10 Questions", marks: "/100 Marks", color: "#3B82F6", icon: Layers },
+                      { name: "HR", count: "5 Questions", marks: "/100 Marks", color: "#A855F7", icon: Mic },
+                      { name: "Coding", count: "3 Questions", marks: "/100 Marks", color: "#10B981", icon: Zap },
+                    ].map((round) => {
+                      const Icon = round.icon;
+                      return (
+                        <div
+                          key={round.name}
+                          className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:border-white/15 transition-colors"
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <div
+                              className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border"
+                              style={{
+                                background: `color-mix(in srgb, ${round.color} 12%, transparent)`,
+                                borderColor: `color-mix(in srgb, ${round.color} 25%, transparent)`,
+                                color: round.color,
+                              }}
+                            >
+                              <Icon className="w-4 h-4" />
+                            </div>
+                            <div>
+                              <span className="text-xs font-bold text-white block">{round.name}</span>
+                              <span className="text-[11px] text-gray-400 block">{round.count}</span>
+                            </div>
                           </div>
-                          <span
-                            className="text-[10px] font-bold px-2.5 py-0.5 rounded-full border"
-                            style={{
-                              color: round.tagColor,
-                              borderColor: `color-mix(in srgb, ${round.tagColor} 25%, transparent)`,
-                              background: `color-mix(in srgb, ${round.tagColor} 10%, transparent)`,
-                            }}
-                          >
-                            {round.tag}
+                          <span className="text-xs font-black text-gray-300 px-2 py-1 rounded-md bg-white/5 border border-white/10">
+                            {round.marks}
                           </span>
                         </div>
-
-                        <h4 className="text-sm font-bold text-white mt-2.5">
-                          {round.title}
-                        </h4>
-                        <p className="text-xs text-gray-400 mt-0.5">
-                          {round.desc}
-                        </p>
-
-                        <div className="mt-3 pt-2.5 border-t border-white/5 flex items-center justify-between text-xs">
-                          <span className="text-gray-400">
-                            {round.time}
-                          </span>
-                          <span
-                            className="font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform"
-                            style={{ color: round.color }}
-                          >
-                            Launch <ArrowRight className="w-3.5 h-3.5" />
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
+
+                {/* Primary Launch Action Button */}
+                <motion.button
+                  onClick={handleStartRealInterview}
+                  disabled={isStartingInterview}
+                  className="w-full py-3.5 px-6 rounded-2xl text-sm font-bold text-white cursor-pointer shadow-lg flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+                  style={{
+                    background: "linear-gradient(135deg, #FF6B35 0%, #FF8A3D 100%)",
+                    boxShadow: "0 6px 20px rgba(255, 107, 53, 0.4)",
+                  }}
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.99 }}
+                >
+                  {isStartingInterview ? (
+                    <>
+                      <Sparkles className="w-4.5 h-4.5 animate-spin" />
+                      <span>Launching Session...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Play className="w-4.5 h-4.5 fill-current" />
+                      <span>Start Real Interview</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
+                </motion.button>
               </div>
             </motion.div>
           </motion.div>

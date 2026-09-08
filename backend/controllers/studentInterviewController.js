@@ -5,6 +5,7 @@ import RealInterviewTechnicalQuestion from "../models/RealInterviewTechnicalQues
 import RealInterviewProjectQuestion from "../models/RealInterviewProjectQuestion.js";
 import RealInterviewHRQuestion from "../models/RealInterviewHRQuestion.js";
 import RealInterviewCodingQuestion from "../models/RealInterviewCodingQuestion.js";
+import RealInterviewResult from "../models/RealInterviewResult.js";
 
 /**
  * Aggregates questions from all 5 Real Interview round collections for a given session.
@@ -168,7 +169,7 @@ export const createInterviewSession = async (req, res) => {
 export const saveInterviewAnswer = async (req, res) => {
   try {
     const { sessionId } = req.params;
-    const { questionId, question, category, section, answer, transcript, inputMethod, status, currentQuestionIndex } = req.body || {};
+    const { questionId, question, category, section, answer, transcript, selectedOption: rawSelectedOption, inputMethod, status, currentQuestionIndex } = req.body || {};
 
     if (!sessionId || !mongoose.Types.ObjectId.isValid(sessionId)) {
       return res.status(400).json({ success: false, message: "Invalid sessionId" });
@@ -183,6 +184,16 @@ export const saveInterviewAnswer = async (req, res) => {
     const qIdStr = String(questionId || "");
     const existingIdx = answers.findIndex((a) => String(a.questionId) === qIdStr);
 
+    let resolvedSelectedOpt = String(rawSelectedOption || "").trim();
+    if (!resolvedSelectedOpt && answer) {
+      const match = String(answer).trim().match(/^(?:OPTION\s+)?([A-D])(?:\b|:|\s)/i);
+      if (match) {
+        resolvedSelectedOpt = match[1].toUpperCase();
+      } else if (["A", "B", "C", "D"].includes(String(answer).trim().toUpperCase())) {
+        resolvedSelectedOpt = String(answer).trim().toUpperCase();
+      }
+    }
+
     const record = {
       questionId: qIdStr,
       question: question || "",
@@ -190,6 +201,7 @@ export const saveInterviewAnswer = async (req, res) => {
       section: section || "APTITUDE",
       answer: answer || "",
       transcript: transcript || answer || "",
+      selectedOption: resolvedSelectedOpt,
       inputMethod: inputMethod || "TEXT",
       status: status || "answered",
       updatedAt: new Date(),
@@ -311,6 +323,8 @@ export const getInterviewSession = async (req, res) => {
       ? realInterviewQuestions
       : (realInterviewQuestions.length > 0 ? realInterviewQuestions : (session?.generatedQuestions || []));
 
+    const resultDoc = await RealInterviewResult.findOne({ sessionId }).lean();
+
     res.status(200).json({
       success: true,
       sessionId: session ? session._id.toString() : sessionId,
@@ -326,6 +340,7 @@ export const getInterviewSession = async (req, res) => {
       sectionCounts,
       isValidRealInterview,
       totalQuestionsCount: totalCount,
+      result: resultDoc || null,
     });
   } catch (error) {
     console.error("[StudentInterviewController] Get session error:", error.message);

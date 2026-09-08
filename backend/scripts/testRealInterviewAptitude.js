@@ -15,17 +15,11 @@ async function runTest() {
   console.log("=======================================================\n");
 
   console.log("1. Environment Verification:");
-  console.log("   - REAL_INTERVIEW_APTITUDE_API_KEY:", process.env.REAL_INTERVIEW_APTITUDE_API_KEY ? "✅ Configured" : "❌ Missing");
-  console.log("   - REAL_INTERVIEW_TECHNICAL_API_KEY:", process.env.REAL_INTERVIEW_TECHNICAL_API_KEY !== undefined ? "✅ Placeholder present" : "❌ Missing");
-  console.log("   - REAL_INTERVIEW_CODING_API_KEY:", process.env.REAL_INTERVIEW_CODING_API_KEY !== undefined ? "✅ Placeholder present" : "❌ Missing");
-  console.log("   - REAL_INTERVIEW_HR_API_KEY:", process.env.REAL_INTERVIEW_HR_API_KEY !== undefined ? "✅ Placeholder present" : "❌ Missing");
-
-  if (!process.env.REAL_INTERVIEW_APTITUDE_API_KEY) {
-    console.error("❌ Test failed: REAL_INTERVIEW_APTITUDE_API_KEY is not set.");
-    process.exit(1);
-  }
+  console.log("   - Aptitude Source: Local JSON Bank (backend/data/aptitude/*.json)");
+  console.log("   - AI Calls for Aptitude: 0");
 
   await connectDB();
+  await RealInterviewAptitudeQuestion.deleteMany({ sessionId: "TEST_SESSION_001" });
 
   console.log("\n2. Executing ONE AI Generation Request (15 Questions)...");
   const startTime = Date.now();

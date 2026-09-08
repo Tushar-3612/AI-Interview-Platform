@@ -21,8 +21,28 @@ function getHRConfig(attempt = 1) {
     );
   }
   const custom = (process.env.REAL_INTERVIEW_HR_MODEL || "").trim();
-  const model = custom || (attempt === 1 ? "openai/gpt-oss-120b" : "openai/gpt-oss-20b");
+  const model = custom || (attempt === 2 ? "openai/gpt-oss-20b" : "openai/gpt-oss-120b");
   return { apiKey, model };
+}
+
+/**
+ * Classify Groq API errors to determine retry behavior.
+ * Returns { retryable: boolean, reason: string }
+ */
+function classifyGroqError(err) {
+  const status = err?.status || err?.statusCode || 0;
+  const msg = String(err?.message || err || "").toLowerCase();
+
+  if (status === 404 || msg.includes("404") || msg.includes("model_not_found") || msg.includes("does not exist")) {
+    return { retryable: false, reason: "Model not found (404)" };
+  }
+  if (status === 401 || status === 403 || msg.includes("401") || msg.includes("403")) {
+    return { retryable: false, reason: "Authentication/authorization error" };
+  }
+  if (status === 429 || msg.includes("429") || msg.includes("rate_limit") || msg.includes("tokens per day")) {
+    return { retryable: false, reason: "Rate limit / daily quota exhausted (429)" };
+  }
+  return { retryable: true, reason: "Transient error" };
 }
 
 /**
@@ -59,9 +79,13 @@ function cleanJsonResponse(rawText) {
 export async function generateHRAI({ candidateProfile = {}, count = 5 }) {
   console.log("\n[REAL-INTERVIEW][AI-CALL]\nround=hr\noperation=generation\nattempt=1");
 
+  const educationText = Array.isArray(candidateProfile.education)
+    ? candidateProfile.education.map((e) => `${e.degree || "Degree"} at ${e.institution || "Institution"}`).join(", ")
+    : (candidateProfile.education || "Undergraduate Degree");
+
   const profileSummary = `
 - Full Name: ${candidateProfile.fullName || candidateProfile.name || "Candidate"}
-- Education: ${candidateProfile.education || "Undergraduate Degree"}
+- Education: ${educationText}
 - Experience / Internships: ${JSON.stringify(candidateProfile.experience || candidateProfile.internships || [])}
 - Extracurricular / Leadership: ${JSON.stringify(candidateProfile.leadership || candidateProfile.extracurricular || [])}
 - Certifications / Achievements: ${JSON.stringify(candidateProfile.achievements || candidateProfile.certifications || [])}
@@ -116,7 +140,7 @@ JSON SCHEMA REQUIREMENT:
           { role: "user", content: userPrompt },
         ],
         temperature: 0.1,
-        max_tokens: 1000,
+        max_tokens: 2000,
         timeoutMs: 60000,
       });
 
@@ -140,7 +164,12 @@ JSON SCHEMA REQUIREMENT:
       }
     } catch (err) {
       lastError = err;
-      console.warn(`[RealInterviewAI][HR] Generation attempt ${attempt} failed: ${err.message}`);
+      const { retryable, reason } = classifyGroqError(err);
+      console.warn(`[RealInterviewAI][HR] Attempt ${attempt} failed: ${err.message} (${reason})`);
+      if (!retryable) {
+        console.warn(`[RealInterviewAI][HR] Non-retryable error, failing immediately: ${reason}`);
+        break;
+      }
       if (attempt < 3) {
         await new Promise((r) => setTimeout(r, 8000));
       }

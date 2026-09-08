@@ -13,6 +13,8 @@ import {
   normalizeQuestionText,
 } from "./questionHistoryService.js";
 import { isQuestionGroundedInResume, getOrBuildCandidateResumeContext } from "../../utils/resumeContextBuilder.js";
+import { preprocessAnswerBatch } from "../realInterviewAI/answerPreprocessor.js";
+import { resolveCandidateAnswer } from "./answerResolver.js";
 
 /**
  * Generates or retrieves existing 10 Project/Resume questions for a Real Interview session (AI CALL #1).
@@ -377,12 +379,11 @@ export async function evaluateProjectInterviewSession({ sessionId, candidateProf
 
   // Idempotency Check
   if (
-    session.aiEvaluationCalls >= 1 ||
-    session.evaluationStatus === "COMPLETED" ||
-    session.evaluationCompleted
+    session.evaluationCompleted ||
+    session.evaluationStatus === "COMPLETED"
   ) {
     console.log(
-      `[ProjectService] Session ${sessionId} already evaluated (aiEvaluationCalls: ${session.aiEvaluationCalls}). Reusing stored evaluation without AI call.`
+      `[ProjectService] Session ${sessionId} already evaluated cleanly (aiEvaluationCalls: ${session.aiEvaluationCalls}). Reusing stored evaluation.`
     );
     return {
       success: true,
@@ -426,18 +427,41 @@ export async function evaluateProjectInterviewSession({ sessionId, candidateProf
   const mainInterviewDoc = await Interview.findById(sessionId).lean().catch(() => null);
   const mainInterviewAnswers = mainInterviewDoc?.answers || [];
 
-  const questionsToEvaluate = allQuestions.map((q) => {
+  // Build base questions with answer tracing & resolution
+  const baseQuestions = allQuestions.map((q, idx) => {
     const qIdStr = q._id.toString();
-    const matchedAnswer = (session.answers || []).find(
-      (a) => a.questionId.toString() === qIdStr
-    );
-    const mainAnsMatch = mainInterviewAnswers.find(
-      (a) => String(a.questionId) === qIdStr
-    );
+    const resolved = resolveCandidateAnswer({
+      roundType: "RESUME_PROJECT",
+      questionId: qIdStr,
+      questionIndex: idx + 1,
+      questionText: q.question,
+      roundSessionAnswers: session.answers || [],
+      mainInterviewAnswers,
+    });
 
-    const rawAns = (matchedAnswer?.candidateAnswer || mainAnsMatch?.answer || mainAnsMatch?.transcript || "").trim();
-    const finalAnsText = rawAns.length > 0 ? rawAns : "(No answer submitted)";
     const maxScore = q.maxMarks || (q.difficulty === "easy" ? 5 : q.difficulty === "hard" ? 20 : 10);
+
+    // Sync answer back to project session if found in main interview doc but missing in session
+    if (resolved.answerPresent) {
+      const existingAnsIndex = (session.answers || []).findIndex(
+        (a) => a.questionId.toString() === qIdStr
+      );
+      if (existingAnsIndex === -1) {
+        session.answers.push({
+          questionId: q._id,
+          question: q.question,
+          difficulty: q.difficulty,
+          maxScore,
+          topic: q.topic,
+          category: q.category,
+          projectName: q.projectName,
+          candidateAnswer: resolved.answer,
+          submittedAt: new Date(),
+        });
+      } else if (!session.answers[existingAnsIndex].candidateAnswer || session.answers[existingAnsIndex].candidateAnswer === "(No answer submitted)") {
+        session.answers[existingAnsIndex].candidateAnswer = resolved.answer;
+      }
+    }
 
     return {
       questionId: qIdStr,
@@ -448,17 +472,104 @@ export async function evaluateProjectInterviewSession({ sessionId, candidateProf
       category: q.category,
       projectName: q.projectName,
       expectedKnowledge: q.expectedKnowledge || `Architectural and technical implementation details for ${q.projectName || q.topic || "project"}.`,
-      candidateAnswer: finalAnsText,
+      candidateAnswer: resolved.answer,
+      answerPresent: resolved.answerPresent,
     };
+  });
+
+  // Filter ONLY attempted questions
+  const attemptedQuestions = baseQuestions.filter((q) => q.answerPresent);
+
+  // If ZERO questions were attempted, skip AI call completely
+  if (attemptedQuestions.length === 0) {
+    console.log(`[ProjectService] 0 candidate answers submitted for project session ${sessionId}. Skipping AI evaluation call.`);
+
+    for (const q of allQuestions) {
+      const qIdStr = q._id.toString();
+      const maxScore = q.maxMarks || (q.difficulty === "easy" ? 5 : q.difficulty === "hard" ? 20 : 10);
+      const existingAnsIndex = session.answers.findIndex((a) => a.questionId.toString() === qIdStr);
+
+      const answerData = {
+        questionId: q._id,
+        question: q.question,
+        difficulty: q.difficulty,
+        maxScore,
+        topic: q.topic,
+        category: q.category,
+        projectName: q.projectName,
+        candidateAnswer: "(No answer submitted)",
+        score: 0,
+        rating: "Weak",
+        evaluationSource: "not_attempted",
+        correctPoints: [],
+        missingPoints: ["Question was not attempted"],
+        incorrectPoints: [],
+        grammarIssues: [],
+        feedback: "Question was not attempted.",
+        betterAnswer: q.expectedKnowledge || "Architectural and technical implementation details for project.",
+        submittedAt: existingAnsIndex !== -1 ? session.answers[existingAnsIndex].submittedAt : new Date(),
+      };
+
+      if (existingAnsIndex !== -1) {
+        session.answers[existingAnsIndex] = answerData;
+      } else {
+        session.answers.push(answerData);
+      }
+    }
+
+    session.totalScore = 0;
+    session.overallScore = 0;
+    session.maxScore = 100;
+    session.percentage = 0;
+    session.overallRating = "Weak";
+    session.strengths = [];
+    session.weaknesses = ["No questions attempted"];
+    session.finalFeedback = "No project questions were attempted during the interview.";
+    session.evaluationStatus = "COMPLETED";
+    session.evaluationCompleted = true;
+    session.aiEvaluationCalls = 0;
+    session.evaluationCompletedAt = new Date();
+    session.status = "completed";
+
+    await session.save();
+
+    return {
+      success: true,
+      message: "Project session completed with 0 attempted questions (0 AI calls)",
+      sessionId,
+      totalScore: 0,
+      maxScore: 100,
+      percentage: 0,
+      overallRating: "Weak",
+      strengths: session.strengths,
+      weaknesses: session.weaknesses,
+      finalFeedback: session.finalFeedback,
+      evaluations: session.answers,
+      reused: false,
+      aiEvaluationCalls: 0,
+    };
+  }
+
+  // Preprocess attempted answers
+  const preprocessMap = await preprocessAnswerBatch(
+    attemptedQuestions.map((q) => ({ questionId: q.questionId, answer: q.candidateAnswer, round: "project" })),
+    300
+  );
+
+  const questionsToEvaluate = attemptedQuestions.map((q) => {
+    const pre = preprocessMap.get(q.questionId);
+    if (pre && pre.reductionPercent > 0) {
+      console.log(`[EVAL-NLP] round=project questionId=${q.questionId} originalTokens=${pre.tokenCountBefore} compactTokens=${pre.tokenCountAfter} reductionPercent=${pre.reductionPercent}`);
+    }
+    return { ...q, candidateAnswer: pre?.compactAnswer || q.candidateAnswer, originalCandidateAnswer: q.candidateAnswer };
   });
 
   session.evaluationStatus = "EVALUATING";
   session.evaluationStartedAt = new Date();
   await session.save();
 
-  console.log(`[ProjectService] Making AI CALL #2 (complete evaluation) for session ${sessionId}...`);
+  console.log(`[ProjectService] Making AI CALL #2 (evaluation of ${questionsToEvaluate.length} attempted questions) for session ${sessionId}...`);
   let evalResult;
-  let isFallback = false;
 
   try {
     evalResult = await evaluateProjectInterviewAI({
@@ -466,9 +577,10 @@ export async function evaluateProjectInterviewSession({ sessionId, candidateProf
       questions: questionsToEvaluate,
     });
   } catch (evalErr) {
-    console.warn(`[ProjectService] AI evaluation call failed (${evalErr.message}). Applying deterministic application-level fallback evaluation.`);
-    isFallback = true;
-    evalResult = generateDeterministicProjectFallback(questionsToEvaluate, evalErr.message);
+    console.error(`[ProjectService] Project AI evaluation call failed for session ${sessionId}: ${evalErr.message}`);
+    session.evaluationStatus = "FAILED";
+    await session.save();
+    throw new Error(`Project AI evaluation failed: ${evalErr.message}`);
   }
 
   const evaluationsList = Array.isArray(evalResult.evaluations) ? evalResult.evaluations : [];
@@ -477,21 +589,37 @@ export async function evaluateProjectInterviewSession({ sessionId, candidateProf
   for (const q of allQuestions) {
     const qIdStr = q._id.toString();
     const itemEval = evaluationsList.find((e) => String(e.questionId) === qIdStr) || {};
-    const mainAnsMatch = mainInterviewAnswers.find((a) => String(a.questionId) === qIdStr);
+    const baseObj = baseQuestions.find((bq) => bq.questionId === qIdStr);
     const maxScore = q.maxMarks || (q.difficulty === "easy" ? 5 : q.difficulty === "hard" ? 20 : 10);
 
-    const rawScore = Number(itemEval.score);
-    const score = isNaN(rawScore) ? 0 : Math.max(0, Math.min(maxScore, Math.round(rawScore)));
+    let score = 0;
+    let rating = "Weak";
+    let feedback = "Question was not attempted.";
+    let missingPoints = ["Question was not attempted"];
+    let correctPoints = [];
+    let incorrectPoints = [];
+    let grammarIssues = [];
+    let betterAnswer = q.expectedKnowledge || "Interview-ready response based on candidate answer.";
+
+    if (baseObj?.answerPresent) {
+      const rawScore = Number(itemEval.score);
+      score = isNaN(rawScore) ? 0 : Math.max(0, Math.min(maxScore, Math.round(rawScore)));
+      const ratingCandidate = String(itemEval.rating || "").trim();
+      rating = ratingCandidate || (score >= maxScore * 0.8 ? "Strong" : score >= maxScore * 0.5 ? "Acceptable" : "Weak");
+      feedback = String(itemEval.feedback || "Evaluation complete.").trim();
+      missingPoints = Array.isArray(itemEval.missingPoints) ? itemEval.missingPoints : [];
+      correctPoints = Array.isArray(itemEval.correctPoints) ? itemEval.correctPoints : [];
+      incorrectPoints = Array.isArray(itemEval.incorrectPoints) ? itemEval.incorrectPoints : [];
+      grammarIssues = Array.isArray(itemEval.grammarIssues) ? itemEval.grammarIssues : [];
+      if (itemEval.betterAnswer) betterAnswer = String(itemEval.betterAnswer).trim();
+    }
+
     calculatedTotalScore += score;
 
-    const ratingCandidate = String(itemEval.rating || "").trim();
-    const rating = ratingCandidate || (
-      score >= maxScore * 0.8 ? "Strong" : score >= maxScore * 0.5 ? "Acceptable" : "Weak"
-    );
-
-    const existingAnsIndex = session.answers.findIndex(
-      (a) => a.questionId.toString() === qIdStr
-    );
+    const existingAnsIndex = session.answers.findIndex((a) => a.questionId.toString() === qIdStr);
+    const persistedAnswer = baseObj?.answerPresent
+      ? baseObj.candidateAnswer
+      : "(No answer submitted)";
 
     const answerData = {
       questionId: q._id,
@@ -501,20 +629,16 @@ export async function evaluateProjectInterviewSession({ sessionId, candidateProf
       topic: q.topic,
       category: q.category,
       projectName: q.projectName,
-      candidateAnswer: (existingAnsIndex !== -1 && session.answers[existingAnsIndex].candidateAnswer && session.answers[existingAnsIndex].candidateAnswer !== "(No answer submitted)")
-        ? session.answers[existingAnsIndex].candidateAnswer
-        : (mainAnsMatch?.answer || mainAnsMatch?.transcript || "(No answer submitted)"),
+      candidateAnswer: persistedAnswer,
       score,
       rating,
-      evaluationSource: itemEval.evaluationSource || (isFallback ? "deterministic_fallback" : "ai_evaluated"),
-      correctPoints: Array.isArray(itemEval.correctPoints) ? itemEval.correctPoints : [],
-      missingPoints: Array.isArray(itemEval.missingPoints) ? itemEval.missingPoints : [],
-      incorrectPoints: Array.isArray(itemEval.incorrectPoints) ? itemEval.incorrectPoints : [],
-      grammarIssues: Array.isArray(itemEval.grammarIssues) ? itemEval.grammarIssues : [],
-      feedback: String(itemEval.feedback || "Evaluation complete.").trim(),
-      betterAnswer: String(
-        itemEval.betterAnswer || q.expectedKnowledge || "Interview-ready response based on candidate answer."
-      ).trim(),
+      evaluationSource: baseObj?.answerPresent ? (itemEval.evaluationSource || "ai_evaluated") : "not_attempted",
+      correctPoints,
+      missingPoints,
+      incorrectPoints,
+      grammarIssues,
+      feedback,
+      betterAnswer,
       submittedAt: existingAnsIndex !== -1 ? session.answers[existingAnsIndex].submittedAt : new Date(),
     };
 
@@ -542,8 +666,8 @@ export async function evaluateProjectInterviewSession({ sessionId, candidateProf
   session.percentage = percentage;
   session.overallRating = evalResult.overallRating || overallRating;
   session.strengths = Array.isArray(evalResult.strengths) ? evalResult.strengths : ["Candidate project answer recorded"];
-  session.weaknesses = Array.isArray(evalResult.weaknesses) ? evalResult.weaknesses : ["Automated AI evaluation was unavailable"];
-  session.finalFeedback = String(evalResult.finalFeedback || "Project interview evaluated using deterministic application fallback.").trim();
+  session.weaknesses = Array.isArray(evalResult.weaknesses) ? evalResult.weaknesses : ["Areas identified in response"];
+  session.finalFeedback = String(evalResult.finalFeedback || "Project interview evaluated using AI.").trim();
 
   session.evaluationStatus = "COMPLETED";
   session.evaluationCompleted = true;
@@ -553,13 +677,11 @@ export async function evaluateProjectInterviewSession({ sessionId, candidateProf
 
   await session.save();
 
-  console.log(`[ProjectService] Evaluation complete for session ${sessionId}. Total score: ${calculatedTotalScore}/100 (${percentage}%). Fallback used: ${isFallback}`);
+  console.log(`[ProjectService] Evaluation complete for session ${sessionId}. Total score: ${calculatedTotalScore}/100 (${percentage}%).`);
 
   return {
     success: true,
-    message: isFallback
-      ? "Project interview evaluated using deterministic application fallback (0 extra AI calls)"
-      : "Project interview evaluated successfully in 1 AI call",
+    message: "Project interview evaluated successfully in 1 AI call",
     sessionId,
     totalScore: session.totalScore,
     maxScore: session.maxScore,
@@ -576,7 +698,7 @@ export async function evaluateProjectInterviewSession({ sessionId, candidateProf
       maxScore: a.maxScore,
       difficulty: a.difficulty,
       rating: a.rating,
-      evaluationSource: a.evaluationSource || (isFallback ? "deterministic_fallback" : "ai_evaluated"),
+      evaluationSource: a.evaluationSource || "ai_evaluated",
       correctPoints: a.correctPoints,
       missingPoints: a.missingPoints,
       incorrectPoints: a.incorrectPoints,
@@ -586,48 +708,7 @@ export async function evaluateProjectInterviewSession({ sessionId, candidateProf
     })),
     reused: false,
     aiEvaluationCalls: 1,
-    isFallback,
   };
 }
 
-/**
- * Deterministic application-level fallback evaluation generator.
- * Does NOT fabricate semantic correctness or positive marks if AI is unavailable.
- */
-function generateDeterministicProjectFallback(questionsToEvaluate, reason = "AI provider unavailable") {
-  console.log(`\n[REAL-INTERVIEW][EVALUATION-FALLBACK]\nround=project\nreason=${reason}\nevaluationSource=deterministic_fallback\n`);
-
-  const evaluations = questionsToEvaluate.map((q) => {
-    const ans = String(q.candidateAnswer || "").trim();
-    const maxScore = Number(q.maxScore || (q.difficulty === "easy" ? 5 : q.difficulty === "hard" ? 20 : 10));
-    const isUnanswered = !ans || ans === "(No answer submitted)" || ans.toLowerCase() === "not answered";
-
-    return {
-      questionId: q.questionId,
-      score: 0,
-      maxScore,
-      difficulty: q.difficulty,
-      rating: isUnanswered ? "Not Attempted" : "Unverified (AI Unavailable)",
-      evaluationSource: "deterministic_fallback",
-      correctPoints: [],
-      missingPoints: isUnanswered ? ["Question was not attempted"] : ["Automated AI evaluation was unavailable for this response"],
-      incorrectPoints: [],
-      grammarIssues: [],
-      feedback: isUnanswered
-        ? "Question was not attempted."
-        : "Automated detailed evaluation was unavailable for this response. Answer preserved for review.",
-      betterAnswer: q.expectedKnowledge || "Detailed project architectural explanation grounded in resume evidence.",
-    };
-  });
-
-  return {
-    evaluations,
-    totalScore: 0,
-    maxScore: 100,
-    percentage: 0,
-    overallRating: "Unverified",
-    strengths: ["Candidate project answers preserved in session"],
-    weaknesses: ["Automated AI evaluation service was unavailable"],
-    finalFeedback: "Project interview completed with deterministic fallback because AI evaluation was unavailable.",
-  };
-}
+// generateDeterministicProjectFallback removed — replaced by deterministicEvaluator.js

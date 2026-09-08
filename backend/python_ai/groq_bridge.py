@@ -52,10 +52,22 @@ def main():
                 sys.exit(1)
 
             message = choices[0].get("message", {})
-            content = message.get("content", "")
+            content = message.get("content", "") or ""
             
-            if not content and "reasoning" in message:
-                content = message["reasoning"]
+            # Thinking models sometimes exhaust token budget on reasoning and return empty content
+            # Fall back to reasoning field if available
+            if not content.strip() and "reasoning" in message:
+                content = message["reasoning"] or ""
+
+            # If still empty, return error so Node.js can retry with a different model
+            if not content.strip():
+                finish_reason = choices[0].get("finish_reason", "unknown")
+                print(json.dumps({
+                    "success": False,
+                    "error": f"Model returned empty content (finish_reason={finish_reason}). Model may have exhausted token budget on reasoning. Try increasing max_tokens or switching to a non-thinking model.",
+                    "usage": res_json.get("usage", {})
+                }))
+                sys.exit(0)
 
             print(json.dumps({
                 "success": True,

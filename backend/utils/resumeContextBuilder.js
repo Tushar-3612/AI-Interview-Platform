@@ -107,7 +107,10 @@ export async function getOrBuildCandidateResumeContext(userId = null, bodyProfil
     }
   }
 
-  // Normalize project entries
+  // Normalize project entries and filter out fragments/technology names
+  const techNameSet = new Set(KNOWN_TECH_KEYWORDS.map(k => k.toLowerCase()));
+  const genericWords = new Set(["workflows", "workflow", "control", "dashboards", "dashboard", "communication", "generation", "based", "system", "management", "project", "details", "implementation", "features", "functionality", "using", "with", "technology", "technologies"]);
+
   const normalizedProjects = projects.map((p) => {
     if (typeof p === "string") {
       return { name: p.trim(), description: "", technologies: [] };
@@ -117,6 +120,22 @@ export async function getOrBuildCandidateResumeContext(userId = null, bodyProfil
       description: p.description || p.summary || "",
       technologies: Array.isArray(p.technologies) ? p.technologies : (p.techStack || []),
     };
+  }).filter((p) => {
+    const name = (p.name || "").trim();
+    if (!name || name.length < 4) return false;
+    // Filter out entries that are just technology names (e.g., "React.js", "HTML", "ESP32")
+    if (techNameSet.has(name.toLowerCase())) return false;
+    // Filter out generic single words or short fragments
+    if (name.split(/\s+/).length === 1 && genericWords.has(name.toLowerCase())) return false;
+    // Filter out entries that look like description fragments (contain "based on", "using", etc.)
+    if (/^(?:based on|using|with|for|the|a|an)\b/i.test(name)) return false;
+    // Filter out entries that are clearly not project titles (too short and no description)
+    if (name.length < 8 && (!p.description || p.description.length < 10)) return false;
+    return true;
+  }).filter((p, idx, arr) => {
+    // Deduplicate by normalized name
+    const normalizedName = p.name.toLowerCase().replace(/[^a-z0-9]/g, "");
+    return arr.findIndex(x => x.name.toLowerCase().replace(/[^a-z0-9]/g, "") === normalizedName) === idx;
   });
 
   // Extract explicit skill categories

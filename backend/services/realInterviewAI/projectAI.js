@@ -35,6 +35,25 @@ function getProjectModel(attempt = 1) {
   return "openai/gpt-oss-120b";
 }
 
+/**
+ * Classify Groq API errors to determine retry behavior.
+ */
+function classifyGroqError(err) {
+  const status = err?.status || err?.statusCode || 0;
+  const msg = String(err?.message || err || "").toLowerCase();
+
+  if (status === 404 || msg.includes("404") || msg.includes("model_not_found") || msg.includes("does not exist")) {
+    return { retryable: false, reason: "Model not found (404)" };
+  }
+  if (status === 401 || status === 403 || msg.includes("401") || msg.includes("403")) {
+    return { retryable: false, reason: "Authentication/authorization error" };
+  }
+  if (status === 429 || msg.includes("429") || msg.includes("rate_limit") || msg.includes("tokens per day")) {
+    return { retryable: false, reason: "Rate limit / daily quota exhausted (429)" };
+  }
+  return { retryable: true, reason: "Transient error" };
+}
+
 import { extractJsonFromText } from "./jsonExtractor.js";
 
 /**
@@ -158,7 +177,12 @@ JSON OUTPUT ONLY:
       throw new Error(`AI returned ${parsed?.questions?.length || 0} questions (expected 10)`);
     } catch (err) {
       lastError = err;
-      console.warn(`[RealInterviewAI][Project] Generation attempt ${attempt} failed: ${err.message}`);
+      const { retryable, reason } = classifyGroqError(err);
+      console.warn(`[RealInterviewAI][Project] Attempt ${attempt} failed: ${err.message} (${reason})`);
+      if (!retryable) {
+        console.warn(`[RealInterviewAI][Project] Non-retryable error, failing immediately: ${reason}`);
+        break;
+      }
       if (attempt < 3) {
         await new Promise((r) => setTimeout(r, 12000));
       }

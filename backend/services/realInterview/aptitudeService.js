@@ -1,16 +1,142 @@
-import { generateAptitudeAI } from "../realInterviewAI/aptitudeAI.js";
 import RealInterviewAptitudeQuestion from "../../models/RealInterviewAptitudeQuestion.js";
 import RealInterviewAptitudeSession from "../../models/RealInterviewAptitudeSession.js";
+import { loadAptitudeBank, getBank } from "../questionBank.js";
 import { withInFlightLock } from "./inFlightLock.js";
 import {
   getUserQuestionHistorySet,
   recordUserQuestionHistory,
-  filterUniqueQuestions,
+  normalizeQuestionText,
+  isDuplicateQuestion,
 } from "./questionHistoryService.js";
 
+function shuffleArray(arr) {
+  const result = [...arr];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
+function inferQuestionType(q) {
+  if (q.questionType && typeof q.questionType === "string") {
+    return q.questionType.trim();
+  }
+  const qId = String(q.questionId || q.id || "").toUpperCase();
+  const cat = String(q.category || q.topic || "").toLowerCase();
+  if (
+    qId.startsWith("LRG") ||
+    qId.startsWith("PZL") ||
+    cat.includes("logical") ||
+    cat.includes("relation") ||
+    cat.includes("coding") ||
+    cat.includes("puzzle") ||
+    cat.includes("direction") ||
+    cat.includes("series")
+  ) {
+    return "Logical Reasoning";
+  }
+  if (
+    qId.startsWith("DIT") ||
+    cat.includes("data") ||
+    cat.includes("interpretation") ||
+    cat.includes("table") ||
+    cat.includes("chart") ||
+    cat.includes("graph")
+  ) {
+    return "Data Interpretation";
+  }
+  if (
+    qId.startsWith("VRB") ||
+    cat.includes("verbal") ||
+    cat.includes("grammar") ||
+    cat.includes("reading") ||
+    cat.includes("vocab")
+  ) {
+    return "Verbal Reasoning";
+  }
+  return "Numerical Aptitude";
+}
+
 /**
- * Validates, persists, and formats Real Interview Aptitude Questions.
- * Assigns maxMarks: Easy = 2, Medium = 3, Hard = 5 (Total = 50 Marks).
+ * Loads and validates local Aptitude JSON question bank as source of truth.
+ */
+function getLocalAptitudeBankPool() {
+  let bank = getBank();
+  if (!bank || bank.length === 0) {
+    loadAptitudeBank();
+    bank = getBank();
+  }
+
+  const validPool = [];
+  for (const item of bank) {
+    const text = String(item.question || "").trim();
+    if (!text) continue;
+
+    let rawOpts = item.options;
+    let formattedOptions = [];
+    if (Array.isArray(rawOpts) && rawOpts.length === 4) {
+      formattedOptions = rawOpts.map((opt, optIdx) => {
+        const expectedLabel = ["A", "B", "C", "D"][optIdx];
+        let optText = "";
+        if (typeof opt === "string") {
+          optText = opt.trim();
+        } else if (opt && typeof opt === "object") {
+          optText = String(opt.text || opt.option || "").trim();
+        }
+        return { label: expectedLabel, text: optText };
+      });
+    }
+
+    if (formattedOptions.length !== 4 || formattedOptions.some((o) => !o.text)) {
+      continue;
+    }
+
+    let correctAns = "";
+    const rawAns = String(item.correctAnswer || item.answer || "").trim();
+    if (["A", "B", "C", "D"].includes(rawAns.toUpperCase())) {
+      correctAns = rawAns.toUpperCase();
+    } else if (rawAns) {
+      const lowerAns = rawAns.toLowerCase();
+      for (const opt of formattedOptions) {
+        if (opt.text.toLowerCase() === lowerAns) {
+          correctAns = opt.label;
+          break;
+        }
+      }
+    }
+
+    if (!correctAns || !["A", "B", "C", "D"].includes(correctAns)) {
+      continue;
+    }
+
+    const exp = String(item.explanation || "").trim();
+    if (!exp) continue;
+
+    const diff = String(item.difficulty || "").toLowerCase().trim();
+    const validDiff = ["easy", "medium", "hard"].includes(diff) ? diff : "medium";
+    const maxMarks = validDiff === "easy" ? 2 : validDiff === "hard" ? 5 : 3;
+
+    validPool.push({
+      questionId: String(item.questionId || item.id || `aq_${validPool.length + 1}`),
+      question: text,
+      options: formattedOptions,
+      correctAnswer: correctAns,
+      explanation: exp,
+      difficulty: validDiff,
+      maxMarks,
+      topic: String(item.topic || item.category || "General Aptitude").trim(),
+      questionType: inferQuestionType(item),
+    });
+  }
+
+  return validPool;
+}
+
+/**
+ * Validates, persists, and formats Real Interview Aptitude Questions from local JSON bank.
+ * Assigns maxMarks: Easy = 2, Medium = 3, Hard = 5 (Exactly 5 Easy, 5 Medium, 5 Hard, Total = 50 Marks).
+ * ZERO AI CALLS.
  */
 export async function generateAndProcessAptitudeQuestions({ userId = null, sessionId = null } = {}) {
   const lockKey = `aptitude:${sessionId || "global"}`;
@@ -28,7 +154,7 @@ export async function generateAndProcessAptitudeQuestions({ userId = null, sessi
           maxMarks: doc.maxMarks || (doc.difficulty === "easy" ? 2 : doc.difficulty === "hard" ? 5 : 3),
           topic: doc.topic,
           questionType: doc.questionType,
-          source: doc.source || "AI_PROVIDER",
+          source: doc.source || "local_json_bank",
         }));
         return {
           success: true,
@@ -40,130 +166,96 @@ export async function generateAndProcessAptitudeQuestions({ userId = null, sessi
       }
     }
 
-    let rawQuestions = [];
     const userHistorySet = await getUserQuestionHistorySet(userId);
+    const pool = getLocalAptitudeBankPool();
 
-    const requestId = `apt_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
-    const modelName = process.env.REAL_INTERVIEW_APTITUDE_MODEL || "openai/gpt-oss-20b";
-    const hasKey = Boolean(process.env.REAL_INTERVIEW_APTITUDE_API_KEY?.trim());
+    // Partition pool by difficulty
+    const easyCandidates = pool.filter((q) => q.difficulty === "easy");
+    const mediumCandidates = pool.filter((q) => q.difficulty === "medium");
+    const hardCandidates = pool.filter((q) => q.difficulty === "hard");
 
-    console.log(`\n[AI-REQUEST-START]\nround=aptitude\nprovider=groq\nmodel=${modelName}\nkeyPresent=${hasKey}\nrequestId=${requestId}`);
+    const currentSessionPoolSet = new Set();
 
-    try {
-      const aiResult = await generateAptitudeAI();
-      if (aiResult && Array.isArray(aiResult.questions) && aiResult.questions.length >= 15) {
-        rawQuestions = filterUniqueQuestions(aiResult.questions, userHistorySet);
-        if (rawQuestions.length < 15) {
-          // If historical filter removed too many, take original AI output
-          rawQuestions = aiResult.questions.slice(0, 15);
-        }
+    const selectForDifficulty = (candidates, count, diffLabel) => {
+      // 1. First preference: fresh questions candidate has NOT seen in past history
+      const freshCandidates = candidates.filter(
+        (q) => !isDuplicateQuestion(q.question, userHistorySet, currentSessionPoolSet)
+      );
+
+      let selected = [];
+      if (freshCandidates.length >= count) {
+        selected = shuffleArray(freshCandidates).slice(0, count);
       } else {
-        throw new Error(`Aptitude AI returned ${aiResult?.questions?.length || 0} questions (expected 15)`);
+        // Fallback: candidate has seen many questions in past history.
+        // Still enforce strict uniqueness within currentSessionPoolSet!
+        const shuffled = shuffleArray(candidates);
+        for (const q of shuffled) {
+          if (!isDuplicateQuestion(q.question, new Set(), currentSessionPoolSet)) {
+            selected.push(q);
+            const norm = normalizeQuestionText(q.question);
+            if (norm) currentSessionPoolSet.add(norm);
+            if (selected.length === count) break;
+          }
+        }
       }
-    } catch (err) {
-      console.error(`\n[AI-REQUEST-FAILED]\nround=aptitude\nprovider=groq\nrequestId=${requestId}\nerror=${err.message}`);
-      throw new Error(`Aptitude AI generation failed: ${err.message}`);
-    }
 
-    if (rawQuestions.length < 15) {
-      console.error(`\n[AI-REQUEST-FAILED]\nround=aptitude\nprovider=groq\nrequestId=${requestId}\nerror=Insufficient AI questions returned (${rawQuestions.length}/15)`);
-      throw new Error(`Insufficient Aptitude AI questions generated (${rawQuestions.length}/15)`);
-    }
+      if (selected.length < count) {
+        throw new Error(
+          `Failed to select ${count} valid '${diffLabel}' questions from local JSON bank (found ${selected.length}/${count})`
+        );
+      }
 
-    console.log(`\n[AI-REQUEST-SUCCESS]\nround=aptitude\nprovider=groq\nrequestId=${requestId}\nquestionsReturned=${rawQuestions.length}`);
+      // Add selected questions to currentSessionPoolSet if not already added
+      for (const q of selected) {
+        const norm = normalizeQuestionText(q.question);
+        if (norm) currentSessionPoolSet.add(norm);
+      }
 
-    const selectedQuestions = rawQuestions.slice(0, 15);
+      return selected;
+    };
+
+    const selectedEasy = selectForDifficulty(easyCandidates, 5, "easy");
+    const selectedMedium = selectForDifficulty(mediumCandidates, 5, "medium");
+    const selectedHard = selectForDifficulty(hardCandidates, 5, "hard");
+
+    const selectedQuestions = [...selectedEasy, ...selectedMedium, ...selectedHard];
+
+    // Final verification of 15 questions and difficulty breakdown
     const diffCounts = { easy: 0, medium: 0, hard: 0 };
     const answerCounts = { A: 0, B: 0, C: 0, D: 0 };
-    const seenTexts = new Set();
+    const finalSeenSet = new Set();
     const validatedDocs = [];
 
-    for (let idx = 0; idx < selectedQuestions.length; idx++) {
-      const q = selectedQuestions[idx];
-
-      const text = String(q.question || "").trim();
-      if (!text) {
-        throw new Error(`Question #${idx + 1} has empty question text`);
+    for (const q of selectedQuestions) {
+      const normText = normalizeQuestionText(q.question);
+      if (finalSeenSet.has(normText)) {
+        throw new Error(`Duplicate question detected in selected batch: "${q.question}"`);
       }
+      finalSeenSet.add(normText);
 
-      let normText = text.toLowerCase().replace(/\s+/g, " ").trim();
-      if (seenTexts.has(normText)) {
-        console.warn(`[AptitudeService] Duplicate question text detected in batch: "${text.slice(0, 40)}...". Preserving question.`);
-        normText = normText + "_" + idx;
-      }
-      seenTexts.add(normText);
-
-      const diff = String(q.difficulty || "").toLowerCase().trim();
-      const validDiff = ["easy", "medium", "hard"].includes(diff) ? diff : "medium";
-      diffCounts[validDiff]++;
-
-      const maxMarks = validDiff === "easy" ? 2 : validDiff === "hard" ? 5 : 3;
-
-      let rawOpts = q.options;
-      if (rawOpts && !Array.isArray(rawOpts) && typeof rawOpts === "object") {
-        const keys = Object.keys(rawOpts);
-        if (keys.length === 4) {
-          rawOpts = keys.map((k, i) => ({
-            label: ["A", "B", "C", "D"][i],
-            text: String(rawOpts[k])
-          }));
-        }
-      }
-
-      if (!Array.isArray(rawOpts) || rawOpts.length !== 4) {
-        throw new Error(`Question #${idx + 1} must have exactly 4 options`);
-      }
-
-      const formattedOptions = rawOpts.map((opt, optIdx) => {
-        const expectedLabel = ["A", "B", "C", "D"][optIdx];
-        let parsedOpt = opt;
-        if (typeof opt === "string" && opt.trim().startsWith("{")) {
-          try {
-            parsedOpt = JSON.parse(opt);
-          } catch (e) {}
-        }
-        const optText = typeof parsedOpt === "string" ? parsedOpt.trim() : String(parsedOpt.text || parsedOpt.option || "").trim();
-
-        if (!optText) {
-          throw new Error(`Question #${idx + 1} Option ${expectedLabel} is empty`);
-        }
-        return { label: expectedLabel, text: optText };
-      });
-
-      const correctAns = String(q.correctAnswer || "").toUpperCase().trim();
-      if (!["A", "B", "C", "D"].includes(correctAns)) {
-        throw new Error(`Question #${idx + 1} has invalid correctAnswer: "${q.correctAnswer}"`);
-      }
-      answerCounts[correctAns]++;
-
-      const exp = String(q.explanation || "").trim();
-      if (!exp) {
-        throw new Error(`Question #${idx + 1} has empty explanation`);
-      }
-
-      const topic = String(q.topic || "General Aptitude").trim();
-      const questionType = String(q.questionType || "Numerical Aptitude").trim();
+      diffCounts[q.difficulty]++;
+      answerCounts[q.correctAnswer]++;
 
       validatedDocs.push({
         sessionId,
         userId,
-        question: text,
-        options: formattedOptions,
-        correctAnswer: correctAns,
-        explanation: exp,
-        difficulty: validDiff,
-        maxMarks,
-        topic,
-        questionType,
-        source: "AI_PROVIDER",
+        question: q.question,
+        options: q.options,
+        correctAnswer: q.correctAnswer,
+        explanation: q.explanation,
+        difficulty: q.difficulty,
+        maxMarks: q.maxMarks,
+        topic: q.topic,
+        questionType: q.questionType,
+        source: "local_json_bank",
       });
     }
 
-    if (validatedDocs.length < 15) {
-      throw new Error(`Aptitude AI question validation resulted in ${validatedDocs.length}/15 questions`);
+    if (validatedDocs.length !== 15) {
+      throw new Error(`Failed to select exactly 15 Aptitude questions from local bank (selected ${validatedDocs.length})`);
     }
 
-    console.log(`\n[QUESTION-SOURCE]\nround=aptitude\nsource=AI_PROVIDER\ncount=${validatedDocs.length}\n`);
+    console.log(`\n[QUESTION-SOURCE]\nround=aptitude\nsource=local_json_bank\ncount=${validatedDocs.length}\ndistribution=easy:${diffCounts.easy},medium:${diffCounts.medium},hard:${diffCounts.hard}\n`);
 
     const savedDocs = await RealInterviewAptitudeQuestion.insertMany(validatedDocs);
     if (userId && sessionId) {
@@ -172,18 +264,18 @@ export async function generateAndProcessAptitudeQuestions({ userId = null, sessi
 
     // STRIP correctAnswer & explanation from active interview candidate response
     const studentQuestions = savedDocs.map((doc) => ({
-    id: doc._id.toString(),
-    question: doc.question,
-    options: doc.options.map((o) => ({ label: o.label, text: o.text })),
-    difficulty: doc.difficulty,
-    maxMarks: doc.maxMarks,
-    topic: doc.topic,
-    questionType: doc.questionType,
-  }));
+      id: doc._id.toString(),
+      question: doc.question,
+      options: doc.options.map((o) => ({ label: o.label, text: o.text })),
+      difficulty: doc.difficulty,
+      maxMarks: doc.maxMarks,
+      topic: doc.topic,
+      questionType: doc.questionType,
+    }));
 
     return {
       success: true,
-      message: "15 placement-level aptitude questions generated successfully",
+      message: "15 placement-level aptitude questions selected from local JSON bank successfully",
       count: studentQuestions.length,
       distribution: diffCounts,
       answerDistribution: answerCounts,

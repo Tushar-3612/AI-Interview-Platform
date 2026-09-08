@@ -530,11 +530,14 @@ function StartInterview() {
 
       let targetId = sessionIdRef.current || sessionId || paramSessionId || routerState.sessionId || routerState.interviewId || storedSessionId || profile?.interviewId;
 
+      const activeToken = token || getAuthToken();
+      const authHeaderOptions = activeToken ? { headers: { Authorization: `Bearer ${activeToken}` } } : {};
+
       if (!targetId || targetId === "undefined" || targetId === "null") {
         const { data: newSession } = await api.post(
           "/api/student/interviews",
           { interviewType: "actual" },
-          { headers: { Authorization: `Bearer ${token}` } }
+          authHeaderOptions
         );
         targetId = newSession.sessionId || newSession.interviewId || newSession._id;
         if (targetId) {
@@ -556,9 +559,7 @@ function StartInterview() {
         throw new Error("Could not initialize interview session ID");
       }
 
-      const { data } = await api.get(`/api/student/interviews/${targetId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const { data } = await api.get(`/api/student/interviews/${targetId}`, authHeaderOptions);
 
       const isDbCompleted = (data.status === "completed" || data.status === "COMPLETED");
       if (isDbCompleted) {
@@ -1984,12 +1985,14 @@ function StartInterview() {
   }
 
   if (isCompleted) {
-    console.log(`[REAL-INTERVIEW] sessionId=${sessionId} isCompleted=true isSubmitted=true currentQuestionIndex=${currentIndex}`);
+    const activeSessionId = sessionIdRef.current || sessionId;
+    console.log(`[RESULT-FLOW] completed sessionId=${activeSessionId}`);
+    console.log(`[REAL-INTERVIEW] sessionId=${activeSessionId} isCompleted=true isSubmitted=true currentQuestionIndex=${currentIndex}`);
     console.log(`[REAL-INTERVIEW] showing component=COMPLETION`);
     const stats = getCompletedStats();
     return (
       <CompletionScreen
-        interviewId={sessionIdRef.current || sessionId}
+        interviewId={activeSessionId}
         candidateName={candidateInfo.name}
         answeredCount={stats.answeredCount}
         skippedCount={stats.skippedCount}

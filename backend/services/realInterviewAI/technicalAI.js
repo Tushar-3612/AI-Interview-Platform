@@ -9,17 +9,8 @@ dotenv.config({ path: path.join(__dirname, "../../../.env") });
 import { callPythonGroqBridge } from "./pythonGroqBridge.js";
 import { extractJsonFromText } from "./jsonExtractor.js";
 
-function getTechnicalApiKey(attempt = 1) {
-  const keys = [
-    process.env.REAL_INTERVIEW_TECHNICAL_API_KEY,
-    process.env.AI_API_KEY,
-    process.env.MOCK_INTERVIEW_API_KEY,
-    process.env.REAL_INTERVIEW_PROJECT_API_KEY,
-    process.env.REAL_INTERVIEW_CODING_API_KEY,
-    process.env.REAL_INTERVIEW_APTITUDE_API_KEY,
-  ].map((k) => (k || "").trim()).filter(Boolean);
-  const uniqueKeys = Array.from(new Set(keys));
-  const apiKey = uniqueKeys[(attempt - 1) % uniqueKeys.length];
+function getTechnicalApiKey() {
+  const apiKey = (process.env.REAL_INTERVIEW_TECHNICAL_API_KEY || process.env.GROQ_API_KEY || "").trim();
   if (!apiKey) {
     console.error("[RealInterviewAI][Technical] Missing API Key");
     throw new Error("REAL_INTERVIEW_TECHNICAL_API_KEY is not configured in environment");
@@ -27,123 +18,140 @@ function getTechnicalApiKey(attempt = 1) {
   return apiKey;
 }
 
-function getTechnicalModel(attempt = 1) {
-  const custom = (process.env.REAL_INTERVIEW_TECHNICAL_MODEL || "").trim();
-  if (custom) return custom;
-  if (attempt === 1) return "openai/gpt-oss-120b";
-  if (attempt === 2) return "openai/gpt-oss-20b";
-  return "openai/gpt-oss-120b";
+function getTechnicalModel() {
+  return (process.env.REAL_INTERVIEW_TECHNICAL_MODEL || process.env.GROQ_MODEL || "openai/gpt-oss-120b").trim();
 }
 
 /**
- * Generates EXACTLY 20 resume-driven technical questions in ONE single AI API Request (Attempt 1).
+ * Generates EXACTLY 20 resume-driven technical questions using 7 AI requests (Max 3 questions per batch).
+ * Batch 1: Q1-Q3 (3 Easy)
+ * Batch 2: Q4-Q6 (3 Easy)
+ * Batch 3: Q7-Q9 (2 Easy, 1 Medium) -> Total 8 Easy, 1 Medium
+ * Batch 4: Q10-Q12 (3 Medium)
+ * Batch 5: Q13-Q15 (3 Medium)
+ * Batch 6: Q16-Q18 (3 Medium) -> Total 10 Medium
+ * Batch 7: Q19-Q20 (2 Hard) -> Total 2 Hard
  */
 export async function generateTechnicalAI(candidateProfile = {}) {
-  console.log("\n[REAL-INTERVIEW][AI-CALL]\nround=technical\noperation=generation\nattempt=1");
+  console.log("\n[REAL-INTERVIEW][AI-CALL]\nround=technical\noperation=batch_generation\ntotal_batches=7");
   const apiKey = getTechnicalApiKey();
   const model = getTechnicalModel();
 
-  const profileSummary = {
-    skills: candidateProfile.skills || [],
-    programmingLanguages: candidateProfile.programmingLanguages || [],
-    frameworks: candidateProfile.frameworks || [],
-    databases: candidateProfile.databases || [],
-    tools: candidateProfile.tools || [],
-    cloud: candidateProfile.cloud || [],
-    projects: (candidateProfile.projects || []).map((p) => ({
-      name: p.name || "",
-      description: p.description || "",
-      technologies: p.technologies || [],
-      role: p.role || "",
-    })),
-  };
+  // Extract lightweight skill context (avoid sending full resume details in every request)
+  const skillsList = [
+    ...(candidateProfile.skills || []),
+    ...(candidateProfile.programmingLanguages || []),
+    ...(candidateProfile.frameworks || []),
+    ...(candidateProfile.databases || []),
+    ...(candidateProfile.tools || []),
+    ...(candidateProfile.cloud || []),
+  ].map((s) => String(s).trim()).filter(Boolean);
 
-  const skillsPassed = candidateProfile.skills || [];
-  if (skillsPassed.length > 0) {
-    console.log(`\n[REAL-INTERVIEW][TECHNICAL-CONTEXT]\nskills=[${skillsPassed.join(", ")}]\n`);
-  } else {
-    console.log(`\n[REAL-INTERVIEW][TECHNICAL-CONTEXT]\nskills=[] (Resume context unavailable)\n`);
-  }
+  const uniqueSkills = Array.from(new Set(skillsList));
+  const skillsContextStr = uniqueSkills.length > 0
+    ? uniqueSkills.slice(0, 15).join(", ")
+    : "Computer Science Fundamentals, Data Structures, OOP, Software Engineering Principles";
 
-  const prompt = `You are interviewing this candidate based ONLY on the supplied resume context.
-Do not invent technologies, frameworks, libraries, databases, cloud services, or tools.
-Every candidate-specific technical question must test a technology explicitly listed in the candidate profile.
-If a technology is not present in the candidate profile, DO NOT ask about it.
-If the candidate profile lacks specific technologies, ask general CS conceptual questions (e.g. Operating Systems, Networks, Data Structures) instead of assuming unmentioned technologies.
+  console.log(`[REAL-INTERVIEW][TECHNICAL-CONTEXT]\nskills=[${skillsContextStr}]\n`);
 
-Generate a JSON object with key "questions" containing EXACTLY 20 placement-level technical interview questions tailored strictly to the candidate's explicit technical skills.
+  const BATCH_SPECS = [
+    { batchIndex: 1, count: 3, easy: 3, medium: 0, hard: 0, range: "Q1-Q3" },
+    { batchIndex: 2, count: 3, easy: 3, medium: 0, hard: 0, range: "Q4-Q6" },
+    { batchIndex: 3, count: 3, easy: 2, medium: 1, hard: 0, range: "Q7-Q9" },
+    { batchIndex: 4, count: 3, easy: 0, medium: 3, hard: 0, range: "Q10-Q12" },
+    { batchIndex: 5, count: 3, easy: 0, medium: 3, hard: 0, range: "Q13-Q15" },
+    { batchIndex: 6, count: 3, easy: 0, medium: 3, hard: 0, range: "Q16-Q18" },
+    { batchIndex: 7, count: 2, easy: 0, medium: 0, hard: 2, range: "Q19-Q20" },
+  ];
 
-CANDIDATE PROFILE:
-${JSON.stringify(profileSummary, null, 2)}
+  const allBatchQuestions = [];
 
-STRICT RULES:
-1. EXTRACT TECHNICAL SKILLS ONLY: ONLY ask questions on skills explicitly listed in the profile. DO NOT introduce unmentioned technologies.
-2. SKILL DISTRIBUTION: Distribute the 20 questions proportionally across listed technical skills.
-3. PROJECTS ARE NOT TECHNICAL SKILLS: Focus 100% on evaluating the candidate's deep technical knowledge of the TECHNOLOGY itself.
-4. DEEP QUESTION PRINCIPLE: Test conceptual depth, WHY, HOW, and trade-offs.
-5. DIFFICULTY DISTRIBUTION (EXACTLY 20 QUESTIONS | 100 MARKS TOTAL):
-   - 8 Easy questions (3 marks each = 24 marks)
-   - 10 Medium questions (5 marks each = 50 marks)
-   - 2 Hard questions (13 marks each = 26 marks)
+  for (const spec of BATCH_SPECS) {
+    console.log(`[TechnicalAI] Executing AI Call for Batch ${spec.batchIndex}/7 (${spec.range})...`);
 
-JSON SCHEMA ONLY:
+    const prompt = `You are generating placement-level technical interview questions for a candidate with these explicit technical skills: ${skillsContextStr}.
+Generate EXACTLY ${spec.count} technical interview question(s) for batch ${spec.range}.
+
+DIFFICULTY REQUIREMENTS FOR THIS BATCH (${spec.count} questions total):
+${spec.easy > 0 ? `- ${spec.easy} Easy question(s) (3 marks each)` : ""}
+${spec.medium > 0 ? `- ${spec.medium} Medium question(s) (5 marks each)` : ""}
+${spec.hard > 0 ? `- ${spec.hard} Hard question(s) (13 marks each)` : ""}
+
+RULES:
+1. ONLY ask about the candidate's explicit technical skills listed above.
+2. Test deep conceptual understanding, WHY, HOW, and trade-offs.
+3. Do NOT invent unmentioned technologies.
+4. Output ONLY valid JSON starting immediately with {"questions": [...]}.
+
+JSON SCHEMA:
 {
   "questions": [
     {
-      "question": "Clear deep technical question testing a skill",
-      "expectedKnowledge": "Clear evaluation criteria",
+      "question": "Deep technical question",
+      "expectedKnowledge": "Evaluation criteria and key expected points",
       "difficulty": "easy",
-      "topic": "Backend Architecture",
-      "skillsTested": ["Node.js", "Express.js"]
+      "topic": "Core Principle",
+      "skillsTested": ["Node.js"]
     }
   ]
 }`;
 
-  const requestBody = {
-    model,
-    messages: [
-      {
-        role: "system",
-        content: "You are a JSON API endpoint. Output ONLY valid JSON starting immediately with {\"questions\": [...]} without any reasoning, thinking, or commentary.",
-      },
-      { role: "user", content: prompt },
-    ],
-    temperature: 0.1,
-    max_tokens: 3800,
-  };
-
-  let lastError = null;
-  for (let attempt = 1; attempt <= 3; attempt++) {
-    const currentApiKey = getTechnicalApiKey(attempt);
-    const currentModel = getTechnicalModel(attempt);
     try {
       const rawText = await callPythonGroqBridge({
         round: "technical",
-        apiKey: currentApiKey,
-        model: currentModel,
-        messages: requestBody.messages,
-        temperature: requestBody.temperature,
-        max_tokens: requestBody.max_tokens,
-        timeoutMs: 60000,
+        apiKey,
+        model,
+        messages: [
+          {
+            role: "system",
+            content: "You are a JSON API endpoint. Output ONLY valid JSON starting immediately with {\"questions\": [...]} without any markdown or commentary.",
+          },
+          { role: "user", content: prompt },
+        ],
+        temperature: 0.2,
+        max_tokens: 1200,
+        timeoutMs: 45000,
       });
 
       const parsed = extractJsonFromText(rawText);
+      if (!parsed || !Array.isArray(parsed.questions) || parsed.questions.length === 0) {
+        throw new Error(`Batch ${spec.batchIndex} returned invalid or empty questions array`);
+      }
 
-      if (parsed && Array.isArray(parsed.questions) && parsed.questions.length >= 20) {
-        console.log(`[RealInterviewAI][Technical] Generated ${parsed.questions.length} questions successfully`);
-        return parsed;
-      }
-      throw new Error(`AI returned ${parsed?.questions?.length || 0} questions (expected 20)`);
+      const batchQuestions = parsed.questions.slice(0, spec.count).map((q, qIdx) => {
+        let diff = "medium";
+        if (spec.easy > 0 && qIdx < spec.easy) diff = "easy";
+        else if (spec.hard > 0 && qIdx >= (spec.count - spec.hard)) diff = "hard";
+        else if (spec.medium > 0) diff = "medium";
+
+        const validDiff = ["easy", "medium", "hard"].includes(diff) ? diff : "medium";
+        const maxMarks = validDiff === "easy" ? 3 : validDiff === "hard" ? 13 : 5;
+
+        return {
+          question: String(q.question || "").trim(),
+          expectedKnowledge: String(q.expectedKnowledge || q.expected_knowledge || q.expectedAnswer || "Comprehensive technical explanation.").trim(),
+          difficulty: validDiff,
+          maxMarks,
+          topic: String(q.topic || "Technical Concept").trim(),
+          skillsTested: Array.isArray(q.skillsTested) ? q.skillsTested : [skillsContextStr.split(",")[0] || "General"],
+        };
+      });
+
+      allBatchQuestions.push(...batchQuestions);
+      console.log(`[TechnicalAI] Batch ${spec.batchIndex}/7 (${spec.range}) SUCCESS: ${batchQuestions.length} questions generated.`);
     } catch (err) {
-      lastError = err;
-      console.warn(`[RealInterviewAI][Technical] Generation attempt ${attempt} failed: ${err.message}`);
-      if (attempt < 3) {
-        await new Promise((r) => setTimeout(r, 12000));
-      }
+      console.error(`[TechnicalAI] Batch ${spec.batchIndex}/7 FAILED: ${err.message}`);
+      // Immediately stop generation on 429 or quota/network error — do not retry repeatedly or use fake fallback
+      throw new Error(`Technical AI generation failed on Batch ${spec.batchIndex} (${spec.range}): ${err.message}`);
     }
   }
 
-  throw lastError || new Error("Technical AI generation failed after 3 attempts");
+  if (allBatchQuestions.length < 20) {
+    throw new Error(`Technical AI batch generation produced ${allBatchQuestions.length} questions (expected 20)`);
+  }
+
+  console.log(`[TechnicalAI] All 7 batches completed successfully! Combined total: ${allBatchQuestions.length} questions.`);
+  return { questions: allBatchQuestions };
 }
 
 /**

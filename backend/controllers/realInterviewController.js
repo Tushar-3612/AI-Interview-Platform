@@ -28,8 +28,9 @@ import {
   evaluateCodingInterviewSession,
 } from "../services/realInterview/codingService.js";
 import { getOrBuildCandidateResumeContext } from "../utils/resumeContextBuilder.js";
-import { executeRealInterviewResultPipeline } from "../services/realInterview/resultPipelineService.js";
+import { calculateRealInterviewResult } from "../services/realInterview/realInterviewResultService.js";
 import RealInterviewResult from "../models/RealInterviewResult.js";
+import Interview from "../models/Interview.js";
 
 /**
  * POST /api/real-interview/aptitude/generate
@@ -562,8 +563,8 @@ export const submitRealInterview = async (req, res) => {
       return res.status(400).json({ success: false, message: "sessionId is required for interview submission" });
     }
 
-    // Launch pipeline synchronously or asynchronously; start execution
-    const pipelinePromise = executeRealInterviewResultPipeline({ sessionId, userId });
+    // Launch result calculation
+    const pipelinePromise = calculateRealInterviewResult({ sessionId, userId });
 
     // Wait up to 3 seconds for initial status or complete if fast
     const raceResult = await Promise.race([
@@ -573,12 +574,13 @@ export const submitRealInterview = async (req, res) => {
 
     if (raceResult !== "TIMED_OUT_WAITING") {
       return res.status(200).json({
-        success: true,
+        success: raceResult.status === "COMPLETED",
         sessionId,
         status: raceResult.status,
-        evaluationStage: raceResult.evaluationStage,
-        evaluationProgress: raceResult.evaluationProgress,
         result: raceResult.status === "COMPLETED" ? raceResult : null,
+        message: raceResult.status === "EVALUATION_FAILED"
+          ? "Your interview was completed successfully, but we couldn't generate your result right now. Your answers are safely saved. The AI evaluation service is temporarily unavailable. Please try again later."
+          : undefined,
       });
     }
 
@@ -587,9 +589,8 @@ export const submitRealInterview = async (req, res) => {
     res.status(202).json({
       success: true,
       sessionId,
-      status: currentDoc?.status || "SUBMITTED",
-      evaluationStage: currentDoc?.evaluationStage || "Saving interview responses",
-      evaluationProgress: currentDoc?.evaluationProgress || 10,
+      status: currentDoc?.status || "CALCULATING",
+      message: "Result evaluation in progress",
     });
   } catch (error) {
     console.error("[RealInterviewController] Submit Interview Error:", error.message);
@@ -612,23 +613,42 @@ export const getRealInterviewResultStatus = async (req, res) => {
     }
 
     const resultDoc = await RealInterviewResult.findOne({ sessionId }).lean();
-    if (!resultDoc) {
+    if (resultDoc) {
+      return res.status(200).json({
+        success: true,
+        sessionId,
+        status: resultDoc.status,
+        message: resultDoc.status === "EVALUATION_FAILED"
+          ? "Your interview was completed successfully, but we couldn't generate your result right now. Your answers are safely saved. The AI evaluation service is temporarily unavailable. Please try again later."
+          : undefined,
+      });
+    }
+
+    // Result doc not created yet — check Interview session
+    const interviewDoc = await Interview.findById(sessionId).lean().catch(() => null);
+    if (!interviewDoc) {
       return res.status(404).json({
         success: false,
         sessionId,
-        status: "NOT_SUBMITTED",
-        evaluationStage: "Interview not submitted yet",
-        evaluationProgress: 0,
+        status: "NOT_FOUND",
+        message: "Interview session not found",
       });
+    }
+
+    let status = "NOT_SUBMITTED";
+    if (interviewDoc.status === "SUBMITTED" || interviewDoc.status === "CALCULATING") {
+      status = "CALCULATING";
+    } else if (interviewDoc.status === "EVALUATION_FAILED") {
+      status = "EVALUATION_FAILED";
+    } else if (interviewDoc.status === "completed") {
+      status = "COMPLETED";
     }
 
     res.status(200).json({
       success: true,
       sessionId,
-      status: resultDoc.status,
-      evaluationStage: resultDoc.evaluationStage,
-      evaluationProgress: resultDoc.evaluationProgress,
-      errorDetails: resultDoc.errorDetails || "",
+      status,
+      message: status === "CALCULATING" ? "Evaluation in progress" : undefined,
     });
   } catch (error) {
     console.error("[RealInterviewController] Get Result Status Error:", error.message);
@@ -652,12 +672,18 @@ export const getRealInterviewResult = async (req, res) => {
       return res.status(404).json({ success: false, message: "Result not found for this session" });
     }
 
+    if (resultDoc.status === "EVALUATION_FAILED") {
+      return res.status(200).json({
+        success: false,
+        status: "EVALUATION_FAILED",
+        message: "Your interview was completed successfully, but we couldn't generate your result right now. Your answers are safely saved. The AI evaluation service is temporarily unavailable. Please try again later.",
+      });
+    }
+
     if (resultDoc.status !== "COMPLETED") {
       return res.status(200).json({
         success: false,
         status: resultDoc.status,
-        evaluationStage: resultDoc.evaluationStage,
-        evaluationProgress: resultDoc.evaluationProgress,
         message: "Result evaluation not yet completed",
       });
     }
@@ -684,14 +710,15 @@ export const retryRealInterviewEvaluation = async (req, res) => {
       return res.status(400).json({ success: false, message: "sessionId is required to retry evaluation" });
     }
 
-    const result = await executeRealInterviewResultPipeline({ sessionId, userId });
+    const result = await calculateRealInterviewResult({ sessionId, userId });
     res.status(200).json({
-      success: true,
+      success: result.status === "COMPLETED",
       sessionId,
       status: result.status,
-      evaluationStage: result.evaluationStage,
-      evaluationProgress: result.evaluationProgress,
       result: result.status === "COMPLETED" ? result : null,
+      message: result.status === "EVALUATION_FAILED"
+        ? "Your interview was completed successfully, but we couldn't generate your result right now. Your answers are safely saved. The AI evaluation service is temporarily unavailable. Please try again later."
+        : undefined,
     });
   } catch (error) {
     console.error("[RealInterviewController] Retry Evaluation Error:", error.message);

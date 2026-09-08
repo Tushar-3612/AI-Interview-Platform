@@ -20,6 +20,7 @@ import {
   BookOpen
 } from "lucide-react";
 import api from "../../utils/api";
+import { getAuthToken } from "../../hooks/useStudentProfile";
 
 const PREPARATION_STAGES = [
   {
@@ -156,7 +157,8 @@ export default function RealInterviewPreparationScreen({
       throw new Error("Interview session could not be initialized. Invalid or missing session ID.");
     }
 
-    const headers = { Authorization: `Bearer ${token}` };
+    const activeToken = token || getAuthToken();
+    const headers = activeToken ? { Authorization: `Bearer ${activeToken}` } : {};
     const payload = { sessionId, candidateProfile: candidateProfileRef.current };
 
     console.log(`[PREP] stage=${stage.id} START sessionId=${sessionId ? `${sessionId.slice(0, 6)}...` : "NONE"}`);

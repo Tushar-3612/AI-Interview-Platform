@@ -119,7 +119,35 @@ export function useStudentProfile() {
   };
 }
 
+export function isTokenExpired(token) {
+  if (!token || typeof token !== "string") return true;
+  try {
+    const parts = token.split(".");
+    if (parts.length !== 3) return true;
+    const payloadJson = atob(parts[1].replace(/-/g, "+").replace(/_/g, "/"));
+    const payload = JSON.parse(payloadJson);
+    if (!payload.exp) return false;
+    return payload.exp * 1000 <= Date.now() + 10000;
+  } catch (e) {
+    return true;
+  }
+}
+
+export function clearAuthData() {
+  try {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("user");
+  } catch (e) {
+    // ignore
+  }
+}
+
 export function getAuthUser() {
+  const token = getAuthToken();
+  if (!token) return {};
+
   const raw =
     localStorage.getItem("user") || sessionStorage.getItem("user");
   if (!raw) return {};
@@ -131,7 +159,28 @@ export function getAuthUser() {
 }
 
 export function getAuthToken() {
-  return localStorage.getItem("token") || sessionStorage.getItem("token");
+  let token = localStorage.getItem("token");
+  if (token) {
+    if (isTokenExpired(token)) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      token = null;
+    } else {
+      return token;
+    }
+  }
+
+  token = sessionStorage.getItem("token");
+  if (token) {
+    if (isTokenExpired(token)) {
+      sessionStorage.removeItem("token");
+      sessionStorage.removeItem("user");
+      return null;
+    }
+    return token;
+  }
+
+  return null;
 }
 
 function calculateCompletion(profile) {

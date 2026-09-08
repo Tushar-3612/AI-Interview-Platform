@@ -1,60 +1,40 @@
 /**
- * Ultra-robust JSON extraction helper for AI responses.
- * Uses bracket-depth tracking to perfectly extract JSON objects and arrays even if truncated.
+ * Robust JSON extraction helper for AI responses.
+ * Normalizes text by removing <think> tags, markdown code blocks, and surrounding prose.
+ * Strictly returns parsed JSON without modifying or aliasing schema properties.
  */
 export function extractJsonFromText(rawText) {
   if (!rawText || typeof rawText !== "string") throw new Error("Empty AI text");
-  let cleaned = rawText.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
-  cleaned = cleaned.replace(/```json\s*|```\s*/g, "").trim();
 
-  // 1. Try direct parse
+  // 1. Strip thinking tags
+  let cleaned = rawText.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+
+  // 2. Strip markdown code fences (e.g. ```json ... ```)
+  cleaned = cleaned.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
+
+  // 3. Try direct parse
   try {
     const parsed = JSON.parse(cleaned);
     if (parsed) return parsed;
   } catch (e) {}
 
-  // 2. Bracket-depth tracking to extract all top-level array elements
-  const qStart = cleaned.indexOf("[");
-  if (qStart !== -1) {
-    const items = [];
-    let depth = 0;
-    let itemStart = -1;
+  // 4. Locate root JSON object { ... } or array [ ... ] substring to strip surrounding prose
+  const firstBrace = cleaned.indexOf("{");
+  const firstBracket = cleaned.indexOf("[");
 
-    for (let i = qStart; i < cleaned.length; i++) {
-      if (cleaned[i] === "{") {
-        if (depth === 0) itemStart = i;
-        depth++;
-      } else if (cleaned[i] === "}") {
-        depth--;
-        if (depth === 0 && itemStart !== -1) {
-          const itemStr = cleaned.slice(itemStart, i + 1);
-          try {
-            items.push(JSON.parse(itemStr));
-          } catch (e) {
-            try {
-              const sanitized = itemStr
-                .replace(/,\s*([}\]])/g, "$1")
-                .replace(/[\u0000-\u001F\u007F-\u009F]/g, (c) => (c === "\n" || c === "\r" || c === "\t" ? c : " "));
-              items.push(JSON.parse(sanitized));
-            } catch (e2) {}
-          }
-          itemStart = -1;
-        }
-      }
-    }
+  let startIdx = -1;
+  let endIdx = -1;
 
-    if (items.length > 0) {
-      return { questions: items, problems: items, count: items.length };
-    }
+  if (firstBrace !== -1 && (firstBracket === -1 || firstBrace < firstBracket)) {
+    startIdx = firstBrace;
+    endIdx = cleaned.lastIndexOf("}");
+  } else if (firstBracket !== -1) {
+    startIdx = firstBracket;
+    endIdx = cleaned.lastIndexOf("]");
   }
 
-  // 3. Find { "questions" ... } or first { to last }
-  const qIdx = cleaned.search(/\{\s*"questions"/i);
-  const startIdx = qIdx !== -1 ? qIdx : cleaned.indexOf("{");
-  const lastBrace = cleaned.lastIndexOf("}");
-
-  if (startIdx !== -1 && lastBrace > startIdx) {
-    const candidate = cleaned.slice(startIdx, lastBrace + 1);
+  if (startIdx !== -1 && endIdx > startIdx) {
+    const candidate = cleaned.slice(startIdx, endIdx + 1);
     try {
       return JSON.parse(candidate);
     } catch (e) {

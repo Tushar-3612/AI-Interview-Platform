@@ -68,6 +68,20 @@ const interviewSchema = new mongoose.Schema(
     sectionEvaluations: { type: mongoose.Schema.Types.Mixed, default: {} },
     roundGeneratedAt: { type: mongoose.Schema.Types.Mixed, default: {} },
     roundEvaluatedAt: { type: mongoose.Schema.Types.Mixed, default: {} },
+    answers: [
+      {
+        questionId: { type: String, default: "" },
+        question: { type: String, default: "" },
+        category: { type: String, default: "" },
+        section: { type: String, default: "APTITUDE" },
+        answer: { type: String, default: "" },
+        transcript: { type: String, default: "" },
+        inputMethod: { type: String, default: "TEXT" },
+        status: { type: String, default: "answered" },
+        createdAt: { type: Date, default: Date.now },
+        updatedAt: { type: Date, default: Date.now },
+      }
+    ],
     integrityEvents: [
       {
         eventType: { type: String, required: true },
