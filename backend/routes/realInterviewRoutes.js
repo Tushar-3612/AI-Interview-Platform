@@ -23,6 +23,7 @@ import {
   getRealInterviewResultStatus,
   getRealInterviewResult,
   retryRealInterviewEvaluation,
+  downloadRealInterviewResultPDF,
 } from "../controllers/realInterviewController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 
@@ -31,6 +32,7 @@ const router = express.Router();
 // Master Result Pipeline Routes
 router.post("/submit", authMiddleware, submitRealInterview);
 router.get("/result/:sessionId/status", authMiddleware, getRealInterviewResultStatus);
+router.get("/result/:sessionId/pdf", authMiddleware, downloadRealInterviewResultPDF);
 router.get("/result/:sessionId", authMiddleware, getRealInterviewResult);
 router.post("/result/:sessionId/retry", authMiddleware, retryRealInterviewEvaluation);
 

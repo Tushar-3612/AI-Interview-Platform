@@ -65,6 +65,11 @@ function AppRoutes() {
       <Route path="/interview" element={<StartInterview />} />
       <Route path="/interview/:sessionId" element={<StartInterview />} />
 
+      {/* Standalone Real Interview Result Report — No Sidebar */}
+      <Route path="/interview-history/:interviewId/result" element={<Results />} />
+      <Route path="/real-interview/result/:sessionId" element={<Results />} />
+      <Route path="/results" element={<Results />} />
+
       {/* Dedicated Company Mock Interview Control Room — standalone, renders ONLY
           the assessment with no website Navbar/Footer/Layout. */}
       <Route path="/company-mock" element={<CompanyMockInterview />} />
@@ -86,8 +91,6 @@ function AppRoutes() {
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/interview-history" element={<InterviewHistory />} />
-        <Route path="/interview-history/:interviewId/result" element={<Results />} />
-        <Route path="/results" element={<Results />} />
         <Route path="/placement-dashboard" element={<PlacementDashboard />} />
         <Route path="/placement/leaderboard" element={<Leaderboard />} />
         <Route path="/placement/mock-oa" element={<MockOA />} />

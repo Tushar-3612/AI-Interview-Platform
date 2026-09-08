@@ -1,12 +1,254 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Loader2, AlertCircle, CheckCircle2, XCircle, ChevronDown, ChevronUp, Filter } from "lucide-react";
+import {
+  ArrowLeft,
+  Download,
+  Loader2,
+  AlertCircle,
+  ChevronDown,
+  ChevronUp,
+  ChevronLeft,
+  ChevronRight,
+  User,
+  Clock,
+  Filter,
+} from "lucide-react";
 import api from "../../utils/api";
 import { getAuthToken } from "../../hooks/useStudentProfile";
 
 /**
+ * Reusable helper for Round Performance Status based on Zero Attempt Rule:
+ * - if attemptedCount === 0: status is "NOT ATTEMPTED" (neutral, zero judgment)
+ * - if attemptedCount > 0: percentage = (score / maxScore) * 100
+ *   < 35%: Red ("NEEDS IMPROVEMENT")
+ *   35% - 69.99%: Amber ("GOOD PROGRESS")
+ *   >= 70%: Green ("STRONG PERFORMANCE")
+ */
+export function getRoundPerformanceStatus(attemptedCount, score, maxScore) {
+  const attempted = Number(attemptedCount) || 0;
+  if (attempted === 0) {
+    return {
+      label: "NOT ATTEMPTED",
+      type: "not_attempted",
+      badgeBg: "bg-[#1e202c]",
+      badgeBorder: "border-[#2d3042]",
+      textColor: "text-slate-400",
+      barBg: "bg-slate-700",
+    };
+  }
+
+  const max = Number(maxScore) || 1;
+  const percentage = (Number(score) / max) * 100;
+
+  if (percentage < 35) {
+    return {
+      label: "NEEDS IMPROVEMENT",
+      type: "needs_improvement",
+      badgeBg: "bg-red-500/10",
+      badgeBorder: "border-red-500/30",
+      textColor: "text-red-400",
+      barBg: "bg-red-500",
+    };
+  }
+
+  if (percentage < 70) {
+    return {
+      label: "GOOD PROGRESS",
+      type: "good_progress",
+      badgeBg: "bg-amber-500/10",
+      badgeBorder: "border-amber-500/30",
+      textColor: "text-amber-400",
+      barBg: "bg-amber-500",
+    };
+  }
+
+  return {
+    label: "STRONG PERFORMANCE",
+    type: "strong",
+    badgeBg: "bg-emerald-500/10",
+    badgeBorder: "border-emerald-500/30",
+    textColor: "text-emerald-400",
+    barBg: "bg-emerald-500",
+  };
+}
+
+/**
+ * Helper for overall performance status from total percentage score.
+ */
+export function getOverallPerformanceStatus(percentage) {
+  const pct = Number(percentage) || 0;
+  if (pct >= 70) {
+    return {
+      label: "STRONG PERFORMANCE",
+      badgeBg: "bg-emerald-500/10",
+      badgeBorder: "border-emerald-500/30",
+      textColor: "text-emerald-400",
+      barBg: "bg-emerald-500",
+    };
+  }
+  if (pct >= 35) {
+    return {
+      label: "GOOD PROGRESS",
+      badgeBg: "bg-amber-500/10",
+      badgeBorder: "border-amber-500/30",
+      textColor: "text-amber-400",
+      barBg: "bg-amber-500",
+    };
+  }
+  return {
+    label: "NEEDS IMPROVEMENT",
+    badgeBg: "bg-red-500/10",
+    badgeBorder: "border-red-500/30",
+    textColor: "text-red-400",
+    barBg: "bg-red-500",
+  };
+}
+
+/**
+ * Evidence-based performance feedback builder for attempted and unattempted rounds.
+ * NO generic AI chatbot filler, NO emojis, NO motivation fluff.
+ */
+export function buildEvidenceBasedRoundFeedback(roundKey, roundName, attemptedCount, totalQuestions, score, maxScore, questionResults = []) {
+  if (!attemptedCount || attemptedCount === 0) {
+    return {
+      roundName,
+      statusLabel: "NOT ASSESSED",
+      isAttempted: false,
+      insight: `This section was not attempted, so there is not enough response data to evaluate ${roundName.toLowerCase()} performance.`,
+      strengths: [],
+      focusAreas: [],
+      nextStep: "Attempt this round in your next session to receive detailed evaluation metrics.",
+    };
+  }
+
+  const pct = maxScore > 0 ? (score / maxScore) * 100 : 0;
+  const roundQuestions = questionResults.filter((q) => {
+    if (roundKey === "aptitude") return q.roundType === "APTITUDE";
+    if (roundKey === "technical") return q.roundType === "TECHNICAL";
+    if (roundKey === "project") return q.roundType === "RESUME_PROJECT";
+    if (roundKey === "hr") return q.roundType === "HR";
+    if (roundKey === "coding") return q.roundType === "CODING";
+    return false;
+  });
+
+  const correctCount = roundQuestions.filter((q) => q.status === "CORRECT").length;
+  const storedNotes = roundQuestions
+    .map((q) => q.feedback)
+    .filter((fb) => fb && fb.trim() !== "" && !fb.includes("Incorrect choice") && !fb.includes("Correct answer is"));
+
+  let statusLabel = "NEEDS IMPROVEMENT";
+  if (pct >= 70) statusLabel = "STRONG PERFORMANCE";
+  else if (pct >= 35) statusLabel = "GOOD PROGRESS";
+
+  let insight = "";
+  let strengths = [];
+  let focusAreas = [];
+  let nextStep = "";
+
+  if (roundKey === "aptitude") {
+    if (pct >= 70) {
+      insight = `Your responses show strong analytical accuracy and quantitative problem-solving skills (${correctCount}/${totalQuestions} correct).`;
+      strengths = ["High calculation precision across attempted numerical problems.", `Successfully solved ${correctCount} aptitude questions.`];
+      focusAreas = ["Maintain precision across complex multi-step reasoning problems."];
+      nextStep = "Practice advanced timed aptitude sets to maintain consistency under strict time limits.";
+    } else if (pct >= 35) {
+      insight = `Your responses show that you can solve direct quantitative problems, but accuracy becomes less consistent when multiple reasoning steps are required (${correctCount}/${attemptedCount} correct).`;
+      strengths = [`Completed ${attemptedCount} out of ${totalQuestions} aptitude questions.`, "Demonstrated correct methodology on direct calculation problems."];
+      focusAreas = ["Improve accuracy in multi-step quantitative problems.", "Verify calculations before finalizing an option choice."];
+      nextStep = "Review incorrect questions by identifying where calculation or reasoning first diverged.";
+    } else {
+      insight = `Response accuracy across the aptitude section indicates fundamental gaps in quantitative methods and logical problem-solving (${correctCount}/${attemptedCount} correct).`;
+      strengths = [`Completed ${attemptedCount} questions in the aptitude section.`];
+      focusAreas = ["Strengthen core mathematical formulas and shortcut techniques.", "Improve question interpretation and structured problem decomposition."];
+      nextStep = "Focus on foundational quantitative topics before attempting full-length timed tests.";
+    }
+  } else if (roundKey === "technical") {
+    if (pct >= 70) {
+      insight = `Demonstrates thorough technical domain knowledge and strong conceptual clarity across core engineering topics (${score}/${maxScore} score).`;
+      strengths = ["Strong explanation quality and conceptual accuracy.", "Articulates software engineering fundamentals effectively."];
+      focusAreas = ["Incorporate architectural trade-offs and edge-case considerations into responses."];
+      nextStep = "Practice deeper system design discussions and trade-off analysis for advanced technical rounds.";
+    } else if (pct >= 35) {
+      insight = `Displays foundational technical knowledge, but responses lack depth when explaining underlying mechanics and architectural trade-offs (${score}/${maxScore} score).`;
+      strengths = ["Correctly identified primary technical concepts in attempted questions.", `Completed ${attemptedCount} out of ${totalQuestions} technical evaluation questions.`];
+      focusAreas = ["Elaborate on internal workings, data flow, and underlying system mechanics.", "Structure technical responses using definition, mechanism, and use-case frameworks."];
+      nextStep = "Deepen understanding of core theoretical concepts and practice explaining technical mechanisms aloud.";
+    } else {
+      insight = `Technical evaluation indicates limited depth in core engineering concepts and technical reasoning (${score}/${maxScore} score).`;
+      strengths = [`Attempted ${attemptedCount} technical questions.`];
+      focusAreas = ["Build solid fundamentals in data structures, operating systems, and database internals.", "Avoid superficial definitions; provide concrete technical details and examples."];
+      nextStep = "Review fundamental technical subject material and practice answering core interview questions in detail.";
+    }
+  } else if (roundKey === "project") {
+    if (pct >= 70) {
+      insight = `Excellent articulation of project architecture, technical stack decisions, and real-world engineering challenges (${score}/${maxScore} score).`;
+      strengths = ["Clear explanation of project architecture and personal contributions.", "Strong technical justification for database and API decisions."];
+      focusAreas = ["Detail scalability bottlenecks and production deployment monitoring."];
+      nextStep = "Prepare deeper metrics and benchmark results for key system bottlenecks in your portfolio projects.";
+    } else if (pct >= 35) {
+      insight = `Satisfactory overview of portfolio projects, but explanations lacked technical granularity regarding architectural trade-offs (${score}/${maxScore} score).`;
+      strengths = ["Clearly stated project objectives and tech stack.", `Answered ${attemptedCount} project questions.`];
+      focusAreas = ["Provide specific implementation details rather than generic feature descriptions.", "Explain challenges faced and exact debugging techniques used."];
+      nextStep = "Document system architecture diagrams, API schemas, and key technical challenges for all portfolio projects.";
+    } else {
+      insight = `Project evaluation indicates difficulty in defending architectural decisions and technical implementation details (${score}/${maxScore} score).`;
+      strengths = [`Attempted ${attemptedCount} project questions.`];
+      focusAreas = ["Revisit project codebases to recall exact implementations, schema designs, and data flows.", "Practice explaining personal contributions vs team contributions clearly."];
+      nextStep = "Perform a technical audit of your projects to articulate architecture and implementation details with confidence.";
+    }
+  } else if (roundKey === "hr") {
+    if (pct >= 70) {
+      insight = `Strong behavioral responses demonstrating leadership, structured decision-making, and clear professional communication (${score}/${maxScore} score).`;
+      strengths = ["Clear, structured behavioral responses highlighting personal accountability.", "Effective demonstration of adaptability, teamwork, and problem resolution."];
+      focusAreas = ["Ensure all behavioral answers conclude with quantifiable business impact."];
+      nextStep = "Refine behavioral scenarios using the STAR technique with emphasis on measurable results.";
+    } else if (pct >= 35) {
+      insight = `Good communication style, but behavioral examples could be structured more effectively using situation-action-result frameworks (${score}/${maxScore} score).`;
+      strengths = ["Professional demeanor and clear articulation.", `Attempted ${attemptedCount} behavioral questions.`];
+      focusAreas = ["Use the STAR method (Situation, Task, Action, Result) to structure answers.", "Highlight personal ownership and specific actions taken."];
+      nextStep = "Draft structured story archives mapped to standard behavioral competencies.";
+    } else {
+      insight = `Behavioral evaluation highlights need for improved response structure and personal accountability narrative (${score}/${maxScore} score).`;
+      strengths = [`Completed ${attemptedCount} behavioral questions.`];
+      focusAreas = ["Structure responses clearly to avoid vague or overly brief answers.", "Focus on demonstrating ownership and constructive conflict resolution."];
+      nextStep = "Practice framing past experiences into structured narratives that demonstrate professional growth.";
+    }
+  } else if (roundKey === "coding") {
+    if (pct >= 70) {
+      insight = `Strong algorithmic problem-solving, clean code structure, and successful test case execution (${score}/${maxScore} score).`;
+      strengths = ["Correct algorithmic logic and syntax implementation.", "Successful compilation and passing execution across test cases."];
+      focusAreas = ["Analyze and state optimal time and space complexity explicitly."];
+      nextStep = "Practice hard-level algorithmic problems and focus on time-complexity optimization.";
+    } else if (pct >= 35) {
+      insight = `Demonstrates basic problem-solving logic, but submitted code encountered edge-case failures or sub-optimal complexity (${score}/${maxScore} score).`;
+      strengths = [`Submitted code attempts for ${attemptedCount} coding challenges.`, "Identified correct initial data structures."];
+      focusAreas = ["Handle edge cases (empty inputs, boundary conditions) thoroughly before submission.", "Improve code optimization to meet execution time limits."];
+      nextStep = "Practice dry-running code against edge-case inputs prior to execution and submission.";
+    } else {
+      insight = `Coding evaluation indicates difficulty in implementing functional solutions within required syntax and execution constraints (${score}/${maxScore} score).`;
+      strengths = [`Submitted code attempts for ${attemptedCount} problem(s).`];
+      focusAreas = ["Strengthen mastery of standard language syntax and array manipulation.", "Practice translating logic into clean, compilable code under timed conditions."];
+      nextStep = "Focus on easy-to-medium coding problems to build syntax fluency and algorithmic confidence.";
+    }
+  }
+
+  if (storedNotes.length > 0 && storedNotes[0].length > 15) {
+    strengths.push(`Evaluator Note: ${storedNotes[0]}`);
+  }
+
+  return {
+    roundName,
+    statusLabel,
+    isAttempted: true,
+    insight,
+    strengths,
+    focusAreas,
+    nextStep,
+  };
+}
+
+/**
  * Single authoritative normalization helper for Real Interview Results.
- * Maps backend payload structures into canonical UI shape.
  */
 export function normalizeRealInterviewResult(rawPayload) {
   if (!rawPayload) return null;
@@ -27,27 +269,37 @@ export function normalizeRealInterviewResult(rawPayload) {
     : 0;
 
   const rounds = doc.rounds || {};
-  const roundScores = doc.roundScores || {};
-
-  const aptitudeScore = Number(rounds.aptitude?.obtained ?? roundScores.aptitude?.score ?? 0);
-  const aptitudeMax = Number(rounds.aptitude?.maximum ?? roundScores.aptitude?.maxScore ?? 50);
-
-  const technicalScore = Number(rounds.technical?.obtained ?? roundScores.technical?.score ?? 0);
-  const technicalMax = Number(rounds.technical?.maximum ?? roundScores.technical?.maxScore ?? 100);
-
-  const projectScore = Number(rounds.project?.obtained ?? roundScores.project?.score ?? 0);
-  const projectMax = Number(rounds.project?.maximum ?? roundScores.project?.maxScore ?? 100);
-
-  const hrScore = Number(rounds.hr?.obtained ?? roundScores.hr?.score ?? 0);
-  const hrMax = Number(rounds.hr?.maximum ?? roundScores.hr?.maxScore ?? 100);
-
-  const codingScore = Number(rounds.coding?.obtained ?? roundScores.coding?.score ?? 0);
-  const codingMax = Number(rounds.coding?.maximum ?? roundScores.coding?.maxScore ?? 100);
-
   const questionResults = Array.isArray(doc.questionResults) ? doc.questionResults : [];
+
+  const parseRound = (roundKey, defaultTotalQ, defaultMax) => {
+    const rObj = rounds[roundKey] || {};
+    const qRoundKey = roundKey === "project" ? "RESUME_PROJECT" : roundKey.toUpperCase();
+    const roundQuestions = questionResults.filter((q) => q.roundType === qRoundKey || (roundKey === "aptitude" && q.roundType === "APTITUDE"));
+
+    const attemptedCount = typeof rObj.attempted === "number"
+      ? rObj.attempted
+      : roundQuestions.filter((q) => q.status !== "NOT_ATTEMPTED" && q.candidateAnswer && q.candidateAnswer !== "Not Answered" && q.candidateAnswer !== "Not Submitted").length;
+
+    const score = Number(rObj.obtained ?? 0);
+    const max = Number(rObj.maximum ?? defaultMax);
+
+    return {
+      score,
+      maxScore: max,
+      attemptedCount,
+      totalQuestions: Number(rObj.totalQuestions ?? defaultTotalQ),
+    };
+  };
+
+  const apt = parseRound("aptitude", 15, 50);
+  const tech = parseRound("technical", 20, 100);
+  const proj = parseRound("project", 10, 100);
+  const hr = parseRound("hr", 5, 100);
+  const coding = parseRound("coding", 3, 100);
+
   const attemptedCount = typeof doc.attemptedQuestionsCount === "number"
     ? doc.attemptedQuestionsCount
-    : questionResults.filter(q => q.status !== "NOT_ATTEMPTED" && q.candidateAnswer !== "Not Answered" && q.candidateAnswer !== "Not Submitted").length;
+    : (apt.attemptedCount + tech.attemptedCount + proj.attemptedCount + hr.attemptedCount + coding.attemptedCount);
 
   const totalCount = typeof doc.totalQuestionsCount === "number"
     ? doc.totalQuestionsCount
@@ -60,15 +312,18 @@ export function normalizeRealInterviewResult(rawPayload) {
   return {
     sessionId: doc.sessionId || "",
     status: doc.status || "COMPLETED",
+    candidateName: doc.candidateName || "",
+    candidateEmail: doc.candidateEmail || "",
+    completedAt: doc.completedAt || doc.createdAt || null,
     totalObtained,
     maxScore,
     percentage,
     rounds: {
-      aptitude: { score: aptitudeScore, maxScore: aptitudeMax },
-      technical: { score: technicalScore, maxScore: technicalMax },
-      project: { score: projectScore, maxScore: projectMax },
-      hr: { score: hrScore, maxScore: hrMax },
-      coding: { score: codingScore, maxScore: codingMax },
+      aptitude: apt,
+      technical: tech,
+      project: proj,
+      hr,
+      coding,
     },
     attemptedCount,
     unattemptedCount,
@@ -76,6 +331,8 @@ export function normalizeRealInterviewResult(rawPayload) {
     questionResults,
   };
 }
+
+const PAGE_SIZE = 10;
 
 export default function Results({ sessionId: propSessionId, initialResultData }) {
   const token = getAuthToken();
@@ -95,10 +352,12 @@ export default function Results({ sessionId: propSessionId, initialResultData })
   const [loading, setLoading] = useState(true);
   const [evalFailed, setEvalFailed] = useState(false);
   const [retrying, setRetrying] = useState(false);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
   const [error, setError] = useState("");
   const [roundFilter, setRoundFilter] = useState("ALL");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [expandedItems, setExpandedItems] = useState({});
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     let isCancelled = false;
@@ -110,11 +369,7 @@ export default function Results({ sessionId: propSessionId, initialResultData })
         if (initialResultData && initialResultData.status === "COMPLETED" && initialResultData.totalObtained !== undefined) {
           const norm = normalizeRealInterviewResult(initialResultData);
           if (norm && !isCancelled) {
-            console.log(`[RESULT-FRONTEND] sessionId=${activeId || norm.sessionId}`);
-            console.log(`[RESULT-FRONTEND] using initialResultData`);
-            console.log(`[RESULT-FRONTEND] totalObtained=${norm.totalObtained}`);
-            console.log(`[RESULT-FRONTEND] maxScore=${norm.maxScore}`);
-            console.log(`[RESULT-FRONTEND] percentage=${norm.percentage}`);
+            console.log(`[RESULT-FRONTEND] sessionId=${activeId || norm.sessionId} totalObtained=${norm.totalObtained} maxScore=${norm.maxScore} percentage=${norm.percentage} questionCount=${norm.totalCount}`);
             setResult(norm);
             setLoading(false);
             return;
@@ -122,18 +377,12 @@ export default function Results({ sessionId: propSessionId, initialResultData })
         }
 
         if (activeId) {
-          console.log(`[RESULT-FRONTEND] sessionId=${activeId}`);
-          console.log(`[RESULT-FRONTEND] request=/api/real-interview/result/${activeId}`);
-
           const res = await api.get(`/api/real-interview/result/${activeId}`, { headers }).catch((err) => {
             console.warn(`[RESULT-FRONTEND] fetch warning:`, err.message);
             return { status: err.response?.status || 500, data: null };
           });
 
           if (isCancelled) return;
-
-          console.log(`[RESULT-FRONTEND] responseStatus=${res.status}`);
-          console.log(`[RESULT-FRONTEND] rawResponse=`, res.data);
 
           if (res.data?.status === "EVALUATION_FAILED") {
             setEvalFailed(true);
@@ -144,16 +393,14 @@ export default function Results({ sessionId: propSessionId, initialResultData })
           if (res.data?.success && res.data?.result) {
             const norm = normalizeRealInterviewResult(res.data);
             if (norm) {
-              console.log(`[RESULT-FRONTEND] totalObtained=${norm.totalObtained}`);
-              console.log(`[RESULT-FRONTEND] maxScore=${norm.maxScore}`);
-              console.log(`[RESULT-FRONTEND] percentage=${norm.percentage}`);
+              console.log(`[RESULT-FRONTEND] sessionId=${activeId} totalObtained=${norm.totalObtained} maxScore=${norm.maxScore} percentage=${norm.percentage} questionCount=${norm.totalCount}`);
               setResult(norm);
               setLoading(false);
               return;
             }
           }
 
-          // Status check fallback if result doc is not directly accessible
+          // Fallback status check
           const { data: statusData } = await api.get(`/api/real-interview/result/${activeId}/status`, { headers }).catch(() => ({ data: null }));
           if (isCancelled) return;
 
@@ -167,16 +414,14 @@ export default function Results({ sessionId: propSessionId, initialResultData })
             const retryRes = await api.get(`/api/real-interview/result/${activeId}`, { headers }).catch(() => null);
             if (!isCancelled && retryRes?.data?.success && retryRes?.data?.result) {
               const norm = normalizeRealInterviewResult(retryRes.data);
-              console.log(`[RESULT-FRONTEND] totalObtained=${norm.totalObtained}`);
-              console.log(`[RESULT-FRONTEND] maxScore=${norm.maxScore}`);
-              console.log(`[RESULT-FRONTEND] percentage=${norm.percentage}`);
+              console.log(`[RESULT-FRONTEND] sessionId=${activeId} totalObtained=${norm.totalObtained} maxScore=${norm.maxScore} percentage=${norm.percentage} questionCount=${norm.totalCount}`);
               setResult(norm);
               setLoading(false);
               return;
             }
           }
 
-          setError("Real interview result not available yet for session: " + activeId);
+          setError("Interview evaluation result is not available yet for session: " + activeId);
           setLoading(false);
           return;
         }
@@ -218,6 +463,34 @@ export default function Results({ sessionId: propSessionId, initialResultData })
     }
   };
 
+  const handleDownloadPdf = async () => {
+    const targetSessionId = result?.sessionId || activeId;
+    if (!targetSessionId) return;
+
+    setDownloadingPdf(true);
+    try {
+      const response = await api.get(`/api/real-interview/result/${targetSessionId}/pdf`, {
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: "blob",
+      });
+
+      const blob = new Blob([response.data], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `Prephire_Real_Interview_Result_${targetSessionId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("[Results] Download PDF error:", err.message);
+      alert("Failed to download PDF report. Please try again.");
+    } finally {
+      setDownloadingPdf(false);
+    }
+  };
+
   const toggleExpand = (qId) => {
     setExpandedItems((prev) => ({
       ...prev,
@@ -225,70 +498,123 @@ export default function Results({ sessionId: propSessionId, initialResultData })
     }));
   };
 
-  const totalObtained = useMemo(() => {
-    if (!result) return 0;
-    return result.totalObtained ?? result.overallScore ?? 0;
-  }, [result]);
-
-  const maxScore = useMemo(() => {
-    if (!result) return 450;
-    return result.maximumMarks ?? result.maxScore ?? 450;
-  }, [result]);
-
+  // Computed authoritative values
+  const totalObtained = useMemo(() => result?.totalObtained ?? 0, [result]);
+  const maxScore = useMemo(() => result?.maxScore ?? 450, [result]);
   const percentage = useMemo(() => {
     if (!result) return 0;
     if (typeof result.percentage === "number") return result.percentage;
     return maxScore > 0 ? Number(((totalObtained / maxScore) * 100).toFixed(2)) : 0;
   }, [result, totalObtained, maxScore]);
 
-  const aptitudeScore = useMemo(() => result?.rounds?.aptitude?.score ?? result?.rounds?.aptitude?.obtained ?? result?.roundScores?.aptitude?.score ?? 0, [result]);
-  const aptitudeMax = useMemo(() => result?.rounds?.aptitude?.maxScore ?? result?.rounds?.aptitude?.maximum ?? result?.roundScores?.aptitude?.maxScore ?? 50, [result]);
+  const overallStatus = useMemo(() => getOverallPerformanceStatus(percentage), [percentage]);
 
-  const technicalScore = useMemo(() => result?.rounds?.technical?.score ?? result?.rounds?.technical?.obtained ?? result?.roundScores?.technical?.score ?? 0, [result]);
-  const technicalMax = useMemo(() => result?.rounds?.technical?.maxScore ?? result?.rounds?.technical?.maximum ?? result?.roundScores?.technical?.maxScore ?? 100, [result]);
+  const candidateDisplayName = useMemo(() => {
+    if (result?.candidateName) return result.candidateName;
+    try {
+      const savedUser = JSON.parse(localStorage.getItem("user") || "{}");
+      return savedUser.name || savedUser.fullName || "Candidate";
+    } catch {
+      return "Candidate";
+    }
+  }, [result]);
 
-  const projectScore = useMemo(() => result?.rounds?.project?.score ?? result?.rounds?.project?.obtained ?? result?.roundScores?.project?.score ?? 0, [result]);
-  const projectMax = useMemo(() => result?.rounds?.project?.maxScore ?? result?.rounds?.project?.maximum ?? result?.roundScores?.project?.maxScore ?? 100, [result]);
+  const formattedCompletionDate = useMemo(() => {
+    if (!result?.completedAt) return null;
+    try {
+      return new Date(result.completedAt).toLocaleString("en-US", {
+        dateStyle: "medium",
+        timeStyle: "short",
+      });
+    } catch {
+      return null;
+    }
+  }, [result]);
 
-  const hrScore = useMemo(() => result?.rounds?.hr?.score ?? result?.rounds?.hr?.obtained ?? result?.roundScores?.hr?.score ?? 0, [result]);
-  const hrMax = useMemo(() => result?.rounds?.hr?.maxScore ?? result?.rounds?.hr?.maximum ?? result?.roundScores?.hr?.maxScore ?? 100, [result]);
+  const roundsData = useMemo(() => {
+    const list = [
+      { key: "aptitude", name: "APTITUDE", defaultTotalQ: 15, defaultMax: 50 },
+      { key: "technical", name: "TECHNICAL", defaultTotalQ: 20, defaultMax: 100 },
+      { key: "project", name: "PROJECT", defaultTotalQ: 10, defaultMax: 100 },
+      { key: "hr", name: "HR BEHAVIORAL", defaultTotalQ: 5, defaultMax: 100 },
+      { key: "coding", name: "CODING", defaultTotalQ: 3, defaultMax: 100 },
+    ];
 
-  const codingScore = useMemo(() => result?.rounds?.coding?.score ?? result?.rounds?.coding?.obtained ?? result?.roundScores?.coding?.score ?? 0, [result]);
-  const codingMax = useMemo(() => result?.rounds?.coding?.maxScore ?? result?.rounds?.coding?.maximum ?? result?.roundScores?.coding?.maxScore ?? 100, [result]);
+    return list.map((item) => {
+      const rInfo = result?.rounds?.[item.key] || {};
+      const score = Number(rInfo.score ?? 0);
+      const maxScore = Number(rInfo.maxScore ?? item.defaultMax);
+      const attemptedCount = Number(rInfo.attemptedCount ?? 0);
+      const totalQuestions = Number(rInfo.totalQuestions ?? item.defaultTotalQ);
+      const statusInfo = getRoundPerformanceStatus(attemptedCount, score, maxScore);
 
+      const feedbackObj = buildEvidenceBasedRoundFeedback(
+        item.key,
+        item.name,
+        attemptedCount,
+        totalQuestions,
+        score,
+        maxScore,
+        result?.questionResults || []
+      );
+
+      return {
+        key: item.key,
+        name: item.name,
+        score,
+        maxScore,
+        attemptedCount,
+        totalQuestions,
+        statusInfo,
+        feedbackObj,
+      };
+    });
+  }, [result]);
 
   const questionResults = useMemo(() => result?.questionResults || [], [result]);
-
-  const attemptedCount = useMemo(() => {
-    if (!result) return 0;
-    if (typeof result.attemptedQuestionsCount === "number") return result.attemptedQuestionsCount;
-    return questionResults.filter((q) => q.status !== "NOT_ATTEMPTED" && q.candidateAnswer !== "Not Answered" && q.candidateAnswer !== "Not Submitted").length;
-  }, [result, questionResults]);
-
-  const totalCount = useMemo(() => result?.totalQuestionsCount ?? (questionResults.length > 0 ? questionResults.length : 53), [result, questionResults]);
-  const unattemptedCount = useMemo(() => Math.max(0, totalCount - attemptedCount), [totalCount, attemptedCount]);
+  const attemptedCount = useMemo(() => result?.attemptedCount ?? 0, [result]);
+  const totalCount = useMemo(() => result?.totalCount ?? 53, [result]);
+  const unattemptedCount = useMemo(() => result?.unattemptedCount ?? Math.max(0, totalCount - attemptedCount), [result, totalCount, attemptedCount]);
 
   const filteredQuestions = useMemo(() => {
     return questionResults.filter((item) => {
       const matchRound = roundFilter === "ALL" || item.roundType === roundFilter;
-      const isNotAtt = item.status === "NOT_ATTEMPTED" || item.candidateAnswer === "Not Answered" || item.candidateAnswer === "Not Submitted";
-      const matchStatus =
-        statusFilter === "ALL" ||
-        (statusFilter === "CORRECT" && item.status === "CORRECT") ||
-        (statusFilter === "PARTIAL" && (item.status === "PARTIALLY_CORRECT" || item.status === "PARTIAL")) ||
-        (statusFilter === "INCORRECT" && item.status === "INCORRECT") ||
-        (statusFilter === "NOT_ATTEMPTED" && isNotAtt);
+      const isNotAtt = item.status === "NOT_ATTEMPTED" || !item.candidateAnswer || item.candidateAnswer === "Not Answered" || item.candidateAnswer === "Not Submitted";
+
+      let matchStatus = true;
+      if (statusFilter === "ATTEMPTED") matchStatus = !isNotAtt;
+      else if (statusFilter === "NOT_ATTEMPTED") matchStatus = isNotAtt;
+      else if (statusFilter === "CORRECT") matchStatus = item.status === "CORRECT";
+      else if (statusFilter === "PARTIAL") matchStatus = item.status === "PARTIALLY_CORRECT" || item.status === "PARTIAL";
+      else if (statusFilter === "INCORRECT") matchStatus = item.status === "INCORRECT";
 
       return matchRound && matchStatus;
     });
   }, [questionResults, roundFilter, statusFilter]);
 
+  const totalPages = Math.ceil(filteredQuestions.length / PAGE_SIZE) || 1;
+
+  const paginatedQuestions = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return filteredQuestions.slice(start, start + PAGE_SIZE);
+  }, [filteredQuestions, currentPage]);
+
+  const handleFilterChange = (setter, val) => {
+    setter(val);
+    setCurrentPage(1);
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#050609] text-white flex items-center justify-center p-6 font-sans">
-        <div className="flex flex-col items-center gap-3">
-          <Loader2 className="w-8 h-8 text-blue-400 animate-spin" />
-          <p className="text-sm font-medium text-slate-400">Fetching Interview Result...</p>
+      <div className="min-h-screen bg-[#0a0b10] text-white flex items-center justify-center p-6 font-sans select-none">
+        <div className="flex flex-col items-center gap-4 text-center">
+          <div className="w-12 h-12 rounded-xl bg-orange-500/10 border border-orange-500/30 flex items-center justify-center text-orange-500">
+            <Loader2 className="w-6 h-6 animate-spin" />
+          </div>
+          <div>
+            <h2 className="text-base font-bold text-white tracking-wide">Loading interview assessment report...</h2>
+            <p className="text-xs text-slate-400 mt-1">Retrieving authoritative evaluation metrics</p>
+          </div>
         </div>
       </div>
     );
@@ -296,19 +622,16 @@ export default function Results({ sessionId: propSessionId, initialResultData })
 
   if (evalFailed) {
     return (
-      <div className="min-h-screen bg-[#050609] text-white flex items-center justify-center p-6 font-sans select-none">
-        <div className="max-w-lg w-full bg-slate-900 border border-amber-500/20 rounded-3xl p-8 sm:p-10 text-center space-y-6 shadow-2xl">
-          <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center mx-auto">
-            <AlertCircle className="w-8 h-8" />
+      <div className="min-h-screen bg-[#0a0b10] text-white flex items-center justify-center p-6 font-sans select-none">
+        <div className="max-w-lg w-full bg-[#12131d] border border-orange-500/20 rounded-2xl p-8 text-center space-y-6 shadow-xl">
+          <div className="w-14 h-14 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center mx-auto">
+            <AlertCircle className="w-7 h-7" />
           </div>
 
-          <div className="space-y-3">
-            <h2 className="text-xl font-black text-white uppercase tracking-wider">AI Evaluation Service Unavailable</h2>
-            <p className="text-sm text-slate-300 font-medium leading-relaxed">
-              Your interview was completed successfully, but we couldn't generate your result right now.
-            </p>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Your answers are safely saved. The AI evaluation service is temporarily unavailable. Please try again later.
+          <div className="space-y-2">
+            <h2 className="text-base font-bold text-white uppercase tracking-wider">Interview Evaluation Could Not Be Completed</h2>
+            <p className="text-xs text-slate-300 font-medium leading-relaxed">
+              Your responses were saved to the database, but automated evaluation is pending or unavailable.
             </p>
           </div>
 
@@ -316,15 +639,15 @@ export default function Results({ sessionId: propSessionId, initialResultData })
             <button
               onClick={handleTryAgain}
               disabled={retrying}
-              className="flex-1 py-3.5 px-6 rounded-2xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer transition shadow-lg"
+              className="flex-1 py-3 px-5 rounded-xl bg-orange-600 hover:bg-orange-500 disabled:opacity-50 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer transition"
             >
               {retrying && <Loader2 className="w-4 h-4 animate-spin" />}
-              <span>{retrying ? "Evaluating..." : "Try Again"}</span>
+              <span>{retrying ? "Calculating..." : "Retry Calculation"}</span>
             </button>
 
             <button
               onClick={() => navigate("/dashboard")}
-              className="flex-1 py-3.5 px-6 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs uppercase tracking-wider cursor-pointer transition border border-white/10"
+              className="flex-1 py-3 px-5 rounded-xl bg-[#1b1d2b] hover:bg-[#25283b] text-slate-200 font-bold text-xs uppercase tracking-wider cursor-pointer transition border border-white/10"
             >
               Back to Dashboard
             </button>
@@ -336,14 +659,14 @@ export default function Results({ sessionId: propSessionId, initialResultData })
 
   if (error || !result) {
     return (
-      <div className="min-h-screen bg-[#050609] text-white flex items-center justify-center p-6 font-sans select-none">
-        <div className="max-w-md w-full bg-slate-900 border border-white/10 rounded-3xl p-8 text-center space-y-4">
+      <div className="min-h-screen bg-[#0a0b10] text-white flex items-center justify-center p-6 font-sans select-none">
+        <div className="max-w-md w-full bg-[#12131d] border border-white/10 rounded-2xl p-8 text-center space-y-4">
           <AlertCircle className="w-10 h-10 text-amber-400 mx-auto" />
-          <h2 className="text-lg font-bold text-white">No Result Available</h2>
-          <p className="text-xs text-slate-400">{error || "Please submit your interview to generate a result."}</p>
+          <h2 className="text-base font-bold text-white">No Assessment Result Available</h2>
+          <p className="text-xs text-slate-400">{error || "Please complete an interview session to generate a report."}</p>
           <button
             onClick={() => navigate("/dashboard")}
-            className="w-full py-3 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider cursor-pointer"
+            className="w-full py-3 rounded-xl bg-orange-600 hover:bg-orange-500 text-white font-bold text-xs uppercase tracking-wider cursor-pointer transition"
           >
             Back to Dashboard
           </button>
@@ -353,231 +676,460 @@ export default function Results({ sessionId: propSessionId, initialResultData })
   }
 
   return (
-    <div className="min-h-screen bg-[#050609] text-white p-4 sm:p-8 font-sans select-none">
-      <div className="max-w-4xl mx-auto space-y-6">
+    <div className="min-h-screen bg-[#0a0b10] text-white py-6 px-4 font-sans select-none">
 
-        {/* HEADER */}
-        <div className="flex items-center justify-between border-b border-white/10 pb-4">
-          <div className="flex items-center gap-3">
+      {/* FULL-WIDTH CONTAINER (94% Viewport width, max-w-[1600px]) */}
+      <div className="w-[94%] max-w-[1600px] mx-auto space-y-6">
+
+        {/* --- 1. COMPACT PROFESSIONAL HEADER --- */}
+        <header className="bg-[#12131d] border border-[#252836] rounded-2xl p-4 sm:px-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-md">
+          <div className="flex items-center gap-3.5">
+            <img
+              src="/images/metadata.png"
+              alt="PrepHire Logo"
+              className="h-9 w-9 object-contain shrink-0"
+              draggable="false"
+            />
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-black tracking-widest text-orange-500 uppercase">PREPHIRE</span>
+                <span className="text-slate-600 text-xs">•</span>
+                <h1 className="text-xs font-bold uppercase tracking-wider text-slate-200">REAL INTERVIEW ASSESSMENT RESULT</h1>
+              </div>
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-400 mt-1 font-mono">
+                <span className="flex items-center gap-1.5 text-slate-300">
+                  <User className="w-3.5 h-3.5 text-orange-400" />
+                  Candidate: <strong className="text-white">{candidateDisplayName}</strong>
+                </span>
+                <span className="text-slate-500">ID: {result.sessionId || activeId}</span>
+                {formattedCompletionDate && (
+                  <span className="flex items-center gap-1 text-slate-400">
+                    <Clock className="w-3 h-3 text-slate-500" />
+                    {formattedCompletionDate}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Action buttons */}
+          <div className="flex items-center gap-3 w-full sm:w-auto">
+            <button
+              onClick={handleDownloadPdf}
+              disabled={downloadingPdf}
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-orange-600 hover:bg-orange-500 disabled:opacity-50 text-white font-bold text-xs uppercase tracking-wider transition cursor-pointer shadow"
+            >
+              {downloadingPdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+              <span>{downloadingPdf ? "Generating..." : "Download Result PDF"}</span>
+            </button>
+
             <button
               onClick={() => navigate("/dashboard")}
-              className="p-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-slate-300 transition cursor-pointer"
+              className="py-2 px-4 rounded-xl bg-[#1c1e2c] hover:bg-[#282b3d] text-slate-300 font-bold text-xs uppercase tracking-wider border border-white/10 transition cursor-pointer flex items-center gap-1.5"
             >
               <ArrowLeft className="w-4 h-4" />
+              <span>Dashboard</span>
             </button>
+          </div>
+        </header>
+
+        {/* --- 2. RESULT SUMMARY SECTION --- */}
+        <section className="bg-[#12131d] border border-[#252836] rounded-2xl p-6 shadow-md space-y-4">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+
+            {/* Overall score */}
+            <div className="space-y-1">
+              <span className="text-xs font-bold uppercase tracking-widest text-slate-400">OVERALL RESULT</span>
+              <div className="flex items-baseline gap-3">
+                <span className={`text-5xl font-black font-mono tracking-tight ${overallStatus.textColor}`}>
+                  {totalObtained}
+                </span>
+                <span className="text-xl font-bold text-slate-500 font-mono">/ {maxScore}</span>
+                <span className="text-2xl font-black font-mono text-white ml-2">({percentage}%)</span>
+              </div>
+            </div>
+
+            {/* Performance status badge */}
+            <div className="flex flex-col items-start md:items-end gap-2">
+              <div className={`px-5 py-2.5 rounded-xl border ${overallStatus.badgeBg} ${overallStatus.badgeBorder} flex items-center gap-2`}>
+                <span className="text-xs text-slate-400 font-bold uppercase">PERFORMANCE STATUS:</span>
+                <span className={`text-sm font-black uppercase tracking-wider ${overallStatus.textColor}`}>
+                  {overallStatus.label}
+                </span>
+              </div>
+
+              {/* Questions attempted breakdown */}
+              <div className="flex items-center gap-4 text-xs font-mono bg-[#0a0b10] border border-white/5 rounded-lg px-3.5 py-1.5">
+                <span>Questions Attempted: <strong className="text-emerald-400">{attemptedCount} / {totalCount}</strong></span>
+                <span className="text-slate-600">|</span>
+                <span>Not Attempted: <strong className="text-slate-400">{unattemptedCount} / {totalCount}</strong></span>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        {/* --- 3. ROUND PERFORMANCE ASSESSMENT REPORT TABLE --- */}
+        <section className="bg-[#12131d] border border-[#252836] rounded-2xl p-6 shadow-md space-y-4">
+          <div className="flex justify-between items-center border-b border-white/10 pb-3">
             <div>
-              <h1 className="text-xl font-black uppercase tracking-wider text-white">REAL INTERVIEW RESULT</h1>
-              <p className="text-xs text-slate-400 font-mono">Session ID: {result.sessionId || activeId}</p>
+              <h2 className="text-xs font-black uppercase tracking-widest text-slate-300">ROUND PERFORMANCE</h2>
+              <p className="text-[11px] text-slate-400 mt-0.5">Authoritative performance metrics across all 5 interview stages</p>
             </div>
+            <span className="text-xs font-mono text-slate-500">Maximum Marks: 450</span>
           </div>
-        </div>
 
-        {/* 1. OVERALL SCORE CARD */}
-        <div className="bg-slate-900 border border-white/10 rounded-3xl p-6 sm:p-8 text-center space-y-3 shadow-xl">
-          <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Overall Score</p>
-          <div className="flex items-baseline justify-center gap-2">
-            <span className="text-5xl sm:text-6xl font-black font-mono text-emerald-400">
-              {totalObtained}
-            </span>
-            <span className="text-2xl font-bold text-slate-500 font-mono">/ {maxScore}</span>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="bg-[#0a0b10] border-b border-[#252836] text-slate-400 font-bold uppercase tracking-wider">
+                  <th className="py-3 px-4">ROUND</th>
+                  <th className="py-3 px-4 text-center">QUESTIONS</th>
+                  <th className="py-3 px-4 text-center">ATTEMPTED</th>
+                  <th className="py-3 px-4 text-center">SCORE</th>
+                  <th className="py-3 px-4 text-center">PERFORMANCE</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5 font-mono">
+                {roundsData.map((rd) => {
+                  const isZeroAttempt = rd.attemptedCount === 0;
+
+                  return (
+                    <tr key={rd.key} className="hover:bg-white/[0.01] transition">
+                      {/* Round Name */}
+                      <td className="py-3.5 px-4 font-sans font-bold text-white uppercase text-xs tracking-wider">
+                        {rd.name}
+                      </td>
+
+                      {/* Total Questions */}
+                      <td className="py-3.5 px-4 text-center text-slate-400">
+                        {rd.totalQuestions} questions
+                      </td>
+
+                      {/* Attempted */}
+                      <td className="py-3.5 px-4 text-center">
+                        <span className={isZeroAttempt ? "text-slate-500" : "text-emerald-400 font-bold"}>
+                          {rd.attemptedCount} / {rd.totalQuestions} Attempted
+                        </span>
+                      </td>
+
+                      {/* Score */}
+                      <td className="py-3.5 px-4 text-center">
+                        <span className={isZeroAttempt ? "text-slate-500 font-normal" : `font-bold ${rd.statusInfo.textColor}`}>
+                          {isZeroAttempt ? "NOT ATTEMPTED" : `${rd.score} / ${rd.maxScore}`}
+                        </span>
+                      </td>
+
+                      {/* Performance Status — ZERO ATTEMPT RULE: "NOT ATTEMPTED" if attemptedCount === 0 */}
+                      <td className="py-3.5 px-4 text-center">
+                        <span
+                          className={`inline-block px-3 py-1 rounded-lg text-[11px] font-sans font-bold uppercase tracking-wider border ${rd.statusInfo.badgeBg} ${rd.statusInfo.badgeBorder} ${rd.statusInfo.textColor}`}
+                        >
+                          {rd.statusInfo.label}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
-          <div className="inline-block px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm font-bold font-mono">
-            {percentage}%
+        </section>
+
+        {/* --- 4. STUDENT PERFORMANCE FEEDBACK (STRUCTURED & EVIDENCE-BASED) --- */}
+        <section className="bg-[#12131d] border border-[#252836] rounded-2xl p-6 shadow-md space-y-5">
+          <div className="border-b border-white/10 pb-3">
+            <h2 className="text-xs font-black uppercase tracking-widest text-slate-300">STUDENT PERFORMANCE FEEDBACK</h2>
+            <p className="text-[11px] text-slate-400 mt-0.5">Evidence-based evaluation derived from authoritative persisted response data</p>
           </div>
-        </div>
 
-        {/* 2. ROUND PERFORMANCE */}
-        <div className="bg-slate-900 border border-white/10 rounded-3xl p-6 space-y-4 shadow-xl">
-          <h2 className="text-xs font-black uppercase tracking-widest text-slate-400">Round Performance</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 flex justify-between items-center">
-              <div>
-                <p className="text-xs font-bold text-slate-300">Aptitude</p>
-                <p className="text-[10px] text-slate-500">15 Questions</p>
-              </div>
-              <span className="font-mono text-sm font-black text-amber-400">{aptitudeScore} <span className="text-xs text-slate-500 font-normal">/ {aptitudeMax}</span></span>
-            </div>
+          <div className="space-y-6">
+            {roundsData.map((rd) => {
+              const fb = rd.feedbackObj;
 
-            <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 flex justify-between items-center">
-              <div>
-                <p className="text-xs font-bold text-slate-300">Technical</p>
-                <p className="text-[10px] text-slate-500">20 Questions</p>
-              </div>
-              <span className="font-mono text-sm font-black text-blue-400">{technicalScore} <span className="text-xs text-slate-500 font-normal">/ {technicalMax}</span></span>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 flex justify-between items-center">
-              <div>
-                <p className="text-xs font-bold text-slate-300">Project</p>
-                <p className="text-[10px] text-slate-500">10 Questions</p>
-              </div>
-              <span className="font-mono text-sm font-black text-cyan-400">{projectScore} <span className="text-xs text-slate-500 font-normal">/ {projectMax}</span></span>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 flex justify-between items-center">
-              <div>
-                <p className="text-xs font-bold text-slate-300">HR Behavioral</p>
-                <p className="text-[10px] text-slate-500">5 Questions</p>
-              </div>
-              <span className="font-mono text-sm font-black text-purple-400">{hrScore} <span className="text-xs text-slate-500 font-normal">/ {hrMax}</span></span>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 flex justify-between items-center">
-              <div>
-                <p className="text-xs font-bold text-slate-300">Coding</p>
-                <p className="text-[10px] text-slate-500">3 Questions</p>
-              </div>
-              <span className="font-mono text-sm font-black text-emerald-400">{codingScore} <span className="text-xs text-slate-500 font-normal">/ {codingMax}</span></span>
-            </div>
-          </div>
-        </div>
-
-        {/* 3. PERFORMANCE SUMMARY */}
-        <div className="bg-slate-900 border border-white/10 rounded-3xl p-6 space-y-4 shadow-xl">
-          <h2 className="text-xs font-black uppercase tracking-widest text-slate-400">Performance Summary</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 text-center space-y-1">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Questions Attempted</p>
-              <p className="text-2xl font-black text-emerald-400 font-mono">{attemptedCount} <span className="text-sm font-normal text-slate-500">/ {totalCount}</span></p>
-            </div>
-            <div className="p-4 rounded-2xl bg-slate-950 border border-white/10 text-center space-y-1">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Questions Not Attempted</p>
-              <p className="text-2xl font-black text-slate-400 font-mono">{unattemptedCount} <span className="text-sm font-normal text-slate-500">/ {totalCount}</span></p>
-            </div>
-          </div>
-        </div>
-
-        {/* 4. QUESTION-WISE REVIEW */}
-        {questionResults.length > 0 && (
-          <div className="bg-slate-900 border border-white/10 rounded-3xl p-6 space-y-4 shadow-xl">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-              <h2 className="text-xs font-black uppercase tracking-widest text-slate-400">Question-wise Review</h2>
-
-              {/* Filters */}
-              <div className="flex flex-wrap gap-2 text-xs">
-                <select
-                  value={roundFilter}
-                  onChange={(e) => setRoundFilter(e.target.value)}
-                  className="bg-slate-950 border border-white/10 rounded-xl px-3 py-1 text-slate-300 focus:outline-none cursor-pointer"
-                >
-                  <option value="ALL">All Rounds</option>
-                  <option value="APTITUDE">Aptitude</option>
-                  <option value="TECHNICAL">Technical</option>
-                  <option value="RESUME_PROJECT">Project</option>
-                  <option value="HR">HR</option>
-                  <option value="CODING">Coding</option>
-                </select>
-
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="bg-slate-950 border border-white/10 rounded-xl px-3 py-1 text-slate-300 focus:outline-none cursor-pointer"
-                >
-                  <option value="ALL">All Statuses</option>
-                  <option value="CORRECT">Correct</option>
-                  <option value="PARTIAL">Partially Correct</option>
-                  <option value="INCORRECT">Incorrect</option>
-                  <option value="NOT_ATTEMPTED">Not Attempted</option>
-                </select>
-              </div>
-            </div>
-
-            {/* QUESTIONS LIST */}
-            <div className="space-y-3">
-              {filteredQuestions.map((item, idx) => {
-                const qId = item.questionId || `q_${idx}`;
-                const isExpanded = Boolean(expandedItems[qId]);
-                const isNotAttempted = item.status === "NOT_ATTEMPTED" || item.candidateAnswer === "Not Answered" || item.candidateAnswer === "Not Submitted";
-                const isCorrect = item.status === "CORRECT";
-                const isPartial = item.status === "PARTIALLY_CORRECT";
-
+              if (!fb.isAttempted) {
                 return (
-                  <div
-                    key={qId}
-                    className={`rounded-2xl border transition-all overflow-hidden ${
-                      isNotAttempted
-                        ? "bg-slate-950/60 border-white/5"
-                        : isCorrect
-                        ? "bg-emerald-500/[0.02] border-emerald-500/20"
-                        : isPartial
-                        ? "bg-blue-500/[0.02] border-blue-500/20"
-                        : "bg-red-500/[0.02] border-red-500/20"
-                    }`}
-                  >
-                    <button
-                      onClick={() => toggleExpand(qId)}
-                      className="w-full p-4 flex items-start justify-between gap-3 text-left cursor-pointer hover:bg-white/[0.02] transition"
-                    >
-                      <div className="flex items-start gap-3">
-                        <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-white/10 text-slate-300 shrink-0 mt-0.5">
-                          {item.roundType}
-                        </span>
+                  <div key={rd.key} className="p-4 rounded-xl bg-[#0a0b10] border border-[#252836] space-y-2">
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-xs font-bold text-orange-400 uppercase tracking-wider font-sans">
+                        {rd.name}
+                      </h3>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded border uppercase bg-slate-800/40 border-slate-700/60 text-slate-400 font-mono">
+                        NOT ASSESSED
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-400 leading-relaxed font-sans">
+                      This section was not attempted, so there is not enough response data to evaluate {rd.name.toLowerCase()} performance.
+                    </p>
+                  </div>
+                );
+              }
 
-                        <div>
-                          <p className="text-xs font-semibold text-white leading-snug">
-                            Q{idx + 1}. {item.question}
-                          </p>
+              return (
+                <div key={rd.key} className="p-5 rounded-xl bg-[#0a0b10] border border-[#252836] space-y-4">
+                  <div className="flex justify-between items-center border-b border-white/5 pb-2.5">
+                    <h3 className="text-xs font-bold text-orange-400 uppercase tracking-wider font-sans">
+                      {rd.name}
+                    </h3>
+                    <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded border uppercase font-mono ${rd.statusInfo.badgeBg} ${rd.statusInfo.badgeBorder} ${rd.statusInfo.textColor}`}>
+                      {fb.statusLabel}
+                    </span>
+                  </div>
 
-                          <div className="flex items-center gap-2 mt-1.5">
-                            <span
-                              className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${
-                                isNotAttempted
-                                  ? "bg-slate-800 text-slate-400"
-                                  : isCorrect
-                                  ? "bg-emerald-500/20 text-emerald-400"
-                                  : isPartial
-                                  ? "bg-blue-500/20 text-blue-400"
-                                  : "bg-red-500/20 text-red-400"
-                              }`}
-                            >
-                              {isNotAttempted ? "NOT ATTEMPTED" : isCorrect ? "CORRECT" : isPartial ? "PARTIAL" : "INCORRECT"}
-                            </span>
-                          </div>
-                        </div>
+                  {/* Performance Insight */}
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block font-sans">Performance Insight</span>
+                    <p className="text-xs text-slate-200 leading-relaxed font-sans">{fb.insight}</p>
+                  </div>
+
+                  {/* What Went Well & Focus Areas */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1 text-xs font-sans">
+                    {fb.strengths.length > 0 && (
+                      <div className="space-y-1.5 p-3 rounded-lg bg-emerald-500/[0.03] border border-emerald-500/10">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 block">What Went Well</span>
+                        <ul className="space-y-1 text-slate-300">
+                          {fb.strengths.map((item, i) => (
+                            <li key={i} className="flex items-start gap-1.5">
+                              <span className="text-emerald-400 font-bold">•</span>
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
                       </div>
+                    )}
 
-                      <div className="flex items-center gap-3 shrink-0">
-                        <span className="font-mono text-sm font-black text-white">
-                          {item.score} <span className="text-xs text-slate-500 font-normal">/ {item.maxScore}</span>
-                        </span>
-                        {isExpanded ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
-                      </div>
-                    </button>
-
-                    {isExpanded && (
-                      <div className="px-4 pb-4 border-t border-white/5 space-y-3 pt-3 text-xs">
-                        <div className="p-3 rounded-xl bg-slate-950 border border-white/10 space-y-1">
-                          <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Your Answer:</span>
-                          <p className="font-mono text-slate-200 whitespace-pre-wrap">{item.candidateAnswer || "Not Answered"}</p>
-                        </div>
-
-                        {item.correctAnswer && (
-                          <div className="p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/20 space-y-1">
-                            <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400">Reference / Correct Answer:</span>
-                            <p className="text-slate-300">{item.correctAnswer}</p>
-                          </div>
-                        )}
-
-                        {item.feedback && (
-                          <div className="p-3 rounded-xl bg-blue-500/5 border border-blue-500/20 space-y-1">
-                            <span className="text-[10px] font-black uppercase tracking-wider text-blue-400">Feedback:</span>
-                            <p className="text-slate-300">{item.feedback}</p>
-                          </div>
-                        )}
+                    {fb.focusAreas.length > 0 && (
+                      <div className="space-y-1.5 p-3 rounded-lg bg-orange-500/[0.03] border border-orange-500/10">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-orange-400 block">Focus Areas</span>
+                        <ul className="space-y-1 text-slate-300">
+                          {fb.focusAreas.map((item, i) => (
+                            <li key={i} className="flex items-start gap-1.5">
+                              <span className="text-orange-400 font-bold">•</span>
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
                       </div>
                     )}
                   </div>
-                );
-              })}
-            </div>
+
+                  {/* Recommended Next Step */}
+                  {fb.nextStep && (
+                    <div className="space-y-1 pt-1 font-sans text-xs">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Recommended Next Step</span>
+                      <p className="text-slate-300 leading-relaxed">{fb.nextStep}</p>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
+        </section>
+
+        {/* --- 5. QUESTION-WISE REVIEW (ALL 53 QUESTIONS ACCESSIBLE VIA PAGINATION) --- */}
+        {questionResults.length > 0 && (
+          <section className="bg-[#12131d] border border-[#252836] rounded-2xl p-6 shadow-md space-y-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-white/10 pb-3">
+              <div>
+                <h2 className="text-xs font-black uppercase tracking-widest text-slate-300">QUESTION-WISE REVIEW (ALL {totalCount} QUESTIONS)</h2>
+                <p className="text-[11px] text-slate-400 mt-0.5">
+                  Showing {paginatedQuestions.length > 0 ? (currentPage - 1) * PAGE_SIZE + 1 : 0}–
+                  {Math.min(currentPage * PAGE_SIZE, filteredQuestions.length)} of {filteredQuestions.length} questions
+                </p>
+              </div>
+
+              {/* Simple professional filters */}
+              <div className="flex flex-wrap items-center gap-2 text-xs">
+                <div className="flex items-center gap-1.5 bg-[#0a0b10] border border-[#252836] rounded-xl px-3 py-1.5">
+                  <Filter className="w-3.5 h-3.5 text-slate-400" />
+                  <select
+                    value={roundFilter}
+                    onChange={(e) => handleFilterChange(setRoundFilter, e.target.value)}
+                    className="bg-transparent text-slate-200 focus:outline-none cursor-pointer text-xs font-medium"
+                  >
+                    <option value="ALL" className="bg-[#12131d]">All Rounds</option>
+                    <option value="APTITUDE" className="bg-[#12131d]">Aptitude</option>
+                    <option value="TECHNICAL" className="bg-[#12131d]">Technical</option>
+                    <option value="RESUME_PROJECT" className="bg-[#12131d]">Project</option>
+                    <option value="HR" className="bg-[#12131d]">HR</option>
+                    <option value="CODING" className="bg-[#12131d]">Coding</option>
+                  </select>
+                </div>
+
+                <div className="flex items-center gap-1.5 bg-[#0a0b10] border border-[#252836] rounded-xl px-3 py-1.5">
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => handleFilterChange(setStatusFilter, e.target.value)}
+                    className="bg-transparent text-slate-200 focus:outline-none cursor-pointer text-xs font-medium"
+                  >
+                    <option value="ALL" className="bg-[#12131d]">All Statuses</option>
+                    <option value="ATTEMPTED" className="bg-[#12131d]">Attempted</option>
+                    <option value="NOT_ATTEMPTED" className="bg-[#12131d]">Not Attempted</option>
+                    <option value="CORRECT" className="bg-[#12131d]">Correct</option>
+                    <option value="PARTIAL" className="bg-[#12131d]">Partially Correct</option>
+                    <option value="INCORRECT" className="bg-[#12131d]">Incorrect</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Questions list for active page */}
+            <div className="space-y-3">
+              {paginatedQuestions.length === 0 ? (
+                <div className="p-8 text-center text-slate-500 text-xs">
+                  No questions match the selected filter criteria.
+                </div>
+              ) : (
+                paginatedQuestions.map((item, idx) => {
+                  const globalIdx = (currentPage - 1) * PAGE_SIZE + idx + 1;
+                  const qId = item.questionId || `q_${globalIdx}`;
+                  const isExpanded = Boolean(expandedItems[qId]);
+                  const isNotAttempted = item.status === "NOT_ATTEMPTED" || !item.candidateAnswer || item.candidateAnswer === "Not Answered" || item.candidateAnswer === "Not Submitted";
+                  const isCorrect = item.status === "CORRECT";
+                  const isPartial = item.status === "PARTIALLY_CORRECT" || item.status === "PARTIAL";
+
+                  return (
+                    <div
+                      key={qId}
+                      className={`rounded-xl border transition-all overflow-hidden ${
+                        isNotAttempted
+                          ? "bg-[#0a0b10] border-[#252836]"
+                          : isCorrect
+                          ? "bg-emerald-500/[0.02] border-emerald-500/20"
+                          : isPartial
+                          ? "bg-amber-500/[0.02] border-amber-500/20"
+                          : "bg-red-500/[0.02] border-red-500/20"
+                      }`}
+                    >
+                      <button
+                        onClick={() => toggleExpand(qId)}
+                        className="w-full p-3.5 flex items-start justify-between gap-3 text-left cursor-pointer hover:bg-white/[0.02] transition"
+                      >
+                        <div className="flex items-start gap-3">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-orange-500/10 border border-orange-500/20 text-orange-400 shrink-0 mt-0.5 font-mono">
+                            {item.roundType}
+                          </span>
+
+                          <div className="space-y-1">
+                            <p className="text-xs font-semibold text-white leading-snug">
+                              Q{globalIdx}. {item.question}
+                            </p>
+
+                            <div className="flex items-center gap-2 font-mono">
+                              <span
+                                className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${
+                                  isNotAttempted
+                                    ? "bg-slate-800 text-slate-400"
+                                    : isCorrect
+                                    ? "bg-emerald-500/20 text-emerald-400"
+                                    : isPartial
+                                    ? "bg-amber-500/20 text-amber-400"
+                                    : "bg-red-500/20 text-red-400"
+                                }`}
+                              >
+                                {isNotAttempted ? "NOT ATTEMPTED" : isCorrect ? "CORRECT" : isPartial ? "PARTIALLY CORRECT" : "INCORRECT"}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3 shrink-0">
+                          <span className="font-mono text-xs font-bold text-white">
+                            Score: {item.score} / {item.maxScore}
+                          </span>
+                          {isExpanded ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
+                        </div>
+                      </button>
+
+                      {isExpanded && (
+                        <div className="px-4 pb-4 border-t border-white/5 space-y-3 pt-3 text-xs font-sans">
+                          <div className="p-3 rounded-lg bg-[#07080d] border border-white/10 space-y-1">
+                            <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block font-mono">Candidate Answer:</span>
+                            <p className="font-mono text-slate-200 whitespace-pre-wrap">
+                              {isNotAttempted ? "NOT ATTEMPTED" : (item.candidateAnswer || "NOT ATTEMPTED")}
+                            </p>
+                          </div>
+
+                          {item.correctAnswer && item.correctAnswer.trim() !== "" && (
+                            <div className="p-3 rounded-lg bg-emerald-500/5 border border-emerald-500/20 space-y-1">
+                              <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400 block font-mono">Correct / Expected Answer:</span>
+                              <p className="text-slate-300 font-mono whitespace-pre-wrap">{item.correctAnswer}</p>
+                            </div>
+                          )}
+
+                          {item.feedback && item.feedback.trim() !== "" && (
+                            <div className="p-3 rounded-lg bg-orange-500/5 border border-orange-500/20 space-y-1">
+                              <span className="text-[10px] font-black uppercase tracking-wider text-orange-400 block font-mono">Evaluation Feedback:</span>
+                              <p className="text-slate-300">{item.feedback}</p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-3 border-t border-white/10 text-xs">
+                <span className="text-slate-400 font-mono">
+                  Page {currentPage} of {totalPages} ({filteredQuestions.length} total questions)
+                </span>
+
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="p-1.5 rounded-lg bg-[#0a0b10] border border-[#252836] hover:bg-white/10 disabled:opacity-30 disabled:pointer-events-none text-slate-300 transition cursor-pointer"
+                    title="Previous Page"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((pg) => (
+                    <button
+                      key={pg}
+                      onClick={() => setCurrentPage(pg)}
+                      className={`w-7 h-7 rounded-lg font-bold font-mono text-xs cursor-pointer transition ${
+                        currentPage === pg
+                          ? "bg-orange-600 text-white"
+                          : "bg-[#0a0b10] border border-[#252836] text-slate-400 hover:bg-white/10"
+                      }`}
+                    >
+                      {pg}
+                    </button>
+                  ))}
+
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                    className="p-1.5 rounded-lg bg-[#0a0b10] border border-[#252836] hover:bg-white/10 disabled:opacity-30 disabled:pointer-events-none text-slate-300 transition cursor-pointer"
+                    title="Next Page"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
+          </section>
         )}
 
-        {/* 5. ACTIONS */}
-        <div className="flex justify-center pt-2">
+        {/* --- 6. ACTIONS FOOTER --- */}
+        <div className="flex flex-col sm:flex-row justify-center items-center gap-4 pt-2 pb-6">
+          <button
+            onClick={handleDownloadPdf}
+            disabled={downloadingPdf}
+            className="w-full sm:w-auto py-3 px-8 rounded-xl bg-orange-600 hover:bg-orange-500 disabled:opacity-50 text-white font-bold text-xs uppercase tracking-wider transition cursor-pointer shadow flex items-center justify-center gap-2"
+          >
+            {downloadingPdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+            <span>{downloadingPdf ? "Generating PDF Report..." : "Download Result PDF"}</span>
+          </button>
+
           <button
             onClick={() => navigate("/dashboard")}
-            className="py-3 px-8 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider transition cursor-pointer shadow-lg"
+            className="w-full sm:w-auto py-3 px-8 rounded-xl bg-[#12131d] hover:bg-[#1c1e2c] text-slate-300 font-bold text-xs uppercase tracking-wider transition cursor-pointer border border-[#252836]"
           >
             Back to Dashboard
           </button>

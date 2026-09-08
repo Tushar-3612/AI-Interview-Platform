@@ -1,3 +1,6 @@
+import fs from "fs";
+import path from "path";
+import PDFDocument from "pdfkit";
 import {
   generateAndProcessAptitudeQuestions,
   evaluateAptitudeSession,
@@ -31,6 +34,142 @@ import { getOrBuildCandidateResumeContext } from "../utils/resumeContextBuilder.
 import { calculateRealInterviewResult } from "../services/realInterview/realInterviewResultService.js";
 import RealInterviewResult from "../models/RealInterviewResult.js";
 import Interview from "../models/Interview.js";
+import User from "../models/User.js";
+
+/**
+ * Generates structured evidence-based performance feedback for PDF and Web UI.
+ */
+function buildEvidenceBasedRoundFeedback(roundKey, roundName, attemptedCount, totalQuestions, score, maxScore, questionResults = []) {
+  if (!attemptedCount || attemptedCount === 0) {
+    return {
+      roundName,
+      statusLabel: "NOT ASSESSED",
+      isAttempted: false,
+      insight: "This section was not attempted, so there is not enough response data to evaluate performance.",
+      strengths: [],
+      focusAreas: [],
+      nextStep: "Attempt this round in your next session to receive detailed performance evaluation.",
+    };
+  }
+
+  const pct = maxScore > 0 ? (score / maxScore) * 100 : 0;
+  const roundQuestions = questionResults.filter((q) => {
+    if (roundKey === "aptitude") return q.roundType === "APTITUDE";
+    if (roundKey === "technical") return q.roundType === "TECHNICAL";
+    if (roundKey === "project") return q.roundType === "RESUME_PROJECT";
+    if (roundKey === "hr") return q.roundType === "HR";
+    if (roundKey === "coding") return q.roundType === "CODING";
+    return false;
+  });
+
+  const correctCount = roundQuestions.filter((q) => q.status === "CORRECT").length;
+
+  let statusLabel = "Needs Improvement";
+  if (pct >= 70) statusLabel = "Strong Performance";
+  else if (pct >= 35) statusLabel = "Good Progress";
+
+  let insight = "";
+  let strengths = [];
+  let focusAreas = [];
+  let nextStep = "";
+
+  if (roundKey === "aptitude") {
+    if (pct >= 70) {
+      insight = `Demonstrates strong quantitative precision and analytical problem-solving (${correctCount}/${totalQuestions} correct).`;
+      strengths = ["High calculation accuracy in core reasoning topics.", `Successfully solved ${correctCount} aptitude questions.`];
+      focusAreas = ["Maintain precision across complex multi-step reasoning problems."];
+      nextStep = "Practice advanced timed aptitude sets to maintain high accuracy under time constraints.";
+    } else if (pct >= 35) {
+      insight = `Shows foundational problem-solving ability, but accuracy decreases on multi-step reasoning problems (${correctCount}/${attemptedCount} correct).`;
+      strengths = [`Completed ${attemptedCount} out of ${totalQuestions} aptitude questions.`, "Demonstrated correct methodology on direct calculation problems."];
+      focusAreas = ["Reduce calculation errors in multi-step quantitative problems.", "Improve time management per question."];
+      nextStep = "Review incorrect questions step-by-step and practice targeted drills on calculation accuracy.";
+    } else {
+      insight = `Response accuracy indicates fundamental gaps in quantitative methods and reasoning (${correctCount}/${attemptedCount} correct).`;
+      strengths = [`Completed ${attemptedCount} aptitude questions.`];
+      focusAreas = ["Strengthen core mathematical formulas and shortcut techniques.", "Verify calculations systematically before selecting options."];
+      nextStep = "Focus on foundational quantitative topics before attempting full-length timed tests.";
+    }
+  } else if (roundKey === "technical") {
+    if (pct >= 70) {
+      insight = `Demonstrates thorough technical domain knowledge and strong conceptual clarity (${score}/${maxScore} score).`;
+      strengths = ["Strong explanation quality and conceptual accuracy.", "Articulates software engineering fundamentals effectively."];
+      focusAreas = ["Incorporate architectural trade-offs and edge-case considerations into responses."];
+      nextStep = "Practice deeper system design discussions and trade-off analysis for advanced rounds.";
+    } else if (pct >= 35) {
+      insight = `Displays foundational technical knowledge but lacks depth when explaining underlying mechanics (${score}/${maxScore} score).`;
+      strengths = ["Correctly identified primary technical concepts.", `Answered ${attemptedCount} technical evaluation questions.`];
+      focusAreas = ["Elaborate on internal workings, data flow, and underlying system mechanics.", "Structure responses using definition, mechanism, and use-case frameworks."];
+      nextStep = "Deepen understanding of core theoretical concepts and practice explaining technical mechanisms aloud.";
+    } else {
+      insight = `Technical evaluation indicates limited depth in core engineering concepts (${score}/${maxScore} score).`;
+      strengths = [`Attempted ${attemptedCount} technical questions.`];
+      focusAreas = ["Build solid fundamentals in data structures, operating systems, and database internals.", "Provide concrete technical details and examples instead of high-level definitions."];
+      nextStep = "Review fundamental technical subject material and practice answering core interview questions in detail.";
+    }
+  } else if (roundKey === "project") {
+    if (pct >= 70) {
+      insight = `Excellent articulation of project architecture, technical stack decisions, and real-world engineering challenges (${score}/${maxScore} score).`;
+      strengths = ["Clear explanation of project architecture and personal contributions.", "Strong technical justification for database and API decisions."];
+      focusAreas = ["Detail scalability bottlenecks and production deployment monitoring."];
+      nextStep = "Prepare deeper metrics and benchmark results for key system bottlenecks in your portfolio projects.";
+    } else if (pct >= 35) {
+      insight = `Satisfactory overview of portfolio projects, but explanations lacked technical granularity regarding trade-offs (${score}/${maxScore} score).`;
+      strengths = ["Clearly stated project objectives and tech stack.", `Answered ${attemptedCount} project questions.`];
+      focusAreas = ["Provide specific implementation details rather than generic feature descriptions.", "Explain challenges faced and exact debugging techniques used."];
+      nextStep = "Document system architecture diagrams, API schemas, and key technical challenges for all portfolio projects.";
+    } else {
+      insight = `Project evaluation indicates difficulty in defending architectural decisions of portfolio work (${score}/${maxScore} score).`;
+      strengths = [`Attempted ${attemptedCount} project questions.`];
+      focusAreas = ["Revisit project codebases to recall exact implementations and data flows.", "Practice explaining personal contributions vs team contributions clearly."];
+      nextStep = "Perform a technical audit of your projects to articulate architecture and implementation details with confidence.";
+    }
+  } else if (roundKey === "hr") {
+    if (pct >= 70) {
+      insight = `Strong behavioral responses demonstrating leadership, decision-making, and clear professional communication (${score}/${maxScore} score).`;
+      strengths = ["Clear, structured behavioral responses highlighting personal accountability.", "Demonstrates adaptability, teamwork, and problem resolution."];
+      focusAreas = ["Ensure behavioral answers conclude with quantifiable business impact."];
+      nextStep = "Refine behavioral scenarios using the STAR technique with emphasis on measurable results.";
+    } else if (pct >= 35) {
+      insight = `Good communication style, but behavioral examples could be structured more effectively using situation-action-result frameworks (${score}/${maxScore} score).`;
+      strengths = ["Professional demeanor and clear articulation.", `Attempted ${attemptedCount} behavioral questions.`];
+      focusAreas = ["Use the STAR method (Situation, Task, Action, Result) to structure answers.", "Highlight personal ownership and specific actions taken."];
+      nextStep = "Draft structured story archives mapped to standard behavioral competencies.";
+    } else {
+      insight = `Behavioral evaluation highlights need for improved response structure and personal accountability narrative (${score}/${maxScore} score).`;
+      strengths = [`Completed ${attemptedCount} behavioral questions.`];
+      focusAreas = ["Structure responses clearly to avoid vague or overly brief answers.", "Focus on demonstrating ownership and constructive conflict resolution."];
+      nextStep = "Practice framing past experiences into structured narratives that demonstrate professional growth.";
+    }
+  } else if (roundKey === "coding") {
+    if (pct >= 70) {
+      insight = `Strong algorithmic problem-solving, clean code structure, and successful test case execution (${score}/${maxScore} score).`;
+      strengths = ["Correct algorithmic logic and syntax implementation.", "Successful compilation and passing test cases."];
+      focusAreas = ["Analyze and state optimal time and space complexity explicitly."];
+      nextStep = "Practice hard-level algorithmic problems and focus on optimal time-complexity optimization.";
+    } else if (pct >= 35) {
+      insight = `Demonstrates basic problem-solving logic, but submitted code encountered edge-case failures or sub-optimal complexity (${score}/${maxScore} score).`;
+      strengths = [`Submitted code for ${attemptedCount} coding challenges.`, "Identified correct initial data structures."];
+      focusAreas = ["Handle edge cases (boundaries, empty inputs) thoroughly before submission.", "Improve code optimization for execution time limits."];
+      nextStep = "Practice dry-running code against edge-case inputs prior to execution and submission.";
+    } else {
+      insight = `Coding evaluation indicates difficulty in implementing functional solutions within execution constraints (${score}/${maxScore} score).`;
+      strengths = [`Submitted code attempts for ${attemptedCount} problem(s).`];
+      focusAreas = ["Strengthen mastery of standard language syntax and array manipulation.", "Practice translating logic into clean, compilable code."];
+      nextStep = "Focus on easy-to-medium coding problems to build syntax fluency and algorithmic confidence.";
+    }
+  }
+
+  return {
+    roundName,
+    statusLabel,
+    isAttempted: true,
+    insight,
+    strengths,
+    focusAreas,
+    nextStep,
+  };
+}
 
 /**
  * POST /api/real-interview/aptitude/generate
@@ -688,6 +827,14 @@ export const getRealInterviewResult = async (req, res) => {
       });
     }
 
+    const userDoc = await User.findById(resultDoc.userId).select("name email").lean().catch(() => null);
+    if (userDoc) {
+      resultDoc.candidateName = userDoc.name;
+      resultDoc.candidateEmail = userDoc.email;
+    }
+
+    console.log(`[RESULT-BACKEND] sessionId=${sessionId} totalObtained=${resultDoc.totalObtained} maxScore=${resultDoc.maximumMarks} percentage=${resultDoc.percentage}`);
+
     res.status(200).json({
       success: true,
       result: resultDoc,
@@ -729,5 +876,333 @@ export const retryRealInterviewEvaluation = async (req, res) => {
   }
 };
 
+/**
+ * GET /api/real-interview/result/:sessionId/pdf
+ * Generates and downloads a real, structured PDF assessment report using PDFKit.
+ * NO web screenshots, NO HTML image conversions, NO AI calls.
+ */
+export const downloadRealInterviewResultPDF = async (req, res) => {
+  try {
+    const userId = req.user?.id || req.user?._id;
+    const { sessionId } = req.params;
 
+    if (!sessionId) {
+      return res.status(400).json({ success: false, message: "sessionId is required" });
+    }
 
+    const resultDoc = await RealInterviewResult.findOne({ sessionId }).lean();
+    if (!resultDoc) {
+      return res.status(404).json({ success: false, message: "Interview result not found for this session" });
+    }
+
+    // Security ownership check: verify user owns this interview session
+    if (userId && resultDoc.userId && resultDoc.userId.toString() !== userId.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: "Unauthorized. You are not permitted to access another candidate's interview report.",
+      });
+    }
+
+    const userDoc = await User.findById(resultDoc.userId).select("name email").lean().catch(() => null);
+    const candidateName = userDoc?.name || req.user?.name || "Candidate";
+
+    const filename = `Prephire_Real_Interview_Result_${sessionId}.pdf`;
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+
+    const doc = new PDFDocument({
+      size: "A4",
+      margin: 40,
+      info: {
+        Title: `Prephire Real Interview Assessment Report - ${sessionId}`,
+        Author: "Prephire Assessment Platform",
+        Subject: "Official Candidate Real Interview Assessment Report",
+      },
+      permissions: {
+        modifying: false,
+        copying: false,
+        annotating: false,
+        fillingForms: false,
+      },
+    });
+
+    doc.pipe(res);
+
+    const COLOR_TEXT = "#000000";
+    const COLOR_MUTED = "#475569";
+    const COLOR_BRAND = "#d97706";
+    const COLOR_RED = "#dc2626";
+    const COLOR_AMBER = "#d97706";
+    const COLOR_GREEN = "#16a34a";
+    const COLOR_BORDER = "#cbd5e1";
+
+    const totalObtained = Number(resultDoc.totalObtained ?? 0);
+    const maxScore = Number(resultDoc.maximumMarks ?? 450);
+    const percentage = typeof resultDoc.percentage === "number"
+      ? resultDoc.percentage
+      : maxScore > 0
+      ? Number(((totalObtained / maxScore) * 100).toFixed(2))
+      : 0;
+
+    let overallLabel = "NEEDS IMPROVEMENT";
+    let overallColor = COLOR_RED;
+    if (percentage >= 70) {
+      overallLabel = "STRONG PERFORMANCE";
+      overallColor = COLOR_GREEN;
+    } else if (percentage >= 35) {
+      overallLabel = "GOOD PROGRESS";
+      overallColor = COLOR_AMBER;
+    }
+
+    // --- PDF HEADER ---
+    const logoPath = path.resolve("frontend/public/images/metadata.png");
+    if (fs.existsSync(logoPath)) {
+      try {
+        doc.image(logoPath, 40, 35, { width: 42 });
+      } catch (err) {}
+    }
+
+    doc.fillColor(COLOR_BRAND).fontSize(16).font("Helvetica-Bold").text("PREPHIRE", 90, 38);
+    doc.fillColor(COLOR_TEXT).fontSize(11).font("Helvetica-Bold").text("REAL INTERVIEW ASSESSMENT REPORT", 90, 56);
+
+    doc.moveTo(40, 80).lineTo(555, 80).strokeColor(COLOR_BORDER).lineWidth(1).stroke();
+
+    // --- METADATA HEADER BOX ---
+    doc.rect(40, 90, 515, 55).fillAndStroke("#f8fafc", COLOR_BORDER);
+
+    doc.fillColor(COLOR_MUTED).fontSize(9).font("Helvetica").text("Candidate:", 50, 100);
+    doc.fillColor(COLOR_TEXT).fontSize(9).font("Helvetica-Bold").text(candidateName, 105, 100);
+
+    doc.fillColor(COLOR_MUTED).fontSize(9).font("Helvetica").text("Interview ID:", 50, 118);
+    doc.fillColor(COLOR_TEXT).fontSize(9).font("Courier").text(sessionId, 115, 118);
+
+    const formattedDate = resultDoc.completedAt
+      ? new Date(resultDoc.completedAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
+      : resultDoc.createdAt
+      ? new Date(resultDoc.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
+      : "Completed";
+
+    doc.fillColor(COLOR_MUTED).fontSize(9).font("Helvetica").text("Date:", 350, 100);
+    doc.fillColor(COLOR_TEXT).fontSize(9).font("Helvetica").text(formattedDate, 385, 100);
+
+    doc.fillColor(COLOR_MUTED).fontSize(9).font("Helvetica").text("Status:", 350, 118);
+    doc.fillColor(COLOR_GREEN).fontSize(9).font("Helvetica-Bold").text("COMPLETED", 390, 118);
+
+    // --- OVERALL RESULT HERO BOX ---
+    let y = 160;
+    doc.rect(40, y, 515, 75).fillAndStroke("#f1f5f9", COLOR_BORDER);
+
+    doc.fillColor(COLOR_MUTED).fontSize(9).font("Helvetica-Bold").text("FINAL ASSESSMENT RESULT", 52, y + 10);
+
+    doc.fillColor(overallColor).fontSize(26).font("Helvetica-Bold").text(`${totalObtained}`, 52, y + 26);
+    const scoreStrWidth = doc.widthOfString(`${totalObtained}`, { fontSize: 26 });
+    doc.fillColor(COLOR_MUTED).fontSize(14).font("Helvetica").text(` / ${maxScore}`, 52 + scoreStrWidth, y + 36);
+
+    doc.fillColor(overallColor).fontSize(16).font("Helvetica-Bold").text(`${percentage}%`, 220, y + 30);
+
+    doc.rect(360, y + 22, 180, 24).fillAndStroke(overallColor, overallColor);
+    doc.fillColor("#ffffff").fontSize(9).font("Helvetica-Bold").text(overallLabel, 365, y + 29, { width: 170, align: "center" });
+
+    const attemptedCount = resultDoc.attemptedQuestionsCount ?? 0;
+    const totalCount = resultDoc.totalQuestionsCount ?? 53;
+    const unattemptedCount = Math.max(0, totalCount - attemptedCount);
+
+    doc.fillColor(COLOR_MUTED).fontSize(8.5).font("Helvetica").text(`Questions Attempted: ${attemptedCount} / ${totalCount}   |   Questions Not Attempted: ${unattemptedCount} / ${totalCount}`, 52, y + 56);
+
+    // --- ROUND PERFORMANCE TABLE ---
+    y += 90;
+    doc.fillColor(COLOR_TEXT).fontSize(11).font("Helvetica-Bold").text("ROUND PERFORMANCE", 40, y);
+    y += 15;
+
+    // Table Header
+    doc.rect(40, y, 515, 20).fillAndStroke("#e2e8f0", COLOR_BORDER);
+    doc.fillColor(COLOR_TEXT).fontSize(8).font("Helvetica-Bold");
+    doc.text("ROUND", 48, y + 6, { width: 110 });
+    doc.text("QUESTIONS", 160, y + 6, { width: 70, align: "center" });
+    doc.text("ATTEMPTED", 235, y + 6, { width: 80, align: "center" });
+    doc.text("SCORE", 320, y + 6, { width: 80, align: "center" });
+    doc.text("PERFORMANCE", 410, y + 6, { width: 135, align: "center" });
+    y += 20;
+
+    const roundList = [
+      { name: "Aptitude", key: "aptitude", totalQ: 15, defaultMax: 50 },
+      { name: "Technical", key: "technical", totalQ: 20, defaultMax: 100 },
+      { name: "Project", key: "project", totalQ: 10, defaultMax: 100 },
+      { name: "HR Behavioral", key: "hr", totalQ: 5, defaultMax: 100 },
+      { name: "Coding", key: "coding", totalQ: 3, defaultMax: 100 },
+    ];
+
+    const roundFeedbacks = {};
+
+    for (let rIdx = 0; rIdx < roundList.length; rIdx++) {
+      const r = roundList[rIdx];
+      const rData = resultDoc.rounds?.[r.key] || {};
+      const score = Number(rData.obtained ?? 0);
+      const max = Number(rData.maximum ?? r.defaultMax);
+      const attempted = Number(rData.attempted ?? 0);
+      const totalQ = Number(rData.totalQuestions ?? r.totalQ);
+      const pct = max > 0 ? Number(((score / max) * 100).toFixed(1)) : 0;
+
+      let rColor = COLOR_MUTED;
+      let rStatus = "NOT ATTEMPTED";
+
+      if (attempted > 0) {
+        if (pct >= 70) {
+          rColor = COLOR_GREEN;
+          rStatus = "STRONG PERFORMANCE";
+        } else if (pct >= 35) {
+          rColor = COLOR_AMBER;
+          rStatus = "GOOD PROGRESS";
+        } else {
+          rColor = COLOR_RED;
+          rStatus = "NEEDS IMPROVEMENT";
+        }
+      }
+
+      doc.rect(40, y, 515, 18).fillAndStroke(rIdx % 2 === 0 ? "#ffffff" : "#f8fafc", COLOR_BORDER);
+      doc.fillColor(COLOR_TEXT).fontSize(8.5).font("Helvetica-Bold").text(r.name, 48, y + 5, { width: 110 });
+      doc.fillColor(COLOR_MUTED).fontSize(8.5).font("Helvetica").text(`${totalQ}`, 160, y + 5, { width: 70, align: "center" });
+      doc.fillColor(attempted > 0 ? COLOR_TEXT : COLOR_MUTED).fontSize(8.5).font("Helvetica").text(`${attempted} / ${totalQ}`, 235, y + 5, { width: 80, align: "center" });
+      doc.fillColor(attempted > 0 ? COLOR_TEXT : COLOR_MUTED).fontSize(8.5).font("Helvetica-Bold").text(attempted > 0 ? `${score} / ${max}` : "NOT ATTEMPTED", 320, y + 5, { width: 80, align: "center" });
+      doc.fillColor(rColor).fontSize(8).font("Helvetica-Bold").text(rStatus, 410, y + 5, { width: 135, align: "center" });
+      y += 18;
+
+      roundFeedbacks[r.key] = buildEvidenceBasedRoundFeedback(r.key, r.name, attempted, totalQ, score, max, resultDoc.questionResults || []);
+    }
+
+    // Summary Total Row
+    doc.rect(40, y, 515, 20).fillAndStroke("#e2e8f0", COLOR_BORDER);
+    doc.fillColor(COLOR_TEXT).fontSize(8.5).font("Helvetica-Bold").text("TOTAL", 48, y + 5, { width: 110 });
+    doc.fillColor(COLOR_TEXT).fontSize(8.5).font("Helvetica-Bold").text(`${totalCount}`, 160, y + 5, { width: 70, align: "center" });
+    doc.fillColor(COLOR_TEXT).fontSize(8.5).font("Helvetica-Bold").text(`${attemptedCount} / ${totalCount}`, 235, y + 5, { width: 80, align: "center" });
+    doc.fillColor(COLOR_TEXT).fontSize(8.5).font("Helvetica-Bold").text(`${totalObtained} / ${maxScore}`, 320, y + 5, { width: 80, align: "center" });
+    doc.fillColor(overallColor).fontSize(8).font("Helvetica-Bold").text(overallLabel, 410, y + 5, { width: 135, align: "center" });
+    y += 20;
+
+    // --- STUDENT PERFORMANCE SUMMARY SECTION ---
+    y += 20;
+    doc.fillColor(COLOR_TEXT).fontSize(11).font("Helvetica-Bold").text("STUDENT PERFORMANCE SUMMARY", 40, y);
+    y += 15;
+
+    for (const rKey of ["aptitude", "technical", "project", "hr", "coding"]) {
+      const fb = roundFeedbacks[rKey];
+
+      if (y > 710) {
+        doc.addPage();
+        y = 40;
+      }
+
+      if (!fb.isAttempted) {
+        doc.rect(40, y, 515, 30).fillAndStroke("#f8fafc", COLOR_BORDER);
+        doc.fillColor(COLOR_TEXT).fontSize(9).font("Helvetica-Bold").text(fb.roundName, 48, y + 5);
+        doc.fillColor(COLOR_MUTED).fontSize(8).font("Helvetica-Bold").text("NOT ASSESSED", 180, y + 5);
+        doc.fillColor(COLOR_MUTED).fontSize(8).font("Helvetica").text(fb.insight, 48, y + 17, { width: 495 });
+        y += 35;
+      } else {
+        doc.rect(40, y, 515, 60).fillAndStroke("#ffffff", COLOR_BORDER);
+        doc.fillColor(COLOR_BRAND).fontSize(9).font("Helvetica-Bold").text(fb.roundName, 48, y + 5);
+        doc.fillColor(COLOR_GREEN).fontSize(8).font("Helvetica-Bold").text(fb.statusLabel, 180, y + 5);
+
+        doc.fillColor(COLOR_TEXT).fontSize(8).font("Helvetica").text(fb.insight, 48, y + 17, { width: 495 });
+        
+        let subY = y + 29;
+        if (fb.strengths.length > 0) {
+          doc.fillColor(COLOR_MUTED).fontSize(7.5).font("Helvetica-Bold").text(`Key Strength: ${fb.strengths[0]}`, 48, subY, { width: 495 });
+          subY += 11;
+        }
+        if (fb.focusAreas.length > 0) {
+          doc.fillColor(COLOR_MUTED).fontSize(7.5).font("Helvetica").text(`Focus Area: ${fb.focusAreas[0]}`, 48, subY, { width: 495 });
+        }
+        y += 66;
+      }
+    }
+
+    // --- QUESTION-WISE DETAILED REPORT (ALL 53 QUESTIONS PRESERVED) ---
+    y += 15;
+    if (y > 700) {
+      doc.addPage();
+      y = 40;
+    }
+
+    doc.fillColor(COLOR_TEXT).fontSize(11).font("Helvetica-Bold").text(`DETAILED QUESTION REVIEW (${resultDoc.questionResults?.length || 0} QUESTIONS)`, 40, y);
+    y += 15;
+
+    const questionResults = Array.isArray(resultDoc.questionResults) ? resultDoc.questionResults : [];
+
+    for (let i = 0; i < questionResults.length; i++) {
+      const q = questionResults[i];
+
+      if (y > 690) {
+        doc.addPage();
+        y = 40;
+      }
+
+      const qRound = q.roundType || "QUESTION";
+      const qScore = Number(q.score ?? 0);
+      const qMax = Number(q.maxScore ?? 0);
+      const qStatus = q.status || "NOT_ATTEMPTED";
+
+      let statusBadgeColor = COLOR_MUTED;
+      if (qStatus === "CORRECT") statusBadgeColor = COLOR_GREEN;
+      else if (qStatus === "PARTIALLY_CORRECT" || qStatus === "PARTIAL") statusBadgeColor = COLOR_AMBER;
+      else if (qStatus === "INCORRECT") statusBadgeColor = COLOR_RED;
+
+      doc.rect(40, y, 515, 18).fillAndStroke("#f1f5f9", COLOR_BORDER);
+      doc.fillColor(COLOR_BRAND).fontSize(8).font("Helvetica-Bold").text(`QUESTION ${String(i + 1).padStart(2, "0")}`, 48, y + 5);
+      doc.fillColor(COLOR_MUTED).fontSize(8).font("Helvetica").text(`Round: ${qRound}`, 140, y + 5);
+      doc.fillColor(statusBadgeColor).fontSize(8).font("Helvetica-Bold").text(`Status: ${qStatus}`, 300, y + 5);
+      doc.fillColor(COLOR_TEXT).fontSize(8).font("Helvetica-Bold").text(`Marks: ${qScore} / ${qMax}`, 450, y + 5, { width: 95, align: "right" });
+      y += 18;
+
+      const qText = q.question || "No question text";
+      const ansText = q.candidateAnswer && q.candidateAnswer.trim() ? q.candidateAnswer.trim() : "NOT ATTEMPTED";
+      const correctText = q.correctAnswer ? q.correctAnswer.trim() : "";
+      const feedbackText = q.feedback ? q.feedback.trim() : "";
+
+      doc.fontSize(8).font("Helvetica-Bold");
+      const qHeight = doc.heightOfString(`Question: ${qText}`, { width: 495 });
+
+      doc.fontSize(8).font("Helvetica");
+      const ansHeight = doc.heightOfString(`Candidate Answer:\n${ansText}`, { width: 495 });
+
+      let extraHeight = 0;
+      if (correctText) extraHeight += doc.heightOfString(`Correct / Expected Answer:\n${correctText}`, { width: 495 }) + 4;
+      if (feedbackText) extraHeight += doc.heightOfString(`Evaluation:\n${feedbackText}`, { width: 495 }) + 4;
+
+      const cardBodyHeight = Math.max(35, qHeight + ansHeight + extraHeight + 14);
+
+      if (y + cardBodyHeight > 760) {
+        doc.addPage();
+        y = 40;
+      }
+
+      doc.rect(40, y, 515, cardBodyHeight).fillAndStroke("#ffffff", COLOR_BORDER);
+
+      let currentY = y + 6;
+      doc.fillColor(COLOR_TEXT).fontSize(8).font("Helvetica-Bold").text(`Question: ${qText}`, 48, currentY, { width: 495 });
+      currentY += qHeight + 4;
+
+      doc.fillColor(ansText === "NOT ATTEMPTED" ? COLOR_MUTED : COLOR_TEXT).fontSize(8).font("Helvetica").text(`Candidate Answer: ${ansText}`, 48, currentY, { width: 495 });
+      currentY += ansHeight + 3;
+
+      if (correctText) {
+        doc.fillColor(COLOR_GREEN).fontSize(8).font("Helvetica").text(`Correct / Expected Answer: ${correctText}`, 48, currentY, { width: 495 });
+        currentY += doc.heightOfString(`Correct / Expected Answer: ${correctText}`, { width: 495 }) + 3;
+      }
+
+      if (feedbackText) {
+        doc.fillColor(COLOR_MUTED).fontSize(8).font("Helvetica-Oblique").text(`Evaluation: ${feedbackText}`, 48, currentY, { width: 495 });
+        currentY += doc.heightOfString(`Evaluation: ${feedbackText}`, { width: 495 }) + 3;
+      }
+
+      y += cardBodyHeight + 8;
+    }
+
+    doc.end();
+  } catch (error) {
+    console.error("[RealInterviewController] Download PDF Error:", error.message);
+    if (!res.headersSent) {
+      res.status(500).json({ success: false, message: error.message || "Failed to generate PDF report" });
+    }
+  }
+};
