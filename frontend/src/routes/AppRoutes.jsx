@@ -52,6 +52,9 @@ import AdminTechnicalManagement from "../pages/admin/AdminTechnicalManagement";
 import AnalyticsDashboard from "../pages/admin/AnalyticsDashboard";
 import MockQuestionManagement from "../pages/admin/MockQuestionManagement";
 
+import IndividualTechnicalPractice from "../pages/student/IndividualTechnicalPractice";
+import IndividualTechnicalResult from "../pages/student/IndividualTechnicalResult";
+
 function AppRoutes() {
   return (
     <Routes>
@@ -69,6 +72,10 @@ function AppRoutes() {
       <Route path="/interview-history/:interviewId/result" element={<Results />} />
       <Route path="/real-interview/result/:sessionId" element={<Results />} />
       <Route path="/results" element={<Results />} />
+
+      {/* Standalone Individual Technical Practice & Result — No Sidebar */}
+      <Route path="/individual-practice/technical/:sessionId" element={<IndividualTechnicalPractice />} />
+      <Route path="/individual-practice/technical/result/:sessionId" element={<IndividualTechnicalResult />} />
 
       {/* Dedicated Company Mock Interview Control Room — standalone, renders ONLY
           the assessment with no website Navbar/Footer/Layout. */}

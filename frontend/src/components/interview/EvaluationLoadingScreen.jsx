@@ -3,7 +3,7 @@ import { Loader2, AlertCircle, RefreshCw } from "lucide-react";
 import api from "../../utils/api";
 import { getAuthToken } from "../../hooks/useStudentProfile";
 
-function EvaluationLoadingScreen({ sessionId, onCompleted }) {
+function EvaluationLoadingScreen({ sessionId, onCompleted, isIndividualTechnical = false }) {
   const token = getAuthToken();
   const [errorMsg, setErrorMsg] = useState("");
   const [isRetrying, setIsRetrying] = useState(false);
@@ -16,22 +16,31 @@ function EvaluationLoadingScreen({ sessionId, onCompleted }) {
       if (!sessionId || isCancelled) return;
       try {
         const headers = { Authorization: `Bearer ${token}` };
-        const { data } = await api.get(`/api/real-interview/result/${sessionId}/status`, { headers });
-
-        if (isCancelled) return;
-
-        if (data.status === "COMPLETED") {
-          if (intervalId) clearInterval(intervalId);
-          const resultRes = await api.get(`/api/real-interview/result/${sessionId}`, { headers });
-          if (resultRes.data?.success && resultRes.data?.result) {
-            onCompleted(resultRes.data.result);
+        if (isIndividualTechnical) {
+          const { data } = await api.get(`/api/individual/technical/result/${sessionId}`, { headers });
+          if (isCancelled) return;
+          if (data && (data.obtainedScore !== undefined || data.sessionId)) {
+            if (intervalId) clearInterval(intervalId);
+            onCompleted(data);
+            return;
           }
-          return;
-        }
+        } else {
+          const { data } = await api.get(`/api/real-interview/result/${sessionId}/status`, { headers });
+          if (isCancelled) return;
 
-        if (data.status === "FAILED" || data.status === "EVALUATION_FAILED") {
-          setErrorMsg(data.errorDetails || "AI evaluation service is temporarily unavailable.");
-          if (intervalId) clearInterval(intervalId);
+          if (data.status === "COMPLETED") {
+            if (intervalId) clearInterval(intervalId);
+            const resultRes = await api.get(`/api/real-interview/result/${sessionId}`, { headers });
+            if (resultRes.data?.success && resultRes.data?.result) {
+              onCompleted(resultRes.data.result);
+            }
+            return;
+          }
+
+          if (data.status === "FAILED" || data.status === "EVALUATION_FAILED") {
+            setErrorMsg(data.errorDetails || "AI evaluation service is temporarily unavailable.");
+            if (intervalId) clearInterval(intervalId);
+          }
         }
       } catch (err) {
         console.warn("[EvaluationLoadingScreen] Status check warning:", err.message);
@@ -45,16 +54,20 @@ function EvaluationLoadingScreen({ sessionId, onCompleted }) {
       isCancelled = true;
       if (intervalId) clearInterval(intervalId);
     };
-  }, [sessionId, token, onCompleted]);
+  }, [sessionId, token, onCompleted, isIndividualTechnical]);
 
   const handleRetry = async () => {
     setIsRetrying(true);
     setErrorMsg("");
     try {
       const headers = { Authorization: `Bearer ${token}` };
-      const res = await api.post(`/api/real-interview/result/${sessionId}/retry`, {}, { headers });
-      if (res.data?.success && res.data?.result) {
-        onCompleted(res.data.result);
+      const endpoint = isIndividualTechnical
+        ? `/api/individual/technical/result/${sessionId}/retry`
+        : `/api/real-interview/result/${sessionId}/retry`;
+      const res = await api.post(endpoint, {}, { headers });
+      const resData = res.data?.result || res.data;
+      if (resData) {
+        onCompleted(resData);
       }
     } catch (err) {
       setErrorMsg(err.response?.data?.message || err.message || "Retry failed. Service temporarily unavailable.");

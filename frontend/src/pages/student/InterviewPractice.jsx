@@ -10,6 +10,9 @@ import { getAuthToken } from "../../hooks/useStudentProfile";
 import { useTheme } from "../../hooks/useTheme";
 import { SkeletonCompanyCard, ErrorState } from "../../components/ui/Skeleton";
 
+import IndividualTechnicalStartModal from "../../components/individualRound/technical/IndividualTechnicalStartModal";
+import { Zap } from "lucide-react";
+
 function InterviewPractice() {
   const navigate = useNavigate();
   const token = getAuthToken();
@@ -23,6 +26,9 @@ function InterviewPractice() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [errStatus, setErrStatus] = useState(null);
+
+  // Individual Technical Start Modal State
+  const [isTechModalOpen, setIsTechModalOpen] = useState(false);
 
   // States for search and filters
   const [searchTerm, setSearchTerm] = useState("");
@@ -189,77 +195,152 @@ function InterviewPractice() {
           </p>
         </div>
 
-        {/* ── Company Mock Interview CTA Card (PRO) — Light & Dark Themed ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="p-5 sm:p-6 rounded-[22px] border relative overflow-hidden space-y-4 transition-all"
-          style={{
-            background: isDark
-              ? "linear-gradient(135deg, rgba(124, 58, 237, 0.18) 0%, rgba(20, 16, 36, 0.95) 100%)"
-              : "linear-gradient(135deg, rgba(124, 58, 237, 0.08) 0%, rgba(245, 243, 255, 0.95) 100%)",
-            borderColor: isDark
-              ? "rgba(139, 92, 246, 0.35)"
-              : "rgba(124, 58, 237, 0.25)",
-            boxShadow: isDark
-              ? "0 8px 30px rgba(0, 0, 0, 0.3)"
-              : "0 8px 30px rgba(124, 58, 237, 0.08)",
-          }}
-        >
-          <div className="flex items-start gap-3.5">
-            <div 
-              className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 shadow-md"
+        {/* ── Feature Cards Grid: Company Mock & Individual Technical Practice ── */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Company Mock Interview CTA Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="p-5 sm:p-6 rounded-[22px] border relative overflow-hidden space-y-4 transition-all flex flex-col justify-between"
+            style={{
+              background: isDark
+                ? "linear-gradient(135deg, rgba(124, 58, 237, 0.18) 0%, rgba(20, 16, 36, 0.95) 100%)"
+                : "linear-gradient(135deg, rgba(124, 58, 237, 0.08) 0%, rgba(245, 243, 255, 0.95) 100%)",
+              borderColor: isDark
+                ? "rgba(139, 92, 246, 0.35)"
+                : "rgba(124, 58, 237, 0.25)",
+              boxShadow: isDark
+                ? "0 8px 30px rgba(0, 0, 0, 0.3)"
+                : "0 8px 30px rgba(124, 58, 237, 0.08)",
+            }}
+          >
+            <div className="flex items-start gap-3.5">
+              <div 
+                className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 shadow-md"
+                style={{
+                  background: "linear-gradient(135deg, #7C3AED 0%, #8B5CF6 100%)",
+                  color: "#FFFFFF",
+                  boxShadow: "0 4px 14px rgba(124, 58, 237, 0.3)",
+                }}
+              >
+                <BrainCircuit className="w-6 h-6" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h2
+                    className="text-base sm:text-lg font-black tracking-tight"
+                    style={{ color: isDark ? "#FFFFFF" : "#1E1B4B" }}
+                  >
+                    Company Mock Interview
+                  </h2>
+                  <span
+                    className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md border"
+                    style={{
+                      background: isDark ? "rgba(139, 92, 246, 0.25)" : "rgba(124, 58, 237, 0.12)",
+                      color: isDark ? "#D8B4FE" : "#6D28D9",
+                      borderColor: isDark ? "rgba(139, 92, 246, 0.45)" : "rgba(124, 58, 237, 0.25)",
+                    }}
+                  >
+                    PRO
+                  </span>
+                </div>
+                <p
+                  className="text-xs sm:text-sm mt-1 leading-relaxed"
+                  style={{ color: isDark ? "#D1D5DB" : "#4B5563" }}
+                >
+                  Comprehensive assessments simulating exact hiring patterns across Aptitude, Technical, and Coding.
+                </p>
+              </div>
+            </div>
+
+            <motion.button
+              type="button"
+              onClick={() => navigate("/mock-interview")}
+              className="w-full py-3.5 rounded-xl text-sm font-bold text-white cursor-pointer flex items-center justify-center gap-2 shadow-lg transition-all"
               style={{
                 background: "linear-gradient(135deg, #7C3AED 0%, #8B5CF6 100%)",
-                color: "#FFFFFF",
-                boxShadow: "0 4px 14px rgba(124, 58, 237, 0.3)",
+                boxShadow: "0 4px 18px rgba(124, 58, 237, 0.35)",
               }}
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
             >
-              <BrainCircuit className="w-6 h-6" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h2
-                  className="text-base sm:text-lg font-black tracking-tight"
-                  style={{ color: isDark ? "#FFFFFF" : "#1E1B4B" }}
-                >
-                  Company Mock Interview
-                </h2>
-                <span
-                  className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md border"
-                  style={{
-                    background: isDark ? "rgba(139, 92, 246, 0.25)" : "rgba(124, 58, 237, 0.12)",
-                    color: isDark ? "#D8B4FE" : "#6D28D9",
-                    borderColor: isDark ? "rgba(139, 92, 246, 0.45)" : "rgba(124, 58, 237, 0.25)",
-                  }}
-                >
-                  PRO
-                </span>
-              </div>
-              <p
-                className="text-xs sm:text-sm mt-1 leading-relaxed"
-                style={{ color: isDark ? "#D1D5DB" : "#4B5563" }}
-              >
-                Comprehensive assessments simulating exact hiring patterns across Aptitude, Technical, and Coding rounds.
-              </p>
-            </div>
-          </div>
+              <span>Start Mock Interview</span>
+              <ArrowRight className="w-4 h-4" />
+            </motion.button>
+          </motion.div>
 
-          <motion.button
-            type="button"
-            onClick={() => navigate("/mock-interview")}
-            className="w-full py-3.5 rounded-xl text-sm font-bold text-white cursor-pointer flex items-center justify-center gap-2 shadow-lg transition-all"
+          {/* Individual Technical Practice CTA Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="p-5 sm:p-6 rounded-[22px] border relative overflow-hidden space-y-4 transition-all flex flex-col justify-between"
             style={{
-              background: "linear-gradient(135deg, #7C3AED 0%, #8B5CF6 100%)",
-              boxShadow: "0 4px 18px rgba(124, 58, 237, 0.35)",
+              background: isDark
+                ? "linear-gradient(135deg, rgba(249, 115, 22, 0.18) 0%, rgba(24, 18, 16, 0.95) 100%)"
+                : "linear-gradient(135deg, rgba(249, 115, 22, 0.08) 0%, rgba(254, 243, 199, 0.5) 100%)",
+              borderColor: isDark
+                ? "rgba(249, 115, 22, 0.35)"
+                : "rgba(249, 115, 22, 0.25)",
+              boxShadow: isDark
+                ? "0 8px 30px rgba(0, 0, 0, 0.3)"
+                : "0 8px 30px rgba(249, 115, 22, 0.08)",
             }}
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.99 }}
           >
-            <span>Start Mock Interview</span>
-            <ArrowRight className="w-4 h-4" />
-          </motion.button>
-        </motion.div>
+            <div className="flex items-start gap-3.5">
+              <div 
+                className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 shadow-md"
+                style={{
+                  background: "linear-gradient(135deg, #F97316 0%, #EA580C 100%)",
+                  color: "#FFFFFF",
+                  boxShadow: "0 4px 14px rgba(249, 115, 22, 0.3)",
+                }}
+              >
+                <Zap className="w-6 h-6" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h2
+                    className="text-base sm:text-lg font-black tracking-tight"
+                    style={{ color: isDark ? "#FFFFFF" : "#431407" }}
+                  >
+                    Technical Practice
+                  </h2>
+                  <span
+                    className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md border"
+                    style={{
+                      background: isDark ? "rgba(249, 115, 22, 0.25)" : "rgba(249, 115, 22, 0.12)",
+                      color: isDark ? "#FFEDD5" : "#C2410C",
+                      borderColor: isDark ? "rgba(249, 115, 22, 0.45)" : "rgba(249, 115, 22, 0.25)",
+                    }}
+                  >
+                    TARGETED
+                  </span>
+                </div>
+                <p
+                  className="text-xs sm:text-sm mt-1 leading-relaxed"
+                  style={{ color: isDark ? "#D1D5DB" : "#4B5563" }}
+                >
+                  20 Technical questions tailored to your Resume or Interview Key with /100 score evaluation.
+                </p>
+              </div>
+            </div>
+
+            <motion.button
+              type="button"
+              onClick={() => setIsTechModalOpen(true)}
+              className="w-full py-3.5 rounded-xl text-sm font-bold text-white cursor-pointer flex items-center justify-center gap-2 shadow-lg transition-all"
+              style={{
+                background: "linear-gradient(135deg, #F97316 0%, #EA580C 100%)",
+                boxShadow: "0 4px 18px rgba(249, 115, 22, 0.35)",
+              }}
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
+            >
+              <span>Configure Technical Practice</span>
+              <ArrowRight className="w-4 h-4" />
+            </motion.button>
+          </motion.div>
+        </div>
 
         {/* ── Recent Activity Card ── */}
         {hasActivity && (
@@ -623,6 +704,15 @@ function InterviewPractice() {
         </section>
 
       </motion.div>
+
+      {/* Individual Technical Start Modal */}
+      <IndividualTechnicalStartModal
+        isOpen={isTechModalOpen}
+        onClose={() => setIsTechModalOpen(false)}
+        onStartSuccess={(sessionId) => {
+          navigate(`/individual-practice/technical/${sessionId}`);
+        }}
+      />
     </div>
   );
 }

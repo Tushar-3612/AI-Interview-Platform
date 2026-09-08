@@ -24,6 +24,7 @@ import placementRoutes from "./backend/routes/placement.js";
 import mockInterviewRoutes from "./backend/routes/mockInterviewRoutes.js";
 import technicalQuestionRoutes from "./backend/routes/technicalQuestions.js";
 import realInterviewRoutes from "./backend/routes/realInterviewRoutes.js";
+import individualTechnicalRoutes from "./backend/routes/individualRound/technical/individualTechnicalRoutes.js";
 
 import { initializeCSVExports } from "./backend/utils/csvExporter.js"; // ← Path sahi hai
 import { apiLimiter } from "./backend/middleware/rateLimiter.js";
@@ -104,6 +105,7 @@ app.use("/api/placement", placementRoutes);
 app.use("/api/mock-interview", mockInterviewRoutes);
 app.use("/api/technical-questions", technicalQuestionRoutes);
 app.use("/api/real-interview", realInterviewRoutes);
+app.use("/api/individual/technical", individualTechnicalRoutes);
 
 // Health Check Route (Add this for testing)
 app.get("/api/health", (req, res) => {

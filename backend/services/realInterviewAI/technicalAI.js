@@ -8,6 +8,7 @@ dotenv.config({ path: path.join(__dirname, "../../../.env") });
 
 import { callPythonGroqBridge } from "./pythonGroqBridge.js";
 import { extractJsonFromText } from "./jsonExtractor.js";
+import { isDuplicateQuestion, normalizeQuestionText } from "../realInterview/questionHistoryService.js";
 
 function getTechnicalApiKey() {
   const apiKey = (process.env.REAL_INTERVIEW_TECHNICAL_API_KEY || process.env.GROQ_API_KEY || "").trim();
@@ -23,16 +24,109 @@ function getTechnicalModel() {
 }
 
 /**
- * Generates EXACTLY 20 resume-driven technical questions using 7 AI requests (Max 3 questions per batch).
- * Batch 1: Q1-Q3 (3 Easy)
- * Batch 2: Q4-Q6 (3 Easy)
- * Batch 3: Q7-Q9 (2 Easy, 1 Medium) -> Total 8 Easy, 1 Medium
- * Batch 4: Q10-Q12 (3 Medium)
- * Batch 5: Q13-Q15 (3 Medium)
- * Batch 6: Q16-Q18 (3 Medium) -> Total 10 Medium
- * Batch 7: Q19-Q20 (2 Hard) -> Total 2 Hard
+ * Generates 1 targeted replacement question of a specified difficulty.
  */
-export async function generateTechnicalAI(candidateProfile = {}) {
+async function generateReplacementTechnicalQuestion({
+  skillsContextStr,
+  requiredDifficulty,
+  userHistorySet,
+  currentPoolSet,
+  apiKey,
+  model,
+  retriesLeft = 3,
+}) {
+  if (retriesLeft <= 0) return null;
+
+  const excluded = Array.from(new Set([...userHistorySet, ...currentPoolSet])).slice(0, 40);
+  const prompt = `You are a senior technical interviewer. Generate EXACTLY 1 unique placement-level technical interview question for a candidate with these skills: ${skillsContextStr}.
+
+REQUIRED DIFFICULTY: ${requiredDifficulty} (${requiredDifficulty === "easy" ? "3 marks" : requiredDifficulty === "hard" ? "13 marks" : "5 marks"})
+
+CRITICAL REQUIREMENT:
+DO NOT generate any question that is identical or semantically similar to any of these previously asked questions:
+${excluded.map((q) => `- ${q}`).join("\n")}
+
+Output ONLY valid JSON starting immediately with {"questions": [...]}.
+
+JSON SCHEMA:
+{
+  "questions": [
+    {
+      "question": "Deep technical question",
+      "expectedKnowledge": "Evaluation criteria and key expected points",
+      "difficulty": "${requiredDifficulty}",
+      "topic": "Core Principle",
+      "skillsTested": ["Node.js"]
+    }
+  ]
+}`;
+
+  try {
+    const rawText = await callPythonGroqBridge({
+      round: "technical_replacement",
+      apiKey,
+      model,
+      messages: [
+        {
+          role: "system",
+          content: 'You are a JSON API endpoint. Output ONLY valid JSON starting immediately with {"questions": [...]} without any markdown or commentary.',
+        },
+        { role: "user", content: prompt },
+      ],
+      temperature: 0.4,
+      max_tokens: 600,
+      timeoutMs: 30000,
+    });
+
+    const parsed = extractJsonFromText(rawText);
+    const q = Array.isArray(parsed?.questions) ? parsed.questions[0] : null;
+    if (!q || !q.question) {
+      return generateReplacementTechnicalQuestion({
+        skillsContextStr,
+        requiredDifficulty,
+        userHistorySet,
+        currentPoolSet,
+        apiKey,
+        model,
+        retriesLeft: retriesLeft - 1,
+      });
+    }
+
+    const text = String(q.question).trim();
+    if (isDuplicateQuestion(text, userHistorySet, currentPoolSet)) {
+      console.warn(`[TechnicalAI] Replacement question "${text}" was duplicate. Retrying (${retriesLeft - 1} left)...`);
+      return generateReplacementTechnicalQuestion({
+        skillsContextStr,
+        requiredDifficulty,
+        userHistorySet,
+        currentPoolSet,
+        apiKey,
+        model,
+        retriesLeft: retriesLeft - 1,
+      });
+    }
+
+    const validDiff = ["easy", "medium", "hard"].includes(requiredDifficulty) ? requiredDifficulty : "medium";
+    const maxMarks = validDiff === "easy" ? 3 : validDiff === "hard" ? 13 : 5;
+    return {
+      question: text,
+      expectedKnowledge: String(q.expectedKnowledge || q.expected_knowledge || q.expectedAnswer || "Comprehensive technical explanation.").trim(),
+      difficulty: validDiff,
+      maxMarks,
+      topic: String(q.topic || "Technical Concept").trim(),
+      skillsTested: Array.isArray(q.skillsTested) ? q.skillsTested : [skillsContextStr.split(",")[0] || "General"],
+    };
+  } catch (err) {
+    console.error("[TechnicalAI] Replacement generation failed:", err.message);
+    return null;
+  }
+}
+
+/**
+ * Generates EXACTLY 20 resume-driven technical questions using 7 AI requests (Max 3 questions per batch).
+ * Enforces cross-feature deduplication against user's history and current session pool.
+ */
+export async function generateTechnicalAI(candidateProfile = {}, userHistorySet = new Set()) {
   console.log("\n[REAL-INTERVIEW][AI-CALL]\nround=technical\noperation=batch_generation\ntotal_batches=7");
   const apiKey = getTechnicalApiKey();
   const model = getTechnicalModel();
@@ -65,9 +159,15 @@ export async function generateTechnicalAI(candidateProfile = {}) {
   ];
 
   const allBatchQuestions = [];
+  const currentPoolSet = new Set();
 
   for (const spec of BATCH_SPECS) {
     console.log(`[TechnicalAI] Executing AI Call for Batch ${spec.batchIndex}/7 (${spec.range})...`);
+
+    const excludedList = Array.from(new Set([...userHistorySet, ...currentPoolSet])).slice(0, 35);
+    const exclusionText = excludedList.length > 0
+      ? `\nEXCLUSION RULE:\nDO NOT generate any question that is identical or semantically similar to any of these previously asked questions:\n${excludedList.map(q => `- ${q}`).join("\n")}\n`
+      : "";
 
     const prompt = `You are generating placement-level technical interview questions for a candidate with these explicit technical skills: ${skillsContextStr}.
 Generate EXACTLY ${spec.count} technical interview question(s) for batch ${spec.range}.
@@ -76,7 +176,7 @@ DIFFICULTY REQUIREMENTS FOR THIS BATCH (${spec.count} questions total):
 ${spec.easy > 0 ? `- ${spec.easy} Easy question(s) (3 marks each)` : ""}
 ${spec.medium > 0 ? `- ${spec.medium} Medium question(s) (5 marks each)` : ""}
 ${spec.hard > 0 ? `- ${spec.hard} Hard question(s) (13 marks each)` : ""}
-
+${exclusionText}
 RULES:
 1. ONLY ask about the candidate's explicit technical skills listed above.
 2. Test deep conceptual understanding, WHY, HOW, and trade-offs.
@@ -104,11 +204,11 @@ JSON SCHEMA:
         messages: [
           {
             role: "system",
-            content: "You are a JSON API endpoint. Output ONLY valid JSON starting immediately with {\"questions\": [...]} without any markdown or commentary.",
+            content: 'You are a JSON API endpoint. Output ONLY valid JSON starting immediately with {"questions": [...]} without any markdown or commentary.',
           },
           { role: "user", content: prompt },
         ],
-        temperature: 0.2,
+        temperature: 0.3,
         max_tokens: 1200,
         timeoutMs: 45000,
       });
@@ -118,7 +218,8 @@ JSON SCHEMA:
         throw new Error(`Batch ${spec.batchIndex} returned invalid or empty questions array`);
       }
 
-      const batchQuestions = parsed.questions.slice(0, spec.count).map((q, qIdx) => {
+      for (let qIdx = 0; qIdx < Math.min(spec.count, parsed.questions.length); qIdx++) {
+        const rawQ = parsed.questions[qIdx];
         let diff = "medium";
         if (spec.easy > 0 && qIdx < spec.easy) diff = "easy";
         else if (spec.hard > 0 && qIdx >= (spec.count - spec.hard)) diff = "hard";
@@ -127,21 +228,39 @@ JSON SCHEMA:
         const validDiff = ["easy", "medium", "hard"].includes(diff) ? diff : "medium";
         const maxMarks = validDiff === "easy" ? 3 : validDiff === "hard" ? 13 : 5;
 
-        return {
-          question: String(q.question || "").trim(),
-          expectedKnowledge: String(q.expectedKnowledge || q.expected_knowledge || q.expectedAnswer || "Comprehensive technical explanation.").trim(),
+        let candidateQ = {
+          question: String(rawQ.question || "").trim(),
+          expectedKnowledge: String(rawQ.expectedKnowledge || rawQ.expected_knowledge || rawQ.expectedAnswer || "Comprehensive technical explanation.").trim(),
           difficulty: validDiff,
           maxMarks,
-          topic: String(q.topic || "Technical Concept").trim(),
-          skillsTested: Array.isArray(q.skillsTested) ? q.skillsTested : [skillsContextStr.split(",")[0] || "General"],
+          topic: String(rawQ.topic || "Technical Concept").trim(),
+          skillsTested: Array.isArray(rawQ.skillsTested) ? rawQ.skillsTested : [skillsContextStr.split(",")[0] || "General"],
         };
-      });
 
-      allBatchQuestions.push(...batchQuestions);
-      console.log(`[TechnicalAI] Batch ${spec.batchIndex}/7 (${spec.range}) SUCCESS: ${batchQuestions.length} questions generated.`);
+        if (isDuplicateQuestion(candidateQ.question, userHistorySet, currentPoolSet)) {
+          console.warn(`[TechnicalAI] Batch ${spec.batchIndex} Q#${qIdx+1} duplicate detected: "${candidateQ.question}". Generating targeted replacement...`);
+          const replacement = await generateReplacementTechnicalQuestion({
+            skillsContextStr,
+            requiredDifficulty: validDiff,
+            userHistorySet,
+            currentPoolSet,
+            apiKey,
+            model,
+            retriesLeft: 3,
+          });
+          if (replacement) {
+            candidateQ = replacement;
+          }
+        }
+
+        const norm = normalizeQuestionText(candidateQ.question);
+        if (norm) currentPoolSet.add(norm);
+        allBatchQuestions.push(candidateQ);
+      }
+
+      console.log(`[TechnicalAI] Batch ${spec.batchIndex}/7 (${spec.range}) SUCCESS: ${allBatchQuestions.length} unique questions so far.`);
     } catch (err) {
       console.error(`[TechnicalAI] Batch ${spec.batchIndex}/7 FAILED: ${err.message}`);
-      // Immediately stop generation on 429 or quota/network error — do not retry repeatedly or use fake fallback
       throw new Error(`Technical AI generation failed on Batch ${spec.batchIndex} (${spec.range}): ${err.message}`);
     }
   }
@@ -150,8 +269,7 @@ JSON SCHEMA:
     throw new Error(`Technical AI batch generation produced ${allBatchQuestions.length} questions (expected 20)`);
   }
 
-  console.log(`[TechnicalAI] All 7 batches completed successfully! Combined total: ${allBatchQuestions.length} questions.`);
-  return { questions: allBatchQuestions };
+  return { questions: allBatchQuestions.slice(0, 20) };
 }
 
 /**
@@ -252,3 +370,5 @@ JSON SCHEMA ONLY:
   console.log(`[RealInterviewAI][Technical] Complete evaluation finished for ${parsed.evaluations.length} questions`);
   return parsed;
 }
+
+

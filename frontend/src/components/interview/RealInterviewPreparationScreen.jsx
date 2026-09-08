@@ -86,17 +86,52 @@ const PREPARATION_STAGES = [
   },
 ];
 
+const TECHNICAL_PRACTICE_STAGES = [
+  {
+    id: "tech_profile",
+    key: "STAGE_1",
+    title: "Recognizing your technical profile",
+    description: "Analyzing your technical skills and domain context.",
+    roundKey: null,
+  },
+  {
+    id: "topics",
+    key: "STAGE_2",
+    title: "Preparing technical topics",
+    description: "Structuring technical areas and difficulty levels.",
+    roundKey: null,
+  },
+  {
+    id: "individual_technical_gen",
+    key: "STAGE_3",
+    title: "Generating Technical Questions",
+    description: "Preparing 20 targeted technical practice questions.",
+    roundKey: "TECHNICAL",
+    failedMessage: "Unable to prepare your Technical Practice questions.",
+  },
+  {
+    id: "finalizing_tech",
+    key: "STAGE_4",
+    title: "Finalizing your practice session",
+    description: "Verifying your 20-question practice set.",
+    roundKey: null,
+  },
+];
+
 export default function RealInterviewPreparationScreen({
   sessionId,
   candidateProfile = {},
   token,
+  isIndividualTechnical = false,
   onPreparationSuccess,
   onReturnToPlatform,
   onPracticeMock,
 }) {
+  const activeStages = isIndividualTechnical ? TECHNICAL_PRACTICE_STAGES : PREPARATION_STAGES;
+
   // Stage States: 'pending' | 'in_progress' | 'completed' | 'failed'
   const [stageStatuses, setStageStatuses] = useState(() =>
-    PREPARATION_STAGES.reduce((acc, stage) => {
+    activeStages.reduce((acc, stage) => {
       acc[stage.id] = "pending";
       return acc;
     }, {})
@@ -169,9 +204,33 @@ export default function RealInterviewPreparationScreen({
       return true;
     }
 
-    if (stage.id === "tech_profile") {
+    if (stage.id === "tech_profile" || stage.id === "topics") {
+      await delay(800);
+      console.log(`[PREP] stage=${stage.id} COMPLETE`);
+      return true;
+    }
+
+    if (stage.id === "individual_technical_gen") {
+      console.log(`[PREP] round=individual_technical_gen sessionIdPresent=${Boolean(sessionId)}`);
+      // Validate or fetch the individual technical session
+      const res = await api.get(`/api/individual/technical/session/${sessionId}`, { headers });
+      const sess = res.data?.session;
+      if (!sess || !Array.isArray(sess.questions) || sess.questions.length === 0) {
+        throw new Error("Failed to prepare 20 technical questions for this session.");
+      }
       await delay(1000);
       console.log(`[PREP] stage=${stage.id} COMPLETE`);
+      return true;
+    }
+
+    if (stage.id === "finalizing_tech") {
+      const res = await api.get(`/api/individual/technical/session/${sessionId}`, { headers });
+      const sess = res.data?.session;
+      if (!sess || !Array.isArray(sess.questions) || sess.questions.length !== 20) {
+        throw new Error(`Technical practice session validation failed. Expected 20 questions, got ${sess?.questions?.length || 0}.`);
+      }
+      await delay(800);
+      console.log(`[PREP] stage=${stage.id} COMPLETE - 20 technical questions validated`);
       return true;
     }
 

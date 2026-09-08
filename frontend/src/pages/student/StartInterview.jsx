@@ -56,12 +56,17 @@ function SignalRow({ label, on }) {
 /**
  * StartInterview Page Component — Phase 2E Fullscreen + Interview Integrity
  */
-function StartInterview() {
+function StartInterview({ isIndividualTechnical: propIsIndividualTechnical = false }) {
   const { sessionId: paramSessionId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
 
   const routerState = location.state || {};
+  const isIndividualTechnical =
+    propIsIndividualTechnical ||
+    location.pathname.includes("/individual-practice/technical") ||
+    routerState.mode === "INDIVIDUAL_TECHNICAL";
+
   const { profile } = useStudentProfile();
   const token = getAuthToken();
 
@@ -525,13 +530,85 @@ function StartInterview() {
     try {
       let storedSessionId = "";
       try {
-        storedSessionId = localStorage.getItem("active_real_interview_session_id") || "";
+        storedSessionId = localStorage.getItem(
+          isIndividualTechnical ? "active_individual_technical_session_id" : "active_real_interview_session_id"
+        ) || "";
       } catch (e) {}
 
       let targetId = sessionIdRef.current || sessionId || paramSessionId || routerState.sessionId || routerState.interviewId || storedSessionId || profile?.interviewId;
 
       const activeToken = token || getAuthToken();
       const authHeaderOptions = activeToken ? { headers: { Authorization: `Bearer ${activeToken}` } } : {};
+
+      if (isIndividualTechnical) {
+        if (!targetId || targetId === "undefined" || targetId === "null") {
+          throw new Error("Missing Individual Technical session ID");
+        }
+        setSessionId(targetId);
+        sessionIdRef.current = targetId;
+        try {
+          localStorage.setItem("active_individual_technical_session_id", targetId);
+        } catch (e) {}
+
+        const { data } = await api.get(`/api/individual/technical/session/${targetId}`, authHeaderOptions);
+        const sess = data.session || data;
+
+        const isDbCompleted = sess.status === "COMPLETED";
+        if (isDbCompleted) {
+          setIsCompleted(true);
+          try {
+            localStorage.removeItem("active_individual_technical_session_id");
+          } catch (e) {}
+        } else {
+          setIsCompleted(false);
+        }
+
+        setTargetRound("technical");
+        setInterviewDurationMin(45);
+
+        const loadedQs = (sess.questions || []).map((q, idx) => ({
+          id: String(q.questionId || `Q-${idx + 1}`),
+          questionId: String(q.questionId || `Q-${idx + 1}`),
+          questionNumber: idx + 1,
+          section: "TECHNICAL",
+          topic: q.topic || "Technical",
+          skill: q.skill || "General",
+          difficulty: q.difficulty || "Medium",
+          type: "technical",
+          questionType: "technical",
+          category: "technical",
+          question: q.question,
+          aiSpeechText: q.question,
+        }));
+
+        if (loadedQs.length > 0) {
+          setQuestions(loadedQs);
+        }
+
+        if (sess.answers && Array.isArray(sess.answers)) {
+          const savedAnswersList = sess.answers.map((ans) => ({
+            questionId: String(ans.questionId),
+            questionText: ans.questionText || "",
+            section: "TECHNICAL",
+            answer: ans.candidateAnswer || "",
+            transcript: ans.candidateAnswer || "",
+            inputMethod: ans.inputMethod || "TEXT",
+            status: ans.candidateAnswer ? "answered" : "unanswered",
+          }));
+          setSavedAnswers(savedAnswersList);
+        }
+
+        setCandidateInfo({
+          name: profile?.name || MOCK_CANDIDATE.name,
+          resumeName: profile?.resumeFileName || "Uploaded_Resume.pdf",
+          interviewType: "Technical Practice",
+          difficulty: sess.difficulty || "Medium",
+          totalTimeMinutes: 45,
+        });
+
+        setTimerSeconds(45 * 60);
+        return { isIndividualTechnical: true, session: sess, generatedQuestions: loadedQs, status: sess.status };
+      }
 
       if (!targetId || targetId === "undefined" || targetId === "null") {
         const { data: newSession } = await api.post(
@@ -630,14 +707,32 @@ function StartInterview() {
       toast.error(safeMsg, { duration: 8000, id: "session-load-error" });
       return null;
     }
-  }, [sessionId, paramSessionId, token, initialTargetRound, profile]);
+  }, [sessionId, paramSessionId, token, initialTargetRound, profile, isIndividualTechnical]);
 
   useEffect(() => {
     const initSession = async () => {
       const data = await fetchSessionData();
-      const st = String(data?.status || "").toUpperCase();
+      const st = String(data?.status || data?.session?.status || "").toUpperCase();
       const isDbCompleted = (st === "COMPLETED");
       const isDbEvaluating = (st === "SUBMITTED" || st.startsWith("EVALUATING_") || st === "CALCULATING_RESULT");
+
+      if (isIndividualTechnical) {
+        if (isDbCompleted) {
+          setIsLoadingInterview(false);
+          setIsEvaluating(false);
+          setIsCompleted(true);
+          navigate(`/individual-practice/technical/result/${sessionIdRef.current || sessionId}`);
+        } else if (data?.generatedQuestions?.length === 20 || data?.session?.questions?.length === 20) {
+          setIsLoadingInterview(false);
+          setIsEvaluating(false);
+          setIsCompleted(false);
+        } else {
+          setIsLoadingInterview(true);
+          setIsEvaluating(false);
+          setIsCompleted(false);
+        }
+        return;
+      }
 
       if (isDbCompleted) {
         setIsLoadingInterview(false);
@@ -660,15 +755,40 @@ function StartInterview() {
       }
     };
     initSession();
-  }, [paramSessionId, fetchSessionData]);
+  }, [paramSessionId, fetchSessionData, isIndividualTechnical, navigate, sessionId]);
 
 
   // ─── SINGLE SOURCE OF TRUTH: SESSION PROGRESS ───
   // Every progress readout (sidebar, overall, section headers, completion
   // stats) is derived from this one memoized object so no UI shows a
   // different number. Progress = actually-submitted (non-empty) answers only.
-  const SECTION_TOTALS = { APTITUDE: 15, RESUME_PROJECT: 10, TECHNICAL: 20, CODING: 3, HR: 5 };
+  const SECTION_TOTALS = isIndividualTechnical
+    ? { TECHNICAL: 20 }
+    : { APTITUDE: 15, RESUME_PROJECT: 10, TECHNICAL: 20, CODING: 3, HR: 5 };
+
   const sessionProgress = useMemo(() => {
+    if (isIndividualTechnical) {
+      const answeredIds = new Set(
+        savedAnswers
+          .filter((a) => a.answer && String(a.answer).trim().length > 0)
+          .map((a) => String(a.questionId))
+      );
+
+      let completedCount = 0;
+      questions.forEach((q) => {
+        const qId = String(q.id || q.questionId);
+        if (answeredIds.has(qId)) {
+          completedCount += 1;
+        }
+      });
+
+      return {
+        TECHNICAL: { completed: completedCount, total: 20 },
+        totalCompleted: completedCount,
+        totalQuestions: 20,
+      };
+    }
+
     const counts = {
       APTITUDE: { completed: 0, total: 15 },
       RESUME_PROJECT: { completed: 0, total: 10 },
@@ -697,7 +817,7 @@ function StartInterview() {
     });
 
     return counts;
-  }, [questions, savedAnswers]);
+  }, [questions, savedAnswers, isIndividualTechnical]);
 
   // ─── CONTEXTUAL AI FOLLOW-UP (backend-only, no keys exposed) ───
   const triggerFollowUp = useCallback(async (section, baseQuestion, answerText) => {
@@ -773,18 +893,26 @@ function StartInterview() {
     const currentSessionId = sessionIdRef.current || sessionId;
     if (currentSessionId) {
       try {
-        await api.post(`/api/student/interviews/${currentSessionId}/answer`, {
-          questionId: qId,
-          question: currentQuestion.question,
-          category: currentQuestion.category || section.toLowerCase(),
-          section,
-          answer: finalAnswerText,
-          transcript: finalAnswerText,
-          inputMethod: inputMode === "speak" ? "VOICE" : "TEXT",
-          mode: inputMode === "speak" ? "voice" : "text",
-          status: actualStatus,
-          currentQuestionIndex: currentIndex,
-        }, { headers: { Authorization: `Bearer ${token}` } });
+        if (isIndividualTechnical) {
+          await api.post(`/api/individual/technical/session/${currentSessionId}/answer`, {
+            questionId: qId,
+            candidateAnswer: finalAnswerText,
+            inputMethod: inputMode === "speak" ? "voice" : "text",
+          }, { headers: { Authorization: `Bearer ${token}` } });
+        } else {
+          await api.post(`/api/student/interviews/${currentSessionId}/answer`, {
+            questionId: qId,
+            question: currentQuestion.question,
+            category: currentQuestion.category || section.toLowerCase(),
+            section,
+            answer: finalAnswerText,
+            transcript: finalAnswerText,
+            inputMethod: inputMode === "speak" ? "VOICE" : "TEXT",
+            mode: inputMode === "speak" ? "voice" : "text",
+            status: actualStatus,
+            currentQuestionIndex: currentIndex,
+          }, { headers: { Authorization: `Bearer ${token}` } });
+        }
       } catch (err) {
         console.error("Save answer error:", err);
       }
@@ -808,11 +936,12 @@ function StartInterview() {
       finalAnswerText &&
       finalAnswerText.trim().length > 15 &&
       (section === "TECHNICAL" || section === "HR" || section === "RESUME_PROJECT") &&
-      !currentQuestion._isFollowUp
+      !currentQuestion._isFollowUp &&
+      !isIndividualTechnical
     ) {
       triggerFollowUp(section, currentQuestion, finalAnswerText);
     }
-  }, [stopSpeechRecognition, currentQuestion, currentIndex, currentCode, typedResponse, inputMode, sessionId, token, triggerFollowUp]);
+  }, [stopSpeechRecognition, currentQuestion, currentIndex, currentCode, typedResponse, inputMode, sessionId, token, triggerFollowUp, isIndividualTechnical]);
 
   // ─── SECTION NAVIGATION & ON-DEMAND LAZY LOAD HANDLER ───
   const handleSelectSection = async (targetSection) => {
@@ -907,17 +1036,27 @@ function StartInterview() {
 
     if (currentSessionId) {
       try {
-        await api.post("/api/real-interview/submit", { sessionId: currentSessionId }, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        try {
-          localStorage.removeItem("active_real_interview_session_id");
-        } catch (e) {}
+        if (isIndividualTechnical) {
+          await api.post(`/api/individual/technical/session/${currentSessionId}/submit`, {}, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          try {
+            localStorage.removeItem("active_individual_technical_session_id");
+          } catch (e) {}
+          navigate(`/individual-practice/technical/result/${currentSessionId}`);
+        } else {
+          await api.post("/api/real-interview/submit", { sessionId: currentSessionId }, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          try {
+            localStorage.removeItem("active_real_interview_session_id");
+          } catch (e) {}
+        }
       } catch (err) {
         console.warn("[StartInterview] Submit pipeline notice:", err.message);
       }
     }
-  }, [sessionId, token, handleSaveAnswer, stopSpeechRecognition]);
+  }, [sessionId, token, handleSaveAnswer, stopSpeechRecognition, isIndividualTechnical, navigate]);
 
   // ─── AUTO-SUBMIT WHEN TIME EXPIRES ───
   useEffect(() => {
@@ -1167,7 +1306,7 @@ function StartInterview() {
         }
 
         let currentTranscript = "";
-        for (let i = event.resultIndex; i < event.results.length; i++) {
+        for (let i = 0; i < event.results.length; i++) {
           const result = event.results[i];
           const transcriptPiece = result[0]?.transcript || "";
           currentTranscript += transcriptPiece;
@@ -1227,11 +1366,7 @@ function StartInterview() {
               aiStatusRef.current === "LISTENING" &&
               !isListeningSpeechRef.current
             ) {
-              try {
-                rec.start();
-              } catch (e) {
-                startSpeechRecognition();
-              }
+              startSpeechRecognitionRef.current?.();
             }
           }, 80);
         }
@@ -1975,10 +2110,15 @@ function StartInterview() {
     return (
       <EvaluationLoadingScreen
         sessionId={currentSessionId}
+        isIndividualTechnical={isIndividualTechnical}
         onCompleted={(resultDoc) => {
           setFinalResultDoc(resultDoc);
           setIsEvaluating(false);
-          setIsCompleted(true);
+          if (isIndividualTechnical) {
+            navigate(`/individual-practice/technical/result/${currentSessionId}`);
+          } else {
+            setIsCompleted(true);
+          }
         }}
       />
     );
@@ -2016,7 +2156,7 @@ function StartInterview() {
           } catch (e) {}
           // Fallback navigation if window.close is blocked by browser policy
           setTimeout(() => {
-            navigate("/results");
+            navigate(isIndividualTechnical ? `/individual-practice/technical/result/${activeSessionId}` : "/results");
           }, 150);
         }}
         onRestartInterview={() => {
@@ -2058,6 +2198,7 @@ function StartInterview() {
         sessionId={sessionId}
         candidateProfile={memoizedCandidateProfile}
         token={token}
+        isIndividualTechnical={isIndividualTechnical}
         onPreparationSuccess={async () => {
           console.log(`[REAL-INTERVIEW] preparation success sessionId=${sessionId}`);
           await fetchSessionData();
@@ -2119,7 +2260,7 @@ function StartInterview() {
         headerProps={{
           timerSeconds,
           totalSeconds,
-          interviewType: candidateInfo.interviewType || "Real AI Interview Room",
+          interviewType: isIndividualTechnical ? "Technical Practice" : (candidateInfo.interviewType || "Real AI Interview Room"),
           networkLevel: 4,
         }}
 

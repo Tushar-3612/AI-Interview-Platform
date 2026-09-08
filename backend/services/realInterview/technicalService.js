@@ -94,17 +94,14 @@ export async function generateAndProcessTechnicalQuestions({
 
   let aiResult;
   try {
-    aiResult = await generateTechnicalAI(effectiveProfile);
+    aiResult = await generateTechnicalAI(effectiveProfile, userHistorySet);
   } catch (genErr) {
     console.error(`\n[AI-REQUEST-FAILED]\nround=technical\nprovider=groq\nrequestId=${requestId}\nerror=${genErr.message}`);
     throw new Error(`Technical AI generation failed: ${genErr.message}`);
   }
 
-  const rawAiQuestions = aiResult?.questions || [];
-  let rawQuestions = filterUniqueQuestions(rawAiQuestions, userHistorySet);
-  if (rawQuestions.length < 20) {
-    rawQuestions = rawAiQuestions.slice(0, 20);
-  }
+  const rawAiQuestions = aiResult?.questions || (Array.isArray(aiResult) ? aiResult : []);
+  const rawQuestions = filterUniqueQuestions(rawAiQuestions, userHistorySet);
 
   if (rawQuestions.length < 20) {
     console.error(`\n[AI-REQUEST-FAILED]\nround=technical\nprovider=groq\nrequestId=${requestId}\nerror=Insufficient AI questions returned (${rawQuestions.length}/20)`);

@@ -29,6 +29,7 @@ import { getAuthToken } from "../hooks/useStudentProfile";
 import { SkeletonStudentDashboard, ErrorState } from "../components/ui/Skeleton";
 import AnimatedProgressBar from "../components/ui/AnimatedProgressBar";
 import { CAREER_QUOTES } from "../data/careerQuotes";
+import IndividualTechnicalStartModal from "../components/individualRound/technical/IndividualTechnicalStartModal";
 
 /**
  * Circular progress ring component for Placement Readiness.
@@ -90,6 +91,7 @@ function StudentDashboard() {
   const [dashboardStats, setDashboardStats] = useState(null);
   const [assignedTests, setAssignedTests] = useState([]);
   const [showInterviewModeModal, setShowInterviewModeModal] = useState(false);
+  const [isTechModalOpen, setIsTechModalOpen] = useState(false);
   const [isStartingInterview, setIsStartingInterview] = useState(false);
 
   // 10-second Quote Auto-Rotator (50 messages, smooth opacity fade only)
@@ -741,13 +743,13 @@ function StudentDashboard() {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             {[
               {
                 id: "aptitude",
                 title: "Aptitude Round",
                 desc: "Quantitative, Logical & Verbal MCQs",
-                qs: "25 Questions",
+                qs: "15 Questions",
                 time: "30 Mins",
                 color: "#F59E0B",
                 icon: Target,
@@ -755,13 +757,23 @@ function StudentDashboard() {
               },
               {
                 id: "technical",
-                title: "Technical Stack",
-                desc: "Resume & Tech Stack with AI Alex",
-                qs: "25 Questions",
-                time: "45 Mins",
+                title: "Technical Practice",
+                desc: "Resume & Interview Key Technical Questions",
+                qs: "20 Questions",
+                time: "100 Marks",
+                color: "#F97316",
+                icon: Zap,
+                badge: "Targeted",
+              },
+              {
+                id: "project",
+                title: "Project / Resume",
+                desc: "Deep Resume & Project Scenario Questions",
+                qs: "Resume Based",
+                time: "Individual Practice",
                 color: "#3B82F6",
-                icon: BrainCircuit,
-                badge: "AI Voice & Text",
+                icon: Layers,
+                badge: "Coming Soon",
               },
               {
                 id: "coding",
@@ -788,7 +800,15 @@ function StudentDashboard() {
               return (
                 <motion.div
                   key={round.id}
-                  onClick={() => handleStartInterviewSession(round.id)}
+                  onClick={() => {
+                    if (round.id === "technical") {
+                      setIsTechModalOpen(true);
+                    } else if (round.id === "project") {
+                      toast("Individual Project Practice is Coming Soon! Try Individual Technical Practice now.", { icon: "🚀" });
+                    } else {
+                      navigate("/interview-practice");
+                    }
+                  }}
                   whileHover={{ y: -3, boxShadow: "0 10px 25px -5px rgba(0,0,0,0.15)" }}
                   whileTap={{ y: 0 }}
                   className="bg-[var(--card-bg)] border border-[var(--border)] rounded-[24px] p-5 shadow-[var(--shadow-sm)] flex flex-col justify-between cursor-pointer group transition-all"
@@ -830,7 +850,7 @@ function StudentDashboard() {
                       {round.qs} • {round.time}
                     </span>
                     <span className="text-xs font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform" style={{ color: round.color }}>
-                      Start <ArrowRight className="w-3.5 h-3.5" />
+                      {round.id === "project" ? "Coming Soon" : "Start"} <ArrowRight className="w-3.5 h-3.5" />
                     </span>
                   </div>
                 </motion.div>
@@ -1431,6 +1451,15 @@ function StudentDashboard() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Individual Technical Start Modal */}
+      <IndividualTechnicalStartModal
+        isOpen={isTechModalOpen}
+        onClose={() => setIsTechModalOpen(false)}
+        onStartSuccess={(sessionId) => {
+          navigate(`/individual-practice/technical/${sessionId}`);
+        }}
+      />
     </div>
   );
 }

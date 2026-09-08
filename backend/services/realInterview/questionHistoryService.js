@@ -1,10 +1,15 @@
 import RealInterviewQuestionHistory from "../../models/RealInterviewQuestionHistory.js";
+import IndividualTechnicalSession from "../../models/IndividualTechnicalSession.js";
+import RealInterviewTechnicalSession from "../../models/RealInterviewTechnicalSession.js";
+import RealInterviewTechnicalQuestion from "../../models/RealInterviewTechnicalQuestion.js";
 
 const COMMON_FILLER_WORDS = new Set([
-  "what", "is", "are", "the", "a", "an", "and", "or", "in", "on", "at", "to", "for", "of", "with",
-  "by", "how", "why", "did", "you", "choose", "select", "use", "using", "implement", "your", "project",
-  "explain", "describe", "difference", "between", "tell", "me", "about", "time", "when", "can", "could",
-  "would", "should", "does", "do", "make", "made", "which", "give", "example", "scenario", "case", "system"
+  "what", "is", "are", "was", "were", "the", "a", "an", "and", "or", "in", "on", "at", "to", "for", "of", "with",
+  "by", "how", "why", "did", "do", "does", "done", "you", "choose", "select", "use", "uses", "used", "using",
+  "implement", "implementation", "your", "project", "explain", "describe", "difference", "different", "differ",
+  "between", "tell", "me", "about", "time", "when", "can", "could", "would", "should", "make", "made", "which",
+  "give", "example", "scenario", "case", "system", "purpose", "role", "work", "works", "working", "benefit",
+  "benefits", "advantage", "advantages", "disadvantage", "disadvantages", "main", "key", "concept", "concepts"
 ]);
 
 /**
@@ -15,9 +20,40 @@ export function normalizeQuestionText(text = "") {
   if (!text || typeof text !== "string") return "";
   return text
     .toLowerCase()
-    .replace(/[^\w\s]/gi, "")
+    .replace(/express\.js/g, "express")
+    .replace(/expressjs/g, "express")
+    .replace(/react\.js/g, "react")
+    .replace(/reactjs/g, "react")
+    .replace(/node\.js/g, "node")
+    .replace(/nodejs/g, "node")
+    .replace(/vue\.js/g, "vue")
+    .replace(/vuejs/g, "vue")
+    .replace(/next\.js/g, "next")
+    .replace(/nextjs/g, "next")
+    .replace(/javascript/g, "js")
+    .replace(/typescript/g, "ts")
+    .replace(/mongodb/g, "mongo")
+    .replace(/postgresql/g, "postgres")
+    .replace(/[^\w\s]/gi, " ")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+/**
+ * Normalizes individual word tokens (stemming plurals).
+ */
+function stemToken(word = "") {
+  let w = word.toLowerCase();
+  if (w === "indexes" || w === "indices") return "index";
+  if (w === "keys") return "key";
+  if (w === "props" || w === "properties") return "prop";
+  if (w === "queries") return "query";
+  if (w === "databases") return "database";
+  if (w === "middlewares") return "middleware";
+  if (w.length > 4 && w.endsWith("s") && !w.endsWith("ss") && !w.endsWith("us") && !w.endsWith("is")) {
+    return w.slice(0, -1);
+  }
+  return w;
 }
 
 /**
@@ -26,15 +62,18 @@ export function normalizeQuestionText(text = "") {
 export function extractContentTokens(text = "") {
   const norm = normalizeQuestionText(text);
   if (!norm) return new Set();
-  const words = norm.split(" ").filter((w) => w.length > 2 && !COMMON_FILLER_WORDS.has(w));
+  const words = norm
+    .split(" ")
+    .map(stemToken)
+    .filter((w) => w.length > 1 && !COMMON_FILLER_WORDS.has(w));
   return new Set(words);
 }
 
 /**
  * Deterministic semantic similarity check using Jaccard token overlap & key term matching.
- * Returns true if two questions are semantically equivalent (e.g. asking the same core question).
+ * Returns true if two questions are semantically equivalent.
  */
-export function isSemanticallyDuplicate(textA, textB, threshold = 0.65) {
+export function isSemanticallyDuplicate(textA, textB, threshold = 0.60) {
   const normA = normalizeQuestionText(textA);
   const normB = normalizeQuestionText(textB);
   if (!normA || !normB) return false;
@@ -57,38 +96,79 @@ export function isSemanticallyDuplicate(textA, textB, threshold = 0.65) {
 
   if (jaccard >= threshold) return true;
 
-  // Substring containment check for short coding problem titles (e.g. "Two Sum" inside "Find Two Numbers With Target Sum")
-  if (setA.size >= 2 && setA.size <= 4 && setB.size >= 2) {
-    let subsetMatchCount = 0;
-    for (const token of setA) {
-      if (setB.has(token)) subsetMatchCount++;
+  // Subset containment check: if all tokens of smaller set are present in larger set (min size 2)
+  const minSize = Math.min(setA.size, setB.size);
+  const smallerSet = setA.size <= setB.size ? setA : setB;
+  const largerSet = setA.size <= setB.size ? setB : setA;
+
+  if (minSize >= 2) {
+    let matchCount = 0;
+    for (const token of smallerSet) {
+      if (largerSet.has(token)) matchCount++;
     }
-    if (subsetMatchCount >= setA.size) return true;
+    if (matchCount === minSize) return true;
   }
 
   return false;
 }
 
 /**
- * Retrieves a Set of normalized questions previously shown to the user in past Real Interviews.
+ * Retrieves a Set of normalized questions previously shown to the user across ALL features:
+ * - RealInterviewQuestionHistory
+ * - IndividualTechnicalSession
+ * - RealInterviewTechnicalQuestion / RealInterviewTechnicalSession
  */
 export async function getUserQuestionHistorySet(userId) {
   if (!userId) return new Set();
 
   try {
+    const historySet = new Set();
+
+    // 1. Query RealInterviewQuestionHistory (centralized history table)
     const records = await RealInterviewQuestionHistory.find({ userId })
       .select("normalizedQuestion questionText")
       .lean();
 
-    const historySet = new Set();
     for (const r of records) {
-      if (r.normalizedQuestion) {
-        historySet.add(r.normalizedQuestion);
-      }
-      if (r.questionText) {
-        historySet.add(r.questionText);
+      if (r.normalizedQuestion) historySet.add(r.normalizedQuestion);
+      if (r.questionText) historySet.add(normalizeQuestionText(r.questionText));
+    }
+
+    // 2. Backfill/Include questions from IndividualTechnicalSession for this user
+    const indSessions = await IndividualTechnicalSession.find({ userId })
+      .select("questions.question")
+      .lean();
+
+    for (const sess of indSessions) {
+      if (Array.isArray(sess.questions)) {
+        for (const q of sess.questions) {
+          if (q.question) {
+            const norm = normalizeQuestionText(q.question);
+            if (norm) historySet.add(norm);
+          }
+        }
       }
     }
+
+    // 3. Backfill/Include questions from RealInterviewTechnicalSession & Questions for this user
+    const realTechSessions = await RealInterviewTechnicalSession.find({ userId })
+      .select("sessionId")
+      .lean();
+
+    if (realTechSessions.length > 0) {
+      const sessionIds = realTechSessions.map((s) => s.sessionId);
+      const realTechQs = await RealInterviewTechnicalQuestion.find({ sessionId: { $in: sessionIds } })
+        .select("question")
+        .lean();
+
+      for (const q of realTechQs) {
+        if (q.question) {
+          const norm = normalizeQuestionText(q.question);
+          if (norm) historySet.add(norm);
+        }
+      }
+    }
+
     return historySet;
   } catch (error) {
     console.error("[QuestionHistoryService] Error fetching user history:", error.message);
@@ -123,9 +203,9 @@ export function isDuplicateQuestion(text = "", userHistorySet = new Set(), curre
 }
 
 /**
- * Persists new questions to the user's Real Interview question history.
+ * Persists new questions to the user's question history.
  */
-export async function recordUserQuestionHistory({ userId, sessionId, round, questions = [] }) {
+export async function recordUserQuestionHistory({ userId, sessionId, round = "technical", questions = [] }) {
   if (!userId || !sessionId || !Array.isArray(questions) || questions.length === 0) {
     return;
   }
