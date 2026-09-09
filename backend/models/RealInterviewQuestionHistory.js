@@ -20,7 +20,7 @@ const realInterviewQuestionHistorySchema = new mongoose.Schema(
     round: {
       type: String,
       required: true,
-      enum: ["aptitude", "technical", "resume_project", "hr", "coding", "individual_technical"],
+      enum: ["aptitude", "technical", "resume_project", "hr", "coding", "individual_technical", "individual_project"],
     },
     questionId: {
       type: String,

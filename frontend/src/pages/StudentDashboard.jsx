@@ -30,6 +30,7 @@ import { SkeletonStudentDashboard, ErrorState } from "../components/ui/Skeleton"
 import AnimatedProgressBar from "../components/ui/AnimatedProgressBar";
 import { CAREER_QUOTES } from "../data/careerQuotes";
 import IndividualTechnicalStartModal from "../components/individualRound/technical/IndividualTechnicalStartModal";
+import IndividualProjectStartModal from "../components/individualRound/project/IndividualProjectStartModal";
 
 /**
  * Circular progress ring component for Placement Readiness.
@@ -92,6 +93,7 @@ function StudentDashboard() {
   const [assignedTests, setAssignedTests] = useState([]);
   const [showInterviewModeModal, setShowInterviewModeModal] = useState(false);
   const [isTechModalOpen, setIsTechModalOpen] = useState(false);
+  const [isProjModalOpen, setIsProjModalOpen] = useState(false);
   const [isStartingInterview, setIsStartingInterview] = useState(false);
 
   // 10-second Quote Auto-Rotator (50 messages, smooth opacity fade only)
@@ -769,11 +771,11 @@ function StudentDashboard() {
                 id: "project",
                 title: "Project / Resume",
                 desc: "Deep Resume & Project Scenario Questions",
-                qs: "Resume Based",
-                time: "Individual Practice",
-                color: "#3B82F6",
+                qs: "10 Questions",
+                time: "100 Marks",
+                color: "#10B981",
                 icon: Layers,
-                badge: "Coming Soon",
+                badge: "Targeted",
               },
               {
                 id: "coding",
@@ -804,7 +806,7 @@ function StudentDashboard() {
                     if (round.id === "technical") {
                       setIsTechModalOpen(true);
                     } else if (round.id === "project") {
-                      toast("Individual Project Practice is Coming Soon! Try Individual Technical Practice now.", { icon: "🚀" });
+                      setIsProjModalOpen(true);
                     } else {
                       navigate("/interview-practice");
                     }
@@ -850,7 +852,7 @@ function StudentDashboard() {
                       {round.qs} • {round.time}
                     </span>
                     <span className="text-xs font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform" style={{ color: round.color }}>
-                      {round.id === "project" ? "Coming Soon" : "Start"} <ArrowRight className="w-3.5 h-3.5" />
+                      Start <ArrowRight className="w-3.5 h-3.5" />
                     </span>
                   </div>
                 </motion.div>
@@ -1458,6 +1460,15 @@ function StudentDashboard() {
         onClose={() => setIsTechModalOpen(false)}
         onStartSuccess={(sessionId) => {
           navigate(`/individual-practice/technical/${sessionId}`);
+        }}
+      />
+
+      {/* Individual Project Start Modal */}
+      <IndividualProjectStartModal
+        isOpen={isProjModalOpen}
+        onClose={() => setIsProjModalOpen(false)}
+        onStartSuccess={(sessionId) => {
+          navigate(`/student/individual-project/practice/${sessionId}`);
         }}
       />
     </div>

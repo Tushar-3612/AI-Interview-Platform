@@ -3,7 +3,7 @@ import { Loader2, AlertCircle, RefreshCw } from "lucide-react";
 import api from "../../utils/api";
 import { getAuthToken } from "../../hooks/useStudentProfile";
 
-function EvaluationLoadingScreen({ sessionId, onCompleted, isIndividualTechnical = false }) {
+function EvaluationLoadingScreen({ sessionId, onCompleted, isIndividualTechnical = false, isIndividualProject = false }) {
   const token = getAuthToken();
   const [errorMsg, setErrorMsg] = useState("");
   const [isRetrying, setIsRetrying] = useState(false);
@@ -16,7 +16,22 @@ function EvaluationLoadingScreen({ sessionId, onCompleted, isIndividualTechnical
       if (!sessionId || isCancelled) return;
       try {
         const headers = { Authorization: `Bearer ${token}` };
-        if (isIndividualTechnical) {
+        if (isIndividualProject) {
+          const { data } = await api.get(`/api/individual/project/result/${sessionId}`, { headers });
+          if (isCancelled) return;
+          if (data && (data.obtainedScore !== undefined || data.result || data.sessionId)) {
+            if (data.status === "EVALUATION_FAILED") {
+              setErrorMsg("AI evaluation encountered a temporary delay.");
+              if (intervalId) clearInterval(intervalId);
+              return;
+            }
+            if (data.obtainedScore !== undefined || data.result) {
+              if (intervalId) clearInterval(intervalId);
+              onCompleted(data.result || data);
+              return;
+            }
+          }
+        } else if (isIndividualTechnical) {
           const { data } = await api.get(`/api/individual/technical/result/${sessionId}`, { headers });
           if (isCancelled) return;
           if (data && (data.obtainedScore !== undefined || data.sessionId)) {
@@ -54,14 +69,16 @@ function EvaluationLoadingScreen({ sessionId, onCompleted, isIndividualTechnical
       isCancelled = true;
       if (intervalId) clearInterval(intervalId);
     };
-  }, [sessionId, token, onCompleted, isIndividualTechnical]);
+  }, [sessionId, token, onCompleted, isIndividualTechnical, isIndividualProject]);
 
   const handleRetry = async () => {
     setIsRetrying(true);
     setErrorMsg("");
     try {
       const headers = { Authorization: `Bearer ${token}` };
-      const endpoint = isIndividualTechnical
+      const endpoint = isIndividualProject
+        ? `/api/individual/project/session/${sessionId}/retry-evaluation`
+        : isIndividualTechnical
         ? `/api/individual/technical/result/${sessionId}/retry`
         : `/api/real-interview/result/${sessionId}/retry`;
       const res = await api.post(endpoint, {}, { headers });

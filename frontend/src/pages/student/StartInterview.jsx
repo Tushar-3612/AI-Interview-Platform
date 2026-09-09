@@ -56,7 +56,10 @@ function SignalRow({ label, on }) {
 /**
  * StartInterview Page Component — Phase 2E Fullscreen + Interview Integrity
  */
-function StartInterview({ isIndividualTechnical: propIsIndividualTechnical = false }) {
+function StartInterview({
+  isIndividualTechnical: propIsIndividualTechnical = false,
+  isIndividualProject: propIsIndividualProject = false,
+}) {
   const { sessionId: paramSessionId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
@@ -66,6 +69,11 @@ function StartInterview({ isIndividualTechnical: propIsIndividualTechnical = fal
     propIsIndividualTechnical ||
     location.pathname.includes("/individual-practice/technical") ||
     routerState.mode === "INDIVIDUAL_TECHNICAL";
+
+  const isIndividualProject =
+    propIsIndividualProject ||
+    location.pathname.includes("/individual-project") ||
+    routerState.mode === "INDIVIDUAL_PROJECT";
 
   const { profile } = useStudentProfile();
   const token = getAuthToken();
@@ -531,7 +539,11 @@ function StartInterview({ isIndividualTechnical: propIsIndividualTechnical = fal
       let storedSessionId = "";
       try {
         storedSessionId = localStorage.getItem(
-          isIndividualTechnical ? "active_individual_technical_session_id" : "active_real_interview_session_id"
+          isIndividualProject
+            ? "active_individual_project_session_id"
+            : isIndividualTechnical
+            ? "active_individual_technical_session_id"
+            : "active_real_interview_session_id"
         ) || "";
       } catch (e) {}
 
@@ -539,6 +551,77 @@ function StartInterview({ isIndividualTechnical: propIsIndividualTechnical = fal
 
       const activeToken = token || getAuthToken();
       const authHeaderOptions = activeToken ? { headers: { Authorization: `Bearer ${activeToken}` } } : {};
+
+      if (isIndividualProject) {
+        if (!targetId || targetId === "undefined" || targetId === "null") {
+          throw new Error("Missing Individual Project session ID");
+        }
+        setSessionId(targetId);
+        sessionIdRef.current = targetId;
+        try {
+          localStorage.setItem("active_individual_project_session_id", targetId);
+        } catch (e) {}
+
+        const { data } = await api.get(`/api/individual/project/session/${targetId}`, authHeaderOptions);
+        const sess = data.session || data;
+
+        const isDbCompleted = sess.status === "COMPLETED";
+        if (isDbCompleted) {
+          setIsCompleted(true);
+          try {
+            localStorage.removeItem("active_individual_project_session_id");
+          } catch (e) {}
+        } else {
+          setIsCompleted(false);
+        }
+
+        setTargetRound("resume_project");
+        setInterviewDurationMin(30);
+
+        const loadedQs = (sess.questions || []).map((q, idx) => ({
+          id: String(q.questionId || `Q-${idx + 1}`),
+          questionId: String(q.questionId || `Q-${idx + 1}`),
+          questionNumber: idx + 1,
+          section: "RESUME_PROJECT",
+          topic: q.topic || "Project Architecture",
+          projectName: q.projectName || "Project",
+          difficulty: q.difficulty || "Medium",
+          type: "project",
+          questionType: "project",
+          category: "resume_project",
+          question: q.question,
+          aiSpeechText: q.question,
+          marks: q.marks || 10,
+        }));
+
+        if (loadedQs.length > 0) {
+          setQuestions(loadedQs);
+        }
+
+        if (sess.answers && Array.isArray(sess.answers)) {
+          const savedAnswersList = sess.answers.map((ans) => ({
+            questionId: String(ans.questionId),
+            questionText: ans.questionText || "",
+            section: "RESUME_PROJECT",
+            answer: ans.candidateAnswer || "",
+            transcript: ans.candidateAnswer || "",
+            inputMethod: ans.inputMethod || "TEXT",
+            status: ans.candidateAnswer ? "answered" : "unanswered",
+          }));
+          setSavedAnswers(savedAnswersList);
+        }
+
+        setCandidateInfo({
+          name: profile?.name || MOCK_CANDIDATE.name,
+          resumeName: profile?.resumeFileName || "Uploaded_Resume.pdf",
+          interviewType: "Project / Resume Practice",
+          difficulty: sess.difficulty || "Medium",
+          totalTimeMinutes: 30,
+        });
+
+        setTimerSeconds(30 * 60);
+        return { isIndividualProject: true, session: sess, generatedQuestions: loadedQs, status: sess.status };
+      }
 
       if (isIndividualTechnical) {
         if (!targetId || targetId === "undefined" || targetId === "null") {
@@ -762,11 +845,35 @@ function StartInterview({ isIndividualTechnical: propIsIndividualTechnical = fal
   // Every progress readout (sidebar, overall, section headers, completion
   // stats) is derived from this one memoized object so no UI shows a
   // different number. Progress = actually-submitted (non-empty) answers only.
-  const SECTION_TOTALS = isIndividualTechnical
+  const SECTION_TOTALS = isIndividualProject
+    ? { RESUME_PROJECT: 10 }
+    : isIndividualTechnical
     ? { TECHNICAL: 20 }
     : { APTITUDE: 15, RESUME_PROJECT: 10, TECHNICAL: 20, CODING: 3, HR: 5 };
 
   const sessionProgress = useMemo(() => {
+    if (isIndividualProject) {
+      const answeredIds = new Set(
+        savedAnswers
+          .filter((a) => a.answer && String(a.answer).trim().length > 0)
+          .map((a) => String(a.questionId))
+      );
+
+      let completedCount = 0;
+      questions.forEach((q) => {
+        const qId = String(q.id || q.questionId);
+        if (answeredIds.has(qId)) {
+          completedCount += 1;
+        }
+      });
+
+      return {
+        RESUME_PROJECT: { completed: completedCount, total: 10 },
+        totalCompleted: completedCount,
+        totalQuestions: 10,
+      };
+    }
+
     if (isIndividualTechnical) {
       const answeredIds = new Set(
         savedAnswers
@@ -893,7 +1000,13 @@ function StartInterview({ isIndividualTechnical: propIsIndividualTechnical = fal
     const currentSessionId = sessionIdRef.current || sessionId;
     if (currentSessionId) {
       try {
-        if (isIndividualTechnical) {
+        if (isIndividualProject) {
+          await api.post(`/api/individual/project/session/${currentSessionId}/answer`, {
+            questionId: qId,
+            candidateAnswer: finalAnswerText,
+            inputMethod: inputMode === "speak" ? "voice" : "text",
+          }, { headers: { Authorization: `Bearer ${token}` } });
+        } else if (isIndividualTechnical) {
           await api.post(`/api/individual/technical/session/${currentSessionId}/answer`, {
             questionId: qId,
             candidateAnswer: finalAnswerText,
@@ -1036,7 +1149,15 @@ function StartInterview({ isIndividualTechnical: propIsIndividualTechnical = fal
 
     if (currentSessionId) {
       try {
-        if (isIndividualTechnical) {
+        if (isIndividualProject) {
+          await api.post(`/api/individual/project/session/${currentSessionId}/submit`, {}, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          try {
+            localStorage.removeItem("active_individual_project_session_id");
+          } catch (e) {}
+          navigate(`/student/individual-project/result/${currentSessionId}`);
+        } else if (isIndividualTechnical) {
           await api.post(`/api/individual/technical/session/${currentSessionId}/submit`, {}, {
             headers: { Authorization: `Bearer ${token}` }
           });
@@ -1056,7 +1177,7 @@ function StartInterview({ isIndividualTechnical: propIsIndividualTechnical = fal
         console.warn("[StartInterview] Submit pipeline notice:", err.message);
       }
     }
-  }, [sessionId, token, handleSaveAnswer, stopSpeechRecognition, isIndividualTechnical, navigate]);
+  }, [sessionId, token, handleSaveAnswer, stopSpeechRecognition, isIndividualTechnical, isIndividualProject, navigate]);
 
   // ─── AUTO-SUBMIT WHEN TIME EXPIRES ───
   useEffect(() => {
@@ -2111,10 +2232,13 @@ function StartInterview({ isIndividualTechnical: propIsIndividualTechnical = fal
       <EvaluationLoadingScreen
         sessionId={currentSessionId}
         isIndividualTechnical={isIndividualTechnical}
+        isIndividualProject={isIndividualProject}
         onCompleted={(resultDoc) => {
           setFinalResultDoc(resultDoc);
           setIsEvaluating(false);
-          if (isIndividualTechnical) {
+          if (isIndividualProject) {
+            navigate(`/student/individual-project/result/${currentSessionId}`);
+          } else if (isIndividualTechnical) {
             navigate(`/individual-practice/technical/result/${currentSessionId}`);
           } else {
             setIsCompleted(true);
@@ -2156,7 +2280,13 @@ function StartInterview({ isIndividualTechnical: propIsIndividualTechnical = fal
           } catch (e) {}
           // Fallback navigation if window.close is blocked by browser policy
           setTimeout(() => {
-            navigate(isIndividualTechnical ? `/individual-practice/technical/result/${activeSessionId}` : "/results");
+            navigate(
+              isIndividualProject
+                ? `/student/individual-project/result/${activeSessionId}`
+                : isIndividualTechnical
+                ? `/individual-practice/technical/result/${activeSessionId}`
+                : "/results"
+            );
           }, 150);
         }}
         onRestartInterview={() => {
@@ -2199,6 +2329,7 @@ function StartInterview({ isIndividualTechnical: propIsIndividualTechnical = fal
         candidateProfile={memoizedCandidateProfile}
         token={token}
         isIndividualTechnical={isIndividualTechnical}
+        isIndividualProject={isIndividualProject}
         onPreparationSuccess={async () => {
           console.log(`[REAL-INTERVIEW] preparation success sessionId=${sessionId}`);
           await fetchSessionData();

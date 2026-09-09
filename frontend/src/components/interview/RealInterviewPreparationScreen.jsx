@@ -118,16 +118,67 @@ const TECHNICAL_PRACTICE_STAGES = [
   },
 ];
 
+const PROJECT_PRACTICE_STAGES = [
+  {
+    id: "resume_project",
+    key: "STAGE_1",
+    title: "Reading your resume / interview key",
+    description: "Reading your resume and project context.",
+    roundKey: null,
+  },
+  {
+    id: "project_analysis",
+    key: "STAGE_2",
+    title: "Analyzing your projects",
+    description: "Analyzing your project architecture, DB schemas, and technical implementation decisions.",
+    roundKey: null,
+  },
+  {
+    id: "individual_project_gen",
+    key: "STAGE_3",
+    title: "Preparing project questions",
+    description: "Preparing 10 targeted project practice questions.",
+    roundKey: "RESUME_PROJECT",
+    failedMessage: "Unable to prepare your Project Practice questions.",
+  },
+  {
+    id: "difficulty_check",
+    key: "STAGE_4",
+    title: "Checking question difficulty",
+    description: "Validating question difficulty distribution.",
+    roundKey: null,
+  },
+  {
+    id: "uniqueness_check",
+    key: "STAGE_5",
+    title: "Checking question uniqueness",
+    description: "Ensuring question uniqueness against previous practice sessions.",
+    roundKey: null,
+  },
+  {
+    id: "finalizing_project",
+    key: "STAGE_6",
+    title: "Finalizing project practice",
+    description: "Verifying your 10-question project practice session.",
+    roundKey: null,
+  },
+];
+
 export default function RealInterviewPreparationScreen({
   sessionId,
   candidateProfile = {},
   token,
   isIndividualTechnical = false,
+  isIndividualProject = false,
   onPreparationSuccess,
   onReturnToPlatform,
   onPracticeMock,
 }) {
-  const activeStages = isIndividualTechnical ? TECHNICAL_PRACTICE_STAGES : PREPARATION_STAGES;
+  const activeStages = isIndividualProject
+    ? PROJECT_PRACTICE_STAGES
+    : isIndividualTechnical
+    ? TECHNICAL_PRACTICE_STAGES
+    : PREPARATION_STAGES;
 
   // Stage States: 'pending' | 'in_progress' | 'completed' | 'failed'
   const [stageStatuses, setStageStatuses] = useState(() =>
@@ -159,6 +210,9 @@ export default function RealInterviewPreparationScreen({
 
   // Friendly Error Mapper
   const mapApiErrorToFriendlyMessage = (error) => {
+    if (isIndividualProject) {
+      return "Please retry the project preparation. Your existing session will be preserved.";
+    }
     if (!error?.response) {
       return "We couldn't connect to the interview service. Please check your connection and try again.";
     }
@@ -198,14 +252,14 @@ export default function RealInterviewPreparationScreen({
 
     console.log(`[PREP] stage=${stage.id} START sessionId=${sessionId ? `${sessionId.slice(0, 6)}...` : "NONE"}`);
 
-    if (stage.id === "resume") {
-      await delay(1000);
+    if (stage.id === "resume" || stage.id === "resume_project" || stage.id === "project_analysis") {
+      await delay(800);
       console.log(`[PREP] stage=${stage.id} COMPLETE`);
       return true;
     }
 
-    if (stage.id === "tech_profile" || stage.id === "topics") {
-      await delay(800);
+    if (stage.id === "tech_profile" || stage.id === "topics" || stage.id === "difficulty_check" || stage.id === "uniqueness_check") {
+      await delay(600);
       console.log(`[PREP] stage=${stage.id} COMPLETE`);
       return true;
     }
@@ -231,6 +285,35 @@ export default function RealInterviewPreparationScreen({
       }
       await delay(800);
       console.log(`[PREP] stage=${stage.id} COMPLETE - 20 technical questions validated`);
+      return true;
+    }
+
+    if (stage.id === "individual_project_gen") {
+      console.log(`[PREP] round=individual_project_gen sessionIdPresent=${Boolean(sessionId)}`);
+      const res = await api.get(`/api/individual/project/session/${sessionId}`, { headers });
+      const sess = res.data?.session;
+      if (!sess || !Array.isArray(sess.questions) || sess.questions.length === 0) {
+        throw new Error("Failed to prepare 10 project questions for this session.");
+      }
+      await delay(1000);
+      console.log(`[PREP] stage=${stage.id} COMPLETE`);
+      return true;
+    }
+
+    if (stage.id === "finalizing_project") {
+      const res = await api.get(`/api/individual/project/session/${sessionId}`, { headers });
+      const sess = res.data?.session;
+      const qs = sess?.questions || [];
+      if (!sess || !Array.isArray(qs) || qs.length !== 10) {
+        throw new Error(`Project practice session validation failed. Expected 10 questions, got ${qs.length}.`);
+      }
+      // Verify all questions belong to project/resume scope
+      const hasInvalidQs = qs.some((q) => !q.question || String(q.question).trim().length === 0);
+      if (hasInvalidQs) {
+        throw new Error("Project practice question validation failed: empty or malformed questions detected.");
+      }
+      await delay(800);
+      console.log(`[PREP] stage=${stage.id} COMPLETE - 10 project questions validated`);
       return true;
     }
 
@@ -341,8 +424,8 @@ export default function RealInterviewPreparationScreen({
     setFailedStageId(null);
     setFriendlyErrorMessage("");
 
-    for (let i = 0; i < PREPARATION_STAGES.length; i++) {
-      const stage = PREPARATION_STAGES[i];
+    for (let i = 0; i < activeStages.length; i++) {
+      const stage = activeStages[i];
 
       // Skip already completed stages (used for Retry idempotency)
       if (completedStagesRef.current.has(stage.id)) {
@@ -379,7 +462,7 @@ export default function RealInterviewPreparationScreen({
     preparedSessionIdRef.current = sessionId;
     setIsPreparationComplete(true);
     isRunningRef.current = false;
-  }, [sessionId, token]);
+  }, [sessionId, token, activeStages]);
 
   useEffect(() => {
     executePreparationSequence();
@@ -397,7 +480,7 @@ export default function RealInterviewPreparationScreen({
 
   // Calculate Progress Percentage
   const completedCount = Object.values(stageStatuses).filter((s) => s === "completed").length;
-  const progressPercentage = Math.round((completedCount / PREPARATION_STAGES.length) * 100);
+  const progressPercentage = Math.round((completedCount / activeStages.length) * 100);
 
   // Handle Retry
   const handleRetry = () => {
@@ -417,7 +500,7 @@ export default function RealInterviewPreparationScreen({
   };
 
   // Current active stage
-  const currentStage = PREPARATION_STAGES[currentStageIndex];
+  const currentStage = activeStages[currentStageIndex];
 
   return (
     <div className="min-h-screen bg-[#0B0F19] text-white flex flex-col items-center justify-center p-6 relative overflow-hidden select-none">
@@ -431,20 +514,46 @@ export default function RealInterviewPreparationScreen({
         <div className="text-center space-y-3">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold tracking-wider uppercase">
             <Sparkles className="w-3.5 h-3.5" />
-            AI Real Interview Platform
+            {isIndividualProject
+              ? "Project Practice"
+              : isIndividualTechnical
+              ? "Technical Practice"
+              : "AI Real Interview Platform"}
           </div>
           <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
             {failedStageId
-              ? "INTERVIEW PREPARATION PAUSED"
+              ? isIndividualProject
+                ? "PROJECT PRACTICE PREPARATION PAUSED"
+                : isIndividualTechnical
+                ? "TECHNICAL PRACTICE PREPARATION PAUSED"
+                : "INTERVIEW PREPARATION PAUSED"
               : isPreparationComplete
-              ? "Your Interview is Ready"
+              ? isIndividualProject
+                ? "Your Project Practice is Ready"
+                : isIndividualTechnical
+                ? "Your Technical Practice is Ready"
+                : "Your Interview is Ready"
+              : isIndividualProject
+              ? "Preparing Your Project Practice..."
+              : isIndividualTechnical
+              ? "Preparing Your Technical Practice..."
               : "Preparing Your Interview..."}
           </h1>
           <p className="text-sm md:text-base text-slate-400 max-w-xl mx-auto">
             {failedStageId
-              ? "We couldn't complete your interview preparation at this time."
+              ? isIndividualProject
+                ? "Please retry the project preparation. Your existing session will be preserved."
+                : isIndividualTechnical
+                ? "We couldn't complete your Technical Practice preparation at this time."
+                : "We couldn't complete your interview preparation at this time."
               : isPreparationComplete
-              ? "Your personalized multi-round AI assessment has been fully assembled."
+              ? isIndividualProject
+                ? "Your personalized 10-question Project Practice session is ready."
+                : isIndividualTechnical
+                ? "Your personalized 20-question Technical Practice session is ready."
+                : "Your personalized multi-round AI assessment has been fully assembled."
+              : isIndividualProject
+              ? "Analyzing your projects and preparing a personalized project interview."
               : currentStage?.description || "Personalizing your interview from your profile."}
           </p>
         </div>
@@ -472,7 +581,7 @@ export default function RealInterviewPreparationScreen({
 
           {/* Stages Checklist */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
-            {PREPARATION_STAGES.map((stage) => {
+            {activeStages.map((stage) => {
               const status = stageStatuses[stage.id];
               const isCurrent = stage.id === currentStage?.id && status === "in_progress";
               const isFailed = status === "failed";
@@ -529,8 +638,10 @@ export default function RealInterviewPreparationScreen({
             >
               <div className="flex items-center gap-2 font-bold text-red-400">
                 <AlertCircle className="w-4 h-4 shrink-0" />
-                {PREPARATION_STAGES.find((s) => s.id === failedStageId)?.failedMessage ||
-                  "Interview preparation encountered an issue."}
+                {activeStages.find((s) => s.id === failedStageId)?.failedMessage ||
+                  (isIndividualProject
+                    ? "Project Practice couldn't be prepared"
+                    : "Interview preparation encountered an issue.")}
               </div>
               <p className="text-slate-300 text-xs">{friendlyErrorMessage}</p>
               <p className="text-slate-400 text-xs">We're sorry for the interruption. Please try again.</p>
@@ -545,7 +656,11 @@ export default function RealInterviewPreparationScreen({
                 onClick={onPreparationSuccess}
                 className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-500 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-sm tracking-wide shadow-xl shadow-blue-500/20 flex items-center justify-center gap-2 transition-all transform active:scale-95 cursor-pointer"
               >
-                ENTER INTERVIEW
+                {isIndividualProject
+                  ? "START PROJECT PRACTICE"
+                  : isIndividualTechnical
+                  ? "START TECHNICAL PRACTICE"
+                  : "ENTER INTERVIEW"}
                 <ArrowRight className="w-4 h-4" />
               </button>
             )}
@@ -589,7 +704,7 @@ export default function RealInterviewPreparationScreen({
                   Help Us Improve Your Interview Experience
                 </h3>
                 <p className="text-xs text-slate-400 leading-relaxed">
-                  We're sorry that your interview could not be completed. Your feedback helps us identify and improve the issue.
+                  We're sorry that your session could not be completed. Your feedback helps us identify and improve the issue.
                 </p>
               </div>
 
@@ -602,9 +717,9 @@ export default function RealInterviewPreparationScreen({
                     onChange={(e) => setFeedbackForm({ ...feedbackForm, issueType: e.target.value })}
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-blue-500"
                   >
-                    <option value="Interview did not start">Interview did not start</option>
+                    <option value="Session did not start">Session did not start</option>
                     <option value="Question generation failed">Question generation failed</option>
-                    <option value="Interview stopped unexpectedly">Interview stopped unexpectedly</option>
+                    <option value="Session stopped unexpectedly">Session stopped unexpectedly</option>
                     <option value="Technical issue">Technical issue</option>
                     <option value="Other">Other</option>
                   </select>
@@ -618,7 +733,7 @@ export default function RealInterviewPreparationScreen({
                     onChange={(e) => setFeedbackForm({ ...feedbackForm, failedStage: e.target.value })}
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-blue-500"
                   >
-                    {PREPARATION_STAGES.map((s) => (
+                    {activeStages.map((s) => (
                       <option key={s.id} value={s.title}>
                         {s.title}
                       </option>

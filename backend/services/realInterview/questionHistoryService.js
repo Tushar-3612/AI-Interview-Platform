@@ -1,5 +1,6 @@
 import RealInterviewQuestionHistory from "../../models/RealInterviewQuestionHistory.js";
 import IndividualTechnicalSession from "../../models/IndividualTechnicalSession.js";
+import IndividualProjectSession from "../../models/IndividualProjectSession.js";
 import RealInterviewTechnicalSession from "../../models/RealInterviewTechnicalSession.js";
 import RealInterviewTechnicalQuestion from "../../models/RealInterviewTechnicalQuestion.js";
 
@@ -140,6 +141,22 @@ export async function getUserQuestionHistorySet(userId) {
       .lean();
 
     for (const sess of indSessions) {
+      if (Array.isArray(sess.questions)) {
+        for (const q of sess.questions) {
+          if (q.question) {
+            const norm = normalizeQuestionText(q.question);
+            if (norm) historySet.add(norm);
+          }
+        }
+      }
+    }
+
+    // 2b. Backfill/Include questions from IndividualProjectSession for this user
+    const indProjSessions = await IndividualProjectSession.find({ userId })
+      .select("questions.question")
+      .lean();
+
+    for (const sess of indProjSessions) {
       if (Array.isArray(sess.questions)) {
         for (const q of sess.questions) {
           if (q.question) {
