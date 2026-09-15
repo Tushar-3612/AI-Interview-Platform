@@ -19,15 +19,20 @@ function EvaluationLoadingScreen({ sessionId, onCompleted, isIndividualTechnical
         if (isIndividualProject) {
           const { data } = await api.get(`/api/individual/project/result/${sessionId}`, { headers });
           if (isCancelled) return;
-          if (data && (data.obtainedScore !== undefined || data.result || data.sessionId)) {
-            if (data.status === "EVALUATION_FAILED") {
+          const resDoc = data?.result || data;
+          if (resDoc) {
+            if (resDoc.status === "EVALUATION_FAILED") {
               setErrorMsg("AI evaluation encountered a temporary delay.");
               if (intervalId) clearInterval(intervalId);
               return;
             }
-            if (data.obtainedScore !== undefined || data.result) {
+            if (resDoc.status === "CALCULATING" || resDoc.status === "IN_PROGRESS") {
+              // Still calculating — continue polling
+              return;
+            }
+            if (resDoc.obtainedScore !== undefined || resDoc.percentage !== undefined) {
               if (intervalId) clearInterval(intervalId);
-              onCompleted(data.result || data);
+              onCompleted(resDoc);
               return;
             }
           }
@@ -140,8 +145,14 @@ function EvaluationLoadingScreen({ sessionId, onCompleted, isIndividualTechnical
           <Loader2 className="w-7 h-7 animate-spin" />
         </div>
         <div className="space-y-1">
-          <h2 className="text-lg font-bold text-white uppercase tracking-wider">Calculating Real Interview Result</h2>
-          <p className="text-xs text-slate-400">Evaluating round responses from MongoDB...</p>
+          <h2 className="text-lg font-bold text-white uppercase tracking-wider">
+            {isIndividualProject
+              ? "Calculating Project Interview Result"
+              : isIndividualTechnical
+              ? "Calculating Technical Practice Result"
+              : "Calculating Real Interview Result"}
+          </h2>
+          <p className="text-xs text-slate-400">Evaluating practice responses from MongoDB...</p>
         </div>
       </div>
     </div>

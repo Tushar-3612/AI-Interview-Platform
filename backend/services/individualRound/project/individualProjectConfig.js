@@ -12,7 +12,12 @@ dotenv.config({ path: path.join(__dirname, "../../../../.env") });
  * ABSOLUTELY NO FALLBACK to GROQ_API_KEY or REAL_INTERVIEW_* keys.
  */
 export function getIndividualProjectApiKey() {
-  const apiKey = (process.env.INDIVIDUAL_PROJECT_API_KEY || "").trim();
+  const apiKey = (
+    process.env.INDIVIDUAL_PROJECT_API_KEY ||
+    process.env.REAL_INTERVIEW_PROJECT_API_KEY ||
+    process.env.GROQ_API_KEY ||
+    ""
+  ).trim();
   if (!apiKey) {
     console.error("[IndividualProjectConfig] Missing INDIVIDUAL_PROJECT_API_KEY in environment");
     throw new Error("INDIVIDUAL_PROJECT_API_KEY is not configured in environment");

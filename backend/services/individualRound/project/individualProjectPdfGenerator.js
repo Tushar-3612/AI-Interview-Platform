@@ -1,16 +1,35 @@
 import PDFDocument from "pdfkit";
+import fs from "fs";
+import path from "path";
+
+/**
+ * Resolves the path to the official Prephire logo asset in the repository.
+ */
+function getPrephireLogoPath() {
+  const possiblePaths = [
+    path.resolve(process.cwd(), "frontend/public/images/logo.png"),
+    path.resolve(process.cwd(), "../frontend/public/images/logo.png"),
+    path.resolve(process.cwd(), "public/images/logo.png"),
+  ];
+  for (const p of possiblePaths) {
+    if (fs.existsSync(p)) return p;
+  }
+  return null;
+}
 
 /**
  * Generates a professional, text-based PDF report for Individual Project / Resume Practice.
  * Strictly uses persisted database result/session data (ZERO AI calls executed).
+ * Follows the locked Prephire Black + Orange visual identity.
  */
 export function generateIndividualProjectReportPDF({ result, session, user, res }) {
   const doc = new PDFDocument({
     size: "A4",
+    bufferPages: true, // CRITICAL: Enables doc.bufferedPageRange() and doc.switchToPage()
     margins: { top: 40, bottom: 50, left: 40, right: 40 },
     info: {
       Title: `Individual Project Practice Report - ${user?.name || "Student"}`,
-      Author: "AI Interview Platform",
+      Author: "Prephire AI Interview Platform",
       Subject: "Individual Project Assessment Report",
     },
   });
@@ -22,7 +41,7 @@ export function generateIndividualProjectReportPDF({ result, session, user, res 
   res.setHeader("Content-Disposition", `attachment; filename="${safeFileName}"`);
   doc.pipe(res);
 
-  // --- BRAND COLORS ---
+  // --- PREPHIRE LOCKED BRAND COLORS ---
   const COLOR_BRAND = "#f97316"; // Prephire Orange
   const COLOR_PRIMARY = "#0f172a"; // Dark Slate
   const COLOR_TEXT = "#334155";
@@ -35,14 +54,26 @@ export function generateIndividualProjectReportPDF({ result, session, user, res 
 
   let y = 40;
 
-  // --- HEADER ---
-  doc.fontSize(20).font("Helvetica-Bold").fillColor(COLOR_BRAND).text("AI INTERVIEW PLATFORM", 40, y);
-  doc.fontSize(10).font("Helvetica").fillColor(COLOR_MUTED).text("Individual Project / Resume Practice Report", 40, y + 24);
+  // --- HEADER & PREPHIRE LOGO ---
+  const logoPath = getPrephireLogoPath();
+  if (logoPath) {
+    try {
+      doc.image(logoPath, 40, y, { width: 32, height: 32 });
+      doc.fontSize(18).font("Helvetica-Bold").fillColor(COLOR_BRAND).text("PREPHIRE AI", 80, y + 2);
+      doc.fontSize(9).font("Helvetica").fillColor(COLOR_MUTED).text("Individual Project / Resume Practice Report", 80, y + 20);
+    } catch (e) {
+      doc.fontSize(20).font("Helvetica-Bold").fillColor(COLOR_BRAND).text("PREPHIRE AI", 40, y);
+      doc.fontSize(10).font("Helvetica").fillColor(COLOR_MUTED).text("Individual Project / Resume Practice Report", 40, y + 24);
+    }
+  } else {
+    doc.fontSize(20).font("Helvetica-Bold").fillColor(COLOR_BRAND).text("PREPHIRE AI", 40, y);
+    doc.fontSize(10).font("Helvetica").fillColor(COLOR_MUTED).text("Individual Project / Resume Practice Report", 40, y + 24);
+  }
 
   doc.fontSize(9).font("Helvetica-Bold").fillColor(COLOR_PRIMARY).text("PERFORMANCE REPORT", 400, y, { align: "right" });
   doc.fontSize(8).font("Helvetica").fillColor(COLOR_MUTED).text(`Date: ${new Date(result.createdAt || Date.now()).toLocaleDateString()}`, 400, y + 14, { align: "right" });
   
-  y += 42;
+  y += 44;
   doc.moveTo(40, y).lineTo(555, y).strokeColor(COLOR_BORDER).stroke();
   y += 15;
 
@@ -56,10 +87,10 @@ export function generateIndividualProjectReportPDF({ result, session, user, res 
   metaY += 14;
 
   doc.font("Helvetica-Bold").text(`Practice Type: `, 48, metaY, { continued: true }).font("Helvetica").text("Individual Project / Resume Practice");
-  doc.font("Helvetica-Bold").text(`Source Mode: `, 300, metaY, { continued: true }).font("Helvetica").text(session.sourceMode || "RESUME");
+  doc.font("Helvetica-Bold").text(`Source Mode: `, 300, metaY, { continued: true }).font("Helvetica").text(session.sourceMode === "INTERVIEW_KEY" ? "Interview Key" : "Your Resume");
   metaY += 14;
 
-  doc.font("Helvetica-Bold").text(`Difficulty Mode: `, 48, metaY, { continued: true }).font("Helvetica").text(session.difficulty || "Mixed");
+  doc.font("Helvetica-Bold").text(`Difficulty Mode: `, 48, metaY, { continued: true }).font("Helvetica").text(session.difficulty || result.difficulty || "Mixed");
   doc.font("Helvetica-Bold").text(`Total Questions: `, 300, metaY, { continued: true }).font("Helvetica").text("10 Project Questions");
   
   y += 78;
@@ -73,9 +104,9 @@ export function generateIndividualProjectReportPDF({ result, session, user, res 
   const performanceStatus = result.performanceStatus || "NOT ASSESSED";
 
   let statusBadgeColor = COLOR_MUTED;
-  if (performanceStatus === "Strong Performance") statusBadgeColor = COLOR_GREEN;
-  else if (performanceStatus === "Developing") statusBadgeColor = COLOR_AMBER;
-  else if (performanceStatus === "Needs Significant Improvement") statusBadgeColor = COLOR_RED;
+  if (performanceStatus === "STRONG" || performanceStatus === "Strong Performance") statusBadgeColor = COLOR_GREEN;
+  else if (performanceStatus === "DEVELOPING") statusBadgeColor = COLOR_AMBER;
+  else if (performanceStatus === "NEEDS IMPROVEMENT" || performanceStatus === "Needs Significant Improvement") statusBadgeColor = COLOR_RED;
 
   doc.rect(40, y, 515, 75).fillAndStroke(COLOR_BG_LIGHT, COLOR_BORDER);
 
@@ -145,7 +176,7 @@ export function generateIndividualProjectReportPDF({ result, session, user, res 
     const projName = qItem.projectName || "Project";
     const rawScore = Number(qItem.rawScore || 0);
     const rawMax = Number(qItem.rawMaxScore || 10);
-    const candidateAns = qItem.candidateAnswer || "(No answer provided)";
+    const candidateAns = qItem.attempted ? (qItem.candidateAnswer || "(No answer provided)") : "NOT ATTEMPTED";
     const feedbackText = qItem.feedback || "";
     const improvedAns = qItem.improvedAnswer || "";
 
@@ -165,7 +196,7 @@ export function generateIndividualProjectReportPDF({ result, session, user, res 
     doc.fillColor(COLOR_MUTED).fontSize(8).font("Helvetica-Bold").text("Candidate Answer:", 44, y);
     y += 10;
 
-    const isAnsEmpty = candidateAns === "(No answer provided)" || !qItem.attempted;
+    const isAnsEmpty = candidateAns === "NOT ATTEMPTED" || candidateAns === "(No answer provided)" || !qItem.attempted;
     doc.fillColor(isAnsEmpty ? COLOR_RED : COLOR_TEXT)
        .fontSize(8)
        .font(isAnsEmpty ? "Helvetica-Oblique" : "Helvetica")
@@ -174,14 +205,14 @@ export function generateIndividualProjectReportPDF({ result, session, user, res 
     y += doc.heightOfString(candidateAns, { width: 505 }) + 8;
 
     // Evaluation & Feedback Box
-    if (feedbackText) {
+    if (feedbackText && qItem.attempted) {
       doc.fillColor(COLOR_BRAND).fontSize(8).font("Helvetica-Bold").text("Evaluator Feedback:", 44, y);
       y += 10;
       doc.fillColor(COLOR_TEXT).fontSize(8).font("Helvetica").text(feedbackText, 44, y, { width: 505 });
       y += doc.heightOfString(feedbackText, { width: 505 }) + 6;
     }
 
-    if (Array.isArray(qItem.missingPoints) && qItem.missingPoints.length > 0) {
+    if (Array.isArray(qItem.missingPoints) && qItem.missingPoints.length > 0 && qItem.attempted) {
       doc.fillColor(COLOR_AMBER).fontSize(8).font("Helvetica-Bold").text("Missing Key Concepts:", 44, y);
       y += 10;
       qItem.missingPoints.forEach((mp) => {

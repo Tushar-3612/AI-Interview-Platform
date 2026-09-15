@@ -91,10 +91,12 @@ export async function submitProjectSessionHandler(req, res) {
     const userId = req.user?.id || req.user?._id;
     const { sessionId } = req.params;
 
+    console.log(`[IndividualProjectEvaluation] submitReceived=true sessionId=${sessionId} userIdPresent=${Boolean(userId)}`);
+
     const result = await submitIndividualProjectSession({ userId, sessionId });
     return res.status(200).json({ success: true, result });
   } catch (error) {
-    console.error("[IndividualProjectController] Submit error:", error.message);
+    console.error(`[IndividualProjectEvaluation] submitControllerError=true sessionId=${req.params.sessionId} error=${error.message}`);
     return res.status(500).json({ success: false, message: error.message });
   }
 }
@@ -107,9 +109,12 @@ export async function retryProjectEvaluationHandler(req, res) {
     const userId = req.user?.id || req.user?._id;
     const { sessionId } = req.params;
 
+    console.log(`[IndividualProjectEvaluation] retryControllerReceived=true sessionId=${sessionId}`);
+
     const result = await retryIndividualProjectEvaluation({ userId, sessionId });
     return res.status(200).json({ success: true, result });
   } catch (error) {
+    console.error(`[IndividualProjectEvaluation] retryControllerError=true sessionId=${req.params.sessionId} error=${error.message}`);
     return res.status(500).json({ success: false, message: error.message });
   }
 }
@@ -125,6 +130,7 @@ export async function getProjectResultHandler(req, res) {
     const result = await getIndividualProjectResult({ userId, sessionId });
     return res.status(200).json({ success: true, result });
   } catch (error) {
+    console.warn(`[IndividualProjectEvaluation] getResultControllerNotFound=true sessionId=${req.params.sessionId} message=${error.message}`);
     return res.status(404).json({ success: false, message: error.message });
   }
 }
@@ -143,16 +149,26 @@ export async function downloadProjectPdfHandler(req, res) {
     }
 
     const session = await IndividualProjectSession.findOne({ userId, sessionId }).lean();
-    const user = await User.findById(userId).lean();
+    let user = null;
+    if (userId) {
+      try {
+        user = await User.findById(userId).lean();
+      } catch (uErr) {
+        console.warn("[IndividualProjectController] User lookup warning:", uErr.message);
+      }
+    }
 
     generateIndividualProjectReportPDF({
       result,
       session: session || { sessionId },
-      user,
+      user: user || { name: req.user?.name || "Student" },
       res,
     });
   } catch (error) {
-    console.error("[IndividualProjectController] PDF download error:", error.message);
-    return res.status(500).json({ success: false, message: "Failed to generate PDF report" });
+    console.error("[IndividualProjectController] PDF download error:", error);
+    if (!res.headersSent) {
+      return res.status(500).json({ success: false, message: "Failed to generate PDF report" });
+    }
   }
 }
+

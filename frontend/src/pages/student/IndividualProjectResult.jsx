@@ -9,16 +9,17 @@ import {
   ArrowLeft,
   RotateCcw,
   Sparkles,
-  FolderGit2,
   ChevronLeft,
   ChevronRight,
   BookOpen,
   Award,
   Download,
+  FolderGit2,
 } from "lucide-react";
 import api from "../../utils/api";
 import { getAuthToken } from "../../hooks/useStudentProfile";
 import toast from "react-hot-toast";
+import EvaluationLoadingScreen from "../../components/interview/EvaluationLoadingScreen";
 
 export default function IndividualProjectResult() {
   const { sessionId } = useParams();
@@ -110,53 +111,79 @@ export default function IndividualProjectResult() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-950 text-white flex flex-col items-center justify-center p-6">
-        <div className="w-12 h-12 border-4 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin mb-4" />
-        <p className="text-gray-400 font-medium">Loading Project Result...</p>
+      <div className="min-h-screen bg-gray-950 text-white flex flex-col items-center justify-center space-y-4 font-sans select-none">
+        <FolderGit2 className="w-10 h-10 text-orange-500 animate-bounce" />
+        <p className="text-sm font-bold text-gray-400">Loading Project Practice Report...</p>
       </div>
+    );
+  }
+
+  if (result?.status === "CALCULATING" || result?.status === "IN_PROGRESS") {
+    return (
+      <EvaluationLoadingScreen
+        sessionId={sessionId}
+        isIndividualProject={true}
+        onCompleted={(completedData) => {
+          setResult(completedData);
+        }}
+      />
     );
   }
 
   if (error || result?.status === "EVALUATION_FAILED") {
     return (
-      <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center p-6">
-        <div className="max-w-md w-full bg-gray-900 border border-gray-800 rounded-3xl p-8 text-center space-y-6 shadow-2xl">
-          <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center mx-auto">
-            <AlertCircle className="w-8 h-8" />
-          </div>
-          <div>
-            <h2 className="text-xl font-extrabold">Evaluation Unavailable</h2>
-            <p className="text-sm text-gray-400 mt-2">{error || "AI Evaluation requires a retry."}</p>
-          </div>
-          <div className="flex gap-3">
-            <button
-              onClick={() => navigate("/practice")}
-              className="flex-1 py-3 rounded-xl bg-gray-800 hover:bg-gray-700 font-semibold text-sm transition"
-            >
-              Back to Dashboard
-            </button>
-            <button
-              onClick={handleRetryEvaluation}
-              disabled={retrying}
-              className="flex-1 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 font-semibold text-sm transition flex items-center justify-center gap-2"
-            >
-              <RotateCcw className={`w-4 h-4 ${retrying ? "animate-spin" : ""}`} />
-              <span>Retry Evaluation</span>
-            </button>
-          </div>
+      <div className="min-h-screen bg-gray-950 text-white flex flex-col items-center justify-center p-6 text-center space-y-4 font-sans select-none">
+        <AlertCircle className="w-12 h-12 text-red-500" />
+        <h2 className="text-xl font-bold">Result Unavailable</h2>
+        <p className="text-sm text-gray-400 max-w-md">{error || "AI Evaluation encountered an error or requires a retry."}</p>
+
+        <div className="flex gap-3">
+          <button
+            onClick={handleRetryEvaluation}
+            disabled={retrying}
+            className="px-5 py-2.5 rounded-xl bg-orange-500 text-white font-bold text-xs uppercase cursor-pointer hover:bg-orange-600 disabled:opacity-50 flex items-center gap-2"
+          >
+            <RotateCcw className={`w-4 h-4 ${retrying ? "animate-spin" : ""}`} />
+            <span>{retrying ? "Evaluating..." : "Retry Evaluation"}</span>
+          </button>
+          <button
+            onClick={() => navigate("/interview-practice")}
+            className="px-5 py-2.5 rounded-xl bg-gray-800 text-gray-300 font-bold text-xs uppercase cursor-pointer hover:bg-gray-700"
+          >
+            Back to Dashboard
+          </button>
         </div>
       </div>
     );
   }
 
   const obtainedScore = Number(result?.obtainedScore || 0);
-  const maxScore = 100;
   const percentage = Number(result?.percentage || 0);
   const attemptedCount = Number(result?.attemptedCount || 0);
   const unattemptedCount = Number(result?.unattemptedCount || Math.max(0, 10 - attemptedCount));
-  const performanceStatus = result?.performanceStatus || "NOT ASSESSED";
-  const questionResults = Array.isArray(result?.questionResults) ? result.questionResults : [];
 
+  // Performance Status Badge Config — Exact match with IndividualTechnicalResult
+  let rawStatus = result?.performanceStatus || "NOT ASSESSED";
+  if (attemptedCount === 0) {
+    rawStatus = "NOT ASSESSED";
+  } else if (percentage >= 70) {
+    rawStatus = "STRONG";
+  } else if (percentage >= 35) {
+    rawStatus = "DEVELOPING";
+  } else {
+    rawStatus = "NEEDS IMPROVEMENT";
+  }
+
+  let statusBg = "bg-gray-800 text-gray-400 border-gray-700";
+  if (rawStatus === "STRONG" || rawStatus === "Strong Performance") {
+    statusBg = "bg-emerald-500/15 text-emerald-400 border-emerald-500/30";
+  } else if (rawStatus === "DEVELOPING") {
+    statusBg = "bg-amber-500/15 text-amber-400 border-amber-500/30";
+  } else if (rawStatus === "NEEDS IMPROVEMENT" || rawStatus === "Needs Significant Improvement") {
+    statusBg = "bg-red-500/15 text-red-400 border-red-500/30";
+  }
+
+  const questionResults = Array.isArray(result?.questionResults) ? result.questionResults : [];
   const totalPages = Math.ceil(questionResults.length / ITEMS_PER_PAGE) || 1;
   const paginatedQuestions = questionResults.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
@@ -164,176 +191,188 @@ export default function IndividualProjectResult() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-4 sm:p-8 font-sans">
-      <div className="max-w-5xl mx-auto space-y-8">
-        {/* Header Bar */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-gray-800 pb-6">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => navigate("/practice")}
-              className="p-2.5 rounded-2xl bg-gray-900 border border-gray-800 hover:border-gray-700 text-gray-400 hover:text-white transition"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                  Project Round
-                </span>
-                <span className="text-xs text-gray-400">
-                  Difficulty: {result?.difficulty || "Mixed"}
-                </span>
-              </div>
-              <h1 className="text-2xl sm:text-3xl font-black tracking-tight mt-1">
-                Individual Project / Resume Practice Result
-              </h1>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 w-full sm:w-auto">
-            <button
-              onClick={handleDownloadPDF}
-              disabled={downloadingPdf}
-              className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 font-bold text-sm text-white shadow-lg shadow-emerald-500/20 transition cursor-pointer"
-            >
-              <Download className="w-4 h-4" />
-              <span>{downloadingPdf ? "Generating PDF..." : "Download PDF Report"}</span>
-            </button>
+    <div className="min-h-screen bg-gray-950 text-gray-100 font-sans select-none pb-20">
+      {/* ── HEADER (Identical Prephire Technical Result System) ── */}
+      <header className="sticky top-0 z-30 bg-gray-900/90 backdrop-blur-md border-b border-gray-800 px-6 sm:px-12 py-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => navigate("/interview-practice")}
+            className="p-2 rounded-xl bg-gray-800 text-gray-300 hover:text-white transition cursor-pointer"
+          >
+            <ArrowLeft className="w-4 h-4" />
+          </button>
+          <div>
+            <h1 className="text-base sm:text-lg font-black text-white tracking-tight">
+              PROJECT / RESUME PRACTICE RESULT REPORT
+            </h1>
+            <p className="text-[11px] text-gray-400">
+              Session ID: <span className="font-mono text-orange-400">{sessionId}</span>
+            </p>
           </div>
         </div>
 
-        {/* Score & Stat Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Card 1: Score Banner */}
-          <div className="md:col-span-2 bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800/80 border border-gray-800 rounded-3xl p-6 sm:p-8 relative overflow-hidden flex flex-col justify-between space-y-6">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                  Total Performance Score
-                </p>
-                <div className="flex items-baseline gap-2 mt-2">
-                  <span className="text-5xl font-black tracking-tight text-emerald-400">
-                    {obtainedScore}
-                  </span>
-                  <span className="text-xl font-bold text-gray-400">/ 100 Marks</span>
-                </div>
-              </div>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleDownloadPDF}
+            disabled={downloadingPdf}
+            className="px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-white font-bold text-xs uppercase cursor-pointer flex items-center gap-2 border border-gray-700 disabled:opacity-50 transition"
+          >
+            <Download className="w-4 h-4 text-orange-400" />
+            <span>{downloadingPdf ? "Generating PDF..." : "Download PDF"}</span>
+          </button>
 
-              <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center">
-                <Trophy className="w-6 h-6" />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-800 text-center">
-              <div>
-                <p className="text-xs text-gray-400">Percentage</p>
-                <p className="text-lg font-bold text-white mt-0.5">{percentage}%</p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-400">Attempted</p>
-                <p className="text-lg font-bold text-emerald-400 mt-0.5">{attemptedCount} / 10</p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-400">Unattempted</p>
-                <p className="text-lg font-bold text-gray-400 mt-0.5">{unattemptedCount} / 10</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Card 2: Performance Status */}
-          <div className="bg-gray-900 border border-gray-800 rounded-3xl p-6 flex flex-col justify-between space-y-4">
-            <div>
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                Performance Level
-              </p>
-              <h3 className="text-xl font-extrabold text-white mt-2">{performanceStatus}</h3>
-              <p className="text-xs text-gray-400 mt-2">
-                Based on overall project architecture evaluation & solution correctness.
-              </p>
-            </div>
-
-            <div className="p-3.5 rounded-2xl bg-gray-800/50 border border-gray-800 flex items-center gap-3">
-              <Award className="w-5 h-5 text-emerald-400 shrink-0" />
-              <div className="text-xs text-gray-300">
-                10 Deep Project Questions Scored out of 100.
-              </div>
-            </div>
-          </div>
+          <button
+            onClick={() => navigate("/interview-practice")}
+            className="px-4 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs uppercase cursor-pointer shadow-lg shadow-orange-500/20"
+          >
+            New Practice Session
+          </button>
         </div>
+      </header>
 
-        {/* Executive Feedback Section */}
-        {result?.feedback && (
-          <div className="bg-gray-900 border border-gray-800 rounded-3xl p-6 sm:p-8 space-y-6">
-            <div className="flex items-center gap-2 text-emerald-400 font-extrabold">
-              <Sparkles className="w-5 h-5" />
-              <h3 className="text-lg text-white">Executive AI Performance Feedback</h3>
+      {/* ── CONTAINER (Standalone Full-Width max-w-[1600px]) ── */}
+      <main className="w-[94%] max-w-[1600px] mx-auto pt-8 space-y-8">
+        {/* ── METRICS SCORE HERO ── */}
+        <section className="p-6 sm:p-8 rounded-3xl bg-gray-900 border border-gray-800 space-y-6 shadow-2xl">
+          <div className="flex items-center justify-between flex-wrap gap-4 border-b border-gray-800 pb-6">
+            <div className="space-y-1">
+              <span className="text-xs font-black uppercase tracking-wider text-orange-400">
+                OVERALL PROJECT & RESUME PERFORMANCE
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                Score Summary
+              </h2>
             </div>
 
-            {result.feedback.performanceInsight && (
-              <p className="text-sm text-gray-300 leading-relaxed bg-gray-800/40 p-4 rounded-2xl border border-gray-800">
-                {result.feedback.performanceInsight}
+            <div className={`px-4 py-2 rounded-2xl border text-sm font-extrabold ${statusBg}`}>
+              {rawStatus}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="p-5 rounded-2xl bg-gray-950 border border-gray-800 space-y-1">
+              <div className="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Score</div>
+              <div className="text-3xl font-black text-white">
+                {obtainedScore} <span className="text-sm font-bold text-gray-500">/ 100</span>
+              </div>
+            </div>
+
+            <div className="p-5 rounded-2xl bg-gray-950 border border-gray-800 space-y-1">
+              <div className="text-xs font-bold text-gray-400 uppercase tracking-wider">Percentage</div>
+              <div className="text-3xl font-black text-orange-400">
+                {percentage}%
+              </div>
+            </div>
+
+            <div className="p-5 rounded-2xl bg-gray-950 border border-gray-800 space-y-1">
+              <div className="text-xs font-bold text-gray-400 uppercase tracking-wider">Attempted</div>
+              <div className="text-3xl font-black text-emerald-400">
+                {attemptedCount} <span className="text-sm font-bold text-gray-500">/ 10</span>
+              </div>
+            </div>
+
+            <div className="p-5 rounded-2xl bg-gray-950 border border-gray-800 space-y-1">
+              <div className="text-xs font-bold text-gray-400 uppercase tracking-wider">Unattempted</div>
+              <div className="text-3xl font-black text-gray-400">
+                {unattemptedCount} <span className="text-sm font-bold text-gray-500">/ 10</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── EVIDENCE-BASED FEEDBACK SECTION ── */}
+        <section className="p-6 sm:p-8 rounded-3xl bg-gray-900 border border-gray-800 space-y-6 shadow-2xl">
+          <h3 className="text-lg font-black text-white tracking-tight flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-orange-500" />
+            <span>EVIDENCE-BASED EVALUATION FEEDBACK</span>
+          </h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Performance Insight */}
+            <div className="p-5 rounded-2xl bg-gray-950 border border-gray-800 space-y-2 md:col-span-2">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-orange-400">
+                Performance Insight
+              </h4>
+              <p className="text-sm text-gray-300 leading-relaxed">
+                {result?.feedback?.performanceInsight || "Evaluation analysis based on submitted responses."}
               </p>
-            )}
+            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {Array.isArray(result.feedback.whatWentWell) &&
-                result.feedback.whatWentWell.length > 0 && (
-                  <div className="space-y-3">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4" /> Key Strengths
-                    </h4>
-                    <ul className="space-y-2">
-                      {result.feedback.whatWentWell.map((item, idx) => (
-                        <li key={idx} className="text-xs text-gray-300 bg-emerald-500/5 border border-emerald-500/20 p-3 rounded-xl">
-                          • {item}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-              {Array.isArray(result.feedback.weakAreas) && result.feedback.weakAreas.length > 0 && (
-                <div className="space-y-3">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-2">
-                    <AlertCircle className="w-4 h-4" /> Areas for Growth
-                  </h4>
-                  <ul className="space-y-2">
-                    {result.feedback.weakAreas.map((item, idx) => (
-                      <li key={idx} className="text-xs text-gray-300 bg-amber-500/5 border border-amber-500/20 p-3 rounded-xl">
-                        • {item}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+            {/* What Went Well */}
+            <div className="p-5 rounded-2xl bg-gray-950 border border-gray-800 space-y-3">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4" /> What Went Well
+              </h4>
+              {result?.feedback?.whatWentWell?.length > 0 ? (
+                <ul className="space-y-2 text-xs text-gray-300">
+                  {result.feedback.whatWentWell.map((item, idx) => (
+                    <li key={idx} className="flex items-start gap-2">
+                      <span className="text-emerald-400 font-bold">•</span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-xs text-gray-500 italic">No specific strengths recorded.</p>
               )}
             </div>
-          </div>
-        )}
 
-        {/* Question Results Breakdown (10 Questions) */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xl font-extrabold flex items-center gap-2">
-              <BookOpen className="w-5 h-5 text-emerald-400" />
-              <span>Detailed Question Breakdown (10 Questions)</span>
+            {/* Focus Areas / Weak Areas */}
+            <div className="p-5 rounded-2xl bg-gray-950 border border-gray-800 space-y-3">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+                <AlertCircle className="w-4 h-4" /> Focus Areas
+              </h4>
+              {result?.feedback?.weakAreas?.length > 0 ? (
+                <ul className="space-y-2 text-xs text-gray-300">
+                  {result.feedback.weakAreas.map((item, idx) => (
+                    <li key={idx} className="flex items-start gap-2">
+                      <span className="text-amber-400 font-bold">•</span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-xs text-gray-500 italic">No major weak areas identified.</p>
+              )}
+            </div>
+
+            {/* Recommended Next Step */}
+            <div className="p-5 rounded-2xl bg-gray-950 border border-gray-800 space-y-2 md:col-span-2">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-sky-400">
+                Recommended Next Step
+              </h4>
+              <p className="text-sm text-gray-300 leading-relaxed">
+                {result?.feedback?.recommendedNextStep || "Review incorrect questions and attempt another practice set."}
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* ── QUESTION-WISE DETAILED REVIEW (ALL 10 QUESTIONS) ── */}
+        <section className="p-6 sm:p-8 rounded-3xl bg-gray-900 border border-gray-800 space-y-6 shadow-2xl">
+          <div className="flex items-center justify-between flex-wrap gap-4 border-b border-gray-800 pb-4">
+            <h3 className="text-lg font-black text-white tracking-tight flex items-center gap-2">
+              <BookOpen className="w-5 h-5 text-orange-500" />
+              <span>QUESTION-WISE DETAILED REVIEW ({questionResults.length} QUESTIONS)</span>
             </h3>
 
+            {/* Pagination Controls */}
             {totalPages > 1 && (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 text-xs font-bold">
                 <button
-                  onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
                   disabled={currentPage === 1}
-                  className="p-1.5 rounded-lg bg-gray-900 border border-gray-800 disabled:opacity-40"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  className="p-2 rounded-lg bg-gray-800 border border-gray-700 disabled:opacity-40"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
-                <span className="text-xs text-gray-400">
+                <span className="text-gray-400">
                   Page {currentPage} of {totalPages}
                 </span>
                 <button
-                  onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
                   disabled={currentPage === totalPages}
-                  className="p-1.5 rounded-lg bg-gray-900 border border-gray-800 disabled:opacity-40"
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  className="p-2 rounded-lg bg-gray-800 border border-gray-700 disabled:opacity-40"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>
@@ -343,58 +382,86 @@ export default function IndividualProjectResult() {
 
           <div className="space-y-4">
             {paginatedQuestions.map((q, idx) => {
-              const globalNum = (currentPage - 1) * ITEMS_PER_PAGE + idx + 1;
-              const isAnsProvided = Boolean(q.candidateAnswer && q.candidateAnswer !== "(No answer provided)");
+              const globalIdx = (currentPage - 1) * ITEMS_PER_PAGE + idx + 1;
+              const isAttempted = q.attempted;
 
               return (
                 <div
                   key={q.questionId || idx}
-                  className="bg-gray-900 border border-gray-800 rounded-3xl p-6 space-y-4"
+                  className="p-5 rounded-2xl bg-gray-950 border border-gray-800 space-y-4"
                 >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-800/80 pb-3">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="px-3 py-1 rounded-xl bg-gray-800 text-xs font-bold text-gray-300">
-                        Q{globalNum}
+                  {/* Top Bar */}
+                  <div className="flex items-center justify-between flex-wrap gap-2 border-b border-gray-800/80 pb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-black text-orange-400">
+                        QUESTION {String(globalIdx).padStart(2, "0")}
                       </span>
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 uppercase">
-                        {q.difficulty || "Medium"}
+                      <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-gray-800 text-gray-300">
+                        {q.difficulty}
                       </span>
-                      <span className="text-xs text-gray-400">{q.topic || "Architecture"}</span>
+                      <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-gray-800 text-gray-400">
+                        Topic: {q.topic || "Architecture"}
+                      </span>
                       {q.projectName && (
-                        <span className="text-xs text-emerald-400/80">({q.projectName})</span>
+                        <span className="text-[11px] font-bold text-orange-400/80">
+                          ({q.projectName})
+                        </span>
                       )}
                     </div>
 
-                    <div className="text-sm font-black text-emerald-400">
-                      Score: {q.rawScore || 0} / {q.rawMaxScore || 10} Marks
+                    <div className="flex items-center gap-3">
+                      {isAttempted ? (
+                        <span className="text-xs font-bold text-emerald-400 px-2.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/30">
+                          ATTEMPTED
+                        </span>
+                      ) : (
+                        <span className="text-xs font-bold text-gray-400 px-2.5 py-0.5 rounded bg-gray-800 border border-gray-700">
+                          NOT ATTEMPTED
+                        </span>
+                      )}
+                      <span className="text-xs font-extrabold text-white">
+                        Raw Score: {q.rawScore || 0} / {q.rawMaxScore || 10}
+                      </span>
                     </div>
                   </div>
 
-                  <p className="text-sm font-bold text-white">{q.question}</p>
+                  {/* Question Text */}
+                  <div className="text-sm font-bold text-white">
+                    Question: {q.question}
+                  </div>
 
-                  <div className="space-y-2">
-                    <div className="text-xs font-semibold text-gray-400">Your Answer:</div>
+                  {/* Candidate Answer */}
+                  <div className="space-y-1">
+                    <div className="text-xs font-bold uppercase tracking-wider text-gray-400">
+                      Candidate Original Answer:
+                    </div>
                     <div
-                      className={`text-xs p-3.5 rounded-2xl border ${
-                        isAnsProvided
-                          ? "bg-gray-800/50 border-gray-800 text-gray-200"
-                          : "bg-red-500/5 border-red-500/20 text-red-400 italic"
+                      className={`p-3.5 rounded-xl border text-xs leading-relaxed font-mono ${
+                        isAttempted
+                          ? "bg-gray-900 border-gray-800 text-gray-200"
+                          : "bg-gray-900/50 border-gray-800 text-gray-500 italic"
                       }`}
                     >
-                      {q.candidateAnswer || "(No answer provided)"}
+                      {isAttempted ? q.candidateAnswer : "NOT ATTEMPTED"}
                     </div>
                   </div>
 
-                  {q.feedback && (
-                    <div className="space-y-1">
-                      <div className="text-xs font-semibold text-emerald-400">AI Feedback:</div>
+                  {/* AI Evaluation / Feedback (Attempted only) */}
+                  {isAttempted && q.feedback && (
+                    <div className="space-y-1 pt-1">
+                      <div className="text-xs font-bold uppercase tracking-wider text-orange-400">
+                        Evaluation Feedback:
+                      </div>
                       <p className="text-xs text-gray-300 leading-relaxed">{q.feedback}</p>
                     </div>
                   )}
 
-                  {Array.isArray(q.missingPoints) && q.missingPoints.length > 0 && (
-                    <div className="space-y-1">
-                      <div className="text-xs font-semibold text-amber-400">Missing Concepts:</div>
+                  {/* Missing Concepts */}
+                  {isAttempted && Array.isArray(q.missingPoints) && q.missingPoints.length > 0 && (
+                    <div className="space-y-1 pt-1">
+                      <div className="text-xs font-bold uppercase tracking-wider text-amber-400">
+                        Missing Concepts:
+                      </div>
                       <ul className="list-disc list-inside text-xs text-gray-400 pl-1">
                         {q.missingPoints.map((mp, mIdx) => (
                           <li key={mIdx}>{mp}</li>
@@ -403,18 +470,23 @@ export default function IndividualProjectResult() {
                     </div>
                   )}
 
+                  {/* Improved Answer */}
                   {q.improvedAnswer && (
-                    <div className="space-y-1 bg-emerald-500/5 border border-emerald-500/20 p-3.5 rounded-2xl">
-                      <div className="text-xs font-bold text-emerald-400">Recommended Exemplar Answer:</div>
-                      <p className="text-xs text-gray-300 italic">{q.improvedAnswer}</p>
+                    <div className="space-y-1 pt-1">
+                      <div className="text-xs font-bold uppercase tracking-wider text-emerald-400">
+                        Improved / Key Concepts Answer:
+                      </div>
+                      <div className="p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/20 text-xs text-emerald-300 leading-relaxed">
+                        {q.improvedAnswer}
+                      </div>
                     </div>
                   )}
                 </div>
               );
             })}
           </div>
-        </div>
-      </div>
+        </section>
+      </main>
     </div>
   );
 }

@@ -129,11 +129,19 @@ export async function saveIndividualProjectAnswer({
  */
 export async function submitIndividualProjectSession({ userId, sessionId }) {
   const session = await IndividualProjectSession.findOne({ userId, sessionId });
-  if (!session) throw new Error("Session not found");
+  if (!session) {
+    console.error(`[IndividualProjectEvaluation] submitFailed=true errorType=SESSION_NOT_FOUND sessionId=${sessionId}`);
+    throw new Error("Session not found");
+  }
+
+  console.log(`[IndividualProjectEvaluation] submitReceived=true sessionFound=true sessionId=${sessionId}`);
 
   if (session.status === "COMPLETED") {
     const existingResult = await IndividualProjectResult.findOne({ userId, sessionId });
-    if (existingResult) return existingResult;
+    if (existingResult) {
+      console.log(`[IndividualProjectEvaluation] sessionAlreadyCompleted=true sessionId=${sessionId}`);
+      return existingResult;
+    }
   }
 
   session.status = "CALCULATING";
@@ -147,7 +155,7 @@ export async function submitIndividualProjectSession({ userId, sessionId }) {
       candidateProfile,
     });
 
-    // Create or update result
+    console.log(`[IndividualProjectEvaluation] resultPersistenceStarted=true sessionId=${sessionId}`);
     const resultDoc = await IndividualProjectResult.findOneAndUpdate(
       { userId, sessionId },
       {
@@ -170,9 +178,10 @@ export async function submitIndividualProjectSession({ userId, sessionId }) {
     session.status = "COMPLETED";
     await session.save();
 
+    console.log(`[IndividualProjectEvaluation] resultPersistenceSucceeded=true status=COMPLETED sessionId=${sessionId}`);
     return resultDoc;
   } catch (err) {
-    console.error(`[IndividualProjectService] Evaluation failed for ${sessionId}:`, err.message);
+    console.error(`[IndividualProjectEvaluation] evaluationFailed=true sessionId=${sessionId} error=${err.message}`);
     session.status = "EVALUATION_FAILED";
     await session.save();
     throw new Error(`Evaluation failed: ${err.message}`);
@@ -183,10 +192,12 @@ export async function submitIndividualProjectSession({ userId, sessionId }) {
  * Retries failed evaluation for an individual project session.
  */
 export async function retryIndividualProjectEvaluation({ userId, sessionId }) {
+  console.log(`[IndividualProjectEvaluation] retryStarted=true sessionId=${sessionId}`);
   const session = await IndividualProjectSession.findOne({ userId, sessionId });
   if (!session) throw new Error("Session not found");
 
   session.status = "CALCULATING";
+  session.submittedAt = new Date();
   await session.save();
 
   try {
@@ -196,6 +207,7 @@ export async function retryIndividualProjectEvaluation({ userId, sessionId }) {
       candidateProfile,
     });
 
+    console.log(`[IndividualProjectEvaluation] retryResultPersistenceStarted=true sessionId=${sessionId}`);
     const resultDoc = await IndividualProjectResult.findOneAndUpdate(
       { userId, sessionId },
       {
@@ -218,9 +230,10 @@ export async function retryIndividualProjectEvaluation({ userId, sessionId }) {
     session.status = "COMPLETED";
     await session.save();
 
+    console.log(`[IndividualProjectEvaluation] retryCompleted=true status=COMPLETED sessionId=${sessionId}`);
     return resultDoc;
   } catch (err) {
-    console.error(`[IndividualProjectService] Retry evaluation failed for ${sessionId}:`, err.message);
+    console.error(`[IndividualProjectEvaluation] retryFailed=true sessionId=${sessionId} error=${err.message}`);
     session.status = "EVALUATION_FAILED";
     await session.save();
     throw new Error(`Retry evaluation failed: ${err.message}`);
@@ -233,11 +246,21 @@ export async function retryIndividualProjectEvaluation({ userId, sessionId }) {
 export async function getIndividualProjectResult({ userId, sessionId }) {
   const resultDoc = await IndividualProjectResult.findOne({ userId, sessionId }).lean();
   if (!resultDoc) {
-    const sessionDoc = await IndividualProjectSession.findOne({ userId, sessionId }).lean();
-    if (sessionDoc && sessionDoc.status === "EVALUATION_FAILED") {
-      return { status: "EVALUATION_FAILED", sessionId };
-    }
-    if (sessionDoc && sessionDoc.status === "CALCULATING") {
+    const sessionDoc = await IndividualProjectSession.findOne({ userId, sessionId });
+    if (sessionDoc) {
+      if (sessionDoc.status === "EVALUATION_FAILED") {
+        return { status: "EVALUATION_FAILED", sessionId };
+      }
+
+      // Check for stale calculation (older than 5 minutes)
+      const submittedAt = sessionDoc.submittedAt ? new Date(sessionDoc.submittedAt).getTime() : 0;
+      if (submittedAt > 0 && (Date.now() - submittedAt) > 5 * 60 * 1000) {
+        console.warn(`[IndividualProjectEvaluation] sessionStale=true sessionId=${sessionId} marking status=EVALUATION_FAILED`);
+        sessionDoc.status = "EVALUATION_FAILED";
+        await sessionDoc.save();
+        return { status: "EVALUATION_FAILED", sessionId };
+      }
+
       return { status: "CALCULATING", sessionId };
     }
     throw new Error("Result not found for this session");

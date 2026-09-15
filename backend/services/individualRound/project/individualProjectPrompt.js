@@ -116,3 +116,52 @@ JSON OUTPUT ONLY:
   ]
 }`;
 }
+
+/**
+ * Builds prompt for batch evaluation of ATTEMPTED project questions.
+ */
+export function buildProjectBatchEvaluationPrompt({ attemptedQuestions }) {
+  const formatted = attemptedQuestions
+    .map((q, idx) => {
+      return `QUESTION ${idx + 1}:
+Question ID: ${q.questionId}
+Difficulty: ${q.difficulty} (Backend Max Score: ${q.maxScore})
+Topic/Project: ${q.topic || "Architecture"} / ${q.projectName || "Project"}
+Question Text: ${q.question}
+Expected Knowledge: ${q.expectedKnowledge || "Key architectural and technical implementation details"}
+Candidate Answer: ${q.candidateAnswer}`;
+    })
+    .join("\n\n----------------------------------------\n\n");
+
+  return `You are a fair technical interviewer evaluating a student's Project & Resume Practice round.
+
+ATTEMPTED QUESTIONS & RESPONSES:
+${formatted}
+
+FAIR EVALUATION INSTRUCTIONS:
+1. Evaluate ONLY the attempted questions above.
+2. For each question, score the response between 0 and Backend Max Score (indicated per question).
+3. Judge technical correctness, architectural choices, workflow logic, API design, and trade-offs. Do NOT penalize minor grammar if technical logic is sound.
+4. Output valid JSON ONLY matching the exact schema below.
+
+JSON SCHEMA OUTPUT:
+{
+  "evaluations": [
+    {
+      "questionId": "matching questionId string",
+      "score": 8,
+      "strengths": ["Valid architectural choice"],
+      "missingConcepts": ["Missing error handling detail"],
+      "feedback": "Concise feedback on candidate answer",
+      "improvedAnswer": "Refined exemplar answer"
+    }
+  ],
+  "summary": {
+    "strengths": ["Clear API workflow design"],
+    "weakAreas": ["Shallow error handling in server failure scenarios"],
+    "whatToImprove": ["Detail database migration strategies"],
+    "overallFeedback": "Overall assessment of project understanding"
+  }
+}`;
+}
+
