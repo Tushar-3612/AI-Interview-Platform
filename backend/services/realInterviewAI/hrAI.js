@@ -76,7 +76,7 @@ function cleanJsonResponse(rawText) {
 /**
  * AI CALL #1: Generate EXACTLY 5 HR questions in ONE AI request (Attempt 1).
  */
-export async function generateHRAI({ candidateProfile = {}, count = 5 }) {
+export async function generateHRAI({ candidateProfile = {}, userHistorySet = new Set(), count = 5 }) {
   console.log("\n[REAL-INTERVIEW][AI-CALL]\nround=hr\noperation=generation\nattempt=1");
 
   const educationText = Array.isArray(candidateProfile.education)
@@ -92,6 +92,22 @@ export async function generateHRAI({ candidateProfile = {}, count = 5 }) {
 - Key Projects Summary: ${JSON.stringify(candidateProfile.projects || [])}
 `;
 
+  const excludedList = Array.from(userHistorySet).slice(0, 100);
+  const exclusionText = excludedList.length > 0
+    ? `\nABSOLUTE ZERO-REPETITION RULE:
+The following list contains questions that have ALREADY been asked to this candidate in previous Real Interview attempts or earlier in the current attempt.
+You MUST NOT generate any question that:
+1. Exactly matches a previous question.
+2. Is a reworded version of a previous question.
+3. Is a paraphrase of a previous question.
+4. Tests the same underlying concept in substantially the same way.
+5. Uses different wording but has the same question intent.
+6. Is a slightly modified version of an already asked question.
+
+Previously Asked Questions:
+${excludedList.map(q => `- ${q}`).join("\n")}\n`
+    : "";
+
   const systemPrompt = `You are a Senior HR Vice President conducting a final HR cultural & behavioral interview for a top tier tech company.
 Your task is to generate EXACTLY 5 high-impact, professional HR interview questions tailored to the candidate's profile.
 
@@ -105,7 +121,8 @@ CRITICAL ARCHITECTURAL RULES:
    - Question 5: Situational Judgment / Leadership Under Pressure
 3. RESUME GROUNDING: Mention aspects of the candidate's background (education, project experience, leadership) naturally in at least 2 questions.
 4. ABSOLUTE MARKS: Easy=10 marks, Medium=20 marks, Hard=20 marks. Total score possible = 100 or sum of marks (e.g. 5 questions * 20 marks = 100 marks). Set maxMarks = 20 for each question (Total = 100).
-5. STRICT JSON ONLY: Respond with a SINGLE JSON object. No markdown wrappers.
+5. Do NOT generate or rephrase any question from the exclusion list.
+6. STRICT JSON ONLY: Respond with a SINGLE JSON object. No markdown wrappers.
 
 JSON SCHEMA REQUIREMENT:
 {
@@ -122,7 +139,7 @@ JSON SCHEMA REQUIREMENT:
   ]
 }`;
 
-  const userPrompt = `Candidate Profile:\n${profileSummary}\n\nGenerate EXACTLY 5 deep HR questions in valid JSON.`;
+  const userPrompt = `Candidate Profile:\n${profileSummary}\n${exclusionText}\nGenerate EXACTLY 5 deep HR questions in valid JSON.`;
 
   console.log("\n[REAL-INTERVIEW][HR-CONTEXT]");
   console.log(`resume context actually sent to AI: ${profileSummary.trim()}\n`);

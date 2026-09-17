@@ -83,18 +83,18 @@ export async function generateAndProcessProjectQuestions({
 
   // AI CALL #1: Generate 10 deep project questions
   const effectiveProfile = await getOrBuildCandidateResumeContext(userId, candidateProfile);
-  const userHistorySet = await getUserQuestionHistorySet(userId);
+  const userHistorySet = await getUserQuestionHistorySet(userId, effectiveProfile.resumeHash, "resume_project");
 
   const requestId = `proj_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
   const modelName = process.env.REAL_INTERVIEW_PROJECT_MODEL || "openai/gpt-oss-120b";
   const hasKey = Boolean(process.env.REAL_INTERVIEW_PROJECT_API_KEY?.trim());
 
   console.log(`\n[AI-REQUEST-START]\nround=project\nprovider=groq\nmodel=${modelName}\nkeyPresent=${hasKey}\nrequestId=${requestId}`);
-  console.log(`\n[REAL-INTERVIEW][PROJECT-CONTEXT]\nprojects=${JSON.stringify((effectiveProfile.projects || []).map(p => ({ name: p.name, technologies: p.technologies })))}\n`);
+  console.log(`\n[REAL-INTERVIEW][PROJECT-CONTEXT]\nprojects=${JSON.stringify((effectiveProfile.projects || []).map(p => ({ name: p.name, technologies: p.technologies })))}\nresumeHash=${effectiveProfile.resumeHash}\n`);
 
   let aiResult;
   try {
-    aiResult = await generateProjectAI(effectiveProfile);
+    aiResult = await generateProjectAI(effectiveProfile, userHistorySet);
   } catch (genErr) {
     console.error(`\n[AI-REQUEST-FAILED]\nround=project\nprovider=groq\nrequestId=${requestId}\nerror=${genErr.message}`);
     throw new Error(`Project AI generation failed: ${genErr.message}`);
@@ -102,12 +102,9 @@ export async function generateAndProcessProjectQuestions({
 
   const rawAiQuestions = aiResult?.questions || [];
   let rawQuestions = filterUniqueQuestions(rawAiQuestions, userHistorySet);
-  if (rawQuestions.length < 10) {
-    rawQuestions = rawAiQuestions.slice(0, 10);
-  }
 
   if (rawQuestions.length < 10) {
-    console.error(`\n[AI-REQUEST-FAILED]\nround=project\nprovider=groq\nrequestId=${requestId}\nerror=Insufficient AI questions returned (${rawQuestions.length}/10)`);
+    console.error(`\n[AI-REQUEST-FAILED]\nround=project\nprovider=groq\nrequestId=${requestId}\nerror=Insufficient unique AI questions returned (${rawQuestions.length}/10)`);
     throw new Error(`Insufficient Project AI questions generated (${rawQuestions.length}/10)`);
   }
 
@@ -151,7 +148,7 @@ export async function generateAndProcessProjectQuestions({
 
   const savedQuestions = await RealInterviewProjectQuestion.insertMany(validatedDocs);
   if (userId && sessionId) {
-    await recordUserQuestionHistory({ userId, sessionId, round: "resume_project", questions: savedQuestions });
+    await recordUserQuestionHistory({ userId, sessionId, resumeHash: effectiveProfile.resumeHash, round: "resume_project", questions: savedQuestions });
   }
 
   if (!session) {

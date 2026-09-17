@@ -1,5 +1,6 @@
 import {
   generateTechnicalAI,
+  generateTechnicalAIBatch,
   evaluateTechnicalInterviewAI,
 } from "../realInterviewAI/technicalAI.js";
 import RealInterviewTechnicalQuestion from "../../models/RealInterviewTechnicalQuestion.js";
@@ -18,7 +19,11 @@ import { resolveCandidateAnswer } from "./answerResolver.js";
 
 /**
  * Generates or retrieves existing 20 Technical questions for a Real Interview session (AI CALL #1).
- * Enforces IDEMPOTENCY: Does NOT re-generate questions if aiGenerationCalls >= 1 or 20 questions already exist for sessionId.
+ * Enforces IDEMPOTENCY & RESUMABLE CHECKPOINTS:
+ * 1. Checks existing DB questions for current session.
+ * 2. Generates missing questions in 2-question AI batches.
+ * 3. Saves each batch immediately to MongoDB.
+ * 4. Never restarts from Q1 if partial questions exist.
  */
 export async function generateAndProcessTechnicalQuestions({
   userId = null,
@@ -32,19 +37,174 @@ export async function generateAndProcessTechnicalQuestions({
   const lockKey = `technical:${sessionId}`;
   return withInFlightLock(lockKey, async () => {
     let session = await RealInterviewTechnicalSession.findOne({ sessionId });
-
-    const existingQuestions = await RealInterviewTechnicalQuestion.find({ sessionId }).sort({
+    let existingQuestions = await RealInterviewTechnicalQuestion.find({ sessionId }).sort({
       orderIndex: 1,
     });
 
-  if (
-    (session && (session.aiGenerationCalls >= 1 || session.generationStatus === "GENERATED")) ||
-    existingQuestions.length >= 20
-  ) {
+    const TARGET_COUNT = 20;
+
+    // Check if session is already fully generated
+    if (
+      (session && (session.aiGenerationCalls >= 1 || session.generationStatus === "GENERATED")) &&
+      existingQuestions.length >= TARGET_COUNT
+    ) {
+      console.log(
+        `[TechnicalService] Session ${sessionId} already fully generated (${existingQuestions.length} questions). Reusing existing questions.`
+      );
+
+      if (!session) {
+        session = await RealInterviewTechnicalSession.create({
+          sessionId,
+          userId,
+          currentQuestionIndex: 0,
+          strongAnswerCount: 0,
+          hardUnlocked: false,
+          questionsAnswered: 0,
+          answers: [],
+          status: "in_progress",
+          generationStatus: "GENERATED",
+          aiGenerationCalls: 1,
+        });
+      }
+
+      const studentQuestions = existingQuestions.map((q) => ({
+        id: q._id.toString(),
+        question: q.question,
+        difficulty: q.difficulty,
+        maxMarks: q.maxMarks || (q.difficulty === "easy" ? 3 : q.difficulty === "hard" ? 13 : 5),
+        topic: q.topic,
+        category: q.category,
+        source: q.source || "AI_PROVIDER",
+        relatedSkill: q.relatedSkill,
+        relatedProject: q.relatedProject,
+      }));
+
+      return {
+        success: true,
+        message: "Reused existing 20 technical questions",
+        count: studentQuestions.length,
+        questions: studentQuestions,
+        reused: true,
+        aiGenerationCalls: session.aiGenerationCalls || 1,
+      };
+    }
+
+    // Build context
+    const effectiveProfile = await getOrBuildCandidateResumeContext(userId, candidateProfile);
+    const userHistorySet = await getUserQuestionHistorySet(userId, effectiveProfile.resumeHash, "technical");
+
+    // Extract skill context string
+    const skillsList = [
+      ...(effectiveProfile.skills || []),
+      ...(effectiveProfile.programmingLanguages || []),
+      ...(effectiveProfile.frameworks || []),
+      ...(effectiveProfile.databases || []),
+      ...(effectiveProfile.tools || []),
+      ...(effectiveProfile.cloud || []),
+    ].map((s) => String(s).trim()).filter(Boolean);
+
+    const uniqueSkills = Array.from(new Set(skillsList));
+    const skillsContextStr = uniqueSkills.length > 0
+      ? uniqueSkills.slice(0, 15).join(", ")
+      : "Computer Science Fundamentals, Data Structures, OOP, Software Engineering Principles";
+
+    // Track existing questions in memory pool for deduplication
+    const currentPoolSet = new Set();
+    existingQuestions.forEach((q) => {
+      const norm = normalizeQuestionText(q.question);
+      if (norm) currentPoolSet.add(norm);
+    });
+
     console.log(
-      `[TechnicalService] Session ${sessionId} already generated (${existingQuestions.length} questions, aiGenerationCalls: ${session?.aiGenerationCalls || 1}). Reusing existing questions without AI call.`
+      `[TechnicalService] Session ${sessionId} starting/resuming generation. Currently existing questions in DB: ${existingQuestions.length}/${TARGET_COUNT}`
     );
 
+    let totalAiCallsMade = session?.aiGenerationCalls || 0;
+
+    // Resumable progress-driven batch loop (EXACTLY 2 questions per batch)
+    while (existingQuestions.length < TARGET_COUNT) {
+      const startQuestionNumber = existingQuestions.length + 1;
+      const batchSize = Math.min(2, TARGET_COUNT - existingQuestions.length); // Batch size = 2
+
+      console.log(
+        `[TechnicalService] Resuming generation: requesting Q${startQuestionNumber} to Q${startQuestionNumber + batchSize - 1} (batchSize=${batchSize})`
+      );
+
+      const batchResult = await generateTechnicalAIBatch({
+        skillsContextStr,
+        startQuestionNumber,
+        batchSize,
+        targetTotalCount: TARGET_COUNT,
+        userHistorySet,
+        currentPoolSet,
+      });
+
+      totalAiCallsMade++;
+
+      if (!batchResult || batchResult.length === 0) {
+        console.warn(`[TechnicalService] Batch for Q${startQuestionNumber} returned 0 valid questions. Retrying...`);
+        continue;
+      }
+
+      // Format & validate new batch docs
+      const newDocs = batchResult.map((q, idx) => {
+        const orderIndex = existingQuestions.length + idx;
+        const questionText = String(q.question || "").trim();
+        const topic = String(q.topic || "General Technical").trim();
+        const expectedKnowledge = String(
+          q.expectedKnowledge ||
+            q.expected_knowledge ||
+            q.expectedAnswer ||
+            q.expected_answer ||
+            `Comprehensive technical explanation addressing core principles for ${topic}.`
+        ).trim();
+
+        const diff = String(q.difficulty || "medium").toLowerCase().trim();
+        const validDiff = ["easy", "medium", "hard"].includes(diff) ? diff : "medium";
+        const maxMarks = validDiff === "easy" ? 3 : validDiff === "hard" ? 13 : 5;
+
+        return {
+          sessionId,
+          userId,
+          orderIndex,
+          question: questionText,
+          expectedKnowledge,
+          difficulty: validDiff,
+          maxMarks,
+          topic,
+          category: "Conceptual",
+          source: "AI_PROVIDER",
+          relatedSkill: String(q.skillsTested?.[0] || "").trim(),
+          relatedProject: "",
+        };
+      });
+
+      // Save batch IMMEDIATELY to DB checkpoint
+      const savedBatchDocs = await RealInterviewTechnicalQuestion.insertMany(newDocs);
+
+      if (userId && sessionId) {
+        await recordUserQuestionHistory({
+          userId,
+          sessionId,
+          resumeHash: effectiveProfile.resumeHash,
+          round: "technical",
+          questions: savedBatchDocs,
+        });
+      }
+
+      // Add to pool and update in-memory list
+      savedBatchDocs.forEach((doc) => {
+        const norm = normalizeQuestionText(doc.question);
+        if (norm) currentPoolSet.add(norm);
+        existingQuestions.push(doc);
+      });
+
+      console.log(
+        `[TechnicalService] Batch saved successfully to DB! Total questions now: ${existingQuestions.length}/${TARGET_COUNT}`
+      );
+    }
+
+    // Mark session as GENERATED
     if (!session) {
       session = await RealInterviewTechnicalSession.create({
         sessionId,
@@ -56,8 +216,12 @@ export async function generateAndProcessTechnicalQuestions({
         answers: [],
         status: "in_progress",
         generationStatus: "GENERATED",
-        aiGenerationCalls: 1,
+        aiGenerationCalls: totalAiCallsMade,
       });
+    } else {
+      session.generationStatus = "GENERATED";
+      session.aiGenerationCalls = totalAiCallsMade;
+      await session.save();
     }
 
     const studentQuestions = existingQuestions.map((q) => ({
@@ -74,141 +238,11 @@ export async function generateAndProcessTechnicalQuestions({
 
     return {
       success: true,
-      message: "Reused existing 20 technical questions",
-      count: studentQuestions.length,
-      questions: studentQuestions,
-      reused: true,
-      aiGenerationCalls: session.aiGenerationCalls || 1,
-    };
-  }
-
-  const effectiveProfile = await getOrBuildCandidateResumeContext(userId, candidateProfile);
-  const userHistorySet = await getUserQuestionHistorySet(userId);
-
-  const requestId = `tech_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
-  const modelName = process.env.REAL_INTERVIEW_TECHNICAL_MODEL || process.env.GROQ_MODEL || "qwen/qwen3.8-27b";
-  const hasKey = Boolean((process.env.REAL_INTERVIEW_TECHNICAL_API_KEY || process.env.GROQ_API_KEY)?.trim());
-
-  console.log(`\n[AI-REQUEST-START]\nround=technical\nprovider=groq\nmodel=${modelName}\nkeyPresent=${hasKey}\nrequestId=${requestId}`);
-  console.log(`\n[REAL-INTERVIEW][TECHNICAL-CONTEXT]\nskills=[${(effectiveProfile.skills || []).join(", ")}]\n`);
-
-  let aiResult;
-  try {
-    aiResult = await generateTechnicalAI(effectiveProfile, userHistorySet);
-  } catch (genErr) {
-    console.error(`\n[AI-REQUEST-FAILED]\nround=technical\nprovider=groq\nrequestId=${requestId}\nerror=${genErr.message}`);
-    throw new Error(`Technical AI generation failed: ${genErr.message}`);
-  }
-
-  const rawAiQuestions = aiResult?.questions || (Array.isArray(aiResult) ? aiResult : []);
-  const rawQuestions = filterUniqueQuestions(rawAiQuestions, userHistorySet);
-
-  if (rawQuestions.length < 20) {
-    console.error(`\n[AI-REQUEST-FAILED]\nround=technical\nprovider=groq\nrequestId=${requestId}\nerror=Insufficient AI questions returned (${rawQuestions.length}/20)`);
-    throw new Error(`Insufficient Technical AI questions generated (${rawQuestions.length}/20)`);
-  }
-
-  console.log(`\n[AI-REQUEST-SUCCESS]\nround=technical\nprovider=groq\nrequestId=${requestId}\nquestionsReturned=${rawQuestions.length}`);
-  console.log(`\n[QUESTION-SOURCE]\nround=technical\nsource=AI_PROVIDER\ncount=${rawQuestions.length}\n`);
-
-  const selectedQuestions = rawQuestions.slice(0, 20);
-
-  const validatedDocs = selectedQuestions.map((q, idx) => {
-    const questionText = String(q.question || "").trim();
-    if (!questionText) {
-      throw new Error(`Technical Question #${idx + 1} has empty question text`);
-    }
-
-    const topic = String(q.topic || "General Technical").trim();
-    const expectedKnowledge = String(
-      q.expectedKnowledge ||
-        q.expected_knowledge ||
-        q.expectedAnswer ||
-        q.expected_answer ||
-        q.answer ||
-        q.explanation ||
-        `Comprehensive technical explanation addressing core principles, practical application, and architecture for ${topic}.`
-    ).trim();
-
-    const diff = String(q.difficulty || "medium").toLowerCase().trim();
-    const validDiff = ["easy", "medium", "hard"].includes(diff) ? diff : "medium";
-    const maxMarks = validDiff === "easy" ? 3 : validDiff === "hard" ? 13 : 5;
-
-    const categoryCandidate = String(q.category || "Conceptual").trim();
-    const validCategories = [
-      "Fundamentals",
-      "Conceptual",
-      "Project Implementation",
-      "Debugging",
-      "Scenario",
-      "Architecture",
-      "System Design",
-      "Technology Specific",
-      "Problem Solving",
-    ];
-    const category = validCategories.includes(categoryCandidate)
-      ? categoryCandidate
-      : "Conceptual";
-
-    return {
-      sessionId,
-      userId,
-      orderIndex: idx,
-      question: questionText,
-      expectedKnowledge,
-      difficulty: validDiff,
-      maxMarks,
-      topic,
-      category,
-      source: "AI_PROVIDER",
-      relatedSkill: String(q.relatedSkill || "").trim(),
-      relatedProject: String(q.relatedProject || "").trim(),
-    };
-  });
-
-  const savedQuestions = await RealInterviewTechnicalQuestion.insertMany(validatedDocs);
-  if (userId && sessionId) {
-    await recordUserQuestionHistory({ userId, sessionId, round: "technical", questions: savedQuestions });
-  }
-
-  if (!session) {
-    session = await RealInterviewTechnicalSession.create({
-      sessionId,
-      userId,
-      currentQuestionIndex: 0,
-      strongAnswerCount: 0,
-      hardUnlocked: false,
-      questionsAnswered: 0,
-      answers: [],
-      status: "in_progress",
-      generationStatus: "GENERATED",
-      aiGenerationCalls: 1,
-    });
-  } else {
-    session.generationStatus = "GENERATED";
-    session.aiGenerationCalls = 1;
-    await session.save();
-  }
-
-  const studentQuestions = savedQuestions.map((q) => ({
-    id: q._id.toString(),
-    question: q.question,
-    difficulty: q.difficulty,
-    maxMarks: q.maxMarks,
-    topic: q.topic,
-    category: q.category,
-    source: q.source,
-    relatedSkill: q.relatedSkill,
-    relatedProject: q.relatedProject,
-  }));
-
-    return {
-      success: true,
-      message: "20 resume-driven technical questions generated successfully",
+      message: `${studentQuestions.length} resume-driven technical questions generated successfully`,
       count: studentQuestions.length,
       questions: studentQuestions,
       reused: false,
-      aiGenerationCalls: 1,
+      aiGenerationCalls: totalAiCallsMade,
     };
   });
 }

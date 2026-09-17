@@ -35,13 +35,23 @@ export function normalizeQuestionText(text = "") {
     .replace(/typescript/g, "ts")
     .replace(/mongodb/g, "mongo")
     .replace(/postgresql/g, "postgres")
+    .replace(/asynchronous/g, "async")
+    .replace(/synchronous/g, "sync")
+    .replace(/authentication/g, "auth")
+    .replace(/authorization/g, "authz")
+    .replace(/databases/g, "db")
+    .replace(/database/g, "db")
+    .replace(/operations/g, "ops")
+    .replace(/operation/g, "ops")
+    .replace(/functions/g, "fn")
+    .replace(/function/g, "fn")
     .replace(/[^\w\s]/gi, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
 
 /**
- * Normalizes individual word tokens (stemming plurals).
+ * Normalizes individual word tokens (stemming plurals and aliases).
  */
 function stemToken(word = "") {
   let w = word.toLowerCase();
@@ -49,8 +59,10 @@ function stemToken(word = "") {
   if (w === "keys") return "key";
   if (w === "props" || w === "properties") return "prop";
   if (w === "queries") return "query";
-  if (w === "databases") return "database";
-  if (w === "middlewares") return "middleware";
+  if (w === "databases" || w === "database") return "db";
+  if (w === "middlewares" || w === "middleware") return "middleware";
+  if (w === "asynchronous") return "async";
+  if (w === "synchronous") return "sync";
   if (w.length > 4 && w.endsWith("s") && !w.endsWith("ss") && !w.endsWith("us") && !w.endsWith("is")) {
     return w.slice(0, -1);
   }
@@ -74,7 +86,7 @@ export function extractContentTokens(text = "") {
  * Deterministic semantic similarity check using Jaccard token overlap & key term matching.
  * Returns true if two questions are semantically equivalent.
  */
-export function isSemanticallyDuplicate(textA, textB, threshold = 0.60) {
+export function isSemanticallyDuplicate(textA, textB, threshold = 0.40) {
   const normA = normalizeQuestionText(textA);
   const normB = normalizeQuestionText(textB);
   if (!normA || !normB) return false;
@@ -97,93 +109,40 @@ export function isSemanticallyDuplicate(textA, textB, threshold = 0.60) {
 
   if (jaccard >= threshold) return true;
 
-  // Subset containment check: if all tokens of smaller set are present in larger set (min size 2)
+  // Relative overlap against smaller set: if >= 50% of tokens in smaller set overlap
   const minSize = Math.min(setA.size, setB.size);
-  const smallerSet = setA.size <= setB.size ? setA : setB;
-  const largerSet = setA.size <= setB.size ? setB : setA;
-
-  if (minSize >= 2) {
-    let matchCount = 0;
-    for (const token of smallerSet) {
-      if (largerSet.has(token)) matchCount++;
-    }
-    if (matchCount === minSize) return true;
+  if (minSize >= 2 && (intersectionCount / minSize) >= 0.50) {
+    return true;
   }
 
   return false;
 }
 
 /**
- * Retrieves a Set of normalized questions previously shown to the user across ALL features:
- * - RealInterviewQuestionHistory
- * - IndividualTechnicalSession
- * - RealInterviewTechnicalQuestion / RealInterviewTechnicalSession
+ * Retrieves a Set of normalized questions previously shown to the user across Real Interview sessions:
+ * Isolated by resumeHash if provided (satisfying the Resume Isolation Rule).
  */
-export async function getUserQuestionHistorySet(userId) {
+export async function getUserQuestionHistorySet(userId, resumeHash = null, round = null) {
   if (!userId) return new Set();
 
   try {
     const historySet = new Set();
+    const query = { userId };
+    if (resumeHash) {
+      query.resumeHash = resumeHash;
+    }
+    if (round) {
+      query.round = round;
+    }
 
     // 1. Query RealInterviewQuestionHistory (centralized history table)
-    const records = await RealInterviewQuestionHistory.find({ userId })
+    const records = await RealInterviewQuestionHistory.find(query)
       .select("normalizedQuestion questionText")
       .lean();
 
     for (const r of records) {
       if (r.normalizedQuestion) historySet.add(r.normalizedQuestion);
       if (r.questionText) historySet.add(normalizeQuestionText(r.questionText));
-    }
-
-    // 2. Backfill/Include questions from IndividualTechnicalSession for this user
-    const indSessions = await IndividualTechnicalSession.find({ userId })
-      .select("questions.question")
-      .lean();
-
-    for (const sess of indSessions) {
-      if (Array.isArray(sess.questions)) {
-        for (const q of sess.questions) {
-          if (q.question) {
-            const norm = normalizeQuestionText(q.question);
-            if (norm) historySet.add(norm);
-          }
-        }
-      }
-    }
-
-    // 2b. Backfill/Include questions from IndividualProjectSession for this user
-    const indProjSessions = await IndividualProjectSession.find({ userId })
-      .select("questions.question")
-      .lean();
-
-    for (const sess of indProjSessions) {
-      if (Array.isArray(sess.questions)) {
-        for (const q of sess.questions) {
-          if (q.question) {
-            const norm = normalizeQuestionText(q.question);
-            if (norm) historySet.add(norm);
-          }
-        }
-      }
-    }
-
-    // 3. Backfill/Include questions from RealInterviewTechnicalSession & Questions for this user
-    const realTechSessions = await RealInterviewTechnicalSession.find({ userId })
-      .select("sessionId")
-      .lean();
-
-    if (realTechSessions.length > 0) {
-      const sessionIds = realTechSessions.map((s) => s.sessionId);
-      const realTechQs = await RealInterviewTechnicalQuestion.find({ sessionId: { $in: sessionIds } })
-        .select("question")
-        .lean();
-
-      for (const q of realTechQs) {
-        if (q.question) {
-          const norm = normalizeQuestionText(q.question);
-          if (norm) historySet.add(norm);
-        }
-      }
     }
 
     return historySet;
@@ -222,7 +181,7 @@ export function isDuplicateQuestion(text = "", userHistorySet = new Set(), curre
 /**
  * Persists new questions to the user's question history.
  */
-export async function recordUserQuestionHistory({ userId, sessionId, round = "technical", questions = [] }) {
+export async function recordUserQuestionHistory({ userId, sessionId, resumeHash = "", round = "technical", questions = [] }) {
   if (!userId || !sessionId || !Array.isArray(questions) || questions.length === 0) {
     return;
   }
@@ -243,6 +202,7 @@ export async function recordUserQuestionHistory({ userId, sessionId, round = "te
           docsToInsert.push({
             userId,
             sessionId,
+            resumeHash: String(resumeHash || ""),
             round,
             questionId: q.id || q._id || q.questionId || "",
             questionText: String(text),

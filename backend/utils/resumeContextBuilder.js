@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import crypto from "crypto";
 import User from "../models/User.js";
 import { parseResumeComplete, normalizeSkill } from "../services/resumeParser.js";
 
@@ -14,6 +15,26 @@ const KNOWN_TECH_KEYWORDS = [
   "Redux", "Axios", "Prisma", "Mongoose", "GraphQL", "REST APIs", "WebSockets", "Kafka", "RabbitMQ",
   "Pandas", "NumPy", "Matplotlib", "Seaborn", "Scikit-learn", "XGBoost", "TensorFlow", "Keras", "PyTorch", "OpenCV", "NLTK", "Spacy", "Transformers", "BERT", "Power BI", "Tableau"
 ];
+
+/**
+ * Computes a deterministic hash representation for a candidate's resume context.
+ * Used for resume-isolated question history tracking.
+ */
+export function computeResumeHash(resumeContext = {}, studentDoc = null) {
+  const normSkills = (resumeContext.skills || []).map((s) => String(s).toLowerCase().trim()).sort().join("|");
+  const normProjects = (resumeContext.projects || []).map((p) => {
+    const name = String(p.name || "").toLowerCase().trim();
+    const techs = Array.isArray(p.technologies) ? p.technologies.map((t) => String(t).toLowerCase().trim()).sort().join(",") : "";
+    return `${name}:${techs}`;
+  }).sort().join("|");
+  const normExp = (resumeContext.experience || []).map((e) => String(e.company || e.title || "").toLowerCase().trim()).sort().join("|");
+  const normEdu = (resumeContext.education || []).map((e) => String(e.degree || e.institution || "").toLowerCase().trim()).sort().join("|");
+  const fileName = String(studentDoc?.resumeFileName || "").toLowerCase().trim();
+  const uploadedAt = studentDoc?.resumeUploadedAt ? new Date(studentDoc.resumeUploadedAt).getTime() : "";
+
+  const rawStr = `file:${fileName};uploaded:${uploadedAt};skills:${normSkills};projects:${normProjects};exp:${normExp};edu:${normEdu}`;
+  return crypto.createHash("sha256").update(rawStr).digest("hex").slice(0, 16);
+}
 
 /**
  * Fetches and builds structured candidate resume context from MongoDB User record,
@@ -177,20 +198,14 @@ export async function getOrBuildCandidateResumeContext(userId = null, bodyProfil
   Object.values(categorizedSkills).forEach((arr) => {
     if (Array.isArray(arr)) arr.forEach(addTech);
   });
+
   normalizedProjects.forEach((p) => {
     if (Array.isArray(p.technologies)) p.technologies.forEach(addTech);
   });
 
   const fullName = student?.name || bodyProfile?.fullName || bodyProfile?.name || "Candidate";
 
-  console.log("\n[REAL-INTERVIEW][RESUME-CONTEXT]");
-  console.log(`skills: [${skills.join(", ")}]`);
-  console.log(`projects: ${JSON.stringify(normalizedProjects.map(p => ({ name: p.name, technologies: p.technologies })))}`);
-  console.log(`experience: ${JSON.stringify(experience)}`);
-  console.log(`education: ${JSON.stringify(education)}`);
-  console.log(`certifications: ${JSON.stringify(certifications)}\n`);
-
-  return {
+  const tempContext = {
     fullName,
     skills,
     categorizedSkills,
@@ -207,6 +222,21 @@ export async function getOrBuildCandidateResumeContext(userId = null, bodyProfil
     education,
     certifications,
     allCandidateTechSet: allTechSet,
+  };
+
+  const resumeHash = computeResumeHash(tempContext, student);
+
+  console.log("\n[REAL-INTERVIEW][RESUME-CONTEXT]");
+  console.log(`resumeHash: ${resumeHash}`);
+  console.log(`skills: [${skills.join(", ")}]`);
+  console.log(`projects: ${JSON.stringify(normalizedProjects.map(p => ({ name: p.name, technologies: p.technologies })))}`);
+  console.log(`experience: ${JSON.stringify(experience)}`);
+  console.log(`education: ${JSON.stringify(education)}`);
+  console.log(`certifications: ${JSON.stringify(certifications)}\n`);
+
+  return {
+    ...tempContext,
+    resumeHash,
   };
 }
 

@@ -62,15 +62,12 @@ export async function generateAndProcessCodingQuestions({ userId = null, session
     console.log(`\n[AI-REQUEST-START]\nround=coding\nprovider=groq\nmodel=${modelName}\nkeyPresent=${hasKey}\nrequestId=${requestId}`);
 
     let problemsData = [];
-    const userHistorySet = await getUserQuestionHistorySet(userId);
+    const userHistorySet = await getUserQuestionHistorySet(userId, candidateProfile?.resumeHash, "coding");
 
     try {
-      const res = await generateCodingAI({ candidateProfile, count: 3 });
+      const res = await generateCodingAI({ candidateProfile, userHistorySet, count: 3 });
       if (res && Array.isArray(res)) {
         problemsData = filterUniqueQuestions(res, userHistorySet);
-        if (problemsData.length < 3) {
-          problemsData = res.slice(0, 3);
-        }
       } else {
         throw new Error(`Coding AI returned empty or invalid response`);
       }
@@ -80,7 +77,7 @@ export async function generateAndProcessCodingQuestions({ userId = null, session
     }
 
     if (problemsData.length < 3) {
-      console.error(`\n[AI-REQUEST-FAILED]\nround=coding\nprovider=groq\nrequestId=${requestId}\nerror=Insufficient AI coding problems returned (${problemsData.length}/3)`);
+      console.error(`\n[AI-REQUEST-FAILED]\nround=coding\nprovider=groq\nrequestId=${requestId}\nerror=Insufficient unique AI coding problems returned (${problemsData.length}/3)`);
       throw new Error(`Insufficient Coding AI problems generated (${problemsData.length}/3)`);
     }
 
@@ -144,6 +141,7 @@ export async function generateAndProcessCodingQuestions({ userId = null, session
     await recordUserQuestionHistory({
       userId,
       sessionId,
+      resumeHash: candidateProfile?.resumeHash,
       round: "coding",
       questions: createdQuestions.map((q) => ({
         id: q._id,

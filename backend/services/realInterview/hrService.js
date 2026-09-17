@@ -66,17 +66,14 @@ export async function generateAndProcessHRQuestions({ userId = null, sessionId, 
     console.log(`[HR-DIAGNOSTIC] apiKeyPresent=${hasKey} (key hidden) model=${modelName} requestId=${requestId}`);
 
     let questionsData = [];
-    const userHistorySet = await getUserQuestionHistorySet(userId);
+    const userHistorySet = await getUserQuestionHistorySet(userId, candidateProfile?.resumeHash, "hr");
 
     try {
-      console.log(`[HR-DIAGNOSTIC] Invoking generateHRAI...`);
-      const res = await generateHRAI({ candidateProfile, count: 5 });
+      console.log(`[HR-DIAGNOSTIC] Invoking generateHRAI... resumeHash=${candidateProfile?.resumeHash}`);
+      const res = await generateHRAI({ candidateProfile, userHistorySet, count: 5 });
       if (res && Array.isArray(res)) {
         console.log(`[HR-DIAGNOSTIC] rawQuestionsReceived=${res.length}`);
         questionsData = filterUniqueQuestions(res, userHistorySet);
-        if (questionsData.length < 5) {
-          questionsData = res.slice(0, 5);
-        }
       } else {
         throw new Error(`HR AI returned empty or invalid response`);
       }
@@ -86,7 +83,7 @@ export async function generateAndProcessHRQuestions({ userId = null, sessionId, 
     }
 
     if (questionsData.length < 5) {
-      console.error(`\n[AI-REQUEST-FAILED]\nround=hr\nprovider=groq\nrequestId=${requestId}\nerror=Insufficient AI questions returned (${questionsData.length}/5)`);
+      console.error(`\n[AI-REQUEST-FAILED]\nround=hr\nprovider=groq\nrequestId=${requestId}\nerror=Insufficient unique AI questions returned (${questionsData.length}/5)`);
       throw new Error(`Insufficient HR AI questions generated (${questionsData.length}/5)`);
     }
 
@@ -118,7 +115,7 @@ export async function generateAndProcessHRQuestions({ userId = null, sessionId, 
     console.log(`[HR-DIAGNOSTIC] dbSaveSuccess=true savedQuestionsCount=${createdQuestions.length}`);
 
     if (userId && sessionId) {
-      await recordUserQuestionHistory({ userId, sessionId, round: "hr", questions: createdQuestions });
+      await recordUserQuestionHistory({ userId, sessionId, resumeHash: candidateProfile?.resumeHash, round: "hr", questions: createdQuestions });
     }
 
     session.generationStatus = "GENERATED";

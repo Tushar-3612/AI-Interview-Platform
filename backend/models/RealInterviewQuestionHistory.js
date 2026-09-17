@@ -17,6 +17,11 @@ const realInterviewQuestionHistorySchema = new mongoose.Schema(
       required: true,
       index: true,
     },
+    resumeHash: {
+      type: String,
+      default: "",
+      index: true,
+    },
     round: {
       type: String,
       required: true,
@@ -39,9 +44,10 @@ const realInterviewQuestionHistorySchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Compound index for fast user-level duplicate lookups
+// Compound index for fast user & resume-level duplicate lookups
+realInterviewQuestionHistorySchema.index({ userId: 1, resumeHash: 1, normalizedQuestion: 1 });
+realInterviewQuestionHistorySchema.index({ userId: 1, resumeHash: 1, round: 1 });
 realInterviewQuestionHistorySchema.index({ userId: 1, normalizedQuestion: 1 });
-realInterviewQuestionHistorySchema.index({ userId: 1, round: 1 });
 
 const RealInterviewQuestionHistory = mongoose.model(
   "RealInterviewQuestionHistory",

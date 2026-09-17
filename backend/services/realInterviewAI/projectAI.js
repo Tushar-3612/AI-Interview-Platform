@@ -63,7 +63,7 @@ import { extractJsonFromText } from "./jsonExtractor.js";
  * @returns {Promise<{ questions: Array }>}
  */
 
-export async function generateProjectAI(candidateProfile = {}) {
+export async function generateProjectAI(candidateProfile = {}, userHistorySet = new Set()) {
   console.log("\n[REAL-INTERVIEW][AI-CALL]\nround=project\noperation=generation\nattempt=1");
 
   const apiKey = getProjectApiKey();
@@ -109,6 +109,22 @@ export async function generateProjectAI(candidateProfile = {}) {
 
   const defaultProjName = normalizedProjects[0]?.name || "Full Stack Application";
 
+  const excludedList = Array.from(userHistorySet).slice(0, 100);
+  const exclusionText = excludedList.length > 0
+    ? `\nABSOLUTE ZERO-REPETITION RULE:
+The following list contains questions that have ALREADY been asked to this candidate in previous Real Interview attempts or earlier in the current attempt.
+You MUST NOT generate any question that:
+1. Exactly matches a previous question.
+2. Is a reworded version of a previous question.
+3. Is a paraphrase of a previous question.
+4. Tests the same underlying concept in substantially the same way.
+5. Uses different wording but has the same question intent.
+6. Is a slightly modified version of an already asked question.
+
+Previously Asked Questions:
+${excludedList.map(q => `- ${q}`).join("\n")}\n`
+    : "";
+
   const prompt = `Generate a JSON object with key "questions" containing EXACTLY 10 deep project interview questions based on candidate's project portfolio:
 
 CANDIDATE PROJECTS:
@@ -118,7 +134,7 @@ DIFFICULTY BREAKDOWN (EXACTLY 10 QUESTIONS):
 - Questions 1 to 4: "difficulty": "easy" (5 marks each)
 - Questions 5 to 8: "difficulty": "medium" (10 marks each)
 - Questions 9 to 10: "difficulty": "hard" (20 marks each)
-
+${exclusionText}
 CRITICAL GROUNDING CONSTRAINTS:
 1. "questions" MUST be an array of EXACTLY 10 objects.
 2. Ask about actual technologies, architecture, data flow, trade-offs, and challenges mentioned in candidate projects.
@@ -126,6 +142,7 @@ CRITICAL GROUNDING CONSTRAINTS:
 4. "expectedKnowledge": Key architectural and technical points expected.
 5. "topic": Project domain or component.
 6. "projectName": Project name associated with question.
+7. Do NOT generate or rephrase any question from the exclusion list.
 
 JSON OUTPUT ONLY:
 {

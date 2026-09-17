@@ -58,13 +58,27 @@ function cleanJsonResponse(rawText) {
 /**
  * AI CALL #1: Generate EXACTLY 3 DSA Coding Problems in ONE AI request (Attempt 1).
  */
-export async function generateCodingAI({ candidateProfile = {}, count = 3 }) {
+export async function generateCodingAI({ candidateProfile = {}, userHistorySet = new Set(), count = 3 }) {
   console.log("\n[REAL-INTERVIEW][AI-CALL]\nround=coding\noperation=generation\nattempt=1");
 
   const profileSummary = `
 - Full Name: ${candidateProfile.fullName || candidateProfile.name || "Candidate"}
 - Key Skills: ${JSON.stringify(candidateProfile.skills || candidateProfile.technicalSkills || ["Data Structures", "Algorithms"])}
 `;
+
+  const excludedList = Array.from(userHistorySet).slice(0, 100);
+  const exclusionText = excludedList.length > 0
+    ? `\nABSOLUTE ZERO-REPETITION RULE:
+The following list contains coding problems/questions that have ALREADY been asked to this candidate in previous Real Interview attempts or earlier in the current attempt.
+You MUST NOT generate any coding problem that:
+1. Exactly matches a previous problem title, description, or statement.
+2. Is a reworded or paraphrased version of a previous problem.
+3. Tests the exact same core problem statement in substantially the same way.
+4. Uses different variable names or story contexts but has the same problem intent.
+
+Previously Asked Problems:
+${excludedList.map(q => `- ${q}`).join("\n")}\n`
+    : "";
 
   const systemPrompt = `You are a Principal Software Engineer & Technical Hiring Lead conducting a real LeetCode-style placement coding interview.
 Your task is to generate EXACTLY 3 distinct, high-quality Data Structures & Algorithms coding problems in ONE single JSON request.
@@ -79,6 +93,7 @@ CRITICAL ARCHITECTURAL RULES:
 3. STARTER CODE: Provide problem-specific starter code for ALL 4 languages ("python", "javascript", "java", "cpp"). The function signatures MUST match the problem requirements exactly.
 4. TEST CASES: Provide 2 visible sample test cases and at least 3 hidden test cases per problem. Input and expected outputs MUST be clean strings that can be passed directly to standard input/output.
 5. NO TRIVIAL OR AMBIGUOUS PROBLEMS: Generate realistic interview-relevant DSA problems. Input, output, examples, and starter code MUST be 100% consistent.
+6. Do NOT select or rephrase any problem from the exclusion list.
 
 JSON SCHEMA REQUIREMENT:
 {
@@ -110,7 +125,7 @@ JSON SCHEMA REQUIREMENT:
   ]
 }`;
 
-  const userPrompt = `Candidate Profile:\n${profileSummary}\n\nGenerate EXACTLY 3 DSA coding problems (20m, 30m, 50m) in valid JSON.`;
+  const userPrompt = `Candidate Profile:\n${profileSummary}\n${exclusionText}\nGenerate EXACTLY 3 DSA coding problems (20m, 30m, 50m) in valid JSON.`;
 
   console.log("\n[REAL-INTERVIEW][CODING-CONTEXT]");
   console.log(`technical profile actually sent to AI: ${profileSummary.trim()}\n`);
