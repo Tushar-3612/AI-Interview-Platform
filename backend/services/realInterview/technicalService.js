@@ -3,6 +3,7 @@ import {
   generateTechnicalAIBatch,
   evaluateTechnicalInterviewAI,
 } from "../realInterviewAI/technicalAI.js";
+import { generateDeterministicTechnicalEvaluation } from "../realInterviewAI/deterministicEvaluator.js";
 import RealInterviewTechnicalQuestion from "../../models/RealInterviewTechnicalQuestion.js";
 import RealInterviewTechnicalSession from "../../models/RealInterviewTechnicalSession.js";
 import Interview from "../../models/Interview.js";
@@ -18,16 +19,10 @@ import { preprocessAnswerBatch } from "../realInterviewAI/answerPreprocessor.js"
 import { resolveCandidateAnswer } from "./answerResolver.js";
 import { classifyInterviewAIError } from "./errorClassifier.js";
 import { resolveTechnicalFallbackQuestion } from "../realInterviewAI/technicalFallbackResolver.js";
+import { idempotentUpsertQuestion } from "../aiReliability/utils/mongoConnectionHelper.js";
 
 /**
  * Generates or retrieves existing 20 Technical questions for a Real Interview session (AI CALL #1).
- * Enforces IDEMPOTENCY & RESUMABLE CHECKPOINTS:
- * 1. Checks existing DB questions for current session.
- * 2. Computes exact missing 1-indexed question numbers from actual DB orderIndex values.
- * 3. Generates missing questions in 2-question AI batches.
- * 4. Saves each batch immediately to MongoDB.
- * 5. Never restarts from Q1 if partial questions exist.
- * 6. Returns a controlled recoverable response on AI failure without unhandled rejections.
  */
 export async function generateAndProcessTechnicalQuestions({
   userId = null,
@@ -47,7 +42,6 @@ export async function generateAndProcessTechnicalQuestions({
 
     const TARGET_COUNT = 20;
 
-    // Helper: compute missing 0-indexed order indices (0..19)
     const computeMissingIndices = (questionsList) => {
       const existingIndicesSet = new Set(questionsList.map((q) => q.orderIndex));
       const missing = [];
@@ -61,7 +55,6 @@ export async function generateAndProcessTechnicalQuestions({
 
     let missingIndices = computeMissingIndices(existingQuestions);
 
-    // Check if session is already fully generated with all 20 indices present
     if (
       (session && (session.aiGenerationCalls >= 1 || session.generationStatus === "GENERATED")) &&
       missingIndices.length === 0 &&
@@ -102,20 +95,23 @@ export async function generateAndProcessTechnicalQuestions({
       }));
 
       return {
+        executionCompleted: true,
+        generationSucceeded: false, // Reused, AI wasn't newly run
+        roundComplete: true,
+        count: studentQuestions.length,
+        expectedCount: TARGET_COUNT,
+        status: "COMPLETE",
         success: true,
         message: "Reused existing 20 technical questions",
-        count: studentQuestions.length,
         questions: studentQuestions,
         reused: true,
         aiGenerationCalls: session.aiGenerationCalls || 1,
       };
     }
 
-    // Build context
     const effectiveProfile = await getOrBuildCandidateResumeContext(userId, candidateProfile);
     const userHistorySet = await getUserQuestionHistorySet(userId, effectiveProfile.resumeHash, "technical");
 
-    // Extract skill context string
     const skillsList = [
       ...(effectiveProfile.skills || []),
       ...(effectiveProfile.programmingLanguages || []),
@@ -130,7 +126,6 @@ export async function generateAndProcessTechnicalQuestions({
       ? uniqueSkills.slice(0, 15).join(", ")
       : "Computer Science Fundamentals, Data Structures, OOP, Software Engineering Principles";
 
-    // Track existing questions in memory pool for deduplication
     const currentPoolSet = new Set();
     existingQuestions.forEach((q) => {
       const norm = normalizeQuestionText(q.question);
@@ -162,10 +157,9 @@ export async function generateAndProcessTechnicalQuestions({
     let totalAiCallsMade = session?.aiGenerationCalls || 0;
     let lastError = null;
 
-    // Resumable progress-driven batch loop (EXACTLY 2 questions per batch)
     while (missingIndices.length > 0) {
       const currentBatchIndices = missingIndices.slice(0, 2);
-      const startQuestionNumber = currentBatchIndices[0] + 1; // First missing 1-indexed question number
+      const startQuestionNumber = currentBatchIndices[0] + 1;
       const batchSize = currentBatchIndices.length;
 
       console.log(
@@ -181,22 +175,22 @@ export async function generateAndProcessTechnicalQuestions({
           targetTotalCount: TARGET_COUNT,
           userHistorySet,
           currentPoolSet,
+          sessionId
         });
         totalAiCallsMade++;
       } catch (aiErr) {
         console.error(`[TechnicalService] Batch generation error for Q${startQuestionNumber}: ${aiErr.message}`);
         lastError = aiErr;
-        break; // Stop cleanly on AI failure
+        break;
       }
 
       if (!batchResult || batchResult.length === 0) {
         console.warn(`[TechnicalService] Batch for Q${startQuestionNumber} returned 0 valid questions.`);
         lastError = new Error(`AI service returned no valid unique questions for Q${startQuestionNumber}`);
-        break; // Stop cleanly if batch is empty
+        break;
       }
 
-      // Format & validate new batch docs mapped to exact missing orderIndex slots
-      const newDocs = [];
+      const savedBatchDocs = [];
       for (let idx = 0; idx < Math.min(batchResult.length, currentBatchIndices.length); idx++) {
         const q = batchResult[idx];
         const assignedOrderIndex = currentBatchIndices[idx];
@@ -215,7 +209,7 @@ export async function generateAndProcessTechnicalQuestions({
         const targetDiff = assignedOrderIndex <= 5 ? "easy" : assignedOrderIndex <= 17 ? "medium" : "hard";
         const maxMarks = targetDiff === "easy" ? 3 : targetDiff === "hard" ? 13 : 5;
 
-        newDocs.push({
+        const docToSave = {
           sessionId,
           userId,
           orderIndex: assignedOrderIndex,
@@ -231,16 +225,20 @@ export async function generateAndProcessTechnicalQuestions({
           isFallback: false,
           relatedSkill: String(q.skillsTested?.[0] || "").trim(),
           relatedProject: "",
-        });
+        };
+
+        const saved = await idempotentUpsertQuestion(
+          RealInterviewTechnicalQuestion,
+          { sessionId, orderIndex: assignedOrderIndex },
+          docToSave
+        );
+        if (saved) savedBatchDocs.push(saved);
       }
 
-      if (newDocs.length === 0) {
+      if (savedBatchDocs.length === 0) {
         lastError = new Error(`No valid question documents created for Q${startQuestionNumber}`);
         break;
       }
-
-      // Save batch IMMEDIATELY to DB checkpoint
-      const savedBatchDocs = await RealInterviewTechnicalQuestion.insertMany(newDocs);
 
       if (userId && sessionId) {
         await recordUserQuestionHistory({
@@ -252,26 +250,18 @@ export async function generateAndProcessTechnicalQuestions({
         });
       }
 
-      // Add to pool and update in-memory list
       savedBatchDocs.forEach((doc) => {
         const norm = normalizeQuestionText(doc.question);
         if (norm) currentPoolSet.add(norm);
         existingQuestions.push(doc);
       });
 
-      console.log(
-        `[TechnicalService] Batch saved successfully to DB! Total questions now in DB: ${existingQuestions.length}/${TARGET_COUNT}`
-      );
-
-      // Recompute missing indices
       missingIndices = computeMissingIndices(existingQuestions);
     }
 
     missingIndices = computeMissingIndices(existingQuestions);
     const initialMissingCount = missingIndices.length;
 
-    // Requirement 2 & 11: If AI generation fails/stops with missingCount between 1 and 3,
-    // invoke the curated technicalFallbackResolver ONLY for the missing slot(s).
     if (initialMissingCount > 0 && initialMissingCount <= 3) {
       console.log(
         `[TechnicalService] AI generation ended with missingCount=${initialMissingCount} (missingIndices=[${missingIndices.join(", ")}]). Invoking curated technical fallback resolver...`
@@ -290,8 +280,12 @@ export async function generateAndProcessTechnicalQuestions({
         });
 
         if (fallbackDoc) {
-          const savedFallback = await RealInterviewTechnicalQuestion.create(fallbackDoc);
-          if (userId && sessionId) {
+          const savedFallback = await idempotentUpsertQuestion(
+            RealInterviewTechnicalQuestion,
+            { sessionId, orderIndex: slotIndex },
+            fallbackDoc
+          );
+          if (savedFallback && userId && sessionId) {
             await recordUserQuestionHistory({
               userId,
               sessionId,
@@ -299,19 +293,19 @@ export async function generateAndProcessTechnicalQuestions({
               round: "technical",
               questions: [savedFallback],
             });
+            const norm = normalizeQuestionText(savedFallback.question);
+            if (norm) currentPoolSet.add(norm);
+            existingQuestions.push(savedFallback);
           }
-
-          const norm = normalizeQuestionText(savedFallback.question);
-          if (norm) currentPoolSet.add(norm);
-          existingQuestions.push(savedFallback);
         }
       }
 
-      // Recompute missing indices after fallback resolution
       missingIndices = computeMissingIndices(existingQuestions);
     }
 
-    if (missingIndices.length === 0 && existingQuestions.length >= TARGET_COUNT) {
+    const roundComplete = missingIndices.length === 0 && existingQuestions.length >= TARGET_COUNT;
+
+    if (roundComplete) {
       session.generationStatus = "GENERATED";
       session.aiGenerationCalls = totalAiCallsMade;
       session.lastErrorCode = "";
@@ -336,15 +330,19 @@ export async function generateAndProcessTechnicalQuestions({
         }));
 
       return {
+        executionCompleted: true,
+        generationSucceeded: true,
+        roundComplete: true,
+        count: studentQuestions.length,
+        expectedCount: TARGET_COUNT,
+        status: "COMPLETE",
         success: true,
         message: `${studentQuestions.length} resume-driven technical questions generated successfully`,
-        count: studentQuestions.length,
         questions: studentQuestions,
         reused: false,
         aiGenerationCalls: totalAiCallsMade,
       };
     } else {
-      // Partial generation / Recoverable failure state (when missingCount > 3 or fallback bank exhausted)
       const classified = classifyInterviewAIError(lastError || "Technical generation stopped before completing all 20 questions");
       session.generationStatus = existingQuestions.length > 0 ? "PARTIAL" : "FAILED";
       session.aiGenerationCalls = totalAiCallsMade;
@@ -353,10 +351,6 @@ export async function generateAndProcessTechnicalQuestions({
       await session.save();
 
       const firstMissingQuestionNumber = missingIndices.length > 0 ? missingIndices[0] + 1 : existingQuestions.length + 1;
-
-      console.warn(
-        `[TechnicalService] Partial generation retained! Saved: ${existingQuestions.length}/${TARGET_COUNT}. First missing question number: Q${firstMissingQuestionNumber}. Error: ${classified.message}`
-      );
 
       const studentQuestions = existingQuestions
         .sort((a, b) => a.orderIndex - b.orderIndex)
@@ -376,6 +370,12 @@ export async function generateAndProcessTechnicalQuestions({
         }));
 
       return {
+        executionCompleted: true,
+        generationSucceeded: false,
+        roundComplete: false,
+        count: existingQuestions.length,
+        expectedCount: TARGET_COUNT,
+        status: existingQuestions.length > 0 ? "PARTIAL" : "FAILED",
         success: false,
         recoverable: classified.recoverable,
         generatedCount: existingQuestions.length,
@@ -390,34 +390,19 @@ export async function generateAndProcessTechnicalQuestions({
 }
 
 /**
- * Selects the candidate's next adaptive technical question.
- * ZERO AI CALLS.
+ * Selects candidate's next adaptive technical question (ZERO AI CALLS).
  */
 export async function getNextTechnicalQuestion({ sessionId }) {
-  if (!sessionId) {
-    throw new Error("sessionId is required");
-  }
-
+  if (!sessionId) throw new Error("sessionId is required");
   const session = await RealInterviewTechnicalSession.findOne({ sessionId });
-  if (!session) {
-    throw new Error("Technical session not found for this sessionId");
-  }
+  if (!session) throw new Error("Technical session not found for this sessionId");
 
   if (session.status === "completed" || session.questionsAnswered >= 20) {
-    return {
-      success: true,
-      completed: true,
-      message: "Technical round completed",
-    };
+    return { success: true, completed: true, message: "Technical round completed" };
   }
 
-  const allQuestions = await RealInterviewTechnicalQuestion.find({ sessionId }).sort({
-    orderIndex: 1,
-  });
-
-  if (allQuestions.length === 0) {
-    throw new Error("No technical questions found for this session. Generate questions first.");
-  }
+  const allQuestions = await RealInterviewTechnicalQuestion.find({ sessionId }).sort({ orderIndex: 1 });
+  if (allQuestions.length === 0) throw new Error("No technical questions found for this session.");
 
   const answeredQuestionIds = (session.answers || []).map((a) => a.questionId.toString());
   const unanswered = allQuestions.filter((q) => !answeredQuestionIds.includes(q._id.toString()));
@@ -425,19 +410,13 @@ export async function getNextTechnicalQuestion({ sessionId }) {
   if (unanswered.length === 0) {
     session.status = "completed";
     await session.save();
-    return {
-      success: true,
-      completed: true,
-      message: "All technical questions answered",
-    };
+    return { success: true, completed: true, message: "All technical questions answered" };
   }
 
   let candidatePool = unanswered;
   if (!session.hardUnlocked) {
     const easyMediumPool = unanswered.filter((q) => q.difficulty !== "hard");
-    if (easyMediumPool.length > 0) {
-      candidatePool = easyMediumPool;
-    }
+    if (easyMediumPool.length > 0) candidatePool = easyMediumPool;
   }
 
   const selectedQuestion = candidatePool[0];
@@ -468,32 +447,17 @@ export async function getNextTechnicalQuestion({ sessionId }) {
 }
 
 /**
- * Submits candidate's answer to database.
- * STRICTLY ZERO AI CALLS.
+ * Submits candidate answer (ZERO AI CALLS).
  */
-export async function submitTechnicalAnswer({
-  sessionId,
-  questionId,
-  candidateAnswer,
-  userId = null,
-}) {
-  if (!sessionId || !questionId) {
-    throw new Error("sessionId and questionId are required");
-  }
-
+export async function submitTechnicalAnswer({ sessionId, questionId, candidateAnswer, userId = null }) {
+  if (!sessionId || !questionId) throw new Error("sessionId and questionId are required");
   const questionDoc = await RealInterviewTechnicalQuestion.findById(questionId);
-  if (!questionDoc) {
-    throw new Error("Question not found");
-  }
+  if (!questionDoc) throw new Error("Question not found");
 
   const session = await RealInterviewTechnicalSession.findOne({ sessionId });
-  if (!session) {
-    throw new Error("Technical session not found");
-  }
+  if (!session) throw new Error("Technical session not found");
 
-  const existingAnswerIndex = session.answers.findIndex(
-    (a) => a.questionId.toString() === questionId
-  );
+  const existingAnswerIndex = session.answers.findIndex((a) => a.questionId.toString() === questionId);
   if (existingAnswerIndex !== -1) {
     return {
       success: true,
@@ -510,26 +474,16 @@ export async function submitTechnicalAnswer({
   }
 
   const cleanAnswer = String(candidateAnswer || "").trim();
-
-  const isSubstantialAnswer = cleanAnswer.length >= 15;
-  if (isSubstantialAnswer) {
-    session.strongAnswerCount += 1;
-  }
-
-  if (session.strongAnswerCount >= 2) {
-    session.hardUnlocked = true;
-  }
+  if (cleanAnswer.length >= 15) session.strongAnswerCount += 1;
+  if (session.strongAnswerCount >= 2) session.hardUnlocked = true;
 
   session.questionsAnswered += 1;
   session.currentQuestionIndex = session.questionsAnswered;
-
-  if (session.questionsAnswered >= 20) {
-    session.status = "completed";
-  }
+  if (session.questionsAnswered >= 20) session.status = "completed";
 
   const maxScore = questionDoc.maxMarks || (questionDoc.difficulty === "easy" ? 3 : questionDoc.difficulty === "hard" ? 13 : 5);
 
-  const answerRecord = {
+  session.answers.push({
     questionId: questionDoc._id,
     question: questionDoc.question,
     difficulty: questionDoc.difficulty,
@@ -538,9 +492,7 @@ export async function submitTechnicalAnswer({
     category: questionDoc.category,
     candidateAnswer: cleanAnswer,
     submittedAt: new Date(),
-  };
-
-  session.answers.push(answerRecord);
+  });
   await session.save();
 
   return {
@@ -558,26 +510,14 @@ export async function submitTechnicalAnswer({
 }
 
 /**
- * Evaluates ALL 20 candidate answers in ONE SINGLE AI API Request after completion (AI CALL #2).
- * Includes safe deterministic application-level fallback if AI request fails (e.g. rate limit/network error).
+ * Evaluates technical session after completion.
  */
 export async function evaluateTechnicalInterviewSession({ sessionId, candidateProfile = {} }) {
-  if (!sessionId) {
-    throw new Error("sessionId is required for evaluation");
-  }
-
+  if (!sessionId) throw new Error("sessionId is required for evaluation");
   const session = await RealInterviewTechnicalSession.findOne({ sessionId });
-  if (!session) {
-    throw new Error("Technical session not found for evaluation");
-  }
+  if (!session) throw new Error("Technical session not found for evaluation");
 
-  if (
-    session.evaluationCompleted ||
-    session.evaluationStatus === "COMPLETED"
-  ) {
-    console.log(
-      `[TechnicalService] Session ${sessionId} already evaluated cleanly (aiEvaluationCalls: ${session.aiEvaluationCalls}). Reusing stored evaluation.`
-    );
+  if (session.evaluationCompleted || session.evaluationStatus === "COMPLETED") {
     return {
       success: true,
       message: "Reused existing technical evaluation result",
@@ -609,18 +549,12 @@ export async function evaluateTechnicalInterviewSession({ sessionId, candidatePr
     };
   }
 
-  const allQuestions = await RealInterviewTechnicalQuestion.find({ sessionId }).sort({
-    orderIndex: 1,
-  });
-
-  if (allQuestions.length === 0) {
-    throw new Error("No technical questions found for evaluation in this session");
-  }
+  const allQuestions = await RealInterviewTechnicalQuestion.find({ sessionId }).sort({ orderIndex: 1 });
+  if (allQuestions.length === 0) throw new Error("No technical questions found for evaluation");
 
   const mainInterviewDoc = await Interview.findById(sessionId).lean().catch(() => null);
   const mainInterviewAnswers = mainInterviewDoc?.answers || [];
 
-  // Build base questions-to-evaluate list using authoritative answer resolver
   const baseQuestions = allQuestions.map((q, idx) => {
     const qIdStr = q._id.toString();
     const resolved = resolveCandidateAnswer({
@@ -631,30 +565,7 @@ export async function evaluateTechnicalInterviewSession({ sessionId, candidatePr
       roundSessionAnswers: session.answers || [],
       mainInterviewAnswers,
     });
-
     const maxScore = q.maxMarks || (q.difficulty === "easy" ? 3 : q.difficulty === "hard" ? 13 : 5);
-
-    // Sync answer back to technical session if found in main interview doc but missing in session
-    if (resolved.answerPresent) {
-      const existingAnsIndex = (session.answers || []).findIndex(
-        (a) => a.questionId.toString() === qIdStr
-      );
-      if (existingAnsIndex === -1) {
-        session.answers.push({
-          questionId: q._id,
-          question: q.question,
-          difficulty: q.difficulty,
-          maxScore,
-          topic: q.topic,
-          category: q.category,
-          candidateAnswer: resolved.answer,
-          submittedAt: new Date(),
-        });
-      } else if (!session.answers[existingAnsIndex].candidateAnswer || session.answers[existingAnsIndex].candidateAnswer === "(No answer submitted)") {
-        session.answers[existingAnsIndex].candidateAnswer = resolved.answer;
-      }
-    }
-
     return {
       questionId: qIdStr,
       question: q.question,
@@ -662,24 +573,18 @@ export async function evaluateTechnicalInterviewSession({ sessionId, candidatePr
       maxScore,
       topic: q.topic,
       category: q.category,
-      expectedKnowledge: q.expectedKnowledge || `Detailed technical explanation covering key principles and practical implementation of ${q.topic || q.question}.`,
+      expectedKnowledge: q.expectedKnowledge || `Technical explanation for ${q.topic || q.question}.`,
       candidateAnswer: resolved.answer,
       answerPresent: resolved.answerPresent,
     };
   });
 
-  // Filter ONLY attempted questions to send to AI
   const attemptedQuestions = baseQuestions.filter((q) => q.answerPresent);
-
-  // If ZERO questions were attempted, skip AI call completely
   if (attemptedQuestions.length === 0) {
-    console.log(`[TechnicalService] 0 candidate answers submitted for technical session ${sessionId}. Skipping AI evaluation call.`);
-
     for (const q of allQuestions) {
       const qIdStr = q._id.toString();
       const maxScore = q.maxMarks || (q.difficulty === "easy" ? 3 : q.difficulty === "hard" ? 13 : 5);
       const existingAnsIndex = session.answers.findIndex((a) => a.questionId.toString() === qIdStr);
-
       const answerData = {
         questionId: q._id,
         question: q.question,
@@ -696,15 +601,11 @@ export async function evaluateTechnicalInterviewSession({ sessionId, candidatePr
         incorrectPoints: [],
         grammarIssues: [],
         feedback: "Question was not attempted.",
-        betterAnswer: q.expectedKnowledge || "Comprehensive technical explanation covering core principles.",
+        betterAnswer: q.expectedKnowledge || "Comprehensive technical explanation.",
         submittedAt: existingAnsIndex !== -1 ? session.answers[existingAnsIndex].submittedAt : new Date(),
       };
-
-      if (existingAnsIndex !== -1) {
-        session.answers[existingAnsIndex] = answerData;
-      } else {
-        session.answers.push(answerData);
-      }
+      if (existingAnsIndex !== -1) session.answers[existingAnsIndex] = answerData;
+      else session.answers.push(answerData);
     }
 
     session.totalScore = 0;
@@ -718,9 +619,7 @@ export async function evaluateTechnicalInterviewSession({ sessionId, candidatePr
     session.evaluationStatus = "COMPLETED";
     session.evaluationCompleted = true;
     session.aiEvaluationCalls = 0;
-    session.evaluationCompletedAt = new Date();
     session.status = "completed";
-
     await session.save();
 
     return {
@@ -740,7 +639,6 @@ export async function evaluateTechnicalInterviewSession({ sessionId, candidatePr
     };
   }
 
-  // Preprocess attempted answers
   const preprocessMap = await preprocessAnswerBatch(
     attemptedQuestions.map((q) => ({ questionId: q.questionId, answer: q.candidateAnswer, round: "technical" })),
     300
@@ -748,33 +646,23 @@ export async function evaluateTechnicalInterviewSession({ sessionId, candidatePr
 
   const questionsToEvaluate = attemptedQuestions.map((q) => {
     const pre = preprocessMap.get(q.questionId);
-    if (pre && pre.reductionPercent > 0) {
-      console.log(`[EVAL-NLP] round=technical questionId=${q.questionId} originalTokens=${pre.tokenCountBefore} compactTokens=${pre.tokenCountAfter} reductionPercent=${pre.reductionPercent}`);
-    }
-    return {
-      ...q,
-      candidateAnswer: pre?.compactAnswer || q.candidateAnswer,
-      originalCandidateAnswer: q.candidateAnswer,
-    };
+    return { ...q, candidateAnswer: pre?.compactAnswer || q.candidateAnswer, originalCandidateAnswer: q.candidateAnswer };
   });
 
   session.evaluationStatus = "EVALUATING";
-  session.evaluationStartedAt = new Date();
   await session.save();
 
-  console.log(`[TechnicalService] Making AI CALL #2 (evaluation of ${questionsToEvaluate.length} attempted questions) for session ${sessionId}...`);
   let evalResult;
-
   try {
     evalResult = await evaluateTechnicalInterviewAI({
       candidateProfile,
       questions: questionsToEvaluate,
+      options: { sessionId }
     });
   } catch (evalErr) {
-    console.error(`[TechnicalService] Technical AI evaluation call failed for session ${sessionId}: ${evalErr.message}`);
-    session.evaluationStatus = "FAILED";
-    await session.save();
-    throw new Error(`Technical AI evaluation failed: ${evalErr.message}`);
+    console.log(`\n[RESULT-EVALUATION]\nround=technical\nstatus=AI_FAILED\nerrorCode=${evalErr.message}\nfallback=LOCAL_OR_UNAVAILABLE`);
+    console.log(`\n[RESULT-EVALUATION]\nround=technical\nstatus=CONTINUING_AFTER_FAILURE`);
+    evalResult = generateDeterministicTechnicalEvaluation(questionsToEvaluate, evalErr.message);
   }
 
   const evaluationsList = Array.isArray(evalResult.evaluations) ? evalResult.evaluations : [];
@@ -793,13 +681,12 @@ export async function evaluateTechnicalInterviewSession({ sessionId, candidatePr
     let correctPoints = [];
     let incorrectPoints = [];
     let grammarIssues = [];
-    let betterAnswer = q.expectedKnowledge || "Interview-ready response based on candidate answer.";
+    let betterAnswer = q.expectedKnowledge || "Interview-ready response.";
 
     if (baseObj?.answerPresent) {
       const rawScore = Number(itemEval.score);
       score = isNaN(rawScore) ? 0 : Math.max(0, Math.min(maxScore, Math.round(rawScore)));
-      const ratingCandidate = String(itemEval.rating || "").trim();
-      rating = ratingCandidate || (score >= maxScore * 0.8 ? "Strong" : score >= maxScore * 0.5 ? "Acceptable" : "Weak");
+      rating = itemEval.rating || (score >= maxScore * 0.8 ? "Strong" : score >= maxScore * 0.5 ? "Acceptable" : "Weak");
       feedback = String(itemEval.feedback || "Evaluation complete.").trim();
       missingPoints = Array.isArray(itemEval.missingPoints) ? itemEval.missingPoints : [];
       correctPoints = Array.isArray(itemEval.correctPoints) ? itemEval.correctPoints : [];
@@ -809,11 +696,7 @@ export async function evaluateTechnicalInterviewSession({ sessionId, candidatePr
     }
 
     calculatedTotalScore += score;
-
     const existingAnsIndex = session.answers.findIndex((a) => a.questionId.toString() === qIdStr);
-    const persistedAnswer = baseObj?.answerPresent
-      ? baseObj.candidateAnswer
-      : "(No answer submitted)";
 
     const answerData = {
       questionId: q._id,
@@ -822,7 +705,7 @@ export async function evaluateTechnicalInterviewSession({ sessionId, candidatePr
       maxScore,
       topic: q.topic,
       category: q.category,
-      candidateAnswer: persistedAnswer,
+      candidateAnswer: baseObj?.answerPresent ? baseObj.candidateAnswer : "(No answer submitted)",
       score,
       rating,
       evaluationSource: baseObj?.answerPresent ? (itemEval.evaluationSource || "ai_evaluated") : "not_attempted",
@@ -835,42 +718,27 @@ export async function evaluateTechnicalInterviewSession({ sessionId, candidatePr
       submittedAt: existingAnsIndex !== -1 ? session.answers[existingAnsIndex].submittedAt : new Date(),
     };
 
-    if (existingAnsIndex !== -1) {
-      session.answers[existingAnsIndex] = answerData;
-    } else {
-      session.answers.push(answerData);
-    }
+    if (existingAnsIndex !== -1) session.answers[existingAnsIndex] = answerData;
+    else session.answers.push(answerData);
   }
 
   const maxScoreTotal = 100;
   const percentage = Math.round((calculatedTotalScore / maxScoreTotal) * 100);
 
-  let overallRating = "Weak";
-  if (percentage >= 90) overallRating = "Excellent";
-  else if (percentage >= 80) overallRating = "Very Strong";
-  else if (percentage >= 70) overallRating = "Strong";
-  else if (percentage >= 60) overallRating = "Good";
-  else if (percentage >= 50) overallRating = "Average";
-  else if (percentage >= 40) overallRating = "Needs Improvement";
-
   session.totalScore = calculatedTotalScore;
   session.overallScore = calculatedTotalScore;
   session.maxScore = maxScoreTotal;
   session.percentage = percentage;
-  session.overallRating = evalResult.overallRating || overallRating;
-  session.strengths = Array.isArray(evalResult.strengths) ? evalResult.strengths : ["Candidate answer recorded"];
+  session.overallRating = evalResult.overallRating || (percentage >= 70 ? "Strong" : percentage >= 40 ? "Average" : "Weak");
+  session.strengths = Array.isArray(evalResult.strengths) ? evalResult.strengths : ["Technical knowledge recorded"];
   session.weaknesses = Array.isArray(evalResult.weaknesses) ? evalResult.weaknesses : ["Areas identified in response"];
-  session.finalFeedback = String(evalResult.finalFeedback || "Technical interview evaluated using AI.").trim();
-
+  session.finalFeedback = String(evalResult.finalFeedback || "Technical interview evaluated.").trim();
   session.evaluationStatus = "COMPLETED";
   session.evaluationCompleted = true;
   session.aiEvaluationCalls = 1;
-  session.evaluationCompletedAt = new Date();
   session.status = "completed";
 
   await session.save();
-
-  console.log(`[TechnicalService] Evaluation complete for session ${sessionId}. Total score: ${calculatedTotalScore}/100 (${percentage}%).`);
 
   return {
     success: true,
@@ -883,25 +751,8 @@ export async function evaluateTechnicalInterviewSession({ sessionId, candidatePr
     strengths: session.strengths,
     weaknesses: session.weaknesses,
     finalFeedback: session.finalFeedback,
-    evaluations: session.answers.map((a) => ({
-      questionId: a.questionId.toString(),
-      question: a.question,
-      candidateAnswer: a.candidateAnswer,
-      score: a.score,
-      maxScore: a.maxScore,
-      difficulty: a.difficulty,
-      rating: a.rating,
-      evaluationSource: a.evaluationSource || "ai_evaluated",
-      correctPoints: a.correctPoints,
-      missingPoints: a.missingPoints,
-      incorrectPoints: a.incorrectPoints,
-      grammarIssues: a.grammarIssues,
-      feedback: a.feedback,
-      betterAnswer: a.betterAnswer,
-    })),
+    evaluations: session.answers,
     reused: false,
     aiEvaluationCalls: 1,
   };
 }
-
-// generateDeterministicTechnicalFallback removed — replaced by deterministicEvaluator.js

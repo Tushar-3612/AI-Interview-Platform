@@ -17,10 +17,12 @@ import {
   Star,
   AlertCircle,
   Home,
-  BookOpen
+  BookOpen,
+  Key
 } from "lucide-react";
 import api from "../../utils/api";
 import { getAuthToken } from "../../hooks/useStudentProfile";
+import BYOKModal from "../BYOKModal";
 
 const PREPARATION_STAGES = [
   {
@@ -196,6 +198,7 @@ export default function RealInterviewPreparationScreen({
 
   // Feedback Modal State
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [isBYOKOpen, setIsBYOKOpen] = useState(false);
   const [feedbackForm, setFeedbackForm] = useState({
     issueType: "Question generation failed",
     failedStage: "",
@@ -524,6 +527,24 @@ export default function RealInterviewPreparationScreen({
     setFriendlyErrorMessage("");
     setPartialInfoState(null);
 
+    // Bind BYOK key if saved in sessionStorage
+    const byokProvider = sessionStorage.getItem("byok_provider");
+    const byokApiKey = sessionStorage.getItem("byok_api_key");
+    if (byokProvider && byokApiKey) {
+      try {
+        const token = getAuthToken();
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        await api.post("/api/real-interview/byok/set-session-key", {
+          sessionId,
+          provider: byokProvider,
+          apiKey: byokApiKey
+        }, { headers });
+        console.log(`[PREP] BYOK provider '${byokProvider}' bound to session '${sessionId}'`);
+      } catch (keyErr) {
+        console.warn("[PREP] Failed to bind BYOK session key:", keyErr.message);
+      }
+    }
+
     for (let i = 0; i < activeStages.length; i++) {
       const stage = activeStages[i];
 
@@ -781,6 +802,13 @@ export default function RealInterviewPreparationScreen({
                   {partialInfoState?.roundTitle ? `RESUME ${partialInfoState.roundTitle.toUpperCase()} GENERATION` : "TRY AGAIN"}
                 </button>
                 <button
+                  onClick={() => setIsBYOKOpen(true)}
+                  className="w-full sm:w-auto px-6 py-3 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 font-bold text-xs md:text-sm flex items-center justify-center gap-2 border border-indigo-500/30 transition cursor-pointer"
+                >
+                  <Key className="w-4 h-4" />
+                  CONFIGURE AI KEY (BYOK)
+                </button>
+                <button
                   onClick={() => setShowFeedbackModal(true)}
                   className="w-full sm:w-auto px-6 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs md:text-sm flex items-center justify-center gap-2 border border-slate-700 transition cursor-pointer"
                 >
@@ -792,6 +820,16 @@ export default function RealInterviewPreparationScreen({
           </div>
         </div>
       </div>
+
+      {/* BYOK MODAL */}
+      <BYOKModal
+        isOpen={isBYOKOpen}
+        onClose={() => setIsBYOKOpen(false)}
+        onSave={() => {
+          isRunningRef.current = false;
+          executePreparationSequence();
+        }}
+      />
 
       {/* FEEDBACK MODAL */}
       <AnimatePresence>

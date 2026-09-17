@@ -6,7 +6,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.join(__dirname, "../../../.env") });
 
-import { callPythonGroqBridge } from "./pythonGroqBridge.js";
+import { AIGateway } from "../aiReliability/index.js";
 
 function getProjectApiKey(attempt = 1) {
   const keys = [
@@ -18,12 +18,7 @@ function getProjectApiKey(attempt = 1) {
     process.env.REAL_INTERVIEW_APTITUDE_API_KEY,
   ].map((k) => (k || "").trim()).filter(Boolean);
   const uniqueKeys = Array.from(new Set(keys));
-  const apiKey = uniqueKeys[(attempt - 1) % uniqueKeys.length];
-
-  if (!apiKey) {
-    console.error("[RealInterviewAI][Project] Missing API key");
-    throw new Error("REAL_INTERVIEW_PROJECT_API_KEY is not configured in environment");
-  }
+  const apiKey = uniqueKeys[(attempt - 1) % uniqueKeys.length] || uniqueKeys[0] || "";
   return apiKey;
 }
 
@@ -36,38 +31,13 @@ function getProjectModel(attempt = 1) {
 }
 
 /**
- * Classify Groq API errors to determine retry behavior.
+ * Generates EXACTLY 10 deep Project/Resume questions in ONE AI API Request using AIGateway.
  */
-function classifyGroqError(err) {
-  const status = err?.status || err?.statusCode || 0;
-  const msg = String(err?.message || err || "").toLowerCase();
-
-  if (status === 404 || msg.includes("404") || msg.includes("model_not_found") || msg.includes("does not exist")) {
-    return { retryable: false, reason: "Model not found (404)" };
-  }
-  if (status === 401 || status === 403 || msg.includes("401") || msg.includes("403")) {
-    return { retryable: false, reason: "Authentication/authorization error" };
-  }
-  if (status === 429 || msg.includes("429") || msg.includes("rate_limit") || msg.includes("tokens per day")) {
-    return { retryable: false, reason: "Rate limit / daily quota exhausted (429)" };
-  }
-  return { retryable: true, reason: "Transient error" };
-}
-
-import { extractJsonFromText } from "./jsonExtractor.js";
-
-/**
- * Generates EXACTLY 10 deep Project/Resume questions in ONE AI API Request (AI CALL #1).
- * Tests project purpose, workflow, architecture, implementation, API flow, DB decisions, auth, edge cases, trade-offs.
- * @param {Object} candidateProfile 
- * @returns {Promise<{ questions: Array }>}
- */
-
-export async function generateProjectAI(candidateProfile = {}, userHistorySet = new Set()) {
+export async function generateProjectAI(candidateProfile = {}, userHistorySet = new Set(), options = {}) {
   console.log("\n[REAL-INTERVIEW][AI-CALL]\nround=project\noperation=generation\nattempt=1");
 
-  const apiKey = getProjectApiKey();
-  const model = getProjectModel();
+  const apiKey = options.apiKey || getProjectApiKey();
+  const model = options.model || getProjectModel();
 
   const projects = candidateProfile.resumeProjects || candidateProfile.projects || [];
   let normalizedProjects = projects.map((p) => {
@@ -86,12 +56,6 @@ export async function generateProjectAI(candidateProfile = {}, userHistorySet = 
       role: p.role || "Developer",
     };
   }).filter(p => Boolean(p.name && p.name !== "Project"));
-
-  if (normalizedProjects.length > 0) {
-    console.log(`\n[REAL-INTERVIEW][PROJECT-CONTEXT]\nprojects=${JSON.stringify(normalizedProjects.map(p => ({ name: p.name, technologies: p.technologies })))}\n`);
-  } else {
-    console.log(`\n[REAL-INTERVIEW][PROJECT-CONTEXT]\nprojects=[] (Resume context unavailable)\n`);
-  }
 
   let projectsContext = "";
   if (normalizedProjects.length > 0) {
@@ -157,83 +121,36 @@ JSON OUTPUT ONLY:
   ]
 }`;
 
-  const requestBody = {
-    model,
-    messages: [
-      {
-        role: "system",
-        content: "You are a JSON API endpoint. Output ONLY valid JSON starting immediately with {\"questions\": [...]} without any reasoning, thinking, or commentary.",
-      },
-      { role: "user", content: prompt },
-    ],
-    temperature: 0.1,
-    max_tokens: 3500,
-  };
-
-  let lastError = null;
-  for (let attempt = 1; attempt <= 3; attempt++) {
-    const currentApiKey = getProjectApiKey(attempt);
-    const currentModel = getProjectModel(attempt);
-    try {
-      const rawText = await callPythonGroqBridge({
-        round: "project",
-        apiKey: currentApiKey,
-        model: currentModel,
-        messages: requestBody.messages,
-        temperature: requestBody.temperature,
-        max_tokens: requestBody.max_tokens,
-        timeoutMs: 60000,
-      });
-
-      const parsed = extractJsonFromText(rawText);
-
-      if (parsed && Array.isArray(parsed.questions) && parsed.questions.length >= 10) {
-        console.log(`[RealInterviewAI][Project] Generated ${parsed.questions.length} questions successfully`);
-        return parsed;
-      }
-      throw new Error(`AI returned ${parsed?.questions?.length || 0} questions (expected 10)`);
-    } catch (err) {
-      lastError = err;
-      const { retryable, reason } = classifyGroqError(err);
-      console.warn(`[RealInterviewAI][Project] Attempt ${attempt} failed: ${err.message} (${reason})`);
-      if (!retryable) {
-        console.warn(`[RealInterviewAI][Project] Non-retryable error, failing immediately: ${reason}`);
-        break;
-      }
-      if (attempt < 3) {
-        await new Promise((r) => setTimeout(r, 12000));
-      }
+  const parsed = await AIGateway.execute({
+    prompt,
+    systemPrompt: "You are a JSON API endpoint. Output ONLY valid JSON starting immediately with {\"questions\": [...]} without any reasoning, thinking, or commentary.",
+    provider: options.provider || "groq",
+    apiKey,
+    sessionId: options.sessionId,
+    roundType: "project",
+    orderIndex: 1,
+    options: {
+      model,
+      temperature: 0.1,
+      maxRetries: 3
     }
-  }
+  });
 
-  throw lastError || new Error("Project AI generation failed after 3 attempts");
+  if (parsed && Array.isArray(parsed.questions) && parsed.questions.length >= 10) {
+    console.log(`[RealInterviewAI][Project] Generated ${parsed.questions.length} questions successfully`);
+    return parsed;
+  }
+  throw new Error(`Project AI returned ${parsed?.questions?.length || 0} questions (expected 10)`);
 }
 
 /**
- * Evaluates ALL 10 candidate project answers in ONE SINGLE AI API Request (Attempt 1).
- * @param {Object} payload { candidateProfile, questions: [{ questionId, question, difficulty, maxScore, topic, expectedKnowledge, candidateAnswer, projectName }] }
- * @returns {Promise<Object>}
+ * Evaluates ALL 10 candidate project answers in ONE SINGLE AI API Request.
  */
-export async function evaluateProjectInterviewAI({ candidateProfile = {}, questions = [] }) {
+export async function evaluateProjectInterviewAI({ candidateProfile = {}, questions = [], options = {} }) {
   console.log("\n[REAL-INTERVIEW][AI-CALL]\nround=project\noperation=evaluation\nattempt=1");
 
-  const rawProjects = candidateProfile.projects || [];
-  let normalizedProjects = rawProjects.map((p) => {
-    if (typeof p === "string") return { name: p.trim(), technologies: [] };
-    return {
-      name: p.name || p.title || "",
-      technologies: p.technologies || p.techStack || [],
-    };
-  }).filter(p => Boolean(p.name));
-
-  if (normalizedProjects.length > 0) {
-    console.log(`[REAL-INTERVIEW][PROJECT-EVAL-CONTEXT]\nprojects=${JSON.stringify(normalizedProjects)}\n`);
-  } else {
-    console.log(`[REAL-INTERVIEW][PROJECT-EVAL-CONTEXT]\nprojects=[] (Resume context unavailable)\n`);
-  }
-
-  const apiKey = getProjectApiKey();
-  const model = getProjectModel();
+  const apiKey = options.apiKey || getProjectApiKey();
+  const model = options.model || getProjectModel();
 
   const formattedQuestions = questions.map((q, idx) => ({
     i: idx + 1,
@@ -281,31 +198,20 @@ JSON SCHEMA ONLY:
   "finalFeedback": "Overall evaluation summary..."
 }`;
 
-  const requestBody = {
-    model,
-    messages: [
-      {
-        role: "system",
-        content:
-          "You are a project interviewer evaluator. Output ONLY valid JSON matching schema for all 10 questions.",
-      },
-      { role: "user", content: prompt },
-    ],
-    temperature: 0.2,
-    max_tokens: 2560,
-  };
-
-  const rawText = await callPythonGroqBridge({
-    round: "project",
+  const parsed = await AIGateway.execute({
+    prompt,
+    systemPrompt: "You are a project interviewer evaluator. Output ONLY valid JSON matching schema for all 10 questions.",
+    provider: options.provider || "groq",
     apiKey,
-    model,
-    messages: requestBody.messages,
-    temperature: requestBody.temperature,
-    max_tokens: requestBody.max_tokens,
-    timeoutMs: 90000,
+    sessionId: options.sessionId,
+    roundType: "evaluation",
+    orderIndex: 1,
+    options: {
+      model,
+      temperature: 0.2,
+      maxRetries: 3
+    }
   });
-
-  const parsed = extractJsonFromText(rawText);
 
   if (!parsed || !Array.isArray(parsed.evaluations)) {
     throw new Error("Project evaluation AI response missing 'evaluations' array");
@@ -314,4 +220,3 @@ JSON SCHEMA ONLY:
   console.log(`[RealInterviewAI][Project] Complete evaluation finished for ${parsed.evaluations.length} questions`);
   return parsed;
 }
-

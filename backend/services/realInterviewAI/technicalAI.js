@@ -6,57 +6,50 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.join(__dirname, "../../../.env") });
 
-import { callPythonGroqBridge } from "./pythonGroqBridge.js";
-import { extractJsonFromText } from "./jsonExtractor.js";
+import { AIGateway } from "../aiReliability/index.js";
 import { isDuplicateQuestion, normalizeQuestionText } from "../realInterview/questionHistoryService.js";
 
 function getTechnicalApiKey() {
-  const apiKey = (process.env.REAL_INTERVIEW_TECHNICAL_API_KEY || process.env.GROQ_API_KEY || "").trim();
-  if (!apiKey) {
-    console.error("[RealInterviewAI][Technical] Missing API Key");
-    throw new Error("REAL_INTERVIEW_TECHNICAL_API_KEY is not configured in environment");
-  }
-  return apiKey;
+  return (process.env.REAL_INTERVIEW_TECHNICAL_API_KEY || process.env.GROQ_API_KEY || "").trim();
 }
 
 function getTechnicalModel() {
   return (process.env.REAL_INTERVIEW_TECHNICAL_MODEL || process.env.GROQ_MODEL || "openai/gpt-oss-120b").trim();
 }
 
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-function parseGroqRetryAfter(errMsg) {
-  const match = String(errMsg).match(/try again in ([0-9]+(?:\.[0-9]+)?)s/i);
-  if (match && match[1]) {
-    const sec = parseFloat(match[1]);
-    if (!isNaN(sec) && sec > 0) {
-      return Math.ceil(sec) + 1;
-    }
-  }
-  return 0;
+/**
+ * Returns difficulty based on 1-indexed question number.
+ * Q1-Q6: Easy (3 marks)
+ * Q7-Q18: Medium (5 marks)
+ * Q19-Q20: Hard (13 marks)
+ */
+export function getDifficultyForQuestionNumber(qNum) {
+  if (qNum <= 6) return "easy";
+  if (qNum <= 18) return "medium";
+  return "hard";
 }
 
 /**
- * Generates 1 targeted replacement question of a specified difficulty.
+ * Generates 1 targeted replacement question of a specified difficulty (max 1 attempt).
  */
 async function generateReplacementTechnicalQuestion({
   skillsContextStr,
   requiredDifficulty,
+  targetQuestionNumber = 1,
   userHistorySet,
   currentPoolSet,
   apiKey,
   model,
-  retriesLeft = 3,
+  sessionId,
+  provider,
 }) {
-  if (retriesLeft <= 0) return null;
-
-  const excluded = Array.from(new Set([...userHistorySet, ...currentPoolSet])).slice(0, 40);
-  const prompt = `You are a senior technical interviewer. Generate EXACTLY 1 unique placement-level technical interview question for a candidate with these skills: ${skillsContextStr}.
-
-REQUIRED DIFFICULTY: ${requiredDifficulty} (${requiredDifficulty === "easy" ? "3 marks" : requiredDifficulty === "hard" ? "13 marks" : "5 marks"})
+  const excluded = Array.from(new Set([...userHistorySet, ...currentPoolSet])).slice(0, 20);
+  const prompt = `Generate EXACTLY 1 replacement technical question for Q#${targetQuestionNumber}.
+Candidate skills: ${skillsContextStr}.
+REQUIRED DIFFICULTY: ${requiredDifficulty}.
 
 CRITICAL REQUIREMENT:
-DO NOT generate any question that is identical or semantically similar to any of these previously asked questions:
+DO NOT generate any question similar to:
 ${excluded.map((q) => `- ${q}`).join("\n")}
 
 Output ONLY valid JSON starting immediately with {"questions": [...]}.
@@ -75,48 +68,30 @@ JSON SCHEMA:
 }`;
 
   try {
-    const rawText = await callPythonGroqBridge({
-      round: "technical_replacement",
-      apiKey,
-      model,
-      messages: [
-        {
-          role: "system",
-          content: 'You are a JSON API endpoint. Output ONLY valid JSON starting immediately with {"questions": [...]} without any markdown or commentary.',
-        },
-        { role: "user", content: prompt },
-      ],
-      temperature: 0.4,
-      max_tokens: 600,
-      timeoutMs: 30000,
+    const parsed = await AIGateway.execute({
+      prompt,
+      systemPrompt: 'You are a JSON API endpoint. Output ONLY valid JSON starting immediately with {"questions": [...]} without any markdown or commentary.',
+      provider: provider || "groq",
+      apiKey: apiKey || getTechnicalApiKey(),
+      sessionId,
+      roundType: "technical",
+      orderIndex: targetQuestionNumber,
+      options: {
+        model: model || getTechnicalModel(),
+        temperature: 0.4,
+        maxRetries: 1, // Max 1 retry attempt for duplicate replacement!
+        operation: "replacement",
+        targetQuestionNumber
+      }
     });
 
-    const parsed = extractJsonFromText(rawText);
     const q = Array.isArray(parsed?.questions) ? parsed.questions[0] : null;
-    if (!q || !q.question) {
-      return generateReplacementTechnicalQuestion({
-        skillsContextStr,
-        requiredDifficulty,
-        userHistorySet,
-        currentPoolSet,
-        apiKey,
-        model,
-        retriesLeft: retriesLeft - 1,
-      });
-    }
+    if (!q || !q.question) return null;
 
     const text = String(q.question).trim();
     if (isDuplicateQuestion(text, userHistorySet, currentPoolSet)) {
-      console.warn(`[TechnicalAI] Replacement question "${text}" was duplicate. Retrying (${retriesLeft - 1} left)...`);
-      return generateReplacementTechnicalQuestion({
-        skillsContextStr,
-        requiredDifficulty,
-        userHistorySet,
-        currentPoolSet,
-        apiKey,
-        model,
-        retriesLeft: retriesLeft - 1,
-      });
+      console.warn(`[TechnicalAI] Replacement for Q#${targetQuestionNumber} was duplicate. Stopping AI retry and returning null for curated fallback.`);
+      return null;
     }
 
     const validDiff = ["easy", "medium", "hard"].includes(requiredDifficulty) ? requiredDifficulty : "medium";
@@ -130,42 +105,13 @@ JSON SCHEMA:
       skillsTested: Array.isArray(q.skillsTested) ? q.skillsTested : [skillsContextStr.split(",")[0] || "General"],
     };
   } catch (err) {
-    const errMsg = err.message || "";
-    const is429 = errMsg.includes("429") || errMsg.includes("rate_limit") || errMsg.includes("TPM");
-    if (is429 && retriesLeft > 0) {
-      const parsedSec = parseGroqRetryAfter(errMsg);
-      const backoffSec = parsedSec > 0 ? parsedSec : 6;
-      console.warn(`[TechnicalAI] Replacement question call 429 rate limited. Waiting ${backoffSec}s before retry...`);
-      await sleep(backoffSec * 1000);
-      return generateReplacementTechnicalQuestion({
-        skillsContextStr,
-        requiredDifficulty,
-        userHistorySet,
-        currentPoolSet,
-        apiKey,
-        model,
-        retriesLeft: retriesLeft - 1,
-      });
-    }
-    console.error("[TechnicalAI] Replacement generation failed:", err.message);
+    if (err.isRetryable === false) throw err;
     return null;
   }
 }
 
 /**
- * Returns difficulty based on 1-indexed question number.
- * Q1-Q6: Easy (3 marks)
- * Q7-Q18: Medium (5 marks)
- * Q19-Q20: Hard (13 marks)
- */
-export function getDifficultyForQuestionNumber(qNum) {
-  if (qNum <= 6) return "easy";
-  if (qNum <= 18) return "medium";
-  return "hard";
-}
-
-/**
- * Generates 1 batch (normally EXACTLY 2 questions) of technical questions with Groq 429 exponential backoff retries.
+ * Generates 1 batch (normally EXACTLY 2 questions) of technical questions using AI Reliability Gateway.
  */
 export async function generateTechnicalAIBatch({
   skillsContextStr = "",
@@ -174,14 +120,17 @@ export async function generateTechnicalAIBatch({
   targetTotalCount = 20,
   userHistorySet = new Set(),
   currentPoolSet = new Set(),
+  sessionId,
+  apiKey,
+  provider,
+  model
 }) {
-  const apiKey = getTechnicalApiKey();
-  const model = getTechnicalModel();
+  const activeApiKey = apiKey || getTechnicalApiKey();
+  const activeModel = model || getTechnicalModel();
 
   const endQuestionNumber = Math.min(startQuestionNumber + batchSize - 1, targetTotalCount);
   const actualRequestedCount = endQuestionNumber - startQuestionNumber + 1;
 
-  // Determine difficulty requirements for requested slots
   const slotDifficulties = [];
   for (let qNum = startQuestionNumber; qNum <= endQuestionNumber; qNum++) {
     slotDifficulties.push(getDifficultyForQuestionNumber(qNum));
@@ -193,37 +142,21 @@ export async function generateTechnicalAIBatch({
 
   const rangeStr = startQuestionNumber === endQuestionNumber ? `Q${startQuestionNumber}` : `Q${startQuestionNumber}-Q${endQuestionNumber}`;
 
-  const excludedList = Array.from(new Set([...userHistorySet, ...currentPoolSet])).slice(0, 100);
+  // Requirement 8: Limit exclusion list to top 20 recent items to keep context compact
+  const excludedList = Array.from(new Set([...userHistorySet, ...currentPoolSet])).slice(0, 20);
   const exclusionText = excludedList.length > 0
-    ? `\nABSOLUTE ZERO-REPETITION RULE:
-The following list contains questions that have ALREADY been asked to this candidate in previous Real Interview attempts or earlier in the current attempt.
-You MUST NOT generate any question that:
-1. Exactly matches a previous question.
-2. Is a reworded version of a previous question.
-3. Is a paraphrase of a previous question.
-4. Tests the same underlying concept in substantially the same way.
-5. Uses different wording but has the same question intent.
-6. Is a slightly modified version of an already asked question.
-
-Previously Asked Questions:
+    ? `\nDO NOT generate any question identical or semantically similar to:
 ${excludedList.map(q => `- ${q}`).join("\n")}\n`
     : "";
 
-  const prompt = `You are a technical interviewer generating placement-level technical interview questions for a candidate with these explicit technical skills: ${skillsContextStr}.
-Generate EXACTLY ${actualRequestedCount} technical interview question(s) for ${rangeStr} of total ${targetTotalCount} questions in this interview session.
+  const prompt = `You are a technical interviewer generating technical questions for skills: ${skillsContextStr}.
+Generate EXACTLY ${actualRequestedCount} question(s) for ${rangeStr} of total ${targetTotalCount}.
 
-DIFFICULTY REQUIREMENTS FOR THIS BATCH (${actualRequestedCount} question(s) total):
-${easyCount > 0 ? `- ${easyCount} Easy question(s) (3 marks each)` : ""}
-${mediumCount > 0 ? `- ${mediumCount} Medium question(s) (5 marks each)` : ""}
-${hardCount > 0 ? `- ${hardCount} Hard question(s) (13 marks each)` : ""}
+DIFFICULTY REQUIREMENTS (${actualRequestedCount} total):
+${easyCount > 0 ? `- ${easyCount} Easy (3 marks each)` : ""}
+${mediumCount > 0 ? `- ${mediumCount} Medium (5 marks each)` : ""}
+${hardCount > 0 ? `- ${hardCount} Hard (13 marks each)` : ""}
 ${exclusionText}
-RULES:
-1. ONLY ask about candidate's explicit technical skills listed above.
-2. Test deep conceptual understanding, WHY, HOW, and trade-offs.
-3. Do NOT invent unmentioned technologies.
-4. Do not select or rephrase any question from the exclusion list.
-5. Output ONLY valid JSON starting immediately with {"questions": [...]}.
-
 JSON SCHEMA:
 {
   "questions": [
@@ -237,112 +170,78 @@ JSON SCHEMA:
   ]
 }`;
 
-  const maxRetries = 3;
-  let attempt = 0;
+  console.log(`[TechnicalAI] Batch AI Gateway call for ${rangeStr}...`);
 
-  while (attempt <= maxRetries) {
-    attempt++;
-    try {
-      console.log(`[TechnicalAI] Batch AI call for ${rangeStr} (Attempt ${attempt}/${maxRetries + 1})...`);
+  const parsed = await AIGateway.execute({
+    prompt,
+    systemPrompt: 'You are a JSON API endpoint. Output ONLY valid JSON starting immediately with {"questions": [...]} without any markdown or commentary.',
+    provider,
+    apiKey: activeApiKey,
+    sessionId,
+    roundType: "technical",
+    orderIndex: startQuestionNumber,
+    options: {
+      model: activeModel,
+      temperature: 0.3,
+      maxRetries: 3
+    }
+  });
 
-      const rawText = await callPythonGroqBridge({
-        round: "technical",
-        apiKey,
-        model,
-        messages: [
-          {
-            role: "system",
-            content: 'You are a JSON API endpoint. Output ONLY valid JSON starting immediately with {"questions": [...]} without any markdown or commentary.',
-          },
-          { role: "user", content: prompt },
-        ],
-        temperature: 0.3,
-        max_tokens: 800,
-        timeoutMs: 35000,
+  if (!parsed || !Array.isArray(parsed.questions) || parsed.questions.length === 0) {
+    throw new Error(`Batch ${rangeStr} returned invalid or empty questions array`);
+  }
+
+  const validBatchQuestions = [];
+
+  for (let qIdx = 0; qIdx < Math.min(actualRequestedCount, parsed.questions.length); qIdx++) {
+    const rawQ = parsed.questions[qIdx];
+    const targetDiff = slotDifficulties[qIdx] || "medium";
+    const maxMarks = targetDiff === "easy" ? 3 : targetDiff === "hard" ? 13 : 5;
+    const currentQNum = startQuestionNumber + qIdx;
+
+    let candidateQ = {
+      question: String(rawQ.question || "").trim(),
+      expectedKnowledge: String(rawQ.expectedKnowledge || rawQ.expected_knowledge || rawQ.expectedAnswer || "Comprehensive technical explanation.").trim(),
+      difficulty: targetDiff,
+      maxMarks,
+      topic: String(rawQ.topic || "Technical Concept").trim(),
+      skillsTested: Array.isArray(rawQ.skillsTested) ? rawQ.skillsTested : [skillsContextStr.split(",")[0] || "General"],
+    };
+
+    if (!candidateQ.question) continue;
+
+    if (isDuplicateQuestion(candidateQ.question, userHistorySet, currentPoolSet)) {
+      console.warn(`[TechnicalAI] Batch ${rangeStr} Q#${currentQNum} duplicate detected: "${candidateQ.question}". Attempting 1 replacement...`);
+      const replacement = await generateReplacementTechnicalQuestion({
+        skillsContextStr,
+        requiredDifficulty: targetDiff,
+        targetQuestionNumber: currentQNum,
+        userHistorySet,
+        currentPoolSet,
+        apiKey: activeApiKey,
+        model: activeModel,
+        sessionId,
+        provider,
       });
-
-      const parsed = extractJsonFromText(rawText);
-      if (!parsed || !Array.isArray(parsed.questions) || parsed.questions.length === 0) {
-        throw new Error(`Batch ${rangeStr} returned invalid or empty questions array`);
+      if (replacement) {
+        candidateQ = replacement;
       }
+    }
 
-      const validBatchQuestions = [];
-
-      for (let qIdx = 0; qIdx < Math.min(actualRequestedCount, parsed.questions.length); qIdx++) {
-        const rawQ = parsed.questions[qIdx];
-        const targetDiff = slotDifficulties[qIdx] || "medium";
-        const maxMarks = targetDiff === "easy" ? 3 : targetDiff === "hard" ? 13 : 5;
-
-        let candidateQ = {
-          question: String(rawQ.question || "").trim(),
-          expectedKnowledge: String(rawQ.expectedKnowledge || rawQ.expected_knowledge || rawQ.expectedAnswer || "Comprehensive technical explanation.").trim(),
-          difficulty: targetDiff,
-          maxMarks,
-          topic: String(rawQ.topic || "Technical Concept").trim(),
-          skillsTested: Array.isArray(rawQ.skillsTested) ? rawQ.skillsTested : [skillsContextStr.split(",")[0] || "General"],
-        };
-
-        if (!candidateQ.question) continue;
-
-        if (isDuplicateQuestion(candidateQ.question, userHistorySet, currentPoolSet)) {
-          console.warn(`[TechnicalAI] Batch ${rangeStr} Q#${qIdx + 1} duplicate detected: "${candidateQ.question}". Generating replacement...`);
-          const replacement = await generateReplacementTechnicalQuestion({
-            skillsContextStr,
-            requiredDifficulty: targetDiff,
-            userHistorySet,
-            currentPoolSet,
-            apiKey,
-            model,
-            retriesLeft: 3,
-          });
-          if (replacement) {
-            candidateQ = replacement;
-          }
-        }
-
-        const norm = normalizeQuestionText(candidateQ.question);
-        if (norm && !isDuplicateQuestion(candidateQ.question, userHistorySet, currentPoolSet)) {
-          currentPoolSet.add(norm);
-          validBatchQuestions.push(candidateQ);
-        }
-      }
-
-      return validBatchQuestions;
-    } catch (err) {
-      const errMsg = err.message || "";
-      const status = err.status || 0;
-      const is401or403or404 = status === 401 || status === 403 || status === 404 || errMsg.includes("401") || errMsg.includes("403") || errMsg.includes("404") || errMsg.includes("Invalid API Key") || errMsg.includes("unauthorized");
-      const isQuota = errMsg.includes("RPD") || errMsg.includes("daily quota") || errMsg.includes("quota exceeded");
-
-      if (is401or403or404 || isQuota) {
-        console.error(`[TechnicalAI] Non-retryable API error encountered on ${rangeStr} (status=${status || "auth/quota/model"}). Failing batch immediately.`);
-        throw err;
-      }
-
-      const is429 = status === 429 || errMsg.includes("429") || errMsg.includes("rate_limit") || errMsg.includes("TPM");
-
-      if (is429 && attempt <= maxRetries) {
-        const parsedSec = parseGroqRetryAfter(errMsg);
-        const backoffSec = parsedSec > 0 ? parsedSec : (attempt === 1 ? 5 : attempt === 2 ? 10 : 20);
-        console.warn(`[TechnicalAI] Groq 429 Rate Limit encountered on ${rangeStr}. Waiting ${backoffSec}s before retry ${attempt}/${maxRetries}...`);
-        await sleep(backoffSec * 1000);
-      } else if (attempt <= maxRetries && !is429) {
-        console.warn(`[TechnicalAI] Batch ${rangeStr} failed (${errMsg}). Retrying attempt ${attempt}/${maxRetries}...`);
-        await sleep(2000);
-      } else {
-        console.error(`[TechnicalAI] Batch ${rangeStr} failed permanently after ${attempt} attempts: ${errMsg}`);
-        throw err;
-      }
+    const norm = normalizeQuestionText(candidateQ.question);
+    if (norm && !isDuplicateQuestion(candidateQ.question, userHistorySet, currentPoolSet)) {
+      currentPoolSet.add(norm);
+      validBatchQuestions.push(candidateQ);
     }
   }
 
-  return [];
+  return validBatchQuestions;
 }
 
 /**
  * Generates EXACTLY 20 resume-driven technical questions using 2-question batch calls.
  */
-export async function generateTechnicalAI(candidateProfile = {}, userHistorySet = new Set()) {
+export async function generateTechnicalAI(candidateProfile = {}, userHistorySet = new Set(), options = {}) {
   const skillsList = [
     ...(candidateProfile.skills || []),
     ...(candidateProfile.programmingLanguages || []),
@@ -370,6 +269,7 @@ export async function generateTechnicalAI(candidateProfile = {}, userHistorySet 
       targetTotalCount: 20,
       userHistorySet,
       currentPoolSet,
+      ...options
     });
     allQuestions.push(...batch);
   }
@@ -378,20 +278,10 @@ export async function generateTechnicalAI(candidateProfile = {}, userHistorySet 
 }
 
 /**
- * Evaluates candidate technical answers in ONE single AI API Request (Attempt 1).
+ * Evaluates candidate technical answers in ONE single AI Gateway Request.
  */
-export async function evaluateTechnicalInterviewAI({ candidateProfile = {}, questions = [] }) {
+export async function evaluateTechnicalInterviewAI({ candidateProfile = {}, questions = [], options = {} }) {
   console.log("\n[REAL-INTERVIEW][AI-CALL]\nround=technical\noperation=evaluation\nattempt=1");
-
-  const skillsPassed = candidateProfile.skills || [];
-  if (skillsPassed.length > 0) {
-    console.log(`[REAL-INTERVIEW][TECHNICAL-EVAL-CONTEXT]\nskills=[${skillsPassed.join(", ")}]\n`);
-  } else {
-    console.log(`[REAL-INTERVIEW][TECHNICAL-EVAL-CONTEXT]\nskills=[] (Resume context unavailable)\n`);
-  }
-
-  const apiKey = getTechnicalApiKey();
-  const model = getTechnicalModel();
 
   const formattedQuestions = questions.map((q, idx) => ({
     i: idx + 1,
@@ -442,31 +332,20 @@ JSON SCHEMA ONLY:
   "finalFeedback": "Overall candidate summary..."
 }`;
 
-  const requestBody = {
-    model,
-    messages: [
-      {
-        role: "system",
-        content:
-          "You are a technical interviewer evaluator. Output ONLY valid JSON matching the requested schema.",
-      },
-      { role: "user", content: prompt },
-    ],
-    temperature: 0.2,
-    max_tokens: 2560,
-  };
-
-  const rawText = await callPythonGroqBridge({
-    round: "technical",
-    apiKey,
-    model,
-    messages: requestBody.messages,
-    temperature: requestBody.temperature,
-    max_tokens: requestBody.max_tokens,
-    timeoutMs: 90000,
+  const parsed = await AIGateway.execute({
+    prompt,
+    systemPrompt: "You are a technical interviewer evaluator. Output ONLY valid JSON matching the requested schema.",
+    provider: options.provider,
+    apiKey: options.apiKey || getTechnicalApiKey(),
+    sessionId: options.sessionId,
+    roundType: "evaluation",
+    orderIndex: 1,
+    options: {
+      model: options.model || getTechnicalModel(),
+      temperature: 0.2,
+      maxRetries: 3
+    }
   });
-
-  const parsed = extractJsonFromText(rawText);
 
   if (!parsed || !Array.isArray(parsed.evaluations)) {
     throw new Error("Technical evaluation AI response missing 'evaluations' array");
@@ -475,5 +354,3 @@ JSON SCHEMA ONLY:
   console.log(`[RealInterviewAI][Technical] Complete evaluation finished for ${parsed.evaluations.length} questions`);
   return parsed;
 }
-
-

@@ -6,78 +6,24 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.join(__dirname, "../../../.env") });
 
-import { callPythonGroqBridge } from "./pythonGroqBridge.js";
-import { extractJsonFromText } from "./jsonExtractor.js";
+import { AIGateway } from "../aiReliability/index.js";
 
-/**
- * Returns HR AI config strictly from process.env.REAL_INTERVIEW_HR_API_KEY.
- * DO NOT fallback to GROQ_API_KEY, TECHNICAL key, or PROJECT key.
- */
 function getHRConfig(attempt = 1) {
-  const apiKey = (process.env.REAL_INTERVIEW_HR_API_KEY || "").trim();
-  if (!apiKey) {
-    throw new Error(
-      "REAL_INTERVIEW_HR_API_KEY is missing in process.env. Please add it to your root .env file."
-    );
-  }
+  const apiKey = (process.env.REAL_INTERVIEW_HR_API_KEY || process.env.GROQ_API_KEY || "").trim();
   const custom = (process.env.REAL_INTERVIEW_HR_MODEL || "").trim();
   const model = custom || (attempt === 2 ? "openai/gpt-oss-20b" : "openai/gpt-oss-120b");
   return { apiKey, model };
 }
 
 /**
- * Classify Groq API errors to determine retry behavior.
- * Returns { retryable: boolean, reason: string }
+ * AI CALL #1: Generate EXACTLY 5 HR questions in ONE AI request using AIGateway.
  */
-function classifyGroqError(err) {
-  const status = err?.status || err?.statusCode || 0;
-  const msg = String(err?.message || err || "").toLowerCase();
-
-  if (status === 404 || msg.includes("404") || msg.includes("model_not_found") || msg.includes("does not exist")) {
-    return { retryable: false, reason: "Model not found (404)" };
-  }
-  if (status === 401 || status === 403 || msg.includes("401") || msg.includes("403")) {
-    return { retryable: false, reason: "Authentication/authorization error" };
-  }
-  if (status === 429 || msg.includes("429") || msg.includes("rate_limit") || msg.includes("tokens per day")) {
-    return { retryable: false, reason: "Rate limit / daily quota exhausted (429)" };
-  }
-  return { retryable: true, reason: "Transient error" };
-}
-
-/**
- * Clean AI Markdown output to get pure JSON text
- */
-function cleanJsonResponse(rawText) {
-  if (!rawText || typeof rawText !== "string") return "";
-  let text = rawText.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
-  text = text.replace(/```json\s*|```\s*/g, "").trim();
-
-  const qIdx = text.search(/\{\s*"questions"/);
-  if (qIdx !== -1) {
-    let depth = 0;
-    for (let i = qIdx; i < text.length; i++) {
-      if (text[i] === "{") depth++;
-      else if (text[i] === "}") depth--;
-      if (depth === 0) {
-        return text.slice(qIdx, i + 1);
-      }
-    }
-  }
-
-  const firstBrace = text.indexOf("{");
-  const lastBrace = text.lastIndexOf("}");
-  if (firstBrace !== -1 && lastBrace > firstBrace) {
-    return text.slice(firstBrace, lastBrace + 1);
-  }
-  return text;
-}
-
-/**
- * AI CALL #1: Generate EXACTLY 5 HR questions in ONE AI request (Attempt 1).
- */
-export async function generateHRAI({ candidateProfile = {}, userHistorySet = new Set(), count = 5 }) {
+export async function generateHRAI({ candidateProfile = {}, userHistorySet = new Set(), count = 5, options = {} }) {
   console.log("\n[REAL-INTERVIEW][AI-CALL]\nround=hr\noperation=generation\nattempt=1");
+
+  const { apiKey: configApiKey, model: configModel } = getHRConfig(1);
+  const activeApiKey = options.apiKey || configApiKey;
+  const activeModel = options.model || configModel;
 
   const educationText = Array.isArray(candidateProfile.education)
     ? candidateProfile.education.map((e) => `${e.degree || "Degree"} at ${e.institution || "Institution"}`).join(", ")
@@ -120,7 +66,7 @@ CRITICAL ARCHITECTURAL RULES:
    - Question 4: Career Goals & Growth Mindset
    - Question 5: Situational Judgment / Leadership Under Pressure
 3. RESUME GROUNDING: Mention aspects of the candidate's background (education, project experience, leadership) naturally in at least 2 questions.
-4. ABSOLUTE MARKS: Easy=10 marks, Medium=20 marks, Hard=20 marks. Total score possible = 100 or sum of marks (e.g. 5 questions * 20 marks = 100 marks). Set maxMarks = 20 for each question (Total = 100).
+4. ABSOLUTE MARKS: Set maxMarks = 20 for each question (Total = 100).
 5. Do NOT generate or rephrase any question from the exclusion list.
 6. STRICT JSON ONLY: Respond with a SINGLE JSON object. No markdown wrappers.
 
@@ -141,67 +87,49 @@ JSON SCHEMA REQUIREMENT:
 
   const userPrompt = `Candidate Profile:\n${profileSummary}\n${exclusionText}\nGenerate EXACTLY 5 deep HR questions in valid JSON.`;
 
-  console.log("\n[REAL-INTERVIEW][HR-CONTEXT]");
-  console.log(`resume context actually sent to AI: ${profileSummary.trim()}\n`);
-
-  let lastError = null;
-  for (let attempt = 1; attempt <= 3; attempt++) {
-    const { apiKey, model } = getHRConfig(attempt);
-    try {
-      const rawContent = await callPythonGroqBridge({
-        round: "hr",
-        apiKey,
-        model,
-        messages: [
-          { role: "system", content: "You are a JSON API endpoint. Output ONLY valid JSON starting immediately with {\"questions\": [...]} without any reasoning, thinking, or commentary." },
-          { role: "user", content: userPrompt },
-        ],
-        temperature: 0.1,
-        max_tokens: 2000,
-        timeoutMs: 60000,
-      });
-
-      const parsed = extractJsonFromText(rawContent);
-
-      const questions = parsed.questions || parsed.data || (Array.isArray(parsed) ? parsed : null);
-      if (Array.isArray(questions) && questions.length >= 5) {
-        // Enforce exactly 5 questions with 20 maxMarks
-        const formattedQuestions = questions.slice(0, 5).map((q, idx) => ({
-          questionIndex: idx + 1,
-          question: q.question || q.questionText || q.text || q.prompt || (typeof q === "string" ? q : `Behavioral Scenario Question #${idx + 1}`),
-          category: q.category || "Behavioral & Situational",
-          difficulty: idx < 2 ? "easy" : idx < 4 ? "medium" : "hard",
-          maxMarks: 20,
-          behavioralDimensions: Array.isArray(q.behavioralDimensions) ? q.behavioralDimensions : ["decisionMaking", "ownership"],
-          resumeReference: q.resumeReference || "",
-        }));
-
-        console.log(`[RealInterviewAI][HR] Generated 5 HR questions successfully`);
-        return formattedQuestions;
-      }
-    } catch (err) {
-      lastError = err;
-      const { retryable, reason } = classifyGroqError(err);
-      console.warn(`[RealInterviewAI][HR] Attempt ${attempt} failed: ${err.message} (${reason})`);
-      if (!retryable) {
-        console.warn(`[RealInterviewAI][HR] Non-retryable error, failing immediately: ${reason}`);
-        break;
-      }
-      if (attempt < 3) {
-        await new Promise((r) => setTimeout(r, 8000));
-      }
+  const parsed = await AIGateway.execute({
+    prompt: userPrompt,
+    systemPrompt,
+    provider: options.provider || "groq",
+    apiKey: activeApiKey,
+    sessionId: options.sessionId,
+    roundType: "hr",
+    orderIndex: 1,
+    options: {
+      model: activeModel,
+      temperature: 0.1,
+      maxRetries: 3
     }
+  });
+
+  const questions = parsed.questions || parsed.data || (Array.isArray(parsed) ? parsed : null);
+  if (Array.isArray(questions) && questions.length >= 5) {
+    const formattedQuestions = questions.slice(0, 5).map((q, idx) => ({
+      questionIndex: idx + 1,
+      question: q.question || q.questionText || q.text || q.prompt || (typeof q === "string" ? q : `Behavioral Scenario Question #${idx + 1}`),
+      category: q.category || "Behavioral & Situational",
+      difficulty: idx < 2 ? "easy" : idx < 4 ? "medium" : "hard",
+      maxMarks: 20,
+      behavioralDimensions: Array.isArray(q.behavioralDimensions) ? q.behavioralDimensions : ["decisionMaking", "ownership"],
+      resumeReference: q.resumeReference || "",
+    }));
+
+    console.log(`[RealInterviewAI][HR] Generated 5 HR questions successfully`);
+    return formattedQuestions;
   }
 
-  throw lastError || new Error("HR AI generation failed after 3 attempts");
+  throw new Error("HR AI generation returned less than 5 questions");
 }
 
 /**
- * AI CALL #2: Batch evaluate all 5 candidate answers in ONE AI request (Attempt 1).
+ * AI CALL #2: Batch evaluate all 5 candidate answers in ONE AI request using AIGateway.
  */
-export async function evaluateHRAI({ candidateProfile = {}, questionsWithAnswers = [] }) {
+export async function evaluateHRAI({ candidateProfile = {}, questionsWithAnswers = [], options = {} }) {
   console.log("\n[REAL-INTERVIEW][AI-CALL]\nround=hr\noperation=evaluation\nattempt=1");
-  const { apiKey, model, baseUrl } = getHRConfig();
+
+  const { apiKey: configApiKey, model: configModel } = getHRConfig(1);
+  const activeApiKey = options.apiKey || configApiKey;
+  const activeModel = options.model || configModel;
 
   const formattedQA = questionsWithAnswers.map((item, idx) => ({
     i: idx + 1,
@@ -217,15 +145,11 @@ export async function evaluateHRAI({ candidateProfile = {}, questionsWithAnswers
 You must evaluate all 5 questions in ONE batch response.
 
 CRITICAL EVALUATION RULES:
-1. FAIR ENGLISH EVALUATION: Do NOT heavily penalize imperfect English, Indian English, short sentences, or minor grammar/spelling errors. Focus on the candidate's REASONING, JUDGMENT, ACCOUNTABILITY, and BEHAVIORAL MATURITY. Simple English with strong reasoning gets high marks.
-2. NO SINGLE CORRECT ANSWER: HR questions have no single "correct" answer. Evaluate whether their response demonstrates sound judgment, realistic trade-offs, and professional maturity.
-3. NO PSYCHOLOGICAL / MEDICAL DIAGNOSES: Evaluate observable interview behavior ONLY. NEVER output psychological or medical diagnostic terms (e.g., "narcissistic", "mentally unstable", "personality disorder").
-4. MARKS: Each question has max 20 marks. Score must be between 0 and 20.
-   - 0-5: No meaningful answer / avoids situation.
-   - 6-10: Limited reasoning / lacks accountability or depth.
-   - 11-15: Solid professional response with good judgment.
-   - 16-20: Outstanding reasoning, maturity, ownership, and consideration of consequences.
-5. BETTER ANSWER: Provide a "betterAnswer" that preserves the candidate's core intent while improving their structure, clarity, and decision-making reasoning. DO NOT replace with a generic textbook answer.
+1. FAIR ENGLISH EVALUATION: Do NOT heavily penalize imperfect English, Indian English, short sentences, or minor grammar/spelling errors. Focus on REASONING, JUDGMENT, ACCOUNTABILITY, and BEHAVIORAL MATURITY.
+2. NO SINGLE CORRECT ANSWER: Evaluate whether response demonstrates sound judgment and realistic trade-offs.
+3. NO PSYCHOLOGICAL / MEDICAL DIAGNOSES: Evaluate observable interview behavior ONLY.
+4. MARKS: Each question has max 20 marks.
+5. BETTER ANSWER: Provide a "betterAnswer" that preserves candidate's core intent.
 
 RETURN STRICT JSON ONLY:
 {
@@ -264,20 +188,20 @@ RETURN STRICT JSON ONLY:
 
   const userPrompt = `Candidate Profile: ${candidateProfile.fullName || "Candidate"}\nQuestions and Candidate Answers:\n${JSON.stringify(formattedQA, null, 2)}\n\nEvaluate all 5 answers in valid JSON.`;
 
-  const rawContent = await callPythonGroqBridge({
-    round: "hr",
-    apiKey,
-    model,
-    messages: [
-      { role: "system", content: systemPrompt },
-      { role: "user", content: userPrompt },
-    ],
-    temperature: 0.3,
-    max_tokens: 2560,
-    timeoutMs: 90000,
+  const parsed = await AIGateway.execute({
+    prompt: userPrompt,
+    systemPrompt,
+    provider: options.provider || "groq",
+    apiKey: activeApiKey,
+    sessionId: options.sessionId,
+    roundType: "evaluation",
+    orderIndex: 1,
+    options: {
+      model: activeModel,
+      temperature: 0.3,
+      maxRetries: 3
+    }
   });
-
-  const parsed = extractJsonFromText(rawContent);
 
   if (!parsed || !Array.isArray(parsed.evaluations)) {
     throw new Error("Failed to parse AI response into valid HR evaluation JSON");
@@ -286,4 +210,3 @@ RETURN STRICT JSON ONLY:
   console.log(`[RealInterviewAI][HR] Complete batch evaluation succeeded`);
   return parsed;
 }
-

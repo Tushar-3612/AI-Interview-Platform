@@ -24,10 +24,14 @@ import {
   getRealInterviewResult,
   retryRealInterviewEvaluation,
   downloadRealInterviewResultPDF,
+  setSessionBYOKController,
 } from "../controllers/realInterviewController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 
 const router = express.Router();
+
+// BYOK Session Binding Route
+router.post("/byok/set-session-key", authMiddleware, setSessionBYOKController);
 
 // Master Result Pipeline Routes
 router.post("/submit", authMiddleware, submitRealInterview);

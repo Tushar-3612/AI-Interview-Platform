@@ -24,6 +24,7 @@ import FullscreenExitOverlay from "../../components/interview/FullscreenExitOver
 import InterviewSettingsModal from "../../components/interview/InterviewSettingsModal";
 import RealInterviewPreparationScreen from "../../components/interview/RealInterviewPreparationScreen";
 import EvaluationLoadingScreen from "../../components/interview/EvaluationLoadingScreen";
+import BYOKModal from "../../components/BYOKModal";
 
 // Import Monaco editor & Output panel for Coding questions
 import MonacoCodeEditor from "../../components/coding/MonacoCodeEditor";

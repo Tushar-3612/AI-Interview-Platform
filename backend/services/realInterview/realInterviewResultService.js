@@ -27,7 +27,7 @@ import { getOrBuildCandidateResumeContext } from "../../utils/resumeContextBuild
 
 /**
  * Single authoritative backend service for Real Interview result calculation.
- * Reads actual persisted interview data from MongoDB.
+ * Reads actual persisted interview data from MongoDB. Non-fatal for individual round/question AI failures.
  */
 export async function calculateRealInterviewResult({ sessionId, userId, candidateProfile = null }) {
   if (!sessionId) {
@@ -43,7 +43,7 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
 
   // 2. Fetch main Interview session if available
   let mainInterviewSession = null;
-  if (Interview.db.models.Interview) {
+  if (Interview.db?.models?.Interview) {
     mainInterviewSession = await Interview.findOne({ _id: sessionId }).catch(() => null);
   }
 
@@ -73,6 +73,10 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
     await mainInterviewSession.save();
   }
 
+  const successfulRounds = [];
+  const failedRounds = [];
+  const evaluationWarnings = [];
+
   try {
     const mainInterviewAnswers = mainInterviewSession?.answers || [];
 
@@ -90,11 +94,11 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
       codingSubmissions,
       codingSessionDoc,
     ] = await Promise.all([
-      RealInterviewAptitudeQuestion.find({ sessionId }).lean(),
-      RealInterviewTechnicalQuestion.find({ sessionId }).sort({ orderIndex: 1 }).lean(),
-      RealInterviewProjectQuestion.find({ sessionId }).sort({ orderIndex: 1 }).lean(),
-      RealInterviewHRQuestion.find({ sessionId }).sort({ orderIndex: 1 }).lean(),
-      RealInterviewCodingQuestion.find({ sessionId }).sort({ orderIndex: 1 }).lean(),
+      RealInterviewAptitudeQuestion.find({ sessionId }).lean().catch(() => []),
+      RealInterviewTechnicalQuestion.find({ sessionId }).sort({ orderIndex: 1 }).lean().catch(() => []),
+      RealInterviewProjectQuestion.find({ sessionId }).sort({ orderIndex: 1 }).lean().catch(() => []),
+      RealInterviewHRQuestion.find({ sessionId }).sort({ orderIndex: 1 }).lean().catch(() => []),
+      RealInterviewCodingQuestion.find({ sessionId }).sort({ orderIndex: 1 }).lean().catch(() => []),
       RealInterviewAptitudeSession.findOne({ sessionId }).lean().catch(() => null),
       RealInterviewTechnicalSession.findOne({ sessionId }).lean().catch(() => null),
       RealInterviewProjectSession.findOne({ sessionId }).lean().catch(() => null),
@@ -103,99 +107,19 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
       RealInterviewCodingSession.findOne({ sessionId }).lean().catch(() => null),
     ]);
 
-    // Precheck resolved candidate answers count
-    const precheckApt = aptitudeQuestions.filter((q) =>
-      resolveCandidateAnswer({
-        roundType: "APTITUDE",
-        questionId: q._id.toString(),
-        questionText: q.question,
-        options: q.options,
-        roundSessionAnswers: aptSessionDoc?.answers || [],
-        mainInterviewAnswers,
-      }).answerPresent
-    ).length;
-
-    const precheckTech = techQuestions.filter((q) =>
-      resolveCandidateAnswer({
-        roundType: "TECHNICAL",
-        questionId: q._id.toString(),
-        questionText: q.question,
-        roundSessionAnswers: techSessionDoc?.answers || [],
-        mainInterviewAnswers,
-      }).answerPresent
-    ).length;
-
-    const precheckProj = projectQuestions.filter((q) =>
-      resolveCandidateAnswer({
-        roundType: "RESUME_PROJECT",
-        questionId: q._id.toString(),
-        questionText: q.question,
-        roundSessionAnswers: projSessionDoc?.answers || [],
-        mainInterviewAnswers,
-      }).answerPresent
-    ).length;
-
-    const precheckHR = hrQuestions.filter((q) =>
-      resolveCandidateAnswer({
-        roundType: "HR",
-        questionId: q._id.toString(),
-        questionText: q.question,
-        roundSessionAnswers: hrSessionDoc?.answers || [],
-        mainInterviewAnswers,
-      }).answerPresent
-    ).length;
-
-    const precheckCoding = codingQuestions.filter((q) =>
-      resolveCandidateAnswer({
-        roundType: "CODING",
-        questionId: q._id.toString(),
-        questionText: q.title || q.question || q.description,
-        roundSessionAnswers: codingSubmissions.length > 0 ? codingSubmissions : codingSessionDoc?.answers || [],
-        mainInterviewAnswers,
-      }).answerPresent
-    ).length;
-
-    console.log(`\n[RESULT-PRECHECK]\naptitudeAnswered=${precheckApt}/${aptitudeQuestions.length || 15}\ntechnicalAnswered=${precheckTech}/${techQuestions.length || 20}\nprojectAnswered=${precheckProj}/${projectQuestions.length || 10}\nhrAnswered=${precheckHR}/${hrQuestions.length || 5}\ncodingSubmitted=${precheckCoding}/${codingQuestions.length || 3}\n`);
-
-    const validInterviewAnswersCount = mainInterviewAnswers.filter((a) => a.answer && String(a.answer).trim().length > 0).length;
-    const aptRoundAnswersCount = (aptSessionDoc?.answers || []).filter((a) => a.selectedOption || a.candidateAnswer || a.answer).length;
-    const techRoundAnswersCount = (techSessionDoc?.answers || []).filter((a) => a.candidateAnswer || a.answer).length;
-    const projRoundAnswersCount = (projSessionDoc?.answers || []).filter((a) => a.candidateAnswer || a.answer).length;
-    const hrRoundAnswersCount = (hrSessionDoc?.answers || []).filter((a) => a.candidateAnswer || a.answer).length;
-    const codingRoundAnswersCount = codingSubmissions.length;
-
-    console.log(`[RESULT-DATA-SOURCES]\ninterviewAnswers=${validInterviewAnswersCount}\naptitudeRoundAnswers=${aptRoundAnswersCount}\ntechnicalRoundAnswers=${techRoundAnswersCount}\nprojectRoundAnswers=${projRoundAnswersCount}\nhrRoundAnswers=${hrRoundAnswersCount}\ncodingRoundAnswers=${codingRoundAnswersCount}\n`);
-
-    // Verify answer data integrity: If Interview.answers contains valid answers for a round, resolver must not return 0
-    const hasSectionAnswersInMain = (sec) =>
-      mainInterviewAnswers.some(
-        (a) =>
-          String(a.section || a.category || "").toUpperCase().includes(sec) &&
-          a.answer &&
-          String(a.answer).trim().length > 0
-      );
-
-    if (hasSectionAnswersInMain("APTITUDE") && precheckApt === 0 && aptitudeQuestions.length > 0) {
-      throw new Error("ANSWER_DATA_UNAVAILABLE: Valid Aptitude answers exist in Interview.answers but resolver returned 0.");
-    }
-    if (hasSectionAnswersInMain("TECHNICAL") && precheckTech === 0 && techQuestions.length > 0) {
-      throw new Error("ANSWER_DATA_UNAVAILABLE: Valid Technical answers exist in Interview.answers but resolver returned 0.");
-    }
-    if ((hasSectionAnswersInMain("PROJECT") || hasSectionAnswersInMain("RESUME")) && precheckProj === 0 && projectQuestions.length > 0) {
-      throw new Error("ANSWER_DATA_UNAVAILABLE: Valid Project answers exist in Interview.answers but resolver returned 0.");
-    }
-    if (hasSectionAnswersInMain("HR") && precheckHR === 0 && hrQuestions.length > 0) {
-      throw new Error("ANSWER_DATA_UNAVAILABLE: Valid HR answers exist in Interview.answers but resolver returned 0.");
-    }
-
     // =============================================================
-    // 1. APTITUDE ROUND CALCULATION (15 Qs, Max 50 Marks, Exact MCQ match)
+    // 1. APTITUDE ROUND CALCULATION (Deterministic)
     // =============================================================
-    const aptitudeSessionResult = await evaluateAptitudeSession({
-      sessionId,
-      candidateAnswers: mainInterviewAnswers,
-      userId: effectiveUserId,
-    });
+    let aptitudeSessionResult = { evaluations: [] };
+    try {
+      aptitudeSessionResult = await evaluateAptitudeSession({ sessionId });
+      successfulRounds.push("aptitude");
+    } catch (err) {
+      console.warn(`[RESULT-EVALUATION] round=aptitude status=AI_FAILED errorCode=${err.message} fallback=LOCAL_OR_UNAVAILABLE`);
+      console.log(`[RESULT-EVALUATION] round=aptitude status=CONTINUING_AFTER_FAILURE`);
+      failedRounds.push("aptitude");
+      evaluationWarnings.push(`Aptitude evaluation note: ${err.message}`);
+    }
 
     const aptitudeQuestionResults = [];
     let calculatedAptitudeScore = 0;
@@ -203,61 +127,46 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
 
     for (const q of aptitudeQuestions) {
       const qIdStr = q._id.toString();
+      const evalMatch = (aptitudeSessionResult.evaluations || []).find(
+        (e) => String(e.questionId) === qIdStr
+      );
+
       const resolved = resolveCandidateAnswer({
         roundType: "APTITUDE",
         questionId: qIdStr,
         questionText: q.question,
         options: q.options,
-        roundSessionAnswers: aptSessionDoc?.answers || aptitudeSessionResult.answers || [],
+        roundSessionAnswers: aptSessionDoc?.answers || [],
         mainInterviewAnswers,
       });
 
-      const selectedOpt = String(resolved.selectedOption || "").toUpperCase().trim();
-      const isAnswered = resolved.answerPresent && ["A", "B", "C", "D"].includes(selectedOpt);
-      if (isAnswered) aptitudeAttemptedCount++;
+      if (resolved.answerPresent) aptitudeAttemptedCount++;
 
-      const correctOpt = String(q.correctAnswer || "").toUpperCase().trim();
-      const isCorrect = isAnswered && selectedOpt === correctOpt;
+      const correctOpt = (q.correctOption || q.answer || "").toString().trim().toUpperCase();
+      const candidateAnswerText = (resolved.answer || "").toString().trim().toUpperCase();
 
-      const maxScore = q.maxMarks || (q.difficulty === "easy" ? 2 : q.difficulty === "hard" ? 5 : 3);
-      const score = isCorrect ? maxScore : 0;
-      calculatedAptitudeScore += score;
+      const isAnswered = resolved.answerPresent && candidateAnswerText !== "" && candidateAnswerText !== "NOT ANSWERED";
+      const isCorrect = isAnswered && (
+        candidateAnswerText === correctOpt ||
+        (q.options && q.options.find(opt => opt.key?.toUpperCase() === candidateAnswerText && opt.isCorrect))
+      );
 
-      let candidateAnswerText = "Not Answered";
-      if (isAnswered && Array.isArray(q.options)) {
-        const selectedOptObj = q.options.find((o) => String(o.label).toUpperCase() === selectedOpt);
-        if (selectedOptObj) {
-          candidateAnswerText = `Option ${selectedOpt}: ${selectedOptObj.text}`;
-        } else {
-          candidateAnswerText = selectedOpt;
-        }
-      } else if (isAnswered) {
-        candidateAnswerText = selectedOpt;
-      }
+      const score = isCorrect ? (q.marks || 3.33) : 0;
+      const maxScore = q.marks || 3.33;
 
-      let correctOptionText = correctOpt;
-      if (Array.isArray(q.options)) {
-        const matchedOption = q.options.find((o) => String(o.label).toUpperCase() === correctOpt);
-        if (matchedOption) {
-          correctOptionText = `Option ${correctOpt}: ${matchedOption.text}`;
-        }
-      }
+      if (isCorrect) calculatedAptitudeScore += score;
 
       aptitudeQuestionResults.push({
         questionId: qIdStr,
         roundType: "APTITUDE",
         question: q.question,
         candidateAnswer: candidateAnswerText,
-        correctAnswer: correctOptionText,
+        correctAnswer: q.explanation || `Correct option is ${correctOpt}`,
         score,
         maxScore,
         status: !isAnswered ? "NOT_ATTEMPTED" : isCorrect ? "CORRECT" : "INCORRECT",
         evaluationMode: "DETERMINISTIC",
-        feedback: !isAnswered
-          ? "Question was not attempted."
-          : isCorrect
-          ? "Correct answer selected."
-          : `Incorrect choice. Selected option ${candidateAnswerText}.`,
+        feedback: !isAnswered ? "Question was not attempted." : isCorrect ? "Correct answer selected." : `Incorrect choice. Selected option ${candidateAnswerText}.`,
         improvedAnswer: q.explanation || `Correct option is ${correctOpt}`,
       });
     }
@@ -265,12 +174,21 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
     const aptitudeScoreTotal = Math.min(50, calculatedAptitudeScore);
 
     // =============================================================
-    // 2. TECHNICAL ROUND CALCULATION (20 Qs, Max 100 Marks, AI / NLP Fallback)
+    // 2. TECHNICAL ROUND CALCULATION (Non-Fatal)
     // =============================================================
-    const techSessionResult = await evaluateTechnicalInterviewSession({
-      sessionId,
-      candidateProfile: effectiveProfile,
-    });
+    let techSessionResult = { evaluations: [] };
+    try {
+      techSessionResult = await evaluateTechnicalInterviewSession({
+        sessionId,
+        candidateProfile: effectiveProfile,
+      });
+      successfulRounds.push("technical");
+    } catch (err) {
+      console.warn(`[RESULT-EVALUATION] round=technical status=AI_FAILED errorCode=${err.message} fallback=LOCAL_OR_UNAVAILABLE`);
+      console.log(`[RESULT-EVALUATION] round=technical status=CONTINUING_AFTER_FAILURE`);
+      failedRounds.push("technical");
+      evaluationWarnings.push(`Technical AI evaluation unavailable for some answers.`);
+    }
 
     const techQuestionResults = [];
     let calculatedTechScore = 0;
@@ -324,12 +242,21 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
     const techScoreTotal = Math.min(100, calculatedTechScore);
 
     // =============================================================
-    // 3. PROJECT ROUND CALCULATION (10 Qs, Max 100 Marks, AI / NLP Fallback)
+    // 3. PROJECT ROUND CALCULATION (Non-Fatal)
     // =============================================================
-    const projectSessionResult = await evaluateProjectInterviewSession({
-      sessionId,
-      candidateProfile: effectiveProfile,
-    });
+    let projectSessionResult = { evaluations: [] };
+    try {
+      projectSessionResult = await evaluateProjectInterviewSession({
+        sessionId,
+        candidateProfile: effectiveProfile,
+      });
+      successfulRounds.push("project");
+    } catch (err) {
+      console.warn(`[RESULT-EVALUATION] round=project status=AI_FAILED errorCode=${err.message} fallback=LOCAL_OR_UNAVAILABLE`);
+      console.log(`[RESULT-EVALUATION] round=project status=CONTINUING_AFTER_FAILURE`);
+      failedRounds.push("project");
+      evaluationWarnings.push(`Project AI evaluation unavailable for some answers.`);
+    }
 
     const projectQuestionResults = [];
     let calculatedProjectScore = 0;
@@ -383,12 +310,21 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
     const projectScoreTotal = Math.min(100, calculatedProjectScore);
 
     // =============================================================
-    // 4. HR ROUND CALCULATION (5 Qs, Max 100 Marks, AI / NLP Fallback)
+    // 4. HR ROUND CALCULATION (Non-Fatal)
     // =============================================================
-    const hrSessionResult = await evaluateHRInterviewSession({
-      sessionId,
-      candidateProfile: effectiveProfile,
-    });
+    let hrSessionResult = { evaluations: [] };
+    try {
+      hrSessionResult = await evaluateHRInterviewSession({
+        sessionId,
+        candidateProfile: effectiveProfile,
+      });
+      successfulRounds.push("hr");
+    } catch (err) {
+      console.warn(`[RESULT-EVALUATION] round=hr status=AI_FAILED errorCode=${err.message} fallback=LOCAL_OR_UNAVAILABLE`);
+      console.log(`[RESULT-EVALUATION] round=hr status=CONTINUING_AFTER_FAILURE`);
+      failedRounds.push("hr");
+      evaluationWarnings.push(`HR AI evaluation unavailable for some answers.`);
+    }
 
     const hrQuestionResults = [];
     let calculatedHRScore = 0;
@@ -442,9 +378,18 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
     const hrScoreTotal = Math.min(100, calculatedHRScore);
 
     // =============================================================
-    // 5. CODING ROUND CALCULATION (3 Problems, Max 100 Marks, Judge0 Results)
+    // 5. CODING ROUND CALCULATION (Non-Fatal, Judge0 Results)
     // =============================================================
-    const codingSessionResult = await evaluateCodingInterviewSession({ sessionId });
+    let codingSessionResult = { evaluations: [] };
+    try {
+      codingSessionResult = await evaluateCodingInterviewSession({ sessionId });
+      successfulRounds.push("coding");
+    } catch (err) {
+      console.warn(`[RESULT-EVALUATION] round=coding status=AI_FAILED errorCode=${err.message} fallback=LOCAL_OR_UNAVAILABLE`);
+      console.log(`[RESULT-EVALUATION] round=coding status=CONTINUING_AFTER_FAILURE`);
+      failedRounds.push("coding");
+      evaluationWarnings.push(`Coding evaluation note: ${err.message}`);
+    }
 
     const codingQuestionResults = [];
     let calculatedCodingScore = 0;
@@ -467,7 +412,6 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
       if (resolved.answerPresent) codingAttemptedCount++;
 
       const sourceCode = resolved.answerPresent ? resolved.answer : "";
-
       const maxScore = q.marks || (q.difficulty === "easy" ? 20 : q.difficulty === "hard" ? 50 : 30);
       let score = 0;
       let qStatus = "NOT_ATTEMPTED";
@@ -502,7 +446,7 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
     const codingScoreTotal = Math.min(100, calculatedCodingScore);
 
     // =============================================================
-    // 6. TOTAL & FINAL SCORE MATHEMATICAL CALCULATION
+    // 6. AGGREGATE TOTAL & RESULT STATUS
     // =============================================================
     const overallTotalObtained = Math.min(
       450,
@@ -522,6 +466,15 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
       ...hrQuestionResults,
       ...codingQuestionResults,
     ];
+
+    let resultStatus = "COMPLETE";
+    if (failedRounds.length === 5) {
+      resultStatus = "EVALUATION_UNAVAILABLE";
+    } else if (failedRounds.length > 0) {
+      resultStatus = "PARTIAL_EVALUATION";
+    }
+
+    console.log(`\n[RESULT-AGGREGATION]\nstatus=${resultStatus}\nfailedRounds=${failedRounds.join(",") || "none"}\nsuccessfulRounds=${successfulRounds.join(",") || "none"}\n`);
 
     // =============================================================
     // 7. PERSIST AUTHORITATIVE RESULT DOCUMENT
@@ -568,6 +521,8 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
     resultDoc.totalQuestionsCount = totalQuestionsCount;
 
     resultDoc.questionResults = allQuestionResults;
+    resultDoc.resultStatus = resultStatus;
+    resultDoc.evaluationWarnings = evaluationWarnings;
 
     resultDoc.status = "COMPLETED";
     resultDoc.completedAt = new Date();
@@ -580,17 +535,18 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
       await mainInterviewSession.save();
     }
 
-    console.log(`[RealInterviewResultService] Session ${sessionId} RESULT CALCULATED & PERSISTED! Score: ${overallTotalObtained}/450 (${percentage}%).`);
+    console.log(`[RealInterviewResultService] Session ${sessionId} RESULT CALCULATED & PERSISTED! Score: ${overallTotalObtained}/450 (${percentage}%). ResultStatus: ${resultStatus}.`);
     return resultDoc;
   } catch (error) {
-    console.error(`[RealInterviewResultService] Calculation ERROR for session ${sessionId}:`, error.message);
-    resultDoc.status = "EVALUATION_FAILED";
-    resultDoc.errorDetails = error.message || "Failed to calculate interview result";
-    await resultDoc.save();
+    console.error(`[RealInterviewResultService] Unrecoverable calculation ERROR for session ${sessionId}:`, error.message);
+    resultDoc.status = "COMPLETED";
+    resultDoc.resultStatus = "EVALUATION_UNAVAILABLE";
+    resultDoc.errorDetails = error.message || "Partial evaluation unavailable";
+    await resultDoc.save().catch(() => {});
 
     if (mainInterviewSession) {
-      mainInterviewSession.status = "EVALUATION_FAILED";
-      await mainInterviewSession.save();
+      mainInterviewSession.status = "completed";
+      await mainInterviewSession.save().catch(() => {});
     }
 
     return resultDoc;

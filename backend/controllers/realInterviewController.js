@@ -35,6 +35,28 @@ import { calculateRealInterviewResult } from "../services/realInterview/realInte
 import RealInterviewResult from "../models/RealInterviewResult.js";
 import Interview from "../models/Interview.js";
 import User from "../models/User.js";
+import { sessionManager } from "../services/aiReliability/index.js";
+
+/**
+ * POST /api/real-interview/byok/set-session-key
+ */
+export const setSessionBYOKController = async (req, res) => {
+  try {
+    const { sessionId, provider, apiKey } = req.body || {};
+    if (!sessionId || !provider || !apiKey) {
+      return res.status(400).json({ success: false, message: "sessionId, provider, and apiKey are required" });
+    }
+
+    sessionManager.setSessionBYOK(sessionId, provider, apiKey);
+    res.status(200).json({
+      success: true,
+      message: `BYOK provider [${provider}] successfully bound to session`,
+      sessionId
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
 
 /**
  * Generates structured evidence-based performance feedback for PDF and Web UI.
@@ -230,15 +252,15 @@ export const generateTechnical = async (req, res) => {
     const sessionId = req.body?.sessionId || `technical_session_${Date.now()}`;
     const candidateProfile = await getOrBuildCandidateResumeContext(userId, req.body?.candidateProfile || req.body?.resume || {});
 
-    console.log(`[REAL INTERVIEW AI] round=technical keyPresent=${Boolean((process.env.REAL_INTERVIEW_TECHNICAL_API_KEY || "").trim())} provider=groq requestStarted=true`);
     const result = await generateAndProcessTechnicalQuestions({
       userId,
       sessionId,
       candidateProfile,
     });
-    console.log(`[REAL INTERVIEW AI] round=technical requestCompleted=true count=${result.questions?.length || 20}`);
+    console.log(`[REAL INTERVIEW AI] round=technical executionCompleted=${result.executionCompleted} generationSucceeded=${result.generationSucceeded} roundComplete=${result.roundComplete} count=${result.count}/${result.expectedCount || 20} status=${result.status}`);
 
-    res.status(201).json({
+    const httpStatus = result.roundComplete ? 200 : 200;
+    res.status(httpStatus).json({
       sessionId,
       ...result,
     });
@@ -337,15 +359,14 @@ export const generateProject = async (req, res) => {
     const sessionId = req.body?.sessionId || `project_session_${Date.now()}`;
     const candidateProfile = await getOrBuildCandidateResumeContext(userId, req.body?.candidateProfile || req.body?.resume || {});
 
-    console.log(`[REAL INTERVIEW AI] round=project keyPresent=${Boolean((process.env.REAL_INTERVIEW_PROJECT_API_KEY || "").trim())} provider=groq requestStarted=true`);
     const result = await generateAndProcessProjectQuestions({
       userId,
       sessionId,
       candidateProfile,
     });
-    console.log(`[REAL INTERVIEW AI] round=project requestCompleted=true count=${result.questions?.length || 10}`);
+    console.log(`[REAL INTERVIEW AI] round=project executionCompleted=${result.executionCompleted} generationSucceeded=${result.generationSucceeded} roundComplete=${result.roundComplete} count=${result.count}/${result.expectedCount || 10} status=${result.status}`);
 
-    res.status(201).json({
+    res.status(200).json({
       sessionId,
       ...result,
     });
@@ -442,27 +463,21 @@ export const generateHR = async (req, res) => {
   try {
     const userId = req.user?.id || req.user?._id;
     const sessionId = req.body?.sessionId || `hr_session_${Date.now()}`;
-    console.log(`[HR-DIAGNOSTIC] Incoming POST /api/real-interview/hr/generate sessionId=${sessionId} userId=${userId || "ANONYMOUS"}`);
-
     const candidateProfile = await getOrBuildCandidateResumeContext(userId, req.body?.candidateProfile || req.body?.resume || {});
-    console.log(`[HR-DIAGNOSTIC] Resume context retrieved: name=${candidateProfile.fullName || candidateProfile.name || "Candidate"}, skillsCount=${(candidateProfile.skills || []).length}, projectsCount=${(candidateProfile.projects || []).length}`);
-
-    const hasKey = Boolean((process.env.REAL_INTERVIEW_HR_API_KEY || "").trim());
-    console.log(`[HR-DIAGNOSTIC] REAL_INTERVIEW_HR_API_KEY present: ${hasKey} (key value hidden)`);
 
     const result = await generateAndProcessHRQuestions({
       userId,
       sessionId,
       candidateProfile,
     });
-    console.log(`[HR-DIAGNOSTIC] HR generation successfully completed count=${result.questions?.length || result.count || 5}`);
+    console.log(`[REAL INTERVIEW AI] round=hr executionCompleted=${result.executionCompleted} generationSucceeded=${result.generationSucceeded} roundComplete=${result.roundComplete} count=${result.count}/${result.expectedCount || 5} status=${result.status}`);
 
-    res.status(201).json({
+    res.status(200).json({
       sessionId,
       ...result,
     });
   } catch (error) {
-    console.error("[RealInterviewController] HR Generation Error:", error.message, error.stack);
+    console.error("[RealInterviewController] HR Generation Error:", error.message);
     res.status(500).json({
       success: false,
       message: error.message || "Failed to generate Real Interview HR Questions",
@@ -557,15 +572,14 @@ export const generateCoding = async (req, res) => {
     const sessionId = req.body?.sessionId || `coding_session_${Date.now()}`;
     const candidateProfile = await getOrBuildCandidateResumeContext(userId, req.body?.candidateProfile || req.body?.resume || {});
 
-    console.log(`[REAL INTERVIEW AI] round=coding keyPresent=${Boolean((process.env.REAL_INTERVIEW_CODING_API_KEY || "").trim())} provider=groq requestStarted=true`);
     const result = await generateAndProcessCodingQuestions({
       userId,
       sessionId,
       candidateProfile,
     });
-    console.log(`[REAL INTERVIEW AI] round=coding requestCompleted=true count=${result.questions?.length || 3}`);
+    console.log(`[REAL INTERVIEW AI] round=coding executionCompleted=${result.executionCompleted} generationSucceeded=${result.generationSucceeded} roundComplete=${result.roundComplete} count=${result.count}/${result.expectedCount || 3} status=${result.status}`);
 
-    res.status(201).json({
+    res.status(200).json({
       sessionId,
       ...result,
     });
