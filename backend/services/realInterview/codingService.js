@@ -27,19 +27,19 @@ export async function generateAndProcessCodingQuestions({ userId = null, session
   const lockKey = `coding:${sessionId}`;
   return withInFlightLock(lockKey, async () => {
     let session = await RealInterviewCodingSession.findOne({ sessionId });
+    const existingQuestions = await RealInterviewCodingQuestion.find({ sessionId }).sort({ orderIndex: 1 });
+    const existingIndicesSet = new Set(existingQuestions.map((q) => q.orderIndex));
+    const isFullyGenerated = [1, 2, 3].every((idx) => existingIndicesSet.has(idx) || existingIndicesSet.has(idx - 1));
 
-    if (session && (session.generationStatus === "GENERATED" || session.aiGenerationCalls >= 1)) {
-      const existingQuestions = await RealInterviewCodingQuestion.find({ sessionId }).sort({ orderIndex: 1 });
-      if (existingQuestions.length === 3) {
-        console.log(`[CodingService] Session ${sessionId} already generated (3 problems, aiGenerationCalls: ${session.aiGenerationCalls}). Reusing existing questions.`);
-        return {
-          success: true,
-          sessionId,
-          questions: sanitizeQuestionsForClient(existingQuestions),
-          reused: true,
-          aiGenerationCalls: session.aiGenerationCalls,
-        };
-      }
+    if (session && session.generationStatus === "GENERATED" && existingQuestions.length === 3 && isFullyGenerated) {
+      console.log(`[CodingService] Session ${sessionId} already fully GENERATED (3 problems). Reusing existing questions.`);
+      return {
+        success: true,
+        sessionId,
+        questions: sanitizeQuestionsForClient(existingQuestions),
+        reused: true,
+        aiGenerationCalls: session.aiGenerationCalls,
+      };
     }
 
     if (!session) {
@@ -64,7 +64,6 @@ export async function generateAndProcessCodingQuestions({ userId = null, session
 
     let problemsData = [];
     const userHistorySet = await getUserQuestionHistorySet(userId, candidateProfile?.resumeHash, "coding");
-    const existingQuestions = await RealInterviewCodingQuestion.find({ sessionId }).sort({ orderIndex: 1 });
 
     try {
       const res = await generateCodingAI({ candidateProfile, userHistorySet, count: 3 });

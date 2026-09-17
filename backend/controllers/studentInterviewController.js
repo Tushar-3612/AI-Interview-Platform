@@ -281,9 +281,17 @@ export const getInterviewSession = async (req, res) => {
 
     const realInterviewQuestions = await fetchAllRealInterviewQuestions(sessionId);
 
+    const technicalQuestions = realInterviewQuestions.filter((q) => q.section === "TECHNICAL");
+    const techIndices = new Set(technicalQuestions.map((q) => q.orderIndex).filter((idx) => typeof idx === "number"));
+    const missingTechIndices = [];
+    for (let i = 0; i < 20; i++) {
+      if (!techIndices.has(i)) missingTechIndices.push(i);
+    }
+    const firstMissingTechnicalNumber = missingTechIndices.length > 0 ? missingTechIndices[0] + 1 : technicalQuestions.length + 1;
+
     const sectionCounts = {
       APTITUDE: realInterviewQuestions.filter((q) => q.section === "APTITUDE").length,
-      TECHNICAL: realInterviewQuestions.filter((q) => q.section === "TECHNICAL").length,
+      TECHNICAL: technicalQuestions.length,
       RESUME_PROJECT: realInterviewQuestions.filter((q) => q.section === "RESUME_PROJECT").length,
       HR: realInterviewQuestions.filter((q) => q.section === "HR").length,
       CODING: realInterviewQuestions.filter((q) => q.section === "CODING").length,
@@ -293,15 +301,57 @@ export const getInterviewSession = async (req, res) => {
     const isValidRealInterview =
       sectionCounts.APTITUDE === 15 &&
       sectionCounts.TECHNICAL === 20 &&
+      missingTechIndices.length === 0 &&
       sectionCounts.RESUME_PROJECT === 10 &&
       sectionCounts.HR === 5 &&
       sectionCounts.CODING === 3 &&
       totalCount === 53;
 
+    let incompleteCode = "INTERVIEW_INCOMPLETE";
+    let incompleteMessage = "Interview preparation is incomplete.";
+    if (sectionCounts.TECHNICAL < 20 || missingTechIndices.length > 0) {
+      incompleteCode = "TECHNICAL_INCOMPLETE";
+      const missingCount = 20 - sectionCounts.TECHNICAL;
+      incompleteMessage = `Technical interview preparation is incomplete. ${missingCount} questions remaining.`;
+    } else if (sectionCounts.RESUME_PROJECT < 10) {
+      incompleteCode = "PROJECT_INCOMPLETE";
+      incompleteMessage = `Project interview preparation is incomplete. ${10 - sectionCounts.RESUME_PROJECT} questions remaining.`;
+    } else if (sectionCounts.HR < 5) {
+      incompleteCode = "HR_INCOMPLETE";
+      incompleteMessage = `HR interview preparation is incomplete. ${5 - sectionCounts.HR} questions remaining.`;
+    } else if (sectionCounts.CODING < 3) {
+      incompleteCode = "CODING_INCOMPLETE";
+      incompleteMessage = `Coding interview preparation is incomplete. ${3 - sectionCounts.CODING} problems remaining.`;
+    }
+
+    const missingRounds = {
+      technical: Math.max(0, 20 - sectionCounts.TECHNICAL),
+      project: Math.max(0, 10 - sectionCounts.RESUME_PROJECT),
+      hr: Math.max(0, 5 - sectionCounts.HR),
+      coding: Math.max(0, 3 - sectionCounts.CODING),
+      aptitude: Math.max(0, 15 - sectionCounts.APTITUDE),
+    };
+
+    const counts = {
+      aptitude: sectionCounts.APTITUDE,
+      technical: sectionCounts.TECHNICAL,
+      project: sectionCounts.RESUME_PROJECT,
+      hr: sectionCounts.HR,
+      coding: sectionCounts.CODING,
+      total: totalCount,
+    };
+
     if (!session) {
       // Safe fallback for custom/test session IDs to avoid 404 block
       return res.status(200).json({
         success: true,
+        valid: isValidRealInterview,
+        recoverable: true,
+        code: isValidRealInterview ? "COMPLETE" : incompleteCode,
+        message: isValidRealInterview ? "Interview preparation is complete." : incompleteMessage,
+        missingRounds,
+        counts,
+        nextQuestionNumber: firstMissingTechnicalNumber,
         sessionId,
         interviewId: sessionId,
         interviewType: "actual",
@@ -327,6 +377,13 @@ export const getInterviewSession = async (req, res) => {
 
     res.status(200).json({
       success: true,
+      valid: isValidRealInterview,
+      recoverable: true,
+      code: isValidRealInterview ? "COMPLETE" : incompleteCode,
+      message: isValidRealInterview ? "Interview preparation is complete." : incompleteMessage,
+      missingRounds,
+      counts,
+      nextQuestionNumber: firstMissingTechnicalNumber,
       sessionId: session ? session._id.toString() : sessionId,
       interviewId: session ? session._id.toString() : sessionId,
       interviewType: session ? (session.interviewType || "actual") : "actual",

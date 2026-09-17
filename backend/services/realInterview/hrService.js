@@ -29,20 +29,21 @@ export async function generateAndProcessHRQuestions({ userId = null, sessionId, 
   return withInFlightLock(lockKey, async () => {
     // 1. Session lookup & idempotency check
     let session = await RealInterviewHRSession.findOne({ sessionId });
-    console.log(`[HR-DIAGNOSTIC] sessionId=${sessionId} sessionLookup=${Boolean(session)} generationStatus=${session?.generationStatus || "NONE"}`);
+    const existingQuestions = await RealInterviewHRQuestion.find({ sessionId }).sort({ orderIndex: 1 });
+    const existingIndicesSet = new Set(existingQuestions.map((q) => q.orderIndex));
+    const isFullyGenerated = [1, 2, 3, 4, 5].every((idx) => existingIndicesSet.has(idx) || existingIndicesSet.has(idx - 1));
 
-    if (session && (session.generationStatus === "GENERATED" || session.aiGenerationCalls >= 1)) {
-      const existingQuestions = await RealInterviewHRQuestion.find({ sessionId }).sort({ orderIndex: 1 });
-      if (existingQuestions.length === 5) {
-        console.log(`[HR-DIAGNOSTIC] Session ${sessionId} already has 5 valid HR questions. Reusing without re-generation.`);
-        return {
-          success: true,
-          sessionId,
-          questions: existingQuestions,
-          reused: true,
-          aiGenerationCalls: session.aiGenerationCalls,
-        };
-      }
+    console.log(`[HR-DIAGNOSTIC] sessionId=${sessionId} sessionLookup=${Boolean(session)} generationStatus=${session?.generationStatus || "NONE"} existingCount=${existingQuestions.length}`);
+
+    if (session && session.generationStatus === "GENERATED" && existingQuestions.length === 5 && isFullyGenerated) {
+      console.log(`[HR-DIAGNOSTIC] Session ${sessionId} already has 5 valid GENERATED HR questions. Reusing without re-generation.`);
+      return {
+        success: true,
+        sessionId,
+        questions: existingQuestions,
+        reused: true,
+        aiGenerationCalls: session.aiGenerationCalls,
+      };
     }
 
     if (!session) {
@@ -68,8 +69,6 @@ export async function generateAndProcessHRQuestions({ userId = null, sessionId, 
 
     let questionsData = [];
     const userHistorySet = await getUserQuestionHistorySet(userId, candidateProfile?.resumeHash, "hr");
-
-    const existingQuestions = await RealInterviewHRQuestion.find({ sessionId }).sort({ orderIndex: 1 });
 
     try {
       console.log(`[HR-DIAGNOSTIC] Invoking generateHRAI... resumeHash=${candidateProfile?.resumeHash}`);

@@ -17,6 +17,7 @@ import { isQuestionGroundedInResume, getOrBuildCandidateResumeContext } from "..
 import { preprocessAnswerBatch } from "../realInterviewAI/answerPreprocessor.js";
 import { resolveCandidateAnswer } from "./answerResolver.js";
 import { classifyInterviewAIError } from "./errorClassifier.js";
+import { resolveTechnicalFallbackQuestion } from "../realInterviewAI/technicalFallbackResolver.js";
 
 /**
  * Generates or retrieves existing 20 Technical questions for a Real Interview session (AI CALL #1).
@@ -92,7 +93,10 @@ export async function generateAndProcessTechnicalQuestions({
         maxMarks: q.maxMarks || (q.difficulty === "easy" ? 3 : q.difficulty === "hard" ? 13 : 5),
         topic: q.topic,
         category: q.category,
-        source: q.source || "AI_PROVIDER",
+        source: q.source || "AI_GENERATED",
+        generationMethod: q.generationMethod || (q.isFallback ? "CURATED_RESUME_MATCH" : "RESUME_BASED_AI"),
+        matchedSkill: q.matchedSkill || q.relatedSkill || "",
+        isFallback: Boolean(q.isFallback),
         relatedSkill: q.relatedSkill,
         relatedProject: q.relatedProject,
       }));
@@ -221,7 +225,10 @@ export async function generateAndProcessTechnicalQuestions({
           maxMarks,
           topic,
           category: "Conceptual",
-          source: "AI_PROVIDER",
+          source: "AI_GENERATED",
+          generationMethod: "RESUME_BASED_AI",
+          matchedSkill: String(q.skillsTested?.[0] || "").trim(),
+          isFallback: false,
           relatedSkill: String(q.skillsTested?.[0] || "").trim(),
           relatedProject: "",
         });
@@ -261,6 +268,48 @@ export async function generateAndProcessTechnicalQuestions({
     }
 
     missingIndices = computeMissingIndices(existingQuestions);
+    const initialMissingCount = missingIndices.length;
+
+    // Requirement 2 & 11: If AI generation fails/stops with missingCount between 1 and 3,
+    // invoke the curated technicalFallbackResolver ONLY for the missing slot(s).
+    if (initialMissingCount > 0 && initialMissingCount <= 3) {
+      console.log(
+        `[TechnicalService] AI generation ended with missingCount=${initialMissingCount} (missingIndices=[${missingIndices.join(", ")}]). Invoking curated technical fallback resolver...`
+      );
+
+      for (const slotIndex of missingIndices) {
+        const fallbackDoc = resolveTechnicalFallbackQuestion({
+          sessionId,
+          userId,
+          candidateProfile: effectiveProfile,
+          existingQuestions,
+          targetSlotIndex: slotIndex,
+          userHistorySet,
+          missingCount: initialMissingCount,
+          currentPoolSet,
+        });
+
+        if (fallbackDoc) {
+          const savedFallback = await RealInterviewTechnicalQuestion.create(fallbackDoc);
+          if (userId && sessionId) {
+            await recordUserQuestionHistory({
+              userId,
+              sessionId,
+              resumeHash: effectiveProfile.resumeHash,
+              round: "technical",
+              questions: [savedFallback],
+            });
+          }
+
+          const norm = normalizeQuestionText(savedFallback.question);
+          if (norm) currentPoolSet.add(norm);
+          existingQuestions.push(savedFallback);
+        }
+      }
+
+      // Recompute missing indices after fallback resolution
+      missingIndices = computeMissingIndices(existingQuestions);
+    }
 
     if (missingIndices.length === 0 && existingQuestions.length >= TARGET_COUNT) {
       session.generationStatus = "GENERATED";
@@ -278,7 +327,10 @@ export async function generateAndProcessTechnicalQuestions({
           maxMarks: q.maxMarks || (q.difficulty === "easy" ? 3 : q.difficulty === "hard" ? 13 : 5),
           topic: q.topic,
           category: q.category,
-          source: q.source || "AI_PROVIDER",
+          source: q.source || "AI_GENERATED",
+          generationMethod: q.generationMethod || (q.isFallback ? "CURATED_RESUME_MATCH" : "RESUME_BASED_AI"),
+          matchedSkill: q.matchedSkill || q.relatedSkill || "",
+          isFallback: Boolean(q.isFallback),
           relatedSkill: q.relatedSkill,
           relatedProject: q.relatedProject,
         }));
@@ -292,7 +344,7 @@ export async function generateAndProcessTechnicalQuestions({
         aiGenerationCalls: totalAiCallsMade,
       };
     } else {
-      // Partial generation / Recoverable failure state
+      // Partial generation / Recoverable failure state (when missingCount > 3 or fallback bank exhausted)
       const classified = classifyInterviewAIError(lastError || "Technical generation stopped before completing all 20 questions");
       session.generationStatus = existingQuestions.length > 0 ? "PARTIAL" : "FAILED";
       session.aiGenerationCalls = totalAiCallsMade;
@@ -315,7 +367,10 @@ export async function generateAndProcessTechnicalQuestions({
           maxMarks: q.maxMarks || (q.difficulty === "easy" ? 3 : q.difficulty === "hard" ? 13 : 5),
           topic: q.topic,
           category: q.category,
-          source: q.source || "AI_PROVIDER",
+          source: q.source || "AI_GENERATED",
+          generationMethod: q.generationMethod || (q.isFallback ? "CURATED_RESUME_MATCH" : "RESUME_BASED_AI"),
+          matchedSkill: q.matchedSkill || q.relatedSkill || "",
+          isFallback: Boolean(q.isFallback),
           relatedSkill: q.relatedSkill,
           relatedProject: q.relatedProject,
         }));

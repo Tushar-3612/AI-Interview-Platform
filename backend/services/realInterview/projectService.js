@@ -38,13 +38,13 @@ export async function generateAndProcessProjectQuestions({
       orderIndex: 1,
     });
 
-  if (
-    (session && (session.aiGenerationCalls >= 1 || session.generationStatus === "GENERATED")) ||
-    existingQuestions.length >= 10
-  ) {
-    console.log(
-      `[ProjectService] Session ${sessionId} already generated (${existingQuestions.length} questions, aiGenerationCalls: ${session?.aiGenerationCalls || 1}). Reusing existing questions without AI call.`
-    );
+    const existingIndicesSet = new Set(existingQuestions.map((q) => q.orderIndex));
+    const isFullyGenerated = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].every((idx) => existingIndicesSet.has(idx));
+
+    if (session && session.generationStatus === "GENERATED" && existingQuestions.length === 10 && isFullyGenerated) {
+      console.log(
+        `[ProjectService] Session ${sessionId} already fully GENERATED (${existingQuestions.length} questions). Reusing existing questions.`
+      );
 
     if (!session) {
       session = await RealInterviewProjectSession.create({

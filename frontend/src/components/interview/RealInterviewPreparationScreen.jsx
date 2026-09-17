@@ -192,6 +192,7 @@ export default function RealInterviewPreparationScreen({
   const [isPreparationComplete, setIsPreparationComplete] = useState(false);
   const [failedStageId, setFailedStageId] = useState(null);
   const [friendlyErrorMessage, setFriendlyErrorMessage] = useState("");
+  const [partialInfoState, setPartialInfoState] = useState(null);
 
   // Feedback Modal State
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
@@ -209,7 +210,22 @@ export default function RealInterviewPreparationScreen({
   const preparedSessionIdRef = useRef(null);
 
   // Friendly Error Mapper
-  const mapApiErrorToFriendlyMessage = (error) => {
+  const mapApiErrorToFriendlyMessage = (error, partialInfo) => {
+    if (error?.isPartial || partialInfo || error?.partialInfo) {
+      const info = partialInfo || error?.partialInfo;
+      if (info?.missingCount && info?.roundTitle) {
+        return `${info.roundTitle} interview preparation is incomplete. ${info.missingCount} questions remaining.`;
+      }
+      if (error?.message) {
+        return error.message;
+      }
+    }
+    if (error?.message && !error.message.includes("Network Error") && !error.message.includes("AxiosError") && !error.message.includes("object Object")) {
+      return error.message;
+    }
+    if (error?.response?.data?.message) {
+      return error.response.data.message;
+    }
     if (isIndividualProject) {
       return "Please retry the project preparation. Your existing session will be preserved.";
     }
@@ -329,6 +345,23 @@ export default function RealInterviewPreparationScreen({
     if (stage.id === "technical") {
       console.log(`[PREP] round=technical sessionIdPresent=${Boolean(sessionId)}`);
       const res = await api.post("/api/real-interview/technical/generate", payload, { headers });
+      const data = res.data || {};
+      const generatedCount = data.count || data.questions?.length || data.generatedCount || 0;
+      if (data.success === false || generatedCount < 20) {
+        const missingCount = Math.max(1, 20 - generatedCount);
+        const nextQ = data.nextQuestionNumber || (generatedCount + 1);
+        const customErr = new Error(data.message || `Technical preparation is incomplete. ${missingCount} questions remaining.`);
+        customErr.isPartial = true;
+        customErr.targetFailedStage = "technical";
+        customErr.partialInfo = {
+          round: "technical",
+          roundTitle: "Technical",
+          missingCount,
+          nextQuestionNumber: nextQ,
+          generatedCount,
+        };
+        throw customErr;
+      }
       console.log(`[PREP] stage=${stage.id} RESPONSE status=${res.status}`);
       await delay(1200);
       console.log(`[PREP] stage=${stage.id} COMPLETE`);
@@ -338,6 +371,23 @@ export default function RealInterviewPreparationScreen({
     if (stage.id === "project") {
       console.log(`[PREP] round=project sessionIdPresent=${Boolean(sessionId)}`);
       const res = await api.post("/api/real-interview/project/generate", payload, { headers });
+      const data = res.data || {};
+      const generatedCount = data.count || data.questions?.length || data.generatedCount || 0;
+      if (data.success === false || generatedCount < 10) {
+        const missingCount = Math.max(1, 10 - generatedCount);
+        const nextQ = data.nextQuestionNumber || (generatedCount + 1);
+        const customErr = new Error(data.message || `Project preparation is incomplete. ${missingCount} questions remaining.`);
+        customErr.isPartial = true;
+        customErr.targetFailedStage = "project";
+        customErr.partialInfo = {
+          round: "project",
+          roundTitle: "Project",
+          missingCount,
+          nextQuestionNumber: nextQ,
+          generatedCount,
+        };
+        throw customErr;
+      }
       console.log(`[PREP] stage=${stage.id} RESPONSE status=${res.status}`);
       await delay(1200);
       console.log(`[PREP] stage=${stage.id} COMPLETE`);
@@ -347,6 +397,22 @@ export default function RealInterviewPreparationScreen({
     if (stage.id === "hr") {
       console.log(`[PREP] round=hr sessionIdPresent=${Boolean(sessionId)}`);
       const res = await api.post("/api/real-interview/hr/generate", payload, { headers });
+      const data = res.data || {};
+      const generatedCount = data.count || data.questions?.length || data.generatedCount || 0;
+      if (data.success === false || generatedCount < 5) {
+        const missingCount = Math.max(1, 5 - generatedCount);
+        const customErr = new Error(data.message || `HR preparation is incomplete. ${missingCount} questions remaining.`);
+        customErr.isPartial = true;
+        customErr.targetFailedStage = "hr";
+        customErr.partialInfo = {
+          round: "hr",
+          roundTitle: "HR",
+          missingCount,
+          nextQuestionNumber: data.nextQuestionNumber || 1,
+          generatedCount,
+        };
+        throw customErr;
+      }
       console.log(`[PREP] stage=${stage.id} RESPONSE status=${res.status}`);
       await delay(1200);
       console.log(`[PREP] stage=${stage.id} COMPLETE`);
@@ -356,6 +422,22 @@ export default function RealInterviewPreparationScreen({
     if (stage.id === "coding") {
       console.log(`[PREP] round=coding sessionIdPresent=${Boolean(sessionId)}`);
       const res = await api.post("/api/real-interview/coding/generate", payload, { headers });
+      const data = res.data || {};
+      const generatedCount = data.count || data.questions?.length || data.generatedCount || 0;
+      if (data.success === false || generatedCount < 3) {
+        const missingCount = Math.max(1, 3 - generatedCount);
+        const customErr = new Error(data.message || `Coding preparation is incomplete. ${missingCount} problems remaining.`);
+        customErr.isPartial = true;
+        customErr.targetFailedStage = "coding";
+        customErr.partialInfo = {
+          round: "coding",
+          roundTitle: "Coding",
+          missingCount,
+          nextQuestionNumber: data.nextQuestionNumber || 1,
+          generatedCount,
+        };
+        throw customErr;
+      }
       console.log(`[PREP] stage=${stage.id} RESPONSE status=${res.status}`);
       await delay(1200);
       console.log(`[PREP] stage=${stage.id} COMPLETE`);
@@ -368,28 +450,45 @@ export default function RealInterviewPreparationScreen({
       const res = await api.get(`/api/student/interviews/${sessionId}`, { headers });
       console.log(`[PREP] stage=${stage.id} RESPONSE status=${res.status} valid=${res.data?.isValidRealInterview} count=${res.data?.totalQuestionsCount}`);
       const data = res.data || {};
-      const qs = data.generatedQuestions || [];
 
-      const aptitudeCount = qs.filter((q) => q.section === "APTITUDE").length;
-      const technicalCount = qs.filter((q) => q.section === "TECHNICAL").length;
-      const projectCount = qs.filter((q) => q.section === "RESUME_PROJECT").length;
-      const hrCount = qs.filter((q) => q.section === "HR").length;
-      const codingCount = qs.filter((q) => q.section === "CODING").length;
+      if (data.valid === false || data.isValidRealInterview === false) {
+        const code = data.code || "INTERVIEW_INCOMPLETE";
+        let targetFailedStage = "finalizing";
+        let roundTitle = "Interview";
+        let missingCount = 53 - (data.totalQuestionsCount || 0);
 
-      const isValid =
-        aptitudeCount === 15 &&
-        technicalCount === 20 &&
-        projectCount === 10 &&
-        hrCount === 5 &&
-        codingCount === 3 &&
-        qs.length === 53;
+        if (code.includes("TECHNICAL") || (data.counts?.technical < 20)) {
+          targetFailedStage = "technical";
+          roundTitle = "Technical";
+          missingCount = Math.max(1, 20 - (data.counts?.technical || 0));
+        } else if (code.includes("PROJECT") || (data.counts?.project < 10)) {
+          targetFailedStage = "project";
+          roundTitle = "Project";
+          missingCount = Math.max(1, 10 - (data.counts?.project || 0));
+        } else if (code.includes("HR") || (data.counts?.hr < 5)) {
+          targetFailedStage = "hr";
+          roundTitle = "HR";
+          missingCount = Math.max(1, 5 - (data.counts?.hr || 0));
+        } else if (code.includes("CODING") || (data.counts?.coding < 3)) {
+          targetFailedStage = "coding";
+          roundTitle = "Coding";
+          missingCount = Math.max(1, 3 - (data.counts?.coding || 0));
+        }
 
-      if (!isValid) {
-        throw new Error(
-          `Interview session validation failed. Expected 53 total questions (15 Aptitude, 20 Technical, 10 Project, 5 HR, 3 Coding). Received: ${qs.length} (Aptitude:${aptitudeCount}, Technical:${technicalCount}, Project:${projectCount}, HR:${hrCount}, Coding:${codingCount}).`
-        );
+        const customErr = new Error(data.message || `${roundTitle} preparation is incomplete. ${missingCount} questions remaining.`);
+        customErr.isPartial = true;
+        customErr.targetFailedStage = targetFailedStage;
+        customErr.partialInfo = {
+          round: targetFailedStage,
+          roundTitle,
+          missingCount,
+          nextQuestionNumber: data.nextQuestionNumber || 18,
+          counts: data.counts,
+        };
+        throw customErr;
       }
 
+      const qs = data.generatedQuestions || [];
       // Check Aptitude questions options (must have exactly 4 choices each)
       const aptitudeQs = qs.filter((q) => q.section === "APTITUDE");
       const invalidAptitude = aptitudeQs.some((q) => !q.options || q.options.length !== 4);
@@ -423,6 +522,7 @@ export default function RealInterviewPreparationScreen({
 
     setFailedStageId(null);
     setFriendlyErrorMessage("");
+    setPartialInfoState(null);
 
     for (let i = 0; i < activeStages.length; i++) {
       const stage = activeStages[i];
@@ -442,10 +542,15 @@ export default function RealInterviewPreparationScreen({
         setStageStatuses((prev) => ({ ...prev, [stage.id]: "completed" }));
       } catch (err) {
         console.error(`[PREP] preparation ERROR stage=${stage.id}:`, err);
-        setStageStatuses((prev) => ({ ...prev, [stage.id]: "failed" }));
-        setFailedStageId(stage.id);
+        const actualFailedStageId = err.targetFailedStage || stage.id;
 
-        const userFriendlyMsg = mapApiErrorToFriendlyMessage(err);
+        setStageStatuses((prev) => ({ ...prev, [actualFailedStageId]: "failed" }));
+        setFailedStageId(actualFailedStageId);
+
+        const partialData = err.partialInfo || null;
+        setPartialInfoState(partialData);
+
+        const userFriendlyMsg = mapApiErrorToFriendlyMessage(err, partialData);
         setFriendlyErrorMessage(userFriendlyMsg);
 
         setFeedbackForm((prev) => ({
@@ -673,7 +778,7 @@ export default function RealInterviewPreparationScreen({
                   className="w-full sm:w-auto px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs md:text-sm flex items-center justify-center gap-2 transition cursor-pointer"
                 >
                   <RefreshCw className="w-4 h-4" />
-                  TRY AGAIN
+                  {partialInfoState?.roundTitle ? `RESUME ${partialInfoState.roundTitle.toUpperCase()} GENERATION` : "TRY AGAIN"}
                 </button>
                 <button
                   onClick={() => setShowFeedbackModal(true)}
