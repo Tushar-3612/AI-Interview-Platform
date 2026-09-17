@@ -84,7 +84,10 @@ export async function callPythonGroqBridge({
           console.log(`\n[PYTHON-AI-BRIDGE]\nround=${round}\ngroqResponseReceived=true`);
           return resolve(parsed.content || "");
         } else {
-          return reject(new Error(`[PythonAIBridge][${round}] Groq request failed: ${parsed.error || "Unknown error"}`));
+          const err = new Error(`[PythonAIBridge][${round}] Groq request failed: ${parsed.error || "Unknown error"}`);
+          if (parsed.status) err.status = parsed.status;
+          if (parsed.retry_after) err.retryAfter = parsed.retry_after;
+          return reject(err);
         }
       } catch (parseErr) {
         return reject(new Error(`[PythonAIBridge][${round}] Failed to parse Python stdout JSON: ${stdoutData.trim()}`));

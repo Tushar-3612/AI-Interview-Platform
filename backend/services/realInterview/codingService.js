@@ -9,6 +9,7 @@ import {
   recordUserQuestionHistory,
   filterUniqueQuestions,
 } from "./questionHistoryService.js";
+import { classifyInterviewAIError } from "./errorClassifier.js";
 
 /**
  * Robust static fallback set of 3 DSA coding problems if AI API fails (e.g. HTTP 429 rate limit).
@@ -63,6 +64,7 @@ export async function generateAndProcessCodingQuestions({ userId = null, session
 
     let problemsData = [];
     const userHistorySet = await getUserQuestionHistorySet(userId, candidateProfile?.resumeHash, "coding");
+    const existingQuestions = await RealInterviewCodingQuestion.find({ sessionId }).sort({ orderIndex: 1 });
 
     try {
       const res = await generateCodingAI({ candidateProfile, userHistorySet, count: 3 });
@@ -73,12 +75,38 @@ export async function generateAndProcessCodingQuestions({ userId = null, session
       }
     } catch (err) {
       console.error(`\n[AI-REQUEST-FAILED]\nround=coding\nprovider=groq\nrequestId=${requestId}\nerror=${err.message}`);
-      throw new Error(`Coding AI generation failed: ${err.message}`);
+      const classified = classifyInterviewAIError(err);
+      session.generationStatus = existingQuestions.length > 0 ? "PARTIAL" : "FAILED";
+      await session.save();
+
+      return {
+        success: false,
+        recoverable: classified.recoverable,
+        generatedCount: existingQuestions.length,
+        totalRequired: 3,
+        nextQuestionNumber: existingQuestions.length + 1,
+        errorCode: classified.code,
+        message: classified.message,
+        questions: existingQuestions,
+      };
     }
 
     if (problemsData.length < 3) {
       console.error(`\n[AI-REQUEST-FAILED]\nround=coding\nprovider=groq\nrequestId=${requestId}\nerror=Insufficient unique AI coding problems returned (${problemsData.length}/3)`);
-      throw new Error(`Insufficient Coding AI problems generated (${problemsData.length}/3)`);
+      const classified = classifyInterviewAIError("Insufficient unique Coding AI problems generated");
+      session.generationStatus = existingQuestions.length > 0 ? "PARTIAL" : "FAILED";
+      await session.save();
+
+      return {
+        success: false,
+        recoverable: true,
+        generatedCount: existingQuestions.length,
+        totalRequired: 3,
+        nextQuestionNumber: existingQuestions.length + 1,
+        errorCode: classified.code,
+        message: classified.message,
+        questions: existingQuestions,
+      };
     }
 
     console.log(`\n[AI-REQUEST-SUCCESS]\nround=coding\nprovider=groq\nrequestId=${requestId}\nquestionsReturned=${problemsData.length}`);

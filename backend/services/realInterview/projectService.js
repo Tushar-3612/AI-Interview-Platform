@@ -15,6 +15,7 @@ import {
 import { isQuestionGroundedInResume, getOrBuildCandidateResumeContext } from "../../utils/resumeContextBuilder.js";
 import { preprocessAnswerBatch } from "../realInterviewAI/answerPreprocessor.js";
 import { resolveCandidateAnswer } from "./answerResolver.js";
+import { classifyInterviewAIError } from "./errorClassifier.js";
 
 /**
  * Generates or retrieves existing 10 Project/Resume questions for a Real Interview session (AI CALL #1).
@@ -90,14 +91,45 @@ export async function generateAndProcessProjectQuestions({
   const hasKey = Boolean(process.env.REAL_INTERVIEW_PROJECT_API_KEY?.trim());
 
   console.log(`\n[AI-REQUEST-START]\nround=project\nprovider=groq\nmodel=${modelName}\nkeyPresent=${hasKey}\nrequestId=${requestId}`);
-  console.log(`\n[REAL-INTERVIEW][PROJECT-CONTEXT]\nprojects=${JSON.stringify((effectiveProfile.projects || []).map(p => ({ name: p.name, technologies: p.technologies })))}\nresumeHash=${effectiveProfile.resumeHash}\n`);
 
-  let aiResult;
+  if (!session) {
+    session = await RealInterviewProjectSession.create({
+      sessionId,
+      userId,
+      currentQuestionIndex: 0,
+      strongAnswerCount: 0,
+      hardUnlocked: false,
+      questionsAnswered: 0,
+      answers: [],
+      status: "in_progress",
+      generationStatus: "GENERATING",
+      aiGenerationCalls: 0,
+    });
+  } else {
+    session.generationStatus = "GENERATING";
+    await session.save();
+  }
+
+  let aiResult = null;
   try {
     aiResult = await generateProjectAI(effectiveProfile, userHistorySet);
   } catch (genErr) {
     console.error(`\n[AI-REQUEST-FAILED]\nround=project\nprovider=groq\nrequestId=${requestId}\nerror=${genErr.message}`);
-    throw new Error(`Project AI generation failed: ${genErr.message}`);
+    const classified = classifyInterviewAIError(genErr);
+    session.generationStatus = existingQuestions.length > 0 ? "PARTIAL" : "FAILED";
+    session.aiGenerationCalls += 1;
+    await session.save();
+
+    return {
+      success: false,
+      recoverable: classified.recoverable,
+      generatedCount: existingQuestions.length,
+      totalRequired: 10,
+      nextQuestionNumber: existingQuestions.length + 1,
+      errorCode: classified.code,
+      message: classified.message,
+      questions: existingQuestions,
+    };
   }
 
   const rawAiQuestions = aiResult?.questions || [];
@@ -105,7 +137,21 @@ export async function generateAndProcessProjectQuestions({
 
   if (rawQuestions.length < 10) {
     console.error(`\n[AI-REQUEST-FAILED]\nround=project\nprovider=groq\nrequestId=${requestId}\nerror=Insufficient unique AI questions returned (${rawQuestions.length}/10)`);
-    throw new Error(`Insufficient Project AI questions generated (${rawQuestions.length}/10)`);
+    const classified = classifyInterviewAIError("Insufficient unique Project AI questions generated");
+    session.generationStatus = existingQuestions.length > 0 ? "PARTIAL" : "FAILED";
+    session.aiGenerationCalls += 1;
+    await session.save();
+
+    return {
+      success: false,
+      recoverable: true,
+      generatedCount: existingQuestions.length,
+      totalRequired: 10,
+      nextQuestionNumber: existingQuestions.length + 1,
+      errorCode: classified.code,
+      message: classified.message,
+      questions: existingQuestions,
+    };
   }
 
   console.log(`\n[AI-REQUEST-SUCCESS]\nround=project\nprovider=groq\nrequestId=${requestId}\nquestionsReturned=${rawQuestions.length}`);

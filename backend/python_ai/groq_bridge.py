@@ -54,17 +54,13 @@ def main():
             message = choices[0].get("message", {})
             content = message.get("content", "") or ""
             
-            # Thinking models sometimes exhaust token budget on reasoning and return empty content
-            # Fall back to reasoning field if available
-            if not content.strip() and "reasoning" in message:
-                content = message["reasoning"] or ""
-
-            # If still empty, return error so Node.js can retry with a different model
+            # If content is empty, return explicit error so Node.js can retry
             if not content.strip():
                 finish_reason = choices[0].get("finish_reason", "unknown")
                 print(json.dumps({
                     "success": False,
-                    "error": f"Model returned empty content (finish_reason={finish_reason}). Model may have exhausted token budget on reasoning. Try increasing max_tokens or switching to a non-thinking model.",
+                    "status": 200,
+                    "error": f"Model returned empty content (finish_reason={finish_reason}).",
                     "usage": res_json.get("usage", {})
                 }))
                 sys.exit(0)
@@ -78,9 +74,11 @@ def main():
 
     except urllib.error.HTTPError as e:
         err_body = e.read().decode("utf-8") if e.fp else ""
+        retry_after = e.headers.get("Retry-After", "") if e.headers else ""
         print(json.dumps({
             "success": False,
             "status": e.code,
+            "retry_after": retry_after,
             "error": f"Groq HTTP {e.code}: {err_body or e.reason}"
         }))
         sys.exit(0)

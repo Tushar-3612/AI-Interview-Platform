@@ -16,14 +16,17 @@ import {
 import { isQuestionGroundedInResume, getOrBuildCandidateResumeContext } from "../../utils/resumeContextBuilder.js";
 import { preprocessAnswerBatch } from "../realInterviewAI/answerPreprocessor.js";
 import { resolveCandidateAnswer } from "./answerResolver.js";
+import { classifyInterviewAIError } from "./errorClassifier.js";
 
 /**
  * Generates or retrieves existing 20 Technical questions for a Real Interview session (AI CALL #1).
  * Enforces IDEMPOTENCY & RESUMABLE CHECKPOINTS:
  * 1. Checks existing DB questions for current session.
- * 2. Generates missing questions in 2-question AI batches.
- * 3. Saves each batch immediately to MongoDB.
- * 4. Never restarts from Q1 if partial questions exist.
+ * 2. Computes exact missing 1-indexed question numbers from actual DB orderIndex values.
+ * 3. Generates missing questions in 2-question AI batches.
+ * 4. Saves each batch immediately to MongoDB.
+ * 5. Never restarts from Q1 if partial questions exist.
+ * 6. Returns a controlled recoverable response on AI failure without unhandled rejections.
  */
 export async function generateAndProcessTechnicalQuestions({
   userId = null,
@@ -43,9 +46,24 @@ export async function generateAndProcessTechnicalQuestions({
 
     const TARGET_COUNT = 20;
 
-    // Check if session is already fully generated
+    // Helper: compute missing 0-indexed order indices (0..19)
+    const computeMissingIndices = (questionsList) => {
+      const existingIndicesSet = new Set(questionsList.map((q) => q.orderIndex));
+      const missing = [];
+      for (let i = 0; i < TARGET_COUNT; i++) {
+        if (!existingIndicesSet.has(i)) {
+          missing.push(i);
+        }
+      }
+      return missing;
+    };
+
+    let missingIndices = computeMissingIndices(existingQuestions);
+
+    // Check if session is already fully generated with all 20 indices present
     if (
       (session && (session.aiGenerationCalls >= 1 || session.generationStatus === "GENERATED")) &&
+      missingIndices.length === 0 &&
       existingQuestions.length >= TARGET_COUNT
     ) {
       console.log(
@@ -116,40 +134,71 @@ export async function generateAndProcessTechnicalQuestions({
     });
 
     console.log(
-      `[TechnicalService] Session ${sessionId} starting/resuming generation. Currently existing questions in DB: ${existingQuestions.length}/${TARGET_COUNT}`
+      `[TechnicalService] Session ${sessionId} starting/resuming generation. Currently existing questions in DB: ${existingQuestions.length}/${TARGET_COUNT}. Missing slots count: ${missingIndices.length}`
     );
 
+    if (!session) {
+      session = await RealInterviewTechnicalSession.create({
+        sessionId,
+        userId,
+        currentQuestionIndex: 0,
+        strongAnswerCount: 0,
+        hardUnlocked: false,
+        questionsAnswered: 0,
+        answers: [],
+        status: "in_progress",
+        generationStatus: "GENERATING",
+        aiGenerationCalls: 0,
+      });
+    } else {
+      session.generationStatus = "GENERATING";
+      await session.save();
+    }
+
     let totalAiCallsMade = session?.aiGenerationCalls || 0;
+    let lastError = null;
 
     // Resumable progress-driven batch loop (EXACTLY 2 questions per batch)
-    while (existingQuestions.length < TARGET_COUNT) {
-      const startQuestionNumber = existingQuestions.length + 1;
-      const batchSize = Math.min(2, TARGET_COUNT - existingQuestions.length); // Batch size = 2
+    while (missingIndices.length > 0) {
+      const currentBatchIndices = missingIndices.slice(0, 2);
+      const startQuestionNumber = currentBatchIndices[0] + 1; // First missing 1-indexed question number
+      const batchSize = currentBatchIndices.length;
 
       console.log(
-        `[TechnicalService] Resuming generation: requesting Q${startQuestionNumber} to Q${startQuestionNumber + batchSize - 1} (batchSize=${batchSize})`
+        `[TechnicalService] Resuming generation: requesting Q${startQuestionNumber} to Q${startQuestionNumber + batchSize - 1} (batchSize=${batchSize}, missingIndices=[${currentBatchIndices.join(", ")}])`
       );
 
-      const batchResult = await generateTechnicalAIBatch({
-        skillsContextStr,
-        startQuestionNumber,
-        batchSize,
-        targetTotalCount: TARGET_COUNT,
-        userHistorySet,
-        currentPoolSet,
-      });
-
-      totalAiCallsMade++;
-
-      if (!batchResult || batchResult.length === 0) {
-        console.warn(`[TechnicalService] Batch for Q${startQuestionNumber} returned 0 valid questions. Retrying...`);
-        continue;
+      let batchResult = [];
+      try {
+        batchResult = await generateTechnicalAIBatch({
+          skillsContextStr,
+          startQuestionNumber,
+          batchSize,
+          targetTotalCount: TARGET_COUNT,
+          userHistorySet,
+          currentPoolSet,
+        });
+        totalAiCallsMade++;
+      } catch (aiErr) {
+        console.error(`[TechnicalService] Batch generation error for Q${startQuestionNumber}: ${aiErr.message}`);
+        lastError = aiErr;
+        break; // Stop cleanly on AI failure
       }
 
-      // Format & validate new batch docs
-      const newDocs = batchResult.map((q, idx) => {
-        const orderIndex = existingQuestions.length + idx;
+      if (!batchResult || batchResult.length === 0) {
+        console.warn(`[TechnicalService] Batch for Q${startQuestionNumber} returned 0 valid questions.`);
+        lastError = new Error(`AI service returned no valid unique questions for Q${startQuestionNumber}`);
+        break; // Stop cleanly if batch is empty
+      }
+
+      // Format & validate new batch docs mapped to exact missing orderIndex slots
+      const newDocs = [];
+      for (let idx = 0; idx < Math.min(batchResult.length, currentBatchIndices.length); idx++) {
+        const q = batchResult[idx];
+        const assignedOrderIndex = currentBatchIndices[idx];
         const questionText = String(q.question || "").trim();
+        if (!questionText) continue;
+
         const topic = String(q.topic || "General Technical").trim();
         const expectedKnowledge = String(
           q.expectedKnowledge ||
@@ -159,25 +208,29 @@ export async function generateAndProcessTechnicalQuestions({
             `Comprehensive technical explanation addressing core principles for ${topic}.`
         ).trim();
 
-        const diff = String(q.difficulty || "medium").toLowerCase().trim();
-        const validDiff = ["easy", "medium", "hard"].includes(diff) ? diff : "medium";
-        const maxMarks = validDiff === "easy" ? 3 : validDiff === "hard" ? 13 : 5;
+        const targetDiff = assignedOrderIndex <= 5 ? "easy" : assignedOrderIndex <= 17 ? "medium" : "hard";
+        const maxMarks = targetDiff === "easy" ? 3 : targetDiff === "hard" ? 13 : 5;
 
-        return {
+        newDocs.push({
           sessionId,
           userId,
-          orderIndex,
+          orderIndex: assignedOrderIndex,
           question: questionText,
           expectedKnowledge,
-          difficulty: validDiff,
+          difficulty: targetDiff,
           maxMarks,
           topic,
           category: "Conceptual",
           source: "AI_PROVIDER",
           relatedSkill: String(q.skillsTested?.[0] || "").trim(),
           relatedProject: "",
-        };
-      });
+        });
+      }
+
+      if (newDocs.length === 0) {
+        lastError = new Error(`No valid question documents created for Q${startQuestionNumber}`);
+        break;
+      }
 
       // Save batch IMMEDIATELY to DB checkpoint
       const savedBatchDocs = await RealInterviewTechnicalQuestion.insertMany(newDocs);
@@ -200,50 +253,84 @@ export async function generateAndProcessTechnicalQuestions({
       });
 
       console.log(
-        `[TechnicalService] Batch saved successfully to DB! Total questions now: ${existingQuestions.length}/${TARGET_COUNT}`
+        `[TechnicalService] Batch saved successfully to DB! Total questions now in DB: ${existingQuestions.length}/${TARGET_COUNT}`
       );
+
+      // Recompute missing indices
+      missingIndices = computeMissingIndices(existingQuestions);
     }
 
-    // Mark session as GENERATED
-    if (!session) {
-      session = await RealInterviewTechnicalSession.create({
-        sessionId,
-        userId,
-        currentQuestionIndex: 0,
-        strongAnswerCount: 0,
-        hardUnlocked: false,
-        questionsAnswered: 0,
-        answers: [],
-        status: "in_progress",
-        generationStatus: "GENERATED",
-        aiGenerationCalls: totalAiCallsMade,
-      });
-    } else {
+    missingIndices = computeMissingIndices(existingQuestions);
+
+    if (missingIndices.length === 0 && existingQuestions.length >= TARGET_COUNT) {
       session.generationStatus = "GENERATED";
       session.aiGenerationCalls = totalAiCallsMade;
+      session.lastErrorCode = "";
+      session.lastErrorMessage = "";
       await session.save();
+
+      const studentQuestions = existingQuestions
+        .sort((a, b) => a.orderIndex - b.orderIndex)
+        .map((q) => ({
+          id: q._id.toString(),
+          question: q.question,
+          difficulty: q.difficulty,
+          maxMarks: q.maxMarks || (q.difficulty === "easy" ? 3 : q.difficulty === "hard" ? 13 : 5),
+          topic: q.topic,
+          category: q.category,
+          source: q.source || "AI_PROVIDER",
+          relatedSkill: q.relatedSkill,
+          relatedProject: q.relatedProject,
+        }));
+
+      return {
+        success: true,
+        message: `${studentQuestions.length} resume-driven technical questions generated successfully`,
+        count: studentQuestions.length,
+        questions: studentQuestions,
+        reused: false,
+        aiGenerationCalls: totalAiCallsMade,
+      };
+    } else {
+      // Partial generation / Recoverable failure state
+      const classified = classifyInterviewAIError(lastError || "Technical generation stopped before completing all 20 questions");
+      session.generationStatus = existingQuestions.length > 0 ? "PARTIAL" : "FAILED";
+      session.aiGenerationCalls = totalAiCallsMade;
+      session.lastErrorCode = classified.code;
+      session.lastErrorMessage = classified.message;
+      await session.save();
+
+      const firstMissingQuestionNumber = missingIndices.length > 0 ? missingIndices[0] + 1 : existingQuestions.length + 1;
+
+      console.warn(
+        `[TechnicalService] Partial generation retained! Saved: ${existingQuestions.length}/${TARGET_COUNT}. First missing question number: Q${firstMissingQuestionNumber}. Error: ${classified.message}`
+      );
+
+      const studentQuestions = existingQuestions
+        .sort((a, b) => a.orderIndex - b.orderIndex)
+        .map((q) => ({
+          id: q._id.toString(),
+          question: q.question,
+          difficulty: q.difficulty,
+          maxMarks: q.maxMarks || (q.difficulty === "easy" ? 3 : q.difficulty === "hard" ? 13 : 5),
+          topic: q.topic,
+          category: q.category,
+          source: q.source || "AI_PROVIDER",
+          relatedSkill: q.relatedSkill,
+          relatedProject: q.relatedProject,
+        }));
+
+      return {
+        success: false,
+        recoverable: classified.recoverable,
+        generatedCount: existingQuestions.length,
+        totalRequired: TARGET_COUNT,
+        nextQuestionNumber: firstMissingQuestionNumber,
+        errorCode: classified.code,
+        message: classified.message,
+        questions: studentQuestions,
+      };
     }
-
-    const studentQuestions = existingQuestions.map((q) => ({
-      id: q._id.toString(),
-      question: q.question,
-      difficulty: q.difficulty,
-      maxMarks: q.maxMarks || (q.difficulty === "easy" ? 3 : q.difficulty === "hard" ? 13 : 5),
-      topic: q.topic,
-      category: q.category,
-      source: q.source || "AI_PROVIDER",
-      relatedSkill: q.relatedSkill,
-      relatedProject: q.relatedProject,
-    }));
-
-    return {
-      success: true,
-      message: `${studentQuestions.length} resume-driven technical questions generated successfully`,
-      count: studentQuestions.length,
-      questions: studentQuestions,
-      reused: false,
-      aiGenerationCalls: totalAiCallsMade,
-    };
   });
 }
 

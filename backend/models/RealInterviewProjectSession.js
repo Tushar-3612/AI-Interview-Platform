@@ -37,7 +37,7 @@ const realInterviewProjectSessionSchema = new mongoose.Schema(
     // Strict AI Call Tracking & Idempotency States
     generationStatus: {
       type: String,
-      enum: ["NOT_STARTED", "GENERATING", "GENERATED", "FAILED"],
+      enum: ["NOT_STARTED", "GENERATING", "PARTIAL", "GENERATED", "FAILED"],
       default: "NOT_STARTED",
     },
     evaluationStatus: {

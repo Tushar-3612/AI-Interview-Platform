@@ -310,7 +310,16 @@ JSON SCHEMA:
       return validBatchQuestions;
     } catch (err) {
       const errMsg = err.message || "";
-      const is429 = errMsg.includes("429") || errMsg.includes("rate_limit") || errMsg.includes("TPM");
+      const status = err.status || 0;
+      const is401or403or404 = status === 401 || status === 403 || status === 404 || errMsg.includes("401") || errMsg.includes("403") || errMsg.includes("404") || errMsg.includes("Invalid API Key") || errMsg.includes("unauthorized");
+      const isQuota = errMsg.includes("RPD") || errMsg.includes("daily quota") || errMsg.includes("quota exceeded");
+
+      if (is401or403or404 || isQuota) {
+        console.error(`[TechnicalAI] Non-retryable API error encountered on ${rangeStr} (status=${status || "auth/quota/model"}). Failing batch immediately.`);
+        throw err;
+      }
+
+      const is429 = status === 429 || errMsg.includes("429") || errMsg.includes("rate_limit") || errMsg.includes("TPM");
 
       if (is429 && attempt <= maxRetries) {
         const parsedSec = parseGroqRetryAfter(errMsg);

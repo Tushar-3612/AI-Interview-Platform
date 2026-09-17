@@ -10,6 +10,7 @@ import {
 } from "./questionHistoryService.js";
 import { preprocessAnswerBatch } from "../realInterviewAI/answerPreprocessor.js";
 import { resolveCandidateAnswer } from "./answerResolver.js";
+import { classifyInterviewAIError } from "./errorClassifier.js";
 
 /**
  * Fallback static set of 5 deep HR questions if AI generation API fails (e.g. HTTP 429).
@@ -68,6 +69,8 @@ export async function generateAndProcessHRQuestions({ userId = null, sessionId, 
     let questionsData = [];
     const userHistorySet = await getUserQuestionHistorySet(userId, candidateProfile?.resumeHash, "hr");
 
+    const existingQuestions = await RealInterviewHRQuestion.find({ sessionId }).sort({ orderIndex: 1 });
+
     try {
       console.log(`[HR-DIAGNOSTIC] Invoking generateHRAI... resumeHash=${candidateProfile?.resumeHash}`);
       const res = await generateHRAI({ candidateProfile, userHistorySet, count: 5 });
@@ -79,12 +82,38 @@ export async function generateAndProcessHRQuestions({ userId = null, sessionId, 
       }
     } catch (err) {
       console.error(`\n[AI-REQUEST-FAILED]\nround=hr\nprovider=groq\nrequestId=${requestId}\nerror=${err.message}`);
-      throw new Error(`HR AI generation failed: ${err.message}`);
+      const classified = classifyInterviewAIError(err);
+      session.generationStatus = existingQuestions.length > 0 ? "PARTIAL" : "FAILED";
+      await session.save();
+
+      return {
+        success: false,
+        recoverable: classified.recoverable,
+        generatedCount: existingQuestions.length,
+        totalRequired: 5,
+        nextQuestionNumber: existingQuestions.length + 1,
+        errorCode: classified.code,
+        message: classified.message,
+        questions: existingQuestions,
+      };
     }
 
     if (questionsData.length < 5) {
       console.error(`\n[AI-REQUEST-FAILED]\nround=hr\nprovider=groq\nrequestId=${requestId}\nerror=Insufficient unique AI questions returned (${questionsData.length}/5)`);
-      throw new Error(`Insufficient HR AI questions generated (${questionsData.length}/5)`);
+      const classified = classifyInterviewAIError("Insufficient unique HR AI questions generated");
+      session.generationStatus = existingQuestions.length > 0 ? "PARTIAL" : "FAILED";
+      await session.save();
+
+      return {
+        success: false,
+        recoverable: true,
+        generatedCount: existingQuestions.length,
+        totalRequired: 5,
+        nextQuestionNumber: existingQuestions.length + 1,
+        errorCode: classified.code,
+        message: classified.message,
+        questions: existingQuestions,
+      };
     }
 
     console.log(`\n[AI-REQUEST-SUCCESS]\nround=hr\nprovider=groq\nrequestId=${requestId}\nquestionsReturned=${questionsData.length}`);
