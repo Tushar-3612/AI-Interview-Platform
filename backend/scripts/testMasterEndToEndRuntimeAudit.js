@@ -368,9 +368,9 @@ async function runEndToEndAudit() {
 
   const finalVerdict = (
     aptQuestions.length === 15 &&
-    techQuestions.length === 20 &&
-    projQuestions.length === 10 &&
-    hrQuestions.length === 5 &&
+    techQuestions.length === 15 &&
+    projQuestions.length === 5 &&
+    hrQuestions.length === 3 &&
     codingQuestions.length === 3 &&
     syntheticProjects.length === 0 &&
     projUnsupportedClaims === 0 &&

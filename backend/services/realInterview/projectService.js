@@ -20,7 +20,7 @@ import { classifyInterviewAIError } from "./errorClassifier.js";
 import { idempotentUpsertQuestion } from "../aiReliability/utils/mongoConnectionHelper.js";
 
 /**
- * Generates or retrieves existing 10 Project/Resume questions for a Real Interview session (AI CALL #1).
+ * Generates or retrieves existing 5 Project/Resume questions for a Real Interview session (AI CALL #1).
  */
 export async function generateAndProcessProjectQuestions({
   userId = null,
@@ -40,9 +40,9 @@ export async function generateAndProcessProjectQuestions({
     });
 
     const existingIndicesSet = new Set(existingQuestions.map((q) => q.orderIndex));
-    const isFullyGenerated = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].every((idx) => existingIndicesSet.has(idx));
+    const isFullyGenerated = [0, 1, 2, 3, 4].every((idx) => existingIndicesSet.has(idx));
 
-    if (session && session.generationStatus === "GENERATED" && existingQuestions.length === 10 && isFullyGenerated) {
+    if (session && session.generationStatus === "GENERATED" && existingQuestions.length === 5 && isFullyGenerated) {
       console.log(
         `[ProjectService] Session ${sessionId} already fully GENERATED (${existingQuestions.length} questions). Reusing existing questions.`
       );
@@ -62,7 +62,7 @@ export async function generateAndProcessProjectQuestions({
         });
       }
 
-      const studentQuestions = existingQuestions.slice(0, 10).map((q) => ({
+      const studentQuestions = existingQuestions.slice(0, 5).map((q) => ({
         id: q._id.toString(),
         question: q.question,
         difficulty: q.difficulty,
@@ -78,10 +78,10 @@ export async function generateAndProcessProjectQuestions({
         generationSucceeded: false, // Reused from DB
         roundComplete: true,
         count: studentQuestions.length,
-        expectedCount: 10,
+        expectedCount: 5,
         status: "COMPLETE",
         success: true,
-        message: "Reused existing 10 project questions",
+        message: "Reused existing 5 project questions",
         questions: studentQuestions,
         reused: true,
         aiGenerationCalls: session.aiGenerationCalls || 1,
@@ -118,21 +118,21 @@ export async function generateAndProcessProjectQuestions({
     } catch (genErr) {
       console.error(`\n[AI-REQUEST-FAILED]\nround=project\nrequestId=${requestId}\nerror=${genErr.message}`);
       const classified = classifyInterviewAIError(genErr);
-      session.generationStatus = existingQuestions.length === 10 ? "GENERATED" : (existingQuestions.length > 0 ? "PARTIAL" : "FAILED");
+      session.generationStatus = existingQuestions.length === 5 ? "GENERATED" : (existingQuestions.length > 0 ? "PARTIAL" : "FAILED");
       session.aiGenerationCalls += 1;
       await session.save();
 
       return {
         executionCompleted: true,
         generationSucceeded: false,
-        roundComplete: existingQuestions.length === 10,
+        roundComplete: existingQuestions.length === 5,
         count: existingQuestions.length,
-        expectedCount: 10,
-        status: existingQuestions.length === 10 ? "COMPLETE" : (existingQuestions.length > 0 ? "PARTIAL" : "FAILED"),
+        expectedCount: 5,
+        status: existingQuestions.length === 5 ? "COMPLETE" : (existingQuestions.length > 0 ? "PARTIAL" : "FAILED"),
         success: false,
         recoverable: classified.recoverable,
         generatedCount: existingQuestions.length,
-        totalRequired: 10,
+        totalRequired: 5,
         nextQuestionNumber: existingQuestions.length + 1,
         errorCode: classified.code,
         message: classified.message,
@@ -143,24 +143,24 @@ export async function generateAndProcessProjectQuestions({
     const rawAiQuestions = aiResult?.questions || [];
     let rawQuestions = filterUniqueQuestions(rawAiQuestions, userHistorySet);
 
-    if (rawQuestions.length < 10) {
-      console.error(`\n[AI-REQUEST-FAILED]\nround=project\nrequestId=${requestId}\nerror=Insufficient unique AI questions returned (${rawQuestions.length}/10)`);
+    if (rawQuestions.length < 5) {
+      console.error(`\n[AI-REQUEST-FAILED]\nround=project\nrequestId=${requestId}\nerror=Insufficient unique AI questions returned (${rawQuestions.length}/5)`);
       const classified = classifyInterviewAIError("Insufficient unique Project AI questions generated");
-      session.generationStatus = existingQuestions.length === 10 ? "GENERATED" : (existingQuestions.length > 0 ? "PARTIAL" : "FAILED");
+      session.generationStatus = existingQuestions.length === 5 ? "GENERATED" : (existingQuestions.length > 0 ? "PARTIAL" : "FAILED");
       session.aiGenerationCalls += 1;
       await session.save();
 
       return {
         executionCompleted: true,
         generationSucceeded: false,
-        roundComplete: existingQuestions.length === 10,
+        roundComplete: existingQuestions.length === 5,
         count: existingQuestions.length,
-        expectedCount: 10,
-        status: existingQuestions.length === 10 ? "COMPLETE" : (existingQuestions.length > 0 ? "PARTIAL" : "FAILED"),
+        expectedCount: 5,
+        status: existingQuestions.length === 5 ? "COMPLETE" : (existingQuestions.length > 0 ? "PARTIAL" : "FAILED"),
         success: false,
         recoverable: true,
         generatedCount: existingQuestions.length,
-        totalRequired: 10,
+        totalRequired: 5,
         nextQuestionNumber: existingQuestions.length + 1,
         errorCode: classified.code,
         message: classified.message,
@@ -170,7 +170,7 @@ export async function generateAndProcessProjectQuestions({
 
     console.log(`\n[AI-REQUEST-SUCCESS]\nround=project\nrequestId=${requestId}\nquestionsReturned=${rawQuestions.length}`);
 
-    const selectedQuestions = rawQuestions.slice(0, 10);
+    const selectedQuestions = rawQuestions.slice(0, 5);
     const savedQuestions = [];
 
     for (let idx = 0; idx < selectedQuestions.length; idx++) {
@@ -185,7 +185,7 @@ export async function generateAndProcessProjectQuestions({
           "Demonstrate clear project workflow, architecture reasoning, and technical implementation details."
       ).trim();
 
-      const slotDiff = idx < 4 ? "easy" : idx < 8 ? "medium" : "hard";
+      const slotDiff = idx < 2 ? "easy" : idx < 4 ? "medium" : "hard";
       const maxMarks = slotDiff === "easy" ? 5 : slotDiff === "hard" ? 20 : 10;
 
       const docToSave = {
@@ -234,10 +234,10 @@ export async function generateAndProcessProjectQuestions({
       generationSucceeded: true,
       roundComplete: true,
       count: studentQuestions.length,
-      expectedCount: 10,
+      expectedCount: 5,
       status: "COMPLETE",
       success: true,
-      message: "10 resume-project questions generated successfully",
+      message: "5 resume-project questions generated successfully",
       questions: studentQuestions,
       reused: false,
       aiGenerationCalls: 1,
@@ -253,7 +253,7 @@ export async function getNextProjectQuestion({ sessionId }) {
   const session = await RealInterviewProjectSession.findOne({ sessionId });
   if (!session) throw new Error("Project session not found for this sessionId");
 
-  if (session.status === "completed" || session.questionsAnswered >= 10) {
+  if (session.status === "completed" || session.questionsAnswered >= 5) {
     return { success: true, completed: true, message: "Project round completed" };
   }
 
@@ -290,13 +290,13 @@ export async function getNextProjectQuestion({ sessionId }) {
       projectName: selectedQuestion.projectName,
       source: selectedQuestion.source,
       questionNumber: session.questionsAnswered + 1,
-      totalQuestions: 10,
+      totalQuestions: 5,
     },
     adaptiveState: {
       strongAnswerCount: session.strongAnswerCount,
       hardUnlocked: session.hardUnlocked,
       questionsAnswered: session.questionsAnswered,
-      totalQuestions: 10,
+      totalQuestions: 5,
     },
   };
 }
@@ -322,8 +322,8 @@ export async function submitProjectAnswer({ sessionId, questionId, candidateAnsw
         strongAnswerCount: session.strongAnswerCount,
         hardUnlocked: session.hardUnlocked,
         questionsAnswered: session.questionsAnswered,
-        totalQuestions: 10,
-        completed: session.questionsAnswered >= 10 || session.status === "completed",
+        totalQuestions: 5,
+        completed: session.questionsAnswered >= 5 || session.status === "completed",
       },
     };
   }
@@ -334,7 +334,7 @@ export async function submitProjectAnswer({ sessionId, questionId, candidateAnsw
 
   session.questionsAnswered += 1;
   session.currentQuestionIndex = session.questionsAnswered;
-  if (session.questionsAnswered >= 10) session.status = "completed";
+  if (session.questionsAnswered >= 5) session.status = "completed";
 
   const maxScore = questionDoc.maxMarks || (questionDoc.difficulty === "easy" ? 5 : questionDoc.difficulty === "hard" ? 20 : 10);
 
@@ -359,8 +359,8 @@ export async function submitProjectAnswer({ sessionId, questionId, candidateAnsw
       strongAnswerCount: session.strongAnswerCount,
       hardUnlocked: session.hardUnlocked,
       questionsAnswered: session.questionsAnswered,
-      totalQuestions: 10,
-      completed: session.questionsAnswered >= 10 || session.status === "completed",
+      totalQuestions: 5,
+      completed: session.questionsAnswered >= 5 || session.status === "completed",
     },
   };
 }

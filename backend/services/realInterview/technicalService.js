@@ -22,7 +22,7 @@ import { resolveTechnicalFallbackQuestion } from "../realInterviewAI/technicalFa
 import { idempotentUpsertQuestion } from "../aiReliability/utils/mongoConnectionHelper.js";
 
 /**
- * Generates or retrieves existing 20 Technical questions for a Real Interview session (AI CALL #1).
+ * Generates or retrieves existing 15 Technical questions for a Real Interview session (AI CALL #1).
  */
 export async function generateAndProcessTechnicalQuestions({
   userId = null,
@@ -40,7 +40,7 @@ export async function generateAndProcessTechnicalQuestions({
       orderIndex: 1,
     });
 
-    const TARGET_COUNT = 20;
+    const TARGET_COUNT = 15;
 
     const computeMissingIndices = (questionsList) => {
       const existingIndicesSet = new Set(questionsList.map((q) => q.orderIndex));
@@ -102,7 +102,7 @@ export async function generateAndProcessTechnicalQuestions({
         expectedCount: TARGET_COUNT,
         status: "COMPLETE",
         success: true,
-        message: "Reused existing 20 technical questions",
+        message: "Reused existing 15 technical questions",
         questions: studentQuestions,
         reused: true,
         aiGenerationCalls: session.aiGenerationCalls || 1,
@@ -343,7 +343,7 @@ export async function generateAndProcessTechnicalQuestions({
         aiGenerationCalls: totalAiCallsMade,
       };
     } else {
-      const classified = classifyInterviewAIError(lastError || "Technical generation stopped before completing all 20 questions");
+      const classified = classifyInterviewAIError(lastError || "Technical generation stopped before completing all 15 questions");
       session.generationStatus = existingQuestions.length > 0 ? "PARTIAL" : "FAILED";
       session.aiGenerationCalls = totalAiCallsMade;
       session.lastErrorCode = classified.code;
@@ -397,7 +397,7 @@ export async function getNextTechnicalQuestion({ sessionId }) {
   const session = await RealInterviewTechnicalSession.findOne({ sessionId });
   if (!session) throw new Error("Technical session not found for this sessionId");
 
-  if (session.status === "completed" || session.questionsAnswered >= 20) {
+  if (session.status === "completed" || session.questionsAnswered >= 15) {
     return { success: true, completed: true, message: "Technical round completed" };
   }
 
@@ -435,13 +435,13 @@ export async function getNextTechnicalQuestion({ sessionId }) {
       relatedSkill: selectedQuestion.relatedSkill,
       relatedProject: selectedQuestion.relatedProject,
       questionNumber: session.questionsAnswered + 1,
-      totalQuestions: 20,
+      totalQuestions: 15,
     },
     adaptiveState: {
       strongAnswerCount: session.strongAnswerCount,
       hardUnlocked: session.hardUnlocked,
       questionsAnswered: session.questionsAnswered,
-      totalQuestions: 20,
+      totalQuestions: 15,
     },
   };
 }
@@ -467,8 +467,8 @@ export async function submitTechnicalAnswer({ sessionId, questionId, candidateAn
         strongAnswerCount: session.strongAnswerCount,
         hardUnlocked: session.hardUnlocked,
         questionsAnswered: session.questionsAnswered,
-        totalQuestions: 20,
-        completed: session.questionsAnswered >= 20 || session.status === "completed",
+        totalQuestions: 15,
+        completed: session.questionsAnswered >= 15 || session.status === "completed",
       },
     };
   }
@@ -479,7 +479,7 @@ export async function submitTechnicalAnswer({ sessionId, questionId, candidateAn
 
   session.questionsAnswered += 1;
   session.currentQuestionIndex = session.questionsAnswered;
-  if (session.questionsAnswered >= 20) session.status = "completed";
+  if (session.questionsAnswered >= 15) session.status = "completed";
 
   const maxScore = questionDoc.maxMarks || (questionDoc.difficulty === "easy" ? 3 : questionDoc.difficulty === "hard" ? 13 : 5);
 
@@ -503,8 +503,8 @@ export async function submitTechnicalAnswer({ sessionId, questionId, candidateAn
       strongAnswerCount: session.strongAnswerCount,
       hardUnlocked: session.hardUnlocked,
       questionsAnswered: session.questionsAnswered,
-      totalQuestions: 20,
-      completed: session.questionsAnswered >= 20 || session.status === "completed",
+      totalQuestions: 15,
+      completed: session.questionsAnswered >= 15 || session.status === "completed",
     },
   };
 }

@@ -289,7 +289,7 @@ export default function RealInterviewPreparationScreen({
       const res = await api.get(`/api/individual/technical/session/${sessionId}`, { headers });
       const sess = res.data?.session;
       if (!sess || !Array.isArray(sess.questions) || sess.questions.length === 0) {
-        throw new Error("Failed to prepare 20 technical questions for this session.");
+        throw new Error("Failed to prepare 15 technical questions for this session.");
       }
       await delay(1000);
       console.log(`[PREP] stage=${stage.id} COMPLETE`);
@@ -299,11 +299,11 @@ export default function RealInterviewPreparationScreen({
     if (stage.id === "finalizing_tech") {
       const res = await api.get(`/api/individual/technical/session/${sessionId}`, { headers });
       const sess = res.data?.session;
-      if (!sess || !Array.isArray(sess.questions) || sess.questions.length !== 20) {
-        throw new Error(`Technical practice session validation failed. Expected 20 questions, got ${sess?.questions?.length || 0}.`);
+      if (!sess || !Array.isArray(sess.questions) || sess.questions.length !== 15) {
+        throw new Error(`Technical practice session validation failed. Expected 15 questions, got ${sess?.questions?.length || 0}.`);
       }
       await delay(800);
-      console.log(`[PREP] stage=${stage.id} COMPLETE - 20 technical questions validated`);
+      console.log(`[PREP] stage=${stage.id} COMPLETE - 15 technical questions validated`);
       return true;
     }
 
@@ -312,7 +312,7 @@ export default function RealInterviewPreparationScreen({
       const res = await api.get(`/api/individual/project/session/${sessionId}`, { headers });
       const sess = res.data?.session;
       if (!sess || !Array.isArray(sess.questions) || sess.questions.length === 0) {
-        throw new Error("Failed to prepare 10 project questions for this session.");
+        throw new Error("Failed to prepare 5 project questions for this session.");
       }
       await delay(1000);
       console.log(`[PREP] stage=${stage.id} COMPLETE`);
@@ -323,8 +323,8 @@ export default function RealInterviewPreparationScreen({
       const res = await api.get(`/api/individual/project/session/${sessionId}`, { headers });
       const sess = res.data?.session;
       const qs = sess?.questions || [];
-      if (!sess || !Array.isArray(qs) || qs.length !== 10) {
-        throw new Error(`Project practice session validation failed. Expected 10 questions, got ${qs.length}.`);
+      if (!sess || !Array.isArray(qs) || qs.length !== 5) {
+        throw new Error(`Project practice session validation failed. Expected 5 questions, got ${qs.length}.`);
       }
       // Verify all questions belong to project/resume scope
       const hasInvalidQs = qs.some((q) => !q.question || String(q.question).trim().length === 0);
@@ -332,7 +332,7 @@ export default function RealInterviewPreparationScreen({
         throw new Error("Project practice question validation failed: empty or malformed questions detected.");
       }
       await delay(800);
-      console.log(`[PREP] stage=${stage.id} COMPLETE - 10 project questions validated`);
+      console.log(`[PREP] stage=${stage.id} COMPLETE - 5 project questions validated`);
       return true;
     }
 
@@ -350,8 +350,8 @@ export default function RealInterviewPreparationScreen({
       const res = await api.post("/api/real-interview/technical/generate", payload, { headers });
       const data = res.data || {};
       const generatedCount = data.count || data.questions?.length || data.generatedCount || 0;
-      if (data.success === false || generatedCount < 20) {
-        const missingCount = Math.max(1, 20 - generatedCount);
+      if (data.success === false || generatedCount < 15) {
+        const missingCount = Math.max(1, 15 - generatedCount);
         const nextQ = data.nextQuestionNumber || (generatedCount + 1);
         const customErr = new Error(data.message || `Technical preparation is incomplete. ${missingCount} questions remaining.`);
         customErr.isPartial = true;
@@ -376,8 +376,8 @@ export default function RealInterviewPreparationScreen({
       const res = await api.post("/api/real-interview/project/generate", payload, { headers });
       const data = res.data || {};
       const generatedCount = data.count || data.questions?.length || data.generatedCount || 0;
-      if (data.success === false || generatedCount < 10) {
-        const missingCount = Math.max(1, 10 - generatedCount);
+      if (data.success === false || generatedCount < 5) {
+        const missingCount = Math.max(1, 5 - generatedCount);
         const nextQ = data.nextQuestionNumber || (generatedCount + 1);
         const customErr = new Error(data.message || `Project preparation is incomplete. ${missingCount} questions remaining.`);
         customErr.isPartial = true;
@@ -402,8 +402,8 @@ export default function RealInterviewPreparationScreen({
       const res = await api.post("/api/real-interview/hr/generate", payload, { headers });
       const data = res.data || {};
       const generatedCount = data.count || data.questions?.length || data.generatedCount || 0;
-      if (data.success === false || generatedCount < 5) {
-        const missingCount = Math.max(1, 5 - generatedCount);
+      if (data.success === false || generatedCount < 3) {
+        const missingCount = Math.max(1, 3 - generatedCount);
         const customErr = new Error(data.message || `HR preparation is incomplete. ${missingCount} questions remaining.`);
         customErr.isPartial = true;
         customErr.targetFailedStage = "hr";
@@ -458,20 +458,20 @@ export default function RealInterviewPreparationScreen({
         const code = data.code || "INTERVIEW_INCOMPLETE";
         let targetFailedStage = "finalizing";
         let roundTitle = "Interview";
-        let missingCount = 53 - (data.totalQuestionsCount || 0);
+        let missingCount = 41 - (data.totalQuestionsCount || 0);
 
-        if (code.includes("TECHNICAL") || (data.counts?.technical < 20)) {
+        if (code.includes("TECHNICAL") || (data.counts?.technical < 15)) {
           targetFailedStage = "technical";
           roundTitle = "Technical";
-          missingCount = Math.max(1, 20 - (data.counts?.technical || 0));
-        } else if (code.includes("PROJECT") || (data.counts?.project < 10)) {
+          missingCount = Math.max(1, 15 - (data.counts?.technical || 0));
+        } else if (code.includes("PROJECT") || (data.counts?.project < 5)) {
           targetFailedStage = "project";
           roundTitle = "Project";
-          missingCount = Math.max(1, 10 - (data.counts?.project || 0));
-        } else if (code.includes("HR") || (data.counts?.hr < 5)) {
+          missingCount = Math.max(1, 5 - (data.counts?.project || 0));
+        } else if (code.includes("HR") || (data.counts?.hr < 3)) {
           targetFailedStage = "hr";
           roundTitle = "HR";
-          missingCount = Math.max(1, 5 - (data.counts?.hr || 0));
+          missingCount = Math.max(1, 3 - (data.counts?.hr || 0));
         } else if (code.includes("CODING") || (data.counts?.coding < 3)) {
           targetFailedStage = "coding";
           roundTitle = "Coding";
@@ -500,7 +500,7 @@ export default function RealInterviewPreparationScreen({
       }
 
       await delay(1000);
-      console.log(`[PREP] stage=${stage.id} COMPLETE - 53 questions validated`);
+      console.log(`[PREP] stage=${stage.id} COMPLETE - 41 questions validated`);
       return true;
     }
 

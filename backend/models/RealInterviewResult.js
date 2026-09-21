@@ -52,19 +52,19 @@ const realInterviewResultSchema = new mongoose.Schema(
         obtained: { type: Number, default: 0 },
         maximum: { type: Number, default: 100 },
         attempted: { type: Number, default: 0 },
-        totalQuestions: { type: Number, default: 20 },
+        totalQuestions: { type: Number, default: 15 },
       },
       project: {
         obtained: { type: Number, default: 0 },
         maximum: { type: Number, default: 100 },
         attempted: { type: Number, default: 0 },
-        totalQuestions: { type: Number, default: 10 },
+        totalQuestions: { type: Number, default: 5 },
       },
       hr: {
         obtained: { type: Number, default: 0 },
-        maximum: { type: Number, default: 100 },
+        maximum: { type: Number, default: 60 },
         attempted: { type: Number, default: 0 },
-        totalQuestions: { type: Number, default: 5 },
+        totalQuestions: { type: Number, default: 3 },
       },
       coding: {
         obtained: { type: Number, default: 0 },
@@ -75,12 +75,12 @@ const realInterviewResultSchema = new mongoose.Schema(
     },
 
     totalObtained: { type: Number, default: 0 },
-    maximumMarks: { type: Number, default: 450 },
+    maximumMarks: { type: Number, default: 410 },
     percentage: { type: Number, default: 0 },
 
     attemptedQuestionsCount: { type: Number, default: 0 },
     unattemptedQuestionsCount: { type: Number, default: 0 },
-    totalQuestionsCount: { type: Number, default: 53 },
+    totalQuestionsCount: { type: Number, default: 41 },
 
     questionResults: [questionResultSchema],
 

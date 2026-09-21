@@ -303,7 +303,7 @@ export function normalizeRealInterviewResult(rawPayload) {
 
   const totalCount = typeof doc.totalQuestionsCount === "number"
     ? doc.totalQuestionsCount
-    : (questionResults.length > 0 ? questionResults.length : 53);
+    : (questionResults.length > 0 ? questionResults.length : 41);
 
   const unattemptedCount = typeof doc.unattemptedQuestionsCount === "number"
     ? doc.unattemptedQuestionsCount
@@ -573,7 +573,7 @@ export default function Results({ sessionId: propSessionId, initialResultData })
 
   const questionResults = useMemo(() => result?.questionResults || [], [result]);
   const attemptedCount = useMemo(() => result?.attemptedCount ?? 0, [result]);
-  const totalCount = useMemo(() => result?.totalCount ?? 53, [result]);
+  const totalCount = useMemo(() => result?.totalCount ?? 41, [result]);
   const unattemptedCount = useMemo(() => result?.unattemptedCount ?? Math.max(0, totalCount - attemptedCount), [result, totalCount, attemptedCount]);
 
   const filteredQuestions = useMemo(() => {
@@ -926,7 +926,7 @@ export default function Results({ sessionId: propSessionId, initialResultData })
           </div>
         </section>
 
-        {/* --- 5. QUESTION-WISE REVIEW (ALL 53 QUESTIONS ACCESSIBLE VIA PAGINATION) --- */}
+        {/* --- 5. QUESTION-WISE REVIEW (ALL 41 QUESTIONS ACCESSIBLE VIA PAGINATION) --- */}
         {questionResults.length > 0 && (
           <section className="bg-[#12131d] border border-[#252836] rounded-2xl p-6 shadow-md space-y-4">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-white/10 pb-3">

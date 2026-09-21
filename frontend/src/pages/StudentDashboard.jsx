@@ -1365,7 +1365,7 @@ function StudentDashboard() {
                 {/* Stats Summary Bar */}
                 <div className="grid grid-cols-3 gap-2.5 p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 text-center">
                   <div className="space-y-0.5">
-                    <span className="text-lg font-black text-white block">53</span>
+                    <span className="text-lg font-black text-white block">41</span>
                     <span className="text-[10.5px] font-bold text-gray-400 uppercase tracking-wider block">Questions</span>
                   </div>
                   <div className="space-y-0.5 border-x border-white/10">
@@ -1373,7 +1373,7 @@ function StudentDashboard() {
                     <span className="text-[10.5px] font-bold text-gray-400 uppercase tracking-wider block">Rounds</span>
                   </div>
                   <div className="space-y-0.5">
-                    <span className="text-lg font-black text-amber-400 block">450</span>
+                    <span className="text-lg font-black text-amber-400 block">410</span>
                     <span className="text-[10.5px] font-bold text-gray-400 uppercase tracking-wider block">Total Marks</span>
                   </div>
                 </div>
@@ -1387,9 +1387,9 @@ function StudentDashboard() {
                   <div className="space-y-2">
                     {[
                       { name: "Aptitude", count: "15 Questions", marks: "/50 Marks", color: "#F59E0B", icon: Target },
-                      { name: "Technical", count: "20 Questions", marks: "/100 Marks", color: "#06B6D4", icon: Code2 },
-                      { name: "Project/Resume", count: "10 Questions", marks: "/100 Marks", color: "#3B82F6", icon: Layers },
-                      { name: "HR", count: "5 Questions", marks: "/100 Marks", color: "#A855F7", icon: Mic },
+                      { name: "Technical", count: "15 Questions", marks: "/100 Marks", color: "#06B6D4", icon: Code2 },
+                      { name: "Project/Resume", count: "5 Questions", marks: "/100 Marks", color: "#3B82F6", icon: Layers },
+                      { name: "HR", count: "3 Questions", marks: "/60 Marks", color: "#A855F7", icon: Mic },
                       { name: "Coding", count: "3 Questions", marks: "/100 Marks", color: "#10B981", icon: Zap },
                     ].map((round) => {
                       const Icon = round.icon;

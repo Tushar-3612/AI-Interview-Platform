@@ -826,7 +826,7 @@ function StartInterview({
         setIsLoadingInterview(false);
         setIsEvaluating(true);
         setIsCompleted(false);
-      } else if (data?.generatedQuestions && data.generatedQuestions.length >= 53) {
+      } else if (data?.generatedQuestions && data.generatedQuestions.length >= 41) {
         // Active session with questions already prepared (e.g. page refresh)
         setIsLoadingInterview(false);
         setIsEvaluating(false);
@@ -847,10 +847,10 @@ function StartInterview({
   // stats) is derived from this one memoized object so no UI shows a
   // different number. Progress = actually-submitted (non-empty) answers only.
   const SECTION_TOTALS = isIndividualProject
-    ? { RESUME_PROJECT: 10 }
+    ? { RESUME_PROJECT: 5 }
     : isIndividualTechnical
-    ? { TECHNICAL: 20 }
-    : { APTITUDE: 15, RESUME_PROJECT: 10, TECHNICAL: 20, CODING: 3, HR: 5 };
+    ? { TECHNICAL: 15 }
+    : { APTITUDE: 15, RESUME_PROJECT: 5, TECHNICAL: 15, CODING: 3, HR: 3 };
 
   const sessionProgress = useMemo(() => {
     if (isIndividualProject) {
@@ -869,9 +869,9 @@ function StartInterview({
       });
 
       return {
-        RESUME_PROJECT: { completed: completedCount, total: 10 },
+        RESUME_PROJECT: { completed: completedCount, total: 5 },
         totalCompleted: completedCount,
-        totalQuestions: 10,
+        totalQuestions: 5,
       };
     }
 
@@ -891,20 +891,20 @@ function StartInterview({
       });
 
       return {
-        TECHNICAL: { completed: completedCount, total: 20 },
+        TECHNICAL: { completed: completedCount, total: 15 },
         totalCompleted: completedCount,
-        totalQuestions: 20,
+        totalQuestions: 15,
       };
     }
 
     const counts = {
       APTITUDE: { completed: 0, total: 15 },
-      RESUME_PROJECT: { completed: 0, total: 10 },
-      TECHNICAL: { completed: 0, total: 20 },
+      RESUME_PROJECT: { completed: 0, total: 5 },
+      TECHNICAL: { completed: 0, total: 15 },
       CODING: { completed: 0, total: 3 },
-      HR: { completed: 0, total: 5 },
+      HR: { completed: 0, total: 3 },
       totalCompleted: 0,
-      totalQuestions: 53,
+      totalQuestions: 41,
     };
 
     const answeredIds = new Set(

@@ -88,7 +88,7 @@ async function runResultPipelineAudit() {
       ],
     };
 
-    console.log("\n1. GENERATING 53 QUESTIONS ACROSS ALL 5 ROUNDS...");
+    console.log("\n1. GENERATING 41 QUESTIONS ACROSS ALL 5 ROUNDS...");
     await generateAndProcessAptitudeQuestions({ userId, sessionId });
     await generateAndProcessTechnicalQuestions({ userId, sessionId, candidateProfile });
     await generateAndProcessProjectQuestions({ userId, sessionId, candidateProfile });
@@ -106,8 +106,8 @@ async function runResultPipelineAudit() {
     const totalGenerated = aptQs.length + techQs.length + projQs.length + hrQs.length + codingQs.length;
     console.log(`✓ Questions generated: Aptitude=${aptQs.length}, Tech=${techQs.length}, Project=${projQs.length}, HR=${hrQs.length}, Coding=${codingQs.length}. Total=${totalGenerated}`);
 
-    if (totalGenerated !== 53) {
-      throw new Error(`Expected 53 questions, but found ${totalGenerated}`);
+    if (totalGenerated !== 41) {
+      throw new Error(`Expected 41 questions, but found ${totalGenerated}`);
     }
 
     console.log("\n2. SIMULATING PARTIAL CANDIDATE ANSWERS (Some answered, Some unanswered)...");
@@ -281,7 +281,7 @@ async function runResultPipelineAudit() {
     console.log(`Project: ${resultDoc.roundScores.project.score} / ${resultDoc.roundScores.project.maxScore}`);
     console.log(`HR Behavioral: ${resultDoc.roundScores.hr.score} / ${resultDoc.roundScores.hr.maxScore}`);
     console.log(`Coding: ${resultDoc.roundScores.coding.score} / ${resultDoc.roundScores.coding.maxScore}`);
-    console.log(`TOTAL: ${resultDoc.overallScore} / 450`);
+    console.log(`TOTAL: ${resultDoc.overallScore} / 410`);
     console.log(`PERCENTAGE: ${resultDoc.percentage}%`);
 
     console.log("\n============================================================");
@@ -307,7 +307,7 @@ async function runResultPipelineAudit() {
 
     const allPassed =
       resultDoc.status === "COMPLETED" &&
-      resultDoc.maxScore === 450 &&
+      resultDoc.maxScore === 410 &&
       unansweredAptPass &&
       unansweredTechPass &&
       unansweredProjPass &&
@@ -328,7 +328,7 @@ async function runResultPipelineAudit() {
       console.log("✓ CODING USES JUDGE0");
       console.log("✓ HIDDEN TESTS PROTECTED");
       console.log("✓ BACKEND CALCULATES FINAL SCORE");
-      console.log("✓ TOTAL MAX = 450");
+      console.log("✓ TOTAL MAX = 410");
       console.log("✓ RESULT PERSISTED");
       console.log("✓ REFRESH SAFE");
       console.log("✓ SUBMIT IDEMPOTENT");

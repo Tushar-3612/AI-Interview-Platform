@@ -20,12 +20,12 @@ function getTechnicalModel() {
 /**
  * Returns difficulty based on 1-indexed question number.
  * Q1-Q6: Easy (3 marks)
- * Q7-Q18: Medium (5 marks)
- * Q19-Q20: Hard (13 marks)
+ * Q7-Q12: Medium (5 marks)
+ * Q13-Q15: Hard (13 marks)
  */
 export function getDifficultyForQuestionNumber(qNum) {
   if (qNum <= 6) return "easy";
-  if (qNum <= 18) return "medium";
+  if (qNum <= 12) return "medium";
   return "hard";
 }
 
@@ -117,7 +117,7 @@ export async function generateTechnicalAIBatch({
   skillsContextStr = "",
   startQuestionNumber = 1,
   batchSize = 2,
-  targetTotalCount = 20,
+  targetTotalCount = 15,
   userHistorySet = new Set(),
   currentPoolSet = new Set(),
   sessionId,
@@ -239,7 +239,7 @@ JSON SCHEMA:
 }
 
 /**
- * Generates EXACTLY 20 resume-driven technical questions using 2-question batch calls.
+ * Generates EXACTLY 15 resume-driven technical questions using 2-question batch calls.
  */
 export async function generateTechnicalAI(candidateProfile = {}, userHistorySet = new Set(), options = {}) {
   const skillsList = [
@@ -259,14 +259,14 @@ export async function generateTechnicalAI(candidateProfile = {}, userHistorySet 
   const currentPoolSet = new Set();
   const allQuestions = [];
 
-  while (allQuestions.length < 20) {
+  while (allQuestions.length < 15) {
     const startNum = allQuestions.length + 1;
-    const batchSize = Math.min(2, 20 - allQuestions.length);
+    const batchSize = Math.min(2, 15 - allQuestions.length);
     const batch = await generateTechnicalAIBatch({
       skillsContextStr,
       startQuestionNumber: startNum,
       batchSize,
-      targetTotalCount: 20,
+      targetTotalCount: 15,
       userHistorySet,
       currentPoolSet,
       ...options
@@ -274,7 +274,7 @@ export async function generateTechnicalAI(candidateProfile = {}, userHistorySet 
     allQuestions.push(...batch);
   }
 
-  return { questions: allQuestions.slice(0, 20) };
+  return { questions: allQuestions.slice(0, 15) };
 }
 
 /**

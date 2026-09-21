@@ -101,8 +101,8 @@ export function resolveTechnicalFallbackQuestion({
   };
 
   // Determine target difficulty and marks based on orderIndex
-  // 0..5 (Q1..Q6): easy (3m) | 6..17 (Q7..Q18): medium (5m) | 18..19 (Q19..Q20): hard (13m)
-  const targetDiff = targetSlotIndex <= 5 ? "easy" : targetSlotIndex <= 17 ? "medium" : "hard";
+  // 0..5 (Q1..Q6): easy (3m) | 6..11 (Q7..Q12): medium (5m) | 12..14 (Q13..Q15): hard (13m)
+  const targetDiff = targetSlotIndex <= 5 ? "easy" : targetSlotIndex <= 11 ? "medium" : "hard";
   const maxMarks = targetDiff === "easy" ? 3 : targetDiff === "hard" ? 13 : 5;
 
   let selectedCandidate = null;
