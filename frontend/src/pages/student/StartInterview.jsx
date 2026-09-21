@@ -2307,15 +2307,27 @@ function StartInterview({
     if (!sessionId) {
       console.log(`[REAL-INTERVIEW] showing component=INITIALIZING_SESSION`);
       return (
-        <div className="min-h-screen bg-[#0B0F19] text-white flex flex-col items-center justify-center p-6 select-none">
+        <div className="min-h-screen text-white flex flex-col items-center justify-center p-6 select-none font-sans" style={{ background: "#050609" }}>
           <div className="text-center space-y-4 max-w-md">
-            <div className="w-12 h-12 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center mx-auto">
-              <Sparkles className="w-6 h-6 text-blue-400 animate-pulse" />
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <img
+                src="/images/metadata.png"
+                alt="PrepHire Logo"
+                className="h-9 w-9 object-contain shrink-0"
+                draggable="false"
+              />
+              <span className="text-xl font-black tracking-tight">
+                <span className="text-white">Prep</span>
+                <span style={{ color: "#FF6B35" }}>Hire</span>
+              </span>
             </div>
-            <h2 className="text-xl font-bold bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
+            <div className="w-12 h-12 rounded-2xl bg-[#FF6B35]/10 border border-[#FF6B35]/25 text-[#FF6B35] flex items-center justify-center mx-auto">
+              <Sparkles className="w-5 h-5 text-[#FF6B35] animate-pulse" />
+            </div>
+            <h2 className="text-xl font-bold text-white">
               Initializing Interview Room...
             </h2>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-white/50">
               Setting up your secure AI interview environment and session.
             </p>
           </div>

@@ -120,7 +120,7 @@ function EvaluationLoadingScreen({ sessionId, onCompleted, isIndividualTechnical
             <button
               onClick={handleRetry}
               disabled={isRetrying}
-              className="flex-1 py-3.5 px-6 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-lg disabled:opacity-50"
+              className="flex-1 py-3.5 px-6 rounded-2xl bg-gradient-to-r from-[#FF6B35] to-[#FF8A3D] hover:brightness-110 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-[#FF6B35]/20 disabled:opacity-50"
             >
               {isRetrying ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
               <span>{isRetrying ? "Evaluating..." : "Retry Evaluation"}</span>
@@ -128,7 +128,7 @@ function EvaluationLoadingScreen({ sessionId, onCompleted, isIndividualTechnical
 
             <button
               onClick={() => { window.location.href = "/dashboard"; }}
-              className="flex-1 py-3.5 px-6 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs uppercase tracking-wider cursor-pointer transition border border-white/10"
+              className="flex-1 py-3.5 px-6 rounded-2xl bg-white/[0.06] hover:bg-white/[0.1] text-white/80 font-bold text-xs uppercase tracking-wider cursor-pointer transition border border-white/10"
             >
               Back to Dashboard
             </button>
@@ -140,8 +140,14 @@ function EvaluationLoadingScreen({ sessionId, onCompleted, isIndividualTechnical
 
   return (
     <div className="min-h-screen bg-[#050609] text-white flex items-center justify-center p-6 font-sans select-none">
-      <div className="max-w-md w-full bg-slate-900 border border-white/10 rounded-3xl p-8 text-center space-y-5 shadow-2xl">
-        <div className="w-14 h-14 rounded-2xl bg-blue-600/20 border border-blue-500/30 text-blue-400 flex items-center justify-center mx-auto">
+      <div
+        className="max-w-md w-full rounded-3xl p-8 text-center space-y-5 shadow-2xl"
+        style={{
+          background: "rgba(12, 15, 26, 0.95)",
+          border: "1px solid rgba(255, 255, 255, 0.08)",
+        }}
+      >
+        <div className="w-14 h-14 rounded-2xl bg-[#FF6B35]/15 border border-[#FF6B35]/30 text-[#FF6B35] flex items-center justify-center mx-auto">
           <Loader2 className="w-7 h-7 animate-spin" />
         </div>
         <div className="space-y-1">
@@ -152,7 +158,7 @@ function EvaluationLoadingScreen({ sessionId, onCompleted, isIndividualTechnical
               ? "Calculating Technical Practice Result"
               : "Calculating Real Interview Result"}
           </h2>
-          <p className="text-xs text-slate-400">Evaluating practice responses from MongoDB...</p>
+          <p className="text-xs text-white/50">Evaluating practice responses from MongoDB...</p>
         </div>
       </div>
     </div>

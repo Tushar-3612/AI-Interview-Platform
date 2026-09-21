@@ -629,16 +629,32 @@ export default function RealInterviewPreparationScreen({
   const currentStage = activeStages[currentStageIndex];
 
   return (
-    <div className="min-h-screen bg-[#0B0F19] text-white flex flex-col items-center justify-center p-6 relative overflow-hidden select-none">
-      {/* Background Decorative Gradients */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-10 right-10 w-[400px] h-[400px] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none" />
+    <div
+      className="min-h-screen text-white flex flex-col items-center justify-center p-4 sm:p-6 relative overflow-hidden select-none font-sans"
+      style={{ background: "#050609" }}
+    >
+      {/* Background Subtle Ambient Glow */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#FF6B35]/[0.03] rounded-full blur-[140px] pointer-events-none" />
 
       {/* Main Content Container */}
-      <div className="w-full max-w-3xl z-10 space-y-8">
-        {/* Header */}
+      <div className="w-full max-w-2xl z-10 space-y-6">
+        {/* Header with Project Logo & Section Pill */}
         <div className="text-center space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold tracking-wider uppercase">
+          {/* Real Project Logo */}
+          <div className="flex items-center justify-center gap-2 mb-1">
+            <img
+              src="/images/metadata.png"
+              alt="PrepHire Logo"
+              className="h-10 w-10 object-contain shrink-0"
+              draggable="false"
+            />
+            <span className="text-2xl font-black tracking-tight">
+              <span className="text-white">Prep</span>
+              <span style={{ color: "#FF6B35" }}>Hire</span>
+            </span>
+          </div>
+
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FF6B35]/10 border border-[#FF6B35]/25 text-[#FF6B35] text-[11px] font-bold tracking-wider uppercase">
             <Sparkles className="w-3.5 h-3.5" />
             {isIndividualProject
               ? "Project Practice"
@@ -646,7 +662,8 @@ export default function RealInterviewPreparationScreen({
               ? "Technical Practice"
               : "AI Real Interview Platform"}
           </div>
-          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
+
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-white">
             {failedStageId
               ? isIndividualProject
                 ? "PROJECT PRACTICE PREPARATION PAUSED"
@@ -665,7 +682,8 @@ export default function RealInterviewPreparationScreen({
               ? "Preparing Your Technical Practice..."
               : "Preparing Your Interview..."}
           </h1>
-          <p className="text-sm md:text-base text-slate-400 max-w-xl mx-auto">
+
+          <p className="text-xs sm:text-sm text-white/50 max-w-xl mx-auto">
             {failedStageId
               ? isIndividualProject
                 ? "Please retry the project preparation. Your existing session will be preserved."
@@ -685,20 +703,28 @@ export default function RealInterviewPreparationScreen({
         </div>
 
         {/* Progress Bar Container */}
-        <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 md:p-8 space-y-6 shadow-2xl backdrop-blur-xl">
+        <div
+          className="rounded-2xl p-5 sm:p-7 md:p-8 space-y-6 shadow-2xl backdrop-blur-xl"
+          style={{
+            background: "rgba(12, 15, 26, 0.95)",
+            border: "1px solid rgba(255, 255, 255, 0.08)",
+          }}
+        >
           {/* Progress Percentage Display */}
-          <div className="flex items-center justify-between text-sm font-semibold">
-            <span className="text-slate-400 flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-blue-400" />
+          <div className="flex items-center justify-between text-xs sm:text-sm font-semibold">
+            <span className="text-white/60 flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-[#FF6B35]" />
               Preparation Progress
             </span>
-            <span className="text-2xl font-black text-blue-400">{progressPercentage}%</span>
+            <span className="text-xl sm:text-2xl font-mono font-black text-[#FF6B35] tabular-nums">
+              {progressPercentage}%
+            </span>
           </div>
 
           {/* Track Bar */}
-          <div className="w-full h-3 bg-slate-800 rounded-full overflow-hidden p-0.5 border border-slate-700/50">
+          <div className="w-full h-2.5 sm:h-3 bg-white/[0.06] rounded-full overflow-hidden p-0.5 border border-white/10">
             <motion.div
-              className="h-full bg-gradient-to-r from-blue-500 via-indigo-500 to-emerald-400 rounded-full"
+              className="h-full bg-gradient-to-r from-[#FF6B35] to-[#FF8A3D] rounded-full shadow-[0_0_10px_rgba(255,107,53,0.4)]"
               initial={{ width: 0 }}
               animate={{ width: `${progressPercentage}%` }}
               transition={{ duration: 0.5, ease: "easeOut" }}
@@ -706,7 +732,7 @@ export default function RealInterviewPreparationScreen({
           </div>
 
           {/* Stages Checklist */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 pt-1">
             {activeStages.map((stage) => {
               const status = stageStatuses[stage.id];
               const isCurrent = stage.id === currentStage?.id && status === "in_progress";
@@ -716,14 +742,14 @@ export default function RealInterviewPreparationScreen({
               return (
                 <div
                   key={stage.id}
-                  className={`flex items-start gap-3 p-3 rounded-xl border text-xs md:text-sm transition-all duration-300 ${
+                  className={`flex items-start gap-3 p-3 rounded-xl border text-xs sm:text-sm transition-all duration-300 ${
                     isFailed
                       ? "bg-red-500/10 border-red-500/30 text-red-300"
                       : isDone
-                      ? "bg-emerald-500/5 border-emerald-500/20 text-slate-200"
+                      ? "bg-emerald-500/10 border-emerald-500/20 text-slate-200"
                       : isCurrent
-                      ? "bg-blue-500/10 border-blue-500/40 text-blue-300 font-medium"
-                      : "bg-slate-950/40 border-slate-800/80 text-slate-500"
+                      ? "bg-[#FF6B35]/10 border-[#FF6B35]/35 text-[#FF6B35] font-medium shadow-[0_0_15px_rgba(255,107,53,0.08)]"
+                      : "bg-white/[0.02] border-white/[0.06] text-white/40"
                   }`}
                 >
                   <div className="mt-0.5 shrink-0">
@@ -734,20 +760,22 @@ export default function RealInterviewPreparationScreen({
                         animate={{ rotate: 360 }}
                         transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
                       >
-                        <RefreshCw className="w-4 h-4 text-blue-400" />
+                        <RefreshCw className="w-4 h-4 text-[#FF6B35]" />
                       </motion.div>
                     )}
                     {!isDone && !isFailed && !isCurrent && (
-                      <div className="w-4 h-4 rounded-full border border-slate-700 flex items-center justify-center text-[10px] text-slate-600">
+                      <div className="w-4 h-4 rounded-full border border-white/15 flex items-center justify-center text-[8px] text-white/30">
                         ●
                       </div>
                     )}
                   </div>
 
-                  <div className="space-y-0.5">
-                    <p className="font-semibold leading-tight">{stage.title}</p>
+                  <div className="space-y-0.5 min-w-0">
+                    <p className={`font-semibold leading-tight truncate ${isCurrent ? "text-white" : ""}`}>
+                      {stage.title}
+                    </p>
                     {isCurrent && (
-                      <p className="text-[11px] text-blue-400/90 leading-tight">In Progress...</p>
+                      <p className="text-[11px] text-[#FF6B35] leading-tight font-medium">In Progress...</p>
                     )}
                   </div>
                 </div>
@@ -760,7 +788,7 @@ export default function RealInterviewPreparationScreen({
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="p-4 rounded-xl bg-red-950/50 border border-red-500/30 text-red-200 text-xs md:text-sm space-y-2"
+              className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-200 text-xs sm:text-sm space-y-1.5"
             >
               <div className="flex items-center gap-2 font-bold text-red-400">
                 <AlertCircle className="w-4 h-4 shrink-0" />
@@ -769,18 +797,18 @@ export default function RealInterviewPreparationScreen({
                     ? "Project Practice couldn't be prepared"
                     : "Interview preparation encountered an issue.")}
               </div>
-              <p className="text-slate-300 text-xs">{friendlyErrorMessage}</p>
-              <p className="text-slate-400 text-xs">We're sorry for the interruption. Please try again.</p>
+              <p className="text-white/70 text-xs">{friendlyErrorMessage}</p>
+              <p className="text-white/40 text-xs">We're sorry for the interruption. Please try again.</p>
             </motion.div>
           )}
 
           {/* Action Buttons */}
-          <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
+          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
             {/* SUCCESS BUTTON */}
             {isPreparationComplete && !failedStageId && (
               <button
                 onClick={onPreparationSuccess}
-                className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-500 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-sm tracking-wide shadow-xl shadow-blue-500/20 flex items-center justify-center gap-2 transition-all transform active:scale-95 cursor-pointer"
+                className="w-full sm:w-auto px-8 py-3 rounded-xl bg-gradient-to-r from-[#FF6B35] to-[#FF8A3D] hover:brightness-110 text-white font-bold text-xs sm:text-sm tracking-wide shadow-lg shadow-[#FF6B35]/25 flex items-center justify-center gap-2 transition-all transform active:scale-95 cursor-pointer"
               >
                 {isIndividualProject
                   ? "START PROJECT PRACTICE"
@@ -796,21 +824,21 @@ export default function RealInterviewPreparationScreen({
               <>
                 <button
                   onClick={handleRetry}
-                  className="w-full sm:w-auto px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs md:text-sm flex items-center justify-center gap-2 transition cursor-pointer"
+                  className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#FF6B35] to-[#FF8A3D] hover:brightness-110 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md shadow-[#FF6B35]/20 transition cursor-pointer"
                 >
                   <RefreshCw className="w-4 h-4" />
                   {partialInfoState?.roundTitle ? `RESUME ${partialInfoState.roundTitle.toUpperCase()} GENERATION` : "TRY AGAIN"}
                 </button>
                 <button
                   onClick={() => setIsBYOKOpen(true)}
-                  className="w-full sm:w-auto px-6 py-3 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 font-bold text-xs md:text-sm flex items-center justify-center gap-2 border border-indigo-500/30 transition cursor-pointer"
+                  className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-[#FF6B35]/15 hover:bg-[#FF6B35]/25 text-[#FF6B35] font-bold text-xs sm:text-sm flex items-center justify-center gap-2 border border-[#FF6B35]/30 transition cursor-pointer"
                 >
                   <Key className="w-4 h-4" />
                   CONFIGURE AI KEY (BYOK)
                 </button>
                 <button
                   onClick={() => setShowFeedbackModal(true)}
-                  className="w-full sm:w-auto px-6 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs md:text-sm flex items-center justify-center gap-2 border border-slate-700 transition cursor-pointer"
+                  className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] text-white/80 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 border border-white/10 transition cursor-pointer"
                 >
                   <MessageSquare className="w-4 h-4" />
                   GIVE FEEDBACK
@@ -839,45 +867,49 @@ export default function RealInterviewPreparationScreen({
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl p-6 md:p-8 space-y-6 text-slate-200 shadow-2xl"
+              className="w-full max-w-lg rounded-2xl p-6 sm:p-8 space-y-5 text-slate-200 shadow-2xl"
+              style={{
+                background: "rgba(12, 15, 26, 0.98)",
+                border: "1px solid rgba(255, 255, 255, 0.1)",
+              }}
             >
-              <div className="space-y-2">
-                <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                  <MessageSquare className="w-5 h-5 text-blue-400" />
+              <div className="space-y-1.5">
+                <h3 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+                  <MessageSquare className="w-5 h-5 text-[#FF6B35]" />
                   Help Us Improve Your Interview Experience
                 </h3>
-                <p className="text-xs text-slate-400 leading-relaxed">
+                <p className="text-xs text-white/50 leading-relaxed">
                   We're sorry that your session could not be completed. Your feedback helps us identify and improve the issue.
                 </p>
               </div>
 
-              <form onSubmit={handleSubmitFeedback} className="space-y-4 text-xs md:text-sm">
+              <form onSubmit={handleSubmitFeedback} className="space-y-4 text-xs sm:text-sm">
                 {/* Field 1: What happened */}
                 <div className="space-y-1.5">
-                  <label className="font-semibold text-slate-300">1. What happened?</label>
+                  <label className="font-semibold text-white/70">1. What happened?</label>
                   <select
                     value={feedbackForm.issueType}
                     onChange={(e) => setFeedbackForm({ ...feedbackForm, issueType: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-blue-500"
+                    className="w-full bg-white/[0.04] border border-white/10 rounded-xl p-2.5 text-white focus:outline-none focus:border-[#FF6B35]"
                   >
-                    <option value="Session did not start">Session did not start</option>
-                    <option value="Question generation failed">Question generation failed</option>
-                    <option value="Session stopped unexpectedly">Session stopped unexpectedly</option>
-                    <option value="Technical issue">Technical issue</option>
-                    <option value="Other">Other</option>
+                    <option value="Session did not start" className="bg-[#0D111A]">Session did not start</option>
+                    <option value="Question generation failed" className="bg-[#0D111A]">Question generation failed</option>
+                    <option value="Session stopped unexpectedly" className="bg-[#0D111A]">Session stopped unexpectedly</option>
+                    <option value="Technical issue" className="bg-[#0D111A]">Technical issue</option>
+                    <option value="Other" className="bg-[#0D111A]">Other</option>
                   </select>
                 </div>
 
                 {/* Field 2: Which stage */}
                 <div className="space-y-1.5">
-                  <label className="font-semibold text-slate-300">2. Which stage?</label>
+                  <label className="font-semibold text-white/70">2. Which stage?</label>
                   <select
                     value={feedbackForm.failedStage}
                     onChange={(e) => setFeedbackForm({ ...feedbackForm, failedStage: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-blue-500"
+                    className="w-full bg-white/[0.04] border border-white/10 rounded-xl p-2.5 text-white focus:outline-none focus:border-[#FF6B35]"
                   >
                     {activeStages.map((s) => (
-                      <option key={s.id} value={s.title}>
+                      <option key={s.id} value={s.title} className="bg-[#0D111A]">
                         {s.title}
                       </option>
                     ))}
@@ -886,20 +918,20 @@ export default function RealInterviewPreparationScreen({
 
                 {/* Field 3: Experience rating */}
                 <div className="space-y-1.5">
-                  <label className="font-semibold text-slate-300">3. Experience rating</label>
+                  <label className="font-semibold text-white/70">3. Experience rating</label>
                   <div className="flex items-center gap-2 pt-1">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <button
                         key={star}
                         type="button"
                         onClick={() => setFeedbackForm({ ...feedbackForm, rating: star })}
-                        className={`p-2 rounded-lg border transition ${
+                        className={`p-2 rounded-lg border transition cursor-pointer ${
                           feedbackForm.rating >= star
-                            ? "bg-amber-500/20 border-amber-500/40 text-amber-400"
-                            : "bg-slate-950 border-slate-800 text-slate-600"
+                            ? "bg-[#FF6B35]/20 border-[#FF6B35]/50 text-[#FF6B35]"
+                            : "bg-white/[0.03] border-white/10 text-white/25"
                         }`}
                       >
-                        <Star className="w-5 h-5 fill-current" />
+                        <Star className="w-4 h-4 fill-current" />
                       </button>
                     ))}
                   </div>
@@ -907,28 +939,28 @@ export default function RealInterviewPreparationScreen({
 
                 {/* Field 4: Additional comments */}
                 <div className="space-y-1.5">
-                  <label className="font-semibold text-slate-300">4. Additional comments</label>
+                  <label className="font-semibold text-white/70">4. Additional comments</label>
                   <textarea
                     rows={3}
                     value={feedbackForm.comments}
                     onChange={(e) => setFeedbackForm({ ...feedbackForm, comments: e.target.value })}
                     placeholder="Describe any specific details..."
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-blue-500"
+                    className="w-full bg-white/[0.04] border border-white/10 rounded-xl p-2.5 text-white focus:outline-none focus:border-[#FF6B35]"
                   />
                 </div>
 
                 {/* Buttons */}
-                <div className="flex items-center justify-end gap-3 pt-3">
+                <div className="flex items-center justify-end gap-3 pt-2">
                   <button
                     type="button"
                     onClick={() => setShowFeedbackModal(false)}
-                    className="px-4 py-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white text-xs font-semibold cursor-pointer"
+                    className="px-4 py-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] text-white/70 hover:text-white text-xs font-semibold cursor-pointer transition border border-white/10"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-6 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition cursor-pointer"
+                    className="px-6 py-2 rounded-xl bg-gradient-to-r from-[#FF6B35] to-[#FF8A3D] hover:brightness-110 text-white text-xs font-bold transition shadow-md shadow-[#FF6B35]/20 cursor-pointer"
                   >
                     SUBMIT FEEDBACK
                   </button>
@@ -946,37 +978,43 @@ export default function RealInterviewPreparationScreen({
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl p-6 md:p-8 space-y-6 text-center text-slate-200 shadow-2xl"
+              className="w-full max-w-lg rounded-2xl p-6 sm:p-8 space-y-5 text-center text-slate-200 shadow-2xl"
+              style={{
+                background: "rgba(12, 15, 26, 0.98)",
+                border: "1px solid rgba(255, 255, 255, 0.1)",
+              }}
             >
-              <div className="w-12 h-12 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center mx-auto">
+              <div className="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 flex items-center justify-center mx-auto">
                 <CheckCircle2 className="w-6 h-6" />
               </div>
 
-              <div className="space-y-2">
-                <h3 className="text-xl font-extrabold text-white">THANK YOU FOR YOUR FEEDBACK</h3>
-                <p className="text-xs text-slate-400 leading-relaxed">
+              <div className="space-y-1.5">
+                <h3 className="text-lg sm:text-xl font-extrabold text-white uppercase tracking-wider">
+                  THANK YOU FOR YOUR FEEDBACK
+                </h3>
+                <p className="text-xs text-white/60 leading-relaxed">
                   We sincerely apologize that your Real Interview could not be completed.
                 </p>
-                <p className="text-xs text-slate-400 leading-relaxed">
+                <p className="text-xs text-white/60 leading-relaxed">
                   Your feedback has been recorded and will help us improve the interview experience.
                 </p>
               </div>
 
-              <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800 text-xs text-slate-300 leading-relaxed">
+              <div className="p-4 rounded-xl bg-white/[0.03] border border-white/10 text-xs text-white/70 leading-relaxed">
                 Before attempting the Real Interview again, we recommend strengthening your technical preparation through the Mock Interview and practice sections.
               </div>
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
                 <button
                   onClick={onPracticeMock}
-                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold flex items-center justify-center gap-2 transition cursor-pointer"
+                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#FF6B35] to-[#FF8A3D] hover:brightness-110 text-white text-xs font-bold flex items-center justify-center gap-2 transition shadow-md shadow-[#FF6B35]/20 cursor-pointer"
                 >
                   <BookOpen className="w-4 h-4" />
                   PRACTICE MOCK INTERVIEW
                 </button>
                 <button
                   onClick={onReturnToPlatform}
-                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold flex items-center justify-center gap-2 border border-slate-700 transition cursor-pointer"
+                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] text-white/80 text-xs font-semibold flex items-center justify-center gap-2 border border-white/10 transition cursor-pointer"
                 >
                   <Home className="w-4 h-4" />
                   RETURN TO PLATFORM
