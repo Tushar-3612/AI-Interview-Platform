@@ -30,6 +30,8 @@ import BYOKModal from "../../components/BYOKModal";
 import MonacoCodeEditor from "../../components/coding/MonacoCodeEditor";
 import OutputPanel from "../../components/coding/OutputPanel";
 import { getStarterCode } from "../../utils/coding/starterGenerator";
+import formatSpeechTranscript from "../../utils/interview/transcriptFormatter";
+import PersonDetector from "../../utils/proctor/personDetector";
 
 
 
@@ -178,6 +180,13 @@ function StartInterview({
   const isSpeakerOnRef = useRef(true);
   const [micPermissionDenied, setMicPermissionDenied] = useState(false);
 
+  // Proctoring & Person Detection State (0, 1, 2+)
+  const [personCount, setPersonCount] = useState(1);
+  const [personStatus, setPersonStatus] = useState("ONE_PERSON");
+  const personDetectorRef = useRef(null);
+  const lastIntegrityAlertRef = useRef({});
+  const videoElementRef = useRef(null);
+
   // Webcam stream
   const [webcamStream, setWebcamStream] = useState(null);
   const webcamStreamRef = useRef(null);
@@ -192,6 +201,7 @@ function StartInterview({
   const isListeningSpeechRef = useRef(false);
   const recognitionRef = useRef(null);
   const speechBaseTextRef = useRef("");
+  const speechFinalBaseRef = useRef("");
   const silenceTimerRef = useRef(null);
   const isManualStopRef = useRef(false);
 
@@ -402,9 +412,35 @@ function StartInterview({
     }
   }, [ttsStop]);
 
-  // ─── Webcam acquisition ───
+  // ─── Webcam acquisition & Proctoring Detection Loop ───
   const hasAttemptedWebcamRef = useRef(false);
   const webcamDeniedRef = useRef(false);
+
+  // Handle live video element reference for person/face detection
+  const handleVideoElement = useCallback((videoEl) => {
+    videoElementRef.current = videoEl;
+    if (!personDetectorRef.current) {
+      personDetectorRef.current = new PersonDetector();
+    }
+
+    if (videoEl && isCameraOn) {
+      personDetectorRef.current.start(videoEl, (result) => {
+        setPersonCount(result.count);
+        setPersonStatus(result.status);
+
+        const now = Date.now();
+        if (result.status === "MULTIPLE_PEOPLE" && (!lastIntegrityAlertRef.current.multiple || now - lastIntegrityAlertRef.current.multiple > 10000)) {
+          lastIntegrityAlertRef.current.multiple = now;
+          logIntegrityEvent("MULTIPLE_PEOPLE_DETECTED", `Multiple persons (${result.count}) detected in candidate camera frame`);
+        } else if (result.status === "NO_PERSON" && (!lastIntegrityAlertRef.current.noPerson || now - lastIntegrityAlertRef.current.noPerson > 15000)) {
+          lastIntegrityAlertRef.current.noPerson = now;
+          logIntegrityEvent("NO_PERSON_DETECTED", "No candidate face detected in camera frame");
+        }
+      });
+    } else {
+      personDetectorRef.current.stop();
+    }
+  }, [isCameraOn, logIntegrityEvent]);
 
   const startWebcam = useCallback(async () => {
     if (webcamDeniedRef.current || hasAttemptedWebcamRef.current) {
@@ -428,6 +464,9 @@ function StartInterview({
       if (vTrack) {
         vTrack.onended = () => {
           setIsCameraOn(false);
+          if (personDetectorRef.current) {
+            personDetectorRef.current.stop();
+          }
           logIntegrityEvent("CAMERA_DISCONNECTED", "Candidate camera track ended unexpectedly");
         };
       }
@@ -439,6 +478,9 @@ function StartInterview({
   }, [logIntegrityEvent]);
 
   const stopWebcam = useCallback(() => {
+    if (personDetectorRef.current) {
+      personDetectorRef.current.stop();
+    }
     if (webcamStreamRef.current) {
       webcamStreamRef.current.getTracks().forEach((t) => {
         t.stop();
@@ -484,6 +526,15 @@ function StartInterview({
       if (webcamStreamRef.current) {
         webcamStreamRef.current.getVideoTracks().forEach((t) => { t.enabled = next; });
       }
+      if (!next && personDetectorRef.current) {
+        personDetectorRef.current.stop();
+        setPersonStatus("CAMERA_OFF");
+      } else if (next && videoElementRef.current && personDetectorRef.current) {
+        personDetectorRef.current.start(videoElementRef.current, (result) => {
+          setPersonCount(result.count);
+          setPersonStatus(result.status);
+        });
+      }
       return next;
     });
   }, []);
@@ -520,6 +571,10 @@ function StartInterview({
     }
     return () => {
       stopWebcam();
+      if (personDetectorRef.current) {
+        personDetectorRef.current.destroy();
+        personDetectorRef.current = null;
+      }
       stopSpeechRecognition();
       window.speechSynthesis?.cancel();
     };
@@ -529,6 +584,9 @@ function StartInterview({
   useEffect(() => {
     if (isCompleted) {
       stopWebcam();
+      if (personDetectorRef.current) {
+        personDetectorRef.current.stop();
+      }
       stopSpeechRecognition();
       window.speechSynthesis?.cancel();
     }
@@ -1249,13 +1307,14 @@ function StartInterview({
       aiStatusRef.current = "LISTENING";
       ttsEndedAtRef.current = Date.now(); // Mark TTS end time for bleed guard
       speechBaseTextRef.current = typedResponseRef.current || "";
+      speechFinalBaseRef.current = typedResponseRef.current || "";
       if (inputModeRef.current === "speak" && isMicOnRef.current && !micPermissionDenied && section !== "APTITUDE" && section !== "CODING") {
         setTimeout(() => {
           if (aiStatusRef.current === "LISTENING" && isMicOnRef.current && !window.speechSynthesis?.speaking) {
             isManualStopRef.current = false;
             startSpeechRecognitionRef.current?.();
           }
-        }, 600);
+        }, 150); // Prompt transition delay ensures candidate's first spoken words are NOT lost
       }
     };
 
@@ -1263,13 +1322,14 @@ function StartInterview({
       console.warn("TTS Error:", e);
       setAiStatus("LISTENING");
       aiStatusRef.current = "LISTENING";
+      speechFinalBaseRef.current = typedResponseRef.current || "";
       if (inputModeRef.current === "speak" && isMicOnRef.current && !micPermissionDenied && section !== "APTITUDE" && section !== "CODING") {
         setTimeout(() => {
           if (aiStatusRef.current === "LISTENING" && isMicOnRef.current) {
             isManualStopRef.current = false;
             startSpeechRecognitionRef.current?.();
           }
-        }, 400);
+        }, 150);
       }
     };
 
@@ -1352,10 +1412,13 @@ function StartInterview({
       } else {
         setTypedResponse(existing.answer);
         typedResponseRef.current = existing.answer;
+        speechFinalBaseRef.current = existing.answer;
       }
     } else {
       setTypedResponse("");
       typedResponseRef.current = "";
+      speechFinalBaseRef.current = "";
+      speechBaseTextRef.current = "";
       codingCodeByLangRef.current = {};
       const starter = getStarterCode(currentQuestion, codingLanguage);
       setCurrentCode(starter);
@@ -1399,6 +1462,9 @@ function StartInterview({
 
       isManualStopRef.current = false;
       speechBaseTextRef.current = typedResponseRef.current || "";
+      if (!speechFinalBaseRef.current) {
+        speechFinalBaseRef.current = typedResponseRef.current || "";
+      }
 
       rec.onstart = () => {
         setIsListeningSpeech(true);
@@ -1413,28 +1479,34 @@ function StartInterview({
         if (aiStatusRef.current === "SPEAKING" || window.speechSynthesis?.speaking) {
           return;
         }
-        // Bleed guard: Discard results that arrive within 600ms of TTS ending
-        // (prevents speaker audio leaking into mic from overwriting candidate's answer)
-        if (Date.now() - ttsEndedAtRef.current < 600) {
+        // Bleed guard: Discard results that arrive within 150ms of TTS ending
+        if (Date.now() - ttsEndedAtRef.current < 150) {
           return;
         }
 
-        let currentTranscript = "";
-        for (let i = 0; i < event.results.length; i++) {
+        let interimText = "";
+        let finalChunk = "";
+
+        for (let i = event.resultIndex; i < event.results.length; i++) {
           const result = event.results[i];
           const transcriptPiece = result[0]?.transcript || "";
-          currentTranscript += transcriptPiece;
+          if (result.isFinal) {
+            finalChunk += " " + transcriptPiece;
+          } else {
+            interimText += " " + transcriptPiece;
+          }
         }
 
-        if (!currentTranscript.trim()) return; // Nothing meaningful, don't update
+        if (finalChunk.trim()) {
+          const base = speechFinalBaseRef.current.trim();
+          speechFinalBaseRef.current = (base ? base + " " : "") + finalChunk.trim();
+        }
 
-        const base = speechBaseTextRef.current.trim();
-        const fullUnformatted = (base ? base + " " : "") + currentTranscript;
+        const rawCombined = ((speechFinalBaseRef.current ? speechFinalBaseRef.current.trim() : "") + (interimText ? " " + interimText.trim() : "")).trim();
+        if (!rawCombined) return;
 
-        // Auto formatting: Clean extra whitespace & capitalize sentences
-        const formatted = fullUnformatted
-          .replace(/\s+/g, " ")
-          .replace(/(^\s*\w|[.!?]\s+\w)/g, (c) => c.toUpperCase());
+        // Apply conservative technical term formatting and whitespace normalization
+        const formatted = formatSpeechTranscript(rawCombined);
 
         setTypedResponse(formatted);
         typedResponseRef.current = formatted;
@@ -1473,6 +1545,9 @@ function StartInterview({
           currentSectionRef.current !== "CODING"
         ) {
           speechBaseTextRef.current = typedResponseRef.current || "";
+          if (!speechFinalBaseRef.current) {
+            speechFinalBaseRef.current = typedResponseRef.current || "";
+          }
           setTimeout(() => {
             if (
               !isManualStopRef.current &&
@@ -1616,6 +1691,8 @@ function StartInterview({
   const handleNextQuestion = async () => {
     stopSpeechRecognition();
     window.speechSynthesis?.cancel();
+    speechFinalBaseRef.current = "";
+    speechBaseTextRef.current = "";
     await handleSaveAnswer("answered");
 
     if (currentIndex < questions.length) {
@@ -1626,6 +1703,9 @@ function StartInterview({
         setIsGeneratingQuestion(false);
         setCurrentIndex((prev) => prev + 1);
         setTypedResponse("");
+        typedResponseRef.current = "";
+        speechFinalBaseRef.current = "";
+        speechBaseTextRef.current = "";
       }, 700);
     } else {
       setShowConfirmExit(true);
@@ -1634,6 +1714,10 @@ function StartInterview({
 
   const handlePrevQuestion = () => {
     if (currentIndex > 1) {
+      stopSpeechRecognition();
+      window.speechSynthesis?.cancel();
+      speechFinalBaseRef.current = "";
+      speechBaseTextRef.current = "";
       setCurrentIndex((prev) => prev - 1);
     }
   };
@@ -1641,6 +1725,8 @@ function StartInterview({
   const handleSkipQuestion = async () => {
     stopSpeechRecognition();
     window.speechSynthesis?.cancel();
+    speechFinalBaseRef.current = "";
+    speechBaseTextRef.current = "";
     await handleSaveAnswer("skipped");
 
     if (currentIndex < questions.length) {
@@ -1651,6 +1737,9 @@ function StartInterview({
         setIsGeneratingQuestion(false);
         setCurrentIndex((prev) => prev + 1);
         setTypedResponse("");
+        typedResponseRef.current = "";
+        speechFinalBaseRef.current = "";
+        speechBaseTextRef.current = "";
       }, 700);
     } else {
       setShowConfirmExit(true);
@@ -2360,6 +2449,9 @@ function StartInterview({
           stream={webcamStream}
           userName={candidateInfo.name}
           onRetryCamera={startWebcam}
+          personCount={personCount}
+          personStatus={personStatus}
+          onVideoElement={handleVideoElement}
         />
       </div>
 
