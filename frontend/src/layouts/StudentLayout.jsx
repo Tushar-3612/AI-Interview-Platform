@@ -14,7 +14,7 @@ import { getAuthToken, useStudentProfile } from "../hooks/useStudentProfile";
 function StudentLayout() {
   const token = getAuthToken();
   const location = useLocation();
-  const { profile, updateProfile, saveProfile, addSkill, removeSkill, getProfileForInterview } =
+  const { profile, isLoading, updateProfile, saveProfile, refetchProfile, addSkill, removeSkill, getProfileForInterview } =
     useStudentProfile();
   const [interviewModalOpen, setInterviewModalOpen] = useState(false);
 
@@ -67,8 +67,10 @@ function StudentLayout() {
       <Outlet
         context={{
           profile,
+          isLoading,
           updateProfile,
           saveProfile,
+          refetchProfile,
           addSkill,
           removeSkill,
           getProfileForInterview,
@@ -106,17 +108,19 @@ function StudentLayout() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35 }}
         >
-          <Outlet
-            context={{
-              profile,
-              updateProfile,
-              saveProfile,
-              addSkill,
-              removeSkill,
-              getProfileForInterview,
-              openInterviewModal: () => setInterviewModalOpen(true),
-            }}
-          />
+      <Outlet
+        context={{
+          profile,
+          isLoading,
+          updateProfile,
+          saveProfile,
+          refetchProfile,
+          addSkill,
+          removeSkill,
+          getProfileForInterview,
+          openInterviewModal: () => setInterviewModalOpen(true),
+        }}
+      />
         </motion.main>
       </div>
 

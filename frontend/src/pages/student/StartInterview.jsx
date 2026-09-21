@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
-import { Bot, Sparkles, Mic, MicOff, CheckCircle2, Keyboard, Loader2, Play, Code2, AlertTriangle, UserCheck, Target, BrainCircuit, Maximize2, RotateCcw, Radio, Send } from "lucide-react";
+import { Bot, Sparkles, Mic, MicOff, CheckCircle2, Keyboard, Loader2, Play, Code2, AlertTriangle, UserCheck, Target, BrainCircuit, Maximize2, RotateCcw, Radio, Send, Volume2, ChevronLeft, ChevronRight, SkipForward } from "lucide-react";
 
 import api from "../../utils/api";
 import { getAuthToken, useStudentProfile } from "../../hooks/useStudentProfile";
@@ -30,6 +30,8 @@ import BYOKModal from "../../components/BYOKModal";
 import MonacoCodeEditor from "../../components/coding/MonacoCodeEditor";
 import OutputPanel from "../../components/coding/OutputPanel";
 import { getStarterCode } from "../../utils/coding/starterGenerator";
+import formatSpeechTranscript from "../../utils/interview/transcriptFormatter";
+import PersonDetector from "../../utils/proctor/personDetector";
 
 
 
@@ -178,6 +180,13 @@ function StartInterview({
   const isSpeakerOnRef = useRef(true);
   const [micPermissionDenied, setMicPermissionDenied] = useState(false);
 
+  // Proctoring & Person Detection State (0, 1, 2+)
+  const [personCount, setPersonCount] = useState(1);
+  const [personStatus, setPersonStatus] = useState("ONE_PERSON");
+  const personDetectorRef = useRef(null);
+  const lastIntegrityAlertRef = useRef({});
+  const videoElementRef = useRef(null);
+
   // Webcam stream
   const [webcamStream, setWebcamStream] = useState(null);
   const webcamStreamRef = useRef(null);
@@ -192,6 +201,7 @@ function StartInterview({
   const isListeningSpeechRef = useRef(false);
   const recognitionRef = useRef(null);
   const speechBaseTextRef = useRef("");
+  const speechFinalBaseRef = useRef("");
   const silenceTimerRef = useRef(null);
   const isManualStopRef = useRef(false);
 
@@ -402,9 +412,35 @@ function StartInterview({
     }
   }, [ttsStop]);
 
-  // ─── Webcam acquisition ───
+  // ─── Webcam acquisition & Proctoring Detection Loop ───
   const hasAttemptedWebcamRef = useRef(false);
   const webcamDeniedRef = useRef(false);
+
+  // Handle live video element reference for person/face detection
+  const handleVideoElement = useCallback((videoEl) => {
+    videoElementRef.current = videoEl;
+    if (!personDetectorRef.current) {
+      personDetectorRef.current = new PersonDetector();
+    }
+
+    if (videoEl && isCameraOn) {
+      personDetectorRef.current.start(videoEl, (result) => {
+        setPersonCount(result.count);
+        setPersonStatus(result.status);
+
+        const now = Date.now();
+        if (result.status === "MULTIPLE_PEOPLE" && (!lastIntegrityAlertRef.current.multiple || now - lastIntegrityAlertRef.current.multiple > 10000)) {
+          lastIntegrityAlertRef.current.multiple = now;
+          logIntegrityEvent("MULTIPLE_PEOPLE_DETECTED", `Multiple persons (${result.count}) detected in candidate camera frame`);
+        } else if (result.status === "NO_PERSON" && (!lastIntegrityAlertRef.current.noPerson || now - lastIntegrityAlertRef.current.noPerson > 15000)) {
+          lastIntegrityAlertRef.current.noPerson = now;
+          logIntegrityEvent("NO_PERSON_DETECTED", "No candidate face detected in camera frame");
+        }
+      });
+    } else {
+      personDetectorRef.current.stop();
+    }
+  }, [isCameraOn, logIntegrityEvent]);
 
   const startWebcam = useCallback(async () => {
     if (webcamDeniedRef.current || hasAttemptedWebcamRef.current) {
@@ -428,6 +464,9 @@ function StartInterview({
       if (vTrack) {
         vTrack.onended = () => {
           setIsCameraOn(false);
+          if (personDetectorRef.current) {
+            personDetectorRef.current.stop();
+          }
           logIntegrityEvent("CAMERA_DISCONNECTED", "Candidate camera track ended unexpectedly");
         };
       }
@@ -439,6 +478,9 @@ function StartInterview({
   }, [logIntegrityEvent]);
 
   const stopWebcam = useCallback(() => {
+    if (personDetectorRef.current) {
+      personDetectorRef.current.stop();
+    }
     if (webcamStreamRef.current) {
       webcamStreamRef.current.getTracks().forEach((t) => {
         t.stop();
@@ -484,6 +526,15 @@ function StartInterview({
       if (webcamStreamRef.current) {
         webcamStreamRef.current.getVideoTracks().forEach((t) => { t.enabled = next; });
       }
+      if (!next && personDetectorRef.current) {
+        personDetectorRef.current.stop();
+        setPersonStatus("CAMERA_OFF");
+      } else if (next && videoElementRef.current && personDetectorRef.current) {
+        personDetectorRef.current.start(videoElementRef.current, (result) => {
+          setPersonCount(result.count);
+          setPersonStatus(result.status);
+        });
+      }
       return next;
     });
   }, []);
@@ -520,6 +571,10 @@ function StartInterview({
     }
     return () => {
       stopWebcam();
+      if (personDetectorRef.current) {
+        personDetectorRef.current.destroy();
+        personDetectorRef.current = null;
+      }
       stopSpeechRecognition();
       window.speechSynthesis?.cancel();
     };
@@ -529,6 +584,9 @@ function StartInterview({
   useEffect(() => {
     if (isCompleted) {
       stopWebcam();
+      if (personDetectorRef.current) {
+        personDetectorRef.current.stop();
+      }
       stopSpeechRecognition();
       window.speechSynthesis?.cancel();
     }
@@ -826,7 +884,7 @@ function StartInterview({
         setIsLoadingInterview(false);
         setIsEvaluating(true);
         setIsCompleted(false);
-      } else if (data?.generatedQuestions && data.generatedQuestions.length >= 53) {
+      } else if (data?.generatedQuestions && data.generatedQuestions.length >= 41) {
         // Active session with questions already prepared (e.g. page refresh)
         setIsLoadingInterview(false);
         setIsEvaluating(false);
@@ -846,77 +904,58 @@ function StartInterview({
   // Every progress readout (sidebar, overall, section headers, completion
   // stats) is derived from this one memoized object so no UI shows a
   // different number. Progress = actually-submitted (non-empty) answers only.
-  const SECTION_TOTALS = isIndividualProject
-    ? { RESUME_PROJECT: 10 }
-    : isIndividualTechnical
-    ? { TECHNICAL: 20 }
-    : { APTITUDE: 15, RESUME_PROJECT: 10, TECHNICAL: 20, CODING: 3, HR: 5 };
-
   const sessionProgress = useMemo(() => {
-    if (isIndividualProject) {
-      const answeredIds = new Set(
-        savedAnswers
-          .filter((a) => a.answer && String(a.answer).trim().length > 0)
-          .map((a) => String(a.questionId))
-      );
-
-      let completedCount = 0;
-      questions.forEach((q) => {
-        const qId = String(q.id || q.questionId);
-        if (answeredIds.has(qId)) {
-          completedCount += 1;
-        }
-      });
-
-      return {
-        RESUME_PROJECT: { completed: completedCount, total: 10 },
-        totalCompleted: completedCount,
-        totalQuestions: 10,
-      };
-    }
-
-    if (isIndividualTechnical) {
-      const answeredIds = new Set(
-        savedAnswers
-          .filter((a) => a.answer && String(a.answer).trim().length > 0)
-          .map((a) => String(a.questionId))
-      );
-
-      let completedCount = 0;
-      questions.forEach((q) => {
-        const qId = String(q.id || q.questionId);
-        if (answeredIds.has(qId)) {
-          completedCount += 1;
-        }
-      });
-
-      return {
-        TECHNICAL: { completed: completedCount, total: 20 },
-        totalCompleted: completedCount,
-        totalQuestions: 20,
-      };
-    }
-
-    const counts = {
-      APTITUDE: { completed: 0, total: 15 },
-      RESUME_PROJECT: { completed: 0, total: 10 },
-      TECHNICAL: { completed: 0, total: 20 },
-      CODING: { completed: 0, total: 3 },
-      HR: { completed: 0, total: 5 },
-      totalCompleted: 0,
-      totalQuestions: 53,
-    };
-
     const answeredIds = new Set(
       savedAnswers
         .filter((a) => a.answer && String(a.answer).trim().length > 0)
         .map((a) => String(a.questionId))
     );
 
-    questions.forEach((q) => {
+    if (isIndividualProject) {
+      const qList = (questions || []).filter((q) => q.section === "RESUME_PROJECT");
+      const total = qList.length > 0 ? qList.length : 5;
+      let completed = 0;
+      qList.forEach((q) => {
+        if (answeredIds.has(String(q.id || q.questionId))) completed += 1;
+      });
+      return {
+        RESUME_PROJECT: { completed, total },
+        totalCompleted: completed,
+        totalQuestions: total,
+      };
+    }
+
+    if (isIndividualTechnical) {
+      const qList = (questions || []).filter((q) => q.section === "TECHNICAL");
+      const total = qList.length > 0 ? qList.length : (questions.length || 20);
+      let completed = 0;
+      qList.forEach((q) => {
+        if (answeredIds.has(String(q.id || q.questionId))) completed += 1;
+      });
+      return {
+        TECHNICAL: { completed, total },
+        totalCompleted: completed,
+        totalQuestions: total,
+      };
+    }
+
+    // Full 5-round real interview mode
+    const counts = {
+      APTITUDE: { completed: 0, total: 0 },
+      RESUME_PROJECT: { completed: 0, total: 0 },
+      TECHNICAL: { completed: 0, total: 0 },
+      CODING: { completed: 0, total: 0 },
+      HR: { completed: 0, total: 0 },
+      totalCompleted: 0,
+      totalQuestions: 0,
+    };
+
+    // Calculate actual total loaded per section from questions array
+    (questions || []).forEach((q) => {
       const sec = q.section || "TECHNICAL";
-      const qId = String(q.id || q.questionId);
       if (counts[sec]) {
+        counts[sec].total += 1;
+        const qId = String(q.id || q.questionId);
         if (answeredIds.has(qId)) {
           counts[sec].completed += 1;
           counts.totalCompleted += 1;
@@ -924,8 +963,19 @@ function StartInterview({
       }
     });
 
+    // Baseline fallbacks if section questions are loaded on-demand
+    if (counts.APTITUDE.total === 0) counts.APTITUDE.total = 15;
+    if (counts.RESUME_PROJECT.total === 0) counts.RESUME_PROJECT.total = 5;
+    if (counts.TECHNICAL.total === 0) counts.TECHNICAL.total = 20;
+    if (counts.CODING.total === 0) counts.CODING.total = 3;
+    if (counts.HR.total === 0) counts.HR.total = 5;
+
+    counts.totalQuestions = (questions && questions.length > 0)
+      ? questions.length
+      : (counts.APTITUDE.total + counts.RESUME_PROJECT.total + counts.TECHNICAL.total + counts.CODING.total + counts.HR.total);
+
     return counts;
-  }, [questions, savedAnswers, isIndividualTechnical]);
+  }, [questions, savedAnswers, isIndividualProject, isIndividualTechnical]);
 
   // ─── CONTEXTUAL AI FOLLOW-UP (backend-only, no keys exposed) ───
   const triggerFollowUp = useCallback(async (section, baseQuestion, answerText) => {
@@ -1257,13 +1307,14 @@ function StartInterview({
       aiStatusRef.current = "LISTENING";
       ttsEndedAtRef.current = Date.now(); // Mark TTS end time for bleed guard
       speechBaseTextRef.current = typedResponseRef.current || "";
+      speechFinalBaseRef.current = typedResponseRef.current || "";
       if (inputModeRef.current === "speak" && isMicOnRef.current && !micPermissionDenied && section !== "APTITUDE" && section !== "CODING") {
         setTimeout(() => {
           if (aiStatusRef.current === "LISTENING" && isMicOnRef.current && !window.speechSynthesis?.speaking) {
             isManualStopRef.current = false;
             startSpeechRecognitionRef.current?.();
           }
-        }, 600);
+        }, 150); // Prompt transition delay ensures candidate's first spoken words are NOT lost
       }
     };
 
@@ -1271,13 +1322,14 @@ function StartInterview({
       console.warn("TTS Error:", e);
       setAiStatus("LISTENING");
       aiStatusRef.current = "LISTENING";
+      speechFinalBaseRef.current = typedResponseRef.current || "";
       if (inputModeRef.current === "speak" && isMicOnRef.current && !micPermissionDenied && section !== "APTITUDE" && section !== "CODING") {
         setTimeout(() => {
           if (aiStatusRef.current === "LISTENING" && isMicOnRef.current) {
             isManualStopRef.current = false;
             startSpeechRecognitionRef.current?.();
           }
-        }, 400);
+        }, 150);
       }
     };
 
@@ -1360,10 +1412,13 @@ function StartInterview({
       } else {
         setTypedResponse(existing.answer);
         typedResponseRef.current = existing.answer;
+        speechFinalBaseRef.current = existing.answer;
       }
     } else {
       setTypedResponse("");
       typedResponseRef.current = "";
+      speechFinalBaseRef.current = "";
+      speechBaseTextRef.current = "";
       codingCodeByLangRef.current = {};
       const starter = getStarterCode(currentQuestion, codingLanguage);
       setCurrentCode(starter);
@@ -1407,6 +1462,9 @@ function StartInterview({
 
       isManualStopRef.current = false;
       speechBaseTextRef.current = typedResponseRef.current || "";
+      if (!speechFinalBaseRef.current) {
+        speechFinalBaseRef.current = typedResponseRef.current || "";
+      }
 
       rec.onstart = () => {
         setIsListeningSpeech(true);
@@ -1421,28 +1479,34 @@ function StartInterview({
         if (aiStatusRef.current === "SPEAKING" || window.speechSynthesis?.speaking) {
           return;
         }
-        // Bleed guard: Discard results that arrive within 600ms of TTS ending
-        // (prevents speaker audio leaking into mic from overwriting candidate's answer)
-        if (Date.now() - ttsEndedAtRef.current < 600) {
+        // Bleed guard: Discard results that arrive within 150ms of TTS ending
+        if (Date.now() - ttsEndedAtRef.current < 150) {
           return;
         }
 
-        let currentTranscript = "";
-        for (let i = 0; i < event.results.length; i++) {
+        let interimText = "";
+        let finalChunk = "";
+
+        for (let i = event.resultIndex; i < event.results.length; i++) {
           const result = event.results[i];
           const transcriptPiece = result[0]?.transcript || "";
-          currentTranscript += transcriptPiece;
+          if (result.isFinal) {
+            finalChunk += " " + transcriptPiece;
+          } else {
+            interimText += " " + transcriptPiece;
+          }
         }
 
-        if (!currentTranscript.trim()) return; // Nothing meaningful, don't update
+        if (finalChunk.trim()) {
+          const base = speechFinalBaseRef.current.trim();
+          speechFinalBaseRef.current = (base ? base + " " : "") + finalChunk.trim();
+        }
 
-        const base = speechBaseTextRef.current.trim();
-        const fullUnformatted = (base ? base + " " : "") + currentTranscript;
+        const rawCombined = ((speechFinalBaseRef.current ? speechFinalBaseRef.current.trim() : "") + (interimText ? " " + interimText.trim() : "")).trim();
+        if (!rawCombined) return;
 
-        // Auto formatting: Clean extra whitespace & capitalize sentences
-        const formatted = fullUnformatted
-          .replace(/\s+/g, " ")
-          .replace(/(^\s*\w|[.!?]\s+\w)/g, (c) => c.toUpperCase());
+        // Apply conservative technical term formatting and whitespace normalization
+        const formatted = formatSpeechTranscript(rawCombined);
 
         setTypedResponse(formatted);
         typedResponseRef.current = formatted;
@@ -1481,6 +1545,9 @@ function StartInterview({
           currentSectionRef.current !== "CODING"
         ) {
           speechBaseTextRef.current = typedResponseRef.current || "";
+          if (!speechFinalBaseRef.current) {
+            speechFinalBaseRef.current = typedResponseRef.current || "";
+          }
           setTimeout(() => {
             if (
               !isManualStopRef.current &&
@@ -1624,6 +1691,8 @@ function StartInterview({
   const handleNextQuestion = async () => {
     stopSpeechRecognition();
     window.speechSynthesis?.cancel();
+    speechFinalBaseRef.current = "";
+    speechBaseTextRef.current = "";
     await handleSaveAnswer("answered");
 
     if (currentIndex < questions.length) {
@@ -1634,6 +1703,9 @@ function StartInterview({
         setIsGeneratingQuestion(false);
         setCurrentIndex((prev) => prev + 1);
         setTypedResponse("");
+        typedResponseRef.current = "";
+        speechFinalBaseRef.current = "";
+        speechBaseTextRef.current = "";
       }, 700);
     } else {
       setShowConfirmExit(true);
@@ -1642,6 +1714,10 @@ function StartInterview({
 
   const handlePrevQuestion = () => {
     if (currentIndex > 1) {
+      stopSpeechRecognition();
+      window.speechSynthesis?.cancel();
+      speechFinalBaseRef.current = "";
+      speechBaseTextRef.current = "";
       setCurrentIndex((prev) => prev - 1);
     }
   };
@@ -1649,6 +1725,8 @@ function StartInterview({
   const handleSkipQuestion = async () => {
     stopSpeechRecognition();
     window.speechSynthesis?.cancel();
+    speechFinalBaseRef.current = "";
+    speechBaseTextRef.current = "";
     await handleSaveAnswer("skipped");
 
     if (currentIndex < questions.length) {
@@ -1659,6 +1737,9 @@ function StartInterview({
         setIsGeneratingQuestion(false);
         setCurrentIndex((prev) => prev + 1);
         setTypedResponse("");
+        typedResponseRef.current = "";
+        speechFinalBaseRef.current = "";
+        speechBaseTextRef.current = "";
       }, 700);
     } else {
       setShowConfirmExit(true);
@@ -1691,15 +1772,15 @@ function StartInterview({
   const tM = String(Math.floor((timerSeconds % 3600) / 60)).padStart(2, "0");
   const tS = String(timerSeconds % 60).padStart(2, "0");
 
-  // CENTER WORKSPACE: AI interviewer (tech/hr) + question / answer / transcript / controls
+  // CENTER WORKSPACE: Unified across all 5 rounds (Aptitude, Resume, Tech, Coding, HR)
   const centerWorkspace = (
-    <div className="flex flex-col h-full min-h-0 gap-3">
+    <div className="flex flex-col h-full min-h-0 gap-2.5 overflow-hidden">
+      {/* ─── Compact AI Avatar Banner (Resume / Project, Technical, HR) ─── */}
       {showAI && (
-        <div className="h-[42%] min-h-0 shrink-0 rounded-2xl overflow-hidden border border-white/10">
+        <div className="shrink-0 h-[80px] sm:h-[84px] rounded-2xl overflow-hidden border border-white/10">
           <AIInterviewerCard
             aiStatus={aiStatus}
             isGeneratingQuestion={isGeneratingQuestion}
-            currentQuestionText={currentQuestion?.aiSpeechText || currentQuestion?.question || ""}
             section={voiceSettings.persona === "sarah" ? "HR" : voiceSettings.persona === "alex" ? "TECHNICAL" : currentSection}
           />
         </div>
@@ -1719,507 +1800,739 @@ function StartInterview({
             <div className="pt-2 flex items-center justify-center gap-3">
               <button
                 onClick={() => window.location.reload()}
-                className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold cursor-pointer transition"
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#FF6B35] to-[#FF8A3D] hover:brightness-110 text-white text-xs font-bold cursor-pointer transition shadow-md shadow-[#FF6B35]/20"
               >
                 Retry
               </button>
             </div>
           </div>
         </div>
-      ) : (
-        <>
-          <div
-            className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-3 pr-1"
-        style={{ scrollbarWidth: "thin", scrollbarColor: "rgba(255,255,255,0.1) transparent" }}
-      >
-        {/* Question header */}
-        <div className="shrink-0 p-3 rounded-2xl bg-slate-900/90 border border-white/10 space-y-1">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-black tracking-wider text-amber-400 uppercase flex items-center gap-1.5">
-              {currentSection} — Question {formattedSectionQuestionIndex} / {String(sectionTotal).padStart(2, "0")}
-            </span>
-              <span className="text-[11px] font-bold text-white/40 font-mono">
+      ) : isAptitude ? (
+        /* ═══════════════════════════════════════════
+           CENTER APTITUDE AREA (PREVIOUS APPROVED DESIGN)
+        ═══════════════════════════════════════════ */
+        <div
+          className="flex-1 min-h-0 flex flex-col justify-between p-5 sm:p-6 rounded-2xl space-y-4 overflow-y-auto select-none"
+          style={{
+            background: "rgba(12, 15, 26, 0.95)",
+            border: "1px solid rgba(255, 255, 255, 0.08)",
+            backdropFilter: "blur(12px)",
+            scrollbarWidth: "thin",
+            scrollbarColor: "rgba(255,255,255,0.1) transparent"
+          }}
+        >
+          {/* Top Section Header */}
+          <div>
+            <div className="flex items-center justify-between pb-3 border-b border-white/5">
+              <span className="text-xs sm:text-sm font-black tracking-wider text-[#FF6B35] uppercase flex items-center gap-1.5">
+                {currentSection} — QUESTION {formattedSectionQuestionIndex} / {String(sectionTotal).padStart(2, "0")}
+              </span>
+              <span className="text-xs font-bold text-white/40 font-mono">
                 Overall: {String(sessionProgress.totalCompleted).padStart(2, "0")} / {String(sessionProgress.totalQuestions).padStart(2, "0")}
               </span>
-          </div>
-          <QuestionCard
-            questionText={currentQuestion?.question || currentQuestion?.aiSpeechText || currentQuestion?.title || ""}
-            currentIndex={currentIndex}
-            totalQuestions={questions.length}
-            difficulty={currentQuestion?.difficulty || "Medium"}
-            category={currentQuestion?.category || currentQuestion?.section || "Technical"}
-            source={currentQuestion?.source}
-            estimatedTime={currentSection === "CODING" ? "10 mins" : "2 mins"}
-            showQuestionText={true}
-          />
-        </div>
+            </div>
 
-        {/* Answer area */}
-        {isCoding ? (
-          <div className="shrink-0 flex flex-col gap-3">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-              {/* Left Side: Problem Description, Constraints, Examples */}
-              <div className="overflow-y-auto max-h-84 p-4 rounded-2xl bg-slate-900/90 border border-white/10 space-y-3">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                    <Code2 className="w-4 h-4 text-emerald-400" />
-                    {currentQuestion.title || "Coding Problem"}
-                  </h3>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase">
-                    {currentQuestion.difficulty || "Medium"}
+            {/* Question Text Box with Topic & Difficulty Badges */}
+            <div className="pt-4 space-y-3">
+              <div className="flex items-center justify-end gap-2 flex-wrap">
+                {(currentQuestion?.topic || currentQuestion?.category) && (
+                  <span className="px-3 py-1 rounded-full text-xs font-semibold bg-white/[0.06] border border-white/10 text-white/80">
+                    {currentQuestion?.topic || currentQuestion?.category}
                   </span>
-                </div>
-                <p className="text-xs text-white/80 leading-relaxed whitespace-pre-line">
-                  {currentQuestion.problemStatement || currentQuestion.description || currentQuestion.question}
-                </p>
-                {currentQuestion.inputFormat && (
-                  <div className="text-[11px] text-white/70 bg-white/5 p-2 rounded-xl border border-white/5">
-                    <span className="text-amber-400 font-bold uppercase text-[10px] block mb-0.5">Input Format</span>
-                    {currentQuestion.inputFormat}
-                  </div>
                 )}
-                {currentQuestion.outputFormat && (
-                  <div className="text-[11px] text-white/70 bg-white/5 p-2 rounded-xl border border-white/5">
-                    <span className="text-blue-400 font-bold uppercase text-[10px] block mb-0.5">Output Format</span>
-                    {currentQuestion.outputFormat}
-                  </div>
-                )}
-                {currentQuestion.constraints && (
-                  <div className="text-[11px] text-white/70 bg-white/5 p-2 rounded-xl border border-white/5">
-                    <span className="text-purple-400 font-bold uppercase text-[10px] block mb-0.5">Constraints</span>
-                    {currentQuestion.constraints}
-                  </div>
-                )}
-                {currentQuestion.sampleInput && (
-                  <div className="text-[11px] text-white/70 bg-white/5 p-2.5 rounded-xl border border-white/5 font-mono space-y-1">
-                    <span className="text-emerald-400 font-bold uppercase text-[10px] block font-sans">Sample Case</span>
-                    <div><span className="text-white/40">Input: </span>{currentQuestion.sampleInput}</div>
-                    <div><span className="text-white/40">Output: </span>{currentQuestion.sampleOutput}</div>
-                  </div>
-                )}
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-bold border ${
+                    (currentQuestion?.difficulty || "Easy").toLowerCase() === "hard"
+                      ? "bg-red-500/10 text-red-400 border-red-500/20"
+                      : (currentQuestion?.difficulty || "Easy").toLowerCase() === "medium"
+                      ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                      : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                  }`}
+                >
+                  {currentQuestion?.difficulty || "Easy"}
+                </span>
               </div>
 
-              {/* Right Side: Language Selector & Monaco Editor */}
-              <div className="flex flex-col rounded-2xl bg-slate-900/90 border border-white/10 overflow-hidden">
-                <div className="flex items-center justify-between p-2.5 border-b border-white/10 bg-slate-950/40">
-                  <span className="text-xs font-bold text-white flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                    Judge0 Sandbox Editor
+              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-white leading-relaxed">
+                {currentQuestion?.question || currentQuestion?.aiSpeechText || currentQuestion?.title || ""}
+              </h2>
+            </div>
+          </div>
+
+          {/* Answer Options Grid (Compact 2x2 cards, exact approved layout) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4 my-auto py-2">
+            {(currentQuestion.options || []).map((opt, idx) => {
+              const optText = typeof opt === "object" && opt !== null ? (opt.text || opt.optionText || opt.value || "") : String(opt || "");
+              const optLabel = typeof opt === "object" && opt !== null && opt.label ? opt.label : String.fromCharCode(65 + idx);
+              const optFormatted = `Option ${optLabel}: ${optText}`;
+              const isSelected =
+                typedResponse === optText ||
+                typedResponse === optLabel ||
+                typedResponse === optFormatted ||
+                typedResponse === opt ||
+                (savedAnswers && savedAnswers.some((a) => (String(a.questionId) === String(currentQuestion.id || currentQuestion.questionId)) && (a.answer === optFormatted || a.answer === optText || a.answer === optLabel || a.answer === opt)));
+
+              return (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => {
+                    setTypedResponse(optFormatted);
+                    handleSaveAnswer("answered", optFormatted);
+                  }}
+                  className={`rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 cursor-pointer text-left border ${
+                    isSelected
+                      ? "bg-[#FF6B35]/[0.06] border-2 border-[#FF6B35] shadow-[0_0_20px_rgba(255,107,53,0.15)]"
+                      : "bg-white/[0.02] border-white/[0.08] hover:bg-white/[0.05] hover:border-white/20"
+                  }`}
+                >
+                  <span
+                    className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-black text-sm shrink-0 border transition-colors ${
+                      isSelected
+                        ? "bg-[#FF6B35]/20 border-[#FF6B35] text-[#FF6B35]"
+                        : "bg-white/[0.06] border-white/10 text-white/80"
+                    }`}
+                  >
+                    {optLabel}
                   </span>
-                  <div className="flex items-center gap-2">
-                    <select
-                      value={codingLanguage}
-                      onChange={(e) => {
-                        const newLang = e.target.value;
-                        codingCodeByLangRef.current[codingLanguage] = currentCode;
-                        setCodingLanguage(newLang);
-                        const saved = codingCodeByLangRef.current[newLang];
-                        if (saved && saved.trim() !== "") {
-                          setCurrentCode(saved);
-                        } else {
-                          const newStarter = getStarterCode(currentQuestion, newLang);
-                          setCurrentCode(newStarter);
-                          codingCodeByLangRef.current[newLang] = newStarter;
-                        }
-                      }}
-                      className="bg-slate-800 border border-white/10 text-xs text-white rounded-lg px-2.5 py-1 outline-none cursor-pointer hover:border-white/20 transition"
-                    >
-                      <option value="python">Python (3.8.1)</option>
-                      <option value="cpp">C++ (GCC 9.2.0)</option>
-                      <option value="java">Java (OpenJDK 13)</option>
-                      <option value="javascript">JavaScript (Node 12)</option>
-                    </select>
+                  <span className="text-sm sm:text-base font-semibold text-white/95 leading-snug">
+                    {optText}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Bottom Action Area: Listen Again + Progress + Prev/Skip/Next */}
+          <div className="pt-2 space-y-3">
+            {/* Listen Again full-width banner */}
+            <button
+              type="button"
+              onClick={() => speakCurrentQuestion(currentQuestion?.aiSpeechText || currentQuestion?.question, currentQuestion?.section, currentQuestion?.topic)}
+              disabled={isPaused || !isSpeakerOn}
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-[#FF6B35]/30 bg-[#FF6B35]/5 hover:bg-[#FF6B35]/10 text-[#FF6B35] font-bold text-xs sm:text-sm cursor-pointer transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              <Volume2 className="w-4 h-4 text-[#FF6B35]" />
+              <span>Listen Again</span>
+            </button>
+
+            {/* Progress Label & Buttons Row */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between px-1">
+                <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">
+                  PROGRESS
+                </span>
+                <span className="text-xs font-bold font-mono text-white/80">
+                  {String(sessionProgress.totalCompleted).padStart(2, "0")} <span className="text-white/30">/ {String(sessionProgress.totalQuestions).padStart(2, "0")}</span>
+                </span>
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                <button
+                  type="button"
+                  onClick={handlePrevQuestion}
+                  disabled={currentIndex <= 1 || isPaused}
+                  className="py-2.5 sm:py-3 rounded-xl bg-white/[0.04] border border-white/10 text-white/60 hover:text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-1 cursor-pointer transition disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  ‹ Prev
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleSkipQuestion}
+                  disabled={isPaused}
+                  className="py-2.5 sm:py-3 rounded-xl bg-white/[0.04] border border-white/10 text-[#FF6B35] hover:bg-white/[0.08] font-bold text-xs sm:text-sm flex items-center justify-center gap-1 cursor-pointer transition disabled:opacity-30"
+                >
+                  ▷| Skip
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleNextQuestion}
+                  disabled={isPaused}
+                  className="py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-[#FF6B35] to-[#FF8A3D] hover:brightness-110 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-1 shadow-lg shadow-[#FF6B35]/25 cursor-pointer transition disabled:opacity-30"
+                >
+                  <span>{currentIndex === questions.length ? "Submit" : "Next"}</span>
+                  ›
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* ─── NON-APTITUDE WORKSPACE (Resume / Technical / Coding / HR) ─── */
+        <div
+          className="flex-1 min-h-0 flex flex-col justify-between p-4 sm:p-5 rounded-2xl border border-white/10 overflow-hidden select-none"
+          style={{
+            background: "rgba(12, 15, 26, 0.95)",
+            backdropFilter: "blur(12px)",
+          }}
+        >
+          {/* Top Question Header & Single-Location Question Text */}
+          <div className="shrink-0 space-y-2">
+            <div className="flex items-center justify-between pb-2 border-b border-white/5">
+              <span className="text-xs sm:text-sm font-black tracking-wider text-[#FF6B35] uppercase flex items-center gap-1.5">
+                {currentSection} — QUESTION {formattedSectionQuestionIndex} / {String(sectionTotal).padStart(2, "0")}
+              </span>
+              <div className="flex items-center gap-2">
+                {(currentQuestion?.topic || currentQuestion?.category) && (
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-white/[0.06] border border-white/10 text-white/80">
+                    {currentQuestion?.topic || currentQuestion?.category}
+                  </span>
+                )}
+                <span
+                  className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                    (currentQuestion?.difficulty || "Easy").toLowerCase() === "hard"
+                      ? "bg-red-500/10 text-red-400 border-red-500/20"
+                      : (currentQuestion?.difficulty || "Easy").toLowerCase() === "medium"
+                      ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                      : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                  }`}
+                >
+                  {currentQuestion?.difficulty || "Easy"}
+                </span>
+                <span className="text-xs font-bold text-white/40 font-mono ml-1">
+                  Overall: {String(sessionProgress.totalCompleted).padStart(2, "0")} / {String(sessionProgress.totalQuestions).padStart(2, "0")}
+                </span>
+              </div>
+            </div>
+
+            {/* Single Question Statement (Non-Coding) */}
+            {!isCoding && (
+              <div className="max-h-[85px] overflow-y-auto pr-1" style={{ scrollbarWidth: "thin", scrollbarColor: "rgba(255,255,255,0.1) transparent" }}>
+                <h2 className="text-sm sm:text-base md:text-lg font-bold text-white leading-snug">
+                  {currentQuestion?.question || currentQuestion?.aiSpeechText || currentQuestion?.title || ""}
+                </h2>
+              </div>
+            )}
+          </div>
+
+          {/* Center Content: Round-Specific Body */}
+          <div className="flex-1 min-h-0 py-2 overflow-hidden flex flex-col">
+            {isAptitude ? (
+              /* ── 1. APTITUDE: 2x2 Clean Option Grid ── */
+              <div
+                className="flex-1 min-h-0 grid grid-cols-1 sm:grid-cols-2 gap-2.5 overflow-y-auto pr-1"
+                style={{ scrollbarWidth: "thin", scrollbarColor: "rgba(255,255,255,0.1) transparent" }}
+              >
+                {(currentQuestion.options || []).map((opt, idx) => {
+                  const optText = typeof opt === "object" && opt !== null ? (opt.text || opt.optionText || opt.value || "") : String(opt || "");
+                  const optLabel = typeof opt === "object" && opt !== null && opt.label ? opt.label : String.fromCharCode(65 + idx);
+                  const optFormatted = `Option ${optLabel}: ${optText}`;
+                  const isSelected =
+                    typedResponse === optText ||
+                    typedResponse === optLabel ||
+                    typedResponse === optFormatted ||
+                    typedResponse === opt ||
+                    (savedAnswers && savedAnswers.some((a) => (String(a.questionId) === String(currentQuestion.id || currentQuestion.questionId)) && (a.answer === optFormatted || a.answer === optText || a.answer === optLabel || a.answer === opt)));
+
+                  return (
                     <button
+                      key={idx}
+                      type="button"
                       onClick={() => {
-                        const resetCode = getStarterCode(currentQuestion, codingLanguage);
-                        setCurrentCode(resetCode);
-                        codingCodeByLangRef.current[codingLanguage] = resetCode;
+                        setTypedResponse(optFormatted);
+                        handleSaveAnswer("answered", optFormatted);
                       }}
-                      title="Reset starter template"
-                      className="text-[11px] text-white/50 hover:text-white px-2 py-1 rounded bg-white/5 hover:bg-white/10 cursor-pointer transition"
+                      className={`p-3 sm:p-4 rounded-xl border text-left transition-all duration-200 cursor-pointer flex items-center gap-3 group relative ${
+                        isSelected
+                          ? "bg-[#FF6B35]/15 border-[#FF6B35] shadow-md shadow-[#FF6B35]/20"
+                          : "bg-white/[0.02] border-white/10 hover:bg-white/[0.05] hover:border-white/20"
+                      }`}
                     >
-                      Reset
+                      <span
+                        className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center font-bold text-xs shrink-0 transition-colors ${
+                          isSelected
+                            ? "bg-[#FF6B35] text-white"
+                            : "bg-white/10 text-white/70 group-hover:bg-white/20 group-hover:text-white"
+                        }`}
+                      >
+                        {optLabel}
+                      </span>
+                      <span className="text-xs sm:text-sm font-medium text-white/90 leading-snug break-words">
+                        {optText}
+                      </span>
                     </button>
+                  );
+                })}
+              </div>
+            ) : isCoding ? (
+              /* ── 2. CODING: Problem Statement + Monaco Sandbox + Output Terminal ── */
+              <div className="flex-1 min-h-0 flex flex-col gap-2 overflow-y-auto pr-1" style={{ scrollbarWidth: "thin" }}>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-2.5">
+                  {/* Left: Problem Statement & Specs */}
+                  <div className="p-3 rounded-xl bg-slate-950/60 border border-white/10 space-y-2 max-h-56 overflow-y-auto text-xs">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-xs font-bold text-white flex items-center gap-1.5">
+                        <Code2 className="w-3.5 h-3.5 text-emerald-400" />
+                        {currentQuestion.title || "Coding Problem"}
+                      </h3>
+                      <span className="text-[9.5px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase">
+                        {currentQuestion.difficulty || "Medium"}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-white/80 leading-relaxed whitespace-pre-line">
+                      {currentQuestion.problemStatement || currentQuestion.description || currentQuestion.question}
+                    </p>
+                    {currentQuestion.sampleInput && (
+                      <div className="text-[10.5px] text-white/70 bg-white/5 p-2 rounded-lg border border-white/5 font-mono">
+                        <div><span className="text-white/40">Input: </span>{currentQuestion.sampleInput}</div>
+                        <div><span className="text-white/40">Output: </span>{currentQuestion.sampleOutput}</div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Right: Monaco Editor */}
+                  <div className="flex flex-col rounded-xl bg-slate-950/60 border border-white/10 overflow-hidden">
+                    <div className="flex items-center justify-between p-2 border-b border-white/10 bg-slate-950/80">
+                      <span className="text-[11px] font-bold text-white flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                        Judge0 Sandbox
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <select
+                          value={codingLanguage}
+                          onChange={(e) => {
+                            const newLang = e.target.value;
+                            codingCodeByLangRef.current[codingLanguage] = currentCode;
+                            setCodingLanguage(newLang);
+                            const saved = codingCodeByLangRef.current[newLang];
+                            if (saved && saved.trim() !== "") {
+                              setCurrentCode(saved);
+                            } else {
+                              const newStarter = getStarterCode(currentQuestion, newLang);
+                              setCurrentCode(newStarter);
+                              codingCodeByLangRef.current[newLang] = newStarter;
+                            }
+                          }}
+                          className="bg-slate-800 border border-white/10 text-[11px] text-white rounded-lg px-2 py-0.5 outline-none cursor-pointer"
+                        >
+                          <option value="python">Python (3.8.1)</option>
+                          <option value="cpp">C++ (GCC 9.2.0)</option>
+                          <option value="java">Java (OpenJDK 13)</option>
+                          <option value="javascript">JavaScript (Node 12)</option>
+                        </select>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const resetCode = getStarterCode(currentQuestion, codingLanguage);
+                            setCurrentCode(resetCode);
+                            codingCodeByLangRef.current[codingLanguage] = resetCode;
+                          }}
+                          className="text-[10px] text-white/50 hover:text-white px-1.5 py-0.5 rounded bg-white/5 hover:bg-white/10 cursor-pointer"
+                        >
+                          Reset
+                        </button>
+                      </div>
+                    </div>
+                    <div className="h-44">
+                      <MonacoCodeEditor
+                        value={currentCode}
+                        onChange={(val) => setCurrentCode(val || "")}
+                        language={codingLanguage}
+                        theme="dark"
+                      />
+                    </div>
                   </div>
                 </div>
-                <div className="h-84">
-                  <MonacoCodeEditor
-                    value={currentCode}
-                    onChange={(val) => setCurrentCode(val || "")}
-                    language={codingLanguage}
-                    theme="dark"
+
+                {/* Custom Input & Run/Submit */}
+                <div className="p-2.5 rounded-xl bg-slate-950/60 border border-white/10 space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-white/60 uppercase">Custom Input (Stdin)</span>
+                  </div>
+                  <textarea
+                    value={customInput}
+                    onChange={(e) => setCustomInput(e.target.value)}
+                    placeholder={(currentQuestion.testCases?.[0]?.input || currentQuestion.sampleInput || "3 5").replace(/\b[a-zA-Z_]\w*\s*=\s*/g, "").trim()}
+                    rows={1}
+                    className="w-full bg-slate-900 border border-white/10 rounded-lg p-1.5 text-xs font-mono text-white placeholder:text-white/30 outline-none focus:border-[#FF6B35]/50 resize-none"
+                  />
+                  <div className="flex items-center justify-between pt-1">
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={handleRunCoding}
+                        disabled={isRunningCode || isSubmittingCode}
+                        className="px-3 py-1.5 rounded-lg text-xs font-bold text-white flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                        style={{ background: "#059669" }}
+                      >
+                        {isRunningCode ? <Loader2 className="w-3 h-3 animate-spin" /> : <Play className="w-3 h-3" />}
+                        Run Code
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleSubmitCoding}
+                        disabled={isRunningCode || isSubmittingCode}
+                        className="px-3 py-1.5 rounded-lg text-xs font-bold text-white flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                        style={{ background: "linear-gradient(135deg, #FF6B35, #FF8A3D)" }}
+                      >
+                        {isSubmittingCode ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
+                        Submit Solution
+                      </button>
+                    </div>
+                    {codingSubmissionResult && (
+                      <span className={`font-bold px-2 py-0.5 rounded text-xs border ${codingSubmissionResult.score === 100 ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/30" : "bg-amber-500/20 text-amber-300 border-amber-500/30"}`}>
+                        {codingSubmissionResult.passed}/{codingSubmissionResult.total} ({codingSubmissionResult.score}%)
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Compiler Output */}
+                <div className="rounded-xl overflow-hidden border border-white/10">
+                  <OutputPanel
+                    activeTab={outputTab}
+                    setActiveTab={setOutputTab}
+                    data={{
+                      run: compilerOutput,
+                      submit: codingSubmissionResult ? {
+                        status: codingSubmissionResult.status === "completed" ? "accepted" : codingSubmissionResult.status,
+                        passedCount: codingSubmissionResult.passed,
+                        totalCount: codingSubmissionResult.total,
+                        results: codingSubmissionResult.test_results,
+                        compileOutput: codingSubmissionResult.compileOutput,
+                        timeMs: Math.round(parseFloat(codingSubmissionResult.execution_time || "0") * 1000),
+                      } : null,
+                    }}
+                    testCases={
+                      (currentQuestion.testCases && currentQuestion.testCases.length > 0)
+                        ? currentQuestion.testCases
+                        : (currentQuestion.sampleInput || currentQuestion.sampleOutput)
+                          ? [{ input: currentQuestion.sampleInput || "3 5", expected: currentQuestion.sampleOutput || "8", isHidden: false }]
+                          : []
+                    }
+                    running={isRunningCode}
+                    submitting={isSubmittingCode}
                   />
                 </div>
               </div>
-            </div>
-
-            {/* Custom Input & Action Controls */}
-            <div className="p-3 rounded-2xl bg-slate-900/90 border border-white/10 space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold text-white/60 uppercase tracking-wider">
-                  Custom Input (Stdin for Run Code)
-                </span>
-                <span className="text-[10px] text-white/40 font-mono">
-                  Sample: {(currentQuestion.testCases?.[0]?.input || currentQuestion.sampleInput || "3 5").replace(/\b[a-zA-Z_]\w*\s*=\s*/g, "").trim()}
-                </span>
-              </div>
-              <textarea
-                value={customInput}
-                onChange={(e) => setCustomInput(e.target.value)}
-                placeholder={(currentQuestion.testCases?.[0]?.input || currentQuestion.sampleInput || "3 5").replace(/\b[a-zA-Z_]\w*\s*=\s*/g, "").trim()}
-                rows={2}
-                className="w-full bg-slate-950/60 border border-white/10 rounded-xl p-2 text-xs font-mono text-white placeholder:text-white/30 outline-none focus:border-blue-500/50 transition resize-none"
-              />
-              <div className="flex items-center justify-between pt-1">
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={handleRunCoding}
-                    disabled={isRunningCode || isSubmittingCode}
-                    className="px-4 py-2 rounded-xl text-xs font-bold text-white flex items-center gap-1.5 cursor-pointer transition-all disabled:opacity-50 shadow-md shadow-emerald-900/20 hover:scale-[1.02] active:scale-[0.98]"
-                    style={{ background: "#059669" }}
-                  >
-                    {isRunningCode ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5" />}
-                    Run Code
-                  </button>
-                  <button
-                    onClick={handleSubmitCoding}
-                    disabled={isRunningCode || isSubmittingCode}
-                    className="px-4 py-2 rounded-xl text-xs font-bold text-white flex items-center gap-1.5 cursor-pointer transition-all disabled:opacity-50 shadow-md shadow-blue-900/20 hover:scale-[1.02] active:scale-[0.98]"
-                    style={{ background: "#2563eb" }}
-                  >
-                    {isSubmittingCode ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
-                    Submit Solution
-                  </button>
-                </div>
-                {codingSubmissionResult && (
-                  <div className="flex items-center gap-2 text-xs">
-                    <span className="text-white/60">Score:</span>
-                    <span className={`font-bold px-2 py-0.5 rounded-lg border ${codingSubmissionResult.score === 100 ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/30" : "bg-amber-500/20 text-amber-300 border-amber-500/30"}`}>
-                      {codingSubmissionResult.passed}/{codingSubmissionResult.total} ({codingSubmissionResult.score}%)
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Test Cases & Compiler Output Terminal */}
-            <div className="rounded-2xl overflow-hidden border border-white/10">
-              <OutputPanel
-                activeTab={outputTab}
-                setActiveTab={setOutputTab}
-                data={{
-                  run: compilerOutput,
-                  submit: codingSubmissionResult ? {
-                    status: codingSubmissionResult.status === "completed" ? "accepted" : codingSubmissionResult.status,
-                    passedCount: codingSubmissionResult.passed,
-                    totalCount: codingSubmissionResult.total,
-                    results: codingSubmissionResult.test_results,
-                    compileOutput: codingSubmissionResult.compileOutput,
-                    timeMs: Math.round(parseFloat(codingSubmissionResult.execution_time || "0") * 1000),
-                  } : null,
-                }}
-                testCases={
-                  (currentQuestion.testCases && currentQuestion.testCases.length > 0)
-                    ? currentQuestion.testCases
-                    : (currentQuestion.sampleInput || currentQuestion.sampleOutput)
-                      ? [{ input: currentQuestion.sampleInput || "3 5", expected: currentQuestion.sampleOutput || "8", isHidden: false }]
-                      : []
-                }
-                running={isRunningCode}
-                submitting={isSubmittingCode}
-              />
-            </div>
-          </div>
-        ) : isAptitude ? (
-          <div className="p-4 rounded-2xl bg-slate-900/90 border border-white/10 space-y-3">
-            <p className="text-xs font-bold text-amber-400 uppercase tracking-wider">Select Correct Answer:</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {(currentQuestion.options || []).map((opt, idx) => {
-                const optText = typeof opt === "object" && opt !== null ? (opt.text || opt.optionText || opt.value || "") : String(opt || "");
-                const optLabel = typeof opt === "object" && opt !== null && opt.label ? opt.label : String.fromCharCode(65 + idx);
-                const optFormatted = `Option ${optLabel}: ${optText}`;
-                const isSelected =
-                  typedResponse === optText ||
-                  typedResponse === optLabel ||
-                  typedResponse === optFormatted ||
-                  typedResponse === opt;
-                return (
-                  <button
-                    key={idx}
-                    onClick={() => {
-                      setTypedResponse(optFormatted);
-                      handleSaveAnswer("answered", optFormatted);
-                    }}
-                    className={`p-3.5 rounded-xl border text-left text-xs font-semibold cursor-pointer transition-all flex items-start gap-2.5 ${
-                      isSelected
-                        ? "bg-blue-600/30 border-blue-500 text-white shadow-lg"
-                        : "bg-white/5 border-white/10 text-white/80 hover:bg-white/10"
-                    }`}
-                  >
-                    <span className="w-5 h-5 rounded-full border flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5 border-white/20">
-                      {optLabel}
-                    </span>
-                    <span>{optText}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        ) : (
-          <div className="rounded-2xl p-4 flex flex-col gap-3 bg-slate-900/90 border border-white/10 shadow-lg">
-            {/* Header: Mode selector + live mic indicator */}
-            <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-white/10">
-              <div className="flex items-center gap-1.5">
-                <button
-                  onClick={() => {
-                    setInputMode("speak");
-                    inputModeRef.current = "speak";
-                    if (isMicOn && !isListeningSpeech) {
-                      startSpeechRecognition();
-                    }
-                  }}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all ${
-                    inputMode === "speak"
-                      ? "bg-blue-600 text-white shadow-md shadow-blue-500/20"
-                      : "bg-white/5 text-white/50 hover:bg-white/10 hover:text-white"
-                  }`}
-                >
-                  <Mic className="w-3.5 h-3.5" />
-                  <span>Voice Response {currentSection === "HR" && "(Recommended)"}</span>
-                </button>
-                <button
-                  onClick={() => {
-                    stopSpeechRecognition(true);
-                    setInputMode("type");
-                    inputModeRef.current = "type";
-                  }}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all ${
-                    inputMode === "type"
-                      ? "bg-blue-600 text-white shadow-md shadow-blue-500/20"
-                      : "bg-white/5 text-white/50 hover:bg-white/10 hover:text-white"
-                  }`}
-                >
-                  <Keyboard className="w-3.5 h-3.5" />
-                  <span>Type Text</span>
-                </button>
-              </div>
-
-              {/* Status Indicator badge */}
-              <div className="flex items-center gap-2">
-                {inputMode === "speak" ? (
-                  !isMicOn ? (
-                    <span className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-red-500/10 text-red-400 border border-red-500/20 flex items-center gap-1.5">
-                      <MicOff className="w-3 h-3" /> Mic Muted
-                    </span>
-                  ) : isListeningSpeech ? (
-                    <span className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5 animate-pulse">
-                      <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                      Live Recording
-                    </span>
-                  ) : (
-                    <span className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-blue-500/10 text-blue-300 border border-blue-500/20 flex items-center gap-1.5">
-                      <Radio className="w-3 h-3 text-blue-400" />
-                      Mic Ready
-                    </span>
-                  )
-                ) : (
-                  <span className="text-[11px] font-bold text-white/40">Keyboard Input Mode</span>
-                )}
-                <span className="text-[10px] font-mono text-white/30">{typedResponse.length} chars</span>
-              </div>
-            </div>
-
-            {/* Transcript / Answer Area */}
-            <div className="relative">
-              <textarea
-                value={typedResponse}
-                onChange={(e) => {
-                  setTypedResponse(e.target.value);
-                  typedResponseRef.current = e.target.value;
-                }}
-                placeholder={
-                  inputMode === "speak"
-                    ? currentSection === "HR"
-                      ? "Speak your behavioral response to AI Sarah... Your words will appear here in real-time."
-                      : "Speak your technical explanation... Your words will appear here in real-time."
-                    : currentSection === "HR"
-                    ? "Type your HR behavioral answer here (STAR method recommended)..."
-                    : "Type your technical answer here..."
-                }
-                disabled={isPaused}
-                rows={4}
-                className="w-full rounded-xl p-3 text-xs leading-relaxed outline-none resize-none bg-white/5 border border-white/10 text-white placeholder-white/30 focus:border-blue-500 focus:bg-white/[0.07] transition-all"
-              />
-            </div>
-
-            {/* Action Buttons Toolbar */}
-            <div className="flex items-center justify-between gap-2 pt-1">
-              <div className="flex items-center gap-2">
-                {typedResponse.trim().length > 0 && (
-                  <button
-                    onClick={() => {
-                      setTypedResponse("");
-                      typedResponseRef.current = "";
-                      speechBaseTextRef.current = "";
-                      if (inputMode === "speak" && isMicOn && !isListeningSpeech) {
-                        startSpeechRecognition();
-                      }
-                      toast("Answer cleared. Ready to re-speak.", { duration: 1500 });
-                    }}
-                    className="px-3 py-1.5 rounded-xl text-xs font-bold text-white/50 hover:text-white hover:bg-white/10 border border-white/10 flex items-center gap-1.5 cursor-pointer transition-all"
-                  >
-                    <RotateCcw className="w-3 h-3" /> Clear & Re-speak
-                  </button>
-                )}
-                {inputMode === "speak" && (
-                  isListeningSpeech ? (
+            ) : (
+              /* ── 3. VOICE / TEXT RESPONSE: Resume / Technical / HR ── */
+              <div className="flex-1 min-h-0 flex flex-col gap-2 justify-between">
+                {/* Mode Selector & Mic Live Badge */}
+                <div className="flex flex-wrap items-center justify-between gap-2 pb-1.5 border-b border-white/5 shrink-0">
+                  <div className="flex items-center gap-1.5">
                     <button
+                      type="button"
+                      onClick={() => {
+                        setInputMode("speak");
+                        inputModeRef.current = "speak";
+                        if (isMicOn && !isListeningSpeech) {
+                          startSpeechRecognition();
+                        }
+                      }}
+                      className={`px-3 py-1 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all ${
+                        inputMode === "speak"
+                          ? "bg-gradient-to-r from-[#FF6B35] to-[#FF8A3D] text-white shadow-md shadow-[#FF6B35]/20"
+                          : "bg-white/5 text-white/50 hover:bg-white/10 hover:text-white"
+                      }`}
+                    >
+                      <Mic className="w-3.5 h-3.5" />
+                      <span>Voice Response</span>
+                    </button>
+                    <button
+                      type="button"
                       onClick={() => {
                         stopSpeechRecognition(true);
-                        toast("Microphone paused", { id: "mic-toggle-status", duration: 1500, icon: "⏸️" });
+                        setInputMode("type");
+                        inputModeRef.current = "type";
                       }}
-                      className="px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 hover:bg-amber-500/30 flex items-center gap-1.5 cursor-pointer transition-all"
+                      className={`px-3 py-1 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all ${
+                        inputMode === "type"
+                          ? "bg-gradient-to-r from-[#FF6B35] to-[#FF8A3D] text-white shadow-md shadow-[#FF6B35]/20"
+                          : "bg-white/5 text-white/50 hover:bg-white/10 hover:text-white"
+                      }`}
                     >
-                      <MicOff className="w-3 h-3" /> Stop / Pause Mic
+                      <Keyboard className="w-3.5 h-3.5" />
+                      <span>Type Text</span>
                     </button>
-                  ) : isMicOn ? (
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    {inputMode === "speak" ? (
+                      !isMicOn ? (
+                        <span className="px-2 py-0.5 rounded-lg text-[10.5px] font-bold bg-red-500/10 text-red-400 border border-red-500/20 flex items-center gap-1">
+                          <MicOff className="w-3 h-3" /> Mic Muted
+                        </span>
+                      ) : isListeningSpeech ? (
+                        <span className="px-2 py-0.5 rounded-lg text-[10.5px] font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 flex items-center gap-1 animate-pulse">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                          Live Recording
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded-lg text-[10.5px] font-bold bg-[#FF6B35]/10 text-[#FF6B35] border border-[#FF6B35]/20 flex items-center gap-1">
+                          <Radio className="w-3 h-3 text-[#FF6B35]" />
+                          Mic Ready
+                        </span>
+                      )
+                    ) : (
+                      <span className="text-[10.5px] font-bold text-white/40">Keyboard Mode</span>
+                    )}
+                    <span className="text-[10px] font-mono text-white/30">{typedResponse.length} chars</span>
+                  </div>
+                </div>
+
+                {/* Textarea / Live speech transcript */}
+                <div className="flex-1 min-h-[75px] max-h-[140px] relative">
+                  <textarea
+                    value={typedResponse}
+                    onChange={(e) => {
+                      setTypedResponse(e.target.value);
+                      typedResponseRef.current = e.target.value;
+                    }}
+                    placeholder={
+                      inputMode === "speak"
+                        ? currentSection === "HR"
+                          ? "Speak your response aloud... Your words will transcribe here in real-time."
+                          : "Speak your response aloud... Real-time transcription active."
+                        : "Type your detailed answer here..."
+                    }
+                    className="w-full h-full bg-slate-950/60 border border-white/10 rounded-xl p-3 text-xs sm:text-sm text-white placeholder:text-white/30 resize-none outline-none focus:border-[#FF6B35]/50 transition leading-relaxed font-sans"
+                    style={{ scrollbarWidth: "thin" }}
+                  />
+                </div>
+
+                {/* Speech Action Bar: Clear & Re-speak, Mic controls, Save answer */}
+                <div className="flex items-center justify-between gap-2 shrink-0 pt-1">
+                  <div className="flex items-center gap-2">
+                    {typedResponse.trim().length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setTypedResponse("");
+                          typedResponseRef.current = "";
+                          speechBaseTextRef.current = "";
+                          if (inputMode === "speak" && isMicOn && !isListeningSpeech) {
+                            startSpeechRecognition();
+                          }
+                          toast("Answer cleared. Ready to re-speak.", { duration: 1500 });
+                        }}
+                        className="px-2.5 py-1 rounded-xl text-xs font-bold text-white/50 hover:text-white hover:bg-white/10 border border-white/10 flex items-center gap-1 cursor-pointer transition-all"
+                      >
+                        <RotateCcw className="w-3 h-3" /> Clear
+                      </button>
+                    )}
+                    {inputMode === "speak" && (
+                      isListeningSpeech ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            stopSpeechRecognition(true);
+                            toast("Microphone paused", { id: "mic-toggle-status", duration: 1500, icon: "⏸️" });
+                          }}
+                          className="px-2.5 py-1 rounded-xl text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 hover:bg-amber-500/30 flex items-center gap-1 cursor-pointer transition-all"
+                        >
+                          <MicOff className="w-3 h-3" /> Pause Mic
+                        </button>
+                      ) : isMicOn ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            startSpeechRecognition();
+                            toast.success("Microphone listening", { id: "mic-toggle-status", duration: 1500, icon: "🎙️" });
+                          }}
+                          className="px-2.5 py-1 rounded-xl text-xs font-bold bg-emerald-600/20 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-600/30 flex items-center gap-1 cursor-pointer transition-all"
+                        >
+                          <Mic className="w-3 h-3" /> Start Mic
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={handleToggleMic}
+                          className="px-2.5 py-1 rounded-xl text-xs font-bold bg-red-600/20 text-red-300 border border-red-500/30 hover:bg-red-600/30 flex items-center gap-1 cursor-pointer transition-all"
+                        >
+                          <Mic className="w-3 h-3" /> Unmute Mic
+                        </button>
+                      )
+                    )}
+                  </div>
+
+                  {typedResponse.trim().length > 0 && (
                     <button
-                      onClick={() => {
-                        startSpeechRecognition();
-                        toast.success("Microphone listening", { id: "mic-toggle-status", duration: 1500, icon: "🎙️" });
-                      }}
-                      className="px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-600/20 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-600/30 flex items-center gap-1.5 cursor-pointer transition-all"
+                      type="button"
+                      onClick={() => handleSaveAnswer("answered")}
+                      className="px-3.5 py-1 rounded-xl text-xs font-bold bg-gradient-to-r from-[#FF6B35] to-[#FF8A3D] hover:brightness-110 text-white flex items-center gap-1.5 cursor-pointer transition-all shadow-md shadow-[#FF6B35]/25"
                     >
-                      <Mic className="w-3 h-3" /> Start Mic
+                      <CheckCircle2 className="w-3.5 h-3.5" /> Save Answer
                     </button>
-                  ) : (
-                    <button
-                      onClick={handleToggleMic}
-                      className="px-3 py-1.5 rounded-xl text-xs font-bold bg-red-600/20 text-red-300 border border-red-500/30 hover:bg-red-600/30 flex items-center gap-1.5 cursor-pointer transition-all"
-                    >
-                      <Mic className="w-3 h-3" /> Unmute Mic
-                    </button>
-                  )
-                )}
+                  )}
+                </div>
+
+                {/* Collapsible View Conversation */}
+                <div className="shrink-0 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setShowTranscript((v) => !v)}
+                    className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-[10px] font-bold uppercase tracking-wider text-white/60 cursor-pointer hover:bg-white/10 transition-all"
+                  >
+                    <span>View Conversation History</span>
+                    <span className="text-[9.5px] font-extrabold text-[#FF6B35]">{showTranscript ? "Hide" : "Show"}</span>
+                  </button>
+                  {showTranscript && (
+                    <div className="mt-1.5 max-h-28 overflow-y-auto">
+                      <ConversationPanel logs={dialogueLogs} />
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* ─── Bottom Anchored Action Bar: Listen Again + Progress + Prev/Skip/Next ─── */}
+          <div className="shrink-0 pt-2 border-t border-white/10 space-y-2">
+            {/* Listen Again banner */}
+            <button
+              type="button"
+              onClick={() => speakCurrentQuestion(currentQuestion?.aiSpeechText || currentQuestion?.question, currentQuestion?.section, currentQuestion?.topic)}
+              disabled={isPaused || !isSpeakerOn}
+              className="w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-[#FF6B35]/30 bg-[#FF6B35]/5 hover:bg-[#FF6B35]/10 text-[#FF6B35] font-bold text-xs cursor-pointer transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              <Volume2 className="w-3.5 h-3.5 text-[#FF6B35]" />
+              <span>Listen Again</span>
+            </button>
+
+            {/* Progress indicator + Prev / Skip / Next buttons */}
+            <div className="flex items-center justify-between gap-3">
+              <div className="hidden sm:flex items-center gap-1.5 shrink-0 font-mono text-[11px] text-white/50">
+                <span className="font-bold text-white/40 uppercase text-[9px] tracking-wider">PROGRESS</span>
+                <span className="font-bold text-white">{String(sessionProgress.totalCompleted).padStart(2, "0")}</span>
+                <span>/</span>
+                <span>{String(sessionProgress.totalQuestions).padStart(2, "0")}</span>
               </div>
 
-              {typedResponse.trim().length > 0 && (
+              <div className="flex-1 grid grid-cols-3 gap-2 sm:max-w-md sm:ml-auto">
                 <button
-                  onClick={() => handleSaveAnswer("answered")}
-                  className="px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white flex items-center gap-1.5 cursor-pointer transition-all shadow-md shadow-blue-600/25"
+                  type="button"
+                  onClick={handlePrevQuestion}
+                  disabled={currentIndex <= 1 || isPaused}
+                  className="py-2 rounded-xl bg-white/[0.04] border border-white/10 text-white/60 hover:text-white font-bold text-xs flex items-center justify-center gap-1 cursor-pointer transition disabled:opacity-30 disabled:cursor-not-allowed"
                 >
-                  <CheckCircle2 className="w-3.5 h-3.5" /> Save Answer
+                  <ChevronLeft className="w-3.5 h-3.5" /> Prev
                 </button>
-              )}
+
+                <button
+                  type="button"
+                  onClick={handleSkipQuestion}
+                  disabled={isPaused}
+                  className="py-2 rounded-xl bg-white/[0.04] border border-white/10 text-[#FF6B35] hover:bg-white/[0.08] font-bold text-xs flex items-center justify-center gap-1 cursor-pointer transition disabled:opacity-30"
+                >
+                  <SkipForward className="w-3.5 h-3.5" /> Skip
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleNextQuestion}
+                  disabled={isPaused}
+                  className="py-2 rounded-xl bg-gradient-to-r from-[#FF6B35] to-[#FF8A3D] hover:brightness-110 text-white font-bold text-xs flex items-center justify-center gap-1 shadow-md shadow-[#FF6B35]/25 cursor-pointer transition disabled:opacity-30"
+                >
+                  <span>{currentIndex === questions.length ? "Submit" : "Next"}</span>
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
           </div>
-        )}
-
-        {/* Transcript (secondary / collapsible) */}
-        <div className="shrink-0">
-          <button
-            onClick={() => setShowTranscript((v) => !v)}
-            className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-[11px] font-bold uppercase tracking-wider text-white/60 cursor-pointer hover:bg-white/10 transition-all"
-          >
-            <span>View Conversation</span>
-            <span className="text-[10px] font-extrabold text-blue-400">{showTranscript ? "Hide" : "Show"}</span>
-          </button>
-          {showTranscript && (
-            <div className="mt-2" style={{ minHeight: "120px" }}>
-              <ConversationPanel logs={dialogueLogs} />
-            </div>
-          )}
         </div>
-      </div>
-
-      {/* Pinned navigation controls */}
-      <div className="shrink-0 pt-2 border-t border-white/10 bg-slate-950/80 rounded-b-2xl">
-        <NavigationControls
-          currentIndex={currentIndex}
-          totalQuestions={questions.length}
-          answeredCount={sessionProgress.totalCompleted}
-          isPaused={isPaused}
-          onPrev={handlePrevQuestion}
-          onNext={handleNextQuestion}
-          onSkip={handleSkipQuestion}
-          onRepeat={() => speakCurrentQuestion(currentQuestion?.aiSpeechText || currentQuestion?.question, currentQuestion?.section, currentQuestion?.topic)}
-          onTogglePause={() => setIsPaused(!isPaused)}
-          onEnd={() => setShowConfirmExit(true)}
-        />
-      </div>
-        </>
       )}
     </div>
   );
 
-  // RIGHT CONTEXT: camera (tech/hr) + session status + live signals + AI state
+  // RIGHT CONTEXT: Camera + Session Status + Live Signals + AI State
   const rightContext = (
     <div
-      className="flex flex-col h-full min-h-0 gap-3 overflow-y-auto pr-1"
-      style={{ scrollbarWidth: "thin", scrollbarColor: "rgba(255,255,255,0.1) transparent" }}
+      className="flex flex-col h-full min-h-0 gap-2.5 overflow-hidden select-none"
     >
-      {showAI && (
-        <div className="h-[170px] shrink-0 rounded-2xl overflow-hidden border border-white/10">
-          <WebcamCard
-            isCameraOn={isCameraOn}
-            stream={webcamStream}
-            userName={candidateInfo.name}
-            onRetryCamera={startWebcam}
-          />
-        </div>
-      )}
+      {/* Webcam Card */}
+      <div className="h-[135px] shrink-0 rounded-2xl overflow-hidden border border-white/10">
+        <WebcamCard
+          isCameraOn={isCameraOn}
+          stream={webcamStream}
+          userName={candidateInfo.name}
+          onRetryCamera={startWebcam}
+          personCount={personCount}
+          personStatus={personStatus}
+          onVideoElement={handleVideoElement}
+        />
+      </div>
 
       {/* SESSION & CURRENT ROUND STATUS */}
-      <div className="shrink-0 p-3.5 rounded-2xl bg-slate-900/90 border border-white/10 space-y-2.5">
-        <p className="text-[10px] font-black uppercase tracking-widest text-white/40">Session Control</p>
+      <div
+        className="p-3 rounded-2xl space-y-2 shrink-0"
+        style={{
+          background: "rgba(12, 15, 26, 0.95)",
+          border: "1px solid rgba(255, 255, 255, 0.08)",
+        }}
+      >
+        <p className="text-[9.5px] font-black uppercase tracking-widest text-white/40">Session Control</p>
         
-        <div className="space-y-2 text-xs">
-          <div className="flex justify-between items-center pb-1.5 border-b border-white/5">
-            <span className="text-white/50 text-[11px]">Time Remaining</span>
-            <span className="font-mono font-extrabold text-sm" style={{ color: timerSeconds < 300 ? "#f87171" : "#38bdf8" }}>
+        <div className="space-y-1.5 text-xs">
+          <div className="flex justify-between items-center pb-1 border-b border-white/5">
+            <span className="text-white/50 text-[10.5px]">Time Remaining</span>
+            <span
+              className="font-mono font-black text-xs"
+              style={{ color: timerSeconds < 300 ? "#ef4444" : "#FF6B35" }}
+            >
               {tH}:{tM}:{tS}
             </span>
           </div>
 
           <div className="flex justify-between items-center">
-            <span className="text-white/50 text-[11px]">Current Round</span>
-            <span className="font-extrabold text-amber-400 text-xs tracking-wider uppercase">{currentSection}</span>
+            <span className="text-white/50 text-[10.5px]">Current Round</span>
+            <span className="font-black text-[#FF6B35] text-[11px] tracking-wider uppercase">{currentSection}</span>
           </div>
 
           <div className="flex justify-between items-center">
-            <span className="text-white/50 text-[11px]">Round Progress</span>
-            <span className="font-bold font-mono text-white text-xs">{formattedSectionQuestionIndex} / {String(sectionTotal).padStart(2, "0")}</span>
+            <span className="text-white/50 text-[10.5px]">Round Progress</span>
+            <span className="font-bold font-mono text-white text-[11px]">{formattedSectionQuestionIndex} / {String(sectionTotal).padStart(2, "0")}</span>
           </div>
 
           <div className="flex justify-between items-center">
-            <span className="text-white/50 text-[11px]">Overall Progress</span>
-            <span className="font-bold font-mono text-white text-xs">{String(currentIndex).padStart(2, "0")} / {String(questions.length || 1).padStart(2, "0")}</span>
+            <span className="text-white/50 text-[10.5px]">Overall Progress</span>
+            <span className="font-bold font-mono text-white text-[11px]">{String(sessionProgress.totalCompleted).padStart(2, "0")} / {String(sessionProgress.totalQuestions).padStart(2, "0")}</span>
           </div>
         </div>
       </div>
 
       {/* LIVE SIGNALS */}
-      <div className="shrink-0 p-3.5 rounded-2xl bg-slate-900/90 border border-white/10 space-y-2.5">
-        <p className="text-[10px] font-black uppercase tracking-widest text-white/40">Live Signals</p>
-        <SignalRow label="MIC" on={isMicOn} />
-        <SignalRow label="CAMERA" on={isCameraOn} />
-        <SignalRow label="CONNECTION" on={true} />
+      <div
+        className="p-3 rounded-2xl space-y-2 shrink-0"
+        style={{
+          background: "rgba(12, 15, 26, 0.95)",
+          border: "1px solid rgba(255, 255, 255, 0.08)",
+        }}
+      >
+        <p className="text-[9.5px] font-black uppercase tracking-widest text-white/40">Live Signals</p>
+        <div className="space-y-1 text-xs">
+          <SignalRow label="MIC" on={isMicOn} />
+          <SignalRow label="CAMERA" on={isCameraOn} />
+          <SignalRow label="CONNECTION" on={true} />
+        </div>
       </div>
 
       {/* AI STATE ENGINE */}
-      <div className="shrink-0 p-3.5 rounded-2xl bg-slate-900/90 border border-white/10 space-y-2">
-        <p className="text-[10px] font-black uppercase tracking-widest text-white/40">AI Engine State</p>
-        <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 border border-white/10">
+      <div
+        className="p-3 rounded-2xl space-y-1.5 shrink-0"
+        style={{
+          background: "rgba(12, 15, 26, 0.95)",
+          border: "1px solid rgba(255, 255, 255, 0.08)",
+        }}
+      >
+        <p className="text-[9.5px] font-black uppercase tracking-widest text-white/40">AI Engine State</p>
+        <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-white/[0.04] border border-white/10">
           <span
-            className="w-2.5 h-2.5 rounded-full animate-pulse shrink-0"
+            className="w-2 h-2 rounded-full animate-pulse shrink-0"
             style={{
               backgroundColor:
                 aiStatus === "SPEAKING" ? "#10b981" :
                 aiStatus === "THINKING" ? "#f59e0b" :
-                aiStatus === "LISTENING" ? "#3b82f6" : "#a855f7"
+                aiStatus === "LISTENING" ? "#FF6B35" : "#FF6B35",
+              boxShadow:
+                aiStatus === "SPEAKING" ? "0 0 8px #10b981" :
+                aiStatus === "THINKING" ? "0 0 8px #f59e0b" :
+                "0 0 8px rgba(255,107,53,0.8)"
             }}
           />
-          <span className="text-xs font-black uppercase tracking-wider text-white">
+          <span className="text-[11px] font-black uppercase tracking-wider text-white">
             {aiStatus}
           </span>
         </div>
@@ -2307,15 +2620,27 @@ function StartInterview({
     if (!sessionId) {
       console.log(`[REAL-INTERVIEW] showing component=INITIALIZING_SESSION`);
       return (
-        <div className="min-h-screen bg-[#0B0F19] text-white flex flex-col items-center justify-center p-6 select-none">
+        <div className="min-h-screen text-white flex flex-col items-center justify-center p-6 select-none font-sans" style={{ background: "#050609" }}>
           <div className="text-center space-y-4 max-w-md">
-            <div className="w-12 h-12 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center mx-auto">
-              <Sparkles className="w-6 h-6 text-blue-400 animate-pulse" />
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <img
+                src="/images/metadata.png"
+                alt="PrepHire Logo"
+                className="h-9 w-9 object-contain shrink-0"
+                draggable="false"
+              />
+              <span className="text-xl font-black tracking-tight">
+                <span className="text-white">Prep</span>
+                <span style={{ color: "#FF6B35" }}>Hire</span>
+              </span>
             </div>
-            <h2 className="text-xl font-bold bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
+            <div className="w-12 h-12 rounded-2xl bg-[#FF6B35]/10 border border-[#FF6B35]/25 text-[#FF6B35] flex items-center justify-center mx-auto">
+              <Sparkles className="w-5 h-5 text-[#FF6B35] animate-pulse" />
+            </div>
+            <h2 className="text-xl font-bold text-white">
               Initializing Interview Room...
             </h2>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-white/50">
               Setting up your secure AI interview environment and session.
             </p>
           </div>

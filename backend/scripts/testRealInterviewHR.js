@@ -17,7 +17,7 @@ dotenv.config({ path: path.join(__dirname, "../../.env") });
 
 async function runHRTest() {
   console.log("\n=======================================================");
-  console.log("🧪 TESTING REAL INTERVIEW HR ROUND (EXACTLY 5 QUESTIONS | 2 AI CALLS | 100 MARKS)");
+  console.log("🧪 TESTING REAL INTERVIEW HR ROUND (EXACTLY 3 QUESTIONS | 2 AI CALLS | 60 MARKS)");
   console.log("=======================================================\n");
 
   console.log("1. Environment Verification:");
@@ -31,7 +31,7 @@ async function runHRTest() {
   await mongoose.connect(process.env.MONGO_URI);
   console.log("✅ MongoDB Connected Successfully\n");
 
-  const sessionId = `test_hr_5q_${Date.now()}`;
+  const sessionId = `test_hr_3q_${Date.now()}`;
   const candidateProfile = {
     fullName: "Rohan Sharma",
     education: "B.Tech Computer Science (Final Year)",
@@ -46,7 +46,7 @@ async function runHRTest() {
     await RealInterviewHRSession.deleteMany({ sessionId });
 
     // Step 2: Test CALL #1 (Question Generation)
-    console.log("2. Testing CALL #1: HR Question Generation (Target: Exactly 5 questions)...");
+    console.log("2. Testing CALL #1: HR Question Generation (Target: Exactly 3 questions)...");
     const genResult = await generateAndProcessHRQuestions({
       sessionId,
       candidateProfile,
@@ -56,8 +56,11 @@ async function runHRTest() {
     console.log(`   - Reused flag: ${genResult.reused}`);
     console.log(`   - aiGenerationCalls: ${genResult.aiGenerationCalls}`);
 
-    if (genResult.questions.length !== 5) {
-      throw new Error(`Expected exactly 5 HR questions, got ${genResult.questions.length}`);
+    if (genResult.questions.length !== 3) {
+      throw new Error(`Expected exactly 3 HR questions, got ${genResult.questions.length}`);
+    }
+    if (genResult.questions[0].question !== "Introduce yourself.") {
+      throw new Error(`Expected Q1 to be 'Introduce yourself.', got '${genResult.questions[0].question}'`);
     }
     if (genResult.aiGenerationCalls !== 1) {
       throw new Error(`Expected aiGenerationCalls to be 1, got ${genResult.aiGenerationCalls}`);
@@ -91,20 +94,18 @@ async function runHRTest() {
       }
     });
 
-    console.log(`   - Total Max Marks in DB: ${totalMaxMarks} (Expected: 100)`);
-    if (totalMaxMarks !== 100) {
-      throw new Error(`Total max marks in DB is ${totalMaxMarks}, expected 100!`);
+    console.log(`   - Total Max Marks in DB: ${totalMaxMarks} (Expected: 60)`);
+    if (totalMaxMarks !== 60) {
+      throw new Error(`Total max marks in DB is ${totalMaxMarks}, expected 60!`);
     }
 
     // Step 5: Submitting Answers (ZERO AI Calls)
-    console.log("\n5. Submitting answers for all 5 HR questions (ZERO AI CALLS)...");
+    console.log("\n5. Submitting answers for all 3 HR questions (ZERO AI CALLS)...");
 
     const candidateSampleAnswers = [
-      "I will first talk privately with the team and understand their perspective. If I still feel my alternative avoids a major bug, I will present a quick small prototype to show proof without damaging trust.",
-      "I will immediately inform my manager and team about the mistake. I know delivery might delay slightly, but fixing it properly first is better than deploying broken code to customers.",
-      "I will stay calm and listen to their feedback without arguing in public. After the meeting, I will meet them one-on-one to review the code details together constructively.",
-      "I will accept the manager change gracefully. Requirements change in real projects, so I will discuss which parts of my previous work can be repurposed for the new direction.",
-      "I will evaluate tasks by business urgency and impact. I will communicate early with the lowest priority stakeholder to explain the delay and set realistic revised expectations.",
+      "Hello, I am Rohan Sharma, a final-year Computer Science student passionate about building scalable web software...",
+      "I will first talk privately with the team and understand their perspective constructively.",
+      "I will immediately inform my manager and team about the mistake and deliver a clean fix.",
     ];
 
     for (let i = 0; i < dbQuestions.length; i++) {
@@ -131,7 +132,7 @@ async function runHRTest() {
     }
 
     // Step 6: Test CALL #2 (Complete Batch Evaluation)
-    console.log("\n6. Testing CALL #2: Complete Batch Evaluation (100 Marks)...");
+    console.log("\n6. Testing CALL #2: Complete Batch Evaluation (60 Marks)...");
     const evalResult = await evaluateHRInterviewSession({
       sessionId,
       candidateProfile,
@@ -143,11 +144,11 @@ async function runHRTest() {
     console.log(`   - Fallback Used: ${evalResult.fallbackUsed}`);
     console.log(`   - aiEvaluationCalls: ${evalResult.aiEvaluationCalls}`);
 
-    if (evalResult.totalScore < 0 || evalResult.totalScore > 100) {
+    if (evalResult.totalScore < 0 || evalResult.totalScore > 60) {
       throw new Error(`Invalid total score: ${evalResult.totalScore}`);
     }
-    if (evalResult.maxScore !== 100) {
-      throw new Error(`Expected maxScore 100, got ${evalResult.maxScore}`);
+    if (evalResult.maxScore !== 60) {
+      throw new Error(`Expected maxScore 60, got ${evalResult.maxScore}`);
     }
     if (evalResult.aiEvaluationCalls !== 1) {
       throw new Error(`Expected aiEvaluationCalls to be 1, got ${evalResult.aiEvaluationCalls}`);
@@ -190,7 +191,7 @@ async function runHRTest() {
       throw new Error(`EXCEEDED AI BUDGET: Made ${totalAICalls} calls (Max allowed: 2)`);
     }
 
-    console.log("🎉 ALL TESTS PASSED: HR round generates EXACTLY 5 questions and uses EXACTLY 2 AI CALLS PER SESSION!\n");
+    console.log("🎉 ALL TESTS PASSED: HR round generates EXACTLY 3 questions (Q1 fixed) and uses EXACTLY 2 AI CALLS PER SESSION!\n");
 
     await mongoose.disconnect();
     process.exit(0);

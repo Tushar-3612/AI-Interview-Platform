@@ -17,7 +17,9 @@ import { resolveHRFallbackQuestions } from "../realInterviewAI/hrFallbackResolve
 
 /**
  * 1. Generate & Process HR Questions (AI CALL #1)
- * Enforces EXACTLY 5 questions, 20 maxMarks each (Total 100 marks).
+ * Enforces EXACTLY 3 questions, 20 maxMarks each (Total 60 marks).
+ * Q1 is ALWAYS the fixed question: "Introduce yourself."
+ * Q2 and Q3 are dynamically generated from AI.
  */
 export async function generateAndProcessHRQuestions({ userId = null, sessionId, candidateProfile = {} }) {
   if (!sessionId) {
@@ -27,18 +29,29 @@ export async function generateAndProcessHRQuestions({ userId = null, sessionId, 
   const lockKey = `hr:${sessionId}`;
   return withInFlightLock(lockKey, async () => {
     let session = await RealInterviewHRSession.findOne({ sessionId });
-    const existingQuestions = await RealInterviewHRQuestion.find({ sessionId }).sort({ orderIndex: 1 });
-    const existingIndicesSet = new Set(existingQuestions.map((q) => q.orderIndex));
-    const isFullyGenerated = [1, 2, 3, 4, 5].every((idx) => existingIndicesSet.has(idx) || existingIndicesSet.has(idx - 1));
+    let existingQuestions = await RealInterviewHRQuestion.find({ sessionId }).sort({ orderIndex: 1 });
 
-    if (session && session.generationStatus === "GENERATED" && existingQuestions.length === 5 && isFullyGenerated) {
-      console.log(`[HRService] Session ${sessionId} already has 5 valid GENERATED HR questions. Reusing without re-generation.`);
+    // --- MIGRATION: Clean up old sessions that had more than 3 HR questions ---
+    if (existingQuestions.length > 3) {
+      const excessQuestions = existingQuestions.filter((q) => q.orderIndex > 3);
+      if (excessQuestions.length > 0) {
+        console.log(`[HRService] Session ${sessionId} has ${existingQuestions.length} HR questions (old config). Removing ${excessQuestions.length} excess questions (orderIndex > 3).`);
+        await RealInterviewHRQuestion.deleteMany({ sessionId, orderIndex: { $gt: 3 } });
+        existingQuestions = existingQuestions.filter((q) => q.orderIndex <= 3);
+      }
+    }
+
+    const existingIndicesSet = new Set(existingQuestions.map((q) => q.orderIndex));
+    const isFullyGenerated = [1, 2, 3].every((idx) => existingIndicesSet.has(idx));
+
+    if (session && session.generationStatus === "GENERATED" && existingQuestions.length === 3 && isFullyGenerated) {
+      console.log(`[HRService] Session ${sessionId} already has 3 valid GENERATED HR questions. Reusing without re-generation.`);
       return {
         executionCompleted: true,
         generationSucceeded: false, // Reused from DB
         roundComplete: true,
-        count: existingQuestions.length,
-        expectedCount: 5,
+        count: 3,
+        expectedCount: 3,
         status: "COMPLETE",
         success: true,
         sessionId,
@@ -66,13 +79,31 @@ export async function generateAndProcessHRQuestions({ userId = null, sessionId, 
     const requestId = `hr_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
     console.log(`\n[AI-REQUEST-START]\nround=hr\nsessionId=${sessionId}\nrequestId=${requestId}`);
 
-    let questionsData = [];
+    const FIXED_Q1 = {
+      question: "Introduce yourself.",
+      category: "Behavioral",
+      difficulty: "easy",
+      maxMarks: 20,
+      behavioralDimensions: ["communication", "selfAwareness", "personalBrand"],
+      resumeReference: "General Background & Introduction",
+    };
+
+    let aiQuestions = [];
     const userHistorySet = await getUserQuestionHistorySet(userId, candidateProfile?.resumeHash, "hr");
 
+    // Include fixed Q1 text in dedup pool so AI questions won't duplicate it,
+    // but use a separate currentPoolSet (not userHistorySet) to avoid polluting history.
+    const fixedQ1PoolSet = new Set();
+    const fixedQ1Norm = FIXED_Q1.question.toLowerCase().replace(/[^a-z0-9\s]/g, "").replace(/\s+/g, " ").trim();
+    fixedQ1PoolSet.add(fixedQ1Norm);
+
     try {
-      const res = await generateHRAI({ candidateProfile, userHistorySet, count: 5, options: { sessionId } });
+      // Over-request: ask AI for 4 candidate questions, then pick the first 2 unique ones.
+      // This absorbs dedup filtering without needing a retry round-trip.
+      const AI_OVER_REQUEST_COUNT = 4;
+      const res = await generateHRAI({ candidateProfile, userHistorySet, count: AI_OVER_REQUEST_COUNT, options: { sessionId } });
       if (res && Array.isArray(res)) {
-        questionsData = filterUniqueQuestions(res, userHistorySet);
+        aiQuestions = filterUniqueQuestions(res, userHistorySet, fixedQ1PoolSet).slice(0, 2);
       } else {
         throw new Error(`HR AI returned empty or invalid response`);
       }
@@ -107,9 +138,11 @@ export async function generateAndProcessHRQuestions({ userId = null, sessionId, 
         }
       }
       const classified = classifyInterviewAIError(err);
-      session.generationStatus = existingQuestions.length === 5 ? "GENERATED" : (existingQuestions.length > 0 ? "PARTIAL" : "FAILED");
+      const validCount = Math.min(existingQuestions.length, 3);
+      session.generationStatus = validCount === 3 ? "GENERATED" : (validCount > 0 ? "PARTIAL" : "FAILED");
       await session.save();
       return {
+<<<<<<< HEAD
         executionCompleted: true, generationSucceeded: false,
         roundComplete: existingQuestions.length === 5,
         count: existingQuestions.length, expectedCount: 5,
@@ -134,11 +167,53 @@ export async function generateAndProcessHRQuestions({ userId = null, sessionId, 
         question: fd.question, category: fd.category, behavioralDimensions: fd.behavioralDimensions,
         resumeReference: fd.resumeReference, isFallback: true,
       }))];
+=======
+        executionCompleted: true,
+        generationSucceeded: false,
+        roundComplete: validCount === 3,
+        count: validCount,
+        expectedCount: 3,
+        status: validCount === 3 ? "COMPLETE" : (validCount > 0 ? "PARTIAL" : "FAILED"),
+        success: false,
+        recoverable: classified.recoverable,
+        generatedCount: validCount,
+        totalRequired: 3,
+        nextQuestionNumber: validCount + 1,
+        errorCode: classified.code,
+        message: classified.message,
+        questions: existingQuestions.slice(0, 3),
+      };
     }
 
-    console.log(`\n[AI-REQUEST-SUCCESS]\nround=hr\nrequestId=${requestId}\nquestionsReturned=${questionsData.length}`);
+    if (aiQuestions.length < 2) {
+      console.error(`\n[AI-REQUEST-FAILED]\nround=hr\nrequestId=${requestId}\nerror=Insufficient unique AI questions returned (${aiQuestions.length}/2)`);
+      const classified = classifyInterviewAIError("Insufficient unique HR AI questions generated");
+      const validCount = Math.min(existingQuestions.length, 3);
+      session.generationStatus = validCount === 3 ? "GENERATED" : (validCount > 0 ? "PARTIAL" : "FAILED");
+      await session.save();
 
-    const finalQuestionsData = questionsData.slice(0, 5);
+      return {
+        executionCompleted: true,
+        generationSucceeded: false,
+        roundComplete: validCount === 3,
+        count: validCount,
+        expectedCount: 3,
+        status: validCount === 3 ? "COMPLETE" : (validCount > 0 ? "PARTIAL" : "FAILED"),
+        success: false,
+        recoverable: true,
+        generatedCount: validCount,
+        totalRequired: 3,
+        nextQuestionNumber: validCount + 1,
+        errorCode: classified.code,
+        message: classified.message,
+        questions: existingQuestions.slice(0, 3),
+      };
+>>>>>>> 3a072fd44970fe4abf518a56154c5e744ae4ca7a
+    }
+
+    console.log(`\n[AI-REQUEST-SUCCESS]\nround=hr\nrequestId=${requestId}\nquestionsReturned=${aiQuestions.length}`);
+
+    const finalQuestionsData = [FIXED_Q1, ...aiQuestions.slice(0, 2)];
     const createdQuestions = [];
 
     for (let i = 0; i < finalQuestionsData.length; i++) {
@@ -149,11 +224,11 @@ export async function generateAndProcessHRQuestions({ userId = null, sessionId, 
         orderIndex: i + 1,
         question: item.question,
         category: item.category || "Behavioral",
-        difficulty: i < 2 ? "easy" : i < 4 ? "medium" : "hard",
+        difficulty: i === 0 ? "easy" : i === 1 ? "medium" : "hard",
         maxMarks: 20,
         behavioralDimensions: item.behavioralDimensions || ["decisionMaking", "ownership"],
         resumeReference: item.resumeReference || "General Workplace Scenario",
-        source: "AI_PROVIDER",
+        source: i === 0 ? "FIXED_INTRODUCTION" : "AI_PROVIDER",
       };
 
       const saved = await idempotentUpsertQuestion(
@@ -166,7 +241,12 @@ export async function generateAndProcessHRQuestions({ userId = null, sessionId, 
     }
 
     if (userId && sessionId && createdQuestions.length > 0) {
-      await recordUserQuestionHistory({ userId, sessionId, resumeHash: candidateProfile?.resumeHash, round: "hr", questions: createdQuestions });
+      // Only record AI-generated questions (Q2, Q3) in history, NOT the fixed Q1 "Introduce yourself."
+      // Recording Q1 would pollute the dedup set and is unnecessary since it never changes.
+      const aiOnlyQuestions = createdQuestions.filter((q) => q.source !== "FIXED_INTRODUCTION");
+      if (aiOnlyQuestions.length > 0) {
+        await recordUserQuestionHistory({ userId, sessionId, resumeHash: candidateProfile?.resumeHash, round: "hr", questions: aiOnlyQuestions });
+      }
     }
 
     session.generationStatus = "GENERATED";
@@ -178,7 +258,7 @@ export async function generateAndProcessHRQuestions({ userId = null, sessionId, 
       generationSucceeded: true,
       roundComplete: true,
       count: createdQuestions.length,
-      expectedCount: 5,
+      expectedCount: 3,
       status: "COMPLETE",
       success: true,
       sessionId,
@@ -209,7 +289,7 @@ export async function getNextHRQuestion({ sessionId }) {
     return {
       success: true,
       completed: true,
-      message: "All 5 HR questions have been answered.",
+      message: "All 3 HR questions have been answered.",
       totalQuestions: allQuestions.length,
       questionsAnswered: session.answers.length,
     };
@@ -279,7 +359,7 @@ export async function submitHRAnswer({ sessionId, questionId, candidateAnswer, u
     sessionId,
     questionId,
     questionsAnswered: session.answers.length,
-    totalQuestions: 5,
+    totalQuestions: 3,
   };
 }
 
@@ -394,7 +474,7 @@ export async function evaluateHRInterviewSession({ sessionId, candidateProfile =
     }
 
     session.totalScore = 0;
-    session.maxScore = 100;
+    session.maxScore = 60;
     session.percentage = 0;
     session.overallRating = "Weak";
     session.strengths = [];
@@ -410,7 +490,7 @@ export async function evaluateHRInterviewSession({ sessionId, candidateProfile =
       success: true,
       sessionId,
       totalScore: 0,
-      maxScore: 100,
+      maxScore: 60,
       percentage: 0,
       overallRating: "Weak",
       behavioralProfile: session.behavioralProfile || {},
@@ -506,7 +586,7 @@ export async function evaluateHRInterviewSession({ sessionId, candidateProfile =
     }
   });
 
-  const maxScore = 100;
+  const maxScore = 60;
   const percentage = Math.round((totalScore / maxScore) * 100);
   const overallRating = getHROverallRating(percentage);
 

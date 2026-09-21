@@ -64,8 +64,8 @@ async function runProjectTest() {
     console.log(`   - Reused flag: ${genResult.reused}`);
     console.log(`   - aiGenerationCalls: ${genResult.aiGenerationCalls}`);
 
-    if (genResult.questions.length !== 10) {
-      throw new Error(`Expected exactly 10 Project questions, got ${genResult.questions.length}`);
+    if (genResult.questions.length !== 5) {
+      throw new Error(`Expected exactly 5 Project questions, got ${genResult.questions.length}`);
     }
     if (genResult.aiGenerationCalls !== 1) {
       throw new Error(`Expected aiGenerationCalls to be 1, got ${genResult.aiGenerationCalls}`);

@@ -31,7 +31,7 @@ function getProjectModel(attempt = 1) {
 }
 
 /**
- * Generates EXACTLY 10 deep Project/Resume questions in ONE AI API Request using AIGateway.
+ * Generates EXACTLY 5 deep Project/Resume questions in ONE AI API Request using AIGateway.
  */
 export async function generateProjectAI(candidateProfile = {}, userHistorySet = new Set(), options = {}) {
   console.log("\n[REAL-INTERVIEW][AI-CALL]\nround=project\noperation=generation\nattempt=1");
@@ -89,18 +89,18 @@ Previously Asked Questions:
 ${excludedList.map(q => `- ${q}`).join("\n")}\n`
     : "";
 
-  const prompt = `Generate a JSON object with key "questions" containing EXACTLY 10 deep project interview questions based on candidate's project portfolio:
+  const prompt = `Generate a JSON object with key "questions" containing EXACTLY 5 deep project interview questions based on candidate's project portfolio:
 
 CANDIDATE PROJECTS:
 ${projectsContext}
 
-DIFFICULTY BREAKDOWN (EXACTLY 10 QUESTIONS):
-- Questions 1 to 4: "difficulty": "easy" (5 marks each)
-- Questions 5 to 8: "difficulty": "medium" (10 marks each)
-- Questions 9 to 10: "difficulty": "hard" (20 marks each)
+DIFFICULTY BREAKDOWN (EXACTLY 5 QUESTIONS):
+- Questions 1 to 2: "difficulty": "easy" (5 marks each)
+- Questions 3 to 4: "difficulty": "medium" (10 marks each)
+- Question 5: "difficulty": "hard" (20 marks each)
 ${exclusionText}
 CRITICAL GROUNDING CONSTRAINTS:
-1. "questions" MUST be an array of EXACTLY 10 objects.
+1. "questions" MUST be an array of EXACTLY 5 objects.
 2. Ask about actual technologies, architecture, data flow, trade-offs, and challenges mentioned in candidate projects.
 3. "question": Grounded project question.
 4. "expectedKnowledge": Key architectural and technical points expected.
@@ -136,15 +136,15 @@ JSON OUTPUT ONLY:
     }
   });
 
-  if (parsed && Array.isArray(parsed.questions) && parsed.questions.length >= 10) {
+  if (parsed && Array.isArray(parsed.questions) && parsed.questions.length >= 5) {
     console.log(`[RealInterviewAI][Project] Generated ${parsed.questions.length} questions successfully`);
     return parsed;
   }
-  throw new Error(`Project AI returned ${parsed?.questions?.length || 0} questions (expected 10)`);
+  throw new Error(`Project AI returned ${parsed?.questions?.length || 0} questions (expected 5)`);
 }
 
 /**
- * Evaluates ALL 10 candidate project answers in ONE SINGLE AI API Request.
+ * Evaluates ALL 5 candidate project answers in ONE SINGLE AI API Request.
  */
 export async function evaluateProjectInterviewAI({ candidateProfile = {}, questions = [], options = {} }) {
   console.log("\n[REAL-INTERVIEW][AI-CALL]\nround=project\noperation=evaluation\nattempt=1");
@@ -161,16 +161,16 @@ export async function evaluateProjectInterviewAI({ candidateProfile = {}, questi
     ans: String(q.candidateAnswer || "(No answer provided)").trim(),
   }));
 
-  const prompt = `You are a fair technical interviewer evaluating 10 candidate responses for a Project Interview session in ONE assessment.
+  const prompt = `You are a fair technical interviewer evaluating 5 candidate responses for a Project Interview session in ONE assessment.
 
 QUESTIONS & CANDIDATE ANSWERS:
 ${JSON.stringify(formattedQuestions, null, 2)}
 
 FAIR EVALUATION INSTRUCTIONS:
 1. PROJECT UNDERSTANDING FIRST: Judge project workflow and implementation choices. DO NOT heavily penalize grammar or broken English if concept is correct.
-2. MARKS: Easy (max 5), Medium (max 10), Hard (max 20). Total = 100 marks.
+2. MARKS: Easy (max 5), Medium (max 10), Hard (max 20).
 3. BETTER ANSWER: Preserve candidate's correct ideas, fix errors, refine phrasing.
-4. OVERALL METRICS: totalScore (out of 100), maxScore: 100, percentage, overallRating (90+: Excellent, 80-89: Very Strong, 70-79: Strong, 60-69: Good, 50-59: Average, 40-49: Needs Improvement, <40: Weak), strengths, weaknesses, finalFeedback.
+4. OVERALL METRICS: totalScore, maxScore, percentage, overallRating (90+: Excellent, 80-89: Very Strong, 70-79: Strong, 60-69: Good, 50-59: Average, 40-49: Needs Improvement, <40: Weak), strengths, weaknesses, finalFeedback.
 
 JSON SCHEMA ONLY:
 {
@@ -189,9 +189,9 @@ JSON SCHEMA ONLY:
       "betterAnswer": "Refined answer"
     }
   ],
-  "totalScore": 82,
-  "maxScore": 100,
-  "percentage": 82,
+  "totalScore": 42,
+  "maxScore": 50,
+  "percentage": 84,
   "overallRating": "Very Strong",
   "strengths": ["Clear API workflow"],
   "weaknesses": ["Shallow error handling"],
@@ -200,7 +200,7 @@ JSON SCHEMA ONLY:
 
   const parsed = await AIGateway.execute({
     prompt,
-    systemPrompt: "You are a project interviewer evaluator. Output ONLY valid JSON matching schema for all 10 questions.",
+    systemPrompt: "You are a project interviewer evaluator. Output ONLY valid JSON matching schema for all 5 questions.",
     provider: options.provider || "groq",
     apiKey,
     sessionId: options.sessionId,

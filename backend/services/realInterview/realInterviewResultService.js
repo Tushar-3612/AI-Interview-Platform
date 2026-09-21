@@ -375,7 +375,7 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
       });
     }
 
-    const hrScoreTotal = Math.min(100, calculatedHRScore);
+    const hrScoreTotal = Math.min(60, calculatedHRScore);
 
     // =============================================================
     // 5. CODING ROUND CALCULATION (Non-Fatal, Judge0 Results)
@@ -449,14 +449,14 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
     // 6. AGGREGATE TOTAL & RESULT STATUS
     // =============================================================
     const overallTotalObtained = Math.min(
-      450,
+      410,
       aptitudeScoreTotal + techScoreTotal + projectScoreTotal + hrScoreTotal + codingScoreTotal
     );
 
-    const percentage = Number(((overallTotalObtained / 450) * 100).toFixed(2));
+    const percentage = Number(((overallTotalObtained / 410) * 100).toFixed(2));
 
     const attemptedQuestionsCount = aptitudeAttemptedCount + techAttemptedCount + projectAttemptedCount + hrAttemptedCount + codingAttemptedCount;
-    const totalQuestionsCount = 53;
+    const totalQuestionsCount = 41;
     const unattemptedQuestionsCount = Math.max(0, totalQuestionsCount - attemptedQuestionsCount);
 
     const allQuestionResults = [
@@ -490,19 +490,19 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
         obtained: techScoreTotal,
         maximum: 100,
         attempted: techAttemptedCount,
-        totalQuestions: 20,
+        totalQuestions: 15,
       },
       project: {
         obtained: projectScoreTotal,
         maximum: 100,
         attempted: projectAttemptedCount,
-        totalQuestions: 10,
+        totalQuestions: 5,
       },
       hr: {
         obtained: hrScoreTotal,
-        maximum: 100,
+        maximum: 60,
         attempted: hrAttemptedCount,
-        totalQuestions: 5,
+        totalQuestions: 3,
       },
       coding: {
         obtained: codingScoreTotal,
@@ -513,7 +513,7 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
     };
 
     resultDoc.totalObtained = overallTotalObtained;
-    resultDoc.maximumMarks = 450;
+    resultDoc.maximumMarks = 410;
     resultDoc.percentage = percentage;
 
     resultDoc.attemptedQuestionsCount = attemptedQuestionsCount;

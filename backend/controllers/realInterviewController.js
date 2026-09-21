@@ -257,7 +257,7 @@ export const generateTechnical = async (req, res) => {
       sessionId,
       candidateProfile,
     });
-    console.log(`[REAL INTERVIEW AI] round=technical executionCompleted=${result.executionCompleted} generationSucceeded=${result.generationSucceeded} roundComplete=${result.roundComplete} count=${result.count}/${result.expectedCount || 20} status=${result.status}`);
+    console.log(`[REAL INTERVIEW AI] round=technical executionCompleted=${result.executionCompleted} generationSucceeded=${result.generationSucceeded} roundComplete=${result.roundComplete} count=${result.count}/${result.expectedCount || 15} status=${result.status}`);
 
     const httpStatus = result.roundComplete ? 200 : 200;
     res.status(httpStatus).json({
@@ -364,7 +364,7 @@ export const generateProject = async (req, res) => {
       sessionId,
       candidateProfile,
     });
-    console.log(`[REAL INTERVIEW AI] round=project executionCompleted=${result.executionCompleted} generationSucceeded=${result.generationSucceeded} roundComplete=${result.roundComplete} count=${result.count}/${result.expectedCount || 10} status=${result.status}`);
+    console.log(`[REAL INTERVIEW AI] round=project executionCompleted=${result.executionCompleted} generationSucceeded=${result.generationSucceeded} roundComplete=${result.roundComplete} count=${result.count}/${result.expectedCount || 5} status=${result.status}`);
 
     res.status(200).json({
       sessionId,
@@ -470,7 +470,7 @@ export const generateHR = async (req, res) => {
       sessionId,
       candidateProfile,
     });
-    console.log(`[REAL INTERVIEW AI] round=hr executionCompleted=${result.executionCompleted} generationSucceeded=${result.generationSucceeded} roundComplete=${result.roundComplete} count=${result.count}/${result.expectedCount || 5} status=${result.status}`);
+    console.log(`[REAL INTERVIEW AI] round=hr executionCompleted=${result.executionCompleted} generationSucceeded=${result.generationSucceeded} roundComplete=${result.roundComplete} count=${result.count}/${result.expectedCount || 3} status=${result.status}`);
 
     res.status(200).json({
       sessionId,
@@ -1018,7 +1018,7 @@ export const downloadRealInterviewResultPDF = async (req, res) => {
     doc.fillColor("#ffffff").fontSize(9).font("Helvetica-Bold").text(overallLabel, 365, y + 29, { width: 170, align: "center" });
 
     const attemptedCount = resultDoc.attemptedQuestionsCount ?? 0;
-    const totalCount = resultDoc.totalQuestionsCount ?? 53;
+    const totalCount = resultDoc.totalQuestionsCount ?? 41;
     const unattemptedCount = Math.max(0, totalCount - attemptedCount);
 
     doc.fillColor(COLOR_MUTED).fontSize(8.5).font("Helvetica").text(`Questions Attempted: ${attemptedCount} / ${totalCount}   |   Questions Not Attempted: ${unattemptedCount} / ${totalCount}`, 52, y + 56);
@@ -1040,9 +1040,9 @@ export const downloadRealInterviewResultPDF = async (req, res) => {
 
     const roundList = [
       { name: "Aptitude", key: "aptitude", totalQ: 15, defaultMax: 50 },
-      { name: "Technical", key: "technical", totalQ: 20, defaultMax: 100 },
-      { name: "Project", key: "project", totalQ: 10, defaultMax: 100 },
-      { name: "HR Behavioral", key: "hr", totalQ: 5, defaultMax: 100 },
+      { name: "Technical", key: "technical", totalQ: 15, defaultMax: 100 },
+      { name: "Project", key: "project", totalQ: 5, defaultMax: 100 },
+      { name: "HR Behavioral", key: "hr", totalQ: 3, defaultMax: 60 },
       { name: "Coding", key: "coding", totalQ: 3, defaultMax: 100 },
     ];
 
@@ -1131,7 +1131,7 @@ export const downloadRealInterviewResultPDF = async (req, res) => {
       }
     }
 
-    // --- QUESTION-WISE DETAILED REPORT (ALL 53 QUESTIONS PRESERVED) ---
+    // --- QUESTION-WISE DETAILED REPORT (ALL 41 QUESTIONS PRESERVED) ---
     y += 15;
     if (y > 700) {
       doc.addPage();
@@ -1155,7 +1155,6 @@ export const downloadRealInterviewResultPDF = async (req, res) => {
       const qScore = Number(q.score ?? 0);
       const qMax = Number(q.maxScore ?? 0);
       const qStatus = q.status || "NOT_ATTEMPTED";
-
       let statusBadgeColor = COLOR_MUTED;
       if (qStatus === "CORRECT") statusBadgeColor = COLOR_GREEN;
       else if (qStatus === "PARTIALLY_CORRECT" || qStatus === "PARTIAL") statusBadgeColor = COLOR_AMBER;

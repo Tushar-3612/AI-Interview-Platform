@@ -96,6 +96,10 @@ const userSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    resumeAnalysis: {
+      type: mongoose.Schema.Types.Mixed,
+      default: null,
+    },
     targetCompany: {
       type: String,
       default: "",

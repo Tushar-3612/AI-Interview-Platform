@@ -16,9 +16,9 @@ function getHRConfig(attempt = 1) {
 }
 
 /**
- * AI CALL #1: Generate EXACTLY 5 HR questions in ONE AI request using AIGateway.
+ * AI CALL #1: Generate 2 AI HR questions (for Q2 & Q3) in ONE AI request using AIGateway.
  */
-export async function generateHRAI({ candidateProfile = {}, userHistorySet = new Set(), count = 5, options = {} }) {
+export async function generateHRAI({ candidateProfile = {}, userHistorySet = new Set(), count = 2, options = {} }) {
   console.log("\n[REAL-INTERVIEW][AI-CALL]\nround=hr\noperation=generation\nattempt=1");
 
   const { apiKey: configApiKey, model: configModel } = getHRConfig(1);
@@ -54,27 +54,29 @@ Previously Asked Questions:
 ${excludedList.map(q => `- ${q}`).join("\n")}\n`
     : "";
 
+  const targetCount = count || 2;
+  const minRequired = Math.min(targetCount, 2); // We need at least 2 usable; over-request is a dedup buffer
   const systemPrompt = `You are a Senior HR Vice President conducting a final HR cultural & behavioral interview for a top tier tech company.
-Your task is to generate EXACTLY 5 high-impact, professional HR interview questions tailored to the candidate's profile.
+Your task is to generate EXACTLY ${targetCount} high-impact, professional, DIVERSE HR interview questions tailored to the candidate's profile.
+Note: Q1 is a fixed introduction question handled separately. These questions are additional behavioral/situational questions.
 
 CRITICAL ARCHITECTURAL RULES:
-1. TOTAL QUESTIONS: EXACTLY 5. NO MORE, NO LESS.
-2. QUESTION CATEGORIES:
-   - Question 1: Behavioral / Behavioral Scenario (STAR format)
-   - Question 2: Cultural Fit & Value Alignment
-   - Question 3: Problem Solving & Conflict Resolution
-   - Question 4: Career Goals & Growth Mindset
-   - Question 5: Situational Judgment / Leadership Under Pressure
-3. RESUME GROUNDING: Mention aspects of the candidate's background (education, project experience, leadership) naturally in at least 2 questions.
-4. ABSOLUTE MARKS: Set maxMarks = 20 for each question (Total = 100).
-5. Do NOT generate or rephrase any question from the exclusion list.
-6. STRICT JSON ONLY: Respond with a SINGLE JSON object. No markdown wrappers.
+1. TOTAL QUESTIONS TO GENERATE: EXACTLY ${targetCount}. NO MORE, NO LESS.
+2. EACH QUESTION MUST BE SUBSTANTIALLY DIFFERENT from every other question — different topic, different scenario, different behavioral dimension.
+3. QUESTION CATEGORIES:
+   - Cultural Fit, Value Alignment & Behavioral Scenarios (STAR format)
+   - Situational Judgment, Problem Solving & Leadership Under Pressure
+4. RESUME GROUNDING: Mention aspects of the candidate's background (education, project experience, leadership) naturally in the questions.
+5. ABSOLUTE MARKS: Set maxMarks = 20 for each question.
+6. Do NOT generate or rephrase any question from the exclusion list.
+7. Do NOT generate any variation of "Introduce yourself" or "Tell me about yourself".
+8. STRICT JSON ONLY: Respond with a SINGLE JSON object. No markdown wrappers.
 
 JSON SCHEMA REQUIREMENT:
 {
   "questions": [
     {
-      "id": "hr_q1",
+      "id": "hr_q2",
       "question": "Clear, professional HR question text",
       "category": "Behavioral",
       "difficulty": "medium",
@@ -85,7 +87,7 @@ JSON SCHEMA REQUIREMENT:
   ]
 }`;
 
-  const userPrompt = `Candidate Profile:\n${profileSummary}\n${exclusionText}\nGenerate EXACTLY 5 deep HR questions in valid JSON.`;
+  const userPrompt = `Candidate Profile:\n${profileSummary}\n${exclusionText}\nGenerate EXACTLY ${targetCount} deep HR questions in valid JSON.`;
 
   const parsed = await AIGateway.execute({
     prompt: userPrompt,
@@ -103,26 +105,26 @@ JSON SCHEMA REQUIREMENT:
   });
 
   const questions = parsed.questions || parsed.data || (Array.isArray(parsed) ? parsed : null);
-  if (Array.isArray(questions) && questions.length >= 5) {
-    const formattedQuestions = questions.slice(0, 5).map((q, idx) => ({
-      questionIndex: idx + 1,
-      question: q.question || q.questionText || q.text || q.prompt || (typeof q === "string" ? q : `Behavioral Scenario Question #${idx + 1}`),
+  if (Array.isArray(questions) && questions.length >= minRequired) {
+    const formattedQuestions = questions.slice(0, targetCount).map((q, idx) => ({
+      questionIndex: idx + 2,
+      question: q.question || q.questionText || q.text || q.prompt || (typeof q === "string" ? q : `Behavioral Scenario Question #${idx + 2}`),
       category: q.category || "Behavioral & Situational",
-      difficulty: idx < 2 ? "easy" : idx < 4 ? "medium" : "hard",
+      difficulty: idx === 0 ? "easy" : "medium",
       maxMarks: 20,
       behavioralDimensions: Array.isArray(q.behavioralDimensions) ? q.behavioralDimensions : ["decisionMaking", "ownership"],
       resumeReference: q.resumeReference || "",
     }));
 
-    console.log(`[RealInterviewAI][HR] Generated 5 HR questions successfully`);
+    console.log(`[RealInterviewAI][HR] Generated ${formattedQuestions.length} HR AI questions successfully`);
     return formattedQuestions;
   }
 
-  throw new Error("HR AI generation returned less than 5 questions");
+  throw new Error(`HR AI generation returned less than ${minRequired} questions`);
 }
 
 /**
- * AI CALL #2: Batch evaluate all 5 candidate answers in ONE AI request using AIGateway.
+ * AI CALL #2: Batch evaluate candidate HR answers in ONE AI request using AIGateway.
  */
 export async function evaluateHRAI({ candidateProfile = {}, questionsWithAnswers = [], options = {} }) {
   console.log("\n[REAL-INTERVIEW][AI-CALL]\nround=hr\noperation=evaluation\nattempt=1");
@@ -142,7 +144,7 @@ export async function evaluateHRAI({ candidateProfile = {}, questionsWithAnswers
   }));
 
   const systemPrompt = `You are a Senior HR & Behavioral Evaluator analyzing a candidate's HR interview answers.
-You must evaluate all 5 questions in ONE batch response.
+You must evaluate all questions in ONE batch response.
 
 CRITICAL EVALUATION RULES:
 1. FAIR ENGLISH EVALUATION: Do NOT heavily penalize imperfect English, Indian English, short sentences, or minor grammar/spelling errors. Focus on REASONING, JUDGMENT, ACCOUNTABILITY, and BEHAVIORAL MATURITY.
@@ -186,7 +188,7 @@ RETURN STRICT JSON ONLY:
   "finalFeedback": "Comprehensive candidate summary..."
 }`;
 
-  const userPrompt = `Candidate Profile: ${candidateProfile.fullName || "Candidate"}\nQuestions and Candidate Answers:\n${JSON.stringify(formattedQA, null, 2)}\n\nEvaluate all 5 answers in valid JSON.`;
+  const userPrompt = `Candidate Profile: ${candidateProfile.fullName || "Candidate"}\nQuestions and Candidate Answers:\n${JSON.stringify(formattedQA, null, 2)}\n\nEvaluate all HR answers in valid JSON.`;
 
   const parsed = await AIGateway.execute({
     prompt: userPrompt,

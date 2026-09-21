@@ -71,33 +71,8 @@ export async function getOrBuildCandidateResumeContext(userId = null, bodyProfil
     ? student.certifications
     : (Array.isArray(bodyProfile?.certifications) ? bodyProfile.certifications : []);
 
-  // Lookup from Interview model's resumeSnapshot if skills or projects are missing
-  if ((!projects.length || !skills.length) && (bodyProfile?.sessionId || bodyProfile?.interviewId || userId)) {
-    try {
-      const interviewId = bodyProfile?.sessionId || bodyProfile?.interviewId;
-      const Interview = mongoose.models.Interview;
-      if (Interview) {
-        const interview = interviewId
-          ? await Interview.findById(interviewId).lean()
-          : await Interview.findOne({ userId }).sort({ createdAt: -1 }).lean();
-
-        if (interview?.resumeSnapshot) {
-          const snap = interview.resumeSnapshot;
-          if (!skills.length && (snap.skills?.length || snap.all_skills?.length)) {
-            skills = snap.skills || snap.all_skills;
-          }
-          if (!projects.length && (snap.projects?.length || snap.parsedProjects?.length)) {
-            projects = snap.projects || snap.parsedProjects;
-          }
-          if (!Object.keys(categorizedSkills).length && snap.categorizedSkills) {
-            categorizedSkills = snap.categorizedSkills;
-          }
-        }
-      }
-    } catch (e) {
-      console.warn("[RESUME-CONTEXT] Interview snapshot lookup warning:", e.message);
-    }
-  }
+  // Note: Old interview snapshots are explicitly NOT used as a fallback for profile data,
+  // ensuring that the latest uploaded resume always serves as the single source of truth.
 
   // Fallback: If projects or categorizedSkills are missing, but resumeBase64 is available, perform local parsing
   if ((!projects.length || !skills.length) && student?.resumeBase64) {

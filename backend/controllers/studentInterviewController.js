@@ -284,7 +284,7 @@ export const getInterviewSession = async (req, res) => {
     const technicalQuestions = realInterviewQuestions.filter((q) => q.section === "TECHNICAL");
     const techIndices = new Set(technicalQuestions.map((q) => q.orderIndex).filter((idx) => typeof idx === "number"));
     const missingTechIndices = [];
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 15; i++) {
       if (!techIndices.has(i)) missingTechIndices.push(i);
     }
     const firstMissingTechnicalNumber = missingTechIndices.length > 0 ? missingTechIndices[0] + 1 : technicalQuestions.length + 1;
@@ -300,34 +300,34 @@ export const getInterviewSession = async (req, res) => {
     const totalCount = realInterviewQuestions.length;
     const isValidRealInterview =
       sectionCounts.APTITUDE === 15 &&
-      sectionCounts.TECHNICAL === 20 &&
+      sectionCounts.TECHNICAL === 15 &&
       missingTechIndices.length === 0 &&
-      sectionCounts.RESUME_PROJECT === 10 &&
-      sectionCounts.HR === 5 &&
+      sectionCounts.RESUME_PROJECT === 5 &&
+      sectionCounts.HR === 3 &&
       sectionCounts.CODING === 3 &&
-      totalCount === 53;
+      totalCount === 41;
 
     let incompleteCode = "INTERVIEW_INCOMPLETE";
     let incompleteMessage = "Interview preparation is incomplete.";
-    if (sectionCounts.TECHNICAL < 20 || missingTechIndices.length > 0) {
+    if (sectionCounts.TECHNICAL < 15 || missingTechIndices.length > 0) {
       incompleteCode = "TECHNICAL_INCOMPLETE";
-      const missingCount = 20 - sectionCounts.TECHNICAL;
+      const missingCount = 15 - sectionCounts.TECHNICAL;
       incompleteMessage = `Technical interview preparation is incomplete. ${missingCount} questions remaining.`;
-    } else if (sectionCounts.RESUME_PROJECT < 10) {
+    } else if (sectionCounts.RESUME_PROJECT < 5) {
       incompleteCode = "PROJECT_INCOMPLETE";
-      incompleteMessage = `Project interview preparation is incomplete. ${10 - sectionCounts.RESUME_PROJECT} questions remaining.`;
-    } else if (sectionCounts.HR < 5) {
+      incompleteMessage = `Project interview preparation is incomplete. ${5 - sectionCounts.RESUME_PROJECT} questions remaining.`;
+    } else if (sectionCounts.HR < 3) {
       incompleteCode = "HR_INCOMPLETE";
-      incompleteMessage = `HR interview preparation is incomplete. ${5 - sectionCounts.HR} questions remaining.`;
+      incompleteMessage = `HR interview preparation is incomplete. ${3 - sectionCounts.HR} questions remaining.`;
     } else if (sectionCounts.CODING < 3) {
       incompleteCode = "CODING_INCOMPLETE";
       incompleteMessage = `Coding interview preparation is incomplete. ${3 - sectionCounts.CODING} problems remaining.`;
     }
 
     const missingRounds = {
-      technical: Math.max(0, 20 - sectionCounts.TECHNICAL),
-      project: Math.max(0, 10 - sectionCounts.RESUME_PROJECT),
-      hr: Math.max(0, 5 - sectionCounts.HR),
+      technical: Math.max(0, 15 - sectionCounts.TECHNICAL),
+      project: Math.max(0, 5 - sectionCounts.RESUME_PROJECT),
+      hr: Math.max(0, 3 - sectionCounts.HR),
       coding: Math.max(0, 3 - sectionCounts.CODING),
       aptitude: Math.max(0, 15 - sectionCounts.APTITUDE),
     };

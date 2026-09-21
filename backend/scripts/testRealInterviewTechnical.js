@@ -65,8 +65,8 @@ async function runTest() {
   console.log(`   - Reused flag: ${gen1.reused}`);
   console.log(`   - aiGenerationCalls: ${gen1.aiGenerationCalls}`);
 
-  if (gen1.count !== 20) {
-    throw new Error(`Expected exactly 20 questions, got ${gen1.count}`);
+  if (gen1.count !== 15) {
+    throw new Error(`Expected exactly 15 questions, got ${gen1.count}`);
   }
   if (gen1.aiGenerationCalls !== 1) {
     throw new Error(`Expected aiGenerationCalls = 1, got ${gen1.aiGenerationCalls}`);
