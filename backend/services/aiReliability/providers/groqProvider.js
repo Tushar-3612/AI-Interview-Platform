@@ -62,8 +62,21 @@ export class GroqProvider extends BaseProvider {
       // Direct HTTP fetch fallback if Python subprocess fails or is unavailable
       const normalized = normalizeProviderError(err);
       
-      // If error was Python-bridge specific, attempt direct HTTP fetch fallback
-      if (err.message && err.message.includes("Failed to spawn Python process")) {
+      // If Python bridge failed for any reason (spawn error, network error, timeout, etc.),
+      // attempt direct HTTP fetch as fallback
+      const isPythonBridgeFailure =
+        err.message && (
+          err.message.includes("Failed to spawn Python process") ||
+          err.message.includes("PythonAIBridge") ||
+          err.message.includes("Python bridge") ||
+          err.message.includes("Network error connecting to Groq") ||
+          err.message.includes("forcibly closed") ||
+          err.message.includes("wsasend") ||
+          err.message.includes("WinError") ||
+          err.message.includes("timed out") ||
+          err.message.includes("empty output")
+        );
+      if (isPythonBridgeFailure) {
         try {
           const controller = new AbortController();
           const timer = setTimeout(() => controller.abort(), timeoutMs);

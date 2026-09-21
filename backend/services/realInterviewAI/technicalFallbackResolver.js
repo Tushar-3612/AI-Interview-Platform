@@ -23,7 +23,8 @@ function loadFallbackBank() {
 
 /**
  * Resume-aware curated fallback question selector.
- * Used ONLY when AI batch generation fails permanently for small gaps (missingCount <= 3).
+ * Used when AI batch generation fails for ANY number of missing question slots.
+ * Supports full AI outage (all 20 questions missing) as well as small gaps.
  *
  * Selection Priority:
  * 1. Exact resume skill match (candidateProfile.skills, programmingLanguages, frameworks, databases, tools, cloud)

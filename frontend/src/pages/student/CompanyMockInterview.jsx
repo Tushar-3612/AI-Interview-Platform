@@ -5,6 +5,7 @@ import api from "../../utils/api";
 import { getAuthToken } from "../../hooks/useStudentProfile";
 import CompanyMockCodingIDE from "../../components/coding/CompanyMockCodingIDE";
 import {
+  AlertTriangle,
   Maximize2,
   ShieldAlert,
   Loader2,
@@ -96,12 +97,13 @@ export default function CompanyMockInterview() {
   const [remainingSeconds, setRemainingSeconds] = useState(0);
   const [loading, setLoading] = useState(false);
   const [confirmEnd, setConfirmEnd] = useState(false);
-  const [tabSwitchLocked, setTabSwitchLocked] = useState(false);
+  const [tabWarnings, setTabWarnings] = useState(0);
 
   // ── Anti-cheat ──
   const securityEventsRef = useRef([]);
   const lastTabSwitchAtRef = useRef(0);
   const saveProgressRef = useRef(null);
+  const submitFinalRef = useRef(null);
 
   // ── Save serialization: prevent overlapping autosaves ──
   const saveInProgressRef = useRef(false);
@@ -196,19 +198,63 @@ export default function CompanyMockInterview() {
       );
     };
 
-    // Tab switching: lock the mock immediately, persist the event, keep
-    // locked until the student returns to this tab.
+    // 3-strike violation handler (switches, minimizations, Alt+Tab)
+    const reportViolation = (trigger = "window_blur") => {
+      const now = Date.now();
+      // Debounce rapid dual triggers (e.g. blur + visibilitychange firing simultaneously during Alt+Tab)
+      if (now - lastTabSwitchAtRef.current < 1200) return;
+      lastTabSwitchAtRef.current = now;
+
+      setTabWarnings((prev) => {
+        const next = prev + 1;
+        queueSecurityEvent("TAB_SWITCH", { trigger, count: next });
+
+        if (next >= 3) {
+          toast.error("🚨 3 of 3: Mock interview auto-submitted", {
+            id: "mock-violation-toast",
+            duration: 5000,
+          });
+          submitFinalRef.current?.();
+        } else if (next === 1) {
+          toast.error("⚠️ Warning 1 of 3", {
+            id: "mock-violation-toast",
+            duration: 4000,
+          });
+          saveProgressRef.current?.({ skipGuard: true });
+        } else if (next === 2) {
+          toast.error("🚨 Warning 2 of 3 (Final Warning)", {
+            id: "mock-violation-toast",
+            duration: 5000,
+          });
+          saveProgressRef.current?.({ skipGuard: true });
+        }
+        return next;
+      });
+    };
+
     const handleVisibilityChange = () => {
       if (document.hidden) {
-        const now = Date.now();
-        // Debounce rapid toggles within a single switch.
-        if (now - lastTabSwitchAtRef.current < 500) return;
-        lastTabSwitchAtRef.current = now;
-        queueSecurityEvent("TAB_SWITCH");
-        setTabSwitchLocked(true);
-        saveProgressRef.current?.({ skipGuard: false });
-      } else {
-        setTabSwitchLocked(false);
+        reportViolation("tab_hidden");
+      }
+    };
+
+    const handleWindowBlur = () => {
+      reportViolation("window_blur");
+    };
+
+    const handleWindowFocus = () => {
+      // Focus restored
+    };
+
+    const handleTouchStart = (e) => {
+      if (e.touches && e.touches.length >= 3) {
+        reportViolation("three_finger_touch");
+      }
+    };
+
+    const handleResize = () => {
+      if (document.hidden || window.outerWidth === 0 || window.outerHeight === 0) {
+        reportViolation("minimize");
       }
     };
 
@@ -250,18 +296,33 @@ export default function CompanyMockInterview() {
       }
     };
 
+    const preventSelectStart = (e) => {
+      if (isEditableTarget(e.target)) return;
+      e.preventDefault();
+    };
+
     document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("blur", handleWindowBlur);
+    window.addEventListener("focus", handleWindowFocus);
+    window.addEventListener("touchstart", handleTouchStart, { passive: true });
+    window.addEventListener("resize", handleResize);
     window.addEventListener("copy", preventCopy);
     window.addEventListener("cut", preventCut);
     window.addEventListener("contextmenu", preventContextMenu);
     window.addEventListener("keydown", preventShortcutCopy);
+    document.addEventListener("selectstart", preventSelectStart);
 
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("blur", handleWindowBlur);
+      window.removeEventListener("focus", handleWindowFocus);
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("resize", handleResize);
       window.removeEventListener("copy", preventCopy);
       window.removeEventListener("cut", preventCut);
       window.removeEventListener("contextmenu", preventContextMenu);
       window.removeEventListener("keydown", preventShortcutCopy);
+      document.removeEventListener("selectstart", preventSelectStart);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
@@ -329,7 +390,6 @@ export default function CompanyMockInterview() {
   // through the exact same final-scoring path ("End Mock Interview") so a
   // timed-out result is computed by the one authoritative backend function.
   const autoSubmittedRef = useRef(false);
-  const submitFinalRef = useRef(null);
   useEffect(() => {
     if (phase !== "assessment" || remainingSeconds > 0 || autoSubmittedRef.current) return;
     autoSubmittedRef.current = true;
@@ -844,6 +904,7 @@ export default function CompanyMockInterview() {
 
   // ── End Mock Interview ──
   const submitFinal = async () => {
+    submitFinalRef.current = submitFinal;
     if (submittingRef.current) {
       console.warn("[COMPANY MOCK] Blocked duplicate final submission.");
       return;
@@ -1035,9 +1096,16 @@ export default function CompanyMockInterview() {
   return (
     <div
       className={currentSection === "coding"
-        ? "h-screen overflow-hidden flex flex-col"
-        : "min-h-screen flex flex-col"}
-      style={{ background: "var(--bg-primary)", color: "var(--text-primary)" }}
+        ? "h-screen overflow-hidden flex flex-col select-none"
+        : "min-h-screen flex flex-col select-none"}
+      style={{
+        background: "var(--bg-primary)",
+        color: "var(--text-primary)",
+        userSelect: "none",
+        WebkitUserSelect: "none",
+        MozUserSelect: "none",
+        msUserSelect: "none",
+      }}
     >
       {/* Header bar */}
       <header className="sticky top-0 z-40 px-4 md:px-6 py-3 border-b" style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}>
@@ -1360,21 +1428,15 @@ export default function CompanyMockInterview() {
         </div>
       </div>
 
-      {/* Tab switch detection overlay — locks the mock until the student returns */}
-      {tabSwitchLocked && phase === "assessment" && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 select-none" style={{ background: "rgba(5,6,9,0.96)", backdropFilter: "blur(16px)" }}>
-          <div className="max-w-md w-full p-6 rounded-3xl text-center flex flex-col items-center gap-4" style={{ background: "linear-gradient(145deg,#0e1222 0%,#070913 100%)", border: "1px solid rgba(245,158,11,0.3)", boxShadow: "0 0 50px rgba(245,158,11,0.2)" }}>
-            <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ background: "rgba(245,158,11,0.12)", border: "1px solid rgba(245,158,11,0.3)", color: "#FBBF24" }}>
-              <ShieldAlert className="w-8 h-8 animate-pulse" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-white tracking-wide">Tab switching detected</h2>
-              <p className="text-xs text-white/70 mt-2 leading-relaxed">
-                Please return to the mock interview tab to continue.
-              </p>
-              <p className="text-[10px] text-white/40 mt-3 font-mono">This event has been logged for security.</p>
-            </div>
-          </div>
+      {/* Tab & Window Switch Warning Banner */}
+      {tabWarnings > 0 && phase === "assessment" && (
+        <div className={`sticky bottom-0 z-40 px-4 py-2 text-xs text-center font-bold flex items-center justify-center gap-2 ${
+          tabWarnings >= 2 ? "bg-red-600 text-white animate-pulse" : "bg-amber-500 text-black"
+        }`}>
+          <AlertTriangle className="w-4 h-4 shrink-0" />
+          {tabWarnings >= 2
+            ? "🚨 Warning 2 of 3 (Final Warning)"
+            : `⚠️ Warning ${tabWarnings} of 3`}
         </div>
       )}
 

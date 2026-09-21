@@ -9,7 +9,7 @@ dotenv.config({ path: path.join(__dirname, "../../../.env") });
 import { AIGateway } from "../aiReliability/index.js";
 
 function getHRConfig(attempt = 1) {
-  const apiKey = (process.env.REAL_INTERVIEW_HR_API_KEY || process.env.GROQ_API_KEY || "").trim();
+  const apiKey = (process.env.REAL_INTERVIEW_HR_API_KEY || process.env.GROQ_API_KEY || process.env.AI_API_KEY || "").trim();
   const custom = (process.env.REAL_INTERVIEW_HR_MODEL || "").trim();
   const model = custom || (attempt === 2 ? "openai/gpt-oss-20b" : "openai/gpt-oss-120b");
   return { apiKey, model };

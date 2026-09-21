@@ -197,8 +197,8 @@ function InterviewPractice() {
           </p>
         </div>
 
-        {/* ── Feature Cards Grid: Company Mock, Technical & Project Practice ── */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* ── Feature Cards Grid: Company Mock, Technical, Project & Coding Practice ── */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
           {/* Company Mock Interview CTA Card */}
           <motion.div
             initial={{ opacity: 0, y: 8 }}
@@ -250,7 +250,7 @@ function InterviewPractice() {
                   className="text-xs sm:text-sm mt-1 leading-relaxed"
                   style={{ color: isDark ? "#D1D5DB" : "#4B5563" }}
                 >
-                  Comprehensive assessments simulating exact hiring patterns across Aptitude, Technical, and Coding.
+                  Simulate exact corporate hiring patterns across Aptitude, Technical, and Coding.
                 </p>
               </div>
             </div>
@@ -411,6 +411,78 @@ function InterviewPractice() {
               whileTap={{ scale: 0.99 }}
             >
               <span>Configure Project Practice</span>
+              <ArrowRight className="w-4 h-4" />
+            </motion.button>
+          </motion.div>
+
+          {/* Dedicated Coding Round CTA Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="p-5 sm:p-6 rounded-[22px] border relative overflow-hidden space-y-4 transition-all flex flex-col justify-between"
+            style={{
+              background: isDark
+                ? "linear-gradient(135deg, rgba(6, 182, 212, 0.18) 0%, rgba(8, 28, 36, 0.95) 100%)"
+                : "linear-gradient(135deg, rgba(6, 182, 212, 0.08) 0%, rgba(207, 250, 254, 0.5) 100%)",
+              borderColor: isDark
+                ? "rgba(6, 182, 212, 0.35)"
+                : "rgba(6, 182, 212, 0.25)",
+              boxShadow: isDark
+                ? "0 8px 30px rgba(0, 0, 0, 0.3)"
+                : "0 8px 30px rgba(6, 182, 212, 0.08)",
+            }}
+          >
+            <div className="flex items-start gap-3.5">
+              <div 
+                className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 shadow-md"
+                style={{
+                  background: "linear-gradient(135deg, #06B6D4 0%, #0891B2 100%)",
+                  color: "#FFFFFF",
+                  boxShadow: "0 4px 14px rgba(6, 182, 212, 0.3)",
+                }}
+              >
+                <Code2 className="w-6 h-6" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h2
+                    className="text-base sm:text-lg font-black tracking-tight"
+                    style={{ color: isDark ? "#FFFFFF" : "#164E63" }}
+                  >
+                    Coding Round
+                  </h2>
+                  <span
+                    className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md border"
+                    style={{
+                      background: isDark ? "rgba(6, 182, 212, 0.25)" : "rgba(6, 182, 212, 0.12)",
+                      color: isDark ? "#A5F3FC" : "#0E7490",
+                      borderColor: isDark ? "rgba(6, 182, 212, 0.45)" : "rgba(6, 182, 212, 0.25)",
+                    }}
+                  >
+                    IDE ROUND
+                  </span>
+                </div>
+                <p
+                  className="text-xs sm:text-sm mt-1 leading-relaxed"
+                  style={{ color: isDark ? "#D1D5DB" : "#4B5563" }}
+                >
+                  Live algorithmic challenges evaluated against public & hidden testcases across target companies.
+                </p>
+              </div>
+            </div>
+
+            <motion.button
+              type="button"
+              onClick={() => navigate("/coding-round")}
+              className="w-full py-3.5 rounded-xl text-sm font-bold text-white cursor-pointer flex items-center justify-center gap-2 shadow-lg transition-all"
+              style={{
+                background: "linear-gradient(135deg, #06B6D4 0%, #0891B2 100%)",
+                boxShadow: "0 4px 18px rgba(6, 182, 212, 0.35)",
+              }}
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
+            >
+              <span>Start Coding Round</span>
               <ArrowRight className="w-4 h-4" />
             </motion.button>
           </motion.div>
@@ -620,7 +692,7 @@ function InterviewPractice() {
         </section>
 
         {/* ── AVAILABLE COMPANIES ── */}
-        <section className="space-y-4">
+        <section id="available-companies-section" className="space-y-4">
           <div className="flex items-center justify-between px-1">
             <h2 className="text-[11px] sm:text-xs font-extrabold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
               AVAILABLE COMPANIES ({filtered.length})

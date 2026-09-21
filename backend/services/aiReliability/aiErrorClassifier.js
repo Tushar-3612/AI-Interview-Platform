@@ -92,7 +92,7 @@ export class AIErrorClassifier {
       isRetryable = true;
       userFacingMessage = "AI request timed out. Retrying execution...";
     }
-    // 5. Transient Provider Error (Retryable)
+    // 5. Transient Provider Error / Network Error (Retryable)
     else if (
       statusCode === 500 ||
       statusCode === 502 ||
@@ -102,7 +102,16 @@ export class AIErrorClassifier {
       lowerMsg.includes("internal server error") ||
       lowerMsg.includes("bad gateway") ||
       lowerMsg.includes("service unavailable") ||
-      lowerMsg.includes("overloaded")
+      lowerMsg.includes("overloaded") ||
+      // Windows socket errors (WinError 10054 / WSASEND) — network disruption on Windows
+      lowerMsg.includes("wsasend") ||
+      lowerMsg.includes("winerror 10054") ||
+      lowerMsg.includes("forcibly closed") ||
+      lowerMsg.includes("econnrefused") ||
+      lowerMsg.includes("epipe") ||
+      lowerMsg.includes("network error") ||
+      lowerMsg.includes("socket hang up") ||
+      lowerMsg.includes("connection reset")
     ) {
       category = ERROR_CATEGORIES.TRANSIENT_PROVIDER;
       isRetryable = true;

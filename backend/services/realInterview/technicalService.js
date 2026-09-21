@@ -262,9 +262,11 @@ export async function generateAndProcessTechnicalQuestions({
     missingIndices = computeMissingIndices(existingQuestions);
     const initialMissingCount = missingIndices.length;
 
-    if (initialMissingCount > 0 && initialMissingCount <= 3) {
+    if (initialMissingCount > 0) {
+      // Curated fallback activates for ANY number of missing questions (not just <= 3)
+      // This ensures 100% question delivery even during complete AI outage
       console.log(
-        `[TechnicalService] AI generation ended with missingCount=${initialMissingCount} (missingIndices=[${missingIndices.join(", ")}]). Invoking curated technical fallback resolver...`
+        `[TechnicalService] AI generation ended with missingCount=${initialMissingCount} (missingIndices=[${missingIndices.join(", ")}]). Invoking curated technical fallback resolver for ALL missing slots...`
       );
 
       for (const slotIndex of missingIndices) {

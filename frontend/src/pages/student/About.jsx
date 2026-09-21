@@ -18,7 +18,7 @@ const TEAM = [
     role: "Full Stack Lead",
     tag: "Lead Developer",
     initials: "TN",
-    photo: "/images/team/profile.png",
+    photo: "/images/team/tushar-nagare.jpg",
   },
   {
     name: "Roshan Langhi",

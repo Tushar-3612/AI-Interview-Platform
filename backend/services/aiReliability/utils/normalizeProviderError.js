@@ -29,7 +29,11 @@ export function normalizeProviderError(error) {
     status === 404 ||
     /model_not_found|model not found|decommissioned|unavailable/i.test(errMsg);
 
-  const isTransient = (status >= 500 && status < 600) || isTimeout || isRateLimit;
+  // Windows socket errors (WSASEND/WinError 10054) and other network errors — treat as transient
+  const isNetworkError =
+    /wsasend|winerror 10054|forcibly closed|econnrefused|epipe|econnreset|network error|socket hang up|connection reset/i.test(errMsg);
+
+  const isTransient = (status >= 500 && status < 600) || isTimeout || isRateLimit || isNetworkError;
 
   return {
     status,

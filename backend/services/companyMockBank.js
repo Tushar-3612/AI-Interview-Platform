@@ -248,11 +248,82 @@ export function loadCompanyMockCoding(company) {
 }
 
 /**
+ * Load exclusive company mock aptitude/MCQ questions from companyMock/<folder>/mcq.json
+ */
+export function loadCompanyMockAptitude(company) {
+  const folder = toFolderName(company);
+  const dir = companyMockDir();
+  if (!dir) return [];
+  const mcqFile = path.join(dir, folder, "mcq.json");
+  if (!fs.existsSync(mcqFile)) return [];
+  try {
+    const raw = JSON.parse(fs.readFileSync(mcqFile, "utf8"));
+    const arr = Array.isArray(raw) ? raw : Array.isArray(raw.questions) ? raw.questions : [];
+    return arr
+      .filter((q) => q && (q.question || q.title) && (q.questionId || q._id))
+      .map((q) => ({
+        ...normalizeQuestion(q, folder),
+        category: q.category || q.topic || "Aptitude",
+        questionType: "MCQ",
+      }));
+  } catch (err) {
+    console.warn(`[COMPANY MOCK] Failed to parse ${folder}/mcq.json for aptitude:`, err.message);
+    return [];
+  }
+}
+
+/**
+ * Async merged loader for company mock aptitude questions:
+ * Loads company-specific mock aptitude MCQs and overlays any company-specific AptitudeQuestion records.
+ */
+export async function loadCompanyMockAptitudeAsync(company) {
+  const folder = toFolderName(company);
+  const baseJsonAptitude = loadCompanyMockAptitude(folder);
+
+  const dbAptDocs = await AptitudeQuestion.find({
+    isDeleted: { $ne: true },
+    isActive: true,
+    $or: [
+      { companyId: folder },
+      { companyName: { $regex: new RegExp("^" + folder + "$", "i") } },
+    ],
+  }).lean();
+
+  const map = new Map();
+  for (const q of baseJsonAptitude) {
+    if (q.questionId) map.set(q.questionId, q);
+  }
+
+  for (const doc of dbAptDocs) {
+    const qId = String(doc.questionId || doc._id);
+    if (!map.has(qId)) {
+      map.set(qId, {
+        _id: doc._id,
+        questionId: qId,
+        question: doc.question,
+        options: doc.options || [],
+        correctAnswer: doc.correctAnswer,
+        explanation: doc.explanation || "",
+        difficulty: doc.difficulty || "Medium",
+        marks: doc.marks || 1,
+        category: doc.category || "Aptitude",
+        companyId: folder,
+        questionType: "MCQ",
+        source: "company_mock_aptitude",
+      });
+    }
+  }
+
+  return Array.from(map.values());
+}
+
+/**
  * Async merged loader for coding questions:
  * Combines static JSON coding questions with MongoDB CodingQuestion documents,
- * respecting suppressions (isDeleted: true).
+ * respecting suppressions (isDeleted: true) and excluding questions that belong
+ * to the separate Practice Coding bank for this company.
  */
-export async function loadCompanyMockCodingAsync(company) {
+export async function loadCompanyMockCodingAsync(company, { excludePractice = true } = {}) {
   const folder = toFolderName(company);
   const baseJsonCoding = loadCompanyMockCoding(folder);
 
@@ -285,7 +356,37 @@ export async function loadCompanyMockCodingAsync(company) {
     }
   }
 
-  return Array.from(map.values());
+  let results = Array.from(map.values());
+
+  if (excludePractice) {
+    // Read practice questions for this company to guarantee that Mock Interview coding questions
+    // are completely separate and distinct from the practice bank.
+    const practiceFile = path.resolve(process.cwd(), `backend/data/coding/${folder}.json`);
+    let practiceTitles = new Set();
+    if (fs.existsSync(practiceFile)) {
+      try {
+        const raw = JSON.parse(fs.readFileSync(practiceFile, "utf8"));
+        const list = Array.isArray(raw) ? raw : Array.isArray(raw.questions) ? raw.questions : [];
+        list.forEach((p) => {
+          if (p.title) practiceTitles.add(normalizeQuestionText(p.title));
+          if (p.questionId) practiceTitles.add(String(p.questionId).toLowerCase());
+        });
+      } catch {}
+    }
+
+    if (practiceTitles.size > 0) {
+      const filtered = results.filter(
+        (q) =>
+          !practiceTitles.has(normalizeQuestionText(q.title || q.problemStatement)) &&
+          !practiceTitles.has(String(q.questionId).toLowerCase())
+      );
+      if (filtered.length > 0) {
+        results = filtered;
+      }
+    }
+  }
+
+  return results;
 }
 
 /**

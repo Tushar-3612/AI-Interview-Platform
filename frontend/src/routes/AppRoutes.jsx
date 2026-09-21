@@ -56,6 +56,7 @@ import IndividualTechnicalPractice from "../pages/student/IndividualTechnicalPra
 import IndividualTechnicalResult from "../pages/student/IndividualTechnicalResult";
 import IndividualProjectPractice from "../pages/student/IndividualProjectPractice";
 import IndividualProjectResult from "../pages/student/IndividualProjectResult";
+import CodingRoundSelect from "../pages/student/CodingRoundSelect";
 
 function AppRoutes() {
   return (
@@ -109,6 +110,7 @@ function AppRoutes() {
         <Route path="/placement/mock-oa" element={<MockOA />} />
         <Route path="/mock-interview" element={<MockInterview />} />
         <Route path="/mock-interview/history" element={<CompanyMockHistory />} />
+        <Route path="/coding-round" element={<CodingRoundSelect />} />
         <Route path="/placement/company-analytics" element={<CompanyAnalytics />} />
         <Route path="/placement/performance" element={<PerformanceGraphs />} />
         <Route path="/placement/question-analytics" element={<QuestionAnalytics />} />

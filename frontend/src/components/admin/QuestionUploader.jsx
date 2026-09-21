@@ -194,13 +194,30 @@ export default function QuestionUploader({ source, onAdd, onCancel }) {
           )}
 
           <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-            Please fix the file using the official template and upload it again. Only fully valid files can be imported.
+            Please fix the file using the official template and upload it again, or import the valid questions now.
           </p>
-          <button onClick={() => setResult(null)}
-            className="w-full flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-medium border admin-border rounded-lg admin-hover cursor-pointer"
-            style={{ color: "var(--text-secondary)" }}>
-            Re-upload File
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setResult(null)}
+              className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-medium border admin-border rounded-lg admin-hover cursor-pointer"
+              style={{ color: "var(--text-secondary)" }}
+            >
+              Re-upload File
+            </button>
+            {result.validCount > 0 && (
+              <button
+                onClick={() => {
+                  onAdd(result.validQuestions);
+                  setResult(null);
+                  toast.success(`Imported ${result.validCount} valid questions`);
+                }}
+                className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-medium text-white rounded-lg cursor-pointer"
+                style={{ background: "var(--primary)" }}
+              >
+                <CheckCircle className="w-3.5 h-3.5" /> Import {result.validCount} Valid
+              </button>
+            )}
+          </div>
         </div>
       )}
 

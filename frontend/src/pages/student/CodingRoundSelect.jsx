@@ -5,25 +5,23 @@ import { toast } from "react-hot-toast";
 import api from "../../utils/api";
 import { getAuthToken } from "../../hooks/useStudentProfile";
 import {
-  Building2,
+  Code2,
   Loader2,
   Play,
   Hourglass,
   History,
-  Lock,
-  Inbox,
-  ListChecks,
+  Building2,
   Timer,
   ArrowRight,
-  BrainCircuit,
-  Code2,
-  BookOpen,
   Search,
   CheckCircle2,
   ShieldCheck,
   Sparkles,
   X,
-  FileText,
+  FileCode,
+  Layers,
+  Terminal,
+  Cpu,
 } from "lucide-react";
 
 const ENTERPRISE_COMPANIES = [
@@ -34,12 +32,8 @@ const ENTERPRISE_COMPANIES = [
     category: "IT Services",
     tag: "Active",
     tagType: "active",
-    subtitle: "Cognitive & Tech Assessment",
-    aptitudeCount: 45,
-    aptitudeLabel: "Aptitude",
-    codingCount: 2,
-    codingLabel: "Coding",
-    duration: "90 Mins",
+    subtitle: "DSA, String & Array Algorithms",
+    duration: "60 Mins",
     color: "#9333EA",
     bg: "#2A154A",
   },
@@ -50,12 +44,8 @@ const ENTERPRISE_COMPANIES = [
     category: "Big 4 & Consulting",
     tag: "Consulting",
     tagType: "default",
-    subtitle: "Versant & Quantitative Round",
-    aptitudeCount: 50,
-    aptitudeLabel: "Aptitude",
-    codingCount: 1,
-    codingLabel: "Coding",
-    duration: "75 Mins",
+    subtitle: "Data Structures & Business Logic",
+    duration: "60 Mins",
     color: "#10B981",
     bg: "#063028",
   },
@@ -66,12 +56,8 @@ const ENTERPRISE_COMPANIES = [
     category: "IT Services",
     tag: "Popular",
     tagType: "popular",
-    subtitle: "Ninja & Digital Tier Patterns",
-    aptitudeCount: 60,
-    aptitudeLabel: "Aptitude",
-    codingCount: 2,
-    codingLabel: "Coding",
-    duration: "110 Mins",
+    subtitle: "Ninja & Digital Coding Tracks",
+    duration: "60 Mins",
     color: "#3B82F6",
     bg: "#0F284E",
   },
@@ -82,12 +68,8 @@ const ENTERPRISE_COMPANIES = [
     category: "IT Services",
     tag: "IT",
     tagType: "default",
-    subtitle: "Pseudocode & Game-based",
-    aptitudeCount: 40,
-    aptitudeLabel: "MCQ",
-    codingCount: 25,
-    codingLabel: "Pseudo",
-    duration: "80 Mins",
+    subtitle: "Pseudocode & Coding Challenges",
+    duration: "60 Mins",
     color: "#06B6D4",
     bg: "#083344",
   },
@@ -98,12 +80,8 @@ const ENTERPRISE_COMPANIES = [
     category: "IT Services",
     tag: "IT",
     tagType: "default",
-    subtitle: "GenC & GenC Elevate Round",
-    aptitudeCount: 35,
-    aptitudeLabel: "Aptitude",
-    codingCount: 2,
-    codingLabel: "Coding",
-    duration: "90 Mins",
+    subtitle: "GenC & Elevate Algorithm Problems",
+    duration: "60 Mins",
     color: "#6366F1",
     bg: "#1E1B4B",
   },
@@ -114,12 +92,8 @@ const ENTERPRISE_COMPANIES = [
     category: "IT Services",
     tag: "IT",
     tagType: "default",
-    subtitle: "Specialist & SE Assessment",
-    aptitudeCount: 54,
-    aptitudeLabel: "Aptitude",
-    codingCount: 3,
-    codingLabel: "Coding",
-    duration: "100 Mins",
+    subtitle: "Specialist & System Engineer Coding",
+    duration: "60 Mins",
     color: "#0284C7",
     bg: "#082F49",
   },
@@ -130,12 +104,8 @@ const ENTERPRISE_COMPANIES = [
     category: "IT Services",
     tag: "IT",
     tagType: "default",
-    subtitle: "Elite NLTH Assessment",
-    aptitudeCount: 48,
-    aptitudeLabel: "Aptitude",
-    codingCount: 2,
-    codingLabel: "Coding",
-    duration: "95 Mins",
+    subtitle: "Elite NLTH Problem Solving",
+    duration: "60 Mins",
     color: "#A855F7",
     bg: "#3B0764",
   },
@@ -146,34 +116,26 @@ const ENTERPRISE_COMPANIES = [
     category: "Big 4 & Consulting",
     tag: "Product",
     tagType: "default",
-    subtitle: "Product & Algorithm Track",
-    aptitudeCount: 30,
-    aptitudeLabel: "Aptitude",
-    codingCount: 3,
-    codingLabel: "Coding",
-    duration: "85 Mins",
+    subtitle: "Product & Algorithmic Optimization",
+    duration: "60 Mins",
     color: "#F59E0B",
     bg: "#451A03",
   },
   {
     id: "celebal",
     name: "Celebal",
-    code: "CT",
+    code: "CE",
     category: "Cloud & Data",
     tag: "Cloud",
     tagType: "default",
-    subtitle: "Data & Cloud Developer Test",
-    aptitudeCount: 35,
-    aptitudeLabel: "Aptitude",
-    codingCount: 2,
-    codingLabel: "Coding",
-    duration: "75 Mins",
+    subtitle: "Data & Cloud Developer Problem Track",
+    duration: "60 Mins",
     color: "#EC4899",
     bg: "#500724",
   },
 ];
 
-export default function MockInterview() {
+export default function CodingRoundSelect() {
   const navigate = useNavigate();
   const token = getAuthToken();
   const authHeaders = useMemo(() => ({ Authorization: `Bearer ${token}` }), [token]);
@@ -183,9 +145,9 @@ export default function MockInterview() {
   const [selectedCompanyId, setSelectedCompanyId] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
-  const [unfinished, setUnfinished] = useState([]);
-  const [loadingRows, setLoadingRows] = useState(false);
-  const [resumingId, setResumingId] = useState(null);
+  const [recentSubmissions, setRecentSubmissions] = useState([]);
+  const [companyQuestions, setCompanyQuestions] = useState([]);
+  const [loadingQuestions, setLoadingQuestions] = useState(false);
   const [starting, setStarting] = useState(false);
   const [showSyllabusModal, setShowSyllabusModal] = useState(false);
   const searchInputRef = useRef(null);
@@ -203,11 +165,15 @@ export default function MockInterview() {
   }, []);
 
   useEffect(() => {
-    const fetchCompanies = async () => {
+    const fetchCompaniesAndActivity = async () => {
       setLoadingCompanies(true);
       try {
-        const { data } = await api.get("/api/companies", { headers: authHeaders });
-        setCompanies(Array.isArray(data) ? data : []);
+        const [compRes, histRes] = await Promise.all([
+          api.get("/api/companies", { headers: authHeaders }),
+          api.get("/api/practice/coding/history", { headers: authHeaders, params: { limit: 10 } }).catch(() => ({ data: [] })),
+        ]);
+        setCompanies(Array.isArray(compRes.data) ? compRes.data : []);
+        setRecentSubmissions(histRes.data?.submissions || histRes.data || []);
       } catch {
         setCompanies([]);
       } finally {
@@ -215,20 +181,7 @@ export default function MockInterview() {
       }
     };
 
-    const fetchUnfinished = async () => {
-      setLoadingRows(true);
-      try {
-        const { data } = await api.get("/api/mock-interview/unfinished", { headers: authHeaders });
-        setUnfinished(data.rows || []);
-      } catch {
-        setUnfinished([]);
-      } finally {
-        setLoadingRows(false);
-      }
-    };
-
-    fetchCompanies();
-    fetchUnfinished();
+    fetchCompaniesAndActivity();
   }, [authHeaders]);
 
   // Only display companies added by admin and active in MongoDB
@@ -255,21 +208,18 @@ export default function MockInterview() {
         c.subtitle ||
         c.description ||
         preset?.subtitle ||
-        `${c.difficulty || "Standard"} Placement Assessment`;
+        `${c.difficulty || "Standard"} Coding Track`;
 
-      const aptitudeCount =
-        c.aptitudeCount ??
-        (c.technical != null ? c.technical : preset?.aptitudeCount ?? 30);
       const codingCount =
         c.codingCount ??
-        (c.coding != null ? c.coding : preset?.codingCount ?? 2);
+        (c.coding != null ? c.coding : preset?.codingCount ?? 3);
 
       const duration = c.duration
         ? (typeof c.duration === "number" ? `${c.duration} Mins` : c.duration)
-        : (preset?.duration || "90 Mins");
+        : (preset?.duration || "60 Mins");
 
-      const color = c.color || preset?.color || "#FF6B35";
-      const bg = preset?.bg || (color ? `${color}22` : "rgba(255,107,53,0.15)");
+      const color = c.color || preset?.color || "#06B6D4";
+      const bg = preset?.bg || (color ? `${color}22` : "rgba(6,182,212,0.15)");
 
       return {
         id: realId,
@@ -280,10 +230,7 @@ export default function MockInterview() {
         tag: preset?.tag || (c.status === "active" ? "Active" : "Standard"),
         tagType: preset?.tagType || (c.status === "active" ? "active" : "default"),
         subtitle,
-        aptitudeCount,
-        aptitudeLabel: preset?.aptitudeLabel || "Aptitude",
         codingCount,
-        codingLabel: preset?.codingLabel || "Coding",
         duration,
         color,
         bg,
@@ -336,50 +283,45 @@ export default function MockInterview() {
     );
   }, [mergedCompanies, selectedCompanyId]);
 
-  const unfinishedCount = unfinished.length;
-  const maxUnfinished = 2;
-  const limitReached = unfinishedCount >= maxUnfinished;
+  // Load preview questions for the selected company for the Syllabus Modal
+  useEffect(() => {
+    if (!selectedCompany) return;
+    const fetchCompanyQuestions = async () => {
+      setLoadingQuestions(true);
+      try {
+        const targetId = selectedCompany.realId || selectedCompany.id;
+        const res = await api.get("/api/coding-questions", {
+          headers: authHeaders,
+          params: { companyId: targetId, limit: 10 },
+        });
+        setCompanyQuestions(res.data?.questions || []);
+      } catch {
+        setCompanyQuestions([]);
+      } finally {
+        setLoadingQuestions(false);
+      }
+    };
+    fetchCompanyQuestions();
+  }, [selectedCompany, authHeaders]);
 
   const handleBegin = () => {
     if (!selectedCompany) {
       toast.error("Please select a target company.");
       return;
     }
-    if (limitReached) {
-      toast.error("You have 2 unfinished mock interviews. Complete one before starting another.");
-      return;
-    }
     setStarting(true);
     const targetId = selectedCompany.realId || selectedCompany.id;
-    window.open(`/company-mock?companyId=${encodeURIComponent(targetId)}`, "_blank");
-    setTimeout(() => setStarting(false), 800);
-  };
-
-  const handleResume = (attemptId) => {
-    setResumingId(attemptId);
-    window.open(`/company-mock?resume=${attemptId}`, "_blank");
-    setTimeout(() => setResumingId(null), 800);
-  };
-
-  const fmtTime = (totalSeconds) => {
-    const s = Math.max(0, Math.floor(totalSeconds));
-    const h = Math.floor(s / 3600);
-    const m = Math.floor((s % 3600) / 60);
-    const sec = s % 60;
-    const mm = String(m).padStart(2, "0");
-    const ss = String(sec).padStart(2, "0");
-    return h > 0 ? `${String(h).padStart(2, "0")}:${mm}:${ss}` : `${mm}:${ss}`;
+    navigate(`/interview-practice/${encodeURIComponent(targetId)}/coding`);
   };
 
   return (
     <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-8 space-y-6 pb-24 lg:pb-8">
-      
       {/* ── MAIN CARD CONTAINER ── */}
       <section 
         className="bg-[var(--card-bg)] border border-[var(--border)] rounded-[24px] sm:rounded-[28px] p-5 sm:p-7 shadow-[var(--shadow-card)] relative overflow-hidden space-y-6"
       >
-        {/* Top glowing orange accent line */}
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#FF6B35] to-transparent opacity-80" />
+        {/* Top glowing cyan accent line */}
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#06B6D4] to-transparent opacity-80" />
 
         {/* ── Top Header Row ── */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -387,34 +329,34 @@ export default function MockInterview() {
             <div 
               className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 border"
               style={{
-                background: "rgba(255, 107, 53, 0.12)",
-                borderColor: "rgba(255, 107, 53, 0.35)",
-                color: "#FF6B35",
+                background: "rgba(6, 182, 212, 0.12)",
+                borderColor: "rgba(6, 182, 212, 0.35)",
+                color: "#06B6D4",
               }}
             >
-              <BrainCircuit className="w-5 h-5" />
+              <Code2 className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-xl sm:text-2xl font-black tracking-tight" style={{ color: "var(--text-primary)" }}>
-                  Start Mock Interview
+                  Start Coding Round
                 </h1>
-                <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-300 border border-purple-500/30">
-                  AI-Assessed
+                <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-400 border border-cyan-500/30">
+                  IDE-Evaluated
                 </span>
               </div>
               <p className="text-xs text-[var(--text-secondary)] mt-1">
-                Practice verified hiring assessment patterns designed specifically for global tech enterprises.
+                Solve company-specific algorithmic coding questions in multi-language Monaco IDE with automated testcase scoring.
               </p>
             </div>
           </div>
 
           <div className="self-start sm:self-auto flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--bg-secondary)] border border-[var(--border)] text-xs font-semibold text-[var(--text-secondary)] shrink-0">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
             <span>
               {loadingCompanies
                 ? "Loading Companies..."
-                : `${mergedCompanies.length} Active ${mergedCompanies.length === 1 ? "Pattern" : "Patterns"}`}
+                : `${mergedCompanies.length} Active ${mergedCompanies.length === 1 ? "Track" : "Tracks"}`}
             </span>
           </div>
         </div>
@@ -423,10 +365,10 @@ export default function MockInterview() {
         <div className="space-y-4 pt-2">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
             <h2 className="text-sm sm:text-base font-bold text-[var(--text-primary)]">
-              Select Target Company <span className="text-[#FF6B35]">*</span>
+              Select Target Company <span className="text-[#06B6D4]">*</span>
             </h2>
             <span className="text-xs text-[var(--text-muted)]">
-              Choose an active admin-configured company to load tailored assessment patterns
+              Choose an active admin-configured company to load tailored coding problems
             </span>
           </div>
 
@@ -476,8 +418,8 @@ export default function MockInterview() {
                     onClick={() => setActiveCategory(cat)}
                     className={`shrink-0 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
                       active
-                        ? "bg-[#FF6B35] text-white shadow-md shadow-[#FF6B35]/25"
-                        : "bg-[var(--bg-secondary)] text-[var(--text-secondary)] border border-[var(--border)] hover:border-[#FF6B35]/30 hover:text-[var(--text-primary)]"
+                        ? "bg-[#06B6D4] text-white shadow-md shadow-[#06B6D4]/25"
+                        : "bg-[var(--bg-secondary)] text-[var(--text-secondary)] border border-[var(--border)] hover:border-[#06B6D4]/30 hover:text-[var(--text-primary)]"
                     }`}
                   >
                     {label}
@@ -491,18 +433,18 @@ export default function MockInterview() {
         {/* ── Admin Companies Grid ── */}
         {loadingCompanies ? (
           <div className="py-16 text-center text-xs text-[var(--text-muted)] flex items-center justify-center gap-2">
-            <Loader2 className="w-5 h-5 animate-spin text-[#FF6B35]" />
-            <span>Loading active company patterns...</span>
+            <Loader2 className="w-5 h-5 animate-spin text-[#06B6D4]" />
+            <span>Loading active coding tracks...</span>
           </div>
         ) : filteredCompanies.length === 0 ? (
           <div className="py-12 px-4 rounded-2xl border border-dashed border-[var(--border)] text-center bg-[var(--bg-secondary)]/40 space-y-2">
             <Building2 className="w-10 h-10 mx-auto text-[var(--text-muted)] opacity-60" />
             <h3 className="font-bold text-sm sm:text-base text-[var(--text-primary)]">
-              {mergedCompanies.length === 0 ? "No Active Companies Added" : "No Matching Companies Found"}
+              {mergedCompanies.length === 0 ? "No Active Companies Configured" : "No Matching Companies Found"}
             </h3>
             <p className="text-xs text-[var(--text-secondary)] max-w-md mx-auto">
               {mergedCompanies.length === 0
-                ? "Mock interview companies are managed centrally by the administrator. Once an admin adds and activates companies in Company Management, they will automatically appear here."
+                ? "Coding round companies are managed centrally by the administrator. Once an admin activates companies and assigns coding questions, they will automatically appear here."
                 : "Try adjusting your search query or switching to another category filter."}
             </p>
           </div>
@@ -518,8 +460,8 @@ export default function MockInterview() {
                   whileTap={{ scale: 0.99 }}
                   className={`p-4 rounded-2xl cursor-pointer transition-all flex flex-col justify-between space-y-3.5 ${
                     isSelected
-                      ? "bg-[#FF6B35]/5 border-2 border-[#FF6B35] shadow-[0_0_20px_rgba(255,107,53,0.18)]"
-                      : "bg-[var(--bg-secondary)] border border-[var(--border)] hover:border-[#FF6B35]/40"
+                      ? "bg-[#06B6D4]/5 border-2 border-[#06B6D4] shadow-[0_0_20px_rgba(6,182,212,0.18)]"
+                      : "bg-[var(--bg-secondary)] border border-[var(--border)] hover:border-[#06B6D4]/40"
                   }`}
                 >
                   <div>
@@ -538,7 +480,7 @@ export default function MockInterview() {
                               {c.name}
                             </h3>
                             {isSelected && (
-                              <CheckCircle2 className="w-4 h-4 text-[#FF6B35]" />
+                              <CheckCircle2 className="w-4 h-4 text-[#06B6D4]" />
                             )}
                           </div>
                         </div>
@@ -548,7 +490,7 @@ export default function MockInterview() {
                       <span
                         className={`text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full border ${
                           c.tagType === "active"
-                            ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
+                            ? "bg-cyan-500/15 text-cyan-400 border-cyan-500/30"
                             : c.tagType === "popular"
                             ? "bg-amber-500/15 text-amber-400 border-amber-500/30"
                             : "bg-[var(--card-bg)] text-[var(--text-muted)] border-[var(--border)]"
@@ -564,18 +506,15 @@ export default function MockInterview() {
                     </p>
                   </div>
 
-                  {/* Bottom Row: Badges + Duration */}
+                  {/* Bottom Row: Coding count + Duration */}
                   <div className="flex items-center justify-between text-xs pt-2.5 border-t border-[var(--border)]/70">
                     <div className="flex items-center gap-2 text-[11px] font-semibold">
-                      <span className="flex items-center gap-1 text-amber-400">
-                        <BookOpen className="w-3 h-3" /> {c.aptitudeCount} {c.aptitudeLabel}
-                      </span>
                       <span className="flex items-center gap-1 text-sky-400">
-                        <Code2 className="w-3 h-3" /> {c.codingCount} {c.codingLabel}
+                        <Code2 className="w-3.5 h-3.5" /> {c.codingCount} Coding Problems
                       </span>
                     </div>
-                    <span className="text-[11px] font-semibold text-[var(--text-muted)]">
-                      {c.duration}
+                    <span className="text-[11px] font-semibold text-[var(--text-muted)] flex items-center gap-1">
+                      <Timer className="w-3 h-3" /> {c.duration}
                     </span>
                   </div>
                 </motion.div>
@@ -587,8 +526,8 @@ export default function MockInterview() {
         {/* ── Bottom Proctored Footer & CTA ── */}
         <div className="pt-4 border-t border-[var(--border)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
-            <ShieldCheck className="w-4 h-4 text-[#FF6B35] shrink-0" />
-            <span>Assessment environment is locked with proctored timer simulation</span>
+            <ShieldCheck className="w-4 h-4 text-[#06B6D4] shrink-0" />
+            <span>Interactive multi-language IDE with real-time testcase execution and compilation diagnostics</span>
           </div>
 
           <div className="flex items-center gap-3">
@@ -599,17 +538,17 @@ export default function MockInterview() {
               className="px-4 py-3 rounded-xl border text-xs font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
               style={{ borderColor: "var(--border)" }}
             >
-              Assessment Syllabus
+              Problem Outline
             </button>
 
             <motion.button
               type="button"
               onClick={handleBegin}
-              disabled={!selectedCompany || limitReached || starting}
+              disabled={!selectedCompany || starting}
               className="px-6 py-3 rounded-xl text-xs sm:text-sm font-bold text-white cursor-pointer flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
-                background: "linear-gradient(135deg, #FF6B35 0%, #FF8A3D 100%)",
-                boxShadow: "0 6px 20px rgba(255, 107, 53, 0.35)",
+                background: "linear-gradient(135deg, #06B6D4 0%, #0891B2 100%)",
+                boxShadow: "0 6px 20px rgba(6, 182, 212, 0.35)",
               }}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
@@ -618,7 +557,7 @@ export default function MockInterview() {
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
                 <>
-                  <span>Begin Test: {selectedCompany ? selectedCompany.name : "Select Company"}</span>
+                  <span>Begin Coding: {selectedCompany ? selectedCompany.name : "Select Company"}</span>
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
@@ -627,63 +566,57 @@ export default function MockInterview() {
         </div>
       </section>
 
-      {/* ── RESUME IN-PROGRESS MOCKS (IF ANY) ── */}
-      {unfinishedCount > 0 && (
+      {/* ── RECENT CODING SUBMISSIONS (IF ANY) ── */}
+      {recentSubmissions.length > 0 && (
         <section className="bg-[var(--card-bg)] border border-[var(--border)] rounded-[24px] p-5 sm:p-6 space-y-4 shadow-[var(--shadow-card)]">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Hourglass className="w-5 h-5 text-[#FF6B35]" />
+              <Terminal className="w-5 h-5 text-[#06B6D4]" />
               <h2 className="text-base font-bold text-[var(--text-primary)]">
-                Resume Mock Interview
+                Recent Coding Activity
               </h2>
             </div>
-            <span className="text-xs font-semibold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-0.5 rounded-full">
-              {unfinishedCount} Active
+            <span className="text-xs font-semibold text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 px-2.5 py-0.5 rounded-full">
+              {recentSubmissions.length} Submissions
             </span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {unfinished.map((u) => {
-              const apt = u.progress?.aptitude || {};
-              const tech = u.progress?.technical || {};
-              const cod = u.progress?.coding || {};
-              return (
-                <div
-                  key={u.attemptId}
-                  className="rounded-2xl p-4 flex flex-col gap-3 bg-[var(--bg-secondary)] border border-[var(--border)]"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-sm text-[var(--text-primary)]">
-                      {u.companyName}
-                    </span>
-                    <span className="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-400 border border-amber-500/30">
-                      In Progress
-                    </span>
-                  </div>
-
-                  <div className="text-xs text-[var(--text-secondary)] flex items-center gap-3">
-                    <span>Aptitude: <b className="text-[#FF6B35]">{apt.answered || 0}</b>/{apt.total || 15}</span>
-                    <span>Technical: <b className="text-purple-400">{tech.answered || 0}</b>/{tech.total || 15}</span>
-                    <span>Coding: <b className="text-emerald-400">{cod.answered || 0}</b>/{cod.total || 3}</span>
-                  </div>
-
-                  <div className="flex items-center gap-1.5 text-xs font-semibold text-[var(--text-secondary)]">
-                    <Timer className="w-3.5 h-3.5 text-[#FF6B35]" />
-                    <span>Time left: <b className="text-[var(--text-primary)]">{fmtTime(u.remainingSeconds)}</b></span>
-                  </div>
-
-                  <button
-                    onClick={() => handleResume(u.attemptId)}
-                    disabled={resumingId === u.attemptId}
-                    className="w-full py-2.5 rounded-xl text-xs font-bold text-white flex items-center justify-center gap-2 cursor-pointer transition-opacity hover:opacity-90"
-                    style={{ background: "linear-gradient(135deg, #FF6B35 0%, #FF8A3D 100%)" }}
+            {recentSubmissions.slice(0, 4).map((sub) => (
+              <div
+                key={sub._id || sub.id}
+                className="rounded-2xl p-4 flex flex-col justify-between gap-3 bg-[var(--bg-secondary)] border border-[var(--border)]"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-sm text-[var(--text-primary)] truncate max-w-[200px]">
+                    {sub.title || "Algorithmic Challenge"}
+                  </span>
+                  <span
+                    className={`text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-md border ${
+                      sub.status === "accepted"
+                        ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
+                        : "bg-red-500/15 text-red-400 border-red-500/30"
+                    }`}
                   >
-                    {resumingId === u.attemptId ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowRight className="w-4 h-4" />}
-                    <span>Resume Interview</span>
-                  </button>
+                    {sub.status === "accepted" ? "Accepted" : "Failed Cases"}
+                  </span>
                 </div>
-              );
-            })}
+
+                <div className="text-xs text-[var(--text-secondary)] flex items-center justify-between">
+                  <span>Language: <b className="text-cyan-400 uppercase">{sub.language || "Python"}</b></span>
+                  <span>Passed: <b className="text-[var(--text-primary)]">{sub.passedCount ?? 0}/{sub.totalCount ?? 5}</b></span>
+                </div>
+
+                <button
+                  onClick={() => navigate(`/interview-practice/${sub.companyId || "tcs"}/coding`)}
+                  className="w-full py-2.5 rounded-xl text-xs font-bold text-white flex items-center justify-center gap-2 cursor-pointer transition-opacity hover:opacity-90 shadow-md"
+                  style={{ background: "linear-gradient(135deg, #06B6D4 0%, #0891B2 100%)" }}
+                >
+                  <Play className="w-3.5 h-3.5" />
+                  <span>Resume Problem in IDE</span>
+                </button>
+              </div>
+            ))}
           </div>
         </section>
       )}
@@ -691,16 +624,16 @@ export default function MockInterview() {
       {/* ── History Link Footer ── */}
       <div className="flex justify-center pt-2">
         <button
-          onClick={() => navigate("/mock-interview/history")}
+          onClick={() => navigate("/practice/coding/history")}
           className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold border hover:bg-[var(--card-bg)] transition-colors cursor-pointer"
           style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
         >
-          <History className="w-4 h-4 text-[#FF6B35]" />
-          <span>View Mock Interview History</span>
+          <History className="w-4 h-4 text-[#06B6D4]" />
+          <span>View All Coding Submissions</span>
         </button>
       </div>
 
-      {/* ── Assessment Syllabus Modal ── */}
+      {/* ── Problem Outline Modal ── */}
       <AnimatePresence>
         {showSyllabusModal && (
           <motion.div
@@ -717,9 +650,9 @@ export default function MockInterview() {
             >
               <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
                 <div className="flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-[#FF6B35]" />
+                  <FileCode className="w-5 h-5 text-[#06B6D4]" />
                   <h3 className="text-base font-bold text-[var(--text-primary)]">
-                    {selectedCompany?.name || "Company"} Assessment Syllabus
+                    {selectedCompany?.name || "Company"} Coding Problem Outline
                   </h3>
                 </div>
                 <button
@@ -732,26 +665,43 @@ export default function MockInterview() {
 
               <div className="space-y-3 text-xs text-[var(--text-secondary)] max-h-80 overflow-y-auto pr-1">
                 <div className="p-3 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border)]">
-                  <h4 className="font-bold text-[var(--text-primary)] mb-1">1. Aptitude &amp; Cognitive</h4>
-                  <p>Quantitative Ability, Logical Reasoning, Verbal Comprehension, Data Interpretation, and Pseudocode analysis.</p>
+                  <h4 className="font-bold text-[var(--text-primary)] mb-1 flex items-center gap-1.5">
+                    <Layers className="w-3.5 h-3.5 text-cyan-400" /> Key Topics &amp; Patterns
+                  </h4>
+                  <p>Arrays, HashMaps, Two Pointers, Dynamic Programming, Binary Search, Trees, and Graph Traversal.</p>
                 </div>
 
                 <div className="p-3 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border)]">
-                  <h4 className="font-bold text-[var(--text-primary)] mb-1">2. Technical &amp; Core CS</h4>
-                  <p>Data Structures, Algorithms, DBMS, SQL, Operating Systems, Computer Networks, and OOPS concepts.</p>
+                  <h4 className="font-bold text-[var(--text-primary)] mb-1 flex items-center gap-1.5">
+                    <Cpu className="w-3.5 h-3.5 text-emerald-400" /> Evaluation Rigor
+                  </h4>
+                  <p>Codes are benchmarked against public visible testcases and strict hidden boundary testcases with strict time limit (1000ms) and memory limits.</p>
                 </div>
 
-                <div className="p-3 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border)]">
-                  <h4 className="font-bold text-[var(--text-primary)] mb-1">3. Live Coding IDE</h4>
-                  <p>Algorithmic challenges evaluated against public and hidden unit testcases with time &amp; space complexity constraints.</p>
-                </div>
+                {loadingQuestions ? (
+                  <div className="text-center py-4 text-[var(--text-muted)] flex items-center justify-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin text-[#06B6D4]" />
+                    <span>Loading company problem titles...</span>
+                  </div>
+                ) : companyQuestions.length > 0 ? (
+                  <div className="p-3 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border)] space-y-2">
+                    <h4 className="font-bold text-[var(--text-primary)]">Sample Company Problems:</h4>
+                    <ul className="space-y-1.5 list-disc list-inside text-[var(--text-primary)] font-medium">
+                      {companyQuestions.slice(0, 5).map((q) => (
+                        <li key={q._id || q.questionId} className="truncate">
+                          {q.title} <span className="text-[10px] text-cyan-400 font-semibold uppercase">({q.difficulty})</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
               </div>
 
               <button
                 onClick={() => setShowSyllabusModal(false)}
-                className="w-full py-2.5 rounded-xl bg-[#FF6B35] text-white font-bold text-xs cursor-pointer shadow-md"
+                className="w-full py-2.5 rounded-xl bg-[#06B6D4] text-white font-bold text-xs cursor-pointer shadow-md"
               >
-                Close Syllabus
+                Close Outline
               </button>
             </motion.div>
           </motion.div>

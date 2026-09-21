@@ -15,6 +15,8 @@ import {
   saveAnswer,
   getAttemptState,
   recordTabSwitch,
+  recordIntegrityEvent,
+  recordHeartbeat,
   submitTest,
   getTestResult,
 } from "../controllers/testAttemptController.js";
@@ -68,6 +70,8 @@ router.post("/tests/:testId/start", startTest);
 router.get("/tests/attempt/:attemptId", getAttemptState);
 router.post("/tests/attempt/:attemptId/answer", saveAnswer);
 router.post("/tests/attempt/:attemptId/tab-switch", recordTabSwitch);
+router.post("/tests/attempt/:attemptId/integrity-event", recordIntegrityEvent);
+router.post("/tests/attempt/:attemptId/heartbeat", recordHeartbeat);
 router.post("/tests/attempt/:attemptId/submit", submitTest);
 router.get("/tests/attempt/:attemptId/result", getTestResult);
 

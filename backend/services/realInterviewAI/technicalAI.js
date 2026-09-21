@@ -10,7 +10,7 @@ import { AIGateway } from "../aiReliability/index.js";
 import { isDuplicateQuestion, normalizeQuestionText } from "../realInterview/questionHistoryService.js";
 
 function getTechnicalApiKey() {
-  return (process.env.REAL_INTERVIEW_TECHNICAL_API_KEY || process.env.GROQ_API_KEY || "").trim();
+  return (process.env.REAL_INTERVIEW_TECHNICAL_API_KEY || process.env.GROQ_API_KEY || process.env.AI_API_KEY || "").trim();
 }
 
 function getTechnicalModel() {

@@ -20,6 +20,7 @@ import toast from "react-hot-toast";
 const getBreadcrumbTitle = (pathname) => {
   if (pathname === "/dashboard" || pathname === "/") return "Dashboard";
   if (pathname.startsWith("/interview-practice")) return "Question Tracker";
+  if (pathname.startsWith("/coding-round")) return "Coding Round";
   if (pathname.startsWith("/mock-interview")) return "Mock Interview";
   if (pathname.startsWith("/tests")) return "My Tests";
   if (pathname.startsWith("/placement-dashboard")) return "Placement";

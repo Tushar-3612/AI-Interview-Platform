@@ -1,11 +1,24 @@
+import fs from "fs";
+import path from "path";
+import { pathToFileURL } from "url";
+import { createRequire } from "module";
 import mammoth from "mammoth";
 import * as XLSX from "xlsx";
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
 
-pdfjsLib.GlobalWorkerOptions.standardFontDataUrl = new URL(
-  "pdfjs-dist/standard_fonts/",
-  import.meta.url
-).toString();
+function getStandardFontDataUrl() {
+  try {
+    const req = createRequire(import.meta.url);
+    const pkg = req.resolve("pdfjs-dist/package.json");
+    const fontsDir = path.join(path.dirname(pkg), "standard_fonts");
+    if (fs.existsSync(fontsDir)) {
+      return pathToFileURL(fontsDir).toString() + "/";
+    }
+  } catch {
+    /* ignore */
+  }
+  return undefined;
+}
 
 /* ============================================================
    CONSTANTS
@@ -28,8 +41,31 @@ const LABELS = [
 ];
 
 /* ============================================================
-   HELPERS
+   HELPERS & NOISE CLEANING
    ============================================================ */
+
+export function isNoiseLine(line) {
+  const t = (line || "").trim();
+  if (!t) return false;
+  if (/^[—\-_=\*\.]{3,}$/.test(t)) return true;
+  if (/(?:•|\||-|–)?\s*Page\s*\d+(?:\s*(?:of|\/)\s*\d+)?\s*$/i.test(t)) return true;
+  if (/^\s*Page\s*\d+(?:\s*(?:of|\/)\s*\d+)?\s*$/i.test(t)) return true;
+  if (/^AI-Powered Interview & Assessment Platform/i.test(t)) return true;
+  if (/.*Question Import Template.*$/i.test(t)) return true;
+  if (/^Use only the official template for reliable question import\./i.test(t)) return true;
+  if (/^Subject:\s*[^|]+\|\s*Question Type:\s*[^|]+\|\s*Marks:/i.test(t)) return true;
+  if (/^The following questions follow the field structure/i.test(t)) return true;
+  if (/^\s*(?:TECHNICAL|APTITUDE|CODING)\s+QUESTION(?:\s+FORMAT)?\s*$/i.test(t)) return true;
+  return false;
+}
+
+export function cleanExtractedText(text) {
+  if (!text) return "";
+  return text
+    .split(/\r?\n/)
+    .filter((l) => !isNoiseLine(l))
+    .join("\n");
+}
 
 function regexEscape(s) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -55,11 +91,29 @@ function sanitizeTextType(value) {
   return String(value).replace(/<[^>]*>/g, "").trim();
 }
 
-function normalizeAnswer(raw) {
+function normalizeAnswer(raw, options = {}) {
   const a = sanitizeText(raw);
   if (!a) return "";
-  const m = a.match(/^([A-Da-d])\s*[.)]?\s*$/);
-  return m ? m[1].toUpperCase() : a.toUpperCase();
+
+  // 1. Starts with option letter like "A", "B.", "C)", "(D)", "Option C", "Option: C"
+  const startMatch = a.match(/^\s*(?:option\s*)?\(?([A-Da-d])\)?(?:\s*[.):\-\s]|$)/i);
+  if (startMatch) return startMatch[1].toUpperCase();
+
+  // 2. Contains standalone option letter
+  const tokenMatch = a.match(/\b([A-Da-d])\b/);
+  if (tokenMatch) return tokenMatch[1].toUpperCase();
+
+  // 3. Answer is the option text itself
+  if (options && typeof options === "object") {
+    const cleanA = a.toLowerCase().trim();
+    for (const [k, v] of Object.entries(options)) {
+      if (v && sanitizeText(v).toLowerCase().trim() === cleanA) {
+        return k.toUpperCase();
+      }
+    }
+  }
+
+  return a.toUpperCase();
 }
 
 /* ============================================================
@@ -102,22 +156,27 @@ function parseCSV(text) {
    LABEL-BASED PARSER (DOCX + PDF) — Aptitude has no Subject
    ============================================================ */
 
-function fieldValue(block, label) {
-  const re = new RegExp(`\\n\\s*${regexEscape(label)}\\s*:\\s*`, "i");
+function fieldValue(block, label, singleLine = false) {
+  const re = new RegExp(`(?:^|\\n)\\s*${regexEscape(label)}\\s*:\\s*`, "i");
   const m = re.exec(block);
   if (!m) return "";
   const start = m.index + m[0].length;
   let end = block.length;
   for (const l of LABELS) {
-    if (l === label) continue;
-    const r2 = new RegExp(`\\n\\s*${regexEscape(l)}\\s*:[ \\t]*`, "i");
+    if (l.toLowerCase() === label.toLowerCase()) continue;
+    const r2 = new RegExp(`(?:^|\\n)\\s*${regexEscape(l)}\\s*:[ \\t]*`, "i");
     const m2 = r2.exec(block.slice(start));
     if (m2) {
       const candidate = start + m2.index;
       if (candidate < end) end = candidate;
     }
   }
-  return sanitizeText(block.slice(start, end).replace(/\s+/g, " "));
+  let raw = block.slice(start, end).trim();
+  if (singleLine) {
+    const lines = raw.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+    raw = lines[0] || "";
+  }
+  return sanitizeText(raw.replace(/\s+/g, " "));
 }
 
 function parseOptions(text) {
@@ -138,7 +197,12 @@ function parseOptions(text) {
   for (let i = 0; i < matches.length; i++) {
     const contentStart = matches[i].contentStart;
     const nextMarkerStart = i + 1 < matches.length ? matches[i + 1].markerStart : normalized.length;
-    opts[matches[i].letter] = sanitizeText(normalized.slice(contentStart, nextMarkerStart).trim());
+    let content = normalized.slice(contentStart, nextMarkerStart).trim();
+    if (i === matches.length - 1) {
+      const lines = content.split(/\r?\n/).filter((l) => !isNoiseLine(l));
+      content = lines.join(" ").trim();
+    }
+    opts[matches[i].letter] = sanitizeText(content);
   }
   return opts;
 }
@@ -146,20 +210,21 @@ function parseOptions(text) {
 function parseBlock(block) {
   try {
     const qidMatch = block.match(/^\s*question\s*id\s*:\s*(\S+)/i);
-    const questionId = qidMatch ? sanitizeText(qidMatch[1]) : "";
+    const questionId = qidMatch ? sanitizeText(qidMatch[1]) : fieldValue(block, "Question ID", true);
     const question = fieldValue(block, "Question");
-    const type = normalizeType(fieldValue(block, "Type"));
+    const type = normalizeType(fieldValue(block, "Type", true));
     const optionsText = fieldValue(block, "Options");
     const options = parseOptions(optionsText);
+    const rawAnswer = fieldValue(block, "Correct Answer", true);
     return {
       questionId,
       question,
       type,
-      marks: fieldValue(block, "Marks") || "0",
-      negativeMarks: fieldValue(block, "Negative Marks") || "0",
-      difficulty: fieldValue(block, "Difficulty"),
+      marks: fieldValue(block, "Marks", true) || "0",
+      negativeMarks: fieldValue(block, "Negative Marks", true) || "0",
+      difficulty: fieldValue(block, "Difficulty", true),
       options,
-      correctAnswer: normalizeAnswer(fieldValue(block, "Correct Answer")),
+      correctAnswer: normalizeAnswer(rawAnswer, options),
       explanation: fieldValue(block, "Explanation"),
     };
   } catch {
@@ -190,7 +255,8 @@ function splitBlocks(text) {
 }
 
 function parseLabeled(text) {
-  const blocks = splitBlocks(text);
+  const cleaned = cleanExtractedText(text);
+  const blocks = splitBlocks(cleaned);
   const out = [];
   for (const block of blocks) {
     const parsed = parseBlock(block);
@@ -205,16 +271,17 @@ function parseLabeled(text) {
 
 async function extractDocxText(buffer) {
   const result = await mammoth.extractRawText({ buffer });
-  return result.value || "";
+  return cleanExtractedText(result.value || "");
 }
 
 async function extractPDFText(buffer) {
   const uint8 = new Uint8Array(buffer);
-  const pdf = await pdfjsLib.getDocument({ data: uint8 }).promise;
+  const standardFontDataUrl = getStandardFontDataUrl();
+  const pdf = await pdfjsLib.getDocument({
+    data: uint8,
+    ...(standardFontDataUrl ? { standardFontDataUrl } : {}),
+  }).promise;
   let text = "";
-  for (let i = 1; i <= pdf.numPages; i++) {
-    await pdf.getPage(i);
-  }
   for (let i = 1; i <= pdf.numPages; i++) {
     const page = await pdf.getPage(i);
     const content = await page.getTextContent();
@@ -226,9 +293,13 @@ async function extractPDFText(buffer) {
       pageText += item.str + " ";
       lastY = y;
     }
-    text += pageText + "\n\n";
+    const cleanedPage = pageText
+      .split(/\r?\n/)
+      .filter((l) => !isNoiseLine(l))
+      .join("\n");
+    text += cleanedPage + "\n\n";
   }
-  return text;
+  return cleanExtractedText(text);
 }
 
 /* ============================================================

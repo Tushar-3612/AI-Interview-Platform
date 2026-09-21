@@ -13,6 +13,7 @@ import {
   loadCompanyMockCoding,
   loadCompanyMockTechnicalAsync,
   loadCompanyMockCodingAsync,
+  loadCompanyMockAptitudeAsync,
 } from "../services/companyMockBank.js";
 import {
   evaluateSingleAnswer,
@@ -274,23 +275,27 @@ export const startMockInterview = async (req, res) => {
       return { questions: picked, resetType: null };
     }
 
-    /* ── 1) APTITUDE — existing local DB bank, topped up from the in-memory bank ── */
-    const aptitudePool = (
-      await AptitudeQuestion.find({ isActive: true, isDeleted: false }).lean()
-    ).map((q) => ({ ...q, _id: String(q._id || q.questionId) }));
+    /* ── 1) APTITUDE — Company-specific exclusive Mock Interview MCQ pool, distinct from practice bank ── */
+    const mockAptitude = (await loadCompanyMockAptitudeAsync(company.id)).map((q) => ({
+      ...q,
+      _id: q.questionId || String(q._id),
+    }));
+
+    let aptitudePool = mockAptitude;
+    // Top up from the DB aptitude bank only if this company has fewer than required exclusive questions
+    if (aptitudePool.length < config.aptitudeCount) {
+      const dbAptitude = (
+        await AptitudeQuestion.find({ isActive: true, isDeleted: false }).lean()
+      ).map((q) => ({ ...q, _id: String(q._id || q.questionId) }));
+      const usedIds = new Set(aptitudePool.map((q) => String(q._id)));
+      aptitudePool = aptitudePool.concat(
+        pickFromPool(dbAptitude, usedIds, config.aptitudeCount - aptitudePool.length)
+      );
+    }
+
     let { questions: aptitudeQuestions, resetType: aptitudeReset } = await pickWithCycleReset(
       aptitudePool, seenIdsFor("aptitude"), config.aptitudeCount, "aptitude", company.id
     );
-    // Top up from the in-memory bank if needed
-    if (aptitudeQuestions.length < config.aptitudeCount) {
-      const bankPool = selectRandomQuestions({ count: config.aptitudeCount }).map((q) => ({
-        ...q,
-        _id: q.questionId,
-      }));
-      aptitudeQuestions = aptitudeQuestions.concat(
-        pickFromPool(bankPool, new Set(aptitudeQuestions.map((q) => String(q._id))), config.aptitudeCount - aptitudeQuestions.length)
-      );
-    }
 
     /* ── 2) TECHNICAL — Adaptive difficulty question selection from company-specific pool.
            Difficulty distribution is tailored to student's recent performance on this company.
@@ -908,7 +913,33 @@ export const saveMockInterviewProgress = async (req, res) => {
     // Return the remaining ACTIVE time so the client can render it.
     const nowMs = Date.now();
     const remainingMs = Math.max(0, (attempt.expiresAt ? attempt.expiresAt.getTime() : 0) - nowMs);
-    res.status(200).json({ saved: true, status: "paused", remainingSeconds: Math.floor(remainingMs / 1000) });
+
+    // Auto-submit if 3 violations reached (window switch, minimization, Alt+Tab)
+    if ((attempt.security?.tabSwitchCount || 0) >= 3 && attempt.status !== "auto_submitted" && attempt.status !== "completed") {
+      const claimed = await CompanyMockAttempt.findOneAndUpdate(
+        { _id: attempt._id, userId, status: { $nin: ["completed", "auto_submitted", "completing"] } },
+        { $set: { status: "completing" } },
+        { new: true }
+      );
+      if (claimed) {
+        const finalized = await gradeAndFinalizeMock(attempt, { status: "auto_submitted" });
+        return res.status(200).json({
+          saved: true,
+          autoSubmitted: true,
+          status: "auto_submitted",
+          attemptId: finalized._id,
+          tabSwitchCount: attempt.security?.tabSwitchCount || 3,
+        });
+      }
+    }
+
+    res.status(200).json({
+      saved: true,
+      status: "paused",
+      remainingSeconds: Math.floor(remainingMs / 1000),
+      tabSwitchCount: attempt.security?.tabSwitchCount || 0,
+      autoSubmitted: false,
+    });
   } catch (error) {
     console.error("Save mock interview progress error:", error);
     res.status(500).json({ message: "Error saving mock interview progress", error: error.message });

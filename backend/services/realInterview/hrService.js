@@ -13,6 +13,7 @@ import { preprocessAnswerBatch } from "../realInterviewAI/answerPreprocessor.js"
 import { resolveCandidateAnswer } from "./answerResolver.js";
 import { classifyInterviewAIError } from "./errorClassifier.js";
 import { idempotentUpsertQuestion } from "../aiReliability/utils/mongoConnectionHelper.js";
+import { resolveHRFallbackQuestions } from "../realInterviewAI/hrFallbackResolver.js";
 
 /**
  * 1. Generate & Process HR Questions (AI CALL #1)
@@ -77,50 +78,62 @@ export async function generateAndProcessHRQuestions({ userId = null, sessionId, 
       }
     } catch (err) {
       console.error(`\n[AI-REQUEST-FAILED]\nround=hr\nrequestId=${requestId}\nerror=${err.message}`);
+      // Attempt curated HR fallback before returning FAILED
+      if (existingQuestions.length < 5) {
+        console.log(`[HRService] AI failed — attempting curated HR fallback for missing ${5 - existingQuestions.length} questions.`);
+        const fallbackDocs = resolveHRFallbackQuestions({
+          sessionId, userId, candidateProfile, existingQuestions, userHistorySet,
+          neededCount: 5 - existingQuestions.length,
+        });
+        for (const fbDoc of fallbackDocs) {
+          const saved = await idempotentUpsertQuestion(
+            RealInterviewHRQuestion,
+            { sessionId, orderIndex: fbDoc.orderIndex },
+            fbDoc
+          );
+          if (saved) existingQuestions.push(saved);
+        }
+        if (existingQuestions.length === 5) {
+          console.log(`[HRService] Curated HR fallback filled all 5 slots successfully.`);
+          session.generationStatus = "GENERATED";
+          session.fallbackUsed = true;
+          await session.save();
+          return {
+            executionCompleted: true, generationSucceeded: false, roundComplete: true,
+            count: 5, expectedCount: 5, status: "COMPLETE", success: true,
+            sessionId, questions: existingQuestions, reused: false,
+            fallbackUsed: true, aiGenerationCalls: session.aiGenerationCalls,
+          };
+        }
+      }
       const classified = classifyInterviewAIError(err);
       session.generationStatus = existingQuestions.length === 5 ? "GENERATED" : (existingQuestions.length > 0 ? "PARTIAL" : "FAILED");
       await session.save();
-
       return {
-        executionCompleted: true,
-        generationSucceeded: false,
+        executionCompleted: true, generationSucceeded: false,
         roundComplete: existingQuestions.length === 5,
-        count: existingQuestions.length,
-        expectedCount: 5,
+        count: existingQuestions.length, expectedCount: 5,
         status: existingQuestions.length === 5 ? "COMPLETE" : (existingQuestions.length > 0 ? "PARTIAL" : "FAILED"),
-        success: false,
-        recoverable: classified.recoverable,
-        generatedCount: existingQuestions.length,
-        totalRequired: 5,
+        success: false, recoverable: classified.recoverable,
+        generatedCount: existingQuestions.length, totalRequired: 5,
         nextQuestionNumber: existingQuestions.length + 1,
-        errorCode: classified.code,
-        message: classified.message,
-        questions: existingQuestions,
+        errorCode: classified.code, message: classified.message, questions: existingQuestions,
       };
     }
 
     if (questionsData.length < 5) {
-      console.error(`\n[AI-REQUEST-FAILED]\nround=hr\nrequestId=${requestId}\nerror=Insufficient unique AI questions returned (${questionsData.length}/5)`);
-      const classified = classifyInterviewAIError("Insufficient unique HR AI questions generated");
-      session.generationStatus = existingQuestions.length === 5 ? "GENERATED" : (existingQuestions.length > 0 ? "PARTIAL" : "FAILED");
-      await session.save();
-
-      return {
-        executionCompleted: true,
-        generationSucceeded: false,
-        roundComplete: existingQuestions.length === 5,
-        count: existingQuestions.length,
-        expectedCount: 5,
-        status: existingQuestions.length === 5 ? "COMPLETE" : (existingQuestions.length > 0 ? "PARTIAL" : "FAILED"),
-        success: false,
-        recoverable: true,
-        generatedCount: existingQuestions.length,
-        totalRequired: 5,
-        nextQuestionNumber: existingQuestions.length + 1,
-        errorCode: classified.code,
-        message: classified.message,
-        questions: existingQuestions,
-      };
+      // Supplement insufficient AI questions with curated HR fallback questions
+      const missingCount = 5 - questionsData.length;
+      console.warn(`[HRService] AI returned only ${questionsData.length}/5 questions. Filling ${missingCount} slots from HR fallback bank.`);
+      const fallbackDocs = resolveHRFallbackQuestions({
+        sessionId, userId, candidateProfile, existingQuestions, userHistorySet,
+        neededCount: missingCount,
+      });
+      // Will be saved below alongside the AI questions
+      questionsData = [...questionsData, ...fallbackDocs.map(fd => ({
+        question: fd.question, category: fd.category, behavioralDimensions: fd.behavioralDimensions,
+        resumeReference: fd.resumeReference, isFallback: true,
+      }))];
     }
 
     console.log(`\n[AI-REQUEST-SUCCESS]\nround=hr\nrequestId=${requestId}\nquestionsReturned=${questionsData.length}`);

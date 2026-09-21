@@ -4,10 +4,22 @@ import * as XLSX from "xlsx";
 import mammoth from "mammoth";
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
 
-pdfjsLib.GlobalWorkerOptions.standardFontDataUrl = new URL(
-  "pdfjs-dist/standard_fonts/",
-  import.meta.url
-).toString();
+import { pathToFileURL } from "url";
+import { createRequire } from "module";
+
+function getStandardFontDataUrl() {
+  try {
+    const req = createRequire(import.meta.url);
+    const pkg = req.resolve("pdfjs-dist/package.json");
+    const fontsDir = path.join(path.dirname(pkg), "standard_fonts");
+    if (fs.existsSync(fontsDir)) {
+      return pathToFileURL(fontsDir).toString() + "/";
+    }
+  } catch {
+    /* ignore */
+  }
+  return undefined;
+}
 
 export const LABELS = [
   "Problem ID", "Problem Title", "Marks", "Difficulty", "Description", "Constraints",
@@ -17,6 +29,27 @@ export const LABELS = [
 
 export const ALLOWED_DIFFICULTIES = ["Easy", "Medium", "Hard"];
 export const ALLOWED_VISIBILITY = ["Visible", "Hidden"];
+
+export function isNoiseLine(line) {
+  const t = (line || "").trim();
+  if (!t) return false;
+  if (/^[—\-_=\*\.]{3,}$/.test(t)) return true;
+  if (/(?:•|\||-|–)?\s*Page\s*\d+(?:\s*(?:of|\/)\s*\d+)?\s*$/i.test(t)) return true;
+  if (/^\s*Page\s*\d+(?:\s*(?:of|\/)\s*\d+)?\s*$/i.test(t)) return true;
+  if (/^AI-Powered Interview & Assessment Platform/i.test(t)) return true;
+  if (/.*Question Import Template.*$/i.test(t)) return true;
+  if (/^Use only the official template for reliable question import\./i.test(t)) return true;
+  if (/^\s*(?:TECHNICAL|APTITUDE|CODING)\s+QUESTION(?:\s+FORMAT)?\s*$/i.test(t)) return true;
+  return false;
+}
+
+export function cleanExtractedText(text) {
+  if (!text) return "";
+  return text
+    .split(/\r?\n/)
+    .filter((l) => !isNoiseLine(l))
+    .join("\n");
+}
 
 export function regexEscape(s) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -67,12 +100,16 @@ export function detectFileKind(originalname = "", mimetype = "") {
 
 export async function extractDocxText(buffer) {
   const result = await mammoth.extractRawText({ buffer });
-  return result.value || "";
+  return cleanExtractedText(result.value || "");
 }
 
 export async function extractPdfText(buffer) {
   const uint8 = new Uint8Array(buffer);
-  const pdf = await pdfjsLib.getDocument({ data: uint8 }).promise;
+  const standardFontDataUrl = getStandardFontDataUrl();
+  const pdf = await pdfjsLib.getDocument({
+    data: uint8,
+    ...(standardFontDataUrl ? { standardFontDataUrl } : {}),
+  }).promise;
   let text = "";
   for (let i = 1; i <= pdf.numPages; i++) {
     const page = await pdf.getPage(i);
@@ -85,9 +122,13 @@ export async function extractPdfText(buffer) {
       pageText += item.str + " ";
       lastY = y;
     }
-    text += pageText + "\n\n";
+    const cleanedPage = pageText
+      .split(/\r?\n/)
+      .filter((l) => !isNoiseLine(l))
+      .join("\n");
+    text += cleanedPage + "\n\n";
   }
-  return text;
+  return cleanExtractedText(text);
 }
 
 export function parseCsvRows(text) {
@@ -96,22 +137,27 @@ export function parseCsvRows(text) {
   return XLSX.utils.sheet_to_json(ws, { defval: "", raw: false });
 }
 
-export function fieldValue(block, label, stopLabels = LABELS) {
-  const re = new RegExp(`\\n\\s*${regexEscape(label)}\\s*:\\s*`, "i");
+export function fieldValue(block, label, stopLabels = LABELS, singleLine = false) {
+  const re = new RegExp(`(?:^|\\n)\\s*${regexEscape(label)}\\s*:\\s*`, "i");
   const m = re.exec(block);
   if (!m) return "";
   const start = m.index + m[0].length;
   let end = block.length;
   for (const l of stopLabels) {
-    if (l === label) continue;
-    const r2 = new RegExp(`\\n\\s*${regexEscape(l)}\\s*:[ \\t]*`, "i");
+    if (l.toLowerCase() === label.toLowerCase()) continue;
+    const r2 = new RegExp(`(?:^|\\n)\\s*${regexEscape(l)}\\s*:[ \\t]*`, "i");
     const m2 = r2.exec(block.slice(start));
     if (m2) {
       const candidate = start + m2.index;
       if (candidate < end) end = candidate;
     }
   }
-  return sanitizeText(block.slice(start, end).replace(/\s+/g, " "));
+  let raw = block.slice(start, end).trim();
+  if (singleLine) {
+    const lines = raw.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+    raw = lines[0] || "";
+  }
+  return sanitizeText(raw.replace(/\s+/g, " "));
 }
 
 export function splitBlocks(text, startRegex, fallbackRegex) {

@@ -12,17 +12,19 @@ export class BaseProvider {
       return passedKey.trim();
     }
     const envVarMap = {
-      groq: "GROQ_API_KEY",
-      openrouter: "OPENROUTER_API_KEY",
-      gemini: "GEMINI_API_KEY",
-      deepseek: "DEEPSEEK_API_KEY",
-      openai: "OPENAI_API_KEY"
+      groq: ["GROQ_API_KEY", "AI_API_KEY", "REAL_INTERVIEW_TECHNICAL_API_KEY", "REAL_INTERVIEW_HR_API_KEY", "REAL_INTERVIEW_PROJECT_API_KEY", "REAL_INTERVIEW_APTITUDE_API_KEY", "REAL_INTERVIEW_CODING_API_KEY"],
+      openrouter: ["OPENROUTER_API_KEY"],
+      gemini: ["GEMINI_API_KEY"],
+      deepseek: ["DEEPSEEK_API_KEY"],
+      openai: ["OPENAI_API_KEY"]
     };
-    const envVar = envVarMap[this.name];
-    if (envVar && process.env[envVar]) {
-      return process.env[envVar].trim();
+    const envVars = envVarMap[this.name] || [];
+    for (const v of envVars) {
+      if (process.env[v] && process.env[v].trim()) {
+        return process.env[v].trim();
+      }
     }
-    throw new Error(`API key for provider '${this.name}' is missing and not found in environment variable '${envVar}'`);
+    throw new Error(`API key for provider '${this.name}' is missing and not found in environment variables '${envVars.join(", ")}'`);
   }
 
   async generateCompletion({ prompt, systemPrompt, options = {}, apiKey }) {
