@@ -200,8 +200,14 @@ function StartInterview({
   const [isListeningSpeech, setIsListeningSpeech] = useState(false);
   const isListeningSpeechRef = useRef(false);
   const recognitionRef = useRef(null);
-  const speechBaseTextRef = useRef("");
-  const speechFinalBaseRef = useRef("");
+  const isRecognizingRef = useRef(false);
+  const isStartingRef = useRef(false);
+  const shouldListenRef = useRef(false);
+  const isAiSpeakingRef = useRef(true);
+  const baseTranscriptRef = useRef("");
+  const sessionFinalTranscriptRef = useRef("");
+  const sessionInterimTranscriptRef = useRef("");
+  const restartTimeoutRef = useRef(null);
   const silenceTimerRef = useRef(null);
   const isManualStopRef = useRef(false);
 
@@ -495,8 +501,17 @@ function StartInterview({
   const startSpeechRecognitionRef = useRef(null);
 
   const stopSpeechRecognition = useCallback((immediateAbort = true) => {
+    shouldListenRef.current = false;
     isManualStopRef.current = true;
-    if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+    if (restartTimeoutRef.current) {
+      clearTimeout(restartTimeoutRef.current);
+      restartTimeoutRef.current = null;
+    }
+    if (silenceTimerRef.current) {
+      clearTimeout(silenceTimerRef.current);
+      silenceTimerRef.current = null;
+    }
+
     if (recognitionRef.current) {
       const recInstance = recognitionRef.current;
       recognitionRef.current = null;
@@ -512,8 +527,22 @@ function StartInterview({
         }
       } catch (e) {}
     }
+
+    // Flush any session finalized transcript into the permanent base transcript
+    if (sessionFinalTranscriptRef.current) {
+      baseTranscriptRef.current = [
+        baseTranscriptRef.current,
+        sessionFinalTranscriptRef.current
+      ].filter(Boolean).join(" ").trim();
+    }
+    sessionFinalTranscriptRef.current = "";
+    sessionInterimTranscriptRef.current = "";
+
+    isRecognizingRef.current = false;
+    isStartingRef.current = false;
     setIsListeningSpeech(false);
     isListeningSpeechRef.current = false;
+    console.log("[STT] stopSpeechRecognition (base preserved:", baseTranscriptRef.current, ")");
   }, []);
 
   const handleToggleCamera = useCallback(() => {
@@ -545,19 +574,22 @@ function StartInterview({
     setIsMicOn(next);
 
     if (!next) {
+      shouldListenRef.current = false;
       stopSpeechRecognition(true);
       toast("Microphone muted", { duration: 1500, id: "mic-toggle-status", icon: "🔇" });
     } else {
       isManualStopRef.current = false;
       toast.success("Microphone active", { duration: 1500, id: "mic-toggle-status", icon: "🎙️" });
       if (
+        !isAiSpeakingRef.current &&
         aiStatusRef.current === "LISTENING" &&
         inputModeRef.current === "speak" &&
         currentSectionRef.current !== "APTITUDE" &&
         currentSectionRef.current !== "CODING"
       ) {
+        shouldListenRef.current = true;
         setTimeout(() => {
-          if (isMicOnRef.current) {
+          if (isMicOnRef.current && !isAiSpeakingRef.current) {
             startSpeechRecognitionRef.current?.();
           }
         }, 50);
@@ -1297,39 +1329,41 @@ function StartInterview({
     if (chosenVoice) utterance.voice = chosenVoice;
 
     utterance.onstart = () => {
+      isAiSpeakingRef.current = true;
       setAiStatus("SPEAKING");
       aiStatusRef.current = "SPEAKING";
       stopSpeechRecognition(true);
     };
 
     utterance.onend = () => {
+      isAiSpeakingRef.current = false;
       setAiStatus("LISTENING");
       aiStatusRef.current = "LISTENING";
-      ttsEndedAtRef.current = Date.now(); // Mark TTS end time for bleed guard
-      speechBaseTextRef.current = typedResponseRef.current || "";
-      speechFinalBaseRef.current = typedResponseRef.current || "";
+      ttsEndedAtRef.current = Date.now();
+      console.log("[STT] TTS finished. Ready for candidate speech.");
+
       if (inputModeRef.current === "speak" && isMicOnRef.current && !micPermissionDenied && section !== "APTITUDE" && section !== "CODING") {
+        shouldListenRef.current = true;
         setTimeout(() => {
-          if (aiStatusRef.current === "LISTENING" && isMicOnRef.current && !window.speechSynthesis?.speaking) {
-            isManualStopRef.current = false;
+          if (!isAiSpeakingRef.current && isMicOnRef.current && inputModeRef.current === "speak") {
             startSpeechRecognitionRef.current?.();
           }
-        }, 150); // Prompt transition delay ensures candidate's first spoken words are NOT lost
+        }, 50); // Prompt 50ms transition captures candidate's first spoken words immediately
       }
     };
 
     utterance.onerror = (e) => {
       console.warn("TTS Error:", e);
+      isAiSpeakingRef.current = false;
       setAiStatus("LISTENING");
       aiStatusRef.current = "LISTENING";
-      speechFinalBaseRef.current = typedResponseRef.current || "";
       if (inputModeRef.current === "speak" && isMicOnRef.current && !micPermissionDenied && section !== "APTITUDE" && section !== "CODING") {
+        shouldListenRef.current = true;
         setTimeout(() => {
-          if (aiStatusRef.current === "LISTENING" && isMicOnRef.current) {
-            isManualStopRef.current = false;
+          if (!isAiSpeakingRef.current && isMicOnRef.current && inputModeRef.current === "speak") {
             startSpeechRecognitionRef.current?.();
           }
-        }, 150);
+        }, 50);
       }
     };
 
@@ -1345,6 +1379,7 @@ function StartInterview({
 
     if (currentIndex === 1 && !hasIntroducedRef.current) {
       hasIntroducedRef.current = true;
+      isAiSpeakingRef.current = true;
       stopSpeechRecognition(true);
       let introText = `Good day ${candidateInfo.name || "Candidate"}. I am Alex, your senior AI interviewer. I have reviewed your background and resume details. We will begin with Aptitude evaluations. Let's start with your first question.`;
 
@@ -1385,15 +1420,18 @@ function StartInterview({
       if (chosenVoice) introUtterance.voice = chosenVoice;
 
       introUtterance.onstart = () => {
+        isAiSpeakingRef.current = true;
         stopSpeechRecognition(true);
       };
 
       introUtterance.onend = () => {
+        isAiSpeakingRef.current = false;
         setDialogueLogs((prev) => [...prev, { sender: "AI", text: speechText, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }]);
         speakCurrentQuestion(speechText, section, currentQuestion.topic);
       };
 
       introUtterance.onerror = () => {
+        isAiSpeakingRef.current = false;
         speakCurrentQuestion(speechText, section, currentQuestion.topic);
       };
 
@@ -1412,13 +1450,16 @@ function StartInterview({
       } else {
         setTypedResponse(existing.answer);
         typedResponseRef.current = existing.answer;
-        speechFinalBaseRef.current = existing.answer;
+        baseTranscriptRef.current = existing.answer;
+        sessionFinalTranscriptRef.current = "";
+        sessionInterimTranscriptRef.current = "";
       }
     } else {
       setTypedResponse("");
       typedResponseRef.current = "";
-      speechFinalBaseRef.current = "";
-      speechBaseTextRef.current = "";
+      baseTranscriptRef.current = "";
+      sessionFinalTranscriptRef.current = "";
+      sessionInterimTranscriptRef.current = "";
       codingCodeByLangRef.current = {};
       const starter = getStarterCode(currentQuestion, codingLanguage);
       setCurrentCode(starter);
@@ -1429,7 +1470,7 @@ function StartInterview({
     setCodingSubmissionResult(null);
   }, [currentIndex, isLoadingInterview, isGeneratingQuestion, isFullscreenExited, speakCurrentQuestion, stopSpeechRecognition]);
 
-  // ─── SPEECH RECOGNITION (STT) ───
+  // ─── HARDENED SPEECH RECOGNITION (STT) ───
   const startSpeechRecognition = useCallback(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
@@ -1437,22 +1478,52 @@ function StartInterview({
       toast.error("Speech Recognition is not supported by your browser. Text mode enabled.");
       setInputMode("type");
       inputModeRef.current = "type";
+      shouldListenRef.current = false;
       return;
     }
 
-    if (!isMicOnRef.current || isFullscreenExitedRef.current || isCompletedRef.current) return;
+    shouldListenRef.current = true;
 
-    // Do NOT start recording if the AI is actively speaking!
-    if (aiStatusRef.current === "SPEAKING" || window.speechSynthesis?.speaking) {
+    if (
+      !isMicOnRef.current ||
+      isAiSpeakingRef.current ||
+      isCompletedRef.current ||
+      isFullscreenExitedRef.current ||
+      inputModeRef.current !== "speak" ||
+      currentSectionRef.current === "APTITUDE" ||
+      currentSectionRef.current === "CODING"
+    ) {
+      console.log("[STT] startSpeechRecognition skipped (preconditions not met):", {
+        isMicOn: isMicOnRef.current,
+        isAiSpeaking: isAiSpeakingRef.current,
+        inputMode: inputModeRef.current,
+        section: currentSectionRef.current,
+      });
+      return;
+    }
+
+    if (isRecognizingRef.current || isStartingRef.current) {
+      console.log("[STT] already running or starting, ignoring redundant start request");
       return;
     }
 
     if (recognitionRef.current) {
-      try { recognitionRef.current.abort(); } catch (e) {}
+      const oldRec = recognitionRef.current;
       recognitionRef.current = null;
+      oldRec.onend = null;
+      oldRec.onerror = null;
+      oldRec.onresult = null;
+      oldRec.onstart = null;
+      try { oldRec.abort(); } catch (e) {}
+    }
+
+    // Initialize base transcript from existing answer if base is empty
+    if (!baseTranscriptRef.current && typedResponseRef.current) {
+      baseTranscriptRef.current = typedResponseRef.current.trim();
     }
 
     try {
+      isStartingRef.current = true;
       const rec = new SpeechRecognition();
       const sysLang = navigator.language || "en-US";
       rec.lang = sysLang.startsWith("en") ? sysLang : "en-US";
@@ -1460,53 +1531,59 @@ function StartInterview({
       rec.interimResults = true;
       rec.maxAlternatives = 1;
 
-      isManualStopRef.current = false;
-      speechBaseTextRef.current = typedResponseRef.current || "";
-      if (!speechFinalBaseRef.current) {
-        speechFinalBaseRef.current = typedResponseRef.current || "";
-      }
-
       rec.onstart = () => {
+        isStartingRef.current = false;
+        isRecognizingRef.current = true;
         setIsListeningSpeech(true);
         isListeningSpeechRef.current = true;
         setAiStatus("LISTENING");
         aiStatusRef.current = "LISTENING";
         setMicPermissionDenied(false);
+        console.log("[STT] onstart: live listening active");
       };
 
       rec.onresult = (event) => {
-        // Acoustic Isolation: Drop audio packets if AI interviewer is speaking
-        if (aiStatusRef.current === "SPEAKING" || window.speechSynthesis?.speaking) {
-          return;
-        }
-        // Bleed guard: Discard results that arrive within 150ms of TTS ending
-        if (Date.now() - ttsEndedAtRef.current < 150) {
+        if (isAiSpeakingRef.current || aiStatusRef.current === "SPEAKING") {
+          console.log("[STT] dropped onresult: AI is currently speaking");
           return;
         }
 
-        let interimText = "";
-        let finalChunk = "";
+        let sessionFinal = "";
+        let sessionInterim = "";
 
-        for (let i = event.resultIndex; i < event.results.length; i++) {
+        // Reconstruct entire session transcript from event.results (eliminates index mismatch & duplicates)
+        for (let i = 0; i < event.results.length; i++) {
           const result = event.results[i];
-          const transcriptPiece = result[0]?.transcript || "";
+          const text = result[0]?.transcript || "";
           if (result.isFinal) {
-            finalChunk += " " + transcriptPiece;
+            sessionFinal += (sessionFinal ? " " : "") + text.trim();
           } else {
-            interimText += " " + transcriptPiece;
+            sessionInterim += (sessionInterim ? " " : "") + text.trim();
           }
         }
 
-        if (finalChunk.trim()) {
-          const base = speechFinalBaseRef.current.trim();
-          speechFinalBaseRef.current = (base ? base + " " : "") + finalChunk.trim();
-        }
+        sessionFinalTranscriptRef.current = sessionFinal;
+        sessionInterimTranscriptRef.current = sessionInterim;
 
-        const rawCombined = ((speechFinalBaseRef.current ? speechFinalBaseRef.current.trim() : "") + (interimText ? " " + interimText.trim() : "")).trim();
+        const rawCombined = [
+          baseTranscriptRef.current,
+          sessionFinal,
+          sessionInterim
+        ].filter(Boolean).join(" ").trim();
+
         if (!rawCombined) return;
 
-        // Apply conservative technical term formatting and whitespace normalization
+        // Apply conservative technical term casing and sentence normalization
         const formatted = formatSpeechTranscript(rawCombined);
+
+        console.log("[STT] onresult:", {
+          resultIndex: event.resultIndex,
+          resultsCount: event.results.length,
+          base: baseTranscriptRef.current,
+          sessionFinal,
+          sessionInterim,
+          formatted,
+        });
 
         setTypedResponse(formatted);
         typedResponseRef.current = formatted;
@@ -1518,25 +1595,41 @@ function StartInterview({
       };
 
       rec.onerror = (e) => {
-        console.warn("Speech Recognition notice:", e.error);
+        console.warn("[STT] onerror:", e.error);
         if (e.error === "not-allowed" || e.error === "permission-denied") {
+          shouldListenRef.current = false;
           setMicPermissionDenied(true);
           setInputMode("type");
           inputModeRef.current = "type";
           toast.error("Microphone access denied. Switched to Text fallback.");
         }
-        setIsListeningSpeech(false);
-        isListeningSpeechRef.current = false;
+        isStartingRef.current = false;
       };
 
       rec.onend = () => {
+        isRecognizingRef.current = false;
+        isStartingRef.current = false;
+        recognitionRef.current = null;
         setIsListeningSpeech(false);
         isListeningSpeechRef.current = false;
 
-        // Auto-restart ONLY if NOT manually stopped, mic is explicitly ON, and candidate is in voice mode
+        // Flush finalized results into base transcript
+        if (sessionFinalTranscriptRef.current) {
+          baseTranscriptRef.current = [
+            baseTranscriptRef.current,
+            sessionFinalTranscriptRef.current
+          ].filter(Boolean).join(" ").trim();
+        }
+        sessionFinalTranscriptRef.current = "";
+        sessionInterimTranscriptRef.current = "";
+
+        console.log("[STT] onend (shouldListen:", shouldListenRef.current, "base:", baseTranscriptRef.current, ")");
+
+        // Auto-restart after natural browser silence pause if candidate is still in voice answering mode
         if (
-          !isManualStopRef.current &&
-          isMicOnRef.current === true &&
+          shouldListenRef.current &&
+          isMicOnRef.current &&
+          !isAiSpeakingRef.current &&
           aiStatusRef.current === "LISTENING" &&
           !isCompletedRef.current &&
           !isFullscreenExitedRef.current &&
@@ -1544,29 +1637,32 @@ function StartInterview({
           currentSectionRef.current !== "APTITUDE" &&
           currentSectionRef.current !== "CODING"
         ) {
-          speechBaseTextRef.current = typedResponseRef.current || "";
-          if (!speechFinalBaseRef.current) {
-            speechFinalBaseRef.current = typedResponseRef.current || "";
-          }
-          setTimeout(() => {
+          if (restartTimeoutRef.current) clearTimeout(restartTimeoutRef.current);
+          restartTimeoutRef.current = setTimeout(() => {
             if (
-              !isManualStopRef.current &&
-              isMicOnRef.current === true &&
-              aiStatusRef.current === "LISTENING" &&
-              !isListeningSpeechRef.current
+              shouldListenRef.current &&
+              isMicOnRef.current &&
+              !isAiSpeakingRef.current &&
+              !isRecognizingRef.current
             ) {
+              console.log("[STT] auto-restarting after natural pause");
               startSpeechRecognitionRef.current?.();
             }
-          }, 80);
+          }, 60);
         }
       };
 
       recognitionRef.current = rec;
       rec.start();
+      console.log("[STT] rec.start() invoked successfully");
     } catch (err) {
-      console.error("STT Startup Error:", err);
-      setIsListeningSpeech(false);
-      isListeningSpeechRef.current = false;
+      console.error("[STT] rec.start() exception:", err);
+      isStartingRef.current = false;
+      isRecognizingRef.current = false;
+      recognitionRef.current = null;
+      if (shouldListenRef.current && !isAiSpeakingRef.current) {
+        setTimeout(() => startSpeechRecognitionRef.current?.(), 250);
+      }
     }
   }, [currentQuestion, speakCurrentQuestion]);
 
@@ -1689,10 +1785,12 @@ function StartInterview({
 
   // ─── NAVIGATION HANDLERS ───
   const handleNextQuestion = async () => {
-    stopSpeechRecognition();
+    stopSpeechRecognition(true);
     window.speechSynthesis?.cancel();
-    speechFinalBaseRef.current = "";
-    speechBaseTextRef.current = "";
+    isAiSpeakingRef.current = true;
+    baseTranscriptRef.current = "";
+    sessionFinalTranscriptRef.current = "";
+    sessionInterimTranscriptRef.current = "";
     await handleSaveAnswer("answered");
 
     if (currentIndex < questions.length) {
@@ -1704,8 +1802,9 @@ function StartInterview({
         setCurrentIndex((prev) => prev + 1);
         setTypedResponse("");
         typedResponseRef.current = "";
-        speechFinalBaseRef.current = "";
-        speechBaseTextRef.current = "";
+        baseTranscriptRef.current = "";
+        sessionFinalTranscriptRef.current = "";
+        sessionInterimTranscriptRef.current = "";
       }, 700);
     } else {
       setShowConfirmExit(true);
@@ -1714,19 +1813,23 @@ function StartInterview({
 
   const handlePrevQuestion = () => {
     if (currentIndex > 1) {
-      stopSpeechRecognition();
+      stopSpeechRecognition(true);
       window.speechSynthesis?.cancel();
-      speechFinalBaseRef.current = "";
-      speechBaseTextRef.current = "";
+      isAiSpeakingRef.current = true;
+      baseTranscriptRef.current = "";
+      sessionFinalTranscriptRef.current = "";
+      sessionInterimTranscriptRef.current = "";
       setCurrentIndex((prev) => prev - 1);
     }
   };
 
   const handleSkipQuestion = async () => {
-    stopSpeechRecognition();
+    stopSpeechRecognition(true);
     window.speechSynthesis?.cancel();
-    speechFinalBaseRef.current = "";
-    speechBaseTextRef.current = "";
+    isAiSpeakingRef.current = true;
+    baseTranscriptRef.current = "";
+    sessionFinalTranscriptRef.current = "";
+    sessionInterimTranscriptRef.current = "";
     await handleSaveAnswer("skipped");
 
     if (currentIndex < questions.length) {
@@ -1738,8 +1841,9 @@ function StartInterview({
         setCurrentIndex((prev) => prev + 1);
         setTypedResponse("");
         typedResponseRef.current = "";
-        speechFinalBaseRef.current = "";
-        speechBaseTextRef.current = "";
+        baseTranscriptRef.current = "";
+        sessionFinalTranscriptRef.current = "";
+        sessionInterimTranscriptRef.current = "";
       }, 700);
     } else {
       setShowConfirmExit(true);
@@ -2302,7 +2406,9 @@ function StartInterview({
                         onClick={() => {
                           setTypedResponse("");
                           typedResponseRef.current = "";
-                          speechBaseTextRef.current = "";
+                          baseTranscriptRef.current = "";
+                          sessionFinalTranscriptRef.current = "";
+                          sessionInterimTranscriptRef.current = "";
                           if (inputMode === "speak" && isMicOn && !isListeningSpeech) {
                             startSpeechRecognition();
                           }
