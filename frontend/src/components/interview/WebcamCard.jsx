@@ -49,14 +49,14 @@ function WebcamCard({ isCameraOn = true, stream = null, userName = "You", onRetr
           {isCameraOn && !stream ? (
             /* Loading / Permission pending or error */
             <div className="flex flex-col items-center gap-2 text-center">
-              <div className="w-12 h-12 rounded-full bg-blue-600/20 flex items-center justify-center">
-                <span className="text-base font-bold text-blue-400">{initials}</span>
+              <div className="w-14 h-14 rounded-full bg-amber-500/15 border border-amber-500/30 flex items-center justify-center">
+                <span className="text-lg font-bold text-amber-400">{initials}</span>
               </div>
               <span className="text-[11px] text-white/50">Camera disconnected</span>
               {onRetryCamera && (
                 <button
                   onClick={onRetryCamera}
-                  className="mt-1 px-3 py-1 rounded-lg text-[10px] font-bold bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 border border-blue-500/30 flex items-center gap-1.5 cursor-pointer transition-all"
+                  className="mt-1 px-3 py-1 rounded-lg text-[10px] font-bold bg-[#FF6B35]/15 hover:bg-[#FF6B35]/25 text-[#FF6B35] border border-[#FF6B35]/30 flex items-center gap-1.5 cursor-pointer transition-all"
                 >
                   <RefreshCw className="w-3 h-3" /> Retry Camera
                 </button>
@@ -66,17 +66,13 @@ function WebcamCard({ isCameraOn = true, stream = null, userName = "You", onRetr
             /* Camera deliberately turned off */
             <div className="flex flex-col items-center gap-2 text-center">
               <div
-                className="w-12 h-12 rounded-full flex items-center justify-center"
-                style={{
-                  background: "radial-gradient(circle, rgba(37,99,235,0.15), rgba(37,99,235,0.05))",
-                  border: "1px solid rgba(37,99,235,0.2)",
-                }}
+                className="w-14 h-14 rounded-full flex items-center justify-center bg-amber-500/15 border border-amber-500/30"
               >
-                <span className="text-lg font-bold text-blue-300">{initials}</span>
+                <span className="text-lg font-bold text-amber-400">{initials}</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <CameraOff className="w-3 h-3 text-white/30" />
-                <span className="text-[11px] text-white/30 font-medium">Camera off</span>
+                <CameraOff className="w-3.5 h-3.5 text-white/40" />
+                <span className="text-[11px] text-white/40 font-medium">Camera off</span>
               </div>
             </div>
           )}
@@ -85,20 +81,20 @@ function WebcamCard({ isCameraOn = true, stream = null, userName = "You", onRetr
 
       {/* Name badge overlay */}
       <div
-        className="absolute bottom-2.5 left-2.5 px-2 py-0.5 rounded-lg flex items-center gap-1.5"
+        className="absolute bottom-2.5 left-2.5 px-2.5 py-1 rounded-lg flex items-center gap-1.5"
         style={{
-          background: "rgba(0,0,0,0.65)",
+          background: "rgba(0,0,0,0.75)",
           backdropFilter: "blur(8px)",
-          border: "1px solid rgba(255,255,255,0.07)",
+          border: "1px solid rgba(255,255,255,0.1)",
         }}
       >
         <span
           className={`w-1.5 h-1.5 rounded-full ${
-            isCameraOn && stream ? "bg-emerald-400" : "bg-amber-400"
+            isCameraOn && stream ? "bg-emerald-400" : "bg-[#FF6B35]"
           }`}
         />
-        <span className="text-[10px] font-semibold text-white/80">
-          {userName} (You)
+        <span className="text-[10px] font-bold text-white/90">
+          {userName || "Tushar Nagare"} (You)
         </span>
       </div>
     </div>

@@ -101,12 +101,14 @@ function SectionNavigationPanel({
       {/* Panel Header */}
       <div className="shrink-0 mb-4 pb-3 border-b border-white/10 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-amber-400" />
-          <h3 className="text-xs font-extrabold uppercase tracking-widest text-white/90">
+          <div className="w-5 h-5 rounded-lg bg-[#FF6B35]/10 border border-[#FF6B35]/30 flex items-center justify-center">
+            <Sparkles className="w-3 h-3 text-[#FF6B35]" />
+          </div>
+          <h3 className="text-xs font-black uppercase tracking-widest text-white">
             {isIndividualMode ? "Individual Round" : "Interview Sections"}
           </h3>
         </div>
-        <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider">
+        <span className="text-[10px] font-black text-[#FF6B35] uppercase tracking-wider">
           {isIndividualMode ? "Single Mode" : `${SECTIONS.length} Rounds`}
         </span>
       </div>
@@ -124,36 +126,32 @@ function SectionNavigationPanel({
 
           let statusBadgeText = isIndividualMode ? "TARGET ROUND" : "AVAILABLE";
           let statusBadgeClass = isIndividualMode
-            ? "bg-amber-500/20 text-amber-400 border-amber-500/30 font-extrabold"
-            : "bg-white/5 text-white/50 border-white/10";
+            ? "bg-[#FF6B35]/20 text-[#FF6B35] border-[#FF6B35]/30 font-extrabold"
+            : "bg-white/5 text-white/40 border-white/10";
 
           if (isFinished) {
             statusBadgeText = "COMPLETED";
             statusBadgeClass = "bg-emerald-500/20 text-emerald-400 border-emerald-500/30";
           } else if (isActive) {
             statusBadgeText = "IN PROGRESS";
-            statusBadgeClass = "bg-blue-500/20 text-blue-400 border-blue-500/30 font-extrabold";
+            statusBadgeClass = "bg-[#FF6B35]/20 text-[#FF6B35] border-[#FF6B35]/40 font-black";
           }
 
           return (
             <button
               key={sec.id}
               onClick={() => onSelectSection && onSelectSection(sec.id)}
-              className={`w-full p-3 rounded-xl border text-left transition-all duration-200 cursor-pointer relative overflow-hidden group flex flex-col gap-2 ${
+              className={`w-full p-3.5 rounded-2xl border text-left transition-all duration-200 cursor-pointer relative overflow-hidden group flex flex-col gap-2 ${
                 isActive
-                  ? "shadow-lg scale-[1.01]"
-                  : "bg-white/[0.02] border-white/5 hover:bg-white/[0.05] hover:border-white/15"
+                  ? "bg-[#FF6B35]/[0.08] border-[#FF6B35] shadow-lg shadow-[#FF6B35]/10"
+                  : "bg-white/[0.02] border-white/[0.06] hover:bg-white/[0.05] hover:border-white/15"
               }`}
-              style={{
-                background: isActive ? sec.accentBg : undefined,
-                borderColor: isActive ? sec.accentBorder : undefined,
-              }}
             >
               {/* Top Row: Icon + Name + Status Badge */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <Icon className={`w-4 h-4 ${isActive ? "text-white" : "text-white/70"}`} />
-                  <span className="text-xs font-extrabold text-white">
+                  <Icon className={`w-4 h-4 ${isActive ? "text-[#FF6B35]" : "text-white/60"}`} />
+                  <span className="text-xs font-bold text-white">
                     {sec.name}
                   </span>
                 </div>
@@ -164,10 +162,12 @@ function SectionNavigationPanel({
 
               {/* Middle Row: Progress details & percentage */}
               <div className="flex items-center justify-between text-[11px] font-semibold text-white/50 pt-1 border-t border-white/5">
-                <span className="text-[10px] text-white/40">{sec.description}</span>
+                <span className="text-[10px] text-white/40 truncate max-w-[120px]">{sec.description}</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-bold text-amber-400 font-mono">{roundPct}%</span>
-                  <span className="font-mono text-white/80 font-bold">
+                  <span className={`text-[10px] font-bold font-mono ${isActive ? "text-[#FF6B35]" : isFinished ? "text-emerald-400" : "text-white/40"}`}>
+                    {roundPct}%
+                  </span>
+                  <span className={`font-mono font-bold text-[11px] ${isActive ? "text-white" : "text-white/60"}`}>
                     {formattedCompleted} / {formattedTotal}
                   </span>
                 </div>
@@ -179,7 +179,7 @@ function SectionNavigationPanel({
                   className="h-full rounded-full transition-all duration-500"
                   style={{
                     width: `${roundPct}%`,
-                    backgroundColor: isFinished ? "#34d399" : isActive ? sec.badgeColor : "rgba(255,255,255,0.2)"
+                    backgroundColor: isFinished ? "#10b981" : isActive ? "#FF6B35" : "rgba(255,255,255,0.2)"
                   }}
                 />
               </div>
@@ -191,14 +191,14 @@ function SectionNavigationPanel({
       {/* Panel Footer: Total Progress */}
       <div className="shrink-0 pt-3 mt-3 border-t border-white/10 flex items-center justify-between">
         <div>
-          <p className="text-[10px] uppercase tracking-wider font-extrabold text-white/40">
+          <p className="text-[10px] uppercase tracking-widest font-black text-white/40">
             {isIndividualMode ? "Round Progress" : "Total Progress"}
           </p>
           <p className="text-xs font-bold text-white font-mono mt-0.5">
             {String(totalCompleted).padStart(2, "0")} / {String(totalQuestions).padStart(2, "0")} Questions
           </p>
         </div>
-        <div className="w-11 h-11 rounded-full border border-white/15 flex items-center justify-center bg-white/5 font-mono text-xs font-black text-amber-400">
+        <div className="w-11 h-11 rounded-full border border-[#FF6B35]/40 flex items-center justify-center bg-[#FF6B35]/10 font-mono text-xs font-black text-[#FF6B35]">
           {Math.round((totalCompleted / (totalQuestions || 1)) * 100)}%
         </div>
       </div>

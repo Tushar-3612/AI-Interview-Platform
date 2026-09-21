@@ -159,11 +159,13 @@ function InterviewLayout({
       >
         {/* Left — Logo + Interview type */}
         <div className="flex items-center gap-3 min-w-0">
-          <div
-            className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
-            style={{ background: "linear-gradient(135deg, #2563eb, #06b6d4)" }}
-          >
-            <Bot className="w-4 h-4 text-white" />
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 bg-white/[0.04] border border-white/10 p-1">
+            <img
+              src="/images/metadata.png"
+              alt="PrepHire Logo"
+              className="w-full h-full object-contain"
+              draggable="false"
+            />
           </div>
           <div className="flex flex-col min-w-0">
             <div className="flex items-center gap-2">
@@ -176,7 +178,7 @@ function InterviewLayout({
               </span>
             </div>
             <span className="text-[11px] font-medium text-white/40 truncate">
-              {interviewType}
+              {interviewType || "Real AI Interview Room (All 5 Rounds)"}
             </span>
           </div>
         </div>
@@ -187,7 +189,7 @@ function InterviewLayout({
             className="font-mono text-2xl sm:text-3xl font-black tabular-nums tracking-wider"
             style={{
               color: isTimerLow ? "#ef4444" : "#f8fafc",
-              textShadow: isTimerLow ? "0 0 12px rgba(239,68,68,0.5)" : "0 0 12px rgba(37,99,235,0.2)",
+              textShadow: isTimerLow ? "0 0 12px rgba(239,68,68,0.5)" : "0 0 12px rgba(255,107,53,0.25)",
             }}
           >
             {h}:{m}:{s}
@@ -199,7 +201,8 @@ function InterviewLayout({
                 width: `${timerPct}%`,
                 background: isTimerLow
                   ? "linear-gradient(90deg, #ef4444, #f87171)"
-                  : "linear-gradient(90deg, #2563eb, #06b6d4)",
+                  : "linear-gradient(90deg, #FF6B35, #FF8A3D)",
+                boxShadow: isTimerLow ? "0 0 8px rgba(239,68,68,0.5)" : "0 0 8px rgba(255,107,53,0.5)",
               }}
             />
           </div>
@@ -329,10 +332,10 @@ function InterviewLayout({
             style={{
               background: isListening
                 ? "linear-gradient(135deg, #ef4444, #dc2626)"
-                : "linear-gradient(135deg, #2563eb, #14b8a6)",
+                : "linear-gradient(135deg, #FF6B35, #FF8A3D)",
               boxShadow: isListening
                 ? "0 0 24px rgba(239,68,68,0.5)"
-                : "0 0 24px rgba(37,99,235,0.4)",
+                : "0 0 24px rgba(255,107,53,0.35)",
               border: "1px solid rgba(255,255,255,0.12)",
             }}
           >
@@ -368,9 +371,6 @@ function InterviewLayout({
           active={true}
           onClick={onSettings}
         />
-
-        {/* Spacer so the layout is symmetric */}
-        <div className="w-[52px]" />
       </footer>
     </div>
   );
