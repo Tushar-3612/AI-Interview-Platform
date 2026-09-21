@@ -1,258 +1,145 @@
 import React from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Loader2, Brain, Mic } from "lucide-react";
+import { Brain, Mic } from "lucide-react";
 import AudioVisualizer from "./AudioVisualizer";
 
 /**
- * AIInterviewerCard — Cinematic AI Avatar stage.
- *
- * Props:
- *   aiStatus           {string}  — "Speaking" | "Thinking" | "Listening"
- *   isGeneratingQuestion {boolean}
- *   currentQuestionText  {string}
+ * AIInterviewerCard — Compact, high-performance AI Interviewer banner.
+ * Focuses on interviewer identity, speaking/listening state, live waveform, and REC status.
+ * Note: Question text is NOT rendered here to avoid duplicate content on the screen.
  */
 function AIInterviewerCard({
   aiStatus = "Listening",
   isGeneratingQuestion = false,
-  currentQuestionText = "",
   section = "TECHNICAL",
   interviewerName,
   interviewerRole,
 }) {
   const normalizedStatus = String(aiStatus).toUpperCase();
-  const isSpeaking  = normalizedStatus === "SPEAKING";
-  const isThinking  = normalizedStatus === "THINKING" || isGeneratingQuestion;
+  const isSpeaking = normalizedStatus === "SPEAKING";
+  const isThinking = normalizedStatus === "THINKING" || isGeneratingQuestion;
   const isListening = normalizedStatus === "LISTENING";
 
   const isHR = section === "HR";
   const resolvedName = interviewerName || (isHR ? "Sarah — AI HR Interviewer" : "Alex — AI Interviewer");
-  const resolvedRole = interviewerRole || (isHR ? "Senior HR & Behavioral Evaluator" : "Senior Technical Evaluator");
+  const resolvedRole = interviewerRole || (isHR ? "Senior HR Evaluator" : "Senior Technical Evaluator");
 
-  /* Halo ring animation class based on AI state */
-  const haloClass = isSpeaking ? "halo-speak" : isThinking ? "halo-think" : "halo-idle";
-
-  /* Status dot color & label */
+  /* Dot Color */
   const dotColor = isSpeaking
-    ? "#10b981"   // emerald green
+    ? "#10b981"
     : isThinking
-    ? "#f59e0b"   // amber
+    ? "#f59e0b"
     : isListening
-    ? "#3b82f6"   // blue
-    : "#9ca3af";  // neutral slate
+    ? "#FF6B35"
+    : "#9ca3af";
 
   const statusLabel = isGeneratingQuestion
-    ? "ANALYZING RESPONSE..."
+    ? "ANALYZING..."
     : isSpeaking
     ? "SPEAKING"
     : isThinking
     ? "THINKING"
     : isListening
-    ? "LISTENING..."
+    ? "LISTENING"
     : "READY";
 
   return (
-    <div className="relative w-full h-full rounded-2xl overflow-hidden flex flex-col" style={{ background: "linear-gradient(145deg, #07080f 0%, #0e1120 60%, #060b18 100%)" }}>
-
-      {/* Grid noise overlay */}
-      <div className="absolute inset-0 interview-grid-bg pointer-events-none" />
-
-      {/* Ambient glow blobs */}
+    <div
+      className="relative w-full h-full rounded-2xl overflow-hidden flex items-center justify-between px-4 sm:px-6 py-2 select-none border border-white/10"
+      style={{
+        background: "linear-gradient(135deg, rgba(12, 15, 26, 0.95) 0%, rgba(8, 10, 18, 0.98) 100%)",
+        backdropFilter: "blur(12px)",
+      }}
+    >
+      {/* Background ambient pulse */}
       <div
-        className="absolute w-72 h-72 rounded-full pointer-events-none"
+        className="absolute inset-0 pointer-events-none opacity-20"
         style={{
           background: isSpeaking
-            ? "radial-gradient(circle, rgba(20,184,166,0.12) 0%, transparent 70%)"
+            ? "radial-gradient(circle at 20% 50%, rgba(16,185,129,0.3) 0%, transparent 60%)"
             : isThinking
-            ? "radial-gradient(circle, rgba(245,158,11,0.1) 0%, transparent 70%)"
-            : "radial-gradient(circle, rgba(37,99,235,0.1) 0%, transparent 70%)",
-          top: "15%", left: "50%", transform: "translateX(-50%)",
-          transition: "background 1s ease",
+            ? "radial-gradient(circle at 20% 50%, rgba(245,158,11,0.25) 0%, transparent 60%)"
+            : "radial-gradient(circle at 20% 50%, rgba(255,107,53,0.25) 0%, transparent 60%)",
+          transition: "background 0.5s ease",
         }}
       />
 
-      {/* Status Badge — top left */}
-      <div className="absolute top-4 left-4 z-20 flex items-center gap-2 room-card px-3 py-1.5 rounded-full">
-        <span
-          className="w-2 h-2 rounded-full shrink-0"
-          style={{ backgroundColor: dotColor, animation: "statusDot 1.2s ease-in-out infinite" }}
-        />
-        <span className="text-[11px] font-semibold text-white/80 uppercase tracking-widest">
-          {statusLabel}
-        </span>
-      </div>
-
-      {/* REC badge — top right */}
-      <div className="absolute top-4 right-4 z-20 flex items-center gap-1.5 room-card px-2.5 py-1 rounded-full">
-        <span className="relative flex h-2 w-2">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
-          <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
-        </span>
-        <span className="text-[10px] font-bold text-red-400 uppercase tracking-widest">REC</span>
-      </div>
-
-      {/* ─────── Avatar Zone ─────── */}
-      <div className="flex-1 flex flex-col items-center justify-center relative z-10 px-6">
-        <AnimatePresence mode="wait">
-          {isThinking ? (
-            <motion.div
-              key="thinking"
-              initial={{ opacity: 0, scale: 0.85 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.85 }}
-              transition={{ duration: 0.4 }}
-              className="flex flex-col items-center gap-5"
-            >
-              {/* Spinner avatar */}
-              <div className="relative">
-                <div
-                  className="w-28 h-28 rounded-full flex items-center justify-center"
-                  style={{
-                    background: "radial-gradient(circle at 35% 35%, #1e2a4a, #0a0e1a)",
-                    border: "2px solid rgba(245,158,11,0.3)",
-                    boxShadow: "0 0 40px rgba(245,158,11,0.15)",
-                  }}
-                >
-                  <Brain className="w-12 h-12 text-amber-400 animate-pulse" />
-                </div>
-                {/* Orbit ring */}
-                <div
-                  className="absolute inset-0 rounded-full border-2 border-dashed border-amber-500/20 animate-spin"
-                  style={{ animationDuration: "3s" }}
-                />
-              </div>
-              <p className="text-sm font-medium text-amber-300/80">Formulating next question…</p>
-              {/* Typing dots */}
-              <div className="flex gap-1.5">
-                {[0, 1, 2].map((i) => (
-                  <span
-                    key={i}
-                    className="w-2 h-2 rounded-full bg-amber-400/60 animate-bounce"
-                    style={{ animationDelay: `${i * 0.18}s` }}
-                  />
-                ))}
-              </div>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="avatar"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.5 }}
-              className="flex flex-col items-center gap-5"
-            >
-              {/* Avatar circle with halo */}
-              <div className="relative">
-                {/* Outer glow halo */}
-                <div
-                  className={`absolute inset-0 rounded-full ${haloClass}`}
-                  style={{ borderRadius: "50%" }}
-                />
-                {/* Avatar ring */}
-                <div
-                  className="w-32 h-32 rounded-full flex items-center justify-center relative overflow-hidden"
-                  style={{
-                    background: "radial-gradient(circle at 38% 35%, #1a2456 0%, #0a0f22 100%)",
-                    border: `2px solid ${isSpeaking ? "rgba(20,184,166,0.5)" : "rgba(37,99,235,0.4)"}`,
-                  }}
-                >
-                  {/* AI Face SVG */}
-                  <svg width="72" height="72" viewBox="0 0 72 72" fill="none" aria-label="AI Interviewer Avatar">
-                    {/* Head */}
-                    <ellipse cx="36" cy="30" rx="20" ry="22" fill="#1e3a5f" />
-                    {/* Eyes */}
-                    <ellipse cx="28" cy="26" rx="4" ry="4.5"
-                      fill={isSpeaking ? "#14b8a6" : "#2563eb"}
-                      style={{ transition: "fill 0.5s ease" }} />
-                    <ellipse cx="44" cy="26" rx="4" ry="4.5"
-                      fill={isSpeaking ? "#14b8a6" : "#2563eb"}
-                      style={{ transition: "fill 0.5s ease" }} />
-                    {/* Eye shine */}
-                    <circle cx="29.5" cy="24.5" r="1.5" fill="white" opacity="0.8" />
-                    <circle cx="45.5" cy="24.5" r="1.5" fill="white" opacity="0.8" />
-                    {/* Mouth: changes shape when speaking */}
-                    {isSpeaking ? (
-                      <ellipse cx="36" cy="38" rx="7" ry="4" fill="#14b8a6" opacity="0.8" />
-                    ) : (
-                      <path d="M29 37 Q36 42 43 37" stroke="#4a90d9" strokeWidth="2" strokeLinecap="round" fill="none" />
-                    )}
-                    {/* Collar/body */}
-                    <path d="M16 60 Q24 50 36 52 Q48 50 56 60" fill="#0f1f38" />
-                    {/* Circuit lines on forehead */}
-                    <line x1="22" y1="18" x2="26" y2="18" stroke="#2563eb" strokeWidth="0.8" opacity="0.6" />
-                    <line x1="46" y1="18" x2="50" y2="18" stroke="#2563eb" strokeWidth="0.8" opacity="0.6" />
-                    <circle cx="22" cy="18" r="1" fill="#2563eb" opacity="0.7" />
-                    <circle cx="50" cy="18" r="1" fill="#2563eb" opacity="0.7" />
-                  </svg>
-
-                  {/* Scan line overlay when speaking */}
-                  {isSpeaking && (
-                    <div
-                      className="absolute inset-0 pointer-events-none"
-                      style={{
-                        background: "linear-gradient(0deg, transparent 40%, rgba(20,184,166,0.08) 50%, transparent 60%)",
-                        animation: "scanLine 3s linear infinite",
-                      }}
-                    />
-                  )}
-                </div>
-              </div>
-
-              {/* Name tag */}
-              <div className="text-center">
-                <p className="text-sm font-bold text-white">{resolvedName}</p>
-                <p className="text-[11px] text-white/40 mt-0.5">{resolvedRole}</p>
-              </div>
-
-              {/* Audio visualizer — only visible when speaking */}
-              <div className="flex items-center gap-3">
-                <Mic className="w-3.5 h-3.5 text-white/30" />
-                <AudioVisualizer
-                  isActive={isSpeaking}
-                  barCount={16}
-                  color="rgba(96,165,250,0.25)"
-                  activeColor="#14b8a6"
-                  height="24px"
-                />
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* ─────── Bottom: Question Subtitle Overlay ─────── */}
-      <AnimatePresence>
-        {currentQuestionText && !isThinking && (
-          <motion.div
-            key="question-subtitle"
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 8 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="relative z-20 mx-4 mb-4 p-3 rounded-xl"
+      {/* Left: Avatar + Persona details */}
+      <div className="flex items-center gap-3 relative z-10 min-w-0">
+        <div className="relative shrink-0">
+          <div
+            className="w-11 h-11 rounded-full flex items-center justify-center relative overflow-hidden"
             style={{
-              background: "rgba(0,0,0,0.65)",
-              border: "1px solid rgba(255,255,255,0.07)",
-              backdropFilter: "blur(8px)",
+              background: "radial-gradient(circle at 35% 35%, #1a2456 0%, #0a0f22 100%)",
+              border: `2px solid ${isSpeaking ? "#10b981" : isThinking ? "#f59e0b" : "#FF6B35"}`,
+              boxShadow: isSpeaking
+                ? "0 0 12px rgba(16,185,129,0.4)"
+                : isThinking
+                ? "0 0 12px rgba(245,158,11,0.35)"
+                : "0 0 12px rgba(255,107,53,0.35)",
             }}
           >
-            <p className="text-xs text-white/75 leading-relaxed line-clamp-3 text-center">
-              {currentQuestionText}
-            </p>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            {isThinking ? (
+              <Brain className="w-5 h-5 text-amber-400 animate-pulse" />
+            ) : (
+              <svg width="28" height="28" viewBox="0 0 72 72" fill="none" aria-label="AI Interviewer Avatar">
+                <ellipse cx="36" cy="30" rx="20" ry="22" fill="#1e3a5f" />
+                <ellipse cx="28" cy="26" rx="4" ry="4.5" fill={isSpeaking ? "#10b981" : "#FF6B35"} />
+                <ellipse cx="44" cy="26" rx="4" ry="4.5" fill={isSpeaking ? "#10b981" : "#FF6B35"} />
+                <circle cx="29.5" cy="24.5" r="1.5" fill="white" opacity="0.8" />
+                <circle cx="45.5" cy="24.5" r="1.5" fill="white" opacity="0.8" />
+                {isSpeaking ? (
+                  <ellipse cx="36" cy="38" rx="7" ry="4" fill="#10b981" opacity="0.8" />
+                ) : (
+                  <path d="M29 37 Q36 42 43 37" stroke="#FF6B35" strokeWidth="2" strokeLinecap="round" fill="none" />
+                )}
+                <path d="M16 60 Q24 50 36 52 Q48 50 56 60" fill="#0f1f38" />
+              </svg>
+            )}
+          </div>
+          {isSpeaking && (
+            <span className="absolute -top-0.5 -right-0.5 flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500" />
+            </span>
+          )}
+        </div>
 
-      {/* Bottom waveform bar when AI speaks */}
-      <div className="relative z-20 px-6 pb-5 flex items-center justify-center gap-2">
+        <div className="flex flex-col min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="text-xs sm:text-sm font-bold text-white truncate">{resolvedName}</span>
+          </div>
+          <span className="text-[10px] text-white/40 truncate">{resolvedRole}</span>
+        </div>
+      </div>
+
+      {/* Center: Live Audio Waveform */}
+      <div className="hidden md:flex items-center gap-2 flex-1 max-w-xs mx-4 justify-center relative z-10">
         <AudioVisualizer
-          isActive={isSpeaking}
-          barCount={24}
-          color="rgba(37,99,235,0.15)"
-          activeColor="rgba(20,184,166,0.7)"
-          height="20px"
+          isActive={isSpeaking || isListening}
+          barCount={18}
+          color="rgba(255,255,255,0.15)"
+          activeColor={isSpeaking ? "#10b981" : "#FF6B35"}
+          height="16px"
           className="w-full"
         />
+      </div>
+
+      {/* Right: AI Status & REC badge */}
+      <div className="flex items-center gap-2.5 relative z-10 shrink-0">
+        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/[0.04] border border-white/10">
+          <span
+            className="w-2 h-2 rounded-full shrink-0"
+            style={{ backgroundColor: dotColor, animation: "statusDot 1.2s ease-in-out infinite" }}
+          />
+          <span className="text-[10px] font-bold text-white/80 uppercase tracking-wider">
+            {statusLabel}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-red-500/10 border border-red-500/20">
+          <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+          <span className="text-[9px] font-extrabold text-red-400 uppercase tracking-widest">REC</span>
+        </div>
       </div>
     </div>
   );
