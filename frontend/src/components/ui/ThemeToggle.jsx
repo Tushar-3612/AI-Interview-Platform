@@ -14,8 +14,7 @@ function ThemeToggle() {
       type="button"
       onClick={toggleTheme}
       aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
-      className="fixed top-5 right-5 z-50 flex items-center gap-2 px-4 py-2.5 rounded-full glass-card text-sm font-medium cursor-pointer"
-      style={{ color: "var(--text-secondary)" }}
+      className="fixed top-5 right-6 z-50 flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[var(--border)] bg-[var(--card-bg)] shadow-xs text-xs font-medium cursor-pointer text-[var(--text-primary)] hover:opacity-90 transition-all"
       whileHover={{ scale: 1.03 }}
       whileTap={{ scale: 0.97 }}
       initial={{ opacity: 0, y: -10 }}
@@ -29,12 +28,12 @@ function ThemeToggle() {
         transition={{ duration: 0.3 }}
       >
         {isDark ? (
-          <Sun className="w-4 h-4" style={{ color: "var(--accent)" }} />
+          <Moon className="w-3.5 h-3.5 text-blue-400" />
         ) : (
-          <Moon className="w-4 h-4" style={{ color: "var(--primary)" }} />
+          <Sun className="w-3.5 h-3.5 text-[var(--primary)]" />
         )}
       </motion.div>
-      <span>{isDark ? "Dark" : "Light"}</span>
+      <span className="text-xs font-medium text-[var(--text-primary)]">{isDark ? "Dark" : "Light"}</span>
     </motion.button>
   );
 }
