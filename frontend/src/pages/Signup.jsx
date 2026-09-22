@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { User, Mail, Lock, Building2, GraduationCap, Link2 } from "lucide-react";
+import { User, Mail, Lock, GraduationCap, Link2, Calendar, ArrowRight } from "lucide-react";
 import toast from "react-hot-toast";
 import AuthLayout from "../layouts/AuthLayout";
 import InputField from "../components/ui/InputField";
@@ -106,7 +106,7 @@ function Signup() {
     } catch (error) {
       toast.error(
         error.response?.data?.message ||
-          "Registration failed. Please try again."
+        "Registration failed. Please try again."
       );
     } finally {
       setLoading(false);
@@ -114,7 +114,12 @@ function Signup() {
   };
 
   return (
-    <AuthLayout title="Create Account">
+    <AuthLayout
+      title="Create Account"
+      subtitle="Start your placement preparation journey."
+      contentClassName="max-w-[460px]"
+      showFooterBadge={false}
+    >
       <form onSubmit={handleSubmit} noValidate className="flex flex-col">
         <InputField
           label="Full Name"
@@ -155,97 +160,108 @@ function Signup() {
           icon={Link2}
         />
 
-        {/* Department & Year side-by-side to save vertical space */}
-        <div className="flex flex-col">
-          <InputField
-            label="Department"
-            name="department"
-            value={formData.department}
-            onChange={handleChange}
-            placeholder="Select"
-            error={errors.department}
-            required
-            as="select"
-            options={DEPARTMENTS}
-          />
+        {/* Department */}
+        <InputField
+          label="Department"
+          name="department"
+          value={formData.department}
+          onChange={handleChange}
+          placeholder="Select your department"
+          error={errors.department}
+          required
+          as="select"
+          options={DEPARTMENTS}
+          icon={GraduationCap}
+        />
 
-          <InputField
-            label="Year"
-            name="year"
-            value={formData.year}
-            onChange={handleChange}
-            placeholder="Select"
-            error={errors.year}
-            required
-            as="select"
-            options={YEARS}
-          />
-        </div>
+        {/* Year */}
+        <InputField
+          label="Year"
+          name="year"
+          value={formData.year}
+          onChange={handleChange}
+          placeholder="Select your year"
+          error={errors.year}
+          required
+          as="select"
+          options={YEARS}
+          icon={Calendar}
+        />
 
-        {/* Password & Confirm Password side-by-side to save vertical space */}
-        <div className="flex flex-col">
-          <InputField
-            label="Password"
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            placeholder="Create password"
-            error={errors.password}
-            required
-            autoComplete="new-password"
-            icon={Lock}
-          />
+        {/* Password */}
+        <InputField
+          label="Password"
+          type="password"
+          name="password"
+          value={formData.password}
+          onChange={handleChange}
+          placeholder="Create a password"
+          error={errors.password}
+          required
+          autoComplete="new-password"
+          icon={Lock}
+        />
 
-          <InputField
-            label="Confirm Password"
-            type="password"
-            name="confirmPassword"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            placeholder="Re-enter password"
-            error={errors.confirmPassword}
-            required
-            autoComplete="new-password"
-            icon={Lock}
-          />
-        </div>
+        {/* Confirm Password */}
+        <InputField
+          label="Confirm Password"
+          type="password"
+          name="confirmPassword"
+          value={formData.confirmPassword}
+          onChange={handleChange}
+          placeholder="Confirm your password"
+          error={errors.confirmPassword}
+          required
+          autoComplete="new-password"
+          icon={Lock}
+        />
 
         {/* Terms & Conditions */}
-        <div className="mb-3">
-          <label className="flex items-start gap-2.5 cursor-pointer select-none">
+        <div className="mb-4">
+          <label className="flex items-center gap-2.5 cursor-pointer select-none">
             <input
               type="checkbox"
               name="termsAccepted"
               checked={formData.termsAccepted}
               onChange={handleChange}
-              className="w-4 h-4 mt-0.5 rounded cursor-pointer accent-[var(--primary)] border-[var(--border)] bg-[var(--input-bg)]"
+              className="w-4 h-4 rounded cursor-pointer accent-[var(--primary)] border-[var(--border)] bg-[var(--input-bg)]"
             />
-            <span className="text-xs leading-snug" style={{ color: "var(--text-secondary)" }}>
+            <span className="text-xs leading-snug text-[var(--text-secondary)]">
               I agree to the{" "}
-              <Link to="/terms-and-conditions" className="font-semibold underline" style={{color:"var(--primary)"}}>Terms&conditions</Link>
+              <Link to="/terms-and-conditions" className="font-semibold underline hover:opacity-80 text-[var(--primary)]">Terms &amp; Conditions</Link>
             </span>
           </label>
           {errors.termsAccepted && (
-            <p className="mt-1 text-[10px]" style={{ color: "var(--error)" }}>
+            <p className="mt-1 text-[11px] font-medium text-[#EF4444]">
               {errors.termsAccepted}
             </p>
           )}
         </div>
 
-        <Button type="submit" loading={loading} className="py-2.5">
-          Create Account
+        <Button type="submit" loading={loading}>
+          Create Account <ArrowRight className="w-4 h-4 ml-1" />
         </Button>
       </form>
 
-      <p className="text-center text-xs mt-3 pt-2.5 border-t border-[var(--border])" style={{ color: "var(--text-secondary)" }}>
+      {/* OR Divider */}
+      <div className="relative my-4">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-[var(--border)]" />
+        </div>
+        <div className="relative flex justify-center">
+          <span className="px-3 text-[11px] uppercase tracking-wider bg-[var(--card-bg)] text-[var(--text-muted)] font-semibold">
+            OR
+          </span>
+        </div>
+      </div>
+
+      <p className="text-center text-xs text-[var(--text-secondary)]">
         Already have an account?{" "}
         <Link
           to="/"
-          className="font-semibold transition-opacity hover:opacity-80"
-          style={{ color: "var(--primary)" }}
+          className="font-semibold transition-opacity hover:opacity-80 hover:underline text-[var(--primary)]"
         >
-          Login
+          Sign In
         </Link>
       </p>
     </AuthLayout>

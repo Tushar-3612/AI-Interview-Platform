@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 // import { Link } from "react-router-dom";
-import { Mail, Lock, Key } from "lucide-react";
+import { Mail, Lock, Key, ArrowRight } from "lucide-react";
 import toast from "react-hot-toast";
 import AuthLayout from "../layouts/AuthLayout";
 import InputField from "../components/ui/InputField";
@@ -21,7 +21,7 @@ function Login() {
     password: "",
     rememberMe: false,
   });
-  
+
   // Forgot Password / Reset states
   const [forgotEmail, setForgotEmail] = useState("");
   const [otpDigits, setOtpDigits] = useState(["", "", "", "", "", ""]);
@@ -196,7 +196,7 @@ function Login() {
   const handleResetPasswordSubmit = async (e) => {
     e.preventDefault();
     const newErrors = {};
-    
+
     // Strong password validation regex pattern (matches backend rules)
     const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#^()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/;
 
@@ -245,11 +245,21 @@ function Login() {
     if (viewMode === "forgot-password") return "Forgot Password";
     if (viewMode === "enter-otp") return "Verification OTP";
     if (viewMode === "reset-password") return "Reset Password";
-    return "Sign In";
+    return "Welcome Back";
+  };
+
+  const getLayoutSubtitle = () => {
+    if (viewMode === "forgot-password") return "Enter your registered email to receive an OTP";
+    if (viewMode === "enter-otp") return "Enter the 6-digit code sent to your email";
+    if (viewMode === "reset-password") return "Enter your new password below";
+    return "Sign in to continue your placement journey.";
   };
 
   return (
-    <AuthLayout title={getLayoutTitle()}>
+    <AuthLayout
+      title={getLayoutTitle()}
+      subtitle={getLayoutSubtitle()}
+    >
       {viewMode === "login" && (
         <form onSubmit={handleSubmit} noValidate className="flex flex-col">
           <InputField
@@ -279,7 +289,7 @@ function Login() {
           />
 
           {/* Remember Me & Forgot Password */}
-          <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center justify-between gap-4 mb-4">
             <label className="flex items-center gap-2 cursor-pointer group select-none">
               <input
                 type="checkbox"
@@ -288,7 +298,7 @@ function Login() {
                 onChange={handleChange}
                 className="w-4 h-4 rounded cursor-pointer accent-[var(--primary)] border-[var(--border)] bg-[var(--input-bg)]"
               />
-              <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
+              <span className="text-xs font-medium text-[var(--text-secondary)]">
                 Remember Me
               </span>
             </label>
@@ -299,15 +309,14 @@ function Login() {
                 setErrors({});
                 setViewMode("forgot-password");
               }}
-              className="text-xs font-medium transition-opacity hover:opacity-80 cursor-pointer"
-              style={{ color: "var(--primary)" }}
+              className="text-xs font-semibold whitespace-nowrap transition-opacity hover:opacity-80 hover:underline cursor-pointer text-[var(--primary)]"
             >
               Forgot Password?
             </button>
           </div>
 
-          <Button type="submit" loading={loading} className="py-2.5">
-            Login
+          <Button type="submit" loading={loading}>
+            Sign In <ArrowRight className="w-4 h-4 ml-1" />
           </Button>
         </form>
       )}
@@ -337,8 +346,7 @@ function Login() {
                 setErrors({});
                 setViewMode("login");
               }}
-              className="text-xs font-medium transition-opacity hover:opacity-80 cursor-pointer"
-              style={{ color: "var(--primary)" }}
+              className="text-xs font-semibold transition-opacity hover:opacity-80 hover:underline cursor-pointer text-[var(--primary)]"
             >
               Back to Login
             </button>
@@ -353,7 +361,7 @@ function Login() {
       {viewMode === "enter-otp" && (
         <form onSubmit={handleVerifyOtpSubmit} noValidate className="flex flex-col">
           <div className="flex flex-col mb-5">
-            <label className="text-xs font-semibold mb-2" style={{ color: "var(--text-secondary)" }}>
+            <label className="text-xs font-semibold mb-2 text-[var(--text-primary)]">
               Enter 6-Digit OTP
             </label>
             <div className="flex justify-between gap-2" onPaste={handleOtpPaste}>
@@ -366,16 +374,13 @@ function Login() {
                   value={digit}
                   onChange={(e) => handleOtpChange(index, e.target.value)}
                   onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                  className="w-11 h-11 text-center font-bold text-lg rounded-xl border border-[var(--border)] bg-[var(--input-bg)] text-[var(--text-primary)] focus:outline-none focus:border-[var(--primary)] transition-all"
-                  style={{
-                    boxShadow: "var(--shadow-sm)",
-                  }}
+                  className="w-11 h-11 text-center font-bold text-lg rounded-xl border border-[var(--border)] bg-[var(--input-bg)] text-[var(--text-primary)] focus:outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/15 transition-all shadow-xs"
                   autoFocus={index === 0}
                 />
               ))}
             </div>
             {errors.otp && (
-              <span className="text-xs mt-1.5" style={{ color: "var(--error)" }}>
+              <span className="text-xs mt-1.5 text-[#EF4444]">
                 {errors.otp}
               </span>
             )}
@@ -386,8 +391,7 @@ function Login() {
               type="button"
               disabled={countdown > 0 || loading}
               onClick={handleResendOtp}
-              className="text-xs font-medium transition-opacity hover:opacity-80 disabled:opacity-50 cursor-pointer"
-              style={{ color: "var(--primary)" }}
+              className="text-xs font-semibold transition-opacity hover:opacity-80 disabled:opacity-50 cursor-pointer text-[var(--primary)]"
             >
               {countdown > 0 ? `Resend in ${countdown}s` : "Resend OTP"}
             </button>
@@ -398,8 +402,7 @@ function Login() {
                 setErrors({});
                 setViewMode("forgot-password");
               }}
-              className="text-xs font-medium transition-opacity hover:opacity-80 cursor-pointer"
-              style={{ color: "var(--primary)" }}
+              className="text-xs font-semibold transition-opacity hover:opacity-80 hover:underline cursor-pointer text-[var(--primary)]"
             >
               Back
             </button>
@@ -450,25 +453,35 @@ function Login() {
                 setErrors({});
                 setViewMode("enter-otp");
               }}
-              className="text-xs font-medium transition-opacity hover:opacity-80 cursor-pointer"
-              style={{ color: "var(--primary)" }}
+              className="text-xs font-semibold transition-opacity hover:opacity-80 hover:underline cursor-pointer text-[var(--primary)]"
             >
               Back
             </button>
           </div>
 
-          <Button type="submit" loading={loading} className="py-2.5">
+          <Button type="submit" loading={loading}>
             Reset Password
           </Button>
         </form>
       )}
 
-      <p className="text-center text-xs mt-5 pt-3 border-t border-[var(--border)]" style={{ color: "var(--text-secondary)" }}>
+      {/* OR Divider */}
+      <div className="relative my-4">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-[var(--border)]" />
+        </div>
+        <div className="relative flex justify-center">
+          <span className="px-3 text-xs uppercase tracking-wider bg-[var(--card-bg)] text-[var(--text-muted)] font-medium">
+            or
+          </span>
+        </div>
+      </div>
+
+      <p className="text-center text-xs text-[var(--text-secondary)]">
         Don&apos;t have an account?{" "}
         <Link
           to="/signup"
-          className="font-semibold transition-opacity hover:opacity-80"
-          style={{ color: "var(--primary)" }}
+          className="font-semibold transition-opacity hover:opacity-80 hover:underline text-[var(--primary)]"
         >
           Create Account
         </Link>

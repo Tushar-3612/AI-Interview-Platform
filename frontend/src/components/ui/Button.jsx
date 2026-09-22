@@ -35,15 +35,15 @@ function Button({
   };
 
   const baseClasses =
-    "relative inline-flex items-center justify-center gap-2 font-medium text-sm rounded-2xl transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer overflow-hidden";
+    "relative inline-flex items-center justify-center gap-2 font-semibold text-sm rounded-xl transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer overflow-hidden";
 
   const widthClass = fullWidth ? "w-full" : "";
 
   const variants = {
-    gradient: "btn-gradient text-white py-3.5 px-6 shadow-lg hover:shadow-xl",
-    outline:
-      "py-3.5 px-6 border hover:opacity-90",
-    ghost: "py-3.5 px-6 hover:opacity-80",
+    gradient:
+      "bg-gradient-to-r from-[#FF6B35] to-[#FF8A3D] text-white py-3 px-6 shadow-md shadow-orange-500/20 hover:shadow-lg hover:shadow-orange-500/30 hover:brightness-105 active:scale-[0.99]",
+    outline: "py-3 px-6 border hover:bg-[var(--card-bg)] text-[var(--text-primary)] border-[var(--border)]",
+    ghost: "py-3 px-6 hover:opacity-80 text-[var(--primary)]",
   };
 
   const variantStyle =

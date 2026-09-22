@@ -14,7 +14,7 @@
     "compression": "^1.8.1",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
-    "express": "^4.22.2",
+    "express": "^4.22.3",
     "express-mongo-sanitize": "^2.2.0",
     "express-rate-limit": "^8.6.0",
     "file-saver": "^2.0.5",
