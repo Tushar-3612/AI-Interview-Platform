@@ -285,11 +285,7 @@ export async function generateAndProcessAptitudeQuestions({ userId = null, sessi
   });
 }
 
-/**
- * Robust option letter resolver for Aptitude questions.
- * Handles "Option B: 30", "Option B", "B", "30", "b", etc.
- */
-function resolveAptitudeOptionLetter(rawAns, options = []) {
+export function resolveAptitudeOptionLetter(rawAns, options = []) {
   if (!rawAns || typeof rawAns !== "string") return "";
   const trimmed = rawAns.trim();
   if (!trimmed) return "";
@@ -301,24 +297,25 @@ function resolveAptitudeOptionLetter(rawAns, options = []) {
     return upper;
   }
 
-  // 2. Starts with OPTION A, OPTION B, OPTION C, OPTION D or A:, B:, C:, D:
-  const match = upper.match(/^(?:OPTION\s+)?([A-D])(?:\b|:|\s)/);
-  if (match && ["A", "B", "C", "D"].includes(match[1])) {
-    return match[1];
+  // 2. Starts with OPTION A, OPTION B, OPTION C, OPTION D, Option (A), A., A), A:
+  const match = trimmed.match(/^(?:OPTION\s+[\(]?|[A-D]\s*[\.\):]|[\(])\s*([A-D])(?:\b|\)|:|\s|\.|$)/i);
+  if (match && ["A", "B", "C", "D"].includes(match[1].toUpperCase())) {
+    return match[1].toUpperCase();
   }
 
   // 3. Match text against options array
   const lower = trimmed.toLowerCase();
   for (const o of options) {
     const label = String(o.label || "").toUpperCase().trim();
-    const text = String(o.text || "").toLowerCase().trim();
+    const text = String(o.text || o.option || "").toLowerCase().trim();
     if (!label) continue;
 
     if (
       lower === text ||
       lower === `option ${label.toLowerCase()}: ${text}` ||
       lower === `option ${label.toLowerCase()}` ||
-      lower === `${label.toLowerCase()}: ${text}`
+      lower === `${label.toLowerCase()}: ${text}` ||
+      lower.startsWith(`option ${label.toLowerCase()}:`)
     ) {
       return label;
     }
@@ -327,7 +324,7 @@ function resolveAptitudeOptionLetter(rawAns, options = []) {
   // 4. Pure option text fallback match
   for (const o of options) {
     const label = String(o.label || "").toUpperCase().trim();
-    const text = String(o.text || "").toLowerCase().trim();
+    const text = String(o.text || o.option || "").toLowerCase().trim();
     if (text && text === lower) {
       return label;
     }
@@ -368,15 +365,16 @@ export async function evaluateAptitudeSession({ sessionId, candidateAnswers = []
 
   let calculatedTotalScore = 0;
   const maxScoreTotal = 50;
+  const answersPool = Array.isArray(candidateAnswers) && candidateAnswers.length > 0 ? candidateAnswers : (session?.answers || []);
   const processedAnswers = [];
 
   for (const q of questions) {
     const qIdStr = q._id.toString();
-    const subAns = candidateAnswers.find(
-      (a) => String(a.questionId || a.id) === qIdStr
+    const subAns = answersPool.find(
+      (a) => String(a.questionId || a.id || a._id) === qIdStr
     );
 
-    const rawAns = String(subAns?.selectedOption || subAns?.answer || "").trim();
+    const rawAns = String(subAns?.selectedOption || subAns?.candidateAnswer || subAns?.answer || "").trim();
     const resolvedOption = resolveAptitudeOptionLetter(rawAns, q.options || []);
 
     const isCorrect = Boolean(resolvedOption) && resolvedOption === q.correctAnswer;

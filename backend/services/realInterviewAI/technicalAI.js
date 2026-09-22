@@ -290,21 +290,25 @@ export async function evaluateTechnicalInterviewAI({ candidateProfile = {}, ques
     diff: String(q.difficulty || "medium"),
     max: Number(q.maxScore || q.maxMarks || (q.difficulty === "easy" ? 3 : q.difficulty === "hard" ? 13 : 5)),
     ans: String(q.candidateAnswer || "(No answer provided)").trim(),
+    expectedKnowledge: String(q.expectedKnowledge || q.expectedAnswer || "").trim(),
   }));
 
   const prompt = `You are a fair technical interviewer evaluating candidate responses for a Technical Interview session in ONE assessment.
 
-QUESTIONS & CANDIDATE ANSWERS:
+QUESTIONS, EXPECTED KNOWLEDGE & CANDIDATE ANSWERS:
 ${JSON.stringify(formattedQuestions, null, 2)}
 
 FAIR EVALUATION INSTRUCTIONS:
-1. TECHNICAL UNDERSTANDING FIRST: Judge candidate's technical knowledge and core concepts.
+1. TECHNICAL UNDERSTANDING & REFERENCE ALIGNMENT:
+   - Compare candidate's answer against the expectedKnowledge and question context.
+   - For syntax/command/keyword/SQL questions (e.g., 'def', 'git status', 'SELECT * FROM Products;', 'my_list = []'): award FULL MARKS if the candidate provides the direct, correct code/command/keyword/syntax required.
+   - For conceptual/architectural questions: judge conceptual depth, accurate mechanisms, and practical correctness.
 2. DIFFICULTY MARKS:
-   - Easy (maxScore 3): 0=incorrect, 1=partial, 2=mostly correct, 3=correct
+   - Easy (maxScore 3): 0=incorrect, 1=partial, 2=mostly correct, 3=correct (give 3 for direct correct syntax/commands/keywords)
    - Medium (maxScore 5): 0=incorrect, 1=very limited, 2=partial, 3=acceptable, 4=strong, 5=excellent
    - Hard (maxScore 13): 0=incorrect, 1-3=weak, 4-6=partial, 7-9=acceptable, 10-11=strong, 12-13=excellent
-3. UNANSWERED ITEMS: Set score = 0, missingPoints = ["Question was not attempted"].
-4. OVERALL METRICS: totalScore (sum of scores out of 100), maxScore: 100, percentage, overallRating, strengths, weaknesses, finalFeedback.
+3. UNANSWERED ITEMS: Set score = 0, rating = "Weak", missingPoints = ["Question was not attempted"].
+4. OVERALL METRICS: totalScore (sum of question scores out of 100), maxScore: 100, percentage, overallRating, strengths, weaknesses, finalFeedback.
 
 JSON SCHEMA ONLY:
 {

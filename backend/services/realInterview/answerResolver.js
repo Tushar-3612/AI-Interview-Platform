@@ -175,24 +175,30 @@ export function resolveCandidateAnswer({
   let selectedOption = "";
   const upperRound = String(roundType).toUpperCase();
   if (upperRound === "APTITUDE" && answerPresent) {
-    const candidateStr = rawSelectedOpt || rawAnswerStr;
-    const upperCandidate = candidateStr.toUpperCase().trim();
+    const candidateStr = (rawSelectedOpt || rawAnswerStr).trim();
+    const upperCandidate = candidateStr.toUpperCase();
 
+    // 1. Direct letter match: "A", "B", "C", "D"
     if (["A", "B", "C", "D"].includes(upperCandidate)) {
       selectedOption = upperCandidate;
     } else {
-      const match = candidateStr.match(/^(?:OPTION\s+)?([A-D])(?:\b|:|\s)/i);
-      if (match) {
+      // 2. Matches "Option A", "Option A: ...", "Option (A)", "A.", "A)", "A: ..."
+      const match = candidateStr.match(/^(?:OPTION\s+[\(]?|[A-D]\s*[\.\):]|[\(])\s*([A-D])(?:\b|\)|:|\s|\.|$)/i);
+      if (match && ["A", "B", "C", "D"].includes(match[1].toUpperCase())) {
         selectedOption = match[1].toUpperCase();
       } else if (Array.isArray(options) && options.length > 0) {
+        // 3. Match against option text or label
         const lowerCandidate = candidateStr.toLowerCase();
         for (const opt of options) {
           const optLabel = String(opt.label || "").toUpperCase().trim();
           const optText = String(opt.text || opt.option || "").toLowerCase().trim();
+          if (!optLabel) continue;
           if (
             lowerCandidate === optText ||
             lowerCandidate === `option ${optLabel.toLowerCase()}: ${optText}` ||
-            lowerCandidate === `option ${optLabel.toLowerCase()}`
+            lowerCandidate === `option ${optLabel.toLowerCase()}` ||
+            lowerCandidate === `${optLabel.toLowerCase()}: ${optText}` ||
+            lowerCandidate.startsWith(`option ${optLabel.toLowerCase()}:`)
           ) {
             selectedOption = optLabel;
             break;

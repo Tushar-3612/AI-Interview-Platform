@@ -17,7 +17,7 @@ import RealInterviewCodingQuestion from "../../models/RealInterviewCodingQuestio
 import RealInterviewCodingSession from "../../models/RealInterviewCodingSession.js";
 import RealInterviewCodingSubmission from "../../models/RealInterviewCodingSubmission.js";
 
-import { evaluateAptitudeSession } from "./aptitudeService.js";
+import { evaluateAptitudeSession, resolveAptitudeOptionLetter } from "./aptitudeService.js";
 import { evaluateTechnicalInterviewSession } from "./technicalService.js";
 import { evaluateProjectInterviewSession } from "./projectService.js";
 import { evaluateHRInterviewSession } from "./hrService.js";
@@ -112,7 +112,11 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
     // =============================================================
     let aptitudeSessionResult = { evaluations: [] };
     try {
-      aptitudeSessionResult = await evaluateAptitudeSession({ sessionId });
+      aptitudeSessionResult = await evaluateAptitudeSession({
+        sessionId,
+        candidateAnswers: aptSessionDoc?.answers || mainInterviewAnswers,
+        userId: effectiveUserId,
+      });
       successfulRounds.push("aptitude");
     } catch (err) {
       console.warn(`[RESULT-EVALUATION] round=aptitude status=AI_FAILED errorCode=${err.message} fallback=LOCAL_OR_UNAVAILABLE`);
@@ -127,10 +131,6 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
 
     for (const q of aptitudeQuestions) {
       const qIdStr = q._id.toString();
-      const evalMatch = (aptitudeSessionResult.evaluations || []).find(
-        (e) => String(e.questionId) === qIdStr
-      );
-
       const resolved = resolveCandidateAnswer({
         roundType: "APTITUDE",
         questionId: qIdStr,
@@ -142,17 +142,17 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
 
       if (resolved.answerPresent) aptitudeAttemptedCount++;
 
-      const correctOpt = (q.correctOption || q.answer || "").toString().trim().toUpperCase();
-      const candidateAnswerText = (resolved.answer || "").toString().trim().toUpperCase();
+      const correctOpt = String(q.correctAnswer || "").trim().toUpperCase();
+      let candidateSelectedOpt = String(resolved.selectedOption || "").trim().toUpperCase();
+      if (!candidateSelectedOpt && resolved.answerPresent) {
+        candidateSelectedOpt = resolveAptitudeOptionLetter(resolved.answer, q.options || []);
+      }
 
-      const isAnswered = resolved.answerPresent && candidateAnswerText !== "" && candidateAnswerText !== "NOT ANSWERED";
-      const isCorrect = isAnswered && (
-        candidateAnswerText === correctOpt ||
-        (q.options && q.options.find(opt => opt.key?.toUpperCase() === candidateAnswerText && opt.isCorrect))
-      );
+      const isAnswered = resolved.answerPresent && candidateSelectedOpt !== "" && candidateSelectedOpt !== "NOT ANSWERED";
+      const isCorrect = isAnswered && candidateSelectedOpt === correctOpt;
 
-      const score = isCorrect ? (q.marks || 3.33) : 0;
-      const maxScore = q.marks || 3.33;
+      const maxScore = q.maxMarks || (q.difficulty === "easy" ? 2 : q.difficulty === "hard" ? 5 : 3);
+      const score = isCorrect ? maxScore : 0;
 
       if (isCorrect) calculatedAptitudeScore += score;
 
@@ -160,14 +160,18 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
         questionId: qIdStr,
         roundType: "APTITUDE",
         question: q.question,
-        candidateAnswer: candidateAnswerText,
-        correctAnswer: q.explanation || `Correct option is ${correctOpt}`,
+        candidateAnswer: isAnswered ? (resolved.answer || `Option ${candidateSelectedOpt}`) : "Not Answered",
+        correctAnswer: q.explanation || `Correct option is Option ${correctOpt}`,
         score,
         maxScore,
         status: !isAnswered ? "NOT_ATTEMPTED" : isCorrect ? "CORRECT" : "INCORRECT",
         evaluationMode: "DETERMINISTIC",
-        feedback: !isAnswered ? "Question was not attempted." : isCorrect ? "Correct answer selected." : `Incorrect choice. Selected option ${candidateAnswerText}.`,
-        improvedAnswer: q.explanation || `Correct option is ${correctOpt}`,
+        feedback: !isAnswered
+          ? "Question was not attempted."
+          : isCorrect
+          ? `Correct answer selected (Option ${correctOpt}).`
+          : `Incorrect choice. Selected Option ${candidateSelectedOpt || "unknown"}, correct option is Option ${correctOpt}.`,
+        improvedAnswer: q.explanation || `Correct option is Option ${correctOpt}`,
       });
     }
 
@@ -218,8 +222,7 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
       if (resolved.answerPresent) {
         const rawScore = Number(evalMatch?.score);
         score = isNaN(rawScore) ? 0 : Math.max(0, Math.min(maxScore, Math.round(rawScore)));
-        qStatus = score >= maxScore * 0.8 ? "CORRECT" : score >= maxScore * 0.4 ? "PARTIALLY_CORRECT" : "INCORRECT";
-        if (isFallback) qStatus = score > 0 ? "PARTIALLY_CORRECT" : "INCORRECT";
+        qStatus = score >= maxScore * 0.8 ? "CORRECT" : score >= maxScore * 0.4 ? "PARTIALLY_CORRECT" : score > 0 ? "PARTIALLY_CORRECT" : "INCORRECT";
       }
 
       calculatedTechScore += score;
@@ -286,8 +289,7 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
       if (resolved.answerPresent) {
         const rawScore = Number(evalMatch?.score);
         score = isNaN(rawScore) ? 0 : Math.max(0, Math.min(maxScore, Math.round(rawScore)));
-        qStatus = score >= maxScore * 0.8 ? "CORRECT" : score >= maxScore * 0.4 ? "PARTIALLY_CORRECT" : "INCORRECT";
-        if (isFallback) qStatus = score > 0 ? "PARTIALLY_CORRECT" : "INCORRECT";
+        qStatus = score >= maxScore * 0.8 ? "CORRECT" : score >= maxScore * 0.4 ? "PARTIALLY_CORRECT" : score > 0 ? "PARTIALLY_CORRECT" : "INCORRECT";
       }
 
       calculatedProjectScore += score;
@@ -354,8 +356,7 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
       if (resolved.answerPresent) {
         const rawScore = Number(evalMatch?.score);
         score = isNaN(rawScore) ? 0 : Math.max(0, Math.min(maxScore, Math.round(rawScore)));
-        qStatus = score >= maxScore * 0.8 ? "CORRECT" : score >= maxScore * 0.4 ? "PARTIALLY_CORRECT" : "INCORRECT";
-        if (isFallback) qStatus = score > 0 ? "PARTIALLY_CORRECT" : "INCORRECT";
+        qStatus = score >= maxScore * 0.8 ? "CORRECT" : score >= maxScore * 0.4 ? "PARTIALLY_CORRECT" : score > 0 ? "PARTIALLY_CORRECT" : "INCORRECT";
       }
 
       calculatedHRScore += score;
@@ -371,7 +372,6 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
         status: !resolved.answerPresent ? "NOT_ATTEMPTED" : qStatus,
         evaluationMode: isFallback ? "FALLBACK" : "AI",
         feedback: !resolved.answerPresent ? "Question was not attempted." : (evalMatch?.feedback || "Evaluation complete."),
-        improvedAnswer: !resolved.answerPresent ? (q.expectedKnowledge || "") : (evalMatch?.betterAnswer || ""),
       });
     }
 
