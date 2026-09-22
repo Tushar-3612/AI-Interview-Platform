@@ -81,6 +81,7 @@ export const getPracticeHome = async (req, res) => {
       aptitudeCount: aptMap[c.id] || 0,
       codingCount: codMap[c.id] || 0,
       codingCompleted: codCompletedMap[c.id] || 0,
+      supportedRounds: c.supportedRounds && c.supportedRounds.length > 0 ? c.supportedRounds : ["aptitude", "coding", "technical", "hr"],
       lastUpdated: c.lastUpdated || c.updatedAt,
     }));
 

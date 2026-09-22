@@ -1,14 +1,22 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Edit2, Trash2, AlertTriangle, Building2, Globe, MapPin, DollarSign, Users, Cpu, Code2, MessageSquare, Eye, Archive, RotateCcw, Power, Upload } from "lucide-react";
+import { Plus, Edit2, Trash2, AlertTriangle, Building2, Globe, MapPin, DollarSign, Users, Cpu, Code2, MessageSquare, BookOpen, Eye, Archive, RotateCcw, Power, Upload, Search, X } from "lucide-react";
 import api from "../../utils/api";
 import { getAuthToken } from "../../hooks/useStudentProfile";
 import toast from "react-hot-toast";
 import { SkeletonCompanyGrid as SkeletonGrid } from "../../components/ui/Skeleton";
 import { DEPARTMENT_VALUES as DEPARTMENTS, YEAR_VALUES as YEARS } from "../../utils/constants";
+import CompanyCard from "../../components/admin/CompanyCard";
 
 const DIFFICULTIES = ["Easy", "Medium", "Hard"];
 const INTERVIEW_TYPES = ["practice", "real", "both"];
+
+const ALL_ROUNDS = [
+  { id: "aptitude", label: "Aptitude Round", icon: BookOpen, color: "#F59E0B", bg: "rgba(245, 158, 11, 0.12)", border: "rgba(245, 158, 11, 0.3)" },
+  { id: "coding", label: "Coding Round", icon: Code2, color: "#06B6D4", bg: "rgba(6, 182, 212, 0.12)", border: "rgba(6, 182, 212, 0.3)" },
+  { id: "technical", label: "Technical Round", icon: Cpu, color: "#8B5CF6", bg: "rgba(139, 92, 246, 0.12)", border: "rgba(139, 92, 246, 0.3)" },
+  { id: "hr", label: "HR Round", icon: MessageSquare, color: "#10B981", bg: "rgba(16, 185, 129, 0.12)", border: "rgba(16, 185, 129, 0.3)" },
+];
 
 function CompanyManagement() {
   const token = getAuthToken();
@@ -30,10 +38,27 @@ function CompanyManagement() {
     package: "", eligibleDepartments: [], eligibleYears: [], requiredSkills: [],
     selectionProcess: "", passingPercentage: 0, minimumCGPA: 0,
     interviewType: "practice", status: "active",
+    supportedRounds: ["aptitude", "coding", "technical", "hr"],
     technical: 15, coding: 10, hr: 5, difficulty: "Medium",
   });
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [trashDeleteConfirm, setTrashDeleteConfirm] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+
+  const filteredCompanies = useMemo(() => {
+    return companies.filter((c) => {
+      const q = searchQuery.toLowerCase().trim();
+      const matchesSearch =
+        !q ||
+        c.name?.toLowerCase().includes(q) ||
+        c.description?.toLowerCase().includes(q) ||
+        c.location?.toLowerCase().includes(q) ||
+        c.package?.toLowerCase().includes(q);
+      const matchesStatus = statusFilter === "all" || c.status === statusFilter;
+      return matchesSearch && matchesStatus;
+    });
+  }, [companies, searchQuery, statusFilter]);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -66,7 +91,7 @@ function CompanyManagement() {
 
   const openAdd = () => {
     setModalType("add"); setSelectedCompany(null); setLogoFile(null);
-    setForm({ name: "", color: "#2563EB", logo: "", description: "", website: "", location: "", package: "", eligibleDepartments: [], eligibleYears: [], requiredSkills: [], selectionProcess: "", passingPercentage: 0, minimumCGPA: 0, interviewType: "practice", status: "active", technical: 15, coding: 10, hr: 5, difficulty: "Medium" });
+    setForm({ name: "", color: "#2563EB", logo: "", description: "", website: "", location: "", package: "", eligibleDepartments: [], eligibleYears: [], requiredSkills: [], selectionProcess: "", passingPercentage: 0, minimumCGPA: 0, interviewType: "practice", status: "active", supportedRounds: ["aptitude", "coding", "technical", "hr"], technical: 15, coding: 10, hr: 5, difficulty: "Medium" });
     setModalOpen(true);
   };
 
@@ -81,6 +106,7 @@ function CompanyManagement() {
       selectionProcess: company.selectionProcess || "",
       passingPercentage: company.passingPercentage || 0, minimumCGPA: company.minimumCGPA || 0,
       interviewType: company.interviewType || "practice", status: company.status || "active",
+      supportedRounds: company.supportedRounds && company.supportedRounds.length > 0 ? company.supportedRounds : ["aptitude", "coding", "technical", "hr"],
       technical: company.technical ?? 15, coding: company.coding ?? 10, hr: company.hr ?? 5,
       difficulty: company.difficulty || "Medium",
     });
@@ -165,18 +191,79 @@ function CompanyManagement() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      {/* ================= HEADER ================= */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>Company Management</h1>
-          <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>Manage placement companies and track performance</p>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight" style={{ color: "var(--text-primary)" }}>
+            Company Management
+          </h1>
+          <p className="text-xs sm:text-sm mt-1" style={{ color: "var(--text-secondary)" }}>
+            Manage placement companies and track performance
+          </p>
         </div>
+        <div className="flex items-center gap-2.5 shrink-0">
+          <button
+            type="button"
+            onClick={toggleTrash}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer border hover:bg-[var(--admin-surface-hover)]"
+            style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
+          >
+            <Archive className="w-4 h-4" />
+            <span>Trash</span>
+            {trash.length > 0 && !showTrash && (
+              <span className="ml-1 px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-500">
+                {trash.length}
+              </span>
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={openAdd}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white shadow-sm hover:shadow transition-all cursor-pointer bg-[#FF6B35] hover:bg-[#fa5a22]"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add Company</span>
+          </button>
+        </div>
+      </div>
+
+      {/* ================= SEARCH & STATUS FILTER TOOLBAR ================= */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="relative flex-1 max-w-md">
+          <Search
+            className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
+            style={{ color: "var(--text-muted)" }}
+          />
+          <input
+            type="text"
+            placeholder="Search companies by name, description, location..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-9 pr-9 py-2 text-xs sm:text-sm rounded-xl border bg-[var(--card-bg)] outline-none focus:ring-2 focus:ring-[#FF6B35]/20 focus:border-[#FF6B35] transition-all"
+            style={{ borderColor: "var(--border)", color: "var(--text-primary)" }}
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
+
         <div className="flex items-center gap-2">
-          <button onClick={toggleTrash} className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold cursor-pointer" style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
-            <Archive className="w-4 h-4" /> Trash {trash.length > 0 && !showTrash ? `(${trash.length})` : ""}
-          </button>
-          <button onClick={openAdd} className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-white cursor-pointer" style={{ background: "var(--primary)" }}>
-            <Plus className="w-4 h-4" /> Add Company
-          </button>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="px-3 py-2 text-xs sm:text-sm rounded-xl border bg-[var(--card-bg)] outline-none focus:ring-2 focus:ring-[#FF6B35]/20 focus:border-[#FF6B35] cursor-pointer"
+            style={{ borderColor: "var(--border)", color: "var(--text-primary)" }}
+          >
+            <option value="all">All Status</option>
+            <option value="active">Active Only</option>
+            <option value="inactive">Inactive Only</option>
+          </select>
         </div>
       </div>
 
@@ -216,58 +303,57 @@ function CompanyManagement() {
         </div>
       )}
 
+      {/* ================= COMPANIES GRID ================= */}
       {loading ? (
         <SkeletonGrid count={6} />
-      ) : companies.length === 0 ? (
-        <div className="text-center py-20 border rounded-2xl" style={{ borderColor: "var(--border)" }}>
-          <Building2 className="w-10 h-10 mx-auto mb-3" style={{ color: "var(--text-muted)" }} />
-          <p className="text-sm" style={{ color: "var(--text-muted)" }}>No companies yet.</p>
+      ) : filteredCompanies.length === 0 ? (
+        <div
+          className="text-center py-16 border rounded-2xl p-6"
+          style={{ borderColor: "var(--border)", background: "var(--card-bg)" }}
+        >
+          <Building2 className="w-12 h-12 mx-auto mb-3 opacity-30" style={{ color: "var(--text-muted)" }} />
+          <h4 className="text-sm font-bold mb-1" style={{ color: "var(--text-primary)" }}>
+            {companies.length === 0
+              ? "No placement companies yet"
+              : "No companies match your filters"}
+          </h4>
+          <p className="text-xs max-w-sm mx-auto mb-4" style={{ color: "var(--text-secondary)" }}>
+            {companies.length === 0
+              ? "Click 'Add Company' to onboard your first placement drive company."
+              : "Try searching with a different keyword or resetting your status filter."}
+          </p>
+          {companies.length > 0 && (searchQuery || statusFilter !== "all") && (
+            <button
+              type="button"
+              onClick={() => {
+                setSearchQuery("");
+                setStatusFilter("all");
+              }}
+              className="px-3 py-1.5 text-xs font-semibold rounded-lg border hover:bg-[var(--admin-surface-hover)] cursor-pointer"
+              style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
+            >
+              Clear Filters
+            </button>
+          )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {companies.map((company, i) => {
-            const analytic = analytics.find(a => a.companyId === company.id) || {};
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {filteredCompanies.map((company, i) => {
+            const analytic =
+              analytics.find(
+                (a) => a.companyId === company.id || a.companyId === company._id
+              ) || {};
             return (
-              <motion.div key={company._id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}
-                className="border rounded-2xl p-5" style={{ background: "var(--card-bg)", borderColor: "var(--border)" }}>
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center gap-3">
-                    {company.logo ? (
-                      <img src={company.logo} alt={company.name} className="w-10 h-10 rounded-xl object-contain" style={{ background: "var(--input-bg)" }} />
-                    ) : (
-                      <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm" style={{ background: company.color || "#2563EB" }}>
-                        {company.name?.[0]?.toUpperCase()}
-                      </div>
-                    )}
-                    <div>
-                      <h4 className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>{company.name}</h4>
-                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${company.status === "active" ? "text-green-600 bg-green-50 dark:bg-green-900/20" : "text-gray-400 bg-gray-100 dark:bg-gray-800"}`}>
-                        {company.status}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex gap-1">
-                    <button onClick={() => handleView(company)} className="p-1.5 rounded-lg cursor-pointer" style={{ color: "var(--primary)" }} title="View"><Eye className="w-3.5 h-3.5" /></button>
-                    <button onClick={() => toggleStatus(company)} className="p-1.5 rounded-lg cursor-pointer" style={{ color: company.status === "active" ? "var(--text-muted)" : "var(--success)" }} title={company.status === "active" ? "Disable" : "Enable"}>
-                      <Power className="w-3.5 h-3.5" />
-                    </button>
-                    <button onClick={() => openEdit(company)} className="p-1.5 rounded-lg cursor-pointer" style={{ color: "var(--text-secondary)" }} title="Edit"><Edit2 className="w-3.5 h-3.5" /></button>
-                    <button onClick={() => setDeleteConfirm(company)} className="p-1.5 rounded-lg cursor-pointer" style={{ color: "var(--error)" }} title="Delete"><Trash2 className="w-3.5 h-3.5" /></button>
-                  </div>
-                </div>
-                {company.description && <p className="text-xs mb-3 line-clamp-2" style={{ color: "var(--text-secondary)" }}>{company.description}</p>}
-                <div className="flex flex-wrap gap-3 text-xs mb-3">
-                  {company.location && <span className="flex items-center gap-1" style={{ color: "var(--text-muted)" }}><MapPin className="w-3 h-3" />{company.location}</span>}
-                  {company.package && <span className="flex items-center gap-1 font-semibold" style={{ color: "var(--success)" }}><DollarSign className="w-3 h-3" />{company.package}</span>}
-                  {company.lastUpdated && <span className="flex items-center gap-1" style={{ color: "var(--text-muted)" }}><Globe className="w-3 h-3" />Updated {new Date(company.lastUpdated).toLocaleDateString()}</span>}
-                </div>
-                <div className="flex gap-3 text-xs border-t pt-3" style={{ borderColor: "var(--border)" }}>
-                  <span className="flex items-center gap-1" style={{ color: "var(--text-muted)" }}><Cpu className="w-3 h-3" />{company.technical}</span>
-                  <span className="flex items-center gap-1" style={{ color: "var(--text-muted)" }}><Code2 className="w-3 h-3" />{company.coding}</span>
-                  <span className="flex items-center gap-1" style={{ color: "var(--text-muted)" }}><MessageSquare className="w-3 h-3" />{company.hr}</span>
-                  <span className="ml-auto font-semibold" style={{ color: "var(--primary)" }}>{analytic.averageScore || 0}%</span>
-                </div>
-              </motion.div>
+              <CompanyCard
+                key={company._id}
+                company={company}
+                analytic={analytic}
+                onView={handleView}
+                onToggleStatus={toggleStatus}
+                onEdit={openEdit}
+                onDelete={setDeleteConfirm}
+                index={i}
+              />
             );
           })}
         </div>
@@ -367,6 +453,60 @@ function CompanyManagement() {
                   <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-secondary)" }}>Required Skills (comma separated)</label>
                   <input value={form.requiredSkills.join(", ")} onChange={e => setForm({ ...form, requiredSkills: e.target.value.split(",").map(s => s.trim()).filter(Boolean) })} className={inputCls} style={{ color: "var(--text-primary)" }} />
                 </div>
+                <div className="col-span-2">
+                  <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-secondary)" }}>Supported Interview Rounds *</label>
+                  <p className="text-[11px] mb-2" style={{ color: "var(--text-muted)" }}>Select which rounds this company conducts (e.g. Aptitude, Coding, Technical, HR)</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {ALL_ROUNDS.map((r) => {
+                      const Icon = r.icon;
+                      const active = (form.supportedRounds || []).includes(r.id);
+                      return (
+                        <button
+                          key={r.id}
+                          type="button"
+                          onClick={() => toggleArrayField("supportedRounds", r.id)}
+                          className={`flex items-center justify-center gap-2 p-2.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${active ? "shadow-sm scale-[1.02]" : "opacity-60"}`}
+                          style={{
+                            background: active ? r.bg : "transparent",
+                            borderColor: active ? r.color : "var(--border)",
+                            color: active ? r.color : "var(--text-muted)",
+                          }}
+                        >
+                          <Icon className="w-4 h-4" />
+                          <span>{r.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Round Question Targets */}
+                {(form.supportedRounds || []).some(r => ["coding", "technical", "hr"].includes(r)) && (
+                  <div className="col-span-2 p-3 rounded-xl border space-y-2" style={{ borderColor: "var(--border)", background: "var(--bg-secondary)" }}>
+                    <p className="text-xs font-bold" style={{ color: "var(--text-primary)" }}>Round Question Targets</p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {(form.supportedRounds || []).includes("coding") && (
+                        <div>
+                          <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-secondary)" }}>Coding Qs</label>
+                          <input type="number" min="0" value={form.coding} onChange={e => setForm({ ...form, coding: parseInt(e.target.value) || 0 })} className={inputCls} style={{ color: "var(--text-primary)" }} />
+                        </div>
+                      )}
+                      {(form.supportedRounds || []).includes("technical") && (
+                        <div>
+                          <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-secondary)" }}>Technical Qs</label>
+                          <input type="number" min="0" value={form.technical} onChange={e => setForm({ ...form, technical: parseInt(e.target.value) || 0 })} className={inputCls} style={{ color: "var(--text-primary)" }} />
+                        </div>
+                      )}
+                      {(form.supportedRounds || []).includes("hr") && (
+                        <div>
+                          <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-secondary)" }}>HR Qs</label>
+                          <input type="number" min="0" value={form.hr} onChange={e => setForm({ ...form, hr: parseInt(e.target.value) || 0 })} className={inputCls} style={{ color: "var(--text-primary)" }} />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 <div className="col-span-2">
                   <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-secondary)" }}>Selection Process</label>
                   <textarea value={form.selectionProcess} onChange={e => setForm({ ...form, selectionProcess: e.target.value })} rows={2} className={inputCls} style={{ color: "var(--text-primary)" }} placeholder="e.g. Aptitude Test → Technical Interview → HR Round" />

@@ -39,6 +39,10 @@ const companySchema = new mongoose.Schema(
     technical: { type: Number, default: 0 },
     coding: { type: Number, default: 0 },
     hr: { type: Number, default: 0 },
+    supportedRounds: {
+      type: [{ type: String, enum: ["aptitude", "coding", "technical", "hr"] }],
+      default: ["aptitude", "coding", "technical", "hr"],
+    },
     difficulty: {
       type: String,
       enum: ["Easy", "Medium", "Hard"],

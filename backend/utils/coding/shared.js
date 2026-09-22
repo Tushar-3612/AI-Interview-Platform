@@ -11,9 +11,9 @@ function getStandardFontDataUrl() {
   try {
     const req = createRequire(import.meta.url);
     const pkg = req.resolve("pdfjs-dist/package.json");
-    const fontsDir = path.join(path.dirname(pkg), "standard_fonts");
+    const fontsDir = path.resolve(path.dirname(pkg), "standard_fonts").replaceAll("\\", "/") + "/";
     if (fs.existsSync(fontsDir)) {
-      return pathToFileURL(fontsDir).toString() + "/";
+      return fontsDir;
     }
   } catch {
     /* ignore */
@@ -30,6 +30,15 @@ export const LABELS = [
 export const ALLOWED_DIFFICULTIES = ["Easy", "Medium", "Hard"];
 export const ALLOWED_VISIBILITY = ["Visible", "Hidden"];
 
+export function normalizeDifficulty(val) {
+  if (!val) return "Medium";
+  const s = String(val).toLowerCase();
+  if (s.includes("easy")) return "Easy";
+  if (s.includes("hard")) return "Hard";
+  if (s.includes("medium")) return "Medium";
+  return "Medium";
+}
+
 export function isNoiseLine(line) {
   const t = (line || "").trim();
   if (!t) return false;
@@ -45,7 +54,31 @@ export function isNoiseLine(line) {
 
 export function cleanExtractedText(text) {
   if (!text) return "";
-  return text
+  // Strip real HTML / XML formatting tags (like <b>, </b>, <strong>, </td>, etc.)
+  // without destroying mathematical expressions like <= or <
+  let cleaned = text
+    .replace(/<\/?\s*[a-zA-Z][a-zA-Z0-9\-_]*\s*>/gs, " ")
+    .replace(/<\s*\/\s*[a-zA-Z0-9\-_]+\s*>/gs, " ")
+    .replace(/<\s*[a-zA-Z0-9\-_]+\s*>/gs, " ");
+
+  // Fix field labels split across lines or excessive whitespace in tables
+  cleaned = cleaned.replace(/Problem\s*\n+\s*ID\s*:/gi, "Problem ID:");
+  cleaned = cleaned.replace(/Problem\s*\n+\s*Title\s*:/gi, "Problem Title:");
+  cleaned = cleaned.replace(/Input\s*\n+\s*Format\s*:/gi, "Input Format:");
+  cleaned = cleaned.replace(/Output\s*\n+\s*Format\s*:/gi, "Output Format:");
+  cleaned = cleaned.replace(/Sample\s*Input\s*:/gi, "Sample Input:");
+  cleaned = cleaned.replace(/Sample\s*Output\s*:/gi, "Sample Output:");
+  cleaned = cleaned.replace(/Supported\s*\n+\s*Languages\s*:/gi, "Supported Languages:");
+  cleaned = cleaned.replace(/Test\s*\n+\s*Cases\s*:/gi, "Test Cases:");
+  cleaned = cleaned.replace(/Test\s*Case\s*\n+\s*ID\s*:/gi, "Test Case ID:");
+  cleaned = cleaned.replace(/Expected\s*\n+\s*Output\s*:/gi, "Expected Output:");
+  cleaned = cleaned.replace(/Marks\s*\n+\s*:/gi, "Marks:");
+  cleaned = cleaned.replace(/Difficulty\s*\n+\s*:/gi, "Difficulty:");
+  cleaned = cleaned.replace(/Visibility\s*\n+\s*:/gi, "Visibility:");
+  cleaned = cleaned.replace(/Description\s*\n+\s*:/gi, "Description:");
+  cleaned = cleaned.replace(/Constraints\s*\n+\s*:/gi, "Constraints:");
+
+  return cleaned
     .split(/\r?\n/)
     .filter((l) => !isNoiseLine(l))
     .join("\n");
@@ -58,7 +91,8 @@ export function regexEscape(s) {
 export function sanitizeText(value) {
   if (!value) return "";
   return String(value)
-    .replace(/<[^>]*>/g, "")
+    .replace(/<\/?\s*[a-zA-Z][a-zA-Z0-9\-_]*\s*>/gs, " ")
+    .replace(/<\s*\/\s*[a-zA-Z0-9\-_]+\s*>/gs, " ")
     .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, "")
     .trim();
 }
@@ -138,14 +172,14 @@ export function parseCsvRows(text) {
 }
 
 export function fieldValue(block, label, stopLabels = LABELS, singleLine = false) {
-  const re = new RegExp(`(?:^|\\n)\\s*${regexEscape(label)}\\s*:\\s*`, "i");
+  const re = new RegExp(`(?:^|\\n|\\s)${regexEscape(label)}\\s*:\\s*`, "i");
   const m = re.exec(block);
   if (!m) return "";
   const start = m.index + m[0].length;
   let end = block.length;
   for (const l of stopLabels) {
     if (l.toLowerCase() === label.toLowerCase()) continue;
-    const r2 = new RegExp(`(?:^|\\n)\\s*${regexEscape(l)}\\s*:[ \\t]*`, "i");
+    const r2 = new RegExp(`(?:^|\\n|\\s)${regexEscape(l)}\\s*:[ \\t]*`, "i");
     const m2 = r2.exec(block.slice(start));
     if (m2) {
       const candidate = start + m2.index;
@@ -162,44 +196,121 @@ export function fieldValue(block, label, stopLabels = LABELS, singleLine = false
 
 export function splitBlocks(text, startRegex, fallbackRegex) {
   const lines = (text || "").split(/\r?\n/);
-  const sIndices = [];
-  const fIndices = [];
+  const pHeadingRegex = /^\s*P\d{1,4}\s*[—–-]/i;
+  const probIdRegex = /^\s*Problem\s*ID\s*:/i;
+  const probTitleRegex = /^\s*Problem\s*Title\s*:/i;
+  const probNumRegex = /^\s*(?:Coding\s+)?Problem\s*#?\d+\s*[:—–-]/i;
+
+  let chosenRegex = null;
+  const countMatches = (rx) => (rx ? lines.filter((l) => rx.test(l)).length : 0);
+
+  if (countMatches(pHeadingRegex) >= 1) chosenRegex = pHeadingRegex;
+  else if (countMatches(startRegex) >= 1) chosenRegex = startRegex;
+  else if (countMatches(probIdRegex) >= 1) chosenRegex = probIdRegex;
+  else if (countMatches(probTitleRegex) >= 1) chosenRegex = probTitleRegex;
+  else if (countMatches(fallbackRegex) >= 1) chosenRegex = fallbackRegex;
+  else if (countMatches(probNumRegex) >= 1) chosenRegex = probNumRegex;
+  else chosenRegex = /(?:^|\n)\s*(?:Problem\s*ID|Problem\s*Title)/i;
+
+  const indices = [];
   lines.forEach((line, i) => {
-    if (startRegex.test(line)) sIndices.push(i);
-    else if (fallbackRegex.test(line)) fIndices.push(i);
+    if (chosenRegex.test(line)) indices.push(i);
   });
-  const splits = sIndices.length >= 1 ? sIndices : fIndices.length >= 1 ? fIndices : [];
-  if (splits.length === 0) return [];
+
+  if (indices.length === 0) return [];
   const blocks = [];
-  for (let s = 0; s < splits.length; s++) {
-    const startLine = splits[s];
-    const endLine = s < splits.length - 1 ? splits[s + 1] : lines.length;
+  for (let s = 0; s < indices.length; s++) {
+    const startLine = indices[s];
+    const endLine = s < indices.length - 1 ? indices[s + 1] : lines.length;
     const block = lines.slice(startLine, endLine).join("\n");
     if (block.trim()) blocks.push(block);
   }
   return blocks;
 }
 
-export function parseTestCasesInText(text) {
-  const marker = /^\s*test\s*case\s*id\s*:/im;
-  const lines = (text || "").split(/\r?\n/);
-  const idx = [];
-  lines.forEach((line, i) => { if (marker.test(line)) idx.push(i); });
-  if (idx.length === 0) return [];
-  const blocks = [];
-  for (let i = 0; i < idx.length; i++) {
-    const start = idx[i];
-    const end = i < idx.length - 1 ? idx[i + 1] : lines.length;
-    blocks.push(lines.slice(start, end).join("\n"));
+export function parseTestCasesInText(text, sampleOutput = "") {
+  // Check Format A (Label-based: Test Case ID:)
+  const marker = /Test\s*Case\s*ID\s*:/i;
+  if (marker.test(text)) {
+    const lines = (text || "").split(/\r?\n/);
+    const idx = [];
+    lines.forEach((line, i) => {
+      if (/^\s*test\s*case\s*id\s*:/i.test(line)) idx.push(i);
+    });
+    if (idx.length > 0) {
+      const bList = [];
+      for (let i = 0; i < idx.length; i++) {
+        const start = idx[i];
+        const end = i < idx.length - 1 ? idx[i + 1] : lines.length;
+        bList.push(lines.slice(start, end).join("\n"));
+      }
+      return bList
+        .map((b) => ({
+          testCaseId: fieldValue(b, "Test Case ID"),
+          visibility: fieldValue(b, "Visibility"),
+          input: fieldValue(b, "Input"),
+          expectedOutput: fieldValue(b, "Expected Output"),
+        }))
+        .filter((tc) => tc.testCaseId || tc.input || tc.expectedOutput || tc.visibility);
+    }
   }
-  return blocks
-    .map((b) => ({
-      testCaseId: fieldValue(b, "Test Case ID"),
-      visibility: fieldValue(b, "Visibility"),
-      input: fieldValue(b, "Input"),
-      expectedOutput: fieldValue(b, "Expected Output"),
-    }))
-    .filter((tc) => tc.testCaseId || tc.input || tc.expectedOutput || tc.visibility);
+
+  // Check Format B (Table/row-based: T001 Visible/Hidden ...)
+  const tcMarker = /(?:^|\n)\s*Test\s*Cases\s*:\s*/i;
+  const match = tcMarker.exec(text);
+  const tcSection = match ? text.slice(match.index + match[0].length) : text;
+
+  const rowRegex = /(?:^|\n)\s*(T\d{1,4})\s+(Visible|Hidden)\b/gi;
+  const matches = [];
+  let m;
+  while ((m = rowRegex.exec(tcSection)) !== null) {
+    matches.push({
+      testCaseId: m[1],
+      visibility: m[2],
+      startIndex: m.index,
+      endIndex: m.index + m[0].length,
+    });
+  }
+
+  if (matches.length === 0) return [];
+
+  const expectedTokenCount = sampleOutput ? sampleOutput.trim().split(/\s+/).length : 1;
+
+  const testCases = [];
+  for (let i = 0; i < matches.length; i++) {
+    const cur = matches[i];
+    const nextStart = i < matches.length - 1 ? matches[i + 1].startIndex : tcSection.length;
+    let content = tcSection.slice(cur.endIndex, nextStart).trim();
+    content = content.replace(/Page\s+\d+.*$/gi, "").trim();
+
+    const lines = content.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+    let input = "";
+    let expectedOutput = "";
+
+    if (lines.length > 1) {
+      expectedOutput = lines[lines.length - 1];
+      input = lines.slice(0, lines.length - 1).join("\n");
+    } else if (lines.length === 1) {
+      const tokens = lines[0].split(/\s+/);
+      if (tokens.length <= 1) {
+        input = tokens[0] || "";
+        expectedOutput = "";
+      } else {
+        const count = Math.min(expectedTokenCount, tokens.length - 1);
+        expectedOutput = tokens.slice(tokens.length - count).join(" ");
+        input = tokens.slice(0, tokens.length - count).join(" ");
+      }
+    }
+
+    testCases.push({
+      testCaseId: cur.testCaseId,
+      visibility: cur.visibility,
+      input,
+      expectedOutput,
+    });
+  }
+
+  return testCases;
 }
 
 export function parseSupportedLanguages(value) {

@@ -171,13 +171,14 @@ export default function MockQuestionManagement() {
             className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer shadow-sm hover:opacity-90"
             style={{ background: "var(--card-bg)", borderColor: "var(--border)", color: "var(--text-primary)" }}
           >
-            <Upload className="w-3.5 h-3.5 text-blue-500" />
+            <Upload className="w-3.5 h-3.5" style={{ color: "var(--primary)" }} />
             <span>Import Questions</span>
           </button>
 
           <button
             onClick={handleOpenAdd}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white transition-all shadow-md cursor-pointer"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white transition-all shadow-sm cursor-pointer hover:opacity-90"
+            style={{ background: "var(--primary)" }}
           >
             <Plus className="w-4 h-4" />
             <span>Add Question</span>
@@ -191,7 +192,7 @@ export default function MockQuestionManagement() {
           <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
             Target Company:
           </p>
-          <span className="text-[11px] font-semibold text-blue-500">
+          <span className="text-[11px] font-bold" style={{ color: "var(--primary)" }}>
             {currentCompanyName} Selected
           </span>
         </div>
@@ -207,12 +208,15 @@ export default function MockQuestionManagement() {
                 }}
                 className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all whitespace-nowrap cursor-pointer border ${
                   isSelected
-                    ? "bg-blue-600 border-blue-600 text-white shadow-md font-bold"
+                    ? "text-white shadow-sm font-bold"
                     : "border-[var(--border)] text-[var(--text-secondary)] hover:bg-slate-500/10 hover:text-[var(--text-primary)]"
                 }`}
-                style={{ background: isSelected ? undefined : "var(--bg-primary)" }}
+                style={{
+                  background: isSelected ? "var(--primary)" : "var(--bg-primary)",
+                  borderColor: isSelected ? "var(--primary)" : "var(--border)",
+                }}
               >
-                <Building2 className={`w-3.5 h-3.5 ${isSelected ? "text-white" : "text-blue-500"}`} />
+                <Building2 className="w-3.5 h-3.5" style={{ color: isSelected ? "#FFFFFF" : "var(--primary)" }} />
                 <span>{c.name}</span>
               </button>
             );
@@ -239,9 +243,14 @@ export default function MockQuestionManagement() {
                 }}
                 className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
                   isSelected
-                    ? "bg-blue-500/15 border-blue-500/40 text-blue-500 shadow-sm"
+                    ? "shadow-xs"
                     : "border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                 }`}
+                style={{
+                  background: isSelected ? "rgba(255, 107, 53, 0.1)" : "transparent",
+                  borderColor: isSelected ? "rgba(255, 107, 53, 0.3)" : "transparent",
+                  color: isSelected ? "var(--primary)" : "var(--text-secondary)",
+                }}
               >
                 <Icon className="w-4 h-4" />
                 <span>{t.label}</span>
@@ -262,7 +271,7 @@ export default function MockQuestionManagement() {
                 setSearch(e.target.value);
                 setPage(1);
               }}
-              className="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl border focus:outline-none focus:border-blue-500"
+              className="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl border focus:outline-none focus:border-[#FF6B35] focus:ring-1 focus:ring-[#FF6B35]/20"
               style={{ background: "var(--input-bg)", borderColor: "var(--border)", color: "var(--text-primary)" }}
             />
           </div>
@@ -273,7 +282,7 @@ export default function MockQuestionManagement() {
               setDifficulty(e.target.value);
               setPage(1);
             }}
-            className="px-3 py-1.5 text-xs rounded-xl border focus:outline-none focus:border-blue-500"
+            className="px-3 py-1.5 text-xs rounded-xl border focus:outline-none focus:border-[#FF6B35] focus:ring-1 focus:ring-[#FF6B35]/20 cursor-pointer"
             style={{ background: "var(--input-bg)", borderColor: "var(--border)", color: "var(--text-primary)" }}
           >
             <option value="">All Difficulties</option>
@@ -288,7 +297,7 @@ export default function MockQuestionManagement() {
               setLimit(Number(e.target.value));
               setPage(1);
             }}
-            className="px-3 py-1.5 text-xs rounded-xl border focus:outline-none focus:border-blue-500"
+            className="px-3 py-1.5 text-xs rounded-xl border focus:outline-none focus:border-[#FF6B35] focus:ring-1 focus:ring-[#FF6B35]/20 cursor-pointer"
             style={{ background: "var(--input-bg)", borderColor: "var(--border)", color: "var(--text-primary)" }}
           >
             <option value={20}>20 / page</option>
@@ -307,7 +316,7 @@ export default function MockQuestionManagement() {
           </h3>
           {pagination.total > 0 && (
             <p className="text-xs font-semibold" style={{ color: "var(--text-secondary)" }}>
-              Showing <span className="text-blue-500 font-bold">{startCount}–{endCount}</span> of <span className="font-bold text-[var(--text-primary)]">{pagination.total}</span> questions
+              Showing <span className="font-bold" style={{ color: "var(--primary)" }}>{startCount}–{endCount}</span> of <span className="font-bold text-[var(--text-primary)]">{pagination.total}</span> questions
             </p>
           )}
         </div>
@@ -327,7 +336,14 @@ export default function MockQuestionManagement() {
               >
                 <div className="space-y-2 flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-[11px] font-mono px-2 py-0.5 rounded font-bold border bg-slate-500/10 text-blue-500 border-blue-500/20">
+                    <span
+                      className="text-[11px] font-mono px-2 py-0.5 rounded font-bold border"
+                      style={{
+                        background: "rgba(255, 107, 53, 0.1)",
+                        color: "var(--primary)",
+                        borderColor: "rgba(255, 107, 53, 0.25)",
+                      }}
+                    >
                       {q.questionId || `Q-${startCount + idx}`}
                     </span>
 
@@ -385,7 +401,12 @@ export default function MockQuestionManagement() {
                 <div className="flex items-center gap-1.5 self-end md:self-start shrink-0 pt-1">
                   <button
                     onClick={() => setViewingQuestion(q)}
-                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition-colors hover:bg-blue-500/10 text-blue-500 border-blue-500/20 cursor-pointer"
+                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition-colors cursor-pointer hover:opacity-90"
+                    style={{
+                      background: "rgba(255, 107, 53, 0.08)",
+                      color: "var(--primary)",
+                      borderColor: "rgba(255, 107, 53, 0.25)",
+                    }}
                     title="View Full Details"
                   >
                     <Eye className="w-3.5 h-3.5" />
@@ -394,7 +415,7 @@ export default function MockQuestionManagement() {
 
                   <button
                     onClick={() => handleOpenEdit(q)}
-                    className="p-1.5 rounded-lg transition-colors text-slate-400 hover:text-blue-500 hover:bg-slate-500/10 cursor-pointer"
+                    className="p-1.5 rounded-lg transition-colors text-slate-400 hover:text-[var(--primary)] hover:bg-slate-500/10 cursor-pointer"
                     title="Edit Question"
                   >
                     <Edit2 className="w-4 h-4" />
@@ -445,15 +466,17 @@ export default function MockQuestionManagement() {
                   let pageNum = page - 2 + i;
                   if (pageNum < 1) pageNum = i + 1;
                   if (pageNum > pagination.totalPages) return null;
+                  const isCurrent = page === pageNum;
                   return (
                     <button
                       key={pageNum}
                       onClick={() => setPage(pageNum)}
                       className={`w-7 h-7 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                        page === pageNum
-                          ? "bg-blue-600 text-white shadow-sm"
+                        isCurrent
+                          ? "text-white shadow-xs"
                           : "text-slate-400 hover:bg-slate-500/10"
                       }`}
+                      style={isCurrent ? { background: "var(--primary)" } : undefined}
                     >
                       {pageNum}
                     </button>
@@ -485,7 +508,7 @@ export default function MockQuestionManagement() {
           >
             <div className="flex items-start justify-between pb-3 border-b" style={{ borderColor: "var(--border)" }}>
               <div>
-                <span className="text-[11px] font-mono text-blue-500 font-bold">
+                <span className="text-[11px] font-mono font-bold" style={{ color: "var(--primary)" }}>
                   {viewingQuestion.questionId}
                 </span>
                 <h3 className="text-sm font-bold mt-1">Full Question Details</h3>
@@ -538,7 +561,7 @@ export default function MockQuestionManagement() {
               )}
 
               <div className="grid grid-cols-3 gap-2 text-[11px] pt-2 border-t" style={{ borderColor: "var(--border)" }}>
-                <div>Company: <span className="font-bold text-blue-500">{currentCompanyName}</span></div>
+                <div>Company: <span className="font-bold" style={{ color: "var(--primary)" }}>{currentCompanyName}</span></div>
                 <div>Difficulty: <span className="font-bold capitalize text-amber-500">{viewingQuestion.difficulty}</span></div>
                 <div>Marks: <span className="font-bold text-emerald-500">{viewingQuestion.marks}</span></div>
               </div>
@@ -547,7 +570,8 @@ export default function MockQuestionManagement() {
             <div className="flex justify-end pt-2">
               <button
                 onClick={() => setViewingQuestion(null)}
-                className="px-5 py-2 rounded-xl text-xs font-semibold bg-blue-600 text-white hover:bg-blue-500 cursor-pointer"
+                className="px-5 py-2 rounded-xl text-xs font-bold text-white hover:opacity-90 cursor-pointer shadow-sm"
+                style={{ background: "var(--primary)" }}
               >
                 Close
               </button>

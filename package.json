@@ -27,7 +27,6 @@
     "nodemailer": "^9.0.3",
     "pdfjs-dist": "^4.10.38",
     "pdfkit": "^0.19.1",
-    "recharts": "^3.10.1",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {

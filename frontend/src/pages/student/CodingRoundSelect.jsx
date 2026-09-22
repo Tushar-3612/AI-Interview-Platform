@@ -184,11 +184,13 @@ export default function CodingRoundSelect() {
     fetchCompaniesAndActivity();
   }, [authHeaders]);
 
-  // Only display companies added by admin and active in MongoDB
+  // Only display companies added by admin, active in MongoDB, and configured for Coding Round
   const mergedCompanies = useMemo(() => {
-    const activeAdminCompanies = (companies || []).filter(
-      (c) => c && c.status !== "inactive" && !c.isDeleted
-    );
+    const activeAdminCompanies = (companies || []).filter((c) => {
+      if (!c || c.status === "inactive" || c.isDeleted) return false;
+      const rounds = c.supportedRounds && c.supportedRounds.length > 0 ? c.supportedRounds : ["aptitude", "coding", "technical", "hr"];
+      return rounds.includes("coding");
+    });
 
     return activeAdminCompanies.map((c) => {
       const realId = c.id || c._id;

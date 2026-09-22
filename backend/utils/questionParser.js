@@ -9,9 +9,9 @@ function getStandardFontDataUrl() {
   try {
     const req = createRequire(import.meta.url);
     const pkg = req.resolve("pdfjs-dist/package.json");
-    const fontsDir = path.join(path.dirname(pkg), "standard_fonts");
+    const fontsDir = path.resolve(path.dirname(pkg), "standard_fonts").replaceAll("\\", "/") + "/";
     if (fs.existsSync(fontsDir)) {
-      return pathToFileURL(fontsDir).toString() + "/";
+      return fontsDir;
     }
   } catch {
     /* ignore */

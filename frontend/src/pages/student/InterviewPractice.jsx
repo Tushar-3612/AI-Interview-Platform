@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import { 
-  Building2, Search, ArrowRight, BookOpen, Code2, Bookmark, History, Clock, X, BrainCircuit 
+  Building2, Search, ArrowRight, BookOpen, Code2, Bookmark, History, Clock, X, BrainCircuit, Cpu, MessageSquare 
 } from "lucide-react";
 import api from "../../utils/api";
 import { getAuthToken } from "../../hooks/useStudentProfile";
@@ -37,6 +37,7 @@ function InterviewPractice() {
   const [selectedDifficulty, setSelectedDifficulty] = useState("");
   const [selectedDept, setSelectedDept] = useState("");
   const [selectedSolvedStatus, setSelectedSolvedStatus] = useState("");
+  const [selectedRound, setSelectedRound] = useState("");
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -124,18 +125,22 @@ function InterviewPractice() {
         matchesSolved = !solvedCompanyIds.has(companyId) && attemptedCompanyIds.has(companyId);
       }
 
-      return matchesSearch && matchesDifficulty && matchesDept && matchesSolved;
+      const supported = c.supportedRounds && c.supportedRounds.length > 0 ? c.supportedRounds : ["aptitude", "coding", "technical", "hr"];
+      const matchesRound = selectedRound ? supported.includes(selectedRound) : true;
+
+      return matchesSearch && matchesDifficulty && matchesDept && matchesSolved && matchesRound;
     });
-  }, [companies, searchTerm, selectedDifficulty, selectedDept, selectedSolvedStatus, attemptedCompanyIds, solvedCompanyIds]);
+  }, [companies, searchTerm, selectedDifficulty, selectedDept, selectedSolvedStatus, selectedRound, attemptedCompanyIds, solvedCompanyIds]);
 
   const clearFilters = () => {
     setSearchTerm("");
     setSelectedDifficulty("");
     setSelectedDept("");
     setSelectedSolvedStatus("");
+    setSelectedRound("");
   };
 
-  const hasFiltersActive = searchTerm || selectedDifficulty || selectedDept || selectedSolvedStatus;
+  const hasFiltersActive = searchTerm || selectedDifficulty || selectedDept || selectedSolvedStatus || selectedRound;
   const lastAttempt = recent?.lastAttempt || aptitudeHistory[0];
   const lastSubmission = recent?.lastSubmission || codingHistory[0];
   const hasActivity = lastAttempt || lastSubmission;
@@ -638,8 +643,21 @@ function InterviewPractice() {
             )}
           </div>
 
-          {/* Filter Selects — 3-column grid fitting screen */}
-          <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5 w-full">
+          {/* Filter Selects — 4-column responsive grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 sm:gap-2.5 w-full">
+            <select
+              value={selectedRound}
+              onChange={(e) => setSelectedRound(e.target.value)}
+              style={{ padding: "8px 20px 8px 10px", fontSize: "11px", backgroundPosition: "right 6px center" }}
+              className="w-full truncate rounded-xl border font-semibold outline-none cursor-pointer bg-[var(--card-bg)] text-[var(--text-secondary)] border-[var(--border)] transition-colors hover:border-[#FF6B35]/40"
+            >
+              <option value="">All Rounds</option>
+              <option value="aptitude">Aptitude Round</option>
+              <option value="coding">Coding Round</option>
+              <option value="technical">Technical Round</option>
+              <option value="hr">HR Round</option>
+            </select>
+
             <select
               value={selectedDifficulty}
               onChange={(e) => setSelectedDifficulty(e.target.value)}
@@ -810,32 +828,66 @@ function InterviewPractice() {
 
                     {/* Bottom row badges + CTA */}
                     <div className="flex items-center justify-between gap-2 pt-3 border-t" style={{ borderColor: "var(--border)" }}>
-                      <div className="flex items-center gap-2 flex-wrap">
+                      <div className="flex items-center gap-1.5 flex-wrap">
                         {/* Aptitude badge */}
-                        <div
-                          className="flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-lg border"
-                          style={{
-                            background: isDark ? "rgba(245, 158, 11, 0.10)" : "#FEF3C7",
-                            color: isDark ? "#F59E0B" : "#B45309",
-                            borderColor: isDark ? "rgba(245, 158, 11, 0.25)" : "#FDE68A",
-                          }}
-                        >
-                          <BookOpen className="w-3.5 h-3.5" />
-                          <span>{hasCompanyAttempted ? `1/${company.aptitudeCount || 15} Completed` : `${company.aptitudeCount || 20} Aptitude`}</span>
-                        </div>
+                        {(company.supportedRounds || ["aptitude", "coding", "technical", "hr"]).includes("aptitude") && (
+                          <div
+                            className="flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md border"
+                            style={{
+                              background: isDark ? "rgba(245, 158, 11, 0.10)" : "#FEF3C7",
+                              color: isDark ? "#F59E0B" : "#B45309",
+                              borderColor: isDark ? "rgba(245, 158, 11, 0.25)" : "#FDE68A",
+                            }}
+                          >
+                            <BookOpen className="w-3 h-3" />
+                            <span>{hasCompanyAttempted ? `1/${company.aptitudeCount || 15} Done` : `${company.aptitudeCount || 20} Aptitude`}</span>
+                          </div>
+                        )}
 
                         {/* Coding badge */}
-                        <div
-                          className="flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-lg border"
-                          style={{
-                            background: isDark ? "rgba(14, 165, 233, 0.10)" : "#E0F2FE",
-                            color: isDark ? "#38BDF8" : "#0369A1",
-                            borderColor: isDark ? "rgba(14, 165, 233, 0.25)" : "#BAE6FD",
-                          }}
-                        >
-                          <Code2 className="w-3.5 h-3.5" />
-                          <span>{hasCompanyAttempted ? `${solvedCoding}/${totalCoding} Solved` : `${company.codingCount || 5} Coding`}</span>
-                        </div>
+                        {(company.supportedRounds || ["aptitude", "coding", "technical", "hr"]).includes("coding") && (
+                          <div
+                            className="flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md border"
+                            style={{
+                              background: isDark ? "rgba(14, 165, 233, 0.10)" : "#E0F2FE",
+                              color: isDark ? "#38BDF8" : "#0369A1",
+                              borderColor: isDark ? "rgba(14, 165, 233, 0.25)" : "#BAE6FD",
+                            }}
+                          >
+                            <Code2 className="w-3 h-3" />
+                            <span>{hasCompanyAttempted ? `${solvedCoding}/${totalCoding} Solved` : `${company.codingCount || 5} Coding`}</span>
+                          </div>
+                        )}
+
+                        {/* Technical badge */}
+                        {(company.supportedRounds || ["aptitude", "coding", "technical", "hr"]).includes("technical") && (
+                          <div
+                            className="flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md border"
+                            style={{
+                              background: isDark ? "rgba(139, 92, 246, 0.10)" : "#F5F3FF",
+                              color: isDark ? "#A78BFA" : "#7C3AED",
+                              borderColor: isDark ? "rgba(139, 92, 246, 0.25)" : "#DDD6FE",
+                            }}
+                          >
+                            <Cpu className="w-3 h-3" />
+                            <span>{company.technical || 15} Tech</span>
+                          </div>
+                        )}
+
+                        {/* HR badge */}
+                        {(company.supportedRounds || ["aptitude", "coding", "technical", "hr"]).includes("hr") && (
+                          <div
+                            className="flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md border"
+                            style={{
+                              background: isDark ? "rgba(16, 185, 129, 0.10)" : "#ECFDF5",
+                              color: isDark ? "#34D399" : "#059669",
+                              borderColor: isDark ? "rgba(16, 185, 129, 0.25)" : "#A7F3D0",
+                            }}
+                          >
+                            <MessageSquare className="w-3 h-3" />
+                            <span>{company.hr || 5} HR</span>
+                          </div>
+                        )}
                       </div>
 
                       <span className="text-xs font-bold text-[#FF6B35] flex items-center gap-1 shrink-0 group-hover:translate-x-1 transition-transform">

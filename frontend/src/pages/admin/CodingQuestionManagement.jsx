@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Edit2, Trash2, Code, Search, X, ChevronDown, ChevronUp, ToggleLeft, ToggleRight, Archive, RotateCcw, RefreshCw } from "lucide-react";
+import { Plus, Edit2, Trash2, Code, Search, X, ChevronDown, ChevronUp, ToggleLeft, ToggleRight, Archive, RotateCcw, RefreshCw, Upload } from "lucide-react";
 import api from "../../utils/api";
 import { getAuthToken } from "../../hooks/useStudentProfile";
 import toast from "react-hot-toast";
-// Replace line 7 with:
 import { SkeletonCompanyCard as SkeletonCard, ErrorState } from "../../components/ui/Skeleton";
+import CodingBulkImportModal from "../../components/admin/CodingBulkImportModal";
 
 const DIFFICULTIES = ["Easy", "Medium", "Hard"];
 const LANGUAGES = ["JavaScript", "Python", "Java", "C++", "Go", "Rust"];
@@ -19,6 +19,7 @@ function CodingQuestionManagement() {
   const [error, setError] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [isImportOpen, setIsImportOpen] = useState(false);
   const [expandId, setExpandId] = useState(null);
   const [companies, setCompanies] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -204,6 +205,15 @@ function CodingQuestionManagement() {
           )}
         </div>
         <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setIsImportOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold cursor-pointer shadow-xs hover:opacity-90 border"
+            style={{ background: "var(--card-bg)", borderColor: "var(--border)", color: "var(--text-primary)" }}
+          >
+            <Upload className="w-4 h-4" style={{ color: "var(--primary)" }} />
+            <span>Import Questions</span>
+          </button>
           <button type="button" onClick={handleSyncFromJson} disabled={syncing} className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold cursor-pointer" style={{ border: "1px solid var(--border)", color: "var(--text-secondary)", opacity: syncing ? 0.6 : 1 }}>
             <RefreshCw className={`w-4 h-4 ${syncing ? "animate-spin" : ""}`} /> {syncing ? "Syncing..." : "Sync from JSON"}
           </button>
@@ -500,6 +510,15 @@ function CodingQuestionManagement() {
           </>
         )}
       </AnimatePresence>
+
+      {/* Bulk Import Questions Modal */}
+      <CodingBulkImportModal
+        isOpen={isImportOpen}
+        onClose={() => setIsImportOpen(false)}
+        onSuccess={fetchData}
+        companies={companies}
+        defaultCompanyId={companyFilter}
+      />
     </div>
   );
 }

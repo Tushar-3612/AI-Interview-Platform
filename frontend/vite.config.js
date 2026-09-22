@@ -13,8 +13,11 @@ export default defineConfig({
       },
     },
   },
+  resolve: {
+    dedupe: ["react", "react-dom"],
+  },
   optimizeDeps: {
-    include: ["@monaco-editor/react"],
+    include: ["@monaco-editor/react", "recharts"],
     // Monaco ships its own worker entry-points that must not be pre-bundled.
     exclude: ["monaco-editor"],
   },

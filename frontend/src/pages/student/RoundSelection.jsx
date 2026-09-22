@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, BookOpen, Code2, CheckCircle2, Award, ChevronRight, Clock, History, TrendingUp, Target, Timer } from "lucide-react";
+import { ArrowLeft, BookOpen, Code2, CheckCircle2, Award, ChevronRight, Clock, History, TrendingUp, Target, Timer, Cpu, MessageSquare } from "lucide-react";
 import api from "../../utils/api";
 import { getAuthToken } from "../../hooks/useStudentProfile";
 
@@ -83,7 +83,7 @@ function RoundSelection() {
   const latestAttempt = attempts[0];
   const bestAttempt = attempts.reduce((best, a) => (!best || a.percentage > best.percentage ? a : best), null);
 
-  const roundsConfig = [
+  const allRoundsMaster = [
     {
       id: "aptitude",
       title: "Aptitude Round",
@@ -109,7 +109,37 @@ function RoundSelection() {
       accentBg: "rgba(77, 163, 255, 0.08)",
       accentBorder: "rgba(77, 163, 255, 0.2)",
     },
+    {
+      id: "technical",
+      title: "Technical Round",
+      desc: `Core technical interview covering algorithms, system design, and ${company?.name || "company"} tech stack.`,
+      icon: Cpu,
+      path: `/mock-interview`,
+      attempts: null,
+      questionTarget: company?.technical || 15,
+      accent: "#8B5CF6",
+      accentBg: "rgba(139, 92, 246, 0.08)",
+      accentBorder: "rgba(139, 92, 246, 0.2)",
+    },
+    {
+      id: "hr",
+      title: "HR Behavioral Round",
+      desc: "Behavioral and situational questions evaluating culture fit, leadership, and STAR methodology.",
+      icon: MessageSquare,
+      path: `/mock-interview`,
+      attempts: null,
+      questionTarget: company?.hr || 5,
+      accent: "#10B981",
+      accentBg: "rgba(16, 185, 129, 0.08)",
+      accentBorder: "rgba(16, 185, 129, 0.2)",
+    },
   ];
+
+  const supported = company?.supportedRounds && company.supportedRounds.length > 0
+    ? company.supportedRounds
+    : ["aptitude", "coding", "technical", "hr"];
+
+  const roundsConfig = allRoundsMaster.filter((r) => supported.includes(r.id));
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12" style={{ background: "var(--bg-primary)", minHeight: "100vh" }}>
@@ -395,16 +425,20 @@ function RoundSelection() {
                     style={{
                       background: r.id === "aptitude"
                         ? "linear-gradient(135deg, #FF9800, #FF6B35)"
-                        : "linear-gradient(135deg, #4DA3FF, #38BDF8)",
+                        : r.id === "coding"
+                        ? "linear-gradient(135deg, #4DA3FF, #38BDF8)"
+                        : r.id === "technical"
+                        ? "linear-gradient(135deg, #8B5CF6, #7C3AED)"
+                        : "linear-gradient(135deg, #10B981, #059669)",
                       color: "#FFFFFF",
-                      boxShadow: r.id === "aptitude"
-                        ? "0 4px 14px rgba(255, 152, 0, 0.3)"
-                        : "0 4px 14px rgba(77, 163, 255, 0.3)",
+                      boxShadow: `0 4px 14px ${r.accent}4D`,
                     }}
                   >
                     {r.id === "coding"
                       ? (r.completedCount > 0 ? "Practice Again" : "Start Round")
-                      : (r.attempts > 0 ? "Practice Again" : "Start Round")}
+                      : r.id === "aptitude"
+                      ? (r.attempts > 0 ? "Practice Again" : "Start Round")
+                      : "Start Round"}
                   </button>
                 </div>
               </div>

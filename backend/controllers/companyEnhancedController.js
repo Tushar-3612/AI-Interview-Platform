@@ -44,6 +44,7 @@ export const getCompanies = async (req, res) => {
         ...c,
         aptitudeCount: aptMap[c.id] || 0,
         codingCount: codMap[c.id] || 0,
+        supportedRounds: c.supportedRounds && c.supportedRounds.length > 0 ? c.supportedRounds : ["aptitude", "coding", "technical", "hr"],
         lastUpdated: c.lastUpdated || c.updatedAt,
       }))
     );

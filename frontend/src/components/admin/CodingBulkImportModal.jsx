@@ -10,58 +10,37 @@ import {
   Copy,
   Check,
   RefreshCw,
-  AlertTriangle,
 } from "lucide-react";
 import api from "../../utils/api";
 import { getAuthToken } from "../../hooks/useStudentProfile";
 import toast from "react-hot-toast";
-import QuestionUploader from "./QuestionUploader";
 import CodingUpload from "./CodingUploader";
 
-const SAMPLE_QUESTIONS_BY_TYPE = {
-  mcq: [
-    {
-      question: "What is the time complexity of binary search in a sorted array?",
-      options: ["O(1)", "O(log n)", "O(n)", "O(n^2)"],
-      correctAnswer: "O(log n)",
-      difficulty: "Easy",
-      topic: "Algorithms",
-      marks: 1,
-      explanation: "Binary search divides the search interval in half with each iteration.",
-    },
-  ],
-  technical: [
-    {
-      question: "Explain the difference between clustered and non-clustered indexes in SQL.",
-      expectedAnswer:
-        "A clustered index defines the physical order of data in the table, so only one can exist per table. A non-clustered index stores data in one location and index keys in another, pointing to the data rows.",
-      difficulty: "Medium",
-      topic: "DBMS & SQL",
-      marks: 3,
-      explanation:
-        "Clustered index alters physical storage order; non-clustered creates a separate structure pointing to the actual data.",
-    },
-  ],
-  coding: [
-    {
-      title: "Reverse String",
-      difficulty: "Easy",
-      category: "Strings",
-      marks: 10,
-      problemStatement: "Given an array of characters, reverse the array in-place.",
-      constraints: "1 <= s.length <= 10^5",
-      inputFormat: "First line contains integer N.\nSecond line contains space-separated characters.",
-      outputFormat: "Print reversed characters separated by space.",
-      sampleInput: "5\nh e l l o",
-      sampleOutput: "o l l e h",
-      starterCode: "function reverseString(s) {\n  // In-place reversal\n}",
-      testCases: [
-        { input: "5\nh e l l o", expected: "o l l e h", isHidden: false },
-        { input: "4\nH a n n", expected: "n n a H", isHidden: true },
-      ],
-    },
-  ],
-};
+const SAMPLE_CODING_JSON = [
+  {
+    title: "Two Sum Problem",
+    difficulty: "Easy",
+    category: "Arrays",
+    companyId: "celebal",
+    marks: 10,
+    problemStatement:
+      "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.",
+    inputFormat:
+      "First line contains integer N.\nSecond line contains N space-separated integers.\nThird line contains integer target.",
+    outputFormat: "Print the two 0-based indices separated by space.",
+    constraints: "2 <= nums.length <= 10^4\n-10^9 <= nums[i] <= 10^9",
+    sampleInput: "4\n2 7 11 15\n9",
+    sampleOutput: "0 1",
+    explanation: "Because nums[0] + nums[1] == 2 + 7 == 9, return indices 0 1.",
+    starterCode: "function solution(nums, target) {\n  // Write your code here\n}",
+    languages: ["JavaScript", "Python", "Java", "C++"],
+    testCases: [
+      { input: "4\n2 7 11 15\n9", expected: "0 1", isHidden: false },
+      { input: "3\n3 2 4\n6", expected: "1 2", isHidden: false },
+      { input: "2\n3 3\n6", expected: "0 1", isHidden: true },
+    ],
+  },
+];
 
 const IMPORT_TABS = [
   { id: "json", label: "JSON", icon: FileCode },
@@ -70,28 +49,21 @@ const IMPORT_TABS = [
   { id: "pdf", label: "PDF", icon: FileText },
 ];
 
-export default function BulkImportModal({
+export default function CodingBulkImportModal({
   isOpen,
   onClose,
   onSuccess,
-  companyId,
-  type = "mcq",
+  companies = [],
+  defaultCompanyId = "",
 }) {
   const [activeTab, setActiveTab] = useState("json");
   const [jsonText, setJsonText] = useState("");
+  const [selectedCompany, setSelectedCompany] = useState(defaultCompanyId || "");
   const [importing, setImporting] = useState(false);
   const [importReport, setImportReport] = useState(null);
   const [copiedSample, setCopiedSample] = useState(false);
 
   if (!isOpen) return null;
-
-  const currentType = type?.toLowerCase() || "mcq";
-  const typeLabel =
-    currentType === "coding"
-      ? "Coding Problem"
-      : currentType === "technical"
-      ? "Technical Question"
-      : "Aptitude / MCQ";
 
   const handleFileUpload = (e) => {
     const file = e.target.files?.[0];
@@ -105,43 +77,10 @@ export default function BulkImportModal({
   };
 
   const handleLoadSample = () => {
-    const sample = SAMPLE_QUESTIONS_BY_TYPE[currentType] || SAMPLE_QUESTIONS_BY_TYPE.mcq;
-    setJsonText(JSON.stringify(sample, null, 2));
+    setJsonText(JSON.stringify(SAMPLE_CODING_JSON, null, 2));
     setImportReport(null);
     setCopiedSample(true);
     setTimeout(() => setCopiedSample(false), 2000);
-  };
-
-  // Submit questions (array) to the mock questions import endpoint
-  const executeImport = async (parsedQuestions) => {
-    setImporting(true);
-    setImportReport(null);
-
-    try {
-      const token = getAuthToken();
-      const headers = { Authorization: `Bearer ${token}` };
-
-      const res = await api.post(
-        "/api/admin/mock-questions/import",
-        {
-          companyId,
-          type: currentType,
-          questions: parsedQuestions,
-        },
-        { headers }
-      );
-
-      const report = res.data?.report || null;
-      setImportReport(report);
-      toast.success(res.data?.message || "Import completed successfully");
-      if (report?.successCount > 0 || !report) {
-        onSuccess?.();
-      }
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to import questions");
-    } finally {
-      setImporting(false);
-    }
   };
 
   const handleJsonImportSubmit = async () => {
@@ -158,8 +97,8 @@ export default function BulkImportModal({
         : Array.isArray(raw.questions)
         ? raw.questions
         : [raw];
-    } catch {
-      toast.error("Invalid JSON format. Please ensure valid JSON syntax.");
+    } catch (err) {
+      toast.error("Invalid JSON format. Please check syntax (missing commas/quotes).");
       return;
     }
 
@@ -168,16 +107,69 @@ export default function BulkImportModal({
       return;
     }
 
-    await executeImport(parsedQuestions);
+    const questionsWithCompany = parsedQuestions.map((q) => ({
+      ...q,
+      companyId: q.companyId || (selectedCompany ? selectedCompany : undefined),
+    }));
+
+    setImporting(true);
+    setImportReport(null);
+
+    try {
+      const token = getAuthToken();
+      const headers = { Authorization: `Bearer ${token}` };
+
+      const res = await api.post(
+        "/api/coding-questions/bulk-import",
+        { questions: questionsWithCompany },
+        { headers }
+      );
+
+      const report = {
+        created: res.data?.created || 0,
+        updated: res.data?.updated || 0,
+        skipped: res.data?.skipped || 0,
+        message: res.data?.message || "Import completed successfully",
+      };
+
+      setImportReport(report);
+      toast.success(res.data?.message || "Import completed successfully!");
+      if (report.created > 0 || report.updated > 0) {
+        onSuccess();
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to import coding questions");
+    } finally {
+      setImporting(false);
+    }
   };
 
-  // Handler when questions are parsed from CSV, Word, or PDF document upload
   const handleDocImport = async (validQuestions) => {
-    if (!validQuestions || validQuestions.length === 0) {
-      toast.error("No valid questions found in uploaded document");
-      return;
+    if (!validQuestions || validQuestions.length === 0) return;
+    setImporting(true);
+    try {
+      const token = getAuthToken();
+      const headers = { Authorization: `Bearer ${token}` };
+
+      const questionsWithCompany = validQuestions.map((q) => ({
+        ...q,
+        companyId: q.companyId || (selectedCompany ? selectedCompany : undefined),
+      }));
+
+      const res = await api.post(
+        "/api/coding-questions/bulk-import",
+        { questions: questionsWithCompany },
+        { headers }
+      );
+
+      toast.success(res.data?.message || `Successfully imported ${validQuestions.length} coding questions!`);
+      onSuccess();
+      onClose();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to save questions to database");
+    } finally {
+      setImporting(false);
     }
-    await executeImport(validQuestions);
   };
 
   return (
@@ -210,14 +202,10 @@ export default function BulkImportModal({
           >
             <div>
               <h3 className="text-base font-bold tracking-tight">
-                Import Questions —{" "}
-                <span className="uppercase" style={{ color: "var(--primary)" }}>
-                  {companyId}
-                </span>{" "}
-                ({typeLabel})
+                Import Coding Questions from Documents
               </h3>
               <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
-                Import {typeLabel.toLowerCase()}s from different documents (CSV, Word, PDF, or JSON). Duplicates are automatically detected and skipped.
+                Import coding problems and test cases via JSON, CSV, Word, or PDF templates.
               </p>
             </div>
             <button
@@ -231,10 +219,7 @@ export default function BulkImportModal({
           </div>
 
           {/* Document Format Tabs */}
-          <div
-            className="flex items-center gap-2 pt-4 pb-2 border-b"
-            style={{ borderColor: "var(--border)" }}
-          >
+          <div className="flex items-center gap-2 pt-4 pb-2 border-b" style={{ borderColor: "var(--border)" }}>
             {IMPORT_TABS.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -265,12 +250,42 @@ export default function BulkImportModal({
           </div>
 
           <div className="py-4 space-y-4 max-h-[65vh] overflow-y-auto pr-1">
-            {/* TAB 1: JSON FILE / TEXT INPUT */}
+            {/* Optional Company Assignment */}
+            {companies.length > 0 && (
+              <div
+                className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-xl border bg-slate-500/5"
+                style={{ borderColor: "var(--border)" }}
+              >
+                <div>
+                  <p className="text-xs font-bold" style={{ color: "var(--text-primary)" }}>
+                    Target Company (Optional)
+                  </p>
+                  <p className="text-[11px]" style={{ color: "var(--text-secondary)" }}>
+                    Applies if individual questions in the document do not specify a company.
+                  </p>
+                </div>
+                <select
+                  value={selectedCompany}
+                  onChange={(e) => setSelectedCompany(e.target.value)}
+                  className="px-3 py-1.5 text-xs rounded-xl border bg-[var(--card-bg)] outline-none focus:ring-1 focus:ring-[#FF6B35] cursor-pointer"
+                  style={{ borderColor: "var(--border)", color: "var(--text-primary)" }}
+                >
+                  <option value="">Default / In Document</option>
+                  {companies.map((c) => (
+                    <option key={c.id || c._id} value={c.id || c._id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* TAB 1: JSON IMPORT */}
             {activeTab === "json" && (
               <>
                 {/* File Upload Box */}
                 <div
-                  className="border-2 border-dashed rounded-xl p-5 text-center transition-colors hover:border-[#FF6B35]/60 bg-slate-500/5"
+                  className="border-2 border-dashed rounded-xl p-5 text-center transition-colors cursor-pointer hover:border-[#FF6B35]/60 bg-slate-500/5"
                   style={{ borderColor: "var(--border)" }}
                 >
                   <input
@@ -278,10 +293,10 @@ export default function BulkImportModal({
                     accept=".json"
                     onChange={handleFileUpload}
                     className="hidden"
-                    id="mock-json-file-input"
+                    id="coding-json-file-input"
                   />
                   <label
-                    htmlFor="mock-json-file-input"
+                    htmlFor="coding-json-file-input"
                     className="cursor-pointer flex flex-col items-center justify-center gap-1.5"
                   >
                     <Upload className="w-7 h-7" style={{ color: "var(--primary)" }} />
@@ -289,7 +304,7 @@ export default function BulkImportModal({
                       Click to upload JSON file
                     </span>
                     <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>
-                      Supports standard array of question objects for {companyId.toUpperCase()}
+                      Supports array of coding problem objects with test cases
                     </span>
                   </label>
                 </div>
@@ -315,12 +330,12 @@ export default function BulkImportModal({
                   </div>
                   <textarea
                     rows={6}
+                    placeholder='[\n  {\n    "title": "Two Sum",\n    "difficulty": "Easy",\n    "category": "Arrays",\n    "problemStatement": "...",\n    "testCases": [...]\n  }\n]'
                     value={jsonText}
                     onChange={(e) => {
                       setJsonText(e.target.value);
                       setImportReport(null);
                     }}
-                    placeholder={`[\n  {\n    "question": "Sample question text...",\n    "options": ["A", "B", "C", "D"],\n    "correctAnswer": "A",\n    "difficulty": "Easy"\n  }\n]`}
                     className="w-full px-3 py-2 text-xs rounded-xl border font-mono outline-none focus:border-[#FF6B35] focus:ring-1 focus:ring-[#FF6B35]/20 leading-relaxed"
                     style={{
                       background: "var(--input-bg)",
@@ -333,46 +348,27 @@ export default function BulkImportModal({
                 {/* Import Status / Report Feedback */}
                 {importReport && (
                   <div
-                    className="p-4 rounded-xl border text-xs space-y-3 bg-slate-500/5"
+                    className="p-4 rounded-xl border text-xs space-y-2 bg-slate-500/5"
                     style={{ borderColor: "var(--border)" }}
                   >
-                    <h4 className="text-xs font-bold uppercase tracking-wider flex items-center gap-2" style={{ color: "var(--text-primary)" }}>
-                      <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                      <span>Import Report Summary</span>
-                    </h4>
-                    <div className="grid grid-cols-3 gap-2.5 text-center text-xs">
-                      <div className="p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold">
-                        <div className="text-base font-extrabold">{importReport.successCount}</div>
-                        <div className="text-[10px] uppercase tracking-wider">Imported</div>
+                    <div className="flex items-center gap-2 font-bold text-emerald-600 dark:text-emerald-400">
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>{importReport.message}</span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 pt-1 font-semibold text-center">
+                      <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                        <div className="text-base font-extrabold">{importReport.created}</div>
+                        <div className="text-[10px] uppercase tracking-wider">Created</div>
                       </div>
-                      <div className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 font-bold">
-                        <div className="text-base font-extrabold">{importReport.duplicateCount}</div>
-                        <div className="text-[10px] uppercase tracking-wider">Duplicates Skipped</div>
+                      <div className="p-2 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                        <div className="text-base font-extrabold">{importReport.updated}</div>
+                        <div className="text-[10px] uppercase tracking-wider">Updated</div>
                       </div>
-                      <div className="p-2.5 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 font-bold">
-                        <div className="text-base font-extrabold">{importReport.rejectedCount}</div>
-                        <div className="text-[10px] uppercase tracking-wider">Errors</div>
+                      <div className="p-2 rounded-lg bg-slate-500/10 text-slate-500 dark:text-slate-400">
+                        <div className="text-base font-extrabold">{importReport.skipped}</div>
+                        <div className="text-[10px] uppercase tracking-wider">Skipped</div>
                       </div>
                     </div>
-
-                    {importReport.duplicates?.length > 0 && (
-                      <div className="space-y-1.5 pt-2">
-                        <p className="text-[11px] font-semibold text-amber-500 flex items-center gap-1">
-                          <AlertTriangle className="w-3.5 h-3.5" />
-                          <span>Skipped Existing Duplicate Questions:</span>
-                        </p>
-                        <div className="max-h-28 overflow-y-auto space-y-1 pr-1">
-                          {importReport.duplicates.map((dup, i) => (
-                            <div
-                              key={i}
-                              className="text-[11px] p-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 truncate"
-                            >
-                              #{dup.index + 1}: {dup.question}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
                   </div>
                 )}
 
@@ -414,21 +410,11 @@ export default function BulkImportModal({
 
             {/* TAB 2, 3, 4: CSV, WORD, PDF DOCUMENT UPLOAD */}
             {activeTab !== "json" && (
-              <>
-                {currentType === "coding" ? (
-                  <CodingUpload
-                    source={activeTab}
-                    onAdd={handleDocImport}
-                    onCancel={onClose}
-                  />
-                ) : (
-                  <QuestionUploader
-                    source={activeTab}
-                    onAdd={handleDocImport}
-                    onCancel={onClose}
-                  />
-                )}
-              </>
+              <CodingUpload
+                source={activeTab}
+                onAdd={handleDocImport}
+                onCancel={onClose}
+              />
             )}
           </div>
         </motion.div>

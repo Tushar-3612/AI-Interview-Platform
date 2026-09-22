@@ -59,7 +59,14 @@ export default function DuplicateConflictModal({ isOpen, onClose, newQuestion, e
             <div className="p-4 rounded-xl border flex flex-col justify-between" style={{ background: "rgba(15, 23, 42, 0.5)", borderColor: "var(--border, #334155)" }}>
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-md bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                  <span
+                    className="text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-md border"
+                    style={{
+                      background: "rgba(255, 107, 53, 0.15)",
+                      color: "var(--primary)",
+                      borderColor: "rgba(255, 107, 53, 0.3)",
+                    }}
+                  >
                     New Question
                   </span>
                   <span className="text-[11px] font-semibold text-rose-400">

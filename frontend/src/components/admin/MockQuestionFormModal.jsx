@@ -186,7 +186,7 @@ export default function MockQuestionFormModal({ isOpen, onClose, onSuccess, comp
           {/* Header */}
           <div className="flex items-center justify-between pb-4 border-b" style={{ borderColor: "var(--border, #334155)" }}>
             <h3 className="text-base font-bold tracking-tight">
-              {isEdit ? "Edit Mock Question" : "Add New Mock Question"} — <span className="uppercase text-blue-400">{type}</span>
+              {isEdit ? "Edit Mock Question" : "Add New Mock Question"} — <span className="uppercase" style={{ color: "var(--primary)" }}>{type}</span>
             </h3>
             <button
               onClick={onClose}
@@ -307,7 +307,8 @@ export default function MockQuestionFormModal({ isOpen, onClose, onSuccess, comp
                   <button
                     type="button"
                     onClick={addOptionField}
-                    className="flex items-center gap-1 text-[11px] font-semibold text-blue-500 hover:underline cursor-pointer"
+                    className="flex items-center gap-1 text-[11px] font-semibold hover:underline cursor-pointer"
+                    style={{ color: "var(--primary)" }}
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>Add Option</span>
@@ -418,7 +419,8 @@ export default function MockQuestionFormModal({ isOpen, onClose, onSuccess, comp
               <button
                 type="submit"
                 disabled={submitting}
-                className="px-5 py-2 rounded-xl text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-2"
+                className="px-5 py-2 rounded-xl text-xs font-bold text-white transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-2 hover:opacity-90 shadow-sm"
+                style={{ background: "var(--primary)" }}
               >
                 {submitting ? (
                   <span>Checking & Saving...</span>

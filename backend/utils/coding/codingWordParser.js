@@ -1,45 +1,11 @@
-import { extractDocxText, splitBlocks, sanitizeText, LABELS, regexEscape } from "./shared.js";
-
-function readField(block, label) {
-  const re = new RegExp(`(?:^|\\n)\\s*${regexEscape(label)}\\s*:\\s*`, "i");
-  const m = re.exec(block);
-  if (!m) return "";
-  const start = m.index + m[0].length;
-  let end = block.length;
-  for (const l of LABELS) {
-    if (l === label) continue;
-    const r2 = new RegExp(`(?:^|\\n)\\s*${regexEscape(l)}\\s*:[ \\t]*`, "i");
-    const m2 = r2.exec(block.slice(start));
-    if (m2) {
-      const candidate = start + m2.index;
-      if (candidate < end) end = candidate;
-    }
-  }
-  return sanitizeText(block.slice(start, end).replace(/\s+/g, " "));
-}
-
-function parseTestCases(block) {
-  const marker = /^\s*test\s*case\s*id\s*:/im;
-  const lines = (block || "").split(/\r?\n/);
-  const idx = [];
-  lines.forEach((line, i) => { if (marker.test(line)) idx.push(i); });
-  if (idx.length === 0) return [];
-  const blocks = [];
-  for (let i = 0; i < idx.length; i++) {
-    const startLine = idx[i];
-    const endLine = i < idx.length - 1 ? idx[i + 1] : lines.length;
-    const b = lines.slice(startLine, endLine).join("\n");
-    if (b.trim()) blocks.push(b);
-  }
-  return blocks
-    .map((b) => ({
-      testCaseId: readField(b, "Test Case ID"),
-      visibility: readField(b, "Visibility"),
-      input: readField(b, "Input"),
-      expectedOutput: readField(b, "Expected Output"),
-    }))
-    .filter((tc) => tc.testCaseId || tc.input || tc.expectedOutput || tc.visibility);
-}
+import {
+  extractDocxText,
+  splitBlocks,
+  fieldValue,
+  parseTestCasesInText,
+  sanitizeText,
+  normalizeDifficulty,
+} from "./shared.js";
 
 export async function parseCodingDocx(buffer) {
   const text = await extractDocxText(buffer);
@@ -49,24 +15,49 @@ export async function parseCodingDocx(buffer) {
   const blocks = splitBlocks(text, /^\s*problem\s*id\s*:/i, /^\s*problem\s*title\s*:/i);
   const problems = [];
   for (const block of blocks) {
-    const problemId = readField(block, "Problem ID");
-    const title = readField(block, "Problem Title");
+    let problemId = fieldValue(block, "Problem ID");
+    let title = fieldValue(block, "Problem Title");
+
+    // Fallback to heading line e.g. "P001 — Sum of Two Numbers"
+    const headingMatch = /^\s*(P\d{1,4})\s*[—–-]\s*(.+)$/m.exec(block);
+    if (headingMatch) {
+      if (!problemId) problemId = headingMatch[1].trim();
+      if (!title) title = headingMatch[2].trim();
+    }
+
     if (!problemId && !title) continue;
-    const testCases = parseTestCases(block);
+
+    let sampleOutput = fieldValue(block, "Sample Output");
+    let sampleInput = fieldValue(block, "Sample Input");
+    const testCases = parseTestCasesInText(block, sampleOutput);
+
+    // Fallback: If sampleInput / sampleOutput are empty, extract from test case 1 (T001 Visible)
+    if (!sampleInput && testCases.length > 0 && testCases[0].input) {
+      sampleInput = testCases[0].input;
+    }
+    if (!sampleOutput && testCases.length > 0 && testCases[0].expectedOutput) {
+      sampleOutput = testCases[0].expectedOutput;
+    }
+
+    const rawDiff = fieldValue(block, "Difficulty");
+    const difficulty = normalizeDifficulty(rawDiff);
+
     problems.push({
       problemId: sanitizeText(problemId),
       title: sanitizeText(title),
-      marks: readField(block, "Marks") || "0",
-      difficulty: readField(block, "Difficulty"),
-      description: readField(block, "Description"),
-      constraints: readField(block, "Constraints"),
-      inputFormat: readField(block, "Input Format"),
-      outputFormat: readField(block, "Output Format"),
-      sampleInput: readField(block, "Sample Input"),
-      sampleOutput: readField(block, "Sample Output"),
-      supportedLanguages: readField(block, "Supported Languages"),
+      marks: fieldValue(block, "Marks") || "10",
+      difficulty,
+      description: fieldValue(block, "Description"),
+      constraints: fieldValue(block, "Constraints"),
+      inputFormat: fieldValue(block, "Input Format"),
+      outputFormat: fieldValue(block, "Output Format"),
+      sampleInput: sanitizeText(sampleInput),
+      sampleOutput: sanitizeText(sampleOutput),
+      supportedLanguages: fieldValue(block, "Supported Languages") || "Java, Python, C++, JavaScript, C",
       testCases,
     });
   }
   return problems;
 }
+
+

@@ -13,7 +13,6 @@ import { preprocessAnswerBatch } from "../realInterviewAI/answerPreprocessor.js"
 import { resolveCandidateAnswer } from "./answerResolver.js";
 import { classifyInterviewAIError } from "./errorClassifier.js";
 import { idempotentUpsertQuestion } from "../aiReliability/utils/mongoConnectionHelper.js";
-import { resolveHRFallbackQuestions } from "../realInterviewAI/hrFallbackResolver.js";
 
 /**
  * 1. Generate & Process HR Questions (AI CALL #1)
@@ -109,65 +108,12 @@ export async function generateAndProcessHRQuestions({ userId = null, sessionId, 
       }
     } catch (err) {
       console.error(`\n[AI-REQUEST-FAILED]\nround=hr\nrequestId=${requestId}\nerror=${err.message}`);
-      // Attempt curated HR fallback before returning FAILED
-      if (existingQuestions.length < 5) {
-        console.log(`[HRService] AI failed — attempting curated HR fallback for missing ${5 - existingQuestions.length} questions.`);
-        const fallbackDocs = resolveHRFallbackQuestions({
-          sessionId, userId, candidateProfile, existingQuestions, userHistorySet,
-          neededCount: 5 - existingQuestions.length,
-        });
-        for (const fbDoc of fallbackDocs) {
-          const saved = await idempotentUpsertQuestion(
-            RealInterviewHRQuestion,
-            { sessionId, orderIndex: fbDoc.orderIndex },
-            fbDoc
-          );
-          if (saved) existingQuestions.push(saved);
-        }
-        if (existingQuestions.length === 5) {
-          console.log(`[HRService] Curated HR fallback filled all 5 slots successfully.`);
-          session.generationStatus = "GENERATED";
-          session.fallbackUsed = true;
-          await session.save();
-          return {
-            executionCompleted: true, generationSucceeded: false, roundComplete: true,
-            count: 5, expectedCount: 5, status: "COMPLETE", success: true,
-            sessionId, questions: existingQuestions, reused: false,
-            fallbackUsed: true, aiGenerationCalls: session.aiGenerationCalls,
-          };
-        }
-      }
       const classified = classifyInterviewAIError(err);
       const validCount = Math.min(existingQuestions.length, 3);
       session.generationStatus = validCount === 3 ? "GENERATED" : (validCount > 0 ? "PARTIAL" : "FAILED");
       await session.save();
-      return {
-<<<<<<< HEAD
-        executionCompleted: true, generationSucceeded: false,
-        roundComplete: existingQuestions.length === 5,
-        count: existingQuestions.length, expectedCount: 5,
-        status: existingQuestions.length === 5 ? "COMPLETE" : (existingQuestions.length > 0 ? "PARTIAL" : "FAILED"),
-        success: false, recoverable: classified.recoverable,
-        generatedCount: existingQuestions.length, totalRequired: 5,
-        nextQuestionNumber: existingQuestions.length + 1,
-        errorCode: classified.code, message: classified.message, questions: existingQuestions,
-      };
-    }
 
-    if (questionsData.length < 5) {
-      // Supplement insufficient AI questions with curated HR fallback questions
-      const missingCount = 5 - questionsData.length;
-      console.warn(`[HRService] AI returned only ${questionsData.length}/5 questions. Filling ${missingCount} slots from HR fallback bank.`);
-      const fallbackDocs = resolveHRFallbackQuestions({
-        sessionId, userId, candidateProfile, existingQuestions, userHistorySet,
-        neededCount: missingCount,
-      });
-      // Will be saved below alongside the AI questions
-      questionsData = [...questionsData, ...fallbackDocs.map(fd => ({
-        question: fd.question, category: fd.category, behavioralDimensions: fd.behavioralDimensions,
-        resumeReference: fd.resumeReference, isFallback: true,
-      }))];
-=======
+      return {
         executionCompleted: true,
         generationSucceeded: false,
         roundComplete: validCount === 3,
@@ -208,8 +154,8 @@ export async function generateAndProcessHRQuestions({ userId = null, sessionId, 
         message: classified.message,
         questions: existingQuestions.slice(0, 3),
       };
->>>>>>> 3a072fd44970fe4abf518a56154c5e744ae4ca7a
     }
+
 
     console.log(`\n[AI-REQUEST-SUCCESS]\nround=hr\nrequestId=${requestId}\nquestionsReturned=${aiQuestions.length}`);
 
