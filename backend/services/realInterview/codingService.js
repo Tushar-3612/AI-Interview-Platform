@@ -625,6 +625,7 @@ export async function evaluateCodingInterviewSession({ sessionId }) {
     percentage,
     overallRating,
     problems: problemResults,
+    evaluations: problemResults,
     fallbackUsed: session.fallbackUsed,
     aiGenerationCalls: session.aiGenerationCalls,
   };

@@ -147,45 +147,56 @@ export async function evaluateHRAI({ candidateProfile = {}, questionsWithAnswers
 You must evaluate all questions in ONE batch response.
 
 CRITICAL EVALUATION RULES:
-1. FAIR ENGLISH EVALUATION: Do NOT heavily penalize imperfect English, Indian English, short sentences, or minor grammar/spelling errors. Focus on REASONING, JUDGMENT, ACCOUNTABILITY, and BEHAVIORAL MATURITY.
-2. NO SINGLE CORRECT ANSWER: Evaluate whether response demonstrates sound judgment and realistic trade-offs.
-3. NO PSYCHOLOGICAL / MEDICAL DIAGNOSES: Evaluate observable interview behavior ONLY.
-4. MARKS: Each question has max 20 marks.
-5. BETTER ANSWER: Provide a "betterAnswer" that preserves candidate's core intent.
+1. QUESTION-AWARE EVALUATION:
+   - Adapt evaluation criteria strictly based on the question being asked.
+   - Self-Introduction / "Tell me about yourself": Evaluate educational background, core technical skills, and professional interests. DO NOT require STAR format.
+   - Strengths / Weaknesses: Evaluate self-awareness, professional context, and actionable improvement steps. DO NOT require STAR format.
+   - Motivation / "Why should we hire you?": Evaluate technical skills, value proposition, and role alignment. DO NOT require STAR format.
+   - Career Goals / "Where do you see yourself in 5 years?": Evaluate realistic ambition, progression, and learning mindset. DO NOT require STAR format.
+   - Behavioral / Situational Scenarios (conflict, failure, leadership): Evaluate situation, proactive action, personal ownership, and resolution (STAR format is appropriate here).
+2. FAIR ENGLISH EVALUATION: Do NOT heavily penalize imperfect English, Indian English, short sentences, or minor grammar/spelling errors. Focus on SUBSTANCE, REASONING, JUDGMENT, ACCOUNTABILITY, and BEHAVIORAL MATURITY.
+3. CONCISE ANSWERS: Short, technically sound and direct answers should receive high/full marks (17-20). Do not score based on length or verbosity.
+4. EMPTY / IRRELEVANT:
+   - Empty or unattempted answers receive score = 0, status = "NOT_ATTEMPTED".
+   - Completely irrelevant answers receive score = 0, status = "INCORRECT".
+5. NO PSYCHOLOGICAL / MEDICAL DIAGNOSES: Evaluate observable interview behavior ONLY.
+6. MARKS: Each question has max 20 marks.
+7. BETTER ANSWER: Provide a "betterAnswer" that preserves candidate's core intent.
 
 RETURN STRICT JSON ONLY:
 {
   "evaluations": [
     {
       "questionId": "<matching_id>",
-      "score": 17,
+      "score": 18,
       "maxScore": 20,
+      "status": "CORRECT",
       "behavioralDimensions": {
-        "confidence": 4,
-        "selfAwareness": 4,
-        "ownership": 5,
-        "decisionMaking": 4,
-        "adaptability": 4,
-        "professionalMaturity": 4
+        "confidence": 4.5,
+        "selfAwareness": 4.5,
+        "ownership": 5.0,
+        "decisionMaking": 4.0,
+        "adaptability": 4.5,
+        "professionalMaturity": 4.5
       },
-      "reasoningStrengths": ["Took clear ownership of the mistake"],
-      "concerns": ["Could have detailed escalation timeline"],
-      "feedback": "Strong response showing high accountability and maturity.",
+      "reasoningStrengths": ["Clear articulation of technical background and project experience"],
+      "concerns": [],
+      "feedback": "Strong, relevant response tailored to the question.",
       "betterAnswer": "Enhanced version preserving original intent..."
     }
   ],
   "overallRating": "Strong",
   "behavioralProfile": {
     "confidence": 4.5,
-    "selfAwareness": 4.2,
+    "selfAwareness": 4.5,
     "ownership": 4.8,
     "decisionMaking": 4.0,
-    "conflictHandling": 4.1
+    "conflictHandling": 4.2
   },
   "consistencyObservations": [],
-  "strengths": ["High accountability", "Clear ownership"],
-  "areasForImprovement": ["Elaborate trade-off decisions"],
-  "finalFeedback": "Comprehensive candidate summary..."
+  "strengths": ["High accountability", "Clear communication"],
+  "areasForImprovement": ["Further detail practical examples where appropriate"],
+  "finalFeedback": "Comprehensive candidate HR summary..."
 }`;
 
   const userPrompt = `Candidate Profile: ${candidateProfile.fullName || "Candidate"}\nQuestions and Candidate Answers:\n${JSON.stringify(formattedQA, null, 2)}\n\nEvaluate all HR answers in valid JSON.`;

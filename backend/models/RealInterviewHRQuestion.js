@@ -8,7 +8,7 @@ const realInterviewHRQuestionSchema = new mongoose.Schema(
     question: { type: String, required: true },
     category: { type: String, required: true, default: "Behavioral" },
     difficulty: { type: String, required: true, enum: ["easy", "medium", "hard"] },
-    maxMarks: { type: Number, required: true, default: 5 },
+    maxMarks: { type: Number, required: true, default: 20 },
     behavioralDimensions: [{ type: String }],
     resumeReference: { type: String, default: "" },
     source: { type: String, default: "hr_behavioral" },

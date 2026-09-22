@@ -466,6 +466,7 @@ export async function evaluateHRInterviewSession({ sessionId, candidateProfile =
   });
 
   let evalResult;
+  let isFallback = false;
   try {
     evalResult = await evaluateHRAI({
       candidateProfile: candidateProfile && Object.keys(candidateProfile).length ? candidateProfile : session.candidateProfile,
@@ -476,6 +477,7 @@ export async function evaluateHRInterviewSession({ sessionId, candidateProfile =
     console.log(`\n[RESULT-EVALUATION]\nround=hr\nstatus=AI_FAILED\nerrorCode=${err.message}\nfallback=LOCAL_OR_UNAVAILABLE`);
     console.log(`\n[RESULT-EVALUATION]\nround=hr\nstatus=CONTINUING_AFTER_FAILURE`);
     evalResult = generateDeterministicHREvaluation(attemptedPairs, err.message);
+    isFallback = true;
   }
 
   let totalScore = 0;
@@ -486,15 +488,18 @@ export async function evaluateHRInterviewSession({ sessionId, candidateProfile =
 
     let score = 0;
     let rating = "Weak";
+    let status = "NOT_ATTEMPTED";
     let feedback = "Question was not attempted.";
     let reasoningStrengths = [];
     let concerns = ["Question was not attempted"];
-    let betterAnswer = "Provide a structured behavioral response using the STAR method.";
+    let betterAnswer = "Provide a structured, clear response tailored to the question.";
+    const evalSource = matchingEval.evaluationSource || (isFallback ? "deterministic_fallback" : "ai_provider");
 
     if (pair.answerPresent) {
       const rawScore = Number(matchingEval.score);
       score = isNaN(rawScore) ? 0 : Math.max(0, Math.min(20, Math.round(rawScore)));
-      rating = score >= 16 ? "Exceptional" : score >= 11 ? "Strong" : "Average";
+      status = score >= 16 ? "CORRECT" : score >= 8 ? "PARTIALLY_CORRECT" : score > 0 ? "PARTIALLY_CORRECT" : "INCORRECT";
+      rating = score >= 16 ? "Exceptional" : score >= 11 ? "Strong" : score >= 6 ? "Average" : "Weak";
       feedback = matchingEval.feedback || "Evaluation complete.";
       reasoningStrengths = matchingEval.reasoningStrengths || [];
       concerns = matchingEval.concerns || [];
@@ -509,7 +514,9 @@ export async function evaluateHRInterviewSession({ sessionId, candidateProfile =
       session.answers[ansIdx].candidateAnswer = persistedAnswer;
       session.answers[ansIdx].score = score;
       session.answers[ansIdx].maxScore = 20;
+      session.answers[ansIdx].status = status;
       session.answers[ansIdx].rating = rating;
+      session.answers[ansIdx].evaluationSource = evalSource;
       session.answers[ansIdx].reasoningStrengths = reasoningStrengths;
       session.answers[ansIdx].concerns = concerns;
       session.answers[ansIdx].feedback = feedback;
@@ -523,7 +530,9 @@ export async function evaluateHRInterviewSession({ sessionId, candidateProfile =
         candidateAnswer: persistedAnswer,
         score,
         maxScore: 20,
+        status,
         rating,
+        evaluationSource: evalSource,
         reasoningStrengths,
         concerns,
         feedback,
@@ -548,7 +557,7 @@ export async function evaluateHRInterviewSession({ sessionId, candidateProfile =
   session.evaluationCompleted = true;
   session.evaluationStatus = "COMPLETED";
   session.status = "completed";
-  session.fallbackUsed = false;
+  session.fallbackUsed = isFallback;
 
   await session.save();
 
@@ -566,7 +575,7 @@ export async function evaluateHRInterviewSession({ sessionId, candidateProfile =
     finalFeedback: session.finalFeedback,
     evaluations: session.answers,
     reused: false,
-    fallbackUsed: false,
+    fallbackUsed: isFallback,
     aiEvaluationCalls: session.aiEvaluationCalls,
   };
 }

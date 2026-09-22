@@ -581,12 +581,17 @@ export async function evaluateProjectInterviewSession({ sessionId, candidateProf
     else session.answers.push(answerData);
   }
 
-  const maxScoreTotal = 100;
-  const percentage = Math.round((calculatedTotalScore / maxScoreTotal) * 100);
+  const questionMaxMarksSum = allQuestions.reduce(
+    (sum, q) => sum + (q.maxMarks || (q.difficulty === "easy" ? 5 : q.difficulty === "hard" ? 20 : 10)),
+    0
+  );
 
-  session.totalScore = calculatedTotalScore;
-  session.overallScore = calculatedTotalScore;
-  session.maxScore = maxScoreTotal;
+  const percentage = questionMaxMarksSum > 0 ? Math.round((calculatedTotalScore / questionMaxMarksSum) * 100) : 0;
+  const scaledScore = questionMaxMarksSum > 0 ? Math.min(100, Math.round((calculatedTotalScore / questionMaxMarksSum) * 100)) : 0;
+
+  session.totalScore = scaledScore;
+  session.overallScore = scaledScore;
+  session.maxScore = 100;
   session.percentage = percentage;
   session.overallRating = evalResult.overallRating || (percentage >= 70 ? "Strong" : percentage >= 40 ? "Average" : "Weak");
   session.strengths = Array.isArray(evalResult.strengths) ? evalResult.strengths : ["Project answer recorded"];

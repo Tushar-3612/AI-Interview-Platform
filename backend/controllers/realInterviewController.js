@@ -951,7 +951,7 @@ export const downloadRealInterviewResultPDF = async (req, res) => {
     const COLOR_BORDER = "#cbd5e1";
 
     const totalObtained = Number(resultDoc.totalObtained ?? 0);
-    const maxScore = Number(resultDoc.maximumMarks ?? 450);
+    const maxScore = Number(resultDoc.maximumMarks ?? 410);
     const percentage = typeof resultDoc.percentage === "number"
       ? resultDoc.percentage
       : maxScore > 0

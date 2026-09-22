@@ -158,6 +158,7 @@ export async function evaluateProjectInterviewAI({ candidateProfile = {}, questi
     q: String(q.question || ""),
     diff: String(q.difficulty || "medium"),
     max: Number(q.maxScore || q.maxMarks || (q.difficulty === "easy" ? 5 : q.difficulty === "hard" ? 20 : 10)),
+    expected: String(q.expectedKnowledge || q.expectedAnswer || q.referenceAnswer || "Demonstrate clear project workflow, architecture reasoning, and technical implementation details.").trim(),
     ans: String(q.candidateAnswer || "(No answer provided)").trim(),
   }));
 
@@ -167,10 +168,12 @@ QUESTIONS & CANDIDATE ANSWERS:
 ${JSON.stringify(formattedQuestions, null, 2)}
 
 FAIR EVALUATION INSTRUCTIONS:
-1. PROJECT UNDERSTANDING FIRST: Judge project workflow and implementation choices. DO NOT heavily penalize grammar or broken English if concept is correct.
-2. MARKS: Easy (max 5), Medium (max 10), Hard (max 20).
-3. BETTER ANSWER: Preserve candidate's correct ideas, fix errors, refine phrasing.
-4. OVERALL METRICS: totalScore, maxScore, percentage, overallRating (90+: Excellent, 80-89: Very Strong, 70-79: Strong, 60-69: Good, 50-59: Average, 40-49: Needs Improvement, <40: Weak), strengths, weaknesses, finalFeedback.
+1. GROUNDED EVALUATION: Evaluate candidate response (ans) against the expected reference criteria (expected) for each question.
+2. PROJECT UNDERSTANDING FIRST: Judge project workflow, architecture, and implementation choices. DO NOT heavily penalize grammar or broken English if concept is correct. Concise, correct answers must receive full marks.
+3. MARKS: Easy (max 5), Medium (max 10), Hard (max 20).
+4. INCORRECT CLAIMS: If an answer contains technically contradictory or wrong statements, deduct marks accordingly.
+5. BETTER ANSWER: Preserve candidate's correct ideas, fix errors, refine phrasing.
+6. OVERALL METRICS: totalScore, maxScore, percentage, overallRating (90+: Excellent, 80-89: Very Strong, 70-79: Strong, 60-69: Good, 50-59: Average, 40-49: Needs Improvement, <40: Weak), strengths, weaknesses, finalFeedback.
 
 JSON SCHEMA ONLY:
 {

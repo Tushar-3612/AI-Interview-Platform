@@ -261,7 +261,7 @@ export function normalizeRealInterviewResult(rawPayload) {
   }
 
   const totalObtained = Number(doc.totalObtained ?? doc.overallScore ?? doc.totalScore ?? 0);
-  const maxScore = Number(doc.maximumMarks ?? doc.maxScore ?? doc.maximum ?? 450);
+  const maxScore = Number(doc.maximumMarks ?? doc.maxScore ?? doc.maximum ?? 410);
   const percentage = typeof doc.percentage === "number"
     ? doc.percentage
     : maxScore > 0
@@ -500,7 +500,7 @@ export default function Results({ sessionId: propSessionId, initialResultData })
 
   // Computed authoritative values
   const totalObtained = useMemo(() => result?.totalObtained ?? 0, [result]);
-  const maxScore = useMemo(() => result?.maxScore ?? 450, [result]);
+  const maxScore = useMemo(() => result?.maxScore ?? 410, [result]);
   const percentage = useMemo(() => {
     if (!result) return 0;
     if (typeof result.percentage === "number") return result.percentage;
@@ -776,7 +776,7 @@ export default function Results({ sessionId: propSessionId, initialResultData })
               <h2 className="text-xs font-black uppercase tracking-widest text-slate-300">ROUND PERFORMANCE</h2>
               <p className="text-[11px] text-slate-400 mt-0.5">Authoritative performance metrics across all 5 interview stages</p>
             </div>
-            <span className="text-xs font-mono text-slate-500">Maximum Marks: 450</span>
+            <span className="text-xs font-mono text-slate-500">Maximum Marks: 410</span>
           </div>
 
           <div className="overflow-x-auto">

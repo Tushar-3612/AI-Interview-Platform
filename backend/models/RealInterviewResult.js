@@ -103,7 +103,7 @@ realInterviewResultSchema.virtual("roundScores").get(function () {
     aptitude: { score: this.rounds?.aptitude?.obtained || 0, maxScore: 50, status: "COMPLETED" },
     technical: { score: this.rounds?.technical?.obtained || 0, maxScore: 100, status: "COMPLETED" },
     project: { score: this.rounds?.project?.obtained || 0, maxScore: 100, status: "COMPLETED" },
-    hr: { score: this.rounds?.hr?.obtained || 0, maxScore: 100, status: "COMPLETED" },
+    hr: { score: this.rounds?.hr?.obtained || 0, maxScore: 60, status: "COMPLETED" },
     coding: { score: this.rounds?.coding?.obtained || 0, maxScore: 100, status: "COMPLETED" },
   };
 });

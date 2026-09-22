@@ -309,7 +309,15 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
       });
     }
 
-    const projectScoreTotal = Math.min(100, calculatedProjectScore);
+    const projectQuestionsMaxSum = projectQuestions.reduce(
+      (sum, q) => sum + (q.maxMarks || (q.difficulty === "easy" ? 5 : q.difficulty === "hard" ? 20 : 10)),
+      0
+    ) || 50;
+
+    // Normalize question marks sum (e.g. 50) to the 100-mark round max so no candidate is capped at 50
+    const projectScoreTotal = projectQuestionsMaxSum > 0
+      ? Math.min(100, Math.round((calculatedProjectScore / projectQuestionsMaxSum) * 100))
+      : Math.min(100, calculatedProjectScore);
 
     // =============================================================
     // 4. HR ROUND CALCULATION (Non-Fatal)
@@ -380,7 +388,7 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
     // =============================================================
     // 5. CODING ROUND CALCULATION (Non-Fatal, Judge0 Results)
     // =============================================================
-    let codingSessionResult = { evaluations: [] };
+    let codingSessionResult = { problems: [], evaluations: [] };
     try {
       codingSessionResult = await evaluateCodingInterviewSession({ sessionId });
       successfulRounds.push("coding");
@@ -395,33 +403,75 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
     let calculatedCodingScore = 0;
     let codingAttemptedCount = 0;
 
+    const codingProblemList = Array.isArray(codingSessionResult?.problems) && codingSessionResult.problems.length > 0
+      ? codingSessionResult.problems
+      : Array.isArray(codingSessionResult?.evaluations)
+      ? codingSessionResult.evaluations
+      : [];
+
     for (const q of codingQuestions) {
       const qIdStr = q._id.toString();
-      const evalMatch = (codingSessionResult.evaluations || []).find(
-        (e) => String(e.questionId) === qIdStr
+      const evalMatch = codingProblemList.find(
+        (e) => String(e.questionId || e._id) === qIdStr
       );
+
+      // Find latest submission for this question (if any)
+      const matchingSubmissions = (codingSubmissions || []).filter((s) => String(s.questionId) === qIdStr);
+      const latestSub = matchingSubmissions.length > 0 ? matchingSubmissions[matchingSubmissions.length - 1] : null;
 
       const resolved = resolveCandidateAnswer({
         roundType: "CODING",
         questionId: qIdStr,
         questionText: q.title || q.question || q.description,
-        roundSessionAnswers: codingSubmissions.length > 0 ? codingSubmissions : codingSessionDoc?.answers || [],
+        roundSessionAnswers: matchingSubmissions.length > 0 ? matchingSubmissions : codingSessionDoc?.answers || [],
         mainInterviewAnswers,
       });
 
-      if (resolved.answerPresent) codingAttemptedCount++;
+      const hasSubmission = Boolean(latestSub && latestSub.sourceCode && latestSub.sourceCode.trim());
+      const hasResolvedAnswer = Boolean(resolved.answerPresent && resolved.answer && resolved.answer.trim());
+      const isAttempted = hasSubmission || hasResolvedAnswer || Boolean(evalMatch && evalMatch.status !== "Not Attempted" && evalMatch.status !== "NOT_ATTEMPTED");
 
-      const sourceCode = resolved.answerPresent ? resolved.answer : "";
-      const maxScore = q.marks || (q.difficulty === "easy" ? 20 : q.difficulty === "hard" ? 50 : 30);
-      let score = 0;
+      if (isAttempted) codingAttemptedCount++;
+
+      const sourceCode = hasSubmission ? latestSub.sourceCode : hasResolvedAnswer ? resolved.answer : "";
+      const maxScore = q.marks || (String(q.difficulty).toLowerCase() === "easy" ? 20 : String(q.difficulty).toLowerCase() === "hard" ? 50 : 30);
+
+      const passedTests = evalMatch ? Number(evalMatch.passedTests || 0) : latestSub ? Number(latestSub.passedTests || 0) : 0;
+      const totalTests = evalMatch && evalMatch.totalTests > 0
+        ? Number(evalMatch.totalTests)
+        : latestSub && latestSub.totalTests > 0
+        ? Number(latestSub.totalTests)
+        : ((q.visibleTestCases?.length || 0) + (q.hiddenTestCases?.length || 0));
+
+      const rawScore = evalMatch ? Number(evalMatch.score) : latestSub ? Number(latestSub.score) : 0;
+      const score = isAttempted && !isNaN(rawScore) ? Math.max(0, Math.min(maxScore, Math.round(rawScore))) : 0;
+
       let qStatus = "NOT_ATTEMPTED";
+      let feedback = "No code was submitted for this problem.";
 
-      if (resolved.answerPresent) {
-        const rawScore = Number(evalMatch?.score);
-        score = isNaN(rawScore) ? 0 : Math.max(0, Math.min(maxScore, Math.round(rawScore)));
-        qStatus = evalMatch?.passedTests === evalMatch?.totalTests && evalMatch?.totalTests > 0
-          ? "CORRECT"
-          : score > 0 ? "PARTIALLY_CORRECT" : "INCORRECT";
+      if (isAttempted) {
+        const subStatus = evalMatch?.status || latestSub?.status || "Evaluated";
+        const compileOut = latestSub?.compileOutput || "";
+
+        if (subStatus === "Compilation Error" || subStatus === "compile_error") {
+          qStatus = "INCORRECT";
+          feedback = compileOut ? `Compilation Error: ${compileOut.slice(0, 300)}` : `Compilation Error. Code could not be compiled. (Passed 0/${totalTests} test cases).`;
+        } else if (subStatus === "Time Limit Exceeded" || subStatus === "time_limit") {
+          qStatus = "INCORRECT";
+          feedback = `Time Limit Exceeded. Program exceeded execution time limit. Passed ${passedTests}/${totalTests} test cases.`;
+        } else if (subStatus === "Runtime Error" || subStatus === "runtime_error") {
+          qStatus = "INCORRECT";
+          feedback = `Runtime Error. Program terminated with an execution error. Passed ${passedTests}/${totalTests} test cases.`;
+        } else if (passedTests === totalTests && totalTests > 0) {
+          qStatus = "CORRECT";
+          feedback = `Accepted. Passed all ${passedTests}/${totalTests} test cases. Full marks awarded.`;
+        } else if (passedTests > 0) {
+          qStatus = "PARTIALLY_CORRECT";
+          feedback = `Partially Accepted. Passed ${passedTests}/${totalTests} test cases.`;
+        } else {
+          qStatus = "INCORRECT";
+          feedback = `Wrong Answer. Output did not match expected testcase output. Passed 0/${totalTests} test cases.`;
+        }
       }
 
       calculatedCodingScore += score;
@@ -430,15 +480,13 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
         questionId: qIdStr,
         roundType: "CODING",
         question: q.title || q.description || "Coding Problem",
-        candidateAnswer: resolved.answerPresent ? sourceCode : "Not Submitted",
+        candidateAnswer: isAttempted ? sourceCode : "Not Submitted",
         correctAnswer: q.solutionExplanation || "Optimal reference solution and clean algorithmic logic.",
         score,
         maxScore,
-        status: !resolved.answerPresent ? "NOT_ATTEMPTED" : qStatus,
+        status: qStatus,
         evaluationMode: "JUDGE0",
-        feedback: !resolved.answerPresent
-          ? "No code was submitted for this problem."
-          : `Execution result: ${evalMatch?.executionStatus || "Evaluated"}. Passed ${evalMatch?.passedTests || 0}/${evalMatch?.totalTests || 0} test cases.`,
+        feedback,
         improvedAnswer: q.solutionExplanation || "Review reference solution for time and space optimization.",
       });
     }
@@ -535,7 +583,7 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
       await mainInterviewSession.save();
     }
 
-    console.log(`[RealInterviewResultService] Session ${sessionId} RESULT CALCULATED & PERSISTED! Score: ${overallTotalObtained}/450 (${percentage}%). ResultStatus: ${resultStatus}.`);
+    console.log(`[RealInterviewResultService] Session ${sessionId} RESULT CALCULATED & PERSISTED! Score: ${overallTotalObtained}/410 (${percentage}%). ResultStatus: ${resultStatus}.`);
     return resultDoc;
   } catch (error) {
     console.error(`[RealInterviewResultService] Unrecoverable calculation ERROR for session ${sessionId}:`, error.message);

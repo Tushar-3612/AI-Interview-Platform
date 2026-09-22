@@ -210,6 +210,21 @@ const CONTRADICTION_RULES = [
     context: /polymorphism|oop|inheritance/i,
     message: "Object-Oriented Programming concept incorrectly defined as a database.",
   },
+  {
+    pattern: /\b(redis\s+is\s+(?:a\s+)?(?:relational|permanent|sql)|redis\s+is\s+used\s+to\s+permanently\s+store)\b/i,
+    context: /redis|cache|key-value/i,
+    message: "Redis is an in-memory key-value data store/cache, not a relational SQL database for permanent storage.",
+  },
+  {
+    pattern: /\b(jwt\s+(?:is\s+used\s+to\s+store\s+passwords|stores\s+passwords\s+in\s+the\s+database))\b/i,
+    context: /jwt|token|auth|password/i,
+    message: "JWT is used for secure stateless claims/token-based authentication, not for storing passwords in databases.",
+  },
+  {
+    pattern: /\b(rest(?:\s+api)?\s+is\s+a\s+(?:relational\s+)?database|graphql\s+is\s+a\s+database)\b/i,
+    context: /rest|api|graphql/i,
+    message: "REST/GraphQL is an API architecture/protocol, not a database.",
+  },
 ];
 
 function detectContradictions(candidateText, questionText) {
@@ -624,10 +639,10 @@ function evaluateCodeSnippetStrategy(cleanAns, cleanExp, cleanQuestion, maxScore
 // 4. MAIN TECHNICAL QUESTION EVALUATOR
 // -----------------------------------------------------------------------
 
-function evaluateTechnicalQuestion(q) {
+export function evaluateTechnicalQuestion(q) {
   const ans = String(q.candidateAnswer || "").trim();
   const expected = String(q.expectedKnowledge || q.expectedAnswer || q.referenceAnswer || q.question || "").trim();
-  const maxScore = Number(q.maxScore || (q.difficulty === "easy" ? 3 : q.difficulty === "hard" ? 13 : 5));
+  const maxScore = Number(q.maxScore || q.maxMarks || (q.difficulty === "easy" ? 3 : q.difficulty === "hard" ? 13 : 5));
   const qId = String(q.questionId || q.id || "");
 
   // 1. Unanswered check
@@ -906,13 +921,22 @@ function evaluateTechnicalQuestion(q) {
 // 5. PROJECT ROUND DETERMINISTIC EVALUATION
 // -----------------------------------------------------------------------
 
-function evaluateProjectQuestion(q) {
+export function evaluateProjectQuestion(q) {
   const ans = String(q.candidateAnswer || "").trim();
-  const expected = String(q.expectedKnowledge || q.question || "").trim();
-  const maxScore = Number(q.maxScore || (q.difficulty === "easy" ? 5 : q.difficulty === "hard" ? 20 : 10));
+  const expected = String(q.expectedKnowledge || q.expectedAnswer || q.referenceAnswer || q.question || "").trim();
+  const maxScore = Number(q.maxScore || q.maxMarks || (q.difficulty === "easy" ? 5 : q.difficulty === "hard" ? 20 : 10));
   const qId = String(q.questionId || q.id || "");
+  const cleanQuestion = normalizeTechnicalExpression(q.question || "");
 
-  if (!ans || ans === "(No answer submitted)" || ans.toLowerCase() === "not answered") {
+  if (
+    !ans ||
+    ans === "(No answer submitted)" ||
+    ans === "(No answer provided)" ||
+    ans.toLowerCase() === "not answered" ||
+    ans.toLowerCase() === "not submitted" ||
+    ans.toLowerCase() === "none" ||
+    ans.toLowerCase() === "null"
+  ) {
     return {
       questionId: qId,
       score: 0,
@@ -926,33 +950,85 @@ function evaluateProjectQuestion(q) {
       incorrectPoints: [],
       grammarIssues: [],
       feedback: "Question was not attempted.",
-      betterAnswer: expected,
+      betterAnswer: expected || "Demonstrate project architecture, data flow, and trade-off considerations.",
     };
   }
 
   const cleanAns = normalizeTechnicalExpression(ans);
   const cleanExp = normalizeTechnicalExpression(expected);
+
+  // 1. Detect contradictions / false technical claims
+  const contradictions = detectContradictions(cleanAns, cleanExp + " " + cleanQuestion);
+
+  // 2. Extract concepts and filter question echo words
   const candTokens = extractConceptTokens(cleanAns);
   const expTokens = extractConceptTokens(cleanExp);
+  const qTokens = extractConceptTokens(cleanQuestion);
+
+  const pureExpUnigrams = new Set([...expTokens.unigrams].filter((u) => !qTokens.unigrams.has(u)));
+  const targetUnigrams = pureExpUnigrams.size > 0 ? pureExpUnigrams : expTokens.unigrams;
 
   let matchedUnigrams = 0;
-  for (const u of expTokens.unigrams) {
+  for (const u of targetUnigrams) {
     if (candTokens.unigrams.has(u)) matchedUnigrams++;
   }
-  const unigramCoverage = expTokens.unigrams.size > 0 ? matchedUnigrams / expTokens.unigrams.size : 0;
+  const unigramCoverage = targetUnigrams.size > 0 ? matchedUnigrams / targetUnigrams.size : 0;
 
-  const hasArchitecture = /\b(architect|design|structur|pattern|layer|module|service|api|flow|pipeline|endpoint|database|schema|auth|middleware|deploy|scale|bottleneck|trade.?off|decision|chose|because|instead|rather|performance|security|scalab|availability)\b/i.test(cleanAns);
+  // Bonus for compound bigrams
+  let matchedBigrams = 0;
+  for (const b of expTokens.bigrams) {
+    if (!qTokens.bigrams.has(b) && candTokens.bigrams.has(b)) matchedBigrams++;
+  }
+
+  const hasArchitecture = /\b(architect|design|structur|pattern|layer|module|service|api|flow|pipeline|endpoint|database|schema|auth|middleware|deploy|scale|bottleneck|trade.?off|decision|chose|because|instead|rather|performance|security|scalab|availability|caching|redis|docker|microservice)\b/i.test(cleanAns);
   const hasDebugging = /\b(debug|error|fix|issue|problem|resolv|found|discover|root.?cause|stack.?trace|log|monitor)\b/i.test(cleanAns);
   const hasReasoning = REASONING_PATTERN.test(cleanAns);
+  const hasExample = EXAMPLE_PATTERN.test(cleanAns);
 
-  let scoreRatio = unigramCoverage;
-  if (hasArchitecture) scoreRatio += 0.15;
-  if (hasReasoning) scoreRatio += 0.10;
-  if (hasDebugging) scoreRatio += 0.05;
+  let evidenceRatio = unigramCoverage;
+  if (matchedBigrams > 0) evidenceRatio += 0.15 * Math.min(2, matchedBigrams);
+  if (hasArchitecture && matchedUnigrams >= 1) evidenceRatio += 0.08;
+  if (hasReasoning && matchedUnigrams >= 1) evidenceRatio += 0.08;
+  if (hasDebugging && matchedUnigrams >= 1) evidenceRatio += 0.05;
+  if (hasExample && matchedUnigrams >= 1) evidenceRatio += 0.05;
 
-  let score = Math.max(0, Math.min(maxScore, Math.round(scoreRatio * maxScore)));
-  const status = score >= maxScore * 0.8 ? "CORRECT" : score > 0 ? "PARTIALLY_CORRECT" : "INCORRECT";
-  const rating = score >= maxScore * 0.8 ? "Strong" : score >= maxScore * 0.4 ? "Acceptable" : "Weak";
+  let score = 0;
+  if (contradictions.length > 0 || matchedUnigrams === 0) {
+    score = 0;
+  } else if (unigramCoverage >= 0.50 || (evidenceRatio >= 0.55 && matchedUnigrams >= 3)) {
+    score = maxScore;
+  } else if (evidenceRatio >= 0.30 && matchedUnigrams >= 2) {
+    score = Math.max(1, Math.round(maxScore * 0.60));
+  } else if (evidenceRatio >= 0.12 && matchedUnigrams >= 1) {
+    score = Math.max(1, Math.round(maxScore * 0.35));
+  } else {
+    score = 0;
+  }
+
+  score = Math.max(0, Math.min(maxScore, score));
+
+  let status = "INCORRECT";
+  let rating = "Weak";
+
+  if (contradictions.length > 0 || score === 0) {
+    status = "INCORRECT";
+    rating = "Weak";
+  } else if (score >= maxScore * 0.8) {
+    status = "CORRECT";
+    rating = "Strong";
+  } else if (score > 0) {
+    status = "PARTIALLY_CORRECT";
+    rating = "Acceptable";
+  } else {
+    status = "INCORRECT";
+    rating = "Weak";
+  }
+
+  const coveragePct = Math.round(unigramCoverage * 100);
+  const missingPoints = [];
+  if (unigramCoverage < 0.40 && score < maxScore) {
+    missingPoints.push("Key architectural components, trade-offs, or implementation details were omitted");
+  }
 
   return {
     questionId: qId,
@@ -962,75 +1038,85 @@ function evaluateProjectQuestion(q) {
     status,
     rating,
     evaluationSource: "deterministic_nlp",
-    correctPoints: score > 0 ? [`Demonstrated project and architectural reasoning (~${Math.round(unigramCoverage * 100)}% alignment)`] : [],
-    missingPoints: score < maxScore * 0.8 ? ["Specific implementation decisions and trade-offs could be elaborated further"] : [],
-    incorrectPoints: [],
+    correctPoints: score > 0 ? [`Demonstrated ~${Math.max(coveragePct, Math.round((score / maxScore) * 100))}% alignment with expected project architecture`] : [],
+    missingPoints,
+    incorrectPoints: contradictions,
     grammarIssues: [],
-    feedback: `Deterministic evaluation (AI unavailable). Project concept coverage: ~${Math.round(unigramCoverage * 100)}%. Score: ${score}/${maxScore}.`,
+    feedback:
+      contradictions.length > 0
+        ? `Deterministic evaluation: Contradiction identified (${contradictions.join("; ")}). Score: 0/${maxScore}.`
+        : `Deterministic evaluation (AI unavailable). Project concept alignment: ~${Math.max(coveragePct, Math.round((score / maxScore) * 100))}%. Score: ${score}/${maxScore}.`,
     betterAnswer: expected,
   };
 }
 
 // -----------------------------------------------------------------------
-// 6. HR ROUND DETERMINISTIC EVALUATION
+// 6. HR ROUND DETERMINISTIC EVALUATION (QUESTION-AWARE)
 // -----------------------------------------------------------------------
 
-const STAR_SITUATION = /\b(situation|context|problem|challenge|scenario|issue|faced|encountered|happened|was)\b/i;
-const STAR_ACTION = /\b(decided|took|approached|handled|communicated|escalated|prioritized|managed|implemented|chose|resolved|did|made|acted|led)\b/i;
-const STAR_RESULT = /\b(result|outcome|impact|achieved|delivered|improved|reduced|increased|succeeded|learned|realized|ensured|resolved|completion)\b/i;
-const STAR_REFLECTION = /\b(learned|realized|improved|changed|next time|would|better|growth|insight|reflection|take away)\b/i;
+const PATTERN_INTRO = /\b(introduce\s+yourself|tell\s+me\s+about\s+yourself|walk\s+me\s+through\s+your\s+resume|who\s+are\s+you|brief\s+introduction)\b/i;
+const PATTERN_STRENGTHS = /\b(strengths?|strongest\s+asset|greatest\s+strength|core\s+competenc|superpower)\b/i;
+const PATTERN_WEAKNESS = /\b(weakness(?:es)?|greatest\s+weakness|area\s+of\s+improvement|areas?\s+to\s+improve|struggle\s+with)\b/i;
+const PATTERN_MOTIVATION = /\b(why\s+(?:should\s+we\s+hire\s+you|do\s+you\s+want\s+to\s+join|this\s+company|work\s+here|choose\s+this\s+role|fit\s+for\s+this\s+role)|what\s+makes\s+you\s+(?:a\s+good\s+fit|stand\s+out))\b/i;
+const PATTERN_CAREER_GOALS = /\b(career\s+goals?|where\s+do\s+you\s+see\s+yourself|5\s+years?|future\s+aspirations?|long.?term\s+goal|career\s+vision)\b/i;
+const PATTERN_BEHAVIORAL = /\b(tell\s+me\s+about\s+(?:a\s+)?(?:time|conflict|situation|challenge|failure|project|disagreement|mistake)|conflict|disagreement|disagreed|faced|challenging|pressure|failure|failed|describe\s+a\s+situation|give\s+an\s+example|difficult\s+decision|tight\s+deadline|handled\s+a)\b/i;
 
-function evaluateHRQuestion(q) {
-  const ans = String(q.candidateAnswer || "").trim();
-  const maxScore = Number(q.maxScore || 20);
-  const qId = String(q.questionId || q.id || "");
+const STAR_SITUATION = /\b(situation|context|problem|challenge|scenario|issue|faced|encountered|happened|was|project|deadline|conflict|disagree|critical|bug)\b/i;
+const STAR_ACTION = /\b(decided|took|approached|handled|communicated|escalated|prioritized|managed|implemented|chose|resolved|did|made|acted|led|discussed|organized|worked|restructured|fixed|debugged|refactored|initiated|coordinated)\b/i;
+const STAR_RESULT = /\b(result|outcome|impact|achieved|delivered|improved|reduced|increased|succeeded|learned|realized|ensured|resolved|completion|on\s+time|successfully|received|top\s+marks|demo)\b/i;
+const STAR_REFLECTION = /\b(learned|realized|improved|changed|next\s+time|would|better|growth|insight|reflection|takeaway|experience\s+taught|lesson)\b/i;
 
-  if (!ans || ans === "(No answer provided)" || ans.toLowerCase() === "not answered") {
+function classifyHRQuestionType(questionText) {
+  const q = String(questionText || "").toLowerCase();
+  if (PATTERN_INTRO.test(q)) return "INTRODUCTION";
+  if (PATTERN_STRENGTHS.test(q)) return "STRENGTHS";
+  if (PATTERN_WEAKNESS.test(q)) return "WEAKNESS";
+  if (PATTERN_MOTIVATION.test(q)) return "MOTIVATION";
+  if (PATTERN_CAREER_GOALS.test(q)) return "CAREER_GOALS";
+  if (PATTERN_BEHAVIORAL.test(q)) return "BEHAVIORAL";
+  return "GENERAL_HR";
+}
+
+function evaluateIntroductionQuestion(ans, maxScore, qId) {
+  const hasEducation = /\b(degree|bachelor|master|b\.?tech|computer\s+science|engineering|college|university|student|graduate|graduated|pursuing|school|academics?|cgpa|gpa)\b/i.test(ans);
+  const hasSkills = /\b(javascript|python|java|c\+\+|c#|react|node|express|mongo|sql|html|css|frontend|backend|full.?stack|software|developer|engineer|web|app|development|ai|machine\s+learning|data|devops|git|cloud|aws)\b/i.test(ans);
+  const hasProjects = /\b(project|projects|built|developed|created|intern|internship|experience|worked\s+on|designed|implemented|portfolio|hackathon|application|system)\b/i.test(ans);
+  const hasInterests = /\b(passionate|enthusiastic|interested|eager|excited|aiming|looking\s+forward|solve\s+problems|grow|learn|focus|interest|aspiring)\b/i.test(ans);
+  const hasIdentity = /\b(I am|my name|myself|I'm|background)\b/i.test(ans);
+
+  const dimensionCount = (hasEducation ? 1 : 0) + (hasSkills ? 1 : 0) + (hasProjects ? 1 : 0) + (hasInterests ? 1 : 0) + (hasIdentity ? 1 : 0);
+
+  if (dimensionCount === 0) {
     return {
       questionId: qId,
       score: 0,
       maxScore,
-      status: "NOT_ATTEMPTED",
-      rating: "Not Attempted",
+      status: "INCORRECT",
+      rating: "Weak",
       evaluationSource: "deterministic_nlp",
-      behavioralDimensions: { ownership: 0, decisionMaking: 0, professionalMaturity: 0, confidence: 0 },
+      behavioralDimensions: { ownership: 1.0, decisionMaking: 1.0, professionalMaturity: 1.0, confidence: 1.0, selfAwareness: 1.0 },
       reasoningStrengths: [],
-      concerns: ["Question was not attempted"],
-      feedback: "Question was not attempted.",
-      betterAnswer: "A structured behavioral response addressing the situation, action taken, and outcome achieved.",
+      concerns: ["Answer did not contain relevant professional or educational background"],
+      feedback: "Answer is irrelevant to an introduction. Please state your educational background, core skills, and technical interests.",
+      betterAnswer: "Brief professional introduction: Name, degree/background, core technical skills (e.g. React/Node), key projects built, and career interest.",
     };
   }
-
-  const hasSituation = STAR_SITUATION.test(ans);
-  const hasAction = STAR_ACTION.test(ans);
-  const hasResult = STAR_RESULT.test(ans);
-  const hasReflection = STAR_REFLECTION.test(ans);
-  const hasReasoning = REASONING_PATTERN.test(ans);
-  const hasOwnership = /\b(I |my |myself|took responsibility|my fault|I decided|I chose|I handled|I escalated|I managed)\b/i.test(ans);
 
   let score = 0;
   const strengths = [];
   const concerns = [];
 
-  if (hasSituation) { score += 3; strengths.push("Described context and scenario"); }
-  else concerns.push("Situation context was brief");
+  if (hasEducation) { score += 5; strengths.push("Presented educational background"); }
+  else concerns.push("Educational background could be highlighted");
 
-  if (hasAction) {
-    score += 6;
-    strengths.push("Articulated specific actions taken");
-    if (hasOwnership) { score += 2; strengths.push("Demonstrated strong personal ownership"); }
-  } else {
-    concerns.push("Action steps not explicitly articulated");
-  }
+  if (hasSkills) { score += 7; strengths.push("Highlighted core technical skills & proficiencies"); }
+  else concerns.push("Technical skill domain could be highlighted");
 
-  if (hasResult) { score += 5; strengths.push("Communicated measurable outcomes/results"); }
-  else concerns.push("Outcome or business impact omitted");
+  if (hasProjects) { score += 5; strengths.push("Referenced practical projects and experience"); }
+  if (hasInterests) { score += 3; strengths.push("Expressed professional enthusiasm and career direction"); }
 
-  if (hasReasoning) { score += 2; strengths.push("Explained decision-making rationale"); }
-  if (hasReflection) { score += 2; strengths.push("Demonstrated self-reflection & key learnings"); }
-
-  score = Math.max(0, Math.min(maxScore, score));
-  const status = score >= maxScore * 0.8 ? "CORRECT" : score > 0 ? "PARTIALLY_CORRECT" : "INCORRECT";
+  score = Math.max(score > 0 ? 6 : 0, Math.min(maxScore, score));
+  const status = score >= maxScore * 0.8 ? "CORRECT" : score >= maxScore * 0.4 ? "PARTIALLY_CORRECT" : "INCORRECT";
   const rating = score >= 16 ? "Exceptional" : score >= 12 ? "Strong" : score >= 8 ? "Average" : "Weak";
 
   return {
@@ -1041,16 +1127,409 @@ function evaluateHRQuestion(q) {
     rating,
     evaluationSource: "deterministic_nlp",
     behavioralDimensions: {
-      ownership: hasOwnership ? 4.5 : 3.0,
-      decisionMaking: hasAction ? 4.0 : 2.5,
-      professionalMaturity: hasReflection ? 4.5 : 3.5,
-      confidence: 4.0,
+      ownership: 4.5,
+      decisionMaking: 4.0,
+      professionalMaturity: 4.5,
+      confidence: hasIdentity || hasSkills ? 4.5 : 3.5,
+      selfAwareness: 4.5,
     },
     reasoningStrengths: strengths,
     concerns,
-    feedback: `Deterministic behavioral evaluation (AI unavailable). Score: ${score}/${maxScore}.`,
-    betterAnswer: "A complete STAR response: Situation, Task, Action with ownership, and measurable Result.",
+    feedback: `Deterministic evaluation (AI unavailable). ${strengths.join(", ")}. Score: ${score}/${maxScore}.`,
+    betterAnswer: "A concise professional introduction covering education, key technical stack, top projects, and career enthusiasm.",
   };
+}
+
+function evaluateStrengthsQuestion(ans, maxScore, qId) {
+  const hasStrength = /\b(problem.?solving|quick\s+learner|fast\s+learner|adaptab|debugging|attention\s+to\s+detail|teamwork|collaborat|communicat|persever|discipline|ownership|leadership|work\s+ethic|curious|analytical|hard.?working|dedicated|persistence|resilience)\b/i.test(ans);
+  const hasContext = /\b(when|project|coding|team|challenge|complex|learning|work|deadline|pressure|task|build|feature|example|helped|situation)\b/i.test(ans);
+  const hasReasoning = REASONING_PATTERN.test(ans) || /\b(able\s+to|efficient|effective|quality|deliver|succeed|impact)\b/i.test(ans);
+
+  if (!hasStrength && !hasContext) {
+    return {
+      questionId: qId,
+      score: 0,
+      maxScore,
+      status: "INCORRECT",
+      rating: "Weak",
+      evaluationSource: "deterministic_nlp",
+      behavioralDimensions: { ownership: 1.0, decisionMaking: 1.0, professionalMaturity: 1.0, confidence: 1.0, selfAwareness: 1.0 },
+      reasoningStrengths: [],
+      concerns: ["Answer did not identify recognizable professional strengths"],
+      feedback: "Answer does not identify relevant professional strengths or abilities.",
+      betterAnswer: "Identify 1-2 core strengths (e.g. quick learner, problem solving) backed by practical workplace examples.",
+    };
+  }
+
+  let score = 0;
+  const strengths = [];
+  const concerns = [];
+
+  if (hasStrength) { score += 10; strengths.push("Identified clear professional strengths"); }
+  else concerns.push("Could articulate primary strengths more clearly");
+
+  if (hasContext) { score += 6; strengths.push("Provided practical application context"); }
+  else concerns.push("Adding a concrete example would strengthen the response");
+
+  if (hasReasoning) { score += 4; strengths.push("Explained the positive impact of these strengths"); }
+
+  score = Math.max(score > 0 ? 6 : 0, Math.min(maxScore, score));
+  const status = score >= maxScore * 0.8 ? "CORRECT" : score >= maxScore * 0.4 ? "PARTIALLY_CORRECT" : "INCORRECT";
+  const rating = score >= 16 ? "Exceptional" : score >= 12 ? "Strong" : score >= 8 ? "Average" : "Weak";
+
+  return {
+    questionId: qId,
+    score,
+    maxScore,
+    status,
+    rating,
+    evaluationSource: "deterministic_nlp",
+    behavioralDimensions: {
+      ownership: 4.5,
+      decisionMaking: 4.0,
+      professionalMaturity: 4.5,
+      confidence: 4.5,
+      selfAwareness: hasStrength ? 4.5 : 3.0,
+    },
+    reasoningStrengths: strengths,
+    concerns,
+    feedback: `Deterministic evaluation (AI unavailable). ${strengths.join(", ")}. Score: ${score}/${maxScore}.`,
+    betterAnswer: "State your top strengths (e.g. fast learner, problem solving) and give a brief real-world scenario demonstrating them.",
+  };
+}
+
+function evaluateWeaknessQuestion(ans, maxScore, qId) {
+  const hasWeakness = /\b(perfectionis|public\s+speaking|saying\s+no|delegat|overthink|hesitant|impatient|new\s+technolog|time\s+management|asking\s+for\s+help|nervous|speaking\s+up|taking\s+on\s+too\s+much|difficulty|struggle|weakness)\b/i.test(ans);
+  const hasMitigation = /\b(working\s+on|improving|practice|practicing|learning|courses?|reminders?|calendar|feedback|conscious|actively|now\s+I|mitigate|overcome|handle|started|track|routine)\b/i.test(ans);
+  const hasReflection = /\b(learned|improved|progress|better|growth|mindset|manage|developed|realized|aware)\b/i.test(ans);
+
+  if (!hasWeakness && !hasMitigation) {
+    return {
+      questionId: qId,
+      score: 0,
+      maxScore,
+      status: "INCORRECT",
+      rating: "Weak",
+      evaluationSource: "deterministic_nlp",
+      behavioralDimensions: { ownership: 1.0, decisionMaking: 1.0, professionalMaturity: 1.0, confidence: 1.0, selfAwareness: 1.0 },
+      reasoningStrengths: [],
+      concerns: ["Answer did not identify an area of improvement or demonstrate self-awareness"],
+      feedback: "Answer does not address weakness or constructive areas of improvement.",
+      betterAnswer: "Name a genuine weakness (e.g. public speaking, overthinking) and detail the concrete steps you are taking to improve.",
+    };
+  }
+
+  let score = 0;
+  const strengths = [];
+  const concerns = [];
+
+  if (hasWeakness) { score += 8; strengths.push("Demonstrated candid self-awareness of an area for improvement"); }
+  else concerns.push("Identify a specific professional area for development");
+
+  if (hasMitigation) { score += 8; strengths.push("Outlined proactive steps being taken to improve"); }
+  else concerns.push("Mentioning actionable mitigation steps would make the answer stronger");
+
+  if (hasReflection) { score += 4; strengths.push("Demonstrated a growth mindset and self-reflection"); }
+
+  score = Math.max(score > 0 ? 6 : 0, Math.min(maxScore, score));
+  const status = score >= maxScore * 0.8 ? "CORRECT" : score >= maxScore * 0.4 ? "PARTIALLY_CORRECT" : "INCORRECT";
+  const rating = score >= 16 ? "Exceptional" : score >= 12 ? "Strong" : score >= 8 ? "Average" : "Weak";
+
+  return {
+    questionId: qId,
+    score,
+    maxScore,
+    status,
+    rating,
+    evaluationSource: "deterministic_nlp",
+    behavioralDimensions: {
+      ownership: 4.5,
+      decisionMaking: 4.0,
+      professionalMaturity: hasMitigation ? 4.8 : 3.5,
+      confidence: 4.0,
+      selfAwareness: hasWeakness ? 4.8 : 3.0,
+    },
+    reasoningStrengths: strengths,
+    concerns,
+    feedback: `Deterministic evaluation (AI unavailable). ${strengths.join(", ")}. Score: ${score}/${maxScore}.`,
+    betterAnswer: "Demonstrate self-awareness by acknowledging a manageable weakness and explaining how you actively mitigate it.",
+  };
+}
+
+function evaluateMotivationQuestion(ans, maxScore, qId) {
+  const hasSkills = /\b(skills?|technical|experience|knowledge|proficien|strong\s+foundation|hands.?on|projects?|problem.?solving|capabilities|ability)\b/i.test(ans);
+  const hasValue = /\b(contribute|value|impact|solve|deliver|help|grow|team|build|quality|fast\s+learner|dedicated|reliable|results|asset)\b/i.test(ans);
+  const hasAlignment = /\b(culture|mission|vision|environment|opportunity|align|excited|passion|innovat|growth|learn|reputation|company|role|position)\b/i.test(ans);
+  const hasReasoning = REASONING_PATTERN.test(ans) || /\b(because|fit|match|complement|bring|drive|commitment)\b/i.test(ans);
+
+  if (!hasSkills && !hasValue && !hasAlignment) {
+    return {
+      questionId: qId,
+      score: 0,
+      maxScore,
+      status: "INCORRECT",
+      rating: "Weak",
+      evaluationSource: "deterministic_nlp",
+      behavioralDimensions: { ownership: 1.0, decisionMaking: 1.0, professionalMaturity: 1.0, confidence: 1.0, selfAwareness: 1.0 },
+      reasoningStrengths: [],
+      concerns: ["Answer did not articulate value proposition, relevant skills, or motivation"],
+      feedback: "Answer does not provide clear reasons or skills relevant to why you are a fit for the role.",
+      betterAnswer: "Connect your core technical skills, work ethic, and ability to contribute directly to the team's success.",
+    };
+  }
+
+  let score = 0;
+  const strengths = [];
+  const concerns = [];
+
+  if (hasSkills) { score += 7; strengths.push("Communicated relevant technical proficiencies and background"); }
+  if (hasValue) { score += 7; strengths.push("Articulated clear value proposition and commitment to team success"); }
+  if (hasAlignment) { score += 4; strengths.push("Expressed role alignment and enthusiasm"); }
+  if (hasReasoning) { score += 2; strengths.push("Provided logical justification for candidature"); }
+
+  score = Math.max(score > 0 ? 6 : 0, Math.min(maxScore, score));
+  const status = score >= maxScore * 0.8 ? "CORRECT" : score >= maxScore * 0.4 ? "PARTIALLY_CORRECT" : "INCORRECT";
+  const rating = score >= 16 ? "Exceptional" : score >= 12 ? "Strong" : score >= 8 ? "Average" : "Weak";
+
+  return {
+    questionId: qId,
+    score,
+    maxScore,
+    status,
+    rating,
+    evaluationSource: "deterministic_nlp",
+    behavioralDimensions: {
+      ownership: 4.5,
+      decisionMaking: 4.0,
+      professionalMaturity: 4.5,
+      confidence: 4.5,
+      selfAwareness: 4.0,
+    },
+    reasoningStrengths: strengths,
+    concerns,
+    feedback: `Deterministic evaluation (AI unavailable). ${strengths.join(", ")}. Score: ${score}/${maxScore}.`,
+    betterAnswer: "Highlight your key skills, willingness to learn fast, and how you will deliver immediate value to the organization.",
+  };
+}
+
+function evaluateCareerGoalsQuestion(ans, maxScore, qId) {
+  const hasProgression = /\b(senior|lead|architect|tech\s+lead|specialist|expert|master|core\s+contributor|manager|leadership|role|position|level)\b/i.test(ans);
+  const hasTechnicalDepth = /\b(system\s+design|architecture|cloud|scalab|deep\s+dive|mastering|technolog|full.?stack|best\s+practices|domain|engineering|tools)\b/i.test(ans);
+  const hasLearning = /\b(learning|growing|developing|continuous|skills|knowledge|certificat|expand|improve)\b/i.test(ans);
+  const hasImpact = /\b(mentoring|guiding|impact|ownership|responsibility|driving|delivering|business\s+value|contribut)\b/i.test(ans);
+
+  if (!hasProgression && !hasTechnicalDepth && !hasLearning) {
+    return {
+      questionId: qId,
+      score: 0,
+      maxScore,
+      status: "INCORRECT",
+      rating: "Weak",
+      evaluationSource: "deterministic_nlp",
+      behavioralDimensions: { ownership: 1.0, decisionMaking: 1.0, professionalMaturity: 1.0, confidence: 1.0, selfAwareness: 1.0 },
+      reasoningStrengths: [],
+      concerns: ["Answer did not state career aspirations or professional growth direction"],
+      feedback: "Answer does not outline career goals or professional growth plans.",
+      betterAnswer: "Outline a 3-5 year trajectory aiming to deepen technical expertise, take ownership of critical systems, and mentor junior teammates.",
+    };
+  }
+
+  let score = 0;
+  const strengths = [];
+  const concerns = [];
+
+  if (hasProgression) { score += 7; strengths.push("Articulated clear career progression aspirations"); }
+  if (hasTechnicalDepth) { score += 6; strengths.push("Demonstrated ambition to master technical domain and architecture"); }
+  if (hasLearning) { score += 4; strengths.push("Emphasized continuous skill development and learning"); }
+  if (hasImpact) { score += 3; strengths.push("Highlighted broader organizational impact and mentorship"); }
+
+  score = Math.max(score > 0 ? 6 : 0, Math.min(maxScore, score));
+  const status = score >= maxScore * 0.8 ? "CORRECT" : score >= maxScore * 0.4 ? "PARTIALLY_CORRECT" : "INCORRECT";
+  const rating = score >= 16 ? "Exceptional" : score >= 12 ? "Strong" : score >= 8 ? "Average" : "Weak";
+
+  return {
+    questionId: qId,
+    score,
+    maxScore,
+    status,
+    rating,
+    evaluationSource: "deterministic_nlp",
+    behavioralDimensions: {
+      ownership: 4.5,
+      decisionMaking: 4.0,
+      professionalMaturity: 4.5,
+      confidence: 4.5,
+      selfAwareness: 4.2,
+    },
+    reasoningStrengths: strengths,
+    concerns,
+    feedback: `Deterministic evaluation (AI unavailable). ${strengths.join(", ")}. Score: ${score}/${maxScore}.`,
+    betterAnswer: "Present a balanced plan focused on technical mastery, increasing project ownership, and collaborative leadership.",
+  };
+}
+
+function evaluateBehavioralQuestion(ans, maxScore, qId) {
+  const hasSituation = STAR_SITUATION.test(ans);
+  const hasAction = STAR_ACTION.test(ans);
+  const hasResult = STAR_RESULT.test(ans);
+  const hasReflection = STAR_REFLECTION.test(ans);
+  const hasReasoning = REASONING_PATTERN.test(ans);
+  const hasOwnership = /\b(I |my |myself|took responsibility|my role|I decided|I chose|I handled|I escalated|I managed|I initiated)\b/i.test(ans);
+
+  if (!hasSituation && !hasAction && !hasResult) {
+    return {
+      questionId: qId,
+      score: 0,
+      maxScore,
+      status: "INCORRECT",
+      rating: "Weak",
+      evaluationSource: "deterministic_nlp",
+      behavioralDimensions: { ownership: 1.0, decisionMaking: 1.0, professionalMaturity: 1.0, confidence: 1.0, selfAwareness: 1.0 },
+      reasoningStrengths: [],
+      concerns: ["Answer did not describe a behavioral situation or action taken"],
+      feedback: "Answer does not describe a clear workplace scenario or actions taken.",
+      betterAnswer: "Structure using STAR: describe the Situation, Task, specific Action you took with ownership, and the measurable Result.",
+    };
+  }
+
+  let score = 0;
+  const strengths = [];
+  const concerns = [];
+
+  if (hasSituation) { score += 4; strengths.push("Described context and scenario"); }
+  else concerns.push("Situation context was brief");
+
+  if (hasAction) {
+    score += 8;
+    strengths.push("Articulated specific proactive actions taken");
+    if (hasOwnership) { score += 2; strengths.push("Demonstrated strong personal ownership"); }
+  } else {
+    concerns.push("Action steps not explicitly articulated");
+  }
+
+  if (hasResult) { score += 4; strengths.push("Communicated measurable outcomes and resolution"); }
+  else concerns.push("Outcome or business impact omitted");
+
+  if (hasReasoning) { score += 1; strengths.push("Explained decision-making rationale"); }
+  if (hasReflection) { score += 1; strengths.push("Demonstrated self-reflection & key learnings"); }
+
+  score = Math.max(score > 0 ? 6 : 0, Math.min(maxScore, score));
+  const status = score >= maxScore * 0.8 ? "CORRECT" : score >= maxScore * 0.4 ? "PARTIALLY_CORRECT" : "INCORRECT";
+  const rating = score >= 16 ? "Exceptional" : score >= 12 ? "Strong" : score >= 8 ? "Average" : "Weak";
+
+  return {
+    questionId: qId,
+    score,
+    maxScore,
+    status,
+    rating,
+    evaluationSource: "deterministic_nlp",
+    behavioralDimensions: {
+      ownership: hasOwnership ? 4.8 : 3.5,
+      decisionMaking: hasAction ? 4.5 : 2.5,
+      professionalMaturity: hasReflection ? 4.5 : 3.5,
+      confidence: 4.2,
+      selfAwareness: 4.0,
+    },
+    reasoningStrengths: strengths,
+    concerns,
+    feedback: `Deterministic evaluation (AI unavailable). ${strengths.join(", ")}. Score: ${score}/${maxScore}.`,
+    betterAnswer: "A complete STAR response: Situation, Task, Action with personal accountability, and positive Result.",
+  };
+}
+
+function evaluateGeneralHRQuestion(ans, maxScore, qId, qText) {
+  const hasReasoning = REASONING_PATTERN.test(ans);
+  const hasProfessionalTerms = /\b(work|team|project|professional|communication|collaboration|responsibility|ethics|learning|experience|skills|problem|solution)\b/i.test(ans);
+  const wordCount = ans.split(/\s+/).filter(Boolean).length;
+
+  if (wordCount < 3 && !hasProfessionalTerms) {
+    return {
+      questionId: qId,
+      score: 0,
+      maxScore,
+      status: "INCORRECT",
+      rating: "Weak",
+      evaluationSource: "deterministic_nlp",
+      behavioralDimensions: { ownership: 1.0, decisionMaking: 1.0, professionalMaturity: 1.0, confidence: 1.0, selfAwareness: 1.0 },
+      reasoningStrengths: [],
+      concerns: ["Answer was too sparse to demonstrate professional competence"],
+      feedback: "Answer does not provide sufficient detail to evaluate.",
+      betterAnswer: "Provide a thoughtful, professional response with supporting rationale.",
+    };
+  }
+
+  let score = 10;
+  const strengths = [];
+  if (hasProfessionalTerms) { score += 6; strengths.push("Maintained professional workplace context"); }
+  if (hasReasoning) { score += 4; strengths.push("Articulated clear reasoning"); }
+
+  score = Math.max(score > 0 ? 6 : 0, Math.min(maxScore, score));
+  const status = score >= maxScore * 0.8 ? "CORRECT" : score >= maxScore * 0.4 ? "PARTIALLY_CORRECT" : "INCORRECT";
+  const rating = score >= 16 ? "Exceptional" : score >= 12 ? "Strong" : score >= 8 ? "Average" : "Weak";
+
+  return {
+    questionId: qId,
+    score,
+    maxScore,
+    status,
+    rating,
+    evaluationSource: "deterministic_nlp",
+    behavioralDimensions: { ownership: 4.0, decisionMaking: 4.0, professionalMaturity: 4.0, confidence: 4.0, selfAwareness: 4.0 },
+    reasoningStrengths: strengths,
+    concerns: [],
+    feedback: `Deterministic evaluation (AI unavailable). ${strengths.join(", ") || "Answer evaluated for professional relevance."}. Score: ${score}/${maxScore}.`,
+    betterAnswer: "Provide a detailed answer with specific examples and sound reasoning.",
+  };
+}
+
+export function evaluateHRQuestion(q) {
+  const ans = String(q.candidateAnswer || "").trim();
+  const maxScore = Number(q.maxScore || q.maxMarks || 20);
+  const qId = String(q.questionId || q.id || "");
+  const qText = String(q.question || "");
+
+  if (
+    !ans ||
+    ans === "(No answer provided)" ||
+    ans === "(No answer submitted)" ||
+    ans.toLowerCase() === "not answered" ||
+    ans.toLowerCase() === "not submitted" ||
+    ans.toLowerCase() === "none" ||
+    ans.toLowerCase() === "null"
+  ) {
+    return {
+      questionId: qId,
+      score: 0,
+      maxScore,
+      status: "NOT_ATTEMPTED",
+      rating: "Not Attempted",
+      evaluationSource: "deterministic_nlp",
+      behavioralDimensions: { ownership: 0, decisionMaking: 0, professionalMaturity: 0, confidence: 0, selfAwareness: 0 },
+      reasoningStrengths: [],
+      concerns: ["Question was not attempted"],
+      feedback: "Question was not attempted.",
+      betterAnswer: "Provide a complete and thoughtful response addressing the question asked.",
+    };
+  }
+
+  const qType = classifyHRQuestionType(qText);
+
+  if (qType === "INTRODUCTION") {
+    return evaluateIntroductionQuestion(ans, maxScore, qId);
+  } else if (qType === "STRENGTHS") {
+    return evaluateStrengthsQuestion(ans, maxScore, qId);
+  } else if (qType === "WEAKNESS") {
+    return evaluateWeaknessQuestion(ans, maxScore, qId);
+  } else if (qType === "MOTIVATION") {
+    return evaluateMotivationQuestion(ans, maxScore, qId);
+  } else if (qType === "CAREER_GOALS") {
+    return evaluateCareerGoalsQuestion(ans, maxScore, qId);
+  } else if (qType === "BEHAVIORAL") {
+    return evaluateBehavioralQuestion(ans, maxScore, qId);
+  } else {
+    return evaluateGeneralHRQuestion(ans, maxScore, qId, qText);
+  }
 }
 
 // -----------------------------------------------------------------------
@@ -1139,14 +1618,16 @@ export function generateDeterministicHREvaluation(qaPairs, reason = "AI provider
     percentage,
     overallRating,
     behavioralProfile: {
-      ownership: evaluations.reduce((s, e) => s + (e.behavioralDimensions?.ownership || 0), 0) / (evaluations.length || 1),
-      decisionMaking: evaluations.reduce((s, e) => s + (e.behavioralDimensions?.decisionMaking || 0), 0) / (evaluations.length || 1),
-      professionalMaturity: evaluations.reduce((s, e) => s + (e.behavioralDimensions?.professionalMaturity || 0), 0) / (evaluations.length || 1),
+      ownership: Number((evaluations.reduce((s, e) => s + (e.behavioralDimensions?.ownership || 0), 0) / (evaluations.length || 1)).toFixed(1)),
+      decisionMaking: Number((evaluations.reduce((s, e) => s + (e.behavioralDimensions?.decisionMaking || 0), 0) / (evaluations.length || 1)).toFixed(1)),
+      professionalMaturity: Number((evaluations.reduce((s, e) => s + (e.behavioralDimensions?.professionalMaturity || 0), 0) / (evaluations.length || 1)).toFixed(1)),
+      confidence: Number((evaluations.reduce((s, e) => s + (e.behavioralDimensions?.confidence || 0), 0) / (evaluations.length || 1)).toFixed(1)),
+      selfAwareness: Number((evaluations.reduce((s, e) => s + (e.behavioralDimensions?.selfAwareness || 0), 0) / (evaluations.length || 1)).toFixed(1)),
     },
     consistencyObservations: [],
-    strengths: ["Behavioral answers evaluated using STAR framework detection"],
-    areasForImprovement: ["AI evaluation was unavailable; STAR completeness scoring used"],
-    finalFeedback: `HR evaluation completed using deterministic STAR framework fallback (${reason}).`,
+    strengths: ["HR answers evaluated using question-aware rubrics (Introduction, Strengths, Weakness, Motivation, STAR)"],
+    areasForImprovement: ["AI evaluation was unavailable; deterministic rubric scoring applied"],
+    finalFeedback: `HR evaluation completed using deterministic question-aware fallback (${reason}).`,
     isFallback: true,
   };
 }
