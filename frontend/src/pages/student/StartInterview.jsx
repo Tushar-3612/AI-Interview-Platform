@@ -25,6 +25,7 @@ import InterviewSettingsModal from "../../components/interview/InterviewSettings
 import RealInterviewPreparationScreen from "../../components/interview/RealInterviewPreparationScreen";
 import EvaluationLoadingScreen from "../../components/interview/EvaluationLoadingScreen";
 import BYOKModal from "../../components/BYOKModal";
+import InterviewAnswerInput from "../../components/interview/InterviewAnswerInput";
 
 // Import Monaco editor & Output panel for Coding questions
 import MonacoCodeEditor from "../../components/coding/MonacoCodeEditor";
@@ -196,20 +197,9 @@ function StartInterview({
   const totalSeconds = interviewDurationMin * 60;
   const [timerSeconds, setTimerSeconds] = useState(totalSeconds);
 
-  // Speech Recognition & Silence Buffer
-  const [isListeningSpeech, setIsListeningSpeech] = useState(false);
-  const isListeningSpeechRef = useRef(false);
-  const recognitionRef = useRef(null);
-  const isRecognizingRef = useRef(false);
-  const isStartingRef = useRef(false);
-  const shouldListenRef = useRef(false);
-  const isAiSpeakingRef = useRef(true);
-  const baseTranscriptRef = useRef("");
-  const sessionFinalTranscriptRef = useRef("");
-  const sessionInterimTranscriptRef = useRef("");
-  const restartTimeoutRef = useRef(null);
-  const silenceTimerRef = useRef(null);
-  const isManualStopRef = useRef(false);
+  // Shared Answer Input & Speech Recognition Ref
+  const answerInputRef = useRef(null);
+  const [isListeningVoice, setIsListeningVoice] = useState(false);
 
   // Voice Customization Settings
   const [showSettingsModal, setShowSettingsModal] = useState(false);
@@ -250,7 +240,6 @@ function StartInterview({
 
   // Keep refs in sync
   useEffect(() => { isMicOnRef.current = isMicOn; }, [isMicOn]);
-  useEffect(() => { isListeningSpeechRef.current = isListeningSpeech; }, [isListeningSpeech]);
   useEffect(() => { aiStatusRef.current = aiStatus; }, [aiStatus]);
   useEffect(() => { inputModeRef.current = inputMode; }, [inputMode]);
   useEffect(() => { typedResponseRef.current = typedResponse; }, [typedResponse]);
@@ -498,51 +487,8 @@ function StartInterview({
     setIsCameraOn(false);
   }, []);
 
-  const startSpeechRecognitionRef = useRef(null);
-
-  const stopSpeechRecognition = useCallback((immediateAbort = true) => {
-    shouldListenRef.current = false;
-    isManualStopRef.current = true;
-    if (restartTimeoutRef.current) {
-      clearTimeout(restartTimeoutRef.current);
-      restartTimeoutRef.current = null;
-    }
-    if (silenceTimerRef.current) {
-      clearTimeout(silenceTimerRef.current);
-      silenceTimerRef.current = null;
-    }
-
-    if (recognitionRef.current) {
-      const recInstance = recognitionRef.current;
-      recognitionRef.current = null;
-      recInstance.onend = null;
-      recInstance.onerror = null;
-      recInstance.onresult = null;
-      recInstance.onstart = null;
-      try {
-        if (immediateAbort) {
-          recInstance.abort();
-        } else {
-          recInstance.stop();
-        }
-      } catch (e) {}
-    }
-
-    // Flush any session finalized transcript into the permanent base transcript
-    if (sessionFinalTranscriptRef.current) {
-      baseTranscriptRef.current = [
-        baseTranscriptRef.current,
-        sessionFinalTranscriptRef.current
-      ].filter(Boolean).join(" ").trim();
-    }
-    sessionFinalTranscriptRef.current = "";
-    sessionInterimTranscriptRef.current = "";
-
-    isRecognizingRef.current = false;
-    isStartingRef.current = false;
-    setIsListeningSpeech(false);
-    isListeningSpeechRef.current = false;
-    console.log("[STT] stopSpeechRecognition (base preserved:", baseTranscriptRef.current, ")");
+  const stopSpeechRecognition = useCallback(() => {
+    answerInputRef.current?.stopVoiceRecording();
   }, []);
 
   const handleToggleCamera = useCallback(() => {
@@ -574,23 +520,20 @@ function StartInterview({
     setIsMicOn(next);
 
     if (!next) {
-      shouldListenRef.current = false;
       stopSpeechRecognition(true);
       toast("Microphone muted", { duration: 1500, id: "mic-toggle-status", icon: "🔇" });
     } else {
       isManualStopRef.current = false;
       toast.success("Microphone active", { duration: 1500, id: "mic-toggle-status", icon: "🎙️" });
       if (
-        !isAiSpeakingRef.current &&
         aiStatusRef.current === "LISTENING" &&
         inputModeRef.current === "speak" &&
         currentSectionRef.current !== "APTITUDE" &&
         currentSectionRef.current !== "CODING"
       ) {
-        shouldListenRef.current = true;
         setTimeout(() => {
-          if (isMicOnRef.current && !isAiSpeakingRef.current) {
-            startSpeechRecognitionRef.current?.();
+          if (isMicOnRef.current) {
+            answerInputRef.current?.toggleVoiceRecording?.();
           }
         }, 50);
       }
@@ -1119,7 +1062,7 @@ function StartInterview({
       return [...filtered, answerRecord];
     });
 
-    if (finalAnswerText && inputMode === "speak") {
+    if (finalAnswerText) {
       const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       setDialogueLogs((prev) => [
         ...prev,
@@ -1273,20 +1216,12 @@ function StartInterview({
 
   // ─── AI INTERVIEWER SPEECH PLAYBACK LAYER ───
   const speakCurrentQuestion = useCallback((text, section, topic) => {
-    // Immediately stop STT recording so the candidate's mic does NOT record the AI's question audio!
-    stopSpeechRecognition(true);
+    // Immediately stop speech recording so candidate mic does not record AI speech
+    stopSpeechRecognition();
 
     if (!text || !isSpeakerOnRef.current || isFullscreenExitedRef.current) {
       setAiStatus("LISTENING");
       aiStatusRef.current = "LISTENING";
-      if (inputModeRef.current === "speak" && isMicOnRef.current && !micPermissionDenied && section !== "APTITUDE" && section !== "CODING") {
-        setTimeout(() => {
-          if (aiStatusRef.current === "LISTENING" && isMicOnRef.current) {
-            isManualStopRef.current = false;
-            startSpeechRecognitionRef.current?.();
-          }
-        }, 200);
-      }
       return;
     }
 
@@ -1329,46 +1264,25 @@ function StartInterview({
     if (chosenVoice) utterance.voice = chosenVoice;
 
     utterance.onstart = () => {
-      isAiSpeakingRef.current = true;
       setAiStatus("SPEAKING");
       aiStatusRef.current = "SPEAKING";
-      stopSpeechRecognition(true);
+      stopSpeechRecognition();
     };
 
     utterance.onend = () => {
-      isAiSpeakingRef.current = false;
       setAiStatus("LISTENING");
       aiStatusRef.current = "LISTENING";
       ttsEndedAtRef.current = Date.now();
-      console.log("[STT] TTS finished. Ready for candidate speech.");
-
-      if (inputModeRef.current === "speak" && isMicOnRef.current && !micPermissionDenied && section !== "APTITUDE" && section !== "CODING") {
-        shouldListenRef.current = true;
-        setTimeout(() => {
-          if (!isAiSpeakingRef.current && isMicOnRef.current && inputModeRef.current === "speak") {
-            startSpeechRecognitionRef.current?.();
-          }
-        }, 50); // Prompt 50ms transition captures candidate's first spoken words immediately
-      }
     };
 
     utterance.onerror = (e) => {
       console.warn("TTS Error:", e);
-      isAiSpeakingRef.current = false;
       setAiStatus("LISTENING");
       aiStatusRef.current = "LISTENING";
-      if (inputModeRef.current === "speak" && isMicOnRef.current && !micPermissionDenied && section !== "APTITUDE" && section !== "CODING") {
-        shouldListenRef.current = true;
-        setTimeout(() => {
-          if (!isAiSpeakingRef.current && isMicOnRef.current && inputModeRef.current === "speak") {
-            startSpeechRecognitionRef.current?.();
-          }
-        }, 50);
-      }
     };
 
     window.speechSynthesis?.speak(utterance);
-  }, [token, micPermissionDenied, stopSpeechRecognition]);
+  }, [token, stopSpeechRecognition]);
 
   // ─── INTRO & QUESTION TRANSITION HANDLER ───
   useEffect(() => {
@@ -1379,7 +1293,6 @@ function StartInterview({
 
     if (currentIndex === 1 && !hasIntroducedRef.current) {
       hasIntroducedRef.current = true;
-      isAiSpeakingRef.current = true;
       stopSpeechRecognition(true);
       let introText = `Good day ${candidateInfo.name || "Candidate"}. I am Alex, your senior AI interviewer. I have reviewed your background and resume details. We will begin with Aptitude evaluations. Let's start with your first question.`;
 
@@ -1420,18 +1333,15 @@ function StartInterview({
       if (chosenVoice) introUtterance.voice = chosenVoice;
 
       introUtterance.onstart = () => {
-        isAiSpeakingRef.current = true;
         stopSpeechRecognition(true);
       };
 
       introUtterance.onend = () => {
-        isAiSpeakingRef.current = false;
         setDialogueLogs((prev) => [...prev, { sender: "AI", text: speechText, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }]);
         speakCurrentQuestion(speechText, section, currentQuestion.topic);
       };
 
       introUtterance.onerror = () => {
-        isAiSpeakingRef.current = false;
         speakCurrentQuestion(speechText, section, currentQuestion.topic);
       };
 
@@ -1450,16 +1360,10 @@ function StartInterview({
       } else {
         setTypedResponse(existing.answer);
         typedResponseRef.current = existing.answer;
-        baseTranscriptRef.current = existing.answer;
-        sessionFinalTranscriptRef.current = "";
-        sessionInterimTranscriptRef.current = "";
       }
     } else {
       setTypedResponse("");
       typedResponseRef.current = "";
-      baseTranscriptRef.current = "";
-      sessionFinalTranscriptRef.current = "";
-      sessionInterimTranscriptRef.current = "";
       codingCodeByLangRef.current = {};
       const starter = getStarterCode(currentQuestion, codingLanguage);
       setCurrentCode(starter);
@@ -1469,206 +1373,6 @@ function StartInterview({
     setCompilerOutput(null);
     setCodingSubmissionResult(null);
   }, [currentIndex, isLoadingInterview, isGeneratingQuestion, isFullscreenExited, speakCurrentQuestion, stopSpeechRecognition]);
-
-  // ─── HARDENED SPEECH RECOGNITION (STT) ───
-  const startSpeechRecognition = useCallback(() => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      setMicPermissionDenied(true);
-      toast.error("Speech Recognition is not supported by your browser. Text mode enabled.");
-      setInputMode("type");
-      inputModeRef.current = "type";
-      shouldListenRef.current = false;
-      return;
-    }
-
-    shouldListenRef.current = true;
-
-    if (
-      !isMicOnRef.current ||
-      isAiSpeakingRef.current ||
-      isCompletedRef.current ||
-      isFullscreenExitedRef.current ||
-      inputModeRef.current !== "speak" ||
-      currentSectionRef.current === "APTITUDE" ||
-      currentSectionRef.current === "CODING"
-    ) {
-      console.log("[STT] startSpeechRecognition skipped (preconditions not met):", {
-        isMicOn: isMicOnRef.current,
-        isAiSpeaking: isAiSpeakingRef.current,
-        inputMode: inputModeRef.current,
-        section: currentSectionRef.current,
-      });
-      return;
-    }
-
-    if (isRecognizingRef.current || isStartingRef.current) {
-      console.log("[STT] already running or starting, ignoring redundant start request");
-      return;
-    }
-
-    if (recognitionRef.current) {
-      const oldRec = recognitionRef.current;
-      recognitionRef.current = null;
-      oldRec.onend = null;
-      oldRec.onerror = null;
-      oldRec.onresult = null;
-      oldRec.onstart = null;
-      try { oldRec.abort(); } catch (e) {}
-    }
-
-    // Initialize base transcript from existing answer if base is empty
-    if (!baseTranscriptRef.current && typedResponseRef.current) {
-      baseTranscriptRef.current = typedResponseRef.current.trim();
-    }
-
-    try {
-      isStartingRef.current = true;
-      const rec = new SpeechRecognition();
-      const sysLang = navigator.language || "en-US";
-      rec.lang = sysLang.startsWith("en") ? sysLang : "en-US";
-      rec.continuous = true;
-      rec.interimResults = true;
-      rec.maxAlternatives = 1;
-
-      rec.onstart = () => {
-        isStartingRef.current = false;
-        isRecognizingRef.current = true;
-        setIsListeningSpeech(true);
-        isListeningSpeechRef.current = true;
-        setAiStatus("LISTENING");
-        aiStatusRef.current = "LISTENING";
-        setMicPermissionDenied(false);
-        console.log("[STT] onstart: live listening active");
-      };
-
-      rec.onresult = (event) => {
-        if (isAiSpeakingRef.current || aiStatusRef.current === "SPEAKING") {
-          console.log("[STT] dropped onresult: AI is currently speaking");
-          return;
-        }
-
-        let sessionFinal = "";
-        let sessionInterim = "";
-
-        // Reconstruct entire session transcript from event.results (eliminates index mismatch & duplicates)
-        for (let i = 0; i < event.results.length; i++) {
-          const result = event.results[i];
-          const text = result[0]?.transcript || "";
-          if (result.isFinal) {
-            sessionFinal += (sessionFinal ? " " : "") + text.trim();
-          } else {
-            sessionInterim += (sessionInterim ? " " : "") + text.trim();
-          }
-        }
-
-        sessionFinalTranscriptRef.current = sessionFinal;
-        sessionInterimTranscriptRef.current = sessionInterim;
-
-        const rawCombined = [
-          baseTranscriptRef.current,
-          sessionFinal,
-          sessionInterim
-        ].filter(Boolean).join(" ").trim();
-
-        if (!rawCombined) return;
-
-        // Apply conservative technical term casing and sentence normalization
-        const formatted = formatSpeechTranscript(rawCombined);
-
-        console.log("[STT] onresult:", {
-          resultIndex: event.resultIndex,
-          resultsCount: event.results.length,
-          base: baseTranscriptRef.current,
-          sessionFinal,
-          sessionInterim,
-          formatted,
-        });
-
-        setTypedResponse(formatted);
-        typedResponseRef.current = formatted;
-
-        const lower = formatted.toLowerCase();
-        if (lower.includes("repeat the question") || lower.includes("say that again") || lower.includes("repeat question")) {
-          speakCurrentQuestion(currentQuestion?.aiSpeechText || currentQuestion?.question, currentQuestion?.section, currentQuestion?.topic);
-        }
-      };
-
-      rec.onerror = (e) => {
-        console.warn("[STT] onerror:", e.error);
-        if (e.error === "not-allowed" || e.error === "permission-denied") {
-          shouldListenRef.current = false;
-          setMicPermissionDenied(true);
-          setInputMode("type");
-          inputModeRef.current = "type";
-          toast.error("Microphone access denied. Switched to Text fallback.");
-        }
-        isStartingRef.current = false;
-      };
-
-      rec.onend = () => {
-        isRecognizingRef.current = false;
-        isStartingRef.current = false;
-        recognitionRef.current = null;
-        setIsListeningSpeech(false);
-        isListeningSpeechRef.current = false;
-
-        // Flush finalized results into base transcript
-        if (sessionFinalTranscriptRef.current) {
-          baseTranscriptRef.current = [
-            baseTranscriptRef.current,
-            sessionFinalTranscriptRef.current
-          ].filter(Boolean).join(" ").trim();
-        }
-        sessionFinalTranscriptRef.current = "";
-        sessionInterimTranscriptRef.current = "";
-
-        console.log("[STT] onend (shouldListen:", shouldListenRef.current, "base:", baseTranscriptRef.current, ")");
-
-        // Auto-restart after natural browser silence pause if candidate is still in voice answering mode
-        if (
-          shouldListenRef.current &&
-          isMicOnRef.current &&
-          !isAiSpeakingRef.current &&
-          aiStatusRef.current === "LISTENING" &&
-          !isCompletedRef.current &&
-          !isFullscreenExitedRef.current &&
-          inputModeRef.current === "speak" &&
-          currentSectionRef.current !== "APTITUDE" &&
-          currentSectionRef.current !== "CODING"
-        ) {
-          if (restartTimeoutRef.current) clearTimeout(restartTimeoutRef.current);
-          restartTimeoutRef.current = setTimeout(() => {
-            if (
-              shouldListenRef.current &&
-              isMicOnRef.current &&
-              !isAiSpeakingRef.current &&
-              !isRecognizingRef.current
-            ) {
-              console.log("[STT] auto-restarting after natural pause");
-              startSpeechRecognitionRef.current?.();
-            }
-          }, 60);
-        }
-      };
-
-      recognitionRef.current = rec;
-      rec.start();
-      console.log("[STT] rec.start() invoked successfully");
-    } catch (err) {
-      console.error("[STT] rec.start() exception:", err);
-      isStartingRef.current = false;
-      isRecognizingRef.current = false;
-      recognitionRef.current = null;
-      if (shouldListenRef.current && !isAiSpeakingRef.current) {
-        setTimeout(() => startSpeechRecognitionRef.current?.(), 250);
-      }
-    }
-  }, [currentQuestion, speakCurrentQuestion]);
-
-  useEffect(() => {
-    startSpeechRecognitionRef.current = startSpeechRecognition;
-  }, [startSpeechRecognition]);
 
   // ─── CODING COMPILER RUN (Judge0 Hosted Runner) ───
   const handleRunCoding = async () => {
@@ -1785,12 +1489,8 @@ function StartInterview({
 
   // ─── NAVIGATION HANDLERS ───
   const handleNextQuestion = async () => {
-    stopSpeechRecognition(true);
+    stopSpeechRecognition();
     window.speechSynthesis?.cancel();
-    isAiSpeakingRef.current = true;
-    baseTranscriptRef.current = "";
-    sessionFinalTranscriptRef.current = "";
-    sessionInterimTranscriptRef.current = "";
     await handleSaveAnswer("answered");
 
     if (currentIndex < questions.length) {
@@ -1802,9 +1502,6 @@ function StartInterview({
         setCurrentIndex((prev) => prev + 1);
         setTypedResponse("");
         typedResponseRef.current = "";
-        baseTranscriptRef.current = "";
-        sessionFinalTranscriptRef.current = "";
-        sessionInterimTranscriptRef.current = "";
       }, 700);
     } else {
       setShowConfirmExit(true);
@@ -1813,23 +1510,15 @@ function StartInterview({
 
   const handlePrevQuestion = () => {
     if (currentIndex > 1) {
-      stopSpeechRecognition(true);
+      stopSpeechRecognition();
       window.speechSynthesis?.cancel();
-      isAiSpeakingRef.current = true;
-      baseTranscriptRef.current = "";
-      sessionFinalTranscriptRef.current = "";
-      sessionInterimTranscriptRef.current = "";
       setCurrentIndex((prev) => prev - 1);
     }
   };
 
   const handleSkipQuestion = async () => {
-    stopSpeechRecognition(true);
+    stopSpeechRecognition();
     window.speechSynthesis?.cancel();
-    isAiSpeakingRef.current = true;
-    baseTranscriptRef.current = "";
-    sessionFinalTranscriptRef.current = "";
-    sessionInterimTranscriptRef.current = "";
     await handleSaveAnswer("skipped");
 
     if (currentIndex < questions.length) {
@@ -1841,9 +1530,6 @@ function StartInterview({
         setCurrentIndex((prev) => prev + 1);
         setTypedResponse("");
         typedResponseRef.current = "";
-        baseTranscriptRef.current = "";
-        sessionFinalTranscriptRef.current = "";
-        sessionInterimTranscriptRef.current = "";
       }, 700);
     } else {
       setShowConfirmExit(true);
@@ -2314,156 +2000,38 @@ function StartInterview({
             ) : (
               /* ── 3. VOICE / TEXT RESPONSE: Resume / Technical / HR ── */
               <div className="flex-1 min-h-0 flex flex-col gap-2 justify-between">
-                {/* Mode Selector & Mic Live Badge */}
-                <div className="flex flex-wrap items-center justify-between gap-2 pb-1.5 border-b border-white/5 shrink-0">
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setInputMode("speak");
-                        inputModeRef.current = "speak";
-                        if (isMicOn && !isListeningSpeech) {
-                          startSpeechRecognition();
-                        }
-                      }}
-                      className={`px-3 py-1 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all ${
-                        inputMode === "speak"
-                          ? "bg-gradient-to-r from-[#FF6B35] to-[#FF8A3D] text-white shadow-md shadow-[#FF6B35]/20"
-                          : "bg-white/5 text-white/50 hover:bg-white/10 hover:text-white"
-                      }`}
-                    >
-                      <Mic className="w-3.5 h-3.5" />
-                      <span>Voice Response</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        stopSpeechRecognition(true);
-                        setInputMode("type");
-                        inputModeRef.current = "type";
-                      }}
-                      className={`px-3 py-1 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all ${
-                        inputMode === "type"
-                          ? "bg-gradient-to-r from-[#FF6B35] to-[#FF8A3D] text-white shadow-md shadow-[#FF6B35]/20"
-                          : "bg-white/5 text-white/50 hover:bg-white/10 hover:text-white"
-                      }`}
-                    >
-                      <Keyboard className="w-3.5 h-3.5" />
-                      <span>Type Text</span>
-                    </button>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    {inputMode === "speak" ? (
-                      !isMicOn ? (
-                        <span className="px-2 py-0.5 rounded-lg text-[10.5px] font-bold bg-red-500/10 text-red-400 border border-red-500/20 flex items-center gap-1">
-                          <MicOff className="w-3 h-3" /> Mic Muted
-                        </span>
-                      ) : isListeningSpeech ? (
-                        <span className="px-2 py-0.5 rounded-lg text-[10.5px] font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 flex items-center gap-1 animate-pulse">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                          Live Recording
-                        </span>
-                      ) : (
-                        <span className="px-2 py-0.5 rounded-lg text-[10.5px] font-bold bg-[#FF6B35]/10 text-[#FF6B35] border border-[#FF6B35]/20 flex items-center gap-1">
-                          <Radio className="w-3 h-3 text-[#FF6B35]" />
-                          Mic Ready
-                        </span>
-                      )
-                    ) : (
-                      <span className="text-[10.5px] font-bold text-white/40">Keyboard Mode</span>
-                    )}
-                    <span className="text-[10px] font-mono text-white/30">{typedResponse.length} chars</span>
-                  </div>
-                </div>
-
-                {/* Textarea / Live speech transcript */}
-                <div className="flex-1 min-h-[75px] max-h-[140px] relative">
-                  <textarea
-                    value={typedResponse}
-                    onChange={(e) => {
-                      setTypedResponse(e.target.value);
-                      typedResponseRef.current = e.target.value;
-                    }}
-                    placeholder={
-                      inputMode === "speak"
-                        ? currentSection === "HR"
-                          ? "Speak your response aloud... Your words will transcribe here in real-time."
-                          : "Speak your response aloud... Real-time transcription active."
-                        : "Type your detailed answer here..."
-                    }
-                    className="w-full h-full bg-slate-950/60 border border-white/10 rounded-xl p-3 text-xs sm:text-sm text-white placeholder:text-white/30 resize-none outline-none focus:border-[#FF6B35]/50 transition leading-relaxed font-sans"
-                    style={{ scrollbarWidth: "thin" }}
-                  />
-                </div>
-
-                {/* Speech Action Bar: Clear & Re-speak, Mic controls, Save answer */}
-                <div className="flex items-center justify-between gap-2 shrink-0 pt-1">
-                  <div className="flex items-center gap-2">
-                    {typedResponse.trim().length > 0 && (
+                <InterviewAnswerInput
+                  ref={answerInputRef}
+                  value={typedResponse}
+                  onChange={(val) => {
+                    setTypedResponse(val);
+                    typedResponseRef.current = val;
+                  }}
+                  onListeningChange={setIsListeningVoice}
+                  questionId={currentQuestion.id || currentQuestion.questionId || `Q-${currentIndex}`}
+                  placeholder={
+                    currentSection === "HR"
+                      ? "Speak or type your response here... It will be evaluated by AI."
+                      : "Write or speak your answer here..."
+                  }
+                  rows={4}
+                  className="flex-1 min-h-0"
+                  textareaClassName="bg-slate-950/60 border-white/10 text-white placeholder:text-white/30 resize-none font-sans"
+                  textareaStyle={{ scrollbarWidth: "thin", minHeight: "80px", maxHeight: "150px" }}
+                  accentColor="#FF6B35"
+                  disabled={isEvaluating || isCompleted}
+                  actions={
+                    typedResponse.trim().length > 0 && (
                       <button
                         type="button"
-                        onClick={() => {
-                          setTypedResponse("");
-                          typedResponseRef.current = "";
-                          baseTranscriptRef.current = "";
-                          sessionFinalTranscriptRef.current = "";
-                          sessionInterimTranscriptRef.current = "";
-                          if (inputMode === "speak" && isMicOn && !isListeningSpeech) {
-                            startSpeechRecognition();
-                          }
-                          toast("Answer cleared. Ready to re-speak.", { duration: 1500 });
-                        }}
-                        className="px-2.5 py-1 rounded-xl text-xs font-bold text-white/50 hover:text-white hover:bg-white/10 border border-white/10 flex items-center gap-1 cursor-pointer transition-all"
+                        onClick={() => handleSaveAnswer("answered")}
+                        className="px-3.5 py-1 rounded-xl text-xs font-bold bg-gradient-to-r from-[#FF6B35] to-[#FF8A3D] hover:brightness-110 text-white flex items-center gap-1.5 cursor-pointer transition-all shadow-md shadow-[#FF6B35]/25"
                       >
-                        <RotateCcw className="w-3 h-3" /> Clear
+                        <CheckCircle2 className="w-3.5 h-3.5" /> Save Answer
                       </button>
-                    )}
-                    {inputMode === "speak" && (
-                      isListeningSpeech ? (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            stopSpeechRecognition(true);
-                            toast("Microphone paused", { id: "mic-toggle-status", duration: 1500, icon: "⏸️" });
-                          }}
-                          className="px-2.5 py-1 rounded-xl text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 hover:bg-amber-500/30 flex items-center gap-1 cursor-pointer transition-all"
-                        >
-                          <MicOff className="w-3 h-3" /> Pause Mic
-                        </button>
-                      ) : isMicOn ? (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            startSpeechRecognition();
-                            toast.success("Microphone listening", { id: "mic-toggle-status", duration: 1500, icon: "🎙️" });
-                          }}
-                          className="px-2.5 py-1 rounded-xl text-xs font-bold bg-emerald-600/20 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-600/30 flex items-center gap-1 cursor-pointer transition-all"
-                        >
-                          <Mic className="w-3 h-3" /> Start Mic
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={handleToggleMic}
-                          className="px-2.5 py-1 rounded-xl text-xs font-bold bg-red-600/20 text-red-300 border border-red-500/30 hover:bg-red-600/30 flex items-center gap-1 cursor-pointer transition-all"
-                        >
-                          <Mic className="w-3 h-3" /> Unmute Mic
-                        </button>
-                      )
-                    )}
-                  </div>
-
-                  {typedResponse.trim().length > 0 && (
-                    <button
-                      type="button"
-                      onClick={() => handleSaveAnswer("answered")}
-                      className="px-3.5 py-1 rounded-xl text-xs font-bold bg-gradient-to-r from-[#FF6B35] to-[#FF8A3D] hover:brightness-110 text-white flex items-center gap-1.5 cursor-pointer transition-all shadow-md shadow-[#FF6B35]/25"
-                    >
-                      <CheckCircle2 className="w-3.5 h-3.5" /> Save Answer
-                    </button>
-                  )}
-                </div>
+                    )
+                  }
+                />
 
                 {/* Collapsible View Conversation */}
                 <div className="shrink-0 pt-1">
@@ -2831,14 +2399,13 @@ function StartInterview({
           isMicOn,
           isCameraOn,
           isSpeakerOn,
-          isListening: isListeningSpeech,
+          isListening: isListeningVoice,
           onToggleMic: handleToggleMic,
           onToggleCamera: handleToggleCamera,
           onToggleSpeaker: handleToggleSpeaker,
           onPushToTalk: () => {
             if (!isMicOn) return toast.error("Unmute mic first");
-            setInputMode("speak");
-            startSpeechRecognition();
+            answerInputRef.current?.toggleVoiceRecording?.();
           },
           onEndInterview: () => setShowConfirmExit(true),
           onSettings: () => setShowSettingsModal(true),
