@@ -21,6 +21,17 @@ const tabSwitchSchema = new mongoose.Schema({
   timestamp: { type: Date, default: Date.now },
 }, { _id: false });
 
+const integrityEventSchema = new mongoose.Schema({
+  eventType: {
+    type: String,
+    enum: ["tab_switch", "window_blur", "fullscreen_exit", "paste_burst", "heartbeat_gap"],
+    required: true,
+  },
+  timestamp: { type: Date, default: Date.now },
+  durationSeconds: { type: Number, default: 0 },
+  details: { type: mongoose.Schema.Types.Mixed, default: {} },
+}, { _id: false });
+
 const testAttemptSchema = new mongoose.Schema({
   testId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -45,6 +56,11 @@ const testAttemptSchema = new mongoose.Schema({
   currentQuestionIndex: { type: Number, default: 0 },
   tabSwitches: [tabSwitchSchema],
   tabSwitchCount: { type: Number, default: 0 },
+  integrityEvents: [integrityEventSchema],
+  totalAwayTimeSeconds: { type: Number, default: 0 },
+  lastHeartbeatAt: { type: Date },
+  browserCloseDetected: { type: Boolean, default: false },
+  networkFailureDetected: { type: Boolean, default: false },
   startTime: { type: Date },
   endTime: { type: Date },
   totalScore: { type: Number, default: 0 },

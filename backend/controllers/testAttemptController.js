@@ -5,6 +5,21 @@ import User from "../models/User.js";
 import { processResult } from "../services/resultProcessor.js";
 import { computePassingMarks, calculatePassFail } from "../utils/gradeCalculator.js";
 
+function sanitizeTestForStudent(testDoc) {
+  if (!testDoc) return null;
+  const t = typeof testDoc.toObject === "function" ? testDoc.toObject() : JSON.parse(JSON.stringify(testDoc));
+  if (Array.isArray(t.questions)) {
+    t.questions = t.questions.map((q) => {
+      const { correctAnswer, explanation, ...safeQ } = q;
+      if (Array.isArray(safeQ.testCases)) {
+        safeQ.testCases = safeQ.testCases.filter((tc) => !tc.isHidden);
+      }
+      return safeQ;
+    });
+  }
+  return t;
+}
+
 export const getAssignedTests = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -62,7 +77,6 @@ export const getAssignedTests = async (req, res) => {
           passingMarks: test.passingMarks,
           attemptLimit: test.attemptLimit,
           subjects: test.subjects,
-          questions: test.questions,
           totalQuestions: test.questions?.length || 0,
           totalMarks: test.questions?.reduce((s, q) => s + (q.marks || 0), 0) || 0,
           status: test.status,
@@ -126,27 +140,15 @@ export const startTest = async (req, res) => {
       if (attempt.status === "completed" || attempt.status === "auto_submitted") {
         return res.status(400).json({ message: "Test already completed" });
       }
-      attempt.currentQuestionIndex = 0;
-      attempt.status = "started";
-      attempt.startTime = new Date();
-      attempt.endTime = computeEndTime();
-      attempt.answers = test.questions.map((q, idx) => ({
-        questionIndex: idx,
-        questionId: q._id?.toString() || "",
-        type: q.type === "Coding" || q.problemTitle || (q.testCases && q.testCases.length > 0)
-          ? "Coding"
-          : q.options?.length
-            ? "MCQ"
-            : "Descriptive",
-        answer: "",
-        code: "",
-        language: "",
-        status: "not_visited",
-        marks: q.marks || 1,
-        scoredMarks: 0,
-      }));
-      await attempt.save();
-      return res.json({ attempt, test });
+      // Resume existing in-progress attempt without resetting timer
+      if (attempt.endTime && now.getTime() > new Date(attempt.endTime).getTime()) {
+        attempt.status = "auto_submitted";
+        attempt.autoSubmitReason = "Time expired";
+        attempt.submittedAt = now;
+        await attempt.save();
+        return res.status(400).json({ message: "Test time has expired", attempt });
+      }
+      return res.json({ attempt, test: sanitizeTestForStudent(test) });
     }
 
     attempt = await TestAttempt.create({
@@ -154,8 +156,9 @@ export const startTest = async (req, res) => {
       assignmentId: assignment._id,
       userId,
       status: "started",
-      startTime: new Date(),
+      startTime: now,
       endTime: computeEndTime(),
+      lastHeartbeatAt: now,
       answers: test.questions.map((q, idx) => ({
         questionIndex: idx,
         questionId: q._id?.toString() || "",
@@ -177,7 +180,7 @@ export const startTest = async (req, res) => {
       $inc: { startedCount: 1 },
     });
 
-    res.status(201).json({ attempt, test });
+    res.status(201).json({ attempt, test: sanitizeTestForStudent(test) });
   } catch (error) {
     console.error("Start Test Error:", error.message);
     res.status(500).json({ message: "Failed to start test" });
@@ -194,6 +197,16 @@ export const saveAnswer = async (req, res) => {
     if (!attempt) return res.status(404).json({ message: "Attempt not found" });
     if (attempt.status === "completed" || attempt.status === "auto_submitted") {
       return res.status(400).json({ message: "Test already submitted" });
+    }
+
+    const now = new Date();
+    // Enforce server deadline with a 60-second grace period for latency
+    if (attempt.endTime && now.getTime() > new Date(attempt.endTime).getTime() + 60000) {
+      attempt.status = "auto_submitted";
+      attempt.autoSubmitReason = "Time expired";
+      attempt.submittedAt = now;
+      await attempt.save();
+      return res.status(403).json({ message: "Test time has expired. Your test has been auto-submitted." });
     }
 
     const ans = attempt.answers.find(a => a.questionIndex === questionIndex);
@@ -220,6 +233,9 @@ export const getAttemptState = async (req, res) => {
       .populate("testId")
       .lean();
     if (!attempt) return res.status(404).json({ message: "Attempt not found" });
+    if (attempt.testId) {
+      attempt.testId = sanitizeTestForStudent(attempt.testId);
+    }
     res.json(attempt);
   } catch (error) {
     console.error("Get Attempt Error:", error.message);
@@ -227,34 +243,132 @@ export const getAttemptState = async (req, res) => {
   }
 };
 
-export const recordTabSwitch = async (req, res) => {
+export const recordIntegrityEvent = async (req, res) => {
   try {
     const { attemptId } = req.params;
+    const { eventType = "tab_switch", durationSeconds = 0, details = {} } = req.body;
     const userId = req.user.id;
+
     const attempt = await TestAttempt.findOne({ _id: attemptId, userId });
     if (!attempt) return res.status(404).json({ message: "Attempt not found" });
 
-    attempt.tabSwitchCount = (attempt.tabSwitchCount || 0) + 1;
-    attempt.tabSwitches.push({ count: attempt.tabSwitchCount, timestamp: new Date() });
+    if (attempt.status === "completed" || attempt.status === "auto_submitted") {
+      return res.json({ message: "Test already ended", autoSubmitted: true });
+    }
+
+    const duration = Math.max(0, Number(durationSeconds) || 0);
+    const validEvent = ["tab_switch", "window_blur", "fullscreen_exit", "paste_burst", "heartbeat_gap"].includes(eventType)
+      ? eventType
+      : "tab_switch";
+
+    attempt.integrityEvents = attempt.integrityEvents || [];
+    attempt.integrityEvents.push({
+      eventType: validEvent,
+      timestamp: new Date(),
+      durationSeconds: duration,
+      details,
+    });
+
+    if (duration > 0) {
+      attempt.totalAwayTimeSeconds = (attempt.totalAwayTimeSeconds || 0) + duration;
+    }
 
     let autoSubmit = false;
-    if (attempt.tabSwitchCount >= 3) {
-      attempt.status = "auto_submitted";
-      attempt.autoSubmitReason = "Exceeded tab switch limit (3 switches)";
-      attempt.submittedAt = new Date();
-      attempt.endTime = new Date();
-      autoSubmit = true;
 
-      await TestAssignment.findByIdAndUpdate(attempt.assignmentId, {
-        $inc: { completedCount: 1, autoSubmittedCount: 1 },
-      });
+    // Track tab switches / window blurs / fullscreen exits towards 3-strike limit
+    if (["tab_switch", "fullscreen_exit", "window_blur"].includes(validEvent)) {
+      attempt.tabSwitchCount = (attempt.tabSwitchCount || 0) + 1;
+      attempt.tabSwitches = attempt.tabSwitches || [];
+      attempt.tabSwitches.push({ count: attempt.tabSwitchCount, timestamp: new Date() });
+
+      if (attempt.tabSwitchCount >= 3) {
+        attempt.status = "auto_submitted";
+        attempt.autoSubmitReason = `Exceeded window switch / minimization limit (3 violations - last: ${validEvent})`;
+        attempt.submittedAt = new Date();
+        attempt.endTime = new Date();
+        autoSubmit = true;
+
+        if (attempt.assignmentId) {
+          await TestAssignment.findByIdAndUpdate(attempt.assignmentId, {
+            $inc: { completedCount: 1, autoSubmittedCount: 1 },
+          });
+        }
+      }
     }
 
     await attempt.save();
-    res.json({ tabSwitchCount: attempt.tabSwitchCount, autoSubmitted: autoSubmit });
+    res.json({
+      success: true,
+      tabSwitchCount: attempt.tabSwitchCount,
+      totalAwayTimeSeconds: attempt.totalAwayTimeSeconds,
+      autoSubmitted: autoSubmit,
+      remainingAllowed: Math.max(0, 3 - attempt.tabSwitchCount),
+    });
   } catch (error) {
-    console.error("Tab Switch Error:", error.message);
-    res.status(500).json({ message: "Failed to record tab switch" });
+    console.error("Integrity Event Error:", error.message);
+    res.status(500).json({ message: "Failed to record integrity event" });
+  }
+};
+
+export const recordTabSwitch = async (req, res) => {
+  return recordIntegrityEvent(req, res);
+};
+
+export const recordHeartbeat = async (req, res) => {
+  try {
+    const { attemptId } = req.params;
+    const userId = req.user.id;
+
+    const attempt = await TestAttempt.findOne({ _id: attemptId, userId });
+    if (!attempt) return res.status(404).json({ message: "Attempt not found" });
+
+    const now = new Date();
+    let autoSubmit = attempt.status === "auto_submitted";
+
+    // Detect if client was absent / frozen (> 45s gap between heartbeats)
+    if (attempt.lastHeartbeatAt) {
+      const gapSec = Math.round((now.getTime() - new Date(attempt.lastHeartbeatAt).getTime()) / 1000);
+      if (gapSec > 45 && attempt.status === "started") {
+        attempt.integrityEvents = attempt.integrityEvents || [];
+        attempt.integrityEvents.push({
+          eventType: "heartbeat_gap",
+          timestamp: now,
+          durationSeconds: gapSec,
+          details: { gapSeconds: gapSec },
+        });
+        attempt.totalAwayTimeSeconds = (attempt.totalAwayTimeSeconds || 0) + gapSec;
+      }
+    }
+
+    attempt.lastHeartbeatAt = now;
+
+    // Check if test deadline expired on server
+    if (attempt.status === "started" && attempt.endTime && now.getTime() > new Date(attempt.endTime).getTime() + 60000) {
+      attempt.status = "auto_submitted";
+      attempt.autoSubmitReason = "Time expired";
+      attempt.submittedAt = now;
+      autoSubmit = true;
+
+      if (attempt.assignmentId) {
+        await TestAssignment.findByIdAndUpdate(attempt.assignmentId, {
+          $inc: { completedCount: 1, autoSubmittedCount: 1 },
+        });
+      }
+    }
+
+    await attempt.save();
+
+    res.json({
+      success: true,
+      serverTime: now.toISOString(),
+      status: attempt.status,
+      autoSubmitted: autoSubmit,
+      tabSwitchCount: attempt.tabSwitchCount || 0,
+      totalAwayTimeSeconds: attempt.totalAwayTimeSeconds || 0,
+    });
+  } catch (error) {
+    console.error("Heartbeat Error:", error.message);
+    res.status(500).json({ message: "Failed to record heartbeat" });
   }
 };
 
@@ -264,22 +378,39 @@ export const submitTest = async (req, res) => {
     const userId = req.user.id;
     const { forceSubmit } = req.body;
 
-    const attempt = await TestAttempt.findOne({ _id: attemptId, userId }).populate("testId");
-    if (!attempt) return res.status(404).json({ message: "Attempt not found" });
-    if (attempt.status === "completed" || attempt.status === "auto_submitted") {
-      return res.status(400).json({ message: "Test already submitted" });
+    // Atomic findOneAndUpdate from "started" to "submitting" to prevent race condition duplicate submissions
+    const attempt = await TestAttempt.findOneAndUpdate(
+      { _id: attemptId, userId, status: "started" },
+      { $set: { status: "submitting" } },
+      { new: true }
+    ).populate("testId");
+
+    if (!attempt) {
+      const existing = await TestAttempt.findOne({ _id: attemptId, userId });
+      if (existing && (existing.status === "completed" || existing.status === "auto_submitted")) {
+        return res.status(400).json({ message: "Test already submitted" });
+      }
+      return res.status(404).json({ message: "Attempt not found or invalid status" });
     }
 
     const test = attempt.testId;
-    let totalScore = 0;
+    const now = new Date();
+    const isPastDeadline = attempt.endTime && now.getTime() > new Date(attempt.endTime).getTime() + 60000;
+    const finalStatus = (forceSubmit === "auto" || isPastDeadline) ? "auto_submitted" : "completed";
+    let autoReason = "";
 
+    if (forceSubmit === "auto") {
+      autoReason = attempt.autoSubmitReason || "Time expired";
+    } else if (isPastDeadline) {
+      autoReason = "Submitted after deadline";
+    }
+
+    let totalScore = 0;
     attempt.answers.forEach(ans => {
       const question = test.questions[ans.questionIndex];
       if (!question) return;
       if (ans.status === "answered") {
         if (question.type === "Coding") {
-          // Coding questions are scored during processResult via codeExecutionService
-          // Set status to "answered" so processResult knows to evaluate it
           ans.scoredMarks = 0;
         } else if (question.options?.length > 0) {
           const isCorrect = ans.answer?.toLowerCase().trim() === question.correctAnswer?.toLowerCase().trim();
@@ -293,18 +424,15 @@ export const submitTest = async (req, res) => {
 
     totalScore = Math.max(0, totalScore);
     attempt.totalScore = totalScore;
-    attempt.status = forceSubmit === "auto" ? "auto_submitted" : "completed";
-    attempt.submittedAt = new Date();
-    attempt.endTime = new Date();
-
-    if (forceSubmit === "auto") {
-      attempt.autoSubmitReason = "Time expired";
-    }
+    attempt.status = finalStatus;
+    if (autoReason) attempt.autoSubmitReason = autoReason;
+    attempt.submittedAt = now;
+    attempt.endTime = now;
 
     await attempt.save();
 
     await TestAssignment.findByIdAndUpdate(attempt.assignmentId, {
-      $inc: { completedCount: 1 },
+      $inc: { completedCount: 1, ...(finalStatus === "auto_submitted" ? { autoSubmittedCount: 1 } : {}) },
       averageScore: totalScore,
     });
 
@@ -313,7 +441,6 @@ export const submitTest = async (req, res) => {
       const processed = await processResult(attempt._id);
       result = processed.result;
 
-      // Recalculate totalScore from processed results (includes coding question evaluation)
       if (result && result.questions) {
         let recalculatedScore = 0;
         for (const qr of result.questions) {

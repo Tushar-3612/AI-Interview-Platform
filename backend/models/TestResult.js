@@ -65,6 +65,13 @@ const rankingSchema = new mongoose.Schema({
   departmentParticipants: { type: Number, default: 0 },
 }, { _id: false });
 
+const integrityAuditSchema = new mongoose.Schema({
+  eventType: { type: String, default: "" },
+  timestamp: { type: Date, default: Date.now },
+  durationSeconds: { type: Number, default: 0 },
+  details: { type: mongoose.Schema.Types.Mixed, default: {} },
+}, { _id: false });
+
 const auditLogSchema = new mongoose.Schema({
   startedAt: { type: Date },
   submittedAt: { type: Date },
@@ -72,8 +79,10 @@ const auditLogSchema = new mongoose.Schema({
   autoSubmitted: { type: Boolean, default: false },
   autoSubmitReason: { type: String, default: "" },
   tabSwitchCount: { type: Number, default: 0 },
+  totalAwayTimeSeconds: { type: Number, default: 0 },
   browserCloseDetected: { type: Boolean, default: false },
   networkFailureDetected: { type: Boolean, default: false },
+  integrityEvents: [integrityAuditSchema],
 }, { _id: false });
 
 const testResultSchema = new mongoose.Schema({

@@ -6,7 +6,8 @@ import jwt from "jsonwebtoken";
  * @param {string} role - User role: "student" | "admin"
  */
 const generateToken = (id, role) => {
-  return jwt.sign({ id, role }, process.env.JWT_SECRET, {
+  const jwtSecret = process.env.JWT_SECRET || "fallback_secret_key";
+  return jwt.sign({ id, role }, jwtSecret, {
     expiresIn: "7d",
   });
 };

@@ -1,8 +1,7 @@
 import React from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import {
-  Mic, MicOff, Camera, CameraOff, MonitorUp,
-  Settings, PhoneOff, Wifi, Bot, Volume2, VolumeX, Play
+  Mic, MicOff, Camera, CameraOff,
+  Settings, PhoneOff, Wifi, Volume2, VolumeX
 } from "lucide-react";
 import AudioVisualizer from "../interview/AudioVisualizer";
 
@@ -38,7 +37,7 @@ function NetworkStrength({ level = 4 }) {
 function StatusPill({ label, on }) {
   return (
     <div
-      className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-bold uppercase tracking-wide"
+      className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border text-[10px] font-bold uppercase tracking-wide"
       style={{
         borderColor: on ? "rgba(16,185,129,0.35)" : "rgba(239,68,68,0.35)",
         background: on ? "rgba(16,185,129,0.12)" : "rgba(239,68,68,0.12)",
@@ -69,39 +68,30 @@ function ControlButton({ icon: Icon, label, onClick, active = true, danger = fal
     : active ? "#e5e7eb" : "#f87171";
 
   return (
-    <div className="flex flex-col items-center gap-1.5">
+    <div className="flex flex-col items-center gap-1">
       <button
         id={id}
         onClick={onClick}
         disabled={disabled}
         title={label}
-        className="relative w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-200 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed hover:scale-105 active:scale-95"
+        className="relative w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center transition-all duration-200 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed hover:scale-105 active:scale-95"
         style={{ background: bgColor, border: "1px solid rgba(255,255,255,0.07)" }}
       >
         {pulse && (
           <span
-            className="absolute inset-0 rounded-2xl ptl-ring"
+            className="absolute inset-0 rounded-xl ptl-ring"
             style={{ background: "rgba(239,68,68,0.3)" }}
           />
         )}
-        <Icon className="w-5 h-5" style={{ color: iconColor }} />
+        <Icon className="w-4 h-4 sm:w-4.5 sm:h-4.5" style={{ color: iconColor }} />
       </button>
-      <span className="text-[10px] font-medium text-white/35">{label}</span>
+      <span className="text-[9.5px] font-medium text-white/40">{label}</span>
     </div>
   );
 }
 
 /**
- * InterviewLayout — Full-screen dark video call room layout.
- *
- * Props:
- *   headerProps  { timerSeconds, totalSeconds, interviewType, networkLevel }
- *   controlProps { isMicOn, isCameraOn, isListening, onToggleMic, onToggleCamera, onEndInterview, onSettings }
- *   isPaused     {boolean}
- *   onResume     {function}
- *   leftPanel    {ReactNode}  — AI avatar stage (70%)
- *   rightPanel   {ReactNode}  — user cam + transcript + metrics (30%)
- *   centerPanel  {ReactNode}  — preserved for backwards compat / code editor
+ * InterviewLayout — Full-screen dark video call room layout (100vh viewport constrained).
  */
 function InterviewLayout({
   headerProps = {},
@@ -127,7 +117,6 @@ function InterviewLayout({
     isListening,
     onToggleMic,
     onToggleCamera,
-    onShareScreen,
     onSettings,
     onEndInterview,
     onPushToTalk,
@@ -142,15 +131,14 @@ function InterviewLayout({
 
   return (
     <div
-      className="w-screen h-screen overflow-hidden flex flex-col"
+      className="w-screen h-screen overflow-hidden flex flex-col select-none"
       style={{ background: "#050609", fontFamily: "Poppins, system-ui, sans-serif" }}
     >
-
       {/* ═══════════════════════════════════════════
           TOP HEADER BAR
       ═══════════════════════════════════════════ */}
       <header
-        className="shrink-0 h-[60px] flex items-center px-6 gap-4"
+        className="shrink-0 h-[56px] flex items-center px-4 sm:px-6 gap-4"
         style={{
           background: "rgba(8, 10, 18, 0.95)",
           borderBottom: "1px solid rgba(255,255,255,0.06)",
@@ -159,58 +147,61 @@ function InterviewLayout({
       >
         {/* Left — Logo + Interview type */}
         <div className="flex items-center gap-3 min-w-0">
-          <div
-            className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
-            style={{ background: "linear-gradient(135deg, #2563eb, #06b6d4)" }}
-          >
-            <Bot className="w-4 h-4 text-white" />
+          <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 bg-white/[0.04] border border-white/10 p-1">
+            <img
+              src="/images/metadata.png"
+              alt="PrepHire Logo"
+              className="w-full h-full object-contain"
+              draggable="false"
+            />
           </div>
           <div className="flex flex-col min-w-0">
             <div className="flex items-center gap-2">
               <span className="text-[11px] font-extrabold text-white tracking-wider uppercase">
                 REAL AI INTERVIEW
               </span>
-              <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[9px] font-extrabold uppercase tracking-widest flex items-center gap-1">
+              <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[8.5px] font-extrabold uppercase tracking-widest flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 LIVE SESSION
               </span>
             </div>
-            <span className="text-[11px] font-medium text-white/40 truncate">
-              {interviewType}
+            <span className="text-[10px] font-medium text-white/40 truncate">
+              {interviewType || "Real AI Interview Room (All 5 Rounds)"}
             </span>
           </div>
         </div>
 
-        {/* Center — prominent countdown timer */}
+        {/* Center — countdown timer */}
         <div className="flex-1 flex flex-col items-center justify-center">
           <div
-            className="font-mono text-2xl sm:text-3xl font-black tabular-nums tracking-wider"
+            className="font-mono text-xl sm:text-2xl font-black tabular-nums tracking-wider"
             style={{
               color: isTimerLow ? "#ef4444" : "#f8fafc",
-              textShadow: isTimerLow ? "0 0 12px rgba(239,68,68,0.5)" : "0 0 12px rgba(37,99,235,0.2)",
+              textShadow: isTimerLow ? "0 0 12px rgba(239,68,68,0.5)" : "0 0 12px rgba(255,107,53,0.25)",
             }}
           >
             {h}:{m}:{s}
           </div>
-          <div className="w-36 h-1 rounded-full bg-white/10 overflow-hidden mt-1">
+          <div className="w-32 h-1 rounded-full bg-white/10 overflow-hidden mt-0.5">
             <div
               className="h-full rounded-full transition-all duration-1000"
               style={{
                 width: `${timerPct}%`,
                 background: isTimerLow
                   ? "linear-gradient(90deg, #ef4444, #f87171)"
-                  : "linear-gradient(90deg, #2563eb, #06b6d4)",
+                  : "linear-gradient(90deg, #FF6B35, #FF8A3D)",
+                boxShadow: isTimerLow ? "0 0 8px rgba(239,68,68,0.5)" : "0 0 8px rgba(255,107,53,0.5)",
               }}
             />
           </div>
         </div>
 
         {/* Right — Network + Paused banner + End button */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           {isPaused && (
             <button
               onClick={onResume}
-              className="px-3 py-1.5 rounded-lg text-[11px] font-bold text-amber-300 cursor-pointer"
+              className="px-2.5 py-1 rounded-lg text-[10px] font-bold text-amber-300 cursor-pointer"
               style={{ background: "rgba(245,158,11,0.15)", border: "1px solid rgba(245,158,11,0.3)" }}
             >
               ▶ Resume
@@ -218,13 +209,13 @@ function InterviewLayout({
           )}
 
           {/* Network Connection level */}
-          <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-white/5 border border-white/10">
-            <Wifi className="w-3.5 h-3.5 text-white/40" />
+          <div className="hidden md:flex items-center gap-1.5 px-2 py-1 rounded-xl bg-white/5 border border-white/10">
+            <Wifi className="w-3 h-3 text-white/40" />
             <NetworkStrength level={networkLevel} />
           </div>
 
           {/* Live signal chips */}
-          <div className="hidden lg:flex items-center gap-2">
+          <div className="hidden lg:flex items-center gap-1.5">
             <StatusPill label="MIC" on={isMicOn} />
             <StatusPill label="CAMERA" on={isCameraOn} />
             <StatusPill label={isPaused ? "PAUSED" : "LIVE"} on={!isPaused} />
@@ -234,7 +225,7 @@ function InterviewLayout({
           <button
             id="btn-end-interview"
             onClick={onEndInterview}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white cursor-pointer transition-all hover:scale-105 active:scale-95"
+            className="flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs font-bold text-white cursor-pointer transition-all hover:scale-105 active:scale-95"
             style={{
               background: "linear-gradient(135deg, #dc2626, #b91c1c)",
               boxShadow: "0 0 16px rgba(220,38,38,0.35)",
@@ -248,47 +239,39 @@ function InterviewLayout({
       </header>
 
       {/* ═══════════════════════════════════════════
-          MAIN STAGE
+          MAIN 3-COLUMN WORKSPACE (STRICT VIEWPORT)
       ═══════════════════════════════════════════ */}
-      <div className="flex-1 flex min-h-0 p-3 gap-3">
-
-        {/* FAR LEFT: Persistent Section Navigation Panel (hidden on small mobile, visible on desktop) */}
+      <main className="flex-1 flex min-h-0 p-2.5 sm:p-3 gap-2.5 sm:gap-3 overflow-hidden">
+        {/* FAR LEFT: Persistent Section Navigation Panel */}
         {sectionPanel && (
-          <div className="hidden lg:flex w-[240px] xl:w-[260px] shrink-0 flex-col min-h-0">
+          <aside className="hidden lg:flex shrink-0 flex-col min-h-0 h-full transition-all duration-300 ease-in-out">
             {sectionPanel}
-          </div>
+          </aside>
         )}
 
-        {/* LEFT: AI Avatar + (optional) center content stacked */}
-        <div className="flex flex-col flex-1 min-w-0 gap-3">
-          {/* AI Stage — full height when no centerPanel, or 65% */}
-          <div className={`${centerPanel ? "h-[62%]" : "flex-1"} min-h-0`}>
-            {leftPanel}
-          </div>
-
-          {/* Center panel (code editor / question card) if provided */}
+        {/* CENTER: Main Interview Workspace */}
+        <section className="flex-1 min-w-0 h-full flex flex-col min-h-0 overflow-hidden">
+          {leftPanel}
           {centerPanel && (
-            <div className="flex-1 min-h-0">
+            <div className="flex-1 min-h-0 mt-2">
               {centerPanel}
             </div>
           )}
-        </div>
+        </section>
 
-        {/* RIGHT: 30% sidebar */}
-        <div
-          className="w-[30%] shrink-0 flex flex-col min-h-0 min-w-[280px] max-w-[380px] overflow-y-hidden"
-        >
-          {rightPanel}
-        </div>
-
-
-      </div>
+        {/* RIGHT: Live Interview Context (Camera + Session + Signals) */}
+        {rightPanel && (
+          <aside className="w-[260px] xl:w-[280px] shrink-0 flex flex-col min-h-0 h-full overflow-hidden">
+            {rightPanel}
+          </aside>
+        )}
+      </main>
 
       {/* ═══════════════════════════════════════════
-          BOTTOM ACTION BAR
+          BOTTOM GLOBAL CONTROL DOCK (FIXED ANCHORED)
       ═══════════════════════════════════════════ */}
       <footer
-        className="shrink-0 h-[84px] flex items-center justify-center gap-6 px-6"
+        className="shrink-0 h-[72px] flex items-center justify-center gap-4 sm:gap-6 px-4"
         style={{
           background: "rgba(8, 10, 18, 0.95)",
           borderTop: "1px solid rgba(255,255,255,0.06)",
@@ -311,7 +294,6 @@ function InterviewLayout({
           onClick={onToggleCamera}
         />
 
-        {/* Mute / Unmute Chatbot voice */}
         <ControlButton
           id="btn-toggle-speaker"
           icon={isSpeakerOn ? Volume2 : VolumeX}
@@ -321,45 +303,35 @@ function InterviewLayout({
         />
 
         {/* Push-to-Talk — center, larger */}
-        <div className="flex flex-col items-center gap-1.5 relative">
+        <div className="flex flex-col items-center gap-1 relative">
           <button
             id="btn-push-to-talk"
             onClick={onPushToTalk}
-            className="relative w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95"
+            className="relative w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95"
             style={{
               background: isListening
                 ? "linear-gradient(135deg, #ef4444, #dc2626)"
-                : "linear-gradient(135deg, #2563eb, #14b8a6)",
+                : "linear-gradient(135deg, #FF6B35, #FF8A3D)",
               boxShadow: isListening
-                ? "0 0 24px rgba(239,68,68,0.5)"
-                : "0 0 24px rgba(37,99,235,0.4)",
+                ? "0 0 20px rgba(239,68,68,0.5)"
+                : "0 0 20px rgba(255,107,53,0.35)",
               border: "1px solid rgba(255,255,255,0.12)",
             }}
           >
             {isListening && (
               <span
-                className="absolute inset-0 rounded-2xl ptl-ring"
+                className="absolute inset-0 rounded-xl ptl-ring"
                 style={{ background: "rgba(239,68,68,0.35)" }}
               />
             )}
-            <Mic className="w-6 h-6 text-white" />
+            <Mic className="w-5 h-5 text-white" />
           </button>
           <div className="flex flex-col items-center gap-0.5">
-            <span className="text-[10px] font-bold text-white/50">
+            <span className="text-[9px] font-bold text-white/50">
               {isListening ? "Speaking…" : "Push to Talk"}
             </span>
-            {isListening && (
-              <AudioVisualizer
-                isActive={true}
-                barCount={8}
-                color="rgba(239,68,68,0.4)"
-                activeColor="#f87171"
-                height="12px"
-              />
-            )}
           </div>
         </div>
-
 
         <ControlButton
           id="btn-settings"
@@ -368,9 +340,6 @@ function InterviewLayout({
           active={true}
           onClick={onSettings}
         />
-
-        {/* Spacer so the layout is symmetric */}
-        <div className="w-[52px]" />
       </footer>
     </div>
   );

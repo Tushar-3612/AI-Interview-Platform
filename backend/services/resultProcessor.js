@@ -339,8 +339,15 @@ export async function processResult(attemptId) {
     autoSubmitted: attempt.status === "auto_submitted",
     autoSubmitReason: attempt.autoSubmitReason || "",
     tabSwitchCount: attempt.tabSwitchCount || 0,
-    browserCloseDetected: false,
-    networkFailureDetected: false,
+    totalAwayTimeSeconds: attempt.totalAwayTimeSeconds || 0,
+    browserCloseDetected: !!attempt.browserCloseDetected,
+    networkFailureDetected: !!attempt.networkFailureDetected,
+    integrityEvents: (attempt.integrityEvents || []).map((e) => ({
+      eventType: e.eventType,
+      timestamp: e.timestamp,
+      durationSeconds: e.durationSeconds || 0,
+      details: e.details || {},
+    })),
   };
 
   const testResult = new TestResult({

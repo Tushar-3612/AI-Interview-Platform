@@ -7,6 +7,7 @@ import InputField from "../components/ui/InputField";
 import Button from "../components/ui/Button";
 import api from "../utils/api";
 import { validateEmail } from "../utils/validators";
+import { clearAuthData } from "../hooks/useStudentProfile";
 import { Link, useNavigate } from "react-router-dom";
 
 /**
@@ -72,6 +73,7 @@ function Login() {
         password: formData.password,
       });
 
+      clearAuthData();
       const storage = formData.rememberMe ? localStorage : sessionStorage;
       storage.setItem("token", data.token);
       storage.setItem("user", JSON.stringify(data.user));

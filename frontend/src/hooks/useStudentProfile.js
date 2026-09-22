@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import api from "../utils/api";
+import { normalizeProfileData } from "../utils/profileNormalizer";
 
 const PROFILE_KEY = "student-profile";
 
@@ -14,6 +15,20 @@ const defaultProfile = {
   preferredLocation: "",
   skills: [],
   categorizedSkills: {},
+  projects: [],
+  experience: [],
+  education: [],
+  certifications: [],
+  achievements: [],
+  publications: [],
+  research: [],
+  leadership: [],
+  volunteering: [],
+  languages: [],
+  interests: [],
+  codingProfiles: [],
+  links: [],
+  summary: null,
   resumeFileName: "",
   resumeUploadedAt: null,
   interviewStatus: "not_started",
@@ -26,38 +41,83 @@ const defaultProfile = {
  * Merges auth user data with database profile fields.
  */
 export function useStudentProfile() {
+  const [isLoading, setIsLoading] = useState(true);
   const [profile, setProfile] = useState(() => {
     const authUser = getAuthUser();
     const stored = localStorage.getItem(PROFILE_KEY);
     const parsed = stored ? JSON.parse(stored) : {};
-    return { ...defaultProfile, ...authUser, ...parsed };
+    return normalizeProfileData({ ...defaultProfile, ...authUser, ...parsed });
   });
 
-  // Sync with MongoDB on load
+  const latestRequestIdRef = useRef(0);
+
+  // Sync with MongoDB on load (authoritative backend state)
   useEffect(() => {
+    let isMounted = true;
     const syncProfile = async () => {
       const token = getAuthToken();
-      if (!token) return;
+      if (!token) {
+        if (isMounted) setIsLoading(false);
+        return;
+      }
+      const currentRequestId = ++latestRequestIdRef.current;
       try {
         const { data } = await api.get("/api/student/profile", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        if (data) {
-          setProfile((prev) => ({ ...prev, ...data }));
+        if (data && isMounted && currentRequestId === latestRequestIdRef.current) {
+          const normalized = normalizeProfileData(data);
+          setProfile((prev) => ({
+            ...prev,
+            ...normalized,
+          }));
         }
       } catch (err) {
-        console.warn("MongoDB profile sync failed, using localStorage fallback.", err.message);
+        console.warn("MongoDB profile sync failed, preserving local state.", err.message);
+      } finally {
+        if (isMounted) setIsLoading(false);
       }
     };
     syncProfile();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const refetchProfile = useCallback(async () => {
+    const token = getAuthToken();
+    if (!token) return null;
+    const currentRequestId = ++latestRequestIdRef.current;
+    try {
+      const { data } = await api.get("/api/student/profile", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (data && currentRequestId === latestRequestIdRef.current) {
+        const normalized = normalizeProfileData(data);
+        setProfile((prev) => ({
+          ...prev,
+          ...normalized,
+        }));
+        return normalized;
+      }
+    } catch (err) {
+      console.warn("MongoDB profile refetch failed:", err.message);
+      throw err;
+    }
+    return null;
   }, []);
 
   useEffect(() => {
-    localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+    if (profile) {
+      localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+    }
   }, [profile]);
 
   const updateProfile = useCallback((updates) => {
-    setProfile((prev) => ({ ...prev, ...updates }));
+    setProfile((prev) => {
+      const merged = { ...prev, ...updates };
+      return normalizeProfileData(merged);
+    });
   }, []);
 
   const saveProfile = useCallback(async (updates = {}) => {
@@ -68,8 +128,9 @@ export function useStudentProfile() {
       const { data } = await api.put("/api/student/profile", merged, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (data && data.user) {
-        setProfile((prev) => ({ ...prev, ...data.user }));
+      if (data && (data.user || data.data)) {
+        const normalized = normalizeProfileData(data.user || data.data);
+        setProfile((prev) => ({ ...prev, ...normalized }));
       }
       return true;
     } catch (err) {
@@ -110,8 +171,10 @@ export function useStudentProfile() {
 
   return {
     profile,
+    isLoading,
     updateProfile,
     saveProfile,
+    refetchProfile,
     addSkill,
     removeSkill,
     getProfileForInterview,
@@ -119,7 +182,35 @@ export function useStudentProfile() {
   };
 }
 
+export function isTokenExpired(token) {
+  if (!token || typeof token !== "string") return true;
+  try {
+    const parts = token.split(".");
+    if (parts.length !== 3) return true;
+    const payloadJson = atob(parts[1].replace(/-/g, "+").replace(/_/g, "/"));
+    const payload = JSON.parse(payloadJson);
+    if (!payload.exp) return false;
+    return payload.exp * 1000 <= Date.now() + 10000;
+  } catch (e) {
+    return true;
+  }
+}
+
+export function clearAuthData() {
+  try {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("user");
+  } catch (e) {
+    // ignore
+  }
+}
+
 export function getAuthUser() {
+  const token = getAuthToken();
+  if (!token) return {};
+
   const raw =
     localStorage.getItem("user") || sessionStorage.getItem("user");
   if (!raw) return {};
@@ -131,7 +222,28 @@ export function getAuthUser() {
 }
 
 export function getAuthToken() {
-  return localStorage.getItem("token") || sessionStorage.getItem("token");
+  let token = localStorage.getItem("token");
+  if (token) {
+    if (isTokenExpired(token)) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      token = null;
+    } else {
+      return token;
+    }
+  }
+
+  token = sessionStorage.getItem("token");
+  if (token) {
+    if (isTokenExpired(token)) {
+      sessionStorage.removeItem("token");
+      sessionStorage.removeItem("user");
+      return null;
+    }
+    return token;
+  }
+
+  return null;
 }
 
 function calculateCompletion(profile) {

@@ -5,6 +5,7 @@ import api from "../../utils/api";
 import { getAuthToken } from "../../hooks/useStudentProfile";
 import CompanyMockCodingIDE from "../../components/coding/CompanyMockCodingIDE";
 import {
+  AlertTriangle,
   Maximize2,
   ShieldAlert,
   Loader2,
@@ -15,6 +16,8 @@ import {
   CheckCircle2,
   Circle,
   Hourglass,
+  Mic,
+  MicOff,
 } from "lucide-react";
 
 const SECTION_ORDER = ["aptitude", "technical", "coding"];
@@ -94,12 +97,13 @@ export default function CompanyMockInterview() {
   const [remainingSeconds, setRemainingSeconds] = useState(0);
   const [loading, setLoading] = useState(false);
   const [confirmEnd, setConfirmEnd] = useState(false);
-  const [tabSwitchLocked, setTabSwitchLocked] = useState(false);
+  const [tabWarnings, setTabWarnings] = useState(0);
 
   // ── Anti-cheat ──
   const securityEventsRef = useRef([]);
   const lastTabSwitchAtRef = useRef(0);
   const saveProgressRef = useRef(null);
+  const submitFinalRef = useRef(null);
 
   // ── Save serialization: prevent overlapping autosaves ──
   const saveInProgressRef = useRef(false);
@@ -194,19 +198,63 @@ export default function CompanyMockInterview() {
       );
     };
 
-    // Tab switching: lock the mock immediately, persist the event, keep
-    // locked until the student returns to this tab.
+    // 3-strike violation handler (switches, minimizations, Alt+Tab)
+    const reportViolation = (trigger = "window_blur") => {
+      const now = Date.now();
+      // Debounce rapid dual triggers (e.g. blur + visibilitychange firing simultaneously during Alt+Tab)
+      if (now - lastTabSwitchAtRef.current < 1200) return;
+      lastTabSwitchAtRef.current = now;
+
+      setTabWarnings((prev) => {
+        const next = prev + 1;
+        queueSecurityEvent("TAB_SWITCH", { trigger, count: next });
+
+        if (next >= 3) {
+          toast.error("🚨 3 of 3: Mock interview auto-submitted", {
+            id: "mock-violation-toast",
+            duration: 5000,
+          });
+          submitFinalRef.current?.();
+        } else if (next === 1) {
+          toast.error("⚠️ Warning 1 of 3", {
+            id: "mock-violation-toast",
+            duration: 4000,
+          });
+          saveProgressRef.current?.({ skipGuard: true });
+        } else if (next === 2) {
+          toast.error("🚨 Warning 2 of 3 (Final Warning)", {
+            id: "mock-violation-toast",
+            duration: 5000,
+          });
+          saveProgressRef.current?.({ skipGuard: true });
+        }
+        return next;
+      });
+    };
+
     const handleVisibilityChange = () => {
       if (document.hidden) {
-        const now = Date.now();
-        // Debounce rapid toggles within a single switch.
-        if (now - lastTabSwitchAtRef.current < 500) return;
-        lastTabSwitchAtRef.current = now;
-        queueSecurityEvent("TAB_SWITCH");
-        setTabSwitchLocked(true);
-        saveProgressRef.current?.({ skipGuard: false });
-      } else {
-        setTabSwitchLocked(false);
+        reportViolation("tab_hidden");
+      }
+    };
+
+    const handleWindowBlur = () => {
+      reportViolation("window_blur");
+    };
+
+    const handleWindowFocus = () => {
+      // Focus restored
+    };
+
+    const handleTouchStart = (e) => {
+      if (e.touches && e.touches.length >= 3) {
+        reportViolation("three_finger_touch");
+      }
+    };
+
+    const handleResize = () => {
+      if (document.hidden || window.outerWidth === 0 || window.outerHeight === 0) {
+        reportViolation("minimize");
       }
     };
 
@@ -248,18 +296,33 @@ export default function CompanyMockInterview() {
       }
     };
 
+    const preventSelectStart = (e) => {
+      if (isEditableTarget(e.target)) return;
+      e.preventDefault();
+    };
+
     document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("blur", handleWindowBlur);
+    window.addEventListener("focus", handleWindowFocus);
+    window.addEventListener("touchstart", handleTouchStart, { passive: true });
+    window.addEventListener("resize", handleResize);
     window.addEventListener("copy", preventCopy);
     window.addEventListener("cut", preventCut);
     window.addEventListener("contextmenu", preventContextMenu);
     window.addEventListener("keydown", preventShortcutCopy);
+    document.addEventListener("selectstart", preventSelectStart);
 
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("blur", handleWindowBlur);
+      window.removeEventListener("focus", handleWindowFocus);
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("resize", handleResize);
       window.removeEventListener("copy", preventCopy);
       window.removeEventListener("cut", preventCut);
       window.removeEventListener("contextmenu", preventContextMenu);
       window.removeEventListener("keydown", preventShortcutCopy);
+      document.removeEventListener("selectstart", preventSelectStart);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
@@ -327,7 +390,6 @@ export default function CompanyMockInterview() {
   // through the exact same final-scoring path ("End Mock Interview") so a
   // timed-out result is computed by the one authoritative backend function.
   const autoSubmittedRef = useRef(false);
-  const submitFinalRef = useRef(null);
   useEffect(() => {
     if (phase !== "assessment" || remainingSeconds > 0 || autoSubmittedRef.current) return;
     autoSubmittedRef.current = true;
@@ -660,6 +722,112 @@ export default function CompanyMockInterview() {
     setTimeout(() => saveProgress({ skipGuard: true }), 250);
   };
 
+  // ── Voice Dictation (Speech to Text) with Real-Time Streaming ──
+  const [isListeningVoice, setIsListeningVoice] = useState(false);
+  const [liveInterimSpeech, setLiveInterimSpeech] = useState("");
+  const recognitionRef = useRef(null);
+
+  const stopVoiceRecording = useCallback(() => {
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.stop();
+      } catch {}
+      recognitionRef.current = null;
+    }
+    setIsListeningVoice(false);
+    setLiveInterimSpeech("");
+  }, []);
+
+  useEffect(() => {
+    stopVoiceRecording();
+  }, [currentIndex, currentSection, stopVoiceRecording]);
+
+  useEffect(() => {
+    return () => {
+      stopVoiceRecording();
+    };
+  }, [stopVoiceRecording]);
+
+  const toggleVoiceRecording = (qid) => {
+    if (isListeningVoice) {
+      stopVoiceRecording();
+      return;
+    }
+
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      toast.error(
+        "Speech recognition is not supported in this browser. Please use Google Chrome or Edge to speak your answer."
+      );
+      return;
+    }
+
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.lang = "en-US";
+      recognition.continuous = true;
+      recognition.interimResults = true;
+
+      recognition.onstart = () => {
+        setIsListeningVoice(true);
+        setLiveInterimSpeech("");
+        toast.success("Microphone active. Speak your answer...", { icon: "🎙️" });
+      };
+
+      recognition.onresult = (event) => {
+        let interimText = "";
+        let finalChunk = "";
+
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const item = event.results[i];
+          if (item.isFinal) {
+            finalChunk += item[0].transcript + " ";
+          } else {
+            interimText += item[0].transcript;
+          }
+        }
+
+        setLiveInterimSpeech(interimText);
+
+        if (finalChunk.trim()) {
+          setAnswers((prev) => {
+            const current = (prev.technical && prev.technical[qid]) || "";
+            const updated = current
+              ? `${current.trim()} ${finalChunk.trim()}`
+              : finalChunk.trim();
+            return {
+              ...prev,
+              technical: { ...prev.technical, [qid]: updated },
+            };
+          });
+          setTimeout(() => saveProgress({ skipGuard: true }), 250);
+        }
+      };
+
+      recognition.onerror = (e) => {
+        console.warn("Speech recognition error:", e.error);
+        if (e.error !== "no-speech") {
+          toast.error(`Microphone error: ${e.error}`);
+        }
+        stopVoiceRecording();
+      };
+
+      recognition.onend = () => {
+        setIsListeningVoice(false);
+        setLiveInterimSpeech("");
+      };
+
+      recognition.start();
+      recognitionRef.current = recognition;
+    } catch (err) {
+      console.error("Failed to start speech recognition:", err);
+      toast.error("Could not access microphone.");
+      setIsListeningVoice(false);
+      setLiveInterimSpeech("");
+    }
+  };
+
   // ── Navigation ──
   const goNext = () => {
     saveProgress({ skipGuard: true });
@@ -736,6 +904,7 @@ export default function CompanyMockInterview() {
 
   // ── End Mock Interview ──
   const submitFinal = async () => {
+    submitFinalRef.current = submitFinal;
     if (submittingRef.current) {
       console.warn("[COMPANY MOCK] Blocked duplicate final submission.");
       return;
@@ -927,9 +1096,16 @@ export default function CompanyMockInterview() {
   return (
     <div
       className={currentSection === "coding"
-        ? "h-screen overflow-hidden flex flex-col"
-        : "min-h-screen flex flex-col"}
-      style={{ background: "var(--bg-primary)", color: "var(--text-primary)" }}
+        ? "h-screen overflow-hidden flex flex-col select-none"
+        : "min-h-screen flex flex-col select-none"}
+      style={{
+        background: "var(--bg-primary)",
+        color: "var(--text-primary)",
+        userSelect: "none",
+        WebkitUserSelect: "none",
+        MozUserSelect: "none",
+        msUserSelect: "none",
+      }}
     >
       {/* Header bar */}
       <header className="sticky top-0 z-40 px-4 md:px-6 py-3 border-b" style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}>
@@ -1082,26 +1258,139 @@ export default function CompanyMockInterview() {
                 })}
               </div>
             ) : (
-              <div>
-                <p className="text-sm mb-3" style={{ color: "var(--text-secondary)" }}>
-                  Type your answer below. It will be evaluated by AI for correctness and completeness.
-                </p>
-                <textarea
-                  value={answers[currentSection][question._id] || ""}
-                  onChange={(e) => updateTechnicalText(question._id, e.target.value)}
-                  placeholder="Write your answer here..."
-                  rows={8}
-                  className="w-full p-4 border rounded-lg resize-y focus:outline-none focus:ring-2"
-                  style={{
-                    background: "var(--input-bg, var(--card-bg))",
-                    borderColor: "var(--card-border)",
-                    color: "var(--text-primary)",
-                    focusRingColor: meta.color,
-                  }}
-                />
-                <p className="text-xs mt-2" style={{ color: "var(--text-muted)" }}>
-                  {(answers[currentSection][question._id] || "").length} characters
-                </p>
+              <div className="space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-3 mb-1">
+                  <p className="text-sm font-medium" style={{ color: "var(--text-secondary)" }}>
+                    Type or speak your answer below. It will be evaluated by AI for correctness and completeness.
+                  </p>
+
+                  {/* Voice Dictation (Speak Answer) Button */}
+                  <button
+                    type="button"
+                    onClick={() => toggleVoiceRecording(question._id)}
+                    className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold cursor-pointer transition-all border shadow-sm select-none"
+                    style={{
+                      background: isListeningVoice
+                        ? "rgba(239, 68, 68, 0.15)"
+                        : "rgba(255, 107, 53, 0.12)",
+                      borderColor: isListeningVoice
+                        ? "rgba(239, 68, 68, 0.50)"
+                        : "rgba(255, 107, 53, 0.35)",
+                      color: isListeningVoice ? "#EF4444" : "#FF6B35",
+                    }}
+                    title={
+                      isListeningVoice
+                        ? "Click to stop recording"
+                        : "Click to speak your answer"
+                    }
+                  >
+                    {isListeningVoice ? (
+                      <>
+                        <span className="relative flex h-2 w-2">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                        </span>
+                        <MicOff className="w-4 h-4" />
+                        <span>Listening... (Stop)</span>
+                      </>
+                    ) : (
+                      <>
+                        <Mic className="w-4 h-4" />
+                        <span>Speak Answer</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {isListeningVoice && (
+                  <div
+                    className="p-3.5 rounded-xl border flex flex-col gap-2 transition-all duration-200 shadow-sm"
+                    style={{
+                      background: "rgba(255, 107, 53, 0.06)",
+                      borderColor: "rgba(255, 107, 53, 0.35)",
+                    }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-xs font-bold text-[#FF6B35]">
+                        <span className="relative flex h-2.5 w-2.5">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#FF6B35] opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#FF6B35]"></span>
+                        </span>
+                        <Mic className="w-4 h-4 animate-bounce text-[#FF6B35]" />
+                        <span>Live Voice Stream</span>
+                      </div>
+                      <span className="text-[11px] text-gray-400 font-medium">Real-time speech recognition</span>
+                    </div>
+
+                    <div
+                      className="p-2.5 rounded-lg text-sm font-medium leading-relaxed min-h-[36px] flex items-center"
+                      style={{
+                        background: "var(--bg-primary)",
+                        border: "1px dashed rgba(255, 107, 53, 0.30)",
+                        color: liveInterimSpeech ? "var(--text-primary)" : "var(--text-muted)",
+                      }}
+                    >
+                      {liveInterimSpeech ? (
+                        <span className="text-[#FF6B35] font-semibold italic">
+                          “{liveInterimSpeech}”
+                        </span>
+                      ) : (
+                        <span className="italic opacity-70">
+                          Listening... Start speaking into your microphone to see live transcript.
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                <div className="relative">
+                  <textarea
+                    value={answers[currentSection][question._id] || ""}
+                    onChange={(e) => updateTechnicalText(question._id, e.target.value)}
+                    placeholder={
+                      isListeningVoice
+                        ? "Speak or type your answer here..."
+                        : "Write or speak your answer here..."
+                    }
+                    rows={8}
+                    className="w-full p-4 border rounded-xl resize-y focus:outline-none focus:ring-2 font-normal leading-relaxed transition-colors"
+                    style={{
+                      background: "var(--input-bg, var(--card-bg))",
+                      borderColor: isListeningVoice ? "#FF6B35" : "var(--card-border)",
+                      color: "var(--text-primary)",
+                      focusRingColor: meta.color,
+                    }}
+                  />
+
+                  {/* Real-time live speech floating indicator inside textarea */}
+                  {isListeningVoice && liveInterimSpeech && (
+                    <div
+                      className="absolute bottom-4 left-4 right-4 p-2 rounded-lg text-xs flex items-center gap-2 pointer-events-none backdrop-blur-md shadow-lg"
+                      style={{
+                        background: "rgba(15, 18, 28, 0.85)",
+                        border: "1px solid rgba(255, 107, 53, 0.40)",
+                        color: "#FF8A3D",
+                      }}
+                    >
+                      <span className="font-bold">Live:</span>
+                      <span className="truncate italic">{liveInterimSpeech}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-between text-xs" style={{ color: "var(--text-muted)" }}>
+                  <span>{(answers[currentSection][question._id] || "").length} characters</span>
+                  {(answers[currentSection][question._id] || "").length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => updateTechnicalText(question._id, "")}
+                      className="text-xs hover:underline cursor-pointer"
+                      style={{ color: "var(--text-muted)" }}
+                    >
+                      Clear answer
+                    </button>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -1139,21 +1428,15 @@ export default function CompanyMockInterview() {
         </div>
       </div>
 
-      {/* Tab switch detection overlay — locks the mock until the student returns */}
-      {tabSwitchLocked && phase === "assessment" && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 select-none" style={{ background: "rgba(5,6,9,0.96)", backdropFilter: "blur(16px)" }}>
-          <div className="max-w-md w-full p-6 rounded-3xl text-center flex flex-col items-center gap-4" style={{ background: "linear-gradient(145deg,#0e1222 0%,#070913 100%)", border: "1px solid rgba(245,158,11,0.3)", boxShadow: "0 0 50px rgba(245,158,11,0.2)" }}>
-            <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ background: "rgba(245,158,11,0.12)", border: "1px solid rgba(245,158,11,0.3)", color: "#FBBF24" }}>
-              <ShieldAlert className="w-8 h-8 animate-pulse" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-white tracking-wide">Tab switching detected</h2>
-              <p className="text-xs text-white/70 mt-2 leading-relaxed">
-                Please return to the mock interview tab to continue.
-              </p>
-              <p className="text-[10px] text-white/40 mt-3 font-mono">This event has been logged for security.</p>
-            </div>
-          </div>
+      {/* Tab & Window Switch Warning Banner */}
+      {tabWarnings > 0 && phase === "assessment" && (
+        <div className={`sticky bottom-0 z-40 px-4 py-2 text-xs text-center font-bold flex items-center justify-center gap-2 ${
+          tabWarnings >= 2 ? "bg-red-600 text-white animate-pulse" : "bg-amber-500 text-black"
+        }`}>
+          <AlertTriangle className="w-4 h-4 shrink-0" />
+          {tabWarnings >= 2
+            ? "🚨 Warning 2 of 3 (Final Warning)"
+            : `⚠️ Warning ${tabWarnings} of 3`}
         </div>
       )}
 

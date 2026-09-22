@@ -8,15 +8,15 @@ import { BrainCircuit } from "lucide-react";
 function QuestionCard({ currentIndex, totalQuestions, difficulty, category, source, showQuestionText = true, questionText, estimatedTime }) {
   return (
     <div
-      className="rounded-2xl overflow-hidden shadow-sm flex flex-col"
+      className="rounded-2xl overflow-hidden flex flex-col"
       style={{
-        background: "rgba(8,10,18,0.9)",
-        border: "1px solid rgba(255,255,255,0.06)",
+        background: "rgba(12, 15, 26, 0.95)",
+        border: "1px solid rgba(255, 255, 255, 0.08)",
       }}
     >
       <div className="p-3.5 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <BrainCircuit className="w-4 h-4 text-blue-400" />
+          <BrainCircuit className="w-4 h-4 text-[#FF6B35]" />
           <span className="text-xs font-semibold text-white/90">
             Question {currentIndex} <span className="text-white/40 font-normal">/ {totalQuestions}</span>
           </span>
@@ -35,7 +35,7 @@ function QuestionCard({ currentIndex, totalQuestions, difficulty, category, sour
             </span>
           )}
           {category && (
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/15 text-blue-400 border border-blue-500/20">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-white/[0.06] text-white/80 border border-white/10">
               {category}
             </span>
           )}

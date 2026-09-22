@@ -52,6 +52,12 @@ import AdminTechnicalManagement from "../pages/admin/AdminTechnicalManagement";
 import AnalyticsDashboard from "../pages/admin/AnalyticsDashboard";
 import MockQuestionManagement from "../pages/admin/MockQuestionManagement";
 
+import IndividualTechnicalPractice from "../pages/student/IndividualTechnicalPractice";
+import IndividualTechnicalResult from "../pages/student/IndividualTechnicalResult";
+import IndividualProjectPractice from "../pages/student/IndividualProjectPractice";
+import IndividualProjectResult from "../pages/student/IndividualProjectResult";
+import CodingRoundSelect from "../pages/student/CodingRoundSelect";
+
 function AppRoutes() {
   return (
     <Routes>
@@ -64,6 +70,19 @@ function AppRoutes() {
       {/* Dedicated Real AI Interview Control Room (Standalone without website navbar) */}
       <Route path="/interview" element={<StartInterview />} />
       <Route path="/interview/:sessionId" element={<StartInterview />} />
+
+      {/* Standalone Real Interview Result Report — No Sidebar */}
+      <Route path="/interview-history/:interviewId/result" element={<Results />} />
+      <Route path="/real-interview/result/:sessionId" element={<Results />} />
+      <Route path="/results" element={<Results />} />
+
+      {/* Standalone Individual Technical Practice & Result — No Sidebar */}
+      <Route path="/individual-practice/technical/:sessionId" element={<IndividualTechnicalPractice />} />
+      <Route path="/individual-practice/technical/result/:sessionId" element={<IndividualTechnicalResult />} />
+
+      {/* Standalone Individual Project / Resume Practice & Result — No Sidebar */}
+      <Route path="/student/individual-project/practice/:sessionId" element={<IndividualProjectPractice />} />
+      <Route path="/student/individual-project/result/:sessionId" element={<IndividualProjectResult />} />
 
       {/* Dedicated Company Mock Interview Control Room — standalone, renders ONLY
           the assessment with no website Navbar/Footer/Layout. */}
@@ -86,13 +105,12 @@ function AppRoutes() {
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/interview-history" element={<InterviewHistory />} />
-        <Route path="/interview-history/:interviewId/result" element={<Results />} />
-        <Route path="/results" element={<Results />} />
         <Route path="/placement-dashboard" element={<PlacementDashboard />} />
         <Route path="/placement/leaderboard" element={<Leaderboard />} />
         <Route path="/placement/mock-oa" element={<MockOA />} />
         <Route path="/mock-interview" element={<MockInterview />} />
         <Route path="/mock-interview/history" element={<CompanyMockHistory />} />
+        <Route path="/coding-round" element={<CodingRoundSelect />} />
         <Route path="/placement/company-analytics" element={<CompanyAnalytics />} />
         <Route path="/placement/performance" element={<PerformanceGraphs />} />
         <Route path="/placement/question-analytics" element={<QuestionAnalytics />} />

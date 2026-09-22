@@ -1,0 +1,232 @@
+[
+  {
+    "id": "tb_java_01",
+    "question": "How does the Java Garbage Collector manage memory across Heap spaces (Young, Old/Tenured, and Metaspace), and how do Minor vs Major GC pauses differ?",
+    "expectedKnowledge": "Demonstrate understanding of Java Heap memory layout (Eden, Survivor spaces S0/S1, Tenured generation), GC roots, mark-and-sweep/copying algorithms, and how Minor GC cleans Young gen while Major/Full GC pauses clean Tenured space.",
+    "difficulty": "medium",
+    "maxMarks": 5,
+    "topic": "Java",
+    "category": "Conceptual",
+    "skillTags": ["Java", "JVM", "Core CS"]
+  },
+  {
+    "id": "tb_java_02",
+    "question": "Explain the internal implementation of HashMap in Java, focusing on collision resolution, bucket indexing, load factor, and treeification (LinkedList to Red-Black Tree threshold).",
+    "expectedKnowledge": "Explain hashCode() and equals() contracts, array bucket indexing via bitwise AND, LinkedList bucket structure, load factor threshold (0.75), and treeification when bucket length exceeds 8 items.",
+    "difficulty": "medium",
+    "maxMarks": 5,
+    "topic": "Java",
+    "category": "Conceptual",
+    "skillTags": ["Java", "Data Structures", "Core CS"]
+  },
+  {
+    "id": "tb_java_03",
+    "question": "How does the Java Memory Model enforce happen-before relationships using volatile variables, synchronized blocks, and atomic classes?",
+    "expectedKnowledge": "Explain CPU cache coherence, instruction reordering, memory barriers, volatile read/write visibility rules, monitors with synchronized blocks, and CAS (Compare-And-Swap) in AtomicInteger.",
+    "difficulty": "hard",
+    "maxMarks": 13,
+    "topic": "Java",
+    "category": "Architecture",
+    "skillTags": ["Java", "Concurrency", "System Design"]
+  },
+  {
+    "id": "tb_js_01",
+    "question": "Explain how the JavaScript Event Loop coordinates execution between the Call Stack, Microtask Queue (Promises), and Macrotask Queue (setTimeout/setInterval).",
+    "expectedKnowledge": "Explain single-threaded JavaScript execution, call stack frame resolution, continuous microtask draining before next macrotask processing, and event loop tick sequencing.",
+    "difficulty": "medium",
+    "maxMarks": 5,
+    "topic": "JavaScript",
+    "category": "Conceptual",
+    "skillTags": ["JavaScript", "Web Development", "Core CS"]
+  },
+  {
+    "id": "tb_js_02",
+    "question": "What are JavaScript Closures, how do lexical environments retain access to outer scope variables, and what are common memory leak pitfalls when using closures?",
+    "expectedKnowledge": "Define closures as functions bundled with references to their outer lexical environment, explain scope chain traversal, private variable encapsulation patterns, and memory leaks from unintended outer reference retention.",
+    "difficulty": "medium",
+    "maxMarks": 5,
+    "topic": "JavaScript",
+    "category": "Conceptual",
+    "skillTags": ["JavaScript", "Core CS"]
+  },
+  {
+    "id": "tb_react_01",
+    "question": "What is the Virtual DOM in React, and how does the Reconciliation (Diffing) algorithm optimize UI updates using keys and fiber node trees?",
+    "expectedKnowledge": "Explain Virtual DOM in-memory representation, React Fiber tree architecture, O(n) diffing heuristics, component type comparisons, and why unique keys are critical for list rendering performance.",
+    "difficulty": "medium",
+    "maxMarks": 5,
+    "topic": "React.js",
+    "category": "Conceptual",
+    "skillTags": ["React.js", "JavaScript", "Frontend"]
+  },
+  {
+    "id": "tb_react_02",
+    "question": "Explain how React's `useMemo` and `useCallback` hooks optimize child component re-renders, and when over-using them creates performance overhead.",
+    "expectedKnowledge": "Explain referential equality for object props and function references, memoization cost vs re-computation cost, React.memo integration, and avoiding premature optimization.",
+    "difficulty": "medium",
+    "maxMarks": 5,
+    "topic": "React.js",
+    "category": "Conceptual",
+    "skillTags": ["React.js", "JavaScript", "Frontend"]
+  },
+  {
+    "id": "tb_spring_01",
+    "question": "How does Spring Boot Dependency Injection work via ApplicationContext and IoC Containers, and how does `@Transactional` manage database transaction propagation?",
+    "expectedKnowledge": "Explain Inversion of Control (IoC), Bean lifecycle (instantiation, dependency resolution, initialization, destruction), AOP proxy creation for `@Transactional`, and transaction rollback rules.",
+    "difficulty": "medium",
+    "maxMarks": 5,
+    "topic": "Spring Boot",
+    "category": "Frameworks",
+    "skillTags": ["Spring Boot", "Java", "Backend"]
+  },
+  {
+    "id": "tb_sql_01",
+    "question": "What is the difference between Clustered and Non-Clustered Indexes in relational databases (MySQL/PostgreSQL), and how do B-Tree structures optimize query execution?",
+    "expectedKnowledge": "Explain clustered index storing physical table row data in B-Tree leaf nodes vs non-clustered index containing pointer keys to row locators, index seek vs table scan, and index cardinality trade-offs.",
+    "difficulty": "medium",
+    "maxMarks": 5,
+    "topic": "SQL",
+    "category": "Database Internals",
+    "skillTags": ["SQL", "MySQL", "PostgreSQL", "Database"]
+  },
+  {
+    "id": "tb_sql_02",
+    "question": "Explain ACID properties in database transactions and how Isolation Levels (Read Uncommitted, Read Committed, Repeatable Read, Serializable) prevent concurrency anomalies.",
+    "expectedKnowledge": "Define Atomicity, Consistency, Isolation, Durability. Detail dirty reads, non-repeatable reads, phantom reads, and MVCC / lock mechanisms used to enforce serializability.",
+    "difficulty": "hard",
+    "maxMarks": 13,
+    "topic": "SQL",
+    "category": "Database Internals",
+    "skillTags": ["SQL", "MySQL", "PostgreSQL", "System Design"]
+  },
+  {
+    "id": "tb_mongodb_01",
+    "question": "When designing MongoDB schemas, how do you evaluate Embedding vs Referencing documents, and how does the Aggregation Pipeline process multi-stage data transformations?",
+    "expectedKnowledge": "Compare 1:1 and 1:N embedded document performance vs normalized referencing ($lookup / joins), 16MB BSON document limit, and pipeline stages ($match, $group, $project, $unwind).",
+    "difficulty": "medium",
+    "maxMarks": 5,
+    "topic": "MongoDB",
+    "category": "NoSQL Database",
+    "skillTags": ["MongoDB", "Database", "Backend"]
+  },
+  {
+    "id": "tb_redis_01",
+    "question": "How does Redis achieve high throughput as an in-memory key-value store, and what are the differences between RDB snapshots and AOF (Append-Only File) persistence strategies?",
+    "expectedKnowledge": "Explain single-threaded event loop I/O multiplexing in Redis, RAM speed advantages, RDB point-in-time binary snapshotting vs AOF append-log durability and background rewrite mechanisms.",
+    "difficulty": "medium",
+    "maxMarks": 5,
+    "topic": "Redis",
+    "category": "Caching & NoSQL",
+    "skillTags": ["Redis", "Caching", "System Design", "Backend"]
+  },
+  {
+    "id": "tb_redis_02",
+    "question": "Explain Cache Eviction Policies in Redis (LRU, LFU) and how Redis is used to implement Distributed Locks using the Redlock algorithm.",
+    "expectedKnowledge": "Detail Least Recently Used (LRU) and Least Frequently Used (LFU) eviction algorithms, TTL expirations, atomic SETNX with expiration keys, and Redlock distributed consensus across independent Redis nodes.",
+    "difficulty": "hard",
+    "maxMarks": 13,
+    "topic": "Redis",
+    "category": "System Design",
+    "skillTags": ["Redis", "Caching", "System Design"]
+  },
+  {
+    "id": "tb_rest_01",
+    "question": "What are the core constraints of RESTful API design, and how do HTTP methods (GET, POST, PUT, PATCH, DELETE) enforce idempotency and safety principles?",
+    "expectedKnowledge": "Explain statelessness, uniform interface, client-server decoupling, safe methods (GET, HEAD) vs idempotent methods (PUT, DELETE) vs non-idempotent methods (POST), and HTTP status code mappings.",
+    "difficulty": "medium",
+    "maxMarks": 5,
+    "topic": "REST APIs",
+    "category": "API Architecture",
+    "skillTags": ["REST APIs", "Web Development", "Backend"]
+  },
+  {
+    "id": "tb_aws_01",
+    "question": "How do AWS IAM Roles, Policies, and Security Groups enforce the Principle of Least Privilege in cloud application deployment?",
+    "expectedKnowledge": "Explain IAM users, groups, roles, and JSON policy statements (Effect, Action, Resource), Security Group stateful firewall rules vs Network ACL stateless subnet filtering.",
+    "difficulty": "medium",
+    "maxMarks": 5,
+    "topic": "AWS",
+    "category": "Cloud Infrastructure",
+    "skillTags": ["AWS", "Cloud", "DevOps"]
+  },
+  {
+    "id": "tb_docker_01",
+    "question": "What is the difference between a Docker Image layer and a Container runtime, and how do Multi-Stage Docker builds optimize production deployment image sizes?",
+    "expectedKnowledge": "Explain Copy-on-Write (CoW) union file systems, read-only image layers, container execution layer, and separating build-time dependencies (compilers/SDKs) from minimal runtime containers (Alpine/Distroless).",
+    "difficulty": "medium",
+    "maxMarks": 5,
+    "topic": "Docker",
+    "category": "Containerization",
+    "skillTags": ["Docker", "DevOps", "Containers"]
+  },
+  {
+    "id": "tb_cicd_01",
+    "question": "Explain how Continuous Integration and Continuous Deployment (CI/CD) pipelines automate testing, static code analysis, and deployment using tools like GitHub Actions or Jenkins.",
+    "expectedKnowledge": "Detail automated build triggers on pull requests, running unit/integration test suites, security scanning, artifact staging, and automated zero-downtime deployment pipelines.",
+    "difficulty": "medium",
+    "maxMarks": 5,
+    "topic": "CI/CD",
+    "category": "DevOps",
+    "skillTags": ["CI/CD", "GitHub Actions", "Jenkins", "DevOps"]
+  },
+  {
+    "id": "tb_linux_01",
+    "question": "How do Linux file permissions work in numeric notation (e.g., `chmod 755`), and how do system processes use file descriptors for standard input, output, and error streams?",
+    "expectedKnowledge": "Explain read(4), write(2), execute(1) permissions for User, Group, Others. Detail file descriptors stdin (0), stdout (1), stderr (2), and process I/O redirection.",
+    "difficulty": "easy",
+    "maxMarks": 3,
+    "topic": "Linux",
+    "category": "Operating Systems",
+    "skillTags": ["Linux", "DevOps", "Core CS"]
+  },
+  {
+    "id": "tb_github_01",
+    "question": "Compare Git branching strategies (GitFlow vs Trunk-Based Development) and explain the structural difference between `git merge` and `git rebase`.",
+    "expectedKnowledge": "Explain feature branches, release branches, trunk-based rapid deployment, merge commits preserving explicit history vs rebase rewriting commit history into a linear sequence.",
+    "difficulty": "easy",
+    "maxMarks": 3,
+    "topic": "GitHub",
+    "category": "Version Control",
+    "skillTags": ["GitHub", "Git", "DevOps"]
+  },
+  {
+    "id": "tb_dsa_01",
+    "question": "How does a Hash Table achieve average O(1) time complexity for lookup and insert operations, and how are hash collisions resolved using Chaining vs Open Addressing?",
+    "expectedKnowledge": "Explain hash function distribution, bucket indexing, collision resolution via linked list/tree chaining vs open addressing (linear probing, quadratic probing, double hashing), and rehashing on load factor breach.",
+    "difficulty": "medium",
+    "maxMarks": 5,
+    "topic": "Data Structures",
+    "category": "Problem Solving",
+    "skillTags": ["Data Structures", "Algorithms", "Core CS"]
+  },
+  {
+    "id": "tb_dsa_02",
+    "question": "Compare Breadth-First Search (BFS) and Depth-First Search (DFS) graph traversal algorithms in terms of data structures used, time/space complexity, and shortest path properties.",
+    "expectedKnowledge": "Explain Queue structure for BFS vs Stack/Recursion for DFS, O(V+E) time complexity, BFS shortest path property on unweighted graphs, and DFS memory footprint on deep trees.",
+    "difficulty": "hard",
+    "maxMarks": 13,
+    "topic": "Algorithms",
+    "category": "Problem Solving",
+    "skillTags": ["Algorithms", "Data Structures", "Core CS"]
+  },
+  {
+    "id": "tb_sysdesign_01",
+    "question": "Explain the CAP Theorem (Consistency, Availability, Partition Tolerance) and how distributed storage systems trade off strong consistency for eventual availability during network partitions.",
+    "expectedKnowledge": "Define Consistency, Availability, Partition Tolerance. Contrast CP systems (e.g. MongoDB, HBase) with AP systems (e.g. Cassandra, DynamoDB), and explain Eventual Consistency models.",
+    "difficulty": "hard",
+    "maxMarks": 13,
+    "topic": "System Design",
+    "category": "Architecture",
+    "skillTags": ["System Design", "Microservices", "Architecture"]
+  },
+  {
+    "id": "tb_kafka_01",
+    "question": "What is Apache Kafka's event-streaming architecture, and how do Topics, Partitions, Consumer Groups, and Offsets guarantee ordered processing and scalability?",
+    "expectedKnowledge": "Explain Kafka append-only commit logs, partition distribution across brokers, consumer offset tracking, message key hashing for ordered partition delivery, and consumer group rebalancing.",
+    "difficulty": "hard",
+    "maxMarks": 13,
+    "topic": "Apache Kafka",
+    "category": "Distributed Systems",
+    "skillTags": ["Apache Kafka", "Microservices", "System Design"]
+  }
+]
