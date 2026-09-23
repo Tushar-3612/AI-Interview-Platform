@@ -123,6 +123,9 @@ JSON SCHEMA REQUIREMENT:
   throw new Error(`HR AI generation returned less than ${minRequired} questions`);
 }
 
+import { checkAnswerGate } from "./judgeAnswerGate.js";
+import { calibrateScore } from "./judgeScoreCalibrator.js";
+
 /**
  * AI CALL #2: Batch evaluate candidate HR answers in ONE AI request using AIGateway.
  */
@@ -133,17 +136,56 @@ export async function evaluateHRAI({ candidateProfile = {}, questionsWithAnswers
   const activeApiKey = options.apiKey || configApiKey;
   const activeModel = options.model || configModel;
 
-  const formattedQA = questionsWithAnswers.map((item, idx) => ({
-    i: idx + 1,
-    id: item.questionId || item._id,
-    q: item.question,
-    cat: item.category || "Behavioral",
-    max: 20,
-    dimensions: item.behavioralDimensions || [],
-    ans: item.candidateAnswer || item.answer || "(No answer provided)",
-  }));
+  const gatedEvaluations = [];
+  const qaToAI = [];
 
-  const systemPrompt = `You are a Senior HR & Behavioral Evaluator analyzing a candidate's HR interview answers.
+  for (let idx = 0; idx < questionsWithAnswers.length; idx++) {
+    const item = questionsWithAnswers[idx];
+    const qIdStr = String(item.questionId || item._id || idx);
+    const ans = String(item.candidateAnswer || item.answer || "(No answer provided)").trim();
+
+    const gate = checkAnswerGate(ans, { question: item.question });
+    if (gate.isGateTriggered) {
+      gatedEvaluations.push({
+        questionId: qIdStr,
+        score: 0,
+        maxScore: 20,
+        status: gate.status,
+        rating: gate.rating,
+        evaluationSource: "ANSWER_GATE",
+        behavioralDimensions: {
+          confidence: 1.0,
+          selfAwareness: 1.0,
+          ownership: 1.0,
+          decisionMaking: 1.0,
+          professionalMaturity: 1.0,
+        },
+        reasoningStrengths: [],
+        concerns: ["Question was not attempted or was declined"],
+        feedback: gate.feedback,
+        betterAnswer: "Provide a structured, thoughtful response tailored to the question.",
+      });
+    } else {
+      qaToAI.push({
+        i: idx + 1,
+        id: qIdStr,
+        q: item.question,
+        cat: item.category || "Behavioral",
+        max: 20,
+        dimensions: item.behavioralDimensions || [],
+        ans,
+      });
+    }
+  }
+
+  let aiEvaluations = [];
+  let behavioralProfile = {};
+  let strengths = [];
+  let areasForImprovement = [];
+  let finalFeedback = "";
+
+  if (qaToAI.length > 0) {
+    const systemPrompt = `You are a Senior HR & Behavioral Evaluator analyzing a candidate's HR interview answers.
 You must evaluate all questions in ONE batch response.
 
 CRITICAL EVALUATION RULES:
@@ -199,27 +241,78 @@ RETURN STRICT JSON ONLY:
   "finalFeedback": "Comprehensive candidate HR summary..."
 }`;
 
-  const userPrompt = `Candidate Profile: ${candidateProfile.fullName || "Candidate"}\nQuestions and Candidate Answers:\n${JSON.stringify(formattedQA, null, 2)}\n\nEvaluate all HR answers in valid JSON.`;
+    const userPrompt = `Candidate Profile: ${candidateProfile.fullName || "Candidate"}\nQuestions and Candidate Answers:\n${JSON.stringify(qaToAI, null, 2)}\n\nEvaluate all HR answers in valid JSON.`;
 
-  const parsed = await AIGateway.execute({
-    prompt: userPrompt,
-    systemPrompt,
-    provider: options.provider || "groq",
-    apiKey: activeApiKey,
-    sessionId: options.sessionId,
-    roundType: "evaluation",
-    orderIndex: 1,
-    options: {
-      model: activeModel,
-      temperature: 0.3,
-      maxRetries: 3
+    const parsed = await AIGateway.execute({
+      prompt: userPrompt,
+      systemPrompt,
+      provider: options.provider || "groq",
+      apiKey: activeApiKey,
+      sessionId: options.sessionId,
+      roundType: "evaluation",
+      orderIndex: 1,
+      options: {
+        model: activeModel,
+        temperature: 0.3,
+        maxRetries: 3,
+      },
+    });
+
+    if (parsed && Array.isArray(parsed.evaluations)) {
+      behavioralProfile = parsed.behavioralProfile || {};
+      strengths = Array.isArray(parsed.strengths) ? parsed.strengths : [];
+      areasForImprovement = Array.isArray(parsed.areasForImprovement) ? parsed.areasForImprovement : [];
+      finalFeedback = parsed.finalFeedback || "";
+
+      aiEvaluations = parsed.evaluations.map((item) => {
+        const calibrated = calibrateScore({
+          rawScore: item.score,
+          maxMarks: 20,
+          status: item.status,
+          evaluationSource: "ai_provider",
+          confidence: 0.95,
+          evidence: item.reasoningStrengths || [],
+          missing: item.concerns || [],
+          contradictions: [],
+          feedback: item.feedback,
+          betterAnswer: item.betterAnswer || "",
+          difficulty: "medium",
+        });
+
+        return {
+          questionId: String(item.questionId),
+          behavioralDimensions: item.behavioralDimensions || {
+            confidence: 4.0,
+            selfAwareness: 4.0,
+            ownership: 4.0,
+            decisionMaking: 4.0,
+            professionalMaturity: 4.0,
+          },
+          reasoningStrengths: item.reasoningStrengths || [],
+          concerns: item.concerns || [],
+          ...calibrated,
+        };
+      });
+    } else {
+      throw new Error("Failed to parse AI response into valid HR evaluation JSON");
     }
-  });
-
-  if (!parsed || !Array.isArray(parsed.evaluations)) {
-    throw new Error("Failed to parse AI response into valid HR evaluation JSON");
   }
 
+  const allEvaluations = [...gatedEvaluations, ...aiEvaluations];
+  const totalScore = Math.min(60, allEvaluations.reduce((sum, e) => sum + (e.score || 0), 0));
+  const percentage = Math.round((totalScore / 60) * 100);
+
   console.log(`[RealInterviewAI][HR] Complete batch evaluation succeeded`);
-  return parsed;
+  return {
+    evaluations: allEvaluations,
+    totalScore,
+    maxScore: 60,
+    percentage,
+    overallRating: percentage >= 80 ? "Very Strong" : percentage >= 60 ? "Strong" : percentage >= 40 ? "Average" : "Weak",
+    behavioralProfile,
+    consistencyObservations: [],
+    strengths: strengths.length ? strengths : ["Communicated responses in interview context"],
+    areasForImprovement: areasForImprovement.length ? areasForImprovement : ["Continue refining scenario articulation"],
+    finalFeedback: finalFeedback || `HR evaluation completed. Score: ${totalScore}/60.`,
+  };
 }

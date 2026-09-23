@@ -143,6 +143,9 @@ JSON OUTPUT ONLY:
   throw new Error(`Project AI returned ${parsed?.questions?.length || 0} questions (expected 5)`);
 }
 
+import { checkAnswerGate } from "./judgeAnswerGate.js";
+import { calibrateScore, checkContradictions } from "./judgeScoreCalibrator.js";
+
 /**
  * Evaluates ALL 5 candidate project answers in ONE SINGLE AI API Request.
  */
@@ -152,20 +155,56 @@ export async function evaluateProjectInterviewAI({ candidateProfile = {}, questi
   const apiKey = options.apiKey || getProjectApiKey();
   const model = options.model || getProjectModel();
 
-  const formattedQuestions = questions.map((q, idx) => ({
-    i: idx + 1,
-    id: String(q.questionId || q.id || idx),
-    q: String(q.question || ""),
-    diff: String(q.difficulty || "medium"),
-    max: Number(q.maxScore || q.maxMarks || (q.difficulty === "easy" ? 5 : q.difficulty === "hard" ? 20 : 10)),
-    expected: String(q.expectedKnowledge || q.expectedAnswer || q.referenceAnswer || "Demonstrate clear project workflow, architecture reasoning, and technical implementation details.").trim(),
-    ans: String(q.candidateAnswer || "(No answer provided)").trim(),
-  }));
+  const gatedEvaluations = [];
+  const questionsToAI = [];
 
-  const prompt = `You are a fair technical interviewer evaluating 5 candidate responses for a Project Interview session in ONE assessment.
+  for (let idx = 0; idx < questions.length; idx++) {
+    const q = questions[idx];
+    const qIdStr = String(q.questionId || q.id || idx);
+    const maxScore = Number(q.maxScore || q.maxMarks || (q.difficulty === "easy" ? 5 : q.difficulty === "hard" ? 20 : 10));
+    const ans = String(q.candidateAnswer || "(No answer provided)").trim();
+    const expected = String(q.expectedKnowledge || q.expectedAnswer || q.referenceAnswer || "Demonstrate clear project workflow, architecture reasoning, and technical implementation details.").trim();
+
+    const gate = checkAnswerGate(ans, { question: q.question, expectedKnowledge: expected });
+    if (gate.isGateTriggered) {
+      gatedEvaluations.push({
+        questionId: qIdStr,
+        score: 0,
+        maxScore,
+        difficulty: q.difficulty || "medium",
+        status: gate.status,
+        rating: gate.rating,
+        evaluationSource: "ANSWER_GATE",
+        correctPoints: [],
+        missingPoints: ["Question was not attempted or was declined"],
+        incorrectPoints: [],
+        grammarIssues: [],
+        feedback: gate.feedback,
+        betterAnswer: expected,
+      });
+    } else {
+      questionsToAI.push({
+        i: idx + 1,
+        id: qIdStr,
+        q: String(q.question || ""),
+        diff: String(q.difficulty || "medium"),
+        max: maxScore,
+        expected,
+        ans,
+      });
+    }
+  }
+
+  let aiEvaluations = [];
+  let strengths = [];
+  let weaknesses = [];
+  let finalFeedback = "";
+
+  if (questionsToAI.length > 0) {
+    const prompt = `You are a fair technical interviewer evaluating 5 candidate responses for a Project Interview session in ONE assessment.
 
 QUESTIONS & CANDIDATE ANSWERS:
-${JSON.stringify(formattedQuestions, null, 2)}
+${JSON.stringify(questionsToAI, null, 2)}
 
 FAIR EVALUATION INSTRUCTIONS:
 1. GROUNDED EVALUATION: Evaluate candidate response (ans) against the expected reference criteria (expected) for each question.
@@ -201,25 +240,73 @@ JSON SCHEMA ONLY:
   "finalFeedback": "Overall evaluation summary..."
 }`;
 
-  const parsed = await AIGateway.execute({
-    prompt,
-    systemPrompt: "You are a project interviewer evaluator. Output ONLY valid JSON matching schema for all 5 questions.",
-    provider: options.provider || "groq",
-    apiKey,
-    sessionId: options.sessionId,
-    roundType: "evaluation",
-    orderIndex: 1,
-    options: {
-      model,
-      temperature: 0.2,
-      maxRetries: 3
-    }
-  });
+    const parsed = await AIGateway.execute({
+      prompt,
+      systemPrompt: "You are a project interviewer evaluator. Output ONLY valid JSON matching schema for all questions.",
+      provider: options.provider || "groq",
+      apiKey,
+      sessionId: options.sessionId,
+      roundType: "evaluation",
+      orderIndex: 1,
+      options: {
+        model,
+        temperature: 0.2,
+        maxRetries: 3,
+      },
+    });
 
-  if (!parsed || !Array.isArray(parsed.evaluations)) {
-    throw new Error("Project evaluation AI response missing 'evaluations' array");
+    if (parsed && Array.isArray(parsed.evaluations)) {
+      strengths = Array.isArray(parsed.strengths) ? parsed.strengths : [];
+      weaknesses = Array.isArray(parsed.weaknesses) ? parsed.weaknesses : [];
+      finalFeedback = parsed.finalFeedback || "";
+
+      aiEvaluations = parsed.evaluations.map((item) => {
+        const matchingQ = questionsToAI.find((q) => q.id === String(item.questionId));
+        const maxScore = matchingQ?.max || Number(item.maxScore) || 10;
+        const contradictions = checkContradictions(matchingQ?.ans || "", `${matchingQ?.expected || ""} ${matchingQ?.q || ""}`);
+
+        const calibrated = calibrateScore({
+          rawScore: item.score,
+          maxMarks: maxScore,
+          status: item.status,
+          evaluationSource: "ai_evaluated",
+          confidence: 0.95,
+          evidence: item.correctPoints || [],
+          missing: item.missingPoints || [],
+          contradictions: item.incorrectPoints?.length ? item.incorrectPoints : contradictions,
+          feedback: item.feedback,
+          betterAnswer: item.betterAnswer || matchingQ?.expected || "",
+          difficulty: item.difficulty || matchingQ?.diff || "medium",
+        });
+
+        return {
+          questionId: String(item.questionId),
+          ...calibrated,
+        };
+      });
+    } else {
+      throw new Error("Project evaluation AI response missing 'evaluations' array");
+    }
   }
 
-  console.log(`[RealInterviewAI][Project] Complete evaluation finished for ${parsed.evaluations.length} questions`);
-  return parsed;
+  const allEvaluations = [...gatedEvaluations, ...aiEvaluations];
+  const questionMaxMarksSum = questions.reduce(
+    (sum, q) => sum + (q.maxScore || q.maxMarks || (q.difficulty === "easy" ? 5 : q.difficulty === "hard" ? 20 : 10)),
+    0
+  );
+  const totalScore = allEvaluations.reduce((sum, e) => sum + (e.score || 0), 0);
+  const scaledScore = questionMaxMarksSum > 0 ? Math.min(100, Math.round((totalScore / questionMaxMarksSum) * 100)) : totalScore;
+  const percentage = scaledScore;
+
+  console.log(`[RealInterviewAI][Project] Complete evaluation finished for ${allEvaluations.length} questions`);
+  return {
+    evaluations: allEvaluations,
+    totalScore: scaledScore,
+    maxScore: 100,
+    percentage,
+    overallRating: percentage >= 80 ? "Very Strong" : percentage >= 60 ? "Strong" : percentage >= 40 ? "Average" : "Weak",
+    strengths: strengths.length ? strengths : ["Project architecture and implementation answers evaluated"],
+    weaknesses: weaknesses.length ? weaknesses : ["Areas for refinement identified in project explanations"],
+    finalFeedback: finalFeedback || `Project evaluation completed. Score: ${scaledScore}/100.`,
+  };
 }

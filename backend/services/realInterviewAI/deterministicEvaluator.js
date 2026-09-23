@@ -13,6 +13,9 @@
 // 1. TEXT & SYNTAX NORMALIZATION HELPERS
 // -----------------------------------------------------------------------
 
+import { checkAnswerGate } from "./judgeAnswerGate.js";
+import { alignTechnicalSynonyms } from "./judgeRequirementExtractor.js";
+
 const SYNONYM_MAP = {
   distinct: "differ",
   different: "differ",
@@ -51,6 +54,51 @@ const SYNONYM_MAP = {
   implemented: "implement",
   interface: "interfac",
   interfaces: "interfac",
+  // Cloud & Infra Synonyms
+  alb: "loadbalanc",
+  loadbalancer: "loadbalanc",
+  ec2: "comput",
+  instance: "comput",
+  instances: "comput",
+  // OOP & Hierarchy Synonyms
+  inherit: "extend",
+  inherits: "extend",
+  inherited: "extend",
+  inheritance: "extend",
+  subclass: "extend",
+  subclasses: "extend",
+  subclassing: "extend",
+  derive: "extend",
+  derived: "extend",
+  override: "override",
+  overridden: "override",
+  overriding: "override",
+  redefine: "override",
+  redefined: "override",
+  reassign: "reassign",
+  reassigned: "reassign",
+  mutate: "reassign",
+  mutated: "reassign",
+  immutable: "reassign",
+  constant: "reassign",
+  prohibit: "cannot",
+  prohibited: "cannot",
+  forbidden: "cannot",
+  disallow: "cannot",
+  disallowed: "cannot",
+  prevent: "cannot",
+  prevents: "cannot",
+  // Performance & Caching Synonyms
+  speeding: "perform",
+  speed: "perform",
+  faster: "perform",
+  reducing: "optim",
+  reduces: "optim",
+  reduced: "optim",
+  reduction: "optim",
+  expiration: "expir",
+  expiry: "expir",
+  expired: "expir",
 };
 
 /**
@@ -67,21 +115,30 @@ function normalizeToken(word) {
     else if (w.endsWith("ized")) w = w.slice(0, -4);  // optimized → optim
     else if (w.endsWith("izes")) w = w.slice(0, -4);
     else if (w.endsWith("ing")) w = w.slice(0, -3);   // caching → cach
-    else if (w.endsWith("tion")) w = w.slice(0, -4);  // validation → valid
+    else if (w.endsWith("tion")) w = w.slice(0, -3);  // encryption → encrypt
     else if (w.endsWith("ed")) w = w.slice(0, -2);    // implemented → implement
-    else if (w.endsWith("er")) w = w.slice(0, -2);    // controller → controll
+    else if (w.endsWith("er") && w !== "computer" && w !== "computers") w = w.slice(0, -2);    // controller → controll
     else if (w.endsWith("es")) w = w.slice(0, -2);    // caches → cach
     else if (w.endsWith("s") && w.length > 4) w = w.slice(0, -1); // tokens → token
   }
+  if (w.endsWith("e") && w.length > 4) w = w.slice(0, -1); // handle → handl, store → stor
+  if (w.endsWith("y") && w.length > 3) w = w.slice(0, -1) + "i"; // query/queries → queri, policy/policies → polici
   return SYNONYM_MAP[w] || w;
 }
+
+const STOP_WORDS = new Set([
+  "to", "is", "of", "on", "an", "as", "in", "by", "or", "it", "at", "if", "be", "do", "we", "he", "no", "so", "my", "me", "up", "the", "and", "for", "with", "this", "that", "from", "they", "thei", "are", "not", "can", "what", "which", "how", "who", "when", "where", "why", "used", "using", "uses", "such", "while", "whil", "also", "make", "made", "like", "well", "into", "their", "them", "some", "more", "most", "than", "then", "have", "has", "had", "any", "other", "another", "each", "every", "between", "across", "through", "within", "without", "unlike", "unlik", "over", "under", "about", "because", "becaus"
+]);
+const SHORT_TECH_TERMS = new Set(["db", "az", "ui", "ip", "os", "ai", "io", "id", "go", "c"]);
 
 /**
  * Extract normalized unigrams and compound bigrams from text.
  */
 function extractConceptTokens(text) {
   if (!text || typeof text !== "string") return { unigrams: new Set(), bigrams: new Set() };
-  const words = text
+  let s = text.replace(/\bi\/o\b/gi, "io").replace(/\bnon[\s\-_]blocking\b/gi, "non_blocking");
+  const alignedText = alignTechnicalSynonyms(s);
+  const words = alignedText
     .toLowerCase()
     .replace(/[^\w\s]/g, " ")
     .split(/\s+/)
@@ -92,11 +149,16 @@ function extractConceptTokens(text) {
 
   for (let i = 0; i < words.length; i++) {
     const t = normalizeToken(words[i]);
-    if (t.length >= 3) unigrams.add(t);
+    if ((t.length >= 3 && !STOP_WORDS.has(t)) || SHORT_TECH_TERMS.has(t)) {
+      unigrams.add(t);
+    }
     if (i + 1 < words.length) {
       const b1 = normalizeToken(words[i]);
       const b2 = normalizeToken(words[i + 1]);
-      if (b1.length >= 3 && b2.length >= 3) {
+      if (
+        ((b1.length >= 3 && !STOP_WORDS.has(b1)) || SHORT_TECH_TERMS.has(b1)) &&
+        ((b2.length >= 3 && !STOP_WORDS.has(b2)) || SHORT_TECH_TERMS.has(b2))
+      ) {
         bigrams.add(`${b1}_${b2}`);
       }
     }
@@ -224,6 +286,11 @@ const CONTRADICTION_RULES = [
     pattern: /\b(rest(?:\s+api)?\s+is\s+a\s+(?:relational\s+)?database|graphql\s+is\s+a\s+database)\b/i,
     context: /rest|api|graphql/i,
     message: "REST/GraphQL is an API architecture/protocol, not a database.",
+  },
+  {
+    pattern: /\b(?:xss|cross.?site\s+scripting)\b.*?\b(?:sql\s+queries|sql\s+injection|database\s+tables?|relational\s+database)\b/i,
+    context: /xss|cross.?site scripting/i,
+    message: "Cross-Site Scripting (XSS) is client-side script injection in the browser, not SQL query injection into database tables.",
   },
 ];
 
@@ -519,12 +586,20 @@ function evaluateOutputPredictionStrategy(cleanAns, cleanExp, cleanQuestion, max
  * Strategy 4: Exact Keyword / Direct Fact / Method / Protocol
  */
 function evaluateKeywordStrategy(cleanAns, cleanExp, cleanQuestion, maxScore) {
-  const isKeywordTarget =
-    /what\s+keyword|which\s+keyword|keyword\s+is\s+used|http\s+method|status\s+code|protocol|time\s+complexity/i.test(cleanQuestion) ||
-    /^[a-zA-Z0-9_\$#\+\-\[\]\(\)\{\}\.\/]{1,25}$/.test(cleanAns.trim()) ||
-    /^[a-zA-Z0-9_\$#\+\-\[\]\(\)\{\}\.\/]{1,25}$/.test(cleanExp.trim());
+  const ansWords = cleanAns.trim().split(/\s+/).filter(Boolean);
+  const expWords = cleanExp.trim().split(/\s+/).filter(Boolean);
 
-  if (!isKeywordTarget) return null;
+  // Keyword strategy strictly handles short 1-2 word factual/keyword answers
+  if (ansWords.length > 2 && expWords.length > 2) return null;
+
+  const isSingleWordAns = ansWords.length <= 2 && /^[a-zA-Z0-9_\$#\+\-\[\]\(\)\{\}\.\/\s]{1,30}$/.test(cleanAns.trim());
+  const isSingleWordExp = expWords.length <= 2 && /^[a-zA-Z0-9_\$#\+\-\[\]\(\)\{\}\.\/\s]{1,30}$/.test(cleanExp.trim());
+
+  const isKeywordTarget =
+    /\b(?:what|which)\s+(?:is\s+the\s+)?keyword\b|\bkeyword\s+is\s+used\b|http\s+method|status\s+code|protocol|time\s+complexity/i.test(cleanQuestion) ||
+    isSingleWordExp;
+
+  if (!isKeywordTarget && !isSingleWordAns) return null;
 
   const rawAns = cleanAns.trim().toLowerCase();
   const rawExp = cleanExp.trim().toLowerCase();
@@ -645,29 +720,22 @@ export function evaluateTechnicalQuestion(q) {
   const maxScore = Number(q.maxScore || q.maxMarks || (q.difficulty === "easy" ? 3 : q.difficulty === "hard" ? 13 : 5));
   const qId = String(q.questionId || q.id || "");
 
-  // 1. Unanswered check
-  if (
-    !ans ||
-    ans === "(No answer submitted)" ||
-    ans === "(No answer provided)" ||
-    ans.toLowerCase() === "not answered" ||
-    ans.toLowerCase() === "not submitted" ||
-    ans.toLowerCase() === "none" ||
-    ans.toLowerCase() === "null"
-  ) {
+  // 1. Mandatory Answer Gate Pre-Check
+  const gate = checkAnswerGate(ans, { question: q.question, expectedKnowledge: expected });
+  if (gate.isGateTriggered) {
     return {
       questionId: qId,
       score: 0,
       maxScore,
       difficulty: q.difficulty,
-      status: "NOT_ATTEMPTED",
-      rating: "Not Attempted",
+      status: gate.status,
+      rating: gate.rating,
       evaluationSource: "deterministic_nlp",
       correctPoints: [],
-      missingPoints: ["Question was not attempted"],
+      missingPoints: ["Question was not attempted or was declined"],
       incorrectPoints: [],
       grammarIssues: [],
-      feedback: "Question was not attempted.",
+      feedback: gate.feedback,
       betterAnswer: expected || "Comprehensive technical explanation required.",
     };
   }
@@ -852,19 +920,27 @@ export function evaluateTechnicalQuestion(q) {
   if (matchedBigrams > 0) evidenceRatio += 0.15 * Math.min(2, matchedBigrams);
   if (hasReasoning && evidenceRatio > 0.10) evidenceRatio += 0.10;
   if (hasExample && evidenceRatio > 0.10) evidenceRatio += 0.05;
-  if (hasNegation && unigramCoverage > 0.15) evidenceRatio += 0.05;
-
   let finalScore = 0;
   if (contradictions.length > 0) {
     finalScore = 0;
-  } else if (unigramCoverage >= 0.45 || (evidenceRatio >= 0.38 && matchedUnigrams >= 3)) {
-    finalScore = maxScore;
-  } else if (evidenceRatio >= 0.25 && matchedUnigrams >= 2) {
-    finalScore = Math.max(1, Math.round(maxScore * 0.60));
-  } else if (evidenceRatio >= 0.10 && matchedUnigrams >= 1) {
-    finalScore = Math.max(1, Math.round(maxScore * 0.35));
+  } else if (targetUnigrams.size >= 5) {
+    if (unigramCoverage >= 0.45 || (evidenceRatio >= 0.45 && matchedUnigrams >= 4)) {
+      finalScore = maxScore;
+    } else if (evidenceRatio >= 0.20 && matchedUnigrams >= 2) {
+      finalScore = Math.max(1, Math.round(maxScore * 0.60));
+    } else if (evidenceRatio >= 0.08 && matchedUnigrams >= 1) {
+      finalScore = Math.max(1, Math.round(maxScore * 0.35));
+    } else {
+      finalScore = 0;
+    }
   } else {
-    finalScore = 0;
+    if (unigramCoverage >= 0.50 || (evidenceRatio >= 0.45 && matchedUnigrams >= 1)) {
+      finalScore = maxScore;
+    } else if (evidenceRatio >= 0.15 && matchedUnigrams >= 1) {
+      finalScore = Math.max(1, Math.round(maxScore * 0.50));
+    } else {
+      finalScore = 0;
+    }
   }
 
   finalScore = Math.max(0, Math.min(maxScore, finalScore));
@@ -875,7 +951,7 @@ export function evaluateTechnicalQuestion(q) {
   if (contradictions.length > 0) {
     status = "INCORRECT";
     rating = "Weak";
-  } else if (finalScore >= maxScore * 0.85) {
+  } else if (finalScore >= maxScore * 0.80) {
     status = "CORRECT";
     rating = "Strong";
   } else if (finalScore > 0) {
@@ -928,28 +1004,22 @@ export function evaluateProjectQuestion(q) {
   const qId = String(q.questionId || q.id || "");
   const cleanQuestion = normalizeTechnicalExpression(q.question || "");
 
-  if (
-    !ans ||
-    ans === "(No answer submitted)" ||
-    ans === "(No answer provided)" ||
-    ans.toLowerCase() === "not answered" ||
-    ans.toLowerCase() === "not submitted" ||
-    ans.toLowerCase() === "none" ||
-    ans.toLowerCase() === "null"
-  ) {
+  // 1. Mandatory Answer Gate Pre-Check
+  const gate = checkAnswerGate(ans, { question: q.question, expectedKnowledge: expected });
+  if (gate.isGateTriggered) {
     return {
       questionId: qId,
       score: 0,
       maxScore,
       difficulty: q.difficulty,
-      status: "NOT_ATTEMPTED",
-      rating: "Not Attempted",
+      status: gate.status,
+      rating: gate.rating,
       evaluationSource: "deterministic_nlp",
       correctPoints: [],
-      missingPoints: ["Question was not attempted"],
+      missingPoints: ["Question was not attempted or was declined"],
       incorrectPoints: [],
       grammarIssues: [],
-      feedback: "Question was not attempted.",
+      feedback: gate.feedback,
       betterAnswer: expected || "Demonstrate project architecture, data flow, and trade-off considerations.",
     };
   }
@@ -974,10 +1044,12 @@ export function evaluateProjectQuestion(q) {
   }
   const unigramCoverage = targetUnigrams.size > 0 ? matchedUnigrams / targetUnigrams.size : 0;
 
-  // Bonus for compound bigrams
+  // Bonus for compound bigrams (ignoring bigrams composed of question words)
   let matchedBigrams = 0;
   for (const b of expTokens.bigrams) {
-    if (!qTokens.bigrams.has(b) && candTokens.bigrams.has(b)) matchedBigrams++;
+    const parts = b.split("_");
+    const isFromQuestion = qTokens.bigrams.has(b) || parts.some((p) => qTokens.unigrams.has(p));
+    if (!isFromQuestion && candTokens.bigrams.has(b)) matchedBigrams++;
   }
 
   const hasArchitecture = /\b(architect|design|structur|pattern|layer|module|service|api|flow|pipeline|endpoint|database|schema|auth|middleware|deploy|scale|bottleneck|trade.?off|decision|chose|because|instead|rather|performance|security|scalab|availability|caching|redis|docker|microservice)\b/i.test(cleanAns);
@@ -995,12 +1067,14 @@ export function evaluateProjectQuestion(q) {
   let score = 0;
   if (contradictions.length > 0 || matchedUnigrams === 0) {
     score = 0;
-  } else if (unigramCoverage >= 0.50 || (evidenceRatio >= 0.55 && matchedUnigrams >= 3)) {
+  } else if (unigramCoverage >= 0.40 || (evidenceRatio >= 0.35 && matchedUnigrams >= 5) || (evidenceRatio >= 0.40 && matchedBigrams >= 1 && matchedUnigrams >= 4)) {
     score = maxScore;
-  } else if (evidenceRatio >= 0.30 && matchedUnigrams >= 2) {
-    score = Math.max(1, Math.round(maxScore * 0.60));
-  } else if (evidenceRatio >= 0.12 && matchedUnigrams >= 1) {
-    score = Math.max(1, Math.round(maxScore * 0.35));
+  } else if (evidenceRatio >= 0.25 && matchedUnigrams >= 3) {
+    score = Math.max(1, Math.round(maxScore * 0.70));
+  } else if (evidenceRatio >= 0.15 && matchedUnigrams >= 2) {
+    score = Math.max(1, Math.round(maxScore * 0.50));
+  } else if (evidenceRatio >= 0.08 && matchedUnigrams >= 1) {
+    score = Math.max(1, Math.round(maxScore * 0.30));
   } else {
     score = 0;
   }
@@ -1062,7 +1136,7 @@ const PATTERN_CAREER_GOALS = /\b(career\s+goals?|where\s+do\s+you\s+see\s+yourse
 const PATTERN_BEHAVIORAL = /\b(tell\s+me\s+about\s+(?:a\s+)?(?:time|conflict|situation|challenge|failure|project|disagreement|mistake)|conflict|disagreement|disagreed|faced|challenging|pressure|failure|failed|describe\s+a\s+situation|give\s+an\s+example|difficult\s+decision|tight\s+deadline|handled\s+a)\b/i;
 
 const STAR_SITUATION = /\b(situation|context|problem|challenge|scenario|issue|faced|encountered|happened|was|project|deadline|conflict|disagree|critical|bug)\b/i;
-const STAR_ACTION = /\b(decided|took|approached|handled|communicated|escalated|prioritized|managed|implemented|chose|resolved|did|made|acted|led|discussed|organized|worked|restructured|fixed|debugged|refactored|initiated|coordinated)\b/i;
+const STAR_ACTION = /\b(decided|took|approached|handled|communicated|escalated|prioritized|managed|implemented|chose|resolved|did|made|acted|led|discussed|organized|worked|restructured|fixed|debugged|refactored|initiated|coordinated|scheduled|presented|agreed|suggested|proposed|created|prepared|demonstrated)\b/i;
 const STAR_RESULT = /\b(result|outcome|impact|achieved|delivered|improved|reduced|increased|succeeded|learned|realized|ensured|resolved|completion|on\s+time|successfully|received|top\s+marks|demo)\b/i;
 const STAR_REFLECTION = /\b(learned|realized|improved|changed|next\s+time|would|better|growth|insight|reflection|takeaway|experience\s+taught|lesson)\b/i;
 
@@ -1080,7 +1154,7 @@ function classifyHRQuestionType(questionText) {
 function evaluateIntroductionQuestion(ans, maxScore, qId) {
   const hasEducation = /\b(degree|bachelor|master|b\.?tech|computer\s+science|engineering|college|university|student|graduate|graduated|pursuing|school|academics?|cgpa|gpa)\b/i.test(ans);
   const hasSkills = /\b(javascript|python|java|c\+\+|c#|react|node|express|mongo|sql|html|css|frontend|backend|full.?stack|software|developer|engineer|web|app|development|ai|machine\s+learning|data|devops|git|cloud|aws)\b/i.test(ans);
-  const hasProjects = /\b(project|projects|built|developed|created|intern|internship|experience|worked\s+on|designed|implemented|portfolio|hackathon|application|system)\b/i.test(ans);
+  const hasProjects = /\b(project|projects|built|building|developed|created|intern|internship|experience|worked\s+on|worked\s+extensively|designed|implemented|portfolio|hackathon|applications?|systems?)\b/i.test(ans);
   const hasInterests = /\b(passionate|enthusiastic|interested|eager|excited|aiming|looking\s+forward|solve\s+problems|grow|learn|focus|interest|aspiring)\b/i.test(ans);
   const hasIdentity = /\b(I am|my name|myself|I'm|background)\b/i.test(ans);
 
@@ -1200,7 +1274,7 @@ function evaluateStrengthsQuestion(ans, maxScore, qId) {
 
 function evaluateWeaknessQuestion(ans, maxScore, qId) {
   const hasWeakness = /\b(perfectionis|public\s+speaking|saying\s+no|delegat|overthink|hesitant|impatient|new\s+technolog|time\s+management|asking\s+for\s+help|nervous|speaking\s+up|taking\s+on\s+too\s+much|difficulty|struggle|weakness)\b/i.test(ans);
-  const hasMitigation = /\b(working\s+on|improving|practice|practicing|learning|courses?|reminders?|calendar|feedback|conscious|actively|now\s+I|mitigate|overcome|handle|started|track|routine)\b/i.test(ans);
+  const hasMitigation = /\b(working\s+on|improving|practice|practiced|practicing|volunteered|volunteer|learning|courses?|reminders?|calendar|feedback|conscious|actively|now\s+I|mitigate|overcome|handle|started|track|routine|address|presentation|demos?)\b/i.test(ans);
   const hasReflection = /\b(learned|improved|progress|better|growth|mindset|manage|developed|realized|aware)\b/i.test(ans);
 
   if (!hasWeakness && !hasMitigation) {
@@ -1262,7 +1336,7 @@ function evaluateMotivationQuestion(ans, maxScore, qId) {
   const hasAlignment = /\b(culture|mission|vision|environment|opportunity|align|excited|passion|innovat|growth|learn|reputation|company|role|position)\b/i.test(ans);
   const hasReasoning = REASONING_PATTERN.test(ans) || /\b(because|fit|match|complement|bring|drive|commitment)\b/i.test(ans);
 
-  if (!hasSkills && !hasValue && !hasAlignment) {
+  if (!hasSkills && !hasValue) {
     return {
       questionId: qId,
       score: 0,
@@ -1272,8 +1346,8 @@ function evaluateMotivationQuestion(ans, maxScore, qId) {
       evaluationSource: "deterministic_nlp",
       behavioralDimensions: { ownership: 1.0, decisionMaking: 1.0, professionalMaturity: 1.0, confidence: 1.0, selfAwareness: 1.0 },
       reasoningStrengths: [],
-      concerns: ["Answer did not articulate value proposition, relevant skills, or motivation"],
-      feedback: "Answer does not provide clear reasons or skills relevant to why you are a fit for the role.",
+      concerns: ["Answer did not articulate a concrete value proposition or relevant technical skills"],
+      feedback: "Answer does not provide clear reasons, skills, or value proposition for the role.",
       betterAnswer: "Connect your core technical skills, work ethic, and ability to contribute directly to the team's success.",
     };
   }
@@ -1414,7 +1488,7 @@ function evaluateBehavioralQuestion(ans, maxScore, qId) {
   if (hasReflection) { score += 1; strengths.push("Demonstrated self-reflection & key learnings"); }
 
   score = Math.max(score > 0 ? 6 : 0, Math.min(maxScore, score));
-  const status = score >= maxScore * 0.8 ? "CORRECT" : score >= maxScore * 0.4 ? "PARTIALLY_CORRECT" : "INCORRECT";
+  const status = score >= maxScore * 0.8 ? "CORRECT" : score > 0 ? "PARTIALLY_CORRECT" : "INCORRECT";
   const rating = score >= 16 ? "Exceptional" : score >= 12 ? "Strong" : score >= 8 ? "Average" : "Weak";
 
   return {
@@ -1439,11 +1513,33 @@ function evaluateBehavioralQuestion(ans, maxScore, qId) {
 }
 
 function evaluateGeneralHRQuestion(ans, maxScore, qId, qText) {
-  const hasReasoning = REASONING_PATTERN.test(ans);
-  const hasProfessionalTerms = /\b(work|team|project|professional|communication|collaboration|responsibility|ethics|learning|experience|skills|problem|solution)\b/i.test(ans);
-  const wordCount = ans.split(/\s+/).filter(Boolean).length;
+  const gate = checkAnswerGate(ans, { question: qText });
+  if (gate.isGateTriggered) {
+    return {
+      questionId: qId,
+      score: 0,
+      maxScore,
+      status: gate.status,
+      rating: gate.rating,
+      evaluationSource: "deterministic_nlp",
+      behavioralDimensions: { ownership: 0, decisionMaking: 0, professionalMaturity: 0, confidence: 0, selfAwareness: 0 },
+      reasoningStrengths: [],
+      concerns: ["Question was not attempted or was declined"],
+      feedback: gate.feedback,
+      betterAnswer: "Provide a thoughtful, professional response addressing the question asked.",
+    };
+  }
 
-  if (wordCount < 3 && !hasProfessionalTerms) {
+  const cleanAns = ans.trim();
+  const words = cleanAns.split(/\s+/).filter(Boolean);
+  const wordCount = words.length;
+
+  const hasReasoning = REASONING_PATTERN.test(cleanAns);
+  const hasProfessionalTerms = /\b(communication|collaboration|responsibility|ethics|integrity|learning|problem.?solving|adaptability|accountability|mentorship|initiative|stakeholders?|honest|transparen|adhere|standards?|growth|teamwork|ownership)\b/i.test(cleanAns);
+
+  // Require concrete professional terminology / ethics / accountability.
+  // Vacuous tautologies like "I work with my team because of work in the project" must get 0.
+  if (!hasProfessionalTerms || wordCount < 4) {
     return {
       questionId: qId,
       score: 0,
@@ -1453,19 +1549,31 @@ function evaluateGeneralHRQuestion(ans, maxScore, qId, qText) {
       evaluationSource: "deterministic_nlp",
       behavioralDimensions: { ownership: 1.0, decisionMaking: 1.0, professionalMaturity: 1.0, confidence: 1.0, selfAwareness: 1.0 },
       reasoningStrengths: [],
-      concerns: ["Answer was too sparse to demonstrate professional competence"],
-      feedback: "Answer does not provide sufficient detail to evaluate.",
-      betterAnswer: "Provide a thoughtful, professional response with supporting rationale.",
+      concerns: ["Answer lacks substantive professional principles, workplace competencies, or specific ethics/accountability context"],
+      feedback: "Answer does not provide substantive professional reasoning or evidence.",
+      betterAnswer: "Provide a thoughtful, professional response demonstrating ethics, personal accountability, and clear communication standards.",
     };
   }
 
-  let score = 10;
+  let score = 0;
   const strengths = [];
-  if (hasProfessionalTerms) { score += 6; strengths.push("Maintained professional workplace context"); }
-  if (hasReasoning) { score += 4; strengths.push("Articulated clear reasoning"); }
+  const concerns = [];
 
-  score = Math.max(score > 0 ? 6 : 0, Math.min(maxScore, score));
-  const status = score >= maxScore * 0.8 ? "CORRECT" : score >= maxScore * 0.4 ? "PARTIALLY_CORRECT" : "INCORRECT";
+  score += 10;
+  strengths.push("Demonstrated professional competency and workplace ethics");
+
+  if (hasReasoning) {
+    score += 6;
+    strengths.push("Articulated clear reasoning and rationale");
+  }
+
+  if (wordCount >= 20 && score >= 8) {
+    score += 4;
+    strengths.push("Provided detailed context and elaboration");
+  }
+
+  score = Math.max(0, Math.min(maxScore, score));
+  const status = score >= maxScore * 0.8 ? "CORRECT" : score > 0 ? "PARTIALLY_CORRECT" : "INCORRECT";
   const rating = score >= 16 ? "Exceptional" : score >= 12 ? "Strong" : score >= 8 ? "Average" : "Weak";
 
   return {
@@ -1477,8 +1585,10 @@ function evaluateGeneralHRQuestion(ans, maxScore, qId, qText) {
     evaluationSource: "deterministic_nlp",
     behavioralDimensions: { ownership: 4.0, decisionMaking: 4.0, professionalMaturity: 4.0, confidence: 4.0, selfAwareness: 4.0 },
     reasoningStrengths: strengths,
-    concerns: [],
-    feedback: `Deterministic evaluation (AI unavailable). ${strengths.join(", ") || "Answer evaluated for professional relevance."}. Score: ${score}/${maxScore}.`,
+    concerns,
+    feedback: score > 0
+      ? `Deterministic evaluation (AI unavailable). ${strengths.join(", ")}. Score: ${score}/${maxScore}.`
+      : "Answer does not demonstrate adequate professional substance or relevant reasoning.",
     betterAnswer: "Provide a detailed answer with specific examples and sound reasoning.",
   };
 }
@@ -1489,26 +1599,20 @@ export function evaluateHRQuestion(q) {
   const qId = String(q.questionId || q.id || "");
   const qText = String(q.question || "");
 
-  if (
-    !ans ||
-    ans === "(No answer provided)" ||
-    ans === "(No answer submitted)" ||
-    ans.toLowerCase() === "not answered" ||
-    ans.toLowerCase() === "not submitted" ||
-    ans.toLowerCase() === "none" ||
-    ans.toLowerCase() === "null"
-  ) {
+  // 1. Mandatory Answer Gate Pre-Check
+  const gate = checkAnswerGate(ans, { question: qText });
+  if (gate.isGateTriggered) {
     return {
       questionId: qId,
       score: 0,
       maxScore,
-      status: "NOT_ATTEMPTED",
-      rating: "Not Attempted",
+      status: gate.status,
+      rating: gate.rating,
       evaluationSource: "deterministic_nlp",
       behavioralDimensions: { ownership: 0, decisionMaking: 0, professionalMaturity: 0, confidence: 0, selfAwareness: 0 },
       reasoningStrengths: [],
-      concerns: ["Question was not attempted"],
-      feedback: "Question was not attempted.",
+      concerns: ["Question was not attempted or was declined"],
+      feedback: gate.feedback,
       betterAnswer: "Provide a complete and thoughtful response addressing the question asked.",
     };
   }

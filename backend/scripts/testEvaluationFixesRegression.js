@@ -198,7 +198,7 @@ const techTestCases = [
     difficulty: "medium",
     maxScore: 5,
     minScore: 2,
-    expectedStatus: "CORRECT",
+    expectedStatus: "PARTIALLY_CORRECT",
   },
   // 8. Completely wrong answer
   {

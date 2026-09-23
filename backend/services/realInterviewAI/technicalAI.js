@@ -277,26 +277,62 @@ export async function generateTechnicalAI(candidateProfile = {}, userHistorySet 
   return { questions: allQuestions.slice(0, 15) };
 }
 
+import { checkAnswerGate } from "./judgeAnswerGate.js";
+import { calibrateScore, checkContradictions } from "./judgeScoreCalibrator.js";
+
 /**
  * Evaluates candidate technical answers in ONE single AI Gateway Request.
  */
 export async function evaluateTechnicalInterviewAI({ candidateProfile = {}, questions = [], options = {} }) {
   console.log("\n[REAL-INTERVIEW][AI-CALL]\nround=technical\noperation=evaluation\nattempt=1");
 
-  const formattedQuestions = questions.map((q, idx) => ({
-    i: idx + 1,
-    id: String(q.questionId || q.id || idx),
-    q: String(q.question || ""),
-    diff: String(q.difficulty || "medium"),
-    max: Number(q.maxScore || q.maxMarks || (q.difficulty === "easy" ? 3 : q.difficulty === "hard" ? 13 : 5)),
-    ans: String(q.candidateAnswer || "(No answer provided)").trim(),
-    expectedKnowledge: String(q.expectedKnowledge || q.expectedAnswer || "").trim(),
-  }));
+  const gatedEvaluations = [];
+  const questionsToAI = [];
 
-  const prompt = `You are a fair technical interviewer evaluating candidate responses for a Technical Interview session in ONE assessment.
+  for (let idx = 0; idx < questions.length; idx++) {
+    const q = questions[idx];
+    const qIdStr = String(q.questionId || q.id || idx);
+    const maxScore = Number(q.maxScore || q.maxMarks || (q.difficulty === "easy" ? 3 : q.difficulty === "hard" ? 13 : 5));
+    const ans = String(q.candidateAnswer || "(No answer provided)").trim();
+    const expected = String(q.expectedKnowledge || q.expectedAnswer || "").trim();
+
+    const gate = checkAnswerGate(ans, { question: q.question, expectedKnowledge: expected });
+    if (gate.isGateTriggered) {
+      gatedEvaluations.push({
+        questionId: qIdStr,
+        score: 0,
+        maxScore,
+        difficulty: q.difficulty || "medium",
+        status: gate.status,
+        rating: gate.rating,
+        evaluationSource: "ANSWER_GATE",
+        correctPoints: [],
+        missingPoints: ["Question was not attempted or was declined"],
+        incorrectPoints: [],
+        grammarIssues: [],
+        feedback: gate.feedback,
+        betterAnswer: expected || "Comprehensive technical explanation required.",
+      });
+    } else {
+      questionsToAI.push({
+        i: idx + 1,
+        id: qIdStr,
+        q: String(q.question || ""),
+        diff: String(q.difficulty || "medium"),
+        max: maxScore,
+        ans,
+        expectedKnowledge: expected,
+      });
+    }
+  }
+
+  let aiEvaluations = [];
+
+  if (questionsToAI.length > 0) {
+    const prompt = `You are a fair technical interviewer evaluating candidate responses for a Technical Interview session in ONE assessment.
 
 QUESTIONS, EXPECTED KNOWLEDGE & CANDIDATE ANSWERS:
-${JSON.stringify(formattedQuestions, null, 2)}
+${JSON.stringify(questionsToAI, null, 2)}
 
 FAIR EVALUATION INSTRUCTIONS:
 1. TECHNICAL UNDERSTANDING & REFERENCE ALIGNMENT:
@@ -336,25 +372,64 @@ JSON SCHEMA ONLY:
   "finalFeedback": "Overall candidate summary..."
 }`;
 
-  const parsed = await AIGateway.execute({
-    prompt,
-    systemPrompt: "You are a technical interviewer evaluator. Output ONLY valid JSON matching the requested schema.",
-    provider: options.provider,
-    apiKey: options.apiKey || getTechnicalApiKey(),
-    sessionId: options.sessionId,
-    roundType: "evaluation",
-    orderIndex: 1,
-    options: {
-      model: options.model || getTechnicalModel(),
-      temperature: 0.2,
-      maxRetries: 3
-    }
-  });
+    const parsed = await AIGateway.execute({
+      prompt,
+      systemPrompt: "You are a technical interviewer evaluator. Output ONLY valid JSON matching the requested schema.",
+      provider: options.provider,
+      apiKey: options.apiKey || getTechnicalApiKey(),
+      sessionId: options.sessionId,
+      roundType: "evaluation",
+      orderIndex: 1,
+      options: {
+        model: options.model || getTechnicalModel(),
+        temperature: 0.2,
+        maxRetries: 3,
+      },
+    });
 
-  if (!parsed || !Array.isArray(parsed.evaluations)) {
-    throw new Error("Technical evaluation AI response missing 'evaluations' array");
+    if (parsed && Array.isArray(parsed.evaluations)) {
+      aiEvaluations = parsed.evaluations.map((item) => {
+        const matchingQ = questionsToAI.find((q) => q.id === String(item.questionId));
+        const maxScore = matchingQ?.max || Number(item.maxScore) || 5;
+        const contradictions = checkContradictions(matchingQ?.ans || "", `${matchingQ?.expectedKnowledge || ""} ${matchingQ?.q || ""}`);
+
+        const calibrated = calibrateScore({
+          rawScore: item.score,
+          maxMarks: maxScore,
+          status: item.status,
+          evaluationSource: "ai_evaluated",
+          confidence: 0.95,
+          evidence: item.correctPoints || [],
+          missing: item.missingPoints || [],
+          contradictions: item.incorrectPoints?.length ? item.incorrectPoints : contradictions,
+          feedback: item.feedback,
+          betterAnswer: item.betterAnswer || matchingQ?.expectedKnowledge || "",
+          difficulty: item.difficulty || matchingQ?.diff || "medium",
+        });
+
+        return {
+          questionId: String(item.questionId),
+          ...calibrated,
+        };
+      });
+    } else {
+      throw new Error("Technical evaluation AI response missing 'evaluations' array");
+    }
   }
 
-  console.log(`[RealInterviewAI][Technical] Complete evaluation finished for ${parsed.evaluations.length} questions`);
-  return parsed;
+  const allEvaluations = [...gatedEvaluations, ...aiEvaluations];
+  const totalScore = Math.min(100, allEvaluations.reduce((sum, e) => sum + (e.score || 0), 0));
+  const percentage = totalScore;
+
+  console.log(`[RealInterviewAI][Technical] Complete evaluation finished for ${allEvaluations.length} questions`);
+  return {
+    evaluations: allEvaluations,
+    totalScore,
+    maxScore: 100,
+    percentage,
+    overallRating: percentage >= 80 ? "Strong" : percentage >= 50 ? "Average" : "Weak",
+    strengths: ["Technical answers evaluated against expected reference criteria"],
+    weaknesses: ["Areas for improvement identified in candidate responses"],
+    finalFeedback: `Technical evaluation completed. Score: ${totalScore}/100.`,
+  };
 }
