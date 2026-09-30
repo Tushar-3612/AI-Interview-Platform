@@ -105,5 +105,9 @@ export function getStarterCode(question, language = "python") {
     return `#include <stdio.h>\n#include <stdlib.h>\n\n// Write your solution here\n`;
   }
 
+  if (lang === "python" || lang === "py" || lang === "python3") {
+    return `# Write your solution here\n`;
+  }
+
   return `// Write your solution here\n`;
 }

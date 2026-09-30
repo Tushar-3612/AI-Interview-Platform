@@ -12,6 +12,8 @@ import {
   User,
   LogOut,
   X,
+  Terminal,
+  BrainCircuit,
 } from "lucide-react";
 import { useTheme } from "../../hooks/useTheme";
 import { getAuthUser } from "../../hooks/useStudentProfile";
@@ -20,8 +22,10 @@ import toast from "react-hot-toast";
 const NAV_ITEMS = [
   { label: "Home", path: "/dashboard", icon: Home },
   { label: "My Tests", path: "/tests", icon: ClipboardList },
-  { label: "Interview Practice", path: "/interview-practice", icon: BookOpen },
+  { label: "Aptitude", path: "/aptitude", icon: BrainCircuit },
   { label: "Coding Round", path: "/coding-round", icon: Code2 },
+  { label: "Coding Assessment", path: "/coding-assessments", icon: Terminal },
+  { label: "Interview Practice", path: "/interview-practice", icon: BookOpen },
   { label: "Mock Interview", path: "/mock-interview", icon: Sparkles },
   { label: "Placement", path: "/placement-dashboard", icon: Compass },
   { label: "About", path: "/about", icon: HelpCircle },
@@ -134,14 +138,7 @@ export default function StudentSidebar({
                     : theme === "dark"
                     ? "#AEB4C0"
                     : "#4B5563",
-                  background: active
-                    ? theme === "dark"
-                      ? "rgba(255, 107, 53, 0.12)"
-                      : "rgba(255, 107, 53, 0.08)"
-                    : "transparent",
-                  border: active
-                    ? "1px solid rgba(255, 107, 53, 0.25)"
-                    : "1px solid transparent",
+                  background: "transparent",
                 }}
                 onMouseEnter={(e) => {
                   if (!active) {
@@ -161,8 +158,26 @@ export default function StudentSidebar({
                   }
                 }}
               >
+                {/* Smooth sliding active background pill */}
+                {active && !collapsed && (
+                  <motion.div
+                    layoutId="activeSidebarPill"
+                    className="absolute inset-0 rounded-xl pointer-events-none"
+                    style={{
+                      background: "rgba(255, 107, 53, 0.14)",
+                      border: "1px solid rgba(255, 107, 53, 0.28)",
+                      boxShadow: "0 0 16px -4px rgba(255, 107, 53, 0.25)",
+                    }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 260,
+                      damping: 28,
+                    }}
+                  />
+                )}
+
                 <Icon
-                  className="w-5 h-5 shrink-0 transition-transform duration-200 group-hover:scale-110"
+                  className="w-5 h-5 shrink-0 transition-transform duration-200 group-hover:scale-110 relative z-10"
                   style={{
                     color: active
                       ? "#FF6B35"
@@ -172,7 +187,7 @@ export default function StudentSidebar({
                   }}
                 />
                 {!collapsed && (
-                  <span className="whitespace-nowrap truncate">{item.label}</span>
+                  <span className="whitespace-nowrap truncate relative z-10">{item.label}</span>
                 )}
 
                 {/* Active Indicator Bar on Collapsed */}
@@ -180,6 +195,11 @@ export default function StudentSidebar({
                   <motion.div
                     layoutId="activeSidebarIndicator"
                     className="absolute -left-1.5 w-1 h-5 rounded-r-full bg-[#FF6B35]"
+                    transition={{
+                      type: "spring",
+                      stiffness: 260,
+                      damping: 28,
+                    }}
                   />
                 )}
               </Link>

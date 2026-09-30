@@ -135,7 +135,8 @@ export default function CodingBulkImportModal({
       setImportReport(report);
       toast.success(res.data?.message || "Import completed successfully!");
       if (report.created > 0 || report.updated > 0) {
-        onSuccess();
+        onSuccess(res.data?.questions || []);
+        onClose();
       }
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to import coding questions");
@@ -163,7 +164,7 @@ export default function CodingBulkImportModal({
       );
 
       toast.success(res.data?.message || `Successfully imported ${validQuestions.length} coding questions!`);
-      onSuccess();
+      onSuccess(res.data?.questions || []);
       onClose();
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to save questions to database");

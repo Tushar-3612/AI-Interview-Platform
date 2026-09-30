@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Edit2, Trash2, Code, Search, X, ChevronDown, ChevronUp, ToggleLeft, ToggleRight, Archive, RotateCcw, RefreshCw, Upload } from "lucide-react";
+import { Plus, Edit2, Trash2, Code, Search, X, ChevronDown, ChevronUp, ToggleLeft, ToggleRight, Archive, RotateCcw, RefreshCw, Upload, Layers } from "lucide-react";
 import api from "../../utils/api";
 import { getAuthToken } from "../../hooks/useStudentProfile";
 import toast from "react-hot-toast";
 import { SkeletonCompanyCard as SkeletonCard, ErrorState } from "../../components/ui/Skeleton";
 import CodingBulkImportModal from "../../components/admin/CodingBulkImportModal";
+import TestCaseManagementModal from "../../components/admin/TestCaseManagementModal";
 
 const DIFFICULTIES = ["Easy", "Medium", "Hard"];
 const LANGUAGES = ["JavaScript", "Python", "Java", "C++", "Go", "Rust"];
@@ -32,6 +33,8 @@ function CodingQuestionManagement() {
   const [sourceInfo, setSourceInfo] = useState(null);
   const [syncing, setSyncing] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState("");
+  const [testCaseModalOpen, setTestCaseModalOpen] = useState(false);
+  const [selectedQuestionForTestCases, setSelectedQuestionForTestCases] = useState(null);
 
   const emptyForm = {
     title: "", difficulty: "Medium", category: "", problemStatement: "", description: "",
@@ -326,6 +329,19 @@ function CodingQuestionManagement() {
                     <button type="button" onClick={() => setExpandId(isExpanded ? null : q._id)} className="p-2 rounded-lg border cursor-pointer hover:bg-neutral-800 transition" style={{ borderColor: "var(--border)", color: "var(--text-muted)" }}>
                       {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                     </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedQuestionForTestCases(q);
+                        setTestCaseModalOpen(true);
+                      }}
+                      className="px-2.5 py-1.5 rounded-lg border cursor-pointer hover:bg-neutral-800 transition flex items-center gap-1.5 text-xs font-semibold"
+                      style={{ borderColor: "var(--border)", color: "var(--primary)" }}
+                      title="Manage Test Cases (Sample & Hidden)"
+                    >
+                      <Layers className="w-3.5 h-3.5" />
+                      <span className="hidden md:inline">Test Cases</span>
+                    </button>
                     <button type="button" onClick={() => openEdit(q)} className="p-2 rounded-lg border cursor-pointer hover:bg-neutral-800 transition" style={{ borderColor: "var(--border)", color: "var(--text-muted)" }}>
                       <Edit2 className="w-4 h-4" />
                     </button>
@@ -518,6 +534,14 @@ function CodingQuestionManagement() {
         onSuccess={fetchData}
         companies={companies}
         defaultCompanyId={companyFilter}
+      />
+
+      {/* Test Case Management Modal (Sample & Hidden) */}
+      <TestCaseManagementModal
+        isOpen={testCaseModalOpen}
+        onClose={() => setTestCaseModalOpen(false)}
+        question={selectedQuestionForTestCases}
+        onUpdated={fetchData}
       />
     </div>
   );

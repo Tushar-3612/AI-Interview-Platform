@@ -82,8 +82,12 @@ export const getCodingQuestions = async (req, res) => {
     const { companyId, difficulty, tags, page = 1, limit = 20, search, includeDeleted } = req.query;
     const filter = {};
     if (!includeDeleted) filter.isDeleted = { $ne: true };
-    if (companyId) filter.companyId = companyId;
-    if (difficulty) filter.difficulty = difficulty;
+    if (companyId && companyId !== "all" && companyId !== "general" && companyId !== "undefined") {
+      filter.companyId = companyId;
+    }
+    if (difficulty && difficulty !== "all" && difficulty !== "All") {
+      filter.difficulty = new RegExp(`^${difficulty}$`, "i");
+    }
     if (tags) filter.tags = { $in: tags.split(",") };
     if (search) {
       filter.$or = [
@@ -214,6 +218,7 @@ export const bulkImportCodingQuestions = async (req, res) => {
     let created = 0;
     let updated = 0;
     let skipped = 0;
+    const importedDocs = [];
     const companies = await Company.find().lean();
     const companyMap = Object.fromEntries(companies.flatMap((c) => [[c.id, c.name], [String(c.name).toLowerCase(), c.name]]));
     for (const raw of questions) {
@@ -234,13 +239,22 @@ export const bulkImportCodingQuestions = async (req, res) => {
           { _id: existing._id },
           { ...doc, isDeleted: existing.isDeleted, deletedAt: existing.deletedAt, lastEditedAt: new Date() }
         );
+        const updatedDoc = await CodingQuestion.findById(existing._id).lean();
+        if (updatedDoc) importedDocs.push(updatedDoc);
         updated++;
       } else {
-        await CodingQuestion.create({ ...doc, isDeleted: false, createdBy: req.user?._id || null });
+        const createdDoc = await CodingQuestion.create({ ...doc, isDeleted: false, createdBy: req.user?._id || null });
+        importedDocs.push(createdDoc.toObject ? createdDoc.toObject() : createdDoc);
         created++;
       }
     }
-    res.json({ message: `Import complete: ${created} created, ${updated} updated, ${skipped} skipped`, created, updated, skipped });
+    res.json({
+      message: `Import complete: ${created} created, ${updated} updated, ${skipped} skipped`,
+      created,
+      updated,
+      skipped,
+      questions: importedDocs,
+    });
   } catch (error) {
     res.status(500).json({ message: "Failed to import questions", error: error.message });
   }

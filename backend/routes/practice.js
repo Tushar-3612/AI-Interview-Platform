@@ -38,6 +38,7 @@ router.post("/coding/run", runCodingCode);
 router.post("/coding/submit", submitCoding);
 router.get("/coding/history", getCodingHistory);
 router.get("/coding/history/:id", getCodingSubmission);
+router.get("/coding/progress", getCodingProgress);
 router.get("/coding/progress/:companyId", getCodingProgress);
 router.post("/coding/draft", saveCodingDraft);
 router.get("/coding/draft/:questionId", getCodingDraft);

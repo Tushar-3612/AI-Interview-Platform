@@ -18,7 +18,8 @@ const testResultSchema = new mongoose.Schema(
 const codingSubmissionSchema = new mongoose.Schema(
   {
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: false, index: true },
-    candidateId: { type: String, default: "" },
+    candidateId: { type: mongoose.Schema.Types.ObjectId, ref: "User", index: true },
+    attemptId: { type: mongoose.Schema.Types.ObjectId, ref: "CodingAttempt", index: true },
     interviewId: { type: String, default: "", index: true },
     roundId: { type: String, default: "coding" },
     questionId: { type: mongoose.Schema.Types.Mixed, required: false },
@@ -27,26 +28,30 @@ const codingSubmissionSchema = new mongoose.Schema(
     companyName: { type: String, default: "" },
     language: { type: String, default: "cpp" },
     code: { type: String, required: true },
+    sourceCode: { type: String, default: "" },
     approach: { type: String, default: "" },
     status: {
       type: String,
-      enum: ["completed", "accepted", "failed", "compile_error", "runtime_error", "time_limit", "error", "unsupported"],
       default: "failed",
     },
+    passedTests: { type: Number, default: 0 },
+    totalTests: { type: Number, default: 0 },
     passedCount: { type: Number, default: 0 },
     totalCount: { type: Number, default: 0 },
     score: { type: Number, default: 0 },
-    executionTime: { type: String, default: "0.00" },
+    executionTime: { type: mongoose.Schema.Types.Mixed, default: 0 },
     memory: { type: Number, default: 0 },
     compileOutput: { type: String, default: "" },
     results: [testResultSchema],
     timeTakenMs: { type: Number, default: 0 },
+    submittedAt: { type: Date, default: Date.now },
   },
   { timestamps: true }
 );
 
 codingSubmissionSchema.index({ userId: 1, createdAt: -1 });
-codingSubmissionSchema.index({ interviewId: 1, questionId: 1 });
+codingSubmissionSchema.index({ attemptId: 1, questionId: 1 });
+codingSubmissionSchema.index({ candidateId: 1, createdAt: -1 });
 
 const CodingSubmission = mongoose.model("CodingSubmission", codingSubmissionSchema);
 export default CodingSubmission;

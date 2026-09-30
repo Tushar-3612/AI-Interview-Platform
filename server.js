@@ -26,6 +26,8 @@ import technicalQuestionRoutes from "./backend/routes/technicalQuestions.js";
 import realInterviewRoutes from "./backend/routes/realInterviewRoutes.js";
 import individualTechnicalRoutes from "./backend/routes/individualRound/technical/individualTechnicalRoutes.js";
 import individualProjectRoutes from "./backend/routes/individualRound/project/individualProjectRoutes.js";
+import adminCodingAssessmentRoutes from "./backend/routes/adminCodingAssessmentRoutes.js";
+import candidateCodingAssessmentRoutes from "./backend/routes/candidateCodingAssessmentRoutes.js";
 
 import { initializeCSVExports } from "./backend/utils/csvExporter.js"; // ← Path sahi hai
 import { apiLimiter } from "./backend/middleware/rateLimiter.js";
@@ -108,6 +110,8 @@ app.use("/api/technical-questions", technicalQuestionRoutes);
 app.use("/api/real-interview", realInterviewRoutes);
 app.use("/api/individual/technical", individualTechnicalRoutes);
 app.use("/api/individual/project", individualProjectRoutes);
+app.use("/api/admin/coding", adminCodingAssessmentRoutes);
+app.use("/api/coding", candidateCodingAssessmentRoutes);
 
 // Health Check Route (Add this for testing)
 app.get("/api/health", (req, res) => {
