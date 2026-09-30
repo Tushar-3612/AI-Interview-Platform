@@ -6,7 +6,7 @@ import { normalizeProviderError } from "../utils/normalizeProviderError.js";
  */
 export class GeminiProvider extends BaseProvider {
   constructor() {
-    super("gemini", "gemini-2.5-flash");
+    super("gemini", "gemini-2.0-flash");
   }
 
   async executeChatCompletion({ apiKey, model, messages, temperature = 0.3, maxTokens = 8192, timeoutMs = 45000 }) {
@@ -99,26 +99,6 @@ export class GeminiProvider extends BaseProvider {
           };
         }
 
-        if (finishReason === "MAX_TOKENS") {
-          return {
-            success: false,
-            text: text || null,
-            parsedResponse: null,
-            provider: "gemini",
-            model: activeModel,
-            finishReason,
-            category: "AI_TRUNCATED_JSON",
-            retryable: true,
-            rateLimited: false,
-            authenticationError: false,
-            quotaError: false,
-            timeout: false,
-            transientFailure: false,
-            rawSafeError: "Response truncated: MAX_TOKENS limit reached",
-            usage: { promptTokens, completionTokens, totalTokens },
-          };
-        }
-
         if (!hasText) {
           return {
             success: false,
@@ -127,14 +107,14 @@ export class GeminiProvider extends BaseProvider {
             provider: "gemini",
             model: activeModel,
             finishReason,
-            category: "AI_EMPTY_RESPONSE",
+            category: finishReason === "MAX_TOKENS" ? "AI_TRUNCATED_JSON" : "AI_EMPTY_RESPONSE",
             retryable: true,
             rateLimited: false,
             authenticationError: false,
             quotaError: false,
             timeout: false,
             transientFailure: true,
-            rawSafeError: "Gemini returned empty response",
+            rawSafeError: finishReason === "MAX_TOKENS" ? "Response truncated with no text generated" : "Gemini returned empty response",
             usage: { promptTokens, completionTokens, totalTokens },
           };
         }
@@ -156,13 +136,27 @@ export class GeminiProvider extends BaseProvider {
           usage: { promptTokens, completionTokens, totalTokens },
         };
       } else {
-        const err = new Error(`Gemini HTTP ${res.status}`);
+        let errMessage = `Gemini HTTP ${res.status}`;
+        let errDetails = null;
+        try {
+          const errData = await res.json();
+          if (errData?.error?.message) {
+            errMessage = `Gemini HTTP ${res.status}: ${errData.error.message}`;
+            errDetails = errData.error;
+          }
+        } catch {
+          // ignore json parse failure on non-json error responses
+        }
+
+        const err = new Error(errMessage);
         err.status = res.status;
+        err.details = errDetails;
         const norm = normalizeProviderError(err);
         let category = "AI_PROVIDER_UNKNOWN";
         if (norm.rateLimited) category = "AI_PROVIDER_RATE_LIMIT";
         else if (norm.authenticationError) category = "AI_PROVIDER_AUTH_ERROR";
         else if (norm.quotaExceeded) category = "PERMANENT_QUOTA";
+        else if (norm.modelUnavailable) category = "MODEL_NOT_FOUND";
 
         return {
           success: false,

@@ -204,13 +204,12 @@ export async function generateAndProcessCodingQuestions({ userId = null, session
 
     const missingSlots = slots.filter(s => !existingIndicesSet.has(s.orderIndex));
     let newlyGeneratedCount = 0;
-    let fallbackUsedInRun = false;
+    let lastAiError = null;
 
     for (const slot of missingSlots) {
       let problemData = null;
-      let isFallbackForSlot = false;
 
-      // Try AI generation for single question
+      // Pure AI generation for single coding question slot
       try {
         problemData = await generateSingleCodingAI({
           orderIndex: slot.orderIndex,
@@ -225,25 +224,11 @@ export async function generateAndProcessCodingQuestions({ userId = null, session
           newlyGeneratedCount++;
         }
       } catch (aiErr) {
+        lastAiError = aiErr;
         console.warn(`[CodingService] Single Coding AI generation failed for orderIndex=${slot.orderIndex}: ${aiErr.message}`);
       }
 
-      // If AI generation failed, use local curated fallback bank
-      if (!problemData || !problemData.title) {
-        problemData = await getFallbackCodingQuestion({
-          orderIndex: slot.orderIndex,
-          difficulty: slot.difficulty,
-          marks: slot.marks,
-          usedTitlesSet
-        });
-        if (problemData) {
-          isFallbackForSlot = true;
-          fallbackUsedInRun = true;
-          console.log(`[CodingService] Using curated local coding bank fallback for orderIndex=${slot.orderIndex} title="${problemData.title}"`);
-        }
-      }
-
-      // If a valid question was obtained (either AI or Fallback), save immediately
+      // If a valid AI question was obtained, persist immediately
       if (problemData && problemData.title) {
         usedTitlesSet.add(problemData.title);
 
@@ -266,9 +251,9 @@ export async function generateAndProcessCodingQuestions({ userId = null, session
           supportedLanguages: ["python", "javascript", "java", "cpp"],
           visibleTestCases: problemData.visibleTestCases || [],
           hiddenTestCases: problemData.hiddenTestCases || [],
-          source: isFallbackForSlot ? "CURATED_FALLBACK_BANK" : "AI_GENERATED",
-          generationMethod: isFallbackForSlot ? "LOCAL_CODING_BANK" : "SINGLE_AI_REQUEST",
-          isFallback: isFallbackForSlot,
+          source: "AI_GENERATED",
+          generationMethod: "SINGLE_AI_REQUEST",
+          isFallback: false,
         };
 
         await idempotentUpsertQuestion(
@@ -284,28 +269,13 @@ export async function generateAndProcessCodingQuestions({ userId = null, session
     const count = finalQuestions.length;
     const expectedCount = 3;
     const roundComplete = count === 3;
-    const hasAnyFallback = finalQuestions.some(q => q.source === "CURATED_FALLBACK_BANK" || q.isFallback);
 
-    let completionSource = "NONE";
-    if (roundComplete) {
-      if (newlyGeneratedCount === missingSlots.length && !hasAnyFallback) {
-        completionSource = "AI_GENERATED";
-      } else if (hasAnyFallback && newlyGeneratedCount > 0) {
-        completionSource = "MIXED";
-      } else if (hasAnyFallback && newlyGeneratedCount === 0) {
-        completionSource = "CURATED_FALLBACK_BANK";
-      } else {
-        completionSource = "AI_GENERATED";
-      }
-    } else if (count > 0) {
-      completionSource = hasAnyFallback ? "MIXED" : "AI_GENERATED";
-    }
-
-    const generationSucceeded = roundComplete && !hasAnyFallback && newlyGeneratedCount === missingSlots.length;
+    const generationSucceeded = roundComplete && newlyGeneratedCount === missingSlots.length;
     const status = roundComplete ? "COMPLETE" : (count > 0 ? "PARTIAL" : "FAILED");
+    const completionSource = count > 0 ? "AI_GENERATED" : "NONE";
 
     session.generationStatus = roundComplete ? "GENERATED" : (count > 0 ? "PARTIAL" : "FAILED");
-    session.fallbackUsed = hasAnyFallback;
+    session.fallbackUsed = false;
 
     // Update problemScores in session
     session.problemScores = finalQuestions.map(q => ({
@@ -337,16 +307,24 @@ export async function generateAndProcessCodingQuestions({ userId = null, session
 
     console.log(`\n[AI-REQUEST-${roundComplete ? "SUCCESS" : "PARTIAL"}]\nround=coding\nrequestId=${requestId}\nquestionsCount=${count}/3\nstatus=${status}\ncompletionSource=${completionSource}`);
 
+    const classified = lastAiError ? classifyInterviewAIError(lastAiError) : null;
+
     return {
       executionCompleted: true,
       generationSucceeded,
-      fallbackUsed: hasAnyFallback,
+      fallbackUsed: false,
       roundComplete,
       count,
       expectedCount,
       status,
       completionSource,
       success: roundComplete,
+      recoverable: !roundComplete,
+      generatedCount: count,
+      totalRequired: expectedCount,
+      nextQuestionNumber: count + 1,
+      errorCode: classified?.code || (roundComplete ? null : "AI_GENERATION_INCOMPLETE"),
+      message: classified?.message || (roundComplete ? "Coding questions generated successfully" : "Coding AI generation incomplete; retry missing questions"),
       sessionId,
       questions: sanitizeQuestionsForClient(finalQuestions),
       reused: false,

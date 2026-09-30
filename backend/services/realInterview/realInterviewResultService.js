@@ -29,17 +29,27 @@ import { getOrBuildCandidateResumeContext } from "../../utils/resumeContextBuild
  * Single authoritative backend service for Real Interview result calculation.
  * Reads actual persisted interview data from MongoDB. Non-fatal for individual round/question AI failures.
  */
-export async function calculateRealInterviewResult({ sessionId, userId, candidateProfile = null }) {
+export async function calculateRealInterviewResult({ sessionId, userId, candidateProfile = null, forceRecalculate = false }) {
   if (!sessionId) {
     throw new Error("sessionId is required to calculate interview result");
   }
 
-  // 1. Idempotency check: Return existing result if completed
+  // 1. Idempotency check: Return existing result if completed unless forceRecalculate is true
   let resultDoc = await RealInterviewResult.findOne({ sessionId });
-  if (resultDoc && resultDoc.status === "COMPLETED") {
+  if (resultDoc && resultDoc.status === "COMPLETED" && !forceRecalculate) {
     console.log(`[RealInterviewResultService] Session ${sessionId} result already COMPLETED. Reusing stored result.`);
     return resultDoc;
   }
+
+  // Snapshot previous valid result for fallback safety
+  const previousValidResult = resultDoc && resultDoc.status === "COMPLETED" ? {
+    totalObtained: resultDoc.totalObtained,
+    maximumMarks: resultDoc.maximumMarks,
+    percentage: resultDoc.percentage,
+    rounds: resultDoc.rounds,
+    questionResults: resultDoc.questionResults,
+    status: resultDoc.status,
+  } : null;
 
   // 2. Fetch main Interview session if available
   let mainInterviewSession = null;
@@ -72,6 +82,7 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
     mainInterviewSession.status = "SUBMITTED";
     await mainInterviewSession.save();
   }
+
 
   const successfulRounds = [];
   const failedRounds = [];
@@ -175,32 +186,50 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
       });
     }
 
-    const aptitudeScoreTotal = Math.min(50, calculatedAptitudeScore);
+    const aptitudeQuestionsMaxSum = aptitudeQuestions.reduce((sum, q) => sum + (q.maxMarks || (q.difficulty === "easy" ? 2 : q.difficulty === "hard" ? 5 : 3)), 0) || 50;
+    const aptitudeScoreTotal = aptitudeQuestionsMaxSum > 0
+      ? Math.min(20, Math.round((calculatedAptitudeScore / aptitudeQuestionsMaxSum) * 20))
+      : Math.min(20, calculatedAptitudeScore);
+
+    let quotaErrorInfo = null;
 
     // =============================================================
-    // 2. TECHNICAL ROUND CALCULATION (Non-Fatal)
+    // 2. TECHNICAL ROUND CALCULATION (Strict AI Evaluation)
     // =============================================================
     let techSessionResult = { evaluations: [] };
     try {
       techSessionResult = await evaluateTechnicalInterviewSession({
         sessionId,
         candidateProfile: effectiveProfile,
+        forceRecalculate,
       });
       successfulRounds.push("technical");
     } catch (err) {
-      console.warn(`[RESULT-EVALUATION] round=technical status=AI_FAILED errorCode=${err.message} fallback=LOCAL_OR_UNAVAILABLE`);
-      console.log(`[RESULT-EVALUATION] round=technical status=CONTINUING_AFTER_FAILURE`);
+      console.error(`[RESULT-EVALUATION] round=technical status=AI_FAILED errorCode=${err.message}`);
       failedRounds.push("technical");
-      evaluationWarnings.push(`Technical AI evaluation unavailable for some answers.`);
+      evaluationWarnings.push(`Technical AI evaluation unavailable: ${err.message}`);
+      if (err.isQuotaExhausted || /quota|rate limit|rate_limit|credit|billing|429|402|tokens per minute|requests per minute|tpm|rpm|insufficient_quota/i.test(err.message || "")) {
+        quotaErrorInfo = {
+          round: "technical",
+          keySource: err.keySource || "PLATFORM_ENV",
+          mode: err.mode || "PLATFORM",
+          category: err.category || "PERMANENT_QUOTA",
+          message: err.message,
+        };
+      }
     }
+
+    const freshTechSession = await RealInterviewTechnicalSession.findOne({ sessionId }).lean().catch(() => null);
+    const effectiveTechAnswers = (techSessionResult.evaluations?.length ? techSessionResult.evaluations : freshTechSession?.answers) || techSessionDoc?.answers || [];
 
     const techQuestionResults = [];
     let calculatedTechScore = 0;
     let techAttemptedCount = 0;
+    const isTechFailed = failedRounds.includes("technical");
 
     for (const q of techQuestions) {
       const qIdStr = q._id.toString();
-      const evalMatch = (techSessionResult.evaluations || []).find(
+      const evalMatch = effectiveTechAnswers.find(
         (e) => String(e.questionId) === qIdStr
       );
 
@@ -208,7 +237,7 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
         roundType: "TECHNICAL",
         questionId: qIdStr,
         questionText: q.question,
-        roundSessionAnswers: techSessionDoc?.answers || [],
+        roundSessionAnswers: effectiveTechAnswers,
         mainInterviewAnswers,
       });
 
@@ -217,12 +246,17 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
       const maxScore = q.maxMarks || (q.difficulty === "easy" ? 3 : q.difficulty === "hard" ? 13 : 5);
       let score = 0;
       let qStatus = "NOT_ATTEMPTED";
-      const isFallback = techSessionResult.isFallback || evalMatch?.evaluationSource === "deterministic_fallback" || evalMatch?.evaluationSource === "deterministic_nlp";
+      const hasValidEval = evalMatch && typeof evalMatch.score === "number" && !isNaN(evalMatch.score) && evalMatch.evaluationSource !== "AI_FAILED" && evalMatch.status !== "EVALUATION_FAILED";
 
       if (resolved.answerPresent) {
-        const rawScore = Number(evalMatch?.score);
-        score = isNaN(rawScore) ? 0 : Math.max(0, Math.min(maxScore, Math.round(rawScore)));
-        qStatus = score >= maxScore * 0.8 ? "CORRECT" : score >= maxScore * 0.4 ? "PARTIALLY_CORRECT" : score > 0 ? "PARTIALLY_CORRECT" : "INCORRECT";
+        if (hasValidEval) {
+          const rawScore = Number(evalMatch.score);
+          score = Math.max(0, Math.min(maxScore, Math.round(rawScore)));
+          qStatus = evalMatch.status || (score >= maxScore * 0.8 ? "CORRECT" : score >= maxScore * 0.4 ? "PARTIALLY_CORRECT" : score > 0 ? "PARTIALLY_CORRECT" : "INCORRECT");
+        } else if (isTechFailed) {
+          qStatus = "EVALUATION_FAILED";
+          score = 0;
+        }
       }
 
       calculatedTechScore += score;
@@ -236,38 +270,55 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
         score,
         maxScore,
         status: !resolved.answerPresent ? "NOT_ATTEMPTED" : qStatus,
-        evaluationMode: isFallback ? "FALLBACK" : "AI",
-        feedback: !resolved.answerPresent ? "Question was not attempted." : (evalMatch?.feedback || "Evaluation complete."),
+        evaluationMode: hasValidEval ? "AI" : isTechFailed ? "FAILED" : "AI",
+        evaluationSource: !resolved.answerPresent ? "not_attempted" : hasValidEval ? (evalMatch?.evaluationSource || "ai_evaluated") : "AI_FAILED",
+        feedback: !resolved.answerPresent ? "Question was not attempted." : hasValidEval ? (evalMatch?.feedback || "Evaluation complete.") : "AI evaluation service was unavailable for this answer.",
         improvedAnswer: !resolved.answerPresent ? (q.expectedKnowledge || "") : (evalMatch?.betterAnswer || ""),
       });
     }
 
-    const techScoreTotal = Math.min(100, calculatedTechScore);
+    const techQuestionsMaxSum = techQuestions.reduce((sum, q) => sum + (q.maxMarks || (q.difficulty === "easy" ? 3 : q.difficulty === "hard" ? 13 : 5)), 0) || 87;
+    const techScoreTotal = techQuestionsMaxSum > 0
+      ? Math.min(35, Math.round((calculatedTechScore / techQuestionsMaxSum) * 35))
+      : Math.min(35, calculatedTechScore);
 
     // =============================================================
-    // 3. PROJECT ROUND CALCULATION (Non-Fatal)
+    // 3. PROJECT ROUND CALCULATION (Strict AI Evaluation)
     // =============================================================
     let projectSessionResult = { evaluations: [] };
     try {
       projectSessionResult = await evaluateProjectInterviewSession({
         sessionId,
         candidateProfile: effectiveProfile,
+        forceRecalculate,
       });
       successfulRounds.push("project");
     } catch (err) {
-      console.warn(`[RESULT-EVALUATION] round=project status=AI_FAILED errorCode=${err.message} fallback=LOCAL_OR_UNAVAILABLE`);
-      console.log(`[RESULT-EVALUATION] round=project status=CONTINUING_AFTER_FAILURE`);
+      console.error(`[RESULT-EVALUATION] round=project status=AI_FAILED errorCode=${err.message}`);
       failedRounds.push("project");
-      evaluationWarnings.push(`Project AI evaluation unavailable for some answers.`);
+      evaluationWarnings.push(`Project AI evaluation unavailable: ${err.message}`);
+      if (err.isQuotaExhausted || /quota|rate limit|rate_limit|credit|billing|429|402|tokens per minute|requests per minute|tpm|rpm|insufficient_quota/i.test(err.message || "")) {
+        quotaErrorInfo = quotaErrorInfo || {
+          round: "project",
+          keySource: err.keySource || "PLATFORM_ENV",
+          mode: err.mode || "PLATFORM",
+          category: err.category || "PERMANENT_QUOTA",
+          message: err.message,
+        };
+      }
     }
+
+    const freshProjSession = await RealInterviewProjectSession.findOne({ sessionId }).lean().catch(() => null);
+    const effectiveProjAnswers = (projectSessionResult.evaluations?.length ? projectSessionResult.evaluations : freshProjSession?.answers) || projSessionDoc?.answers || [];
 
     const projectQuestionResults = [];
     let calculatedProjectScore = 0;
     let projectAttemptedCount = 0;
+    const isProjectFailed = failedRounds.includes("project");
 
     for (const q of projectQuestions) {
       const qIdStr = q._id.toString();
-      const evalMatch = (projectSessionResult.evaluations || []).find(
+      const evalMatch = effectiveProjAnswers.find(
         (e) => String(e.questionId) === qIdStr
       );
 
@@ -275,7 +326,7 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
         roundType: "RESUME_PROJECT",
         questionId: qIdStr,
         questionText: q.question,
-        roundSessionAnswers: projSessionDoc?.answers || [],
+        roundSessionAnswers: effectiveProjAnswers,
         mainInterviewAnswers,
       });
 
@@ -284,12 +335,17 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
       const maxScore = q.maxMarks || (q.difficulty === "easy" ? 5 : q.difficulty === "hard" ? 20 : 10);
       let score = 0;
       let qStatus = "NOT_ATTEMPTED";
-      const isFallback = projectSessionResult.isFallback || evalMatch?.evaluationSource === "deterministic_fallback" || evalMatch?.evaluationSource === "deterministic_nlp";
+      const hasValidEval = evalMatch && typeof evalMatch.score === "number" && !isNaN(evalMatch.score) && evalMatch.evaluationSource !== "AI_FAILED" && evalMatch.status !== "EVALUATION_FAILED";
 
       if (resolved.answerPresent) {
-        const rawScore = Number(evalMatch?.score);
-        score = isNaN(rawScore) ? 0 : Math.max(0, Math.min(maxScore, Math.round(rawScore)));
-        qStatus = score >= maxScore * 0.8 ? "CORRECT" : score >= maxScore * 0.4 ? "PARTIALLY_CORRECT" : score > 0 ? "PARTIALLY_CORRECT" : "INCORRECT";
+        if (hasValidEval) {
+          const rawScore = Number(evalMatch.score);
+          score = Math.max(0, Math.min(maxScore, Math.round(rawScore)));
+          qStatus = evalMatch.status || (score >= maxScore * 0.8 ? "CORRECT" : score >= maxScore * 0.4 ? "PARTIALLY_CORRECT" : score > 0 ? "PARTIALLY_CORRECT" : "INCORRECT");
+        } else if (isProjectFailed) {
+          qStatus = "EVALUATION_FAILED";
+          score = 0;
+        }
       }
 
       calculatedProjectScore += score;
@@ -303,8 +359,9 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
         score,
         maxScore,
         status: !resolved.answerPresent ? "NOT_ATTEMPTED" : qStatus,
-        evaluationMode: isFallback ? "FALLBACK" : "AI",
-        feedback: !resolved.answerPresent ? "Question was not attempted." : (evalMatch?.feedback || "Evaluation complete."),
+        evaluationMode: hasValidEval ? "AI" : isProjectFailed ? "FAILED" : "AI",
+        evaluationSource: !resolved.answerPresent ? "not_attempted" : hasValidEval ? (evalMatch?.evaluationSource || "ai_evaluated") : "AI_FAILED",
+        feedback: !resolved.answerPresent ? "Question was not attempted." : hasValidEval ? (evalMatch?.feedback || "Evaluation complete.") : "AI evaluation service was unavailable for this answer.",
         improvedAnswer: !resolved.answerPresent ? (q.expectedKnowledge || "") : (evalMatch?.betterAnswer || ""),
       });
     }
@@ -314,35 +371,48 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
       0
     ) || 50;
 
-    // Normalize question marks sum (e.g. 50) to the 100-mark round max so no candidate is capped at 50
+    // Scale question marks sum (e.g. 50) to the 20-mark round max
     const projectScoreTotal = projectQuestionsMaxSum > 0
-      ? Math.min(100, Math.round((calculatedProjectScore / projectQuestionsMaxSum) * 100))
-      : Math.min(100, calculatedProjectScore);
+      ? Math.min(20, Math.round((calculatedProjectScore / projectQuestionsMaxSum) * 20))
+      : Math.min(20, calculatedProjectScore);
 
     // =============================================================
-    // 4. HR ROUND CALCULATION (Non-Fatal)
+    // 4. HR ROUND CALCULATION (Strict AI Evaluation)
     // =============================================================
     let hrSessionResult = { evaluations: [] };
     try {
       hrSessionResult = await evaluateHRInterviewSession({
         sessionId,
         candidateProfile: effectiveProfile,
+        forceRecalculate,
       });
       successfulRounds.push("hr");
     } catch (err) {
-      console.warn(`[RESULT-EVALUATION] round=hr status=AI_FAILED errorCode=${err.message} fallback=LOCAL_OR_UNAVAILABLE`);
-      console.log(`[RESULT-EVALUATION] round=hr status=CONTINUING_AFTER_FAILURE`);
+      console.error(`[RESULT-EVALUATION] round=hr status=AI_FAILED errorCode=${err.message}`);
       failedRounds.push("hr");
-      evaluationWarnings.push(`HR AI evaluation unavailable for some answers.`);
+      evaluationWarnings.push(`HR AI evaluation unavailable: ${err.message}`);
+      if (err.isQuotaExhausted || /quota|rate limit|rate_limit|credit|billing|429|402|tokens per minute|requests per minute|tpm|rpm|insufficient_quota/i.test(err.message || "")) {
+        quotaErrorInfo = quotaErrorInfo || {
+          round: "hr",
+          keySource: err.keySource || "PLATFORM_ENV",
+          mode: err.mode || "PLATFORM",
+          category: err.category || "PERMANENT_QUOTA",
+          message: err.message,
+        };
+      }
     }
+
+    const freshHRSession = await RealInterviewHRSession.findOne({ sessionId }).lean().catch(() => null);
+    const effectiveHRAnswers = (hrSessionResult.evaluations?.length ? hrSessionResult.evaluations : freshHRSession?.answers) || hrSessionDoc?.answers || [];
 
     const hrQuestionResults = [];
     let calculatedHRScore = 0;
     let hrAttemptedCount = 0;
+    const isHRFailed = failedRounds.includes("hr");
 
     for (const q of hrQuestions) {
       const qIdStr = q._id.toString();
-      const evalMatch = (hrSessionResult.evaluations || []).find(
+      const evalMatch = effectiveHRAnswers.find(
         (e) => String(e.questionId) === qIdStr
       );
 
@@ -350,7 +420,7 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
         roundType: "HR",
         questionId: qIdStr,
         questionText: q.question,
-        roundSessionAnswers: hrSessionDoc?.answers || [],
+        roundSessionAnswers: effectiveHRAnswers,
         mainInterviewAnswers,
       });
 
@@ -359,12 +429,17 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
       const maxScore = q.maxMarks || 20;
       let score = 0;
       let qStatus = "NOT_ATTEMPTED";
-      const isFallback = hrSessionResult.fallbackUsed || evalMatch?.evaluationSource === "deterministic_fallback" || evalMatch?.evaluationSource === "deterministic_nlp";
+      const hasValidEval = evalMatch && typeof evalMatch.score === "number" && !isNaN(evalMatch.score) && evalMatch.evaluationSource !== "AI_FAILED" && evalMatch.status !== "EVALUATION_FAILED";
 
       if (resolved.answerPresent) {
-        const rawScore = Number(evalMatch?.score);
-        score = isNaN(rawScore) ? 0 : Math.max(0, Math.min(maxScore, Math.round(rawScore)));
-        qStatus = score >= maxScore * 0.8 ? "CORRECT" : score >= maxScore * 0.4 ? "PARTIALLY_CORRECT" : score > 0 ? "PARTIALLY_CORRECT" : "INCORRECT";
+        if (hasValidEval) {
+          const rawScore = Number(evalMatch.score);
+          score = Math.max(0, Math.min(maxScore, Math.round(rawScore)));
+          qStatus = evalMatch.status || (score >= maxScore * 0.8 ? "CORRECT" : score >= maxScore * 0.4 ? "PARTIALLY_CORRECT" : score > 0 ? "PARTIALLY_CORRECT" : "INCORRECT");
+        } else if (isHRFailed) {
+          qStatus = "EVALUATION_FAILED";
+          score = 0;
+        }
       }
 
       calculatedHRScore += score;
@@ -378,12 +453,16 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
         score,
         maxScore,
         status: !resolved.answerPresent ? "NOT_ATTEMPTED" : qStatus,
-        evaluationMode: isFallback ? "FALLBACK" : "AI",
-        feedback: !resolved.answerPresent ? "Question was not attempted." : (evalMatch?.feedback || "Evaluation complete."),
+        evaluationMode: hasValidEval ? "AI" : isHRFailed ? "FAILED" : "AI",
+        evaluationSource: !resolved.answerPresent ? "not_attempted" : hasValidEval ? (evalMatch?.evaluationSource || "ai_evaluated") : "AI_FAILED",
+        feedback: !resolved.answerPresent ? "Question was not attempted." : hasValidEval ? (evalMatch?.feedback || "Evaluation complete.") : "AI evaluation service was unavailable for this answer.",
       });
     }
 
-    const hrScoreTotal = Math.min(60, calculatedHRScore);
+    const hrQuestionsMaxSum = hrQuestions.reduce((sum, q) => sum + (q.maxMarks || 20), 0) || 60;
+    const hrScoreTotal = hrQuestionsMaxSum > 0
+      ? Math.min(10, Math.round((calculatedHRScore / hrQuestionsMaxSum) * 10))
+      : Math.min(10, calculatedHRScore);
 
     // =============================================================
     // 5. CODING ROUND CALCULATION (Non-Fatal, Judge0 Results)
@@ -491,17 +570,20 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
       });
     }
 
-    const codingScoreTotal = Math.min(100, calculatedCodingScore);
+    const codingQuestionsMaxSum = codingQuestions.reduce((sum, q) => sum + (q.marks || (String(q.difficulty).toLowerCase() === "easy" ? 20 : String(q.difficulty).toLowerCase() === "hard" ? 50 : 30)), 0) || 100;
+    const codingScoreTotal = codingQuestionsMaxSum > 0
+      ? Math.min(15, Math.round((calculatedCodingScore / codingQuestionsMaxSum) * 15))
+      : Math.min(15, calculatedCodingScore);
 
     // =============================================================
-    // 6. AGGREGATE TOTAL & RESULT STATUS
+    // 6. AGGREGATE TOTAL & RESULT STATUS (100 MARKS TOTAL)
     // =============================================================
     const overallTotalObtained = Math.min(
-      410,
+      100,
       aptitudeScoreTotal + techScoreTotal + projectScoreTotal + hrScoreTotal + codingScoreTotal
     );
 
-    const percentage = Number(((overallTotalObtained / 410) * 100).toFixed(2));
+    const percentage = overallTotalObtained;
 
     const attemptedQuestionsCount = aptitudeAttemptedCount + techAttemptedCount + projectAttemptedCount + hrAttemptedCount + codingAttemptedCount;
     const totalQuestionsCount = 41;
@@ -516,52 +598,80 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
     ];
 
     let resultStatus = "COMPLETE";
+    let documentStatus = "COMPLETED";
+
     if (failedRounds.length === 5) {
       resultStatus = "EVALUATION_UNAVAILABLE";
+      documentStatus = "EVALUATION_FAILED";
     } else if (failedRounds.length > 0) {
       resultStatus = "PARTIAL_EVALUATION";
+      documentStatus = "PARTIAL_EVALUATION";
     }
 
-    console.log(`\n[RESULT-AGGREGATION]\nstatus=${resultStatus}\nfailedRounds=${failedRounds.join(",") || "none"}\nsuccessfulRounds=${successfulRounds.join(",") || "none"}\n`);
+    let errorType = null;
+    let keySource = null;
+    let requiresUserApiKey = false;
+    let requiresNewApiKey = false;
+    let recoveryMessage = null;
+
+    if (quotaErrorInfo) {
+      const isBYOK = quotaErrorInfo.keySource === "BYOK_REQUEST" || quotaErrorInfo.keySource === "BYOK_SESSION" || quotaErrorInfo.mode === "BYOK";
+      if (isBYOK) {
+        errorType = "BYOK_QUOTA_EXHAUSTED";
+        keySource = quotaErrorInfo.keySource;
+        requiresNewApiKey = true;
+        recoveryMessage = "Sorry! The AI API key currently being used for your evaluation has reached its usage limit or is no longer available. Please provide a new API key to continue your interview evaluation.";
+      } else {
+        errorType = "AI_QUOTA_EXHAUSTED";
+        keySource = "PLATFORM";
+        requiresUserApiKey = true;
+        recoveryMessage = "Sorry! Our AI service has temporarily reached its usage limit. We couldn't complete your interview evaluation using our platform AI service. Please provide your own AI API key to continue your evaluation.";
+      }
+    } else if (failedRounds.length > 0) {
+      errorType = "AI_EVALUATION_FAILED";
+      recoveryMessage = "AI evaluation service is temporarily unavailable for some rounds. Please try again later.";
+    }
+
+    console.log(`\n[RESULT-AGGREGATION]\nstatus=${resultStatus}\ndocumentStatus=${documentStatus}\nerrorType=${errorType || "none"}\nfailedRounds=${failedRounds.join(",") || "none"}\nsuccessfulRounds=${successfulRounds.join(",") || "none"}\n`);
 
     // =============================================================
-    // 7. PERSIST AUTHORITATIVE RESULT DOCUMENT
+    // 7. PERSIST AUTHORITATIVE RESULT DOCUMENT (100 MARKS TOTAL)
     // =============================================================
     resultDoc.rounds = {
       aptitude: {
         obtained: aptitudeScoreTotal,
-        maximum: 50,
+        maximum: 20,
         attempted: aptitudeAttemptedCount,
         totalQuestions: 15,
       },
       technical: {
         obtained: techScoreTotal,
-        maximum: 100,
+        maximum: 35,
         attempted: techAttemptedCount,
         totalQuestions: 15,
       },
       project: {
         obtained: projectScoreTotal,
-        maximum: 100,
+        maximum: 20,
         attempted: projectAttemptedCount,
         totalQuestions: 5,
       },
       hr: {
         obtained: hrScoreTotal,
-        maximum: 60,
+        maximum: 10,
         attempted: hrAttemptedCount,
         totalQuestions: 3,
       },
       coding: {
         obtained: codingScoreTotal,
-        maximum: 100,
+        maximum: 15,
         attempted: codingAttemptedCount,
         totalQuestions: 3,
       },
     };
 
     resultDoc.totalObtained = overallTotalObtained;
-    resultDoc.maximumMarks = 410;
+    resultDoc.maximumMarks = 100;
     resultDoc.percentage = percentage;
 
     resultDoc.attemptedQuestionsCount = attemptedQuestionsCount;
@@ -572,7 +682,13 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
     resultDoc.resultStatus = resultStatus;
     resultDoc.evaluationWarnings = evaluationWarnings;
 
-    resultDoc.status = "COMPLETED";
+    resultDoc.errorType = errorType;
+    resultDoc.keySource = keySource;
+    resultDoc.requiresUserApiKey = requiresUserApiKey;
+    resultDoc.requiresNewApiKey = requiresNewApiKey;
+    resultDoc.recoveryMessage = recoveryMessage;
+
+    resultDoc.status = documentStatus;
     resultDoc.completedAt = new Date();
     await resultDoc.save();
 
@@ -583,22 +699,36 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
       await mainInterviewSession.save();
     }
 
-    console.log(`[RealInterviewResultService] Session ${sessionId} RESULT CALCULATED & PERSISTED! Score: ${overallTotalObtained}/410 (${percentage}%). ResultStatus: ${resultStatus}.`);
+    console.log(`[RealInterviewResultService] Session ${sessionId} RESULT CALCULATED & PERSISTED! Score: ${overallTotalObtained}/100 (${percentage}%). ResultStatus: ${resultStatus}.`);
     return resultDoc;
   } catch (error) {
     console.error(`[RealInterviewResultService] Unrecoverable calculation ERROR for session ${sessionId}:`, error.message);
-    resultDoc.status = "COMPLETED";
-    resultDoc.resultStatus = "EVALUATION_UNAVAILABLE";
+    if (previousValidResult && previousValidResult.status === "COMPLETED") {
+      resultDoc.totalObtained = previousValidResult.totalObtained;
+      resultDoc.maximumMarks = previousValidResult.maximumMarks;
+      resultDoc.percentage = previousValidResult.percentage;
+      resultDoc.rounds = previousValidResult.rounds;
+      resultDoc.questionResults = previousValidResult.questionResults;
+      resultDoc.status = "COMPLETED";
+      resultDoc.resultStatus = "COMPLETE";
+    } else {
+      resultDoc.status = "EVALUATION_FAILED";
+      resultDoc.resultStatus = "EVALUATION_UNAVAILABLE";
+    }
+
     resultDoc.errorDetails = error.message || "Partial evaluation unavailable";
+    resultDoc.errorType = resultDoc.errorType || "AI_EVALUATION_FAILED";
     await resultDoc.save().catch(() => {});
 
     if (mainInterviewSession) {
-      mainInterviewSession.status = "completed";
+      mainInterviewSession.status = previousValidResult ? "completed" : "in_progress";
       await mainInterviewSession.save().catch(() => {});
     }
 
     return resultDoc;
   }
+
+
 }
 
 /**

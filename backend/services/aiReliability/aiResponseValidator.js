@@ -16,15 +16,16 @@ export class AIResponseValidator {
 
     const type = String(roundType).toLowerCase();
 
-    if (type === "technical" || type === "project" || type === "hr") {
+    if (type.includes("eval") || type === "evaluation") {
+      this.validateEvaluationSchema(data);
+    } else if (type === "technical" || type === "project" || type === "hr") {
       this.validateQuestionSchema(data, type);
     } else if (type === "coding") {
       this.validateCodingSchema(data);
-    } else if (type === "evaluation") {
-      this.validateEvaluationSchema(data);
     }
 
     return true;
+
   }
 
   static validateQuestionSchema(data, roundType) {
@@ -61,17 +62,35 @@ export class AIResponseValidator {
   }
 
   static validateEvaluationSchema(data) {
-    if (typeof data !== "object") {
+    if (!data || typeof data !== "object") {
       throw new Error("Invalid evaluation response: expected object");
     }
 
-    // Must have score or feedback
-    const score = data.score ?? data.rating;
-    const feedback = data.feedback || data.evaluation || data.summary;
+    // Handle batch evaluation response containing evaluations array
+    if (Array.isArray(data.evaluations)) {
+      if (data.evaluations.length === 0) {
+        throw new Error("Evaluation response has empty evaluations array");
+      }
+      for (let i = 0; i < data.evaluations.length; i++) {
+        const item = data.evaluations[i];
+        if (!item || typeof item !== "object") {
+          throw new Error(`Evaluation item at index ${i} is not an object`);
+        }
+        if (item.score === undefined && item.rating === undefined && !item.feedback) {
+          throw new Error(`Evaluation item for question ${item.questionId || i} is missing score and feedback`);
+        }
+      }
+      return true;
+    }
+
+    // Handle single evaluation response
+    const score = data.score ?? data.rating ?? data.totalScore;
+    const feedback = data.feedback || data.evaluation || data.summary || data.finalFeedback;
 
     if (score === undefined && !feedback) {
       throw new Error("Evaluation response missing score and feedback");
     }
+    return true;
   }
 }
 

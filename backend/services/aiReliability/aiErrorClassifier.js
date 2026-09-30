@@ -28,9 +28,12 @@ export const ERROR_CATEGORIES = {
 export class AIErrorClassifier {
   static classify(error) {
     const normalized = normalizeProviderError(error);
-    const { statusCode, rawSafeError } = normalized;
+    const statusCode = normalized.statusCode || normalized.status || error?.status || error?.statusCode || error?.response?.status || 0;
+    const rawSafeError = normalized.rawSafeError;
     const message = rawSafeError || error?.message || String(error || "");
     const lowerMsg = (message || "").toLowerCase();
+
+
 
     let category = ERROR_CATEGORIES.UNKNOWN_ERROR;
     let isRetryable = true; // Default UNKNOWN_ERROR to retryable with retry limits instead of failing permanently!
@@ -41,6 +44,8 @@ export class AIErrorClassifier {
       statusCode === 401 ||
       statusCode === 403 ||
       lowerMsg.includes("invalid api key") ||
+      lowerMsg.includes("api key not valid") ||
+      lowerMsg.includes("api_key_invalid") ||
       lowerMsg.includes("incorrect api key") ||
       lowerMsg.includes("unauthorized") ||
       lowerMsg.includes("authentication failed") ||
@@ -51,25 +56,12 @@ export class AIErrorClassifier {
       isRetryable = false;
       userFacingMessage = "Your provided API key is invalid or unauthorized. Please verify your API key.";
     }
-    // 2. Permanent Quota / Billing Disabled (Permanent)
-    else if (
-      statusCode === 402 ||
-      lowerMsg.includes("billing") ||
-      lowerMsg.includes("quota exceeded") ||
-      lowerMsg.includes("insufficient_quota") ||
-      lowerMsg.includes("credit balance") ||
-      lowerMsg.includes("payment required") ||
-      lowerMsg.includes("exceeded your current quota")
-    ) {
-      category = ERROR_CATEGORIES.PERMANENT_QUOTA;
-      isRetryable = false;
-      userFacingMessage = "The API key has exceeded its quota or has billing disabled.";
-    }
-    // 3. Rate Limit / Throttle (Retryable)
+    // 2. Rate Limit / Throttle (Retryable)
     else if (
       statusCode === 429 ||
       statusCode === 413 ||
       lowerMsg.includes("rate limit") ||
+      lowerMsg.includes("rate_limit_exceeded") ||
       lowerMsg.includes("too many requests") ||
       lowerMsg.includes("tokens per minute") ||
       lowerMsg.includes("requests per minute") ||
@@ -79,6 +71,21 @@ export class AIErrorClassifier {
       category = ERROR_CATEGORIES.RATE_LIMIT;
       isRetryable = true;
       userFacingMessage = "AI rate limit reached. Retrying automatically with backoff...";
+    }
+    // 3. Permanent Quota / Billing Disabled (Permanent)
+    else if (
+      statusCode === 402 ||
+      lowerMsg.includes("billing disabled") ||
+      lowerMsg.includes("billing not enabled") ||
+      lowerMsg.includes("quota exceeded") ||
+      lowerMsg.includes("insufficient_quota") ||
+      lowerMsg.includes("credit balance") ||
+      lowerMsg.includes("payment required") ||
+      lowerMsg.includes("exceeded your current quota")
+    ) {
+      category = ERROR_CATEGORIES.PERMANENT_QUOTA;
+      isRetryable = false;
+      userFacingMessage = "The API key has exceeded its quota or has billing disabled.";
     }
     // 4. Timeout (Retryable)
     else if (

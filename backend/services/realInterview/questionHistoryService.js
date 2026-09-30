@@ -86,7 +86,7 @@ export function extractContentTokens(text = "") {
  * Deterministic semantic similarity check using Jaccard token overlap & key term matching.
  * Returns true if two questions are semantically equivalent.
  */
-export function isSemanticallyDuplicate(textA, textB, threshold = 0.40) {
+export function isSemanticallyDuplicate(textA, textB, threshold = 0.75) {
   const normA = normalizeQuestionText(textA);
   const normB = normalizeQuestionText(textB);
   if (!normA || !normB) return false;
@@ -109,9 +109,9 @@ export function isSemanticallyDuplicate(textA, textB, threshold = 0.40) {
 
   if (jaccard >= threshold) return true;
 
-  // Relative overlap against smaller set: if >= 50% of tokens in smaller set overlap
+  // High-confidence containment: only if smaller set has >= 4 tokens and >= 85% overlap
   const minSize = Math.min(setA.size, setB.size);
-  if (minSize >= 2 && (intersectionCount / minSize) >= 0.50) {
+  if (minSize >= 4 && (intersectionCount / minSize) >= 0.85) {
     return true;
   }
 

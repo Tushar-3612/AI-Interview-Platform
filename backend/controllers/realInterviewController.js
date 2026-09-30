@@ -47,7 +47,15 @@ export const setSessionBYOKController = async (req, res) => {
       return res.status(400).json({ success: false, message: "sessionId, provider, and apiKey are required" });
     }
 
-    sessionManager.setSessionBYOK(sessionId, provider, apiKey);
+    const userId = req.user?._id || req.user?.id;
+    if (userId) {
+      const interview = await Interview.findById(sessionId).lean().catch(() => null);
+      if (interview && interview.user && String(interview.user) !== String(userId)) {
+        return res.status(403).json({ success: false, message: "Unauthorized: You do not own this interview session" });
+      }
+    }
+
+    sessionManager.setSessionBYOK(sessionId, provider, apiKey, userId);
     res.status(200).json({
       success: true,
       message: `BYOK provider [${provider}] successfully bound to session`,
@@ -730,10 +738,16 @@ export const submitRealInterview = async (req, res) => {
         success: raceResult.status === "COMPLETED",
         sessionId,
         status: raceResult.status,
+        resultStatus: raceResult.resultStatus,
+        errorType: raceResult.errorType,
+        keySource: raceResult.keySource,
+        requiresUserApiKey: raceResult.requiresUserApiKey,
+        requiresNewApiKey: raceResult.requiresNewApiKey,
+        recoveryMessage: raceResult.recoveryMessage,
         result: raceResult.status === "COMPLETED" ? raceResult : null,
-        message: raceResult.status === "EVALUATION_FAILED"
+        message: raceResult.recoveryMessage || (raceResult.status === "EVALUATION_FAILED"
           ? "Your interview was completed successfully, but we couldn't generate your result right now. Your answers are safely saved. The AI evaluation service is temporarily unavailable. Please try again later."
-          : undefined,
+          : undefined),
       });
     }
 
@@ -771,9 +785,15 @@ export const getRealInterviewResultStatus = async (req, res) => {
         success: true,
         sessionId,
         status: resultDoc.status,
-        message: resultDoc.status === "EVALUATION_FAILED"
+        resultStatus: resultDoc.resultStatus,
+        errorType: resultDoc.errorType,
+        keySource: resultDoc.keySource,
+        requiresUserApiKey: resultDoc.requiresUserApiKey,
+        requiresNewApiKey: resultDoc.requiresNewApiKey,
+        recoveryMessage: resultDoc.recoveryMessage,
+        message: resultDoc.recoveryMessage || (resultDoc.status === "EVALUATION_FAILED"
           ? "Your interview was completed successfully, but we couldn't generate your result right now. Your answers are safely saved. The AI evaluation service is temporarily unavailable. Please try again later."
-          : undefined,
+          : undefined),
       });
     }
 
@@ -825,11 +845,17 @@ export const getRealInterviewResult = async (req, res) => {
       return res.status(404).json({ success: false, message: "Result not found for this session" });
     }
 
-    if (resultDoc.status === "EVALUATION_FAILED") {
+    if (resultDoc.status === "EVALUATION_FAILED" || resultDoc.status === "PARTIAL_EVALUATION") {
       return res.status(200).json({
         success: false,
-        status: "EVALUATION_FAILED",
-        message: "Your interview was completed successfully, but we couldn't generate your result right now. Your answers are safely saved. The AI evaluation service is temporarily unavailable. Please try again later.",
+        status: resultDoc.status,
+        resultStatus: resultDoc.resultStatus,
+        errorType: resultDoc.errorType,
+        keySource: resultDoc.keySource,
+        requiresUserApiKey: resultDoc.requiresUserApiKey,
+        requiresNewApiKey: resultDoc.requiresNewApiKey,
+        recoveryMessage: resultDoc.recoveryMessage,
+        message: resultDoc.recoveryMessage || "Your interview was completed successfully, but we couldn't generate your result right now. Your answers are safely saved. The AI evaluation service is temporarily unavailable. Please try again later.",
       });
     }
 
@@ -871,16 +897,28 @@ export const retryRealInterviewEvaluation = async (req, res) => {
       return res.status(400).json({ success: false, message: "sessionId is required to retry evaluation" });
     }
 
-    const result = await calculateRealInterviewResult({ sessionId, userId });
+    const { provider, apiKey, forceRecalculate = true } = req.body || {};
+    if (provider && apiKey) {
+      sessionManager.setSessionBYOK(sessionId, provider, apiKey);
+    }
+
+    const result = await calculateRealInterviewResult({ sessionId, userId, forceRecalculate: true });
     res.status(200).json({
       success: result.status === "COMPLETED",
       sessionId,
       status: result.status,
-      result: result.status === "COMPLETED" ? result : null,
-      message: result.status === "EVALUATION_FAILED"
+      resultStatus: result.resultStatus,
+      errorType: result.errorType,
+      keySource: result.keySource,
+      requiresUserApiKey: result.requiresUserApiKey,
+      requiresNewApiKey: result.requiresNewApiKey,
+      recoveryMessage: result.recoveryMessage,
+      result: result.status === "COMPLETED" ? result : result,
+      message: result.recoveryMessage || (result.status === "EVALUATION_FAILED"
         ? "Your interview was completed successfully, but we couldn't generate your result right now. Your answers are safely saved. The AI evaluation service is temporarily unavailable. Please try again later."
-        : undefined,
+        : undefined),
     });
+
   } catch (error) {
     console.error("[RealInterviewController] Retry Evaluation Error:", error.message);
     res.status(500).json({
@@ -951,7 +989,7 @@ export const downloadRealInterviewResultPDF = async (req, res) => {
     const COLOR_BORDER = "#cbd5e1";
 
     const totalObtained = Number(resultDoc.totalObtained ?? 0);
-    const maxScore = Number(resultDoc.maximumMarks ?? 410);
+    const maxScore = Number(resultDoc.maximumMarks ?? 100);
     const percentage = typeof resultDoc.percentage === "number"
       ? resultDoc.percentage
       : maxScore > 0
@@ -1039,11 +1077,11 @@ export const downloadRealInterviewResultPDF = async (req, res) => {
     y += 20;
 
     const roundList = [
-      { name: "Aptitude", key: "aptitude", totalQ: 15, defaultMax: 50 },
-      { name: "Technical", key: "technical", totalQ: 15, defaultMax: 100 },
-      { name: "Project", key: "project", totalQ: 5, defaultMax: 100 },
-      { name: "HR Behavioral", key: "hr", totalQ: 3, defaultMax: 60 },
-      { name: "Coding", key: "coding", totalQ: 3, defaultMax: 100 },
+      { name: "Aptitude", key: "aptitude", totalQ: 15, defaultMax: 20 },
+      { name: "Technical", key: "technical", totalQ: 15, defaultMax: 35 },
+      { name: "Project", key: "project", totalQ: 5, defaultMax: 20 },
+      { name: "HR Behavioral", key: "hr", totalQ: 3, defaultMax: 10 },
+      { name: "Coding", key: "coding", totalQ: 3, defaultMax: 15 },
     ];
 
     const roundFeedbacks = {};

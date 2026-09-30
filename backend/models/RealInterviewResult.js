@@ -15,12 +15,12 @@ const questionResultSchema = new mongoose.Schema(
     maxScore: { type: Number, required: true, default: 0, min: 0 },
     status: {
       type: String,
-      enum: ["CORRECT", "PARTIALLY_CORRECT", "INCORRECT", "NOT_ATTEMPTED"],
+      enum: ["CORRECT", "PARTIALLY_CORRECT", "INCORRECT", "NOT_ATTEMPTED", "EVALUATION_FAILED"],
       default: "NOT_ATTEMPTED",
     },
     evaluationMode: {
       type: String,
-      enum: ["DETERMINISTIC", "AI", "JUDGE0", "FALLBACK"],
+      enum: ["DETERMINISTIC", "AI", "JUDGE0", "FALLBACK", "FAILED"],
       default: "DETERMINISTIC",
     },
     feedback: { type: String, default: "" },
@@ -37,45 +37,46 @@ const realInterviewResultSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["SUBMITTED", "CALCULATING", "COMPLETED", "FAILED", "EVALUATION_FAILED"],
+      enum: ["SUBMITTED", "CALCULATING", "COMPLETED", "FAILED", "EVALUATION_FAILED", "PARTIAL_EVALUATION"],
       default: "SUBMITTED",
     },
+
 
     rounds: {
       aptitude: {
         obtained: { type: Number, default: 0 },
-        maximum: { type: Number, default: 50 },
+        maximum: { type: Number, default: 20 },
         attempted: { type: Number, default: 0 },
         totalQuestions: { type: Number, default: 15 },
       },
       technical: {
         obtained: { type: Number, default: 0 },
-        maximum: { type: Number, default: 100 },
+        maximum: { type: Number, default: 35 },
         attempted: { type: Number, default: 0 },
         totalQuestions: { type: Number, default: 15 },
       },
       project: {
         obtained: { type: Number, default: 0 },
-        maximum: { type: Number, default: 100 },
+        maximum: { type: Number, default: 20 },
         attempted: { type: Number, default: 0 },
         totalQuestions: { type: Number, default: 5 },
       },
       hr: {
         obtained: { type: Number, default: 0 },
-        maximum: { type: Number, default: 60 },
+        maximum: { type: Number, default: 10 },
         attempted: { type: Number, default: 0 },
         totalQuestions: { type: Number, default: 3 },
       },
       coding: {
         obtained: { type: Number, default: 0 },
-        maximum: { type: Number, default: 100 },
+        maximum: { type: Number, default: 15 },
         attempted: { type: Number, default: 0 },
         totalQuestions: { type: Number, default: 3 },
       },
     },
 
     totalObtained: { type: Number, default: 0 },
-    maximumMarks: { type: Number, default: 410 },
+    maximumMarks: { type: Number, default: 100 },
     percentage: { type: Number, default: 0 },
 
     attemptedQuestionsCount: { type: Number, default: 0 },
@@ -83,6 +84,12 @@ const realInterviewResultSchema = new mongoose.Schema(
     totalQuestionsCount: { type: Number, default: 41 },
 
     questionResults: [questionResultSchema],
+
+    errorType: { type: String, default: null },
+    keySource: { type: String, default: null },
+    requiresUserApiKey: { type: Boolean, default: false },
+    requiresNewApiKey: { type: Boolean, default: false },
+    recoveryMessage: { type: String, default: null },
 
     errorDetails: { type: String, default: "" },
     submittedAt: { type: Date, default: Date.now },
@@ -100,11 +107,11 @@ realInterviewResultSchema.virtual("maxScore").get(function () {
 });
 realInterviewResultSchema.virtual("roundScores").get(function () {
   return {
-    aptitude: { score: this.rounds?.aptitude?.obtained || 0, maxScore: 50, status: "COMPLETED" },
-    technical: { score: this.rounds?.technical?.obtained || 0, maxScore: 100, status: "COMPLETED" },
-    project: { score: this.rounds?.project?.obtained || 0, maxScore: 100, status: "COMPLETED" },
-    hr: { score: this.rounds?.hr?.obtained || 0, maxScore: 60, status: "COMPLETED" },
-    coding: { score: this.rounds?.coding?.obtained || 0, maxScore: 100, status: "COMPLETED" },
+    aptitude: { score: this.rounds?.aptitude?.obtained || 0, maxScore: 20, status: "COMPLETED" },
+    technical: { score: this.rounds?.technical?.obtained || 0, maxScore: 35, status: "COMPLETED" },
+    project: { score: this.rounds?.project?.obtained || 0, maxScore: 20, status: "COMPLETED" },
+    hr: { score: this.rounds?.hr?.obtained || 0, maxScore: 10, status: "COMPLETED" },
+    coding: { score: this.rounds?.coding?.obtained || 0, maxScore: 15, status: "COMPLETED" },
   };
 });
 

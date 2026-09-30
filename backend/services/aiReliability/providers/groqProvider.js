@@ -6,10 +6,11 @@ const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
 
 export class GroqProvider extends BaseProvider {
   constructor() {
-    super("groq", "llama-3.3-70b-versatile");
+    const defaultModel = (process.env.GROQ_MODEL || process.env.AI_MODEL || "openai/gpt-oss-120b").trim();
+    super("groq", defaultModel);
   }
 
-  async executeChatCompletion({ apiKey, model, messages, temperature = 0.2, maxTokens = 4000, timeoutMs = 60000, round = "unknown" }) {
+  async executeChatCompletion({ apiKey, model, messages, temperature = 0.2, maxTokens = 8192, timeoutMs = 60000, round = "unknown" }) {
     const activeModel = model || this.defaultModel;
     if (!apiKey) {
       return {
@@ -124,8 +125,26 @@ export class GroqProvider extends BaseProvider {
               },
             };
           } else {
-            const fetchErr = new Error(`Groq HTTP ${res.status}`);
+            let errDetail = `Groq HTTP ${res.status}`;
+            let errCode = null;
+            try {
+              const errBody = await res.json();
+              if (errBody?.error?.message) {
+                errDetail = `Groq HTTP ${res.status}: ${errBody.error.message}`;
+              }
+              if (errBody?.error?.code) {
+                errCode = errBody.error.code;
+              }
+            } catch (_) {
+              const errText = await res.text().catch(() => "");
+              if (errText) {
+                errDetail = `Groq HTTP ${res.status}: ${errText.slice(0, 300)}`;
+              }
+            }
+            console.error(`[GroqProvider] Provider error: ${errDetail} (code: ${errCode || "none"})`);
+            const fetchErr = new Error(errDetail);
             fetchErr.status = res.status;
+            fetchErr.code = errCode;
             const fetchNorm = normalizeProviderError(fetchErr);
             return {
               success: false,

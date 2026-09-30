@@ -57,8 +57,8 @@ function EvaluationLoadingScreen({ sessionId, onCompleted, isIndividualTechnical
             return;
           }
 
-          if (data.status === "FAILED" || data.status === "EVALUATION_FAILED") {
-            setErrorMsg(data.errorDetails || "AI evaluation service is temporarily unavailable.");
+          if (data.status === "FAILED" || data.status === "EVALUATION_FAILED" || data.status === "PARTIAL_EVALUATION" || data.errorType) {
+            setErrorMsg(data.message || data.recoveryMessage || data.errorDetails || "AI evaluation service encountered a temporary issue. Please retry.");
             if (intervalId) clearInterval(intervalId);
           }
         }

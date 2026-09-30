@@ -37,7 +37,7 @@ export class BaseProvider {
       model: options.model || this.defaultModel,
       messages,
       temperature: options.temperature ?? 0.3,
-      maxTokens: options.maxOutputTokens || options.maxTokens || 4000,
+      maxTokens: options.maxOutputTokens || options.maxTokens || 8192,
       timeoutMs: options.timeoutMs || 45000,
       round: options.round || "unknown"
     });
@@ -52,7 +52,7 @@ export class BaseProvider {
     return result.text;
   }
 
-  async executeChatCompletion({ apiKey, model, messages, temperature = 0.2, maxTokens = 4000, timeoutMs = 60000, round = "unknown" }) {
+  async executeChatCompletion({ apiKey, model, messages, temperature = 0.2, maxTokens = 8192, timeoutMs = 60000, round = "unknown" }) {
     throw new Error(`executeChatCompletion not implemented for provider ${this.name}`);
   }
 }

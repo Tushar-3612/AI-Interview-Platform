@@ -3,7 +3,6 @@ import {
   generateTechnicalAIBatch,
   evaluateTechnicalInterviewAI,
 } from "../realInterviewAI/technicalAI.js";
-import { generateDeterministicTechnicalEvaluation } from "../realInterviewAI/deterministicEvaluator.js";
 import RealInterviewTechnicalQuestion from "../../models/RealInterviewTechnicalQuestion.js";
 import RealInterviewTechnicalSession from "../../models/RealInterviewTechnicalSession.js";
 import Interview from "../../models/Interview.js";
@@ -18,8 +17,8 @@ import { isQuestionGroundedInResume, getOrBuildCandidateResumeContext } from "..
 import { preprocessAnswerBatch } from "../realInterviewAI/answerPreprocessor.js";
 import { resolveCandidateAnswer } from "./answerResolver.js";
 import { classifyInterviewAIError } from "./errorClassifier.js";
-import { resolveTechnicalFallbackQuestion } from "../realInterviewAI/technicalFallbackResolver.js";
 import { idempotentUpsertQuestion } from "../aiReliability/utils/mongoConnectionHelper.js";
+import { checkAnswerGate } from "../realInterviewAI/judgeAnswerGate.js";
 
 /**
  * Generates or retrieves existing 15 Technical questions for a Real Interview session (AI CALL #1).
@@ -260,51 +259,6 @@ export async function generateAndProcessTechnicalQuestions({
     }
 
     missingIndices = computeMissingIndices(existingQuestions);
-    const initialMissingCount = missingIndices.length;
-
-    if (initialMissingCount > 0) {
-      // Curated fallback activates for ANY number of missing questions (not just <= 3)
-      // This ensures 100% question delivery even during complete AI outage
-      console.log(
-        `[TechnicalService] AI generation ended with missingCount=${initialMissingCount} (missingIndices=[${missingIndices.join(", ")}]). Invoking curated technical fallback resolver for ALL missing slots...`
-      );
-
-      for (const slotIndex of missingIndices) {
-        const fallbackDoc = resolveTechnicalFallbackQuestion({
-          sessionId,
-          userId,
-          candidateProfile: effectiveProfile,
-          existingQuestions,
-          targetSlotIndex: slotIndex,
-          userHistorySet,
-          missingCount: initialMissingCount,
-          currentPoolSet,
-        });
-
-        if (fallbackDoc) {
-          const savedFallback = await idempotentUpsertQuestion(
-            RealInterviewTechnicalQuestion,
-            { sessionId, orderIndex: slotIndex },
-            fallbackDoc
-          );
-          if (savedFallback && userId && sessionId) {
-            await recordUserQuestionHistory({
-              userId,
-              sessionId,
-              resumeHash: effectiveProfile.resumeHash,
-              round: "technical",
-              questions: [savedFallback],
-            });
-            const norm = normalizeQuestionText(savedFallback.question);
-            if (norm) currentPoolSet.add(norm);
-            existingQuestions.push(savedFallback);
-          }
-        }
-      }
-
-      missingIndices = computeMissingIndices(existingQuestions);
-    }
-
     const roundComplete = missingIndices.length === 0 && existingQuestions.length >= TARGET_COUNT;
 
     if (roundComplete) {
@@ -512,14 +466,14 @@ export async function submitTechnicalAnswer({ sessionId, questionId, candidateAn
 }
 
 /**
- * Evaluates technical session after completion.
+ * Evaluates technical session after completion with batch-wise evaluation and immediate persistence.
  */
-export async function evaluateTechnicalInterviewSession({ sessionId, candidateProfile = {} }) {
+export async function evaluateTechnicalInterviewSession({ sessionId, candidateProfile = {}, forceRecalculate = false }) {
   if (!sessionId) throw new Error("sessionId is required for evaluation");
   const session = await RealInterviewTechnicalSession.findOne({ sessionId });
   if (!session) throw new Error("Technical session not found for evaluation");
 
-  if (session.evaluationCompleted || session.evaluationStatus === "COMPLETED") {
+  if (!forceRecalculate && (session.evaluationCompleted || session.evaluationStatus === "COMPLETED")) {
     return {
       success: true,
       message: "Reused existing technical evaluation result",
@@ -557,8 +511,27 @@ export async function evaluateTechnicalInterviewSession({ sessionId, candidatePr
   const mainInterviewDoc = await Interview.findById(sessionId).lean().catch(() => null);
   const mainInterviewAnswers = mainInterviewDoc?.answers || [];
 
-  const baseQuestions = allQuestions.map((q, idx) => {
+  const isAlreadyEvaluated = (a) =>
+    a &&
+    typeof a.score === "number" &&
+    !isNaN(a.score) &&
+    a.rating &&
+    a.rating !== "pending" &&
+    a.status !== "EVALUATION_FAILED" &&
+    a.evaluationSource !== "AI_FAILED";
+
+  const questionsToEvaluate = [];
+
+  for (let idx = 0; idx < allQuestions.length; idx++) {
+    const q = allQuestions[idx];
     const qIdStr = q._id.toString();
+    const existingAnsIndex = (session.answers || []).findIndex((a) => a.questionId.toString() === qIdStr);
+    const existingAns = existingAnsIndex !== -1 ? session.answers[existingAnsIndex] : null;
+
+    if (existingAns && isAlreadyEvaluated(existingAns) && !forceRecalculate) {
+      continue;
+    }
+
     const resolved = resolveCandidateAnswer({
       roundType: "TECHNICAL",
       questionId: qIdStr,
@@ -567,26 +540,12 @@ export async function evaluateTechnicalInterviewSession({ sessionId, candidatePr
       roundSessionAnswers: session.answers || [],
       mainInterviewAnswers,
     });
-    const maxScore = q.maxMarks || (q.difficulty === "easy" ? 3 : q.difficulty === "hard" ? 13 : 5);
-    return {
-      questionId: qIdStr,
-      question: q.question,
-      difficulty: q.difficulty,
-      maxScore,
-      topic: q.topic,
-      category: q.category,
-      expectedKnowledge: q.expectedKnowledge || `Technical explanation for ${q.topic || q.question}.`,
-      candidateAnswer: resolved.answer,
-      answerPresent: resolved.answerPresent,
-    };
-  });
 
-  const attemptedQuestions = baseQuestions.filter((q) => q.answerPresent);
-  if (attemptedQuestions.length === 0) {
-    for (const q of allQuestions) {
-      const qIdStr = q._id.toString();
-      const maxScore = q.maxMarks || (q.difficulty === "easy" ? 3 : q.difficulty === "hard" ? 13 : 5);
-      const existingAnsIndex = session.answers.findIndex((a) => a.questionId.toString() === qIdStr);
+    const maxScore = q.maxMarks || (q.difficulty === "easy" ? 3 : q.difficulty === "hard" ? 13 : 5);
+    const expectedKnowledge = q.expectedKnowledge || `Technical explanation for ${q.topic || q.question}.`;
+    const gate = checkAnswerGate(resolved.answer, { question: q.question, expectedKnowledge });
+
+    if (!resolved.answerPresent || gate.isGateTriggered) {
       const answerData = {
         questionId: q._id,
         question: q.question,
@@ -594,61 +553,94 @@ export async function evaluateTechnicalInterviewSession({ sessionId, candidatePr
         maxScore,
         topic: q.topic,
         category: q.category,
-        candidateAnswer: "(No answer submitted)",
+        candidateAnswer: resolved.answerPresent ? resolved.answer : "(No answer submitted)",
         score: 0,
-        rating: "Weak",
-        evaluationSource: "not_attempted",
+        status: gate.status || "NOT_ATTEMPTED",
+        rating: gate.rating || "Weak",
+        evaluationSource: gate.isGateTriggered ? "ANSWER_GATE" : "not_attempted",
         correctPoints: [],
-        missingPoints: ["Question was not attempted"],
+        missingPoints: ["Question was not attempted or was declined"],
         incorrectPoints: [],
         grammarIssues: [],
-        feedback: "Question was not attempted.",
-        betterAnswer: q.expectedKnowledge || "Comprehensive technical explanation.",
-        submittedAt: existingAnsIndex !== -1 ? session.answers[existingAnsIndex].submittedAt : new Date(),
+        feedback: gate.feedback || "Question was not attempted.",
+        betterAnswer: expectedKnowledge,
+        submittedAt: existingAns?.submittedAt || new Date(),
       };
+
       if (existingAnsIndex !== -1) session.answers[existingAnsIndex] = answerData;
       else session.answers.push(answerData);
+    } else {
+      questionsToEvaluate.push({
+        questionId: qIdStr,
+        question: q.question,
+        difficulty: q.difficulty,
+        maxScore,
+        topic: q.topic,
+        category: q.category,
+        expectedKnowledge,
+        candidateAnswer: resolved.answer,
+        answerPresent: true,
+      });
     }
+  }
 
-    session.totalScore = 0;
-    session.overallScore = 0;
-    session.maxScore = 100;
-    session.percentage = 0;
-    session.overallRating = "Weak";
-    session.strengths = [];
-    session.weaknesses = ["No questions attempted"];
-    session.finalFeedback = "No technical questions were attempted during the interview.";
+  await session.save();
+
+  if (questionsToEvaluate.length === 0) {
+    const calculatedTotalScore = session.answers.reduce((sum, a) => sum + (a.score || 0), 0);
+    const maxScoreTotal = 100;
+    const percentage = Math.min(100, Math.round(calculatedTotalScore));
+
+    session.totalScore = calculatedTotalScore;
+    session.overallScore = calculatedTotalScore;
+    session.maxScore = maxScoreTotal;
+    session.percentage = percentage;
+    session.overallRating = percentage >= 70 ? "Strong" : percentage >= 40 ? "Average" : "Weak";
+    session.strengths = session.answers.some((a) => (a.score || 0) > 0)
+      ? ["Technical knowledge recorded"]
+      : [];
+    session.weaknesses = session.answers.every((a) => (a.score || 0) === 0)
+      ? ["No questions attempted or answered successfully"]
+      : ["Areas identified in candidate responses"];
+    session.finalFeedback = session.answers.some((a) => (a.score || 0) > 0)
+      ? `Technical evaluation completed. Score: ${calculatedTotalScore}/100.`
+      : "No technical questions were attempted during the interview.";
     session.evaluationStatus = "COMPLETED";
     session.evaluationCompleted = true;
-    session.aiEvaluationCalls = 0;
+    session.aiEvaluationCalls = session.aiEvaluationCalls || 0;
     session.status = "completed";
+
     await session.save();
 
     return {
       success: true,
-      message: "Technical session completed with 0 attempted questions (0 AI calls)",
+      message: "Technical session evaluation complete",
       sessionId,
-      totalScore: 0,
+      totalScore: session.totalScore,
       maxScore: 100,
-      percentage: 0,
-      overallRating: "Weak",
+      percentage: session.percentage,
+      overallRating: session.overallRating,
       strengths: session.strengths,
       weaknesses: session.weaknesses,
       finalFeedback: session.finalFeedback,
       evaluations: session.answers,
       reused: false,
-      aiEvaluationCalls: 0,
+      aiEvaluationCalls: session.aiEvaluationCalls || 0,
     };
   }
 
   const preprocessMap = await preprocessAnswerBatch(
-    attemptedQuestions.map((q) => ({ questionId: q.questionId, answer: q.candidateAnswer, round: "technical" })),
+    questionsToEvaluate.map((q) => ({ questionId: q.questionId, answer: q.candidateAnswer, round: "technical" })),
     300
   );
 
-  const questionsToEvaluate = attemptedQuestions.map((q) => {
+  const preprocessedQuestions = questionsToEvaluate.map((q) => {
     const pre = preprocessMap.get(q.questionId);
-    return { ...q, candidateAnswer: pre?.compactAnswer || q.candidateAnswer, originalCandidateAnswer: q.candidateAnswer };
+    return {
+      ...q,
+      candidateAnswer: pre?.compactAnswer || q.candidateAnswer,
+      originalCandidateAnswer: q.candidateAnswer,
+    };
   });
 
   session.evaluationStatus = "EVALUATING";
@@ -658,74 +650,71 @@ export async function evaluateTechnicalInterviewSession({ sessionId, candidatePr
   try {
     evalResult = await evaluateTechnicalInterviewAI({
       candidateProfile,
-      questions: questionsToEvaluate,
-      options: { sessionId }
+      questions: preprocessedQuestions,
+      options: {
+        sessionId,
+        onBatchComplete: async (batchEvaluated) => {
+          for (const item of batchEvaluated) {
+            const qIdStr = String(item.questionId);
+            const targetQ = allQuestions.find((q) => q._id.toString() === qIdStr);
+            const baseObj = questionsToEvaluate.find((q) => q.questionId === qIdStr);
+            const maxScore = targetQ?.maxMarks || (targetQ?.difficulty === "easy" ? 3 : targetQ?.difficulty === "hard" ? 13 : 5);
+
+            const rawScore = Number(item.score);
+            const score = isNaN(rawScore) ? 0 : Math.max(0, Math.min(maxScore, Math.round(rawScore)));
+            const rating = item.rating || (score >= maxScore * 0.8 ? "Strong" : score >= maxScore * 0.5 ? "Acceptable" : "Weak");
+
+            const answerData = {
+              questionId: targetQ ? targetQ._id : item.questionId,
+              question: targetQ?.question || baseObj?.question || "",
+              difficulty: targetQ?.difficulty || "medium",
+              maxScore,
+              topic: targetQ?.topic || "",
+              category: targetQ?.category || "Conceptual",
+              candidateAnswer: baseObj?.candidateAnswer || "(No answer submitted)",
+              score,
+              rating,
+              status: item.status || (score >= maxScore * 0.8 ? "CORRECT" : score >= maxScore * 0.4 ? "PARTIALLY_CORRECT" : score > 0 ? "PARTIALLY_CORRECT" : "INCORRECT"),
+              evaluationSource: "ai_evaluated",
+              correctPoints: Array.isArray(item.correctPoints) ? item.correctPoints : [],
+              missingPoints: Array.isArray(item.missingPoints) ? item.missingPoints : [],
+              incorrectPoints: Array.isArray(item.incorrectPoints) ? item.incorrectPoints : [],
+              grammarIssues: Array.isArray(item.grammarIssues) ? item.grammarIssues : [],
+              feedback: String(item.feedback || "Evaluation complete.").trim(),
+              betterAnswer: String(item.betterAnswer || targetQ?.expectedKnowledge || "").trim(),
+              submittedAt: new Date(),
+            };
+
+            const existingAnsIndex = session.answers.findIndex((a) => a.questionId.toString() === qIdStr);
+            if (existingAnsIndex !== -1) {
+              answerData.submittedAt = session.answers[existingAnsIndex].submittedAt || answerData.submittedAt;
+              session.answers[existingAnsIndex] = answerData;
+            } else {
+              session.answers.push(answerData);
+            }
+          }
+          await session.save();
+        },
+      },
     });
+    console.log(`\n[RESULT-EVALUATION]\nround=technical\nstatus=AI_SUCCESS\nevaluationSource=AI\n`);
   } catch (evalErr) {
-    console.log(`\n[RESULT-EVALUATION]\nround=technical\nstatus=AI_FAILED\nerrorCode=${evalErr.message}\nfallback=LOCAL_OR_UNAVAILABLE`);
-    console.log(`\n[RESULT-EVALUATION]\nround=technical\nstatus=CONTINUING_AFTER_FAILURE`);
-    evalResult = generateDeterministicTechnicalEvaluation(questionsToEvaluate, evalErr.message);
+    console.error(`\n[RESULT-EVALUATION]\nround=technical\nstatus=AI_FAILED\nerrorCode=${evalErr.message}\n`);
+    const hasSomeEvaluated = session.answers.some((a) => a.evaluationSource === "ai_evaluated");
+    session.evaluationStatus = hasSomeEvaluated ? "PARTIAL" : "FAILED";
+    session.evaluationCompleted = false;
+    await session.save();
+    const propagatedErr = new Error(`Technical AI evaluation failed: ${evalErr.message}`);
+    propagatedErr.isQuotaExhausted = evalErr.isQuotaExhausted;
+    propagatedErr.keySource = evalErr.keySource;
+    propagatedErr.mode = evalErr.mode;
+    propagatedErr.category = evalErr.category;
+    throw propagatedErr;
   }
 
-  const evaluationsList = Array.isArray(evalResult.evaluations) ? evalResult.evaluations : [];
-  let calculatedTotalScore = 0;
-
-  for (const q of allQuestions) {
-    const qIdStr = q._id.toString();
-    const itemEval = evaluationsList.find((e) => String(e.questionId) === qIdStr) || {};
-    const baseObj = baseQuestions.find((bq) => bq.questionId === qIdStr);
-    const maxScore = q.maxMarks || (q.difficulty === "easy" ? 3 : q.difficulty === "hard" ? 13 : 5);
-
-    let score = 0;
-    let rating = "Weak";
-    let feedback = "Question was not attempted.";
-    let missingPoints = ["Question was not attempted"];
-    let correctPoints = [];
-    let incorrectPoints = [];
-    let grammarIssues = [];
-    let betterAnswer = q.expectedKnowledge || "Interview-ready response.";
-
-    if (baseObj?.answerPresent) {
-      const rawScore = Number(itemEval.score);
-      score = isNaN(rawScore) ? 0 : Math.max(0, Math.min(maxScore, Math.round(rawScore)));
-      rating = itemEval.rating || (score >= maxScore * 0.8 ? "Strong" : score >= maxScore * 0.5 ? "Acceptable" : "Weak");
-      feedback = String(itemEval.feedback || "Evaluation complete.").trim();
-      missingPoints = Array.isArray(itemEval.missingPoints) ? itemEval.missingPoints : [];
-      correctPoints = Array.isArray(itemEval.correctPoints) ? itemEval.correctPoints : [];
-      incorrectPoints = Array.isArray(itemEval.incorrectPoints) ? itemEval.incorrectPoints : [];
-      grammarIssues = Array.isArray(itemEval.grammarIssues) ? itemEval.grammarIssues : [];
-      if (itemEval.betterAnswer) betterAnswer = String(itemEval.betterAnswer).trim();
-    }
-
-    calculatedTotalScore += score;
-    const existingAnsIndex = session.answers.findIndex((a) => a.questionId.toString() === qIdStr);
-
-    const answerData = {
-      questionId: q._id,
-      question: q.question,
-      difficulty: q.difficulty,
-      maxScore,
-      topic: q.topic,
-      category: q.category,
-      candidateAnswer: baseObj?.answerPresent ? baseObj.candidateAnswer : "(No answer submitted)",
-      score,
-      rating,
-      evaluationSource: baseObj?.answerPresent ? (itemEval.evaluationSource || "ai_evaluated") : "not_attempted",
-      correctPoints,
-      missingPoints,
-      incorrectPoints,
-      grammarIssues,
-      feedback,
-      betterAnswer,
-      submittedAt: existingAnsIndex !== -1 ? session.answers[existingAnsIndex].submittedAt : new Date(),
-    };
-
-    if (existingAnsIndex !== -1) session.answers[existingAnsIndex] = answerData;
-    else session.answers.push(answerData);
-  }
-
+  const calculatedTotalScore = Math.min(100, session.answers.reduce((sum, a) => sum + (a.score || 0), 0));
   const maxScoreTotal = 100;
-  const percentage = Math.round((calculatedTotalScore / maxScoreTotal) * 100);
+  const percentage = calculatedTotalScore;
 
   session.totalScore = calculatedTotalScore;
   session.overallScore = calculatedTotalScore;
@@ -737,14 +726,14 @@ export async function evaluateTechnicalInterviewSession({ sessionId, candidatePr
   session.finalFeedback = String(evalResult.finalFeedback || "Technical interview evaluated.").trim();
   session.evaluationStatus = "COMPLETED";
   session.evaluationCompleted = true;
-  session.aiEvaluationCalls = 1;
+  session.aiEvaluationCalls = (session.aiEvaluationCalls || 0) + 1;
   session.status = "completed";
 
   await session.save();
 
   return {
     success: true,
-    message: "Technical interview evaluated successfully in 1 AI call",
+    message: "Technical interview evaluated successfully",
     sessionId,
     totalScore: session.totalScore,
     maxScore: session.maxScore,
@@ -755,6 +744,6 @@ export async function evaluateTechnicalInterviewSession({ sessionId, candidatePr
     finalFeedback: session.finalFeedback,
     evaluations: session.answers,
     reused: false,
-    aiEvaluationCalls: 1,
+    aiEvaluationCalls: session.aiEvaluationCalls,
   };
 }

@@ -12,9 +12,16 @@ import {
   User,
   Clock,
   Filter,
+  Key,
+  Sparkles,
+  RotateCcw,
+  X,
 } from "lucide-react";
 import api from "../../utils/api";
 import { getAuthToken } from "../../hooks/useStudentProfile";
+import BYOKModal from "../../components/BYOKModal";
+
+
 
 /**
  * Reusable helper for Round Performance Status based on Zero Attempt Rule:
@@ -261,7 +268,7 @@ export function normalizeRealInterviewResult(rawPayload) {
   }
 
   const totalObtained = Number(doc.totalObtained ?? doc.overallScore ?? doc.totalScore ?? 0);
-  const maxScore = Number(doc.maximumMarks ?? doc.maxScore ?? doc.maximum ?? 410);
+  const maxScore = Number(doc.maximumMarks ?? doc.maxScore ?? doc.maximum ?? 100);
   const percentage = typeof doc.percentage === "number"
     ? doc.percentage
     : maxScore > 0
@@ -291,11 +298,11 @@ export function normalizeRealInterviewResult(rawPayload) {
     };
   };
 
-  const apt = parseRound("aptitude", 15, 50);
-  const tech = parseRound("technical", 20, 100);
-  const proj = parseRound("project", 10, 100);
-  const hr = parseRound("hr", 5, 100);
-  const coding = parseRound("coding", 3, 100);
+  const apt = parseRound("aptitude", 15, 20);
+  const tech = parseRound("technical", 15, 35);
+  const proj = parseRound("project", 5, 20);
+  const hr = parseRound("hr", 3, 10);
+  const coding = parseRound("coding", 3, 15);
 
   const attemptedCount = typeof doc.attemptedQuestionsCount === "number"
     ? doc.attemptedQuestionsCount
@@ -351,7 +358,11 @@ export default function Results({ sessionId: propSessionId, initialResultData })
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(true);
   const [evalFailed, setEvalFailed] = useState(false);
+  const [quotaError, setQuotaError] = useState(null);
+  const [byokModalOpen, setByokModalOpen] = useState(false);
+  const [recalcModalOpen, setRecalcModalOpen] = useState(false);
   const [retrying, setRetrying] = useState(false);
+
   const [downloadingPdf, setDownloadingPdf] = useState(false);
   const [error, setError] = useState("");
   const [roundFilter, setRoundFilter] = useState("ALL");
@@ -379,19 +390,28 @@ export default function Results({ sessionId: propSessionId, initialResultData })
         if (activeId) {
           const res = await api.get(`/api/real-interview/result/${activeId}`, { headers }).catch((err) => {
             console.warn(`[RESULT-FRONTEND] fetch warning:`, err.message);
-            return { status: err.response?.status || 500, data: null };
+            return { status: err.response?.status || 500, data: err.response?.data || null };
           });
 
           if (isCancelled) return;
 
-          if (res.data?.status === "EVALUATION_FAILED") {
+          const resData = res?.data;
+
+          if (resData?.status === "EVALUATION_FAILED" || resData?.errorType) {
+            setQuotaError({
+              errorType: resData.errorType || (resData.result?.errorType),
+              keySource: resData.keySource || (resData.result?.keySource) || "PLATFORM",
+              requiresUserApiKey: Boolean(resData.requiresUserApiKey ?? resData.result?.requiresUserApiKey),
+              requiresNewApiKey: Boolean(resData.requiresNewApiKey ?? resData.result?.requiresNewApiKey),
+              message: resData.message || resData.recoveryMessage || resData.result?.recoveryMessage || "",
+            });
             setEvalFailed(true);
             setLoading(false);
             return;
           }
 
-          if (res.data?.success && res.data?.result) {
-            const norm = normalizeRealInterviewResult(res.data);
+          if (resData?.success && resData?.result) {
+            const norm = normalizeRealInterviewResult(resData);
             if (norm) {
               console.log(`[RESULT-FRONTEND] sessionId=${activeId} totalObtained=${norm.totalObtained} maxScore=${norm.maxScore} percentage=${norm.percentage} questionCount=${norm.totalCount}`);
               setResult(norm);
@@ -404,7 +424,14 @@ export default function Results({ sessionId: propSessionId, initialResultData })
           const { data: statusData } = await api.get(`/api/real-interview/result/${activeId}/status`, { headers }).catch(() => ({ data: null }));
           if (isCancelled) return;
 
-          if (statusData && statusData.status === "EVALUATION_FAILED") {
+          if (statusData && (statusData.status === "EVALUATION_FAILED" || statusData.errorType)) {
+            setQuotaError({
+              errorType: statusData.errorType,
+              keySource: statusData.keySource || "PLATFORM",
+              requiresUserApiKey: Boolean(statusData.requiresUserApiKey),
+              requiresNewApiKey: Boolean(statusData.requiresNewApiKey),
+              message: statusData.message || statusData.recoveryMessage || "",
+            });
             setEvalFailed(true);
             setLoading(false);
             return;
@@ -442,26 +469,54 @@ export default function Results({ sessionId: propSessionId, initialResultData })
     };
   }, [activeId, initialResultData, token]);
 
-  const handleTryAgain = async () => {
+  const handleRetryEvaluation = async (byokPayload = null) => {
     if (!activeId) return;
     setRetrying(true);
+    setError("");
     try {
       const headers = { Authorization: `Bearer ${token}` };
-      const { data } = await api.post(`/api/real-interview/result/${activeId}/retry`, {}, { headers });
+      const body = byokPayload && byokPayload.apiKey ? {
+        provider: byokPayload.provider,
+        apiKey: byokPayload.apiKey,
+      } : {};
+
+      const { data } = await api.post(`/api/real-interview/result/${activeId}/retry`, body, { headers });
       if (data.success && data.result) {
         const norm = normalizeRealInterviewResult(data);
         setResult(norm);
         setEvalFailed(false);
-      } else if (data.status === "EVALUATION_FAILED") {
+        setQuotaError(null);
+      } else if (data.status === "EVALUATION_FAILED" || data.errorType) {
+        setQuotaError({
+          errorType: data.errorType,
+          keySource: data.keySource || "PLATFORM",
+          requiresUserApiKey: Boolean(data.requiresUserApiKey),
+          requiresNewApiKey: Boolean(data.requiresNewApiKey),
+          message: data.message || data.recoveryMessage || "",
+        });
+        setEvalFailed(true);
+      } else {
         setEvalFailed(true);
       }
     } catch (err) {
       console.error("[Results] Retry evaluation failed:", err.message);
+      const errData = err.response?.data;
+      if (errData?.errorType) {
+        setQuotaError({
+          errorType: errData.errorType,
+          keySource: errData.keySource || "PLATFORM",
+          requiresUserApiKey: Boolean(errData.requiresUserApiKey),
+          requiresNewApiKey: Boolean(errData.requiresNewApiKey),
+          message: errData.message || errData.recoveryMessage || "",
+        });
+      }
       setEvalFailed(true);
     } finally {
       setRetrying(false);
     }
   };
+
+  const handleTryAgain = () => handleRetryEvaluation();
 
   const handleDownloadPdf = async () => {
     const targetSessionId = result?.sessionId || activeId;
@@ -500,7 +555,7 @@ export default function Results({ sessionId: propSessionId, initialResultData })
 
   // Computed authoritative values
   const totalObtained = useMemo(() => result?.totalObtained ?? 0, [result]);
-  const maxScore = useMemo(() => result?.maxScore ?? 410, [result]);
+  const maxScore = useMemo(() => result?.maxScore ?? 100, [result]);
   const percentage = useMemo(() => {
     if (!result) return 0;
     if (typeof result.percentage === "number") return result.percentage;
@@ -508,6 +563,7 @@ export default function Results({ sessionId: propSessionId, initialResultData })
   }, [result, totalObtained, maxScore]);
 
   const overallStatus = useMemo(() => getOverallPerformanceStatus(percentage), [percentage]);
+  const showRecalculateButton = useMemo(() => Boolean(result && totalObtained < 30), [result, totalObtained]);
 
   const candidateDisplayName = useMemo(() => {
     if (result?.candidateName) return result.candidateName;
@@ -533,11 +589,11 @@ export default function Results({ sessionId: propSessionId, initialResultData })
 
   const roundsData = useMemo(() => {
     const list = [
-      { key: "aptitude", name: "APTITUDE", defaultTotalQ: 15, defaultMax: 50 },
-      { key: "technical", name: "TECHNICAL", defaultTotalQ: 20, defaultMax: 100 },
-      { key: "project", name: "PROJECT", defaultTotalQ: 10, defaultMax: 100 },
-      { key: "hr", name: "HR BEHAVIORAL", defaultTotalQ: 5, defaultMax: 100 },
-      { key: "coding", name: "CODING", defaultTotalQ: 3, defaultMax: 100 },
+      { key: "aptitude", name: "APTITUDE", defaultTotalQ: 15, defaultMax: 20 },
+      { key: "technical", name: "TECHNICAL", defaultTotalQ: 15, defaultMax: 35 },
+      { key: "project", name: "PROJECT", defaultTotalQ: 5, defaultMax: 20 },
+      { key: "hr", name: "HR BEHAVIORAL", defaultTotalQ: 3, defaultMax: 10 },
+      { key: "coding", name: "CODING", defaultTotalQ: 3, defaultMax: 15 },
     ];
 
     return list.map((item) => {
@@ -621,38 +677,122 @@ export default function Results({ sessionId: propSessionId, initialResultData })
   }
 
   if (evalFailed) {
+    const isPlatformQuotaExhausted =
+      quotaError?.errorType === "AI_QUOTA_EXHAUSTED" ||
+      quotaError?.requiresUserApiKey ||
+      (quotaError?.keySource === "PLATFORM" && Boolean(quotaError?.errorType));
+
+    const isByokQuotaExhausted =
+      quotaError?.errorType === "BYOK_QUOTA_EXHAUSTED" ||
+      quotaError?.requiresNewApiKey ||
+      quotaError?.keySource === "BYOK_REQUEST" ||
+      quotaError?.keySource === "BYOK_SESSION";
+
     return (
       <div className="min-h-screen bg-[#0a0b10] text-white flex items-center justify-center p-6 font-sans select-none">
-        <div className="max-w-lg w-full bg-[#12131d] border border-orange-500/20 rounded-2xl p-8 text-center space-y-6 shadow-xl">
-          <div className="w-14 h-14 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center mx-auto">
-            <AlertCircle className="w-7 h-7" />
+        <div className="max-w-lg w-full bg-[#12131d] border border-orange-500/20 rounded-2xl p-8 text-center space-y-6 shadow-2xl relative">
+          <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center mx-auto shadow-inner">
+            <AlertCircle className="w-8 h-8" />
           </div>
 
-          <div className="space-y-2">
-            <h2 className="text-base font-bold text-white uppercase tracking-wider">Interview Evaluation Could Not Be Completed</h2>
-            <p className="text-xs text-slate-300 font-medium leading-relaxed">
-              Your responses were saved to the database, but automated evaluation is pending or unavailable.
-            </p>
+          <div className="space-y-3">
+            {isByokQuotaExhausted ? (
+              <>
+                <h2 className="text-lg font-bold text-white tracking-wide flex items-center justify-center gap-2">
+                  <span>⚠️</span> API Key Usage Limit Reached
+                </h2>
+                <div className="text-xs text-slate-300 font-medium leading-relaxed space-y-2 text-left bg-white/[0.03] p-4 rounded-xl border border-white/5">
+                  <p>
+                    Sorry! The AI API key currently being used for your evaluation has reached its usage limit or is no longer available.
+                  </p>
+                  <p className="text-slate-400 text-[11px]">
+                    Your interview answers have been safely preserved. Please provide a new API key to continue your interview evaluation.
+                  </p>
+                </div>
+              </>
+            ) : isPlatformQuotaExhausted ? (
+              <>
+                <h2 className="text-lg font-bold text-white tracking-wide flex items-center justify-center gap-2">
+                  <span>⚠️</span> AI Evaluation Temporarily Unavailable
+                </h2>
+                <div className="text-xs text-slate-300 font-medium leading-relaxed space-y-2 text-left bg-white/[0.03] p-4 rounded-xl border border-white/5">
+                  <p>
+                    Sorry! Our AI service has temporarily reached its usage limit.
+                  </p>
+                  <p className="text-slate-400 text-[11px]">
+                    We couldn't complete your interview evaluation using our platform AI service. Your interview answers have been safely preserved. Please provide your own AI API key to continue your evaluation.
+                  </p>
+                </div>
+              </>
+            ) : (
+              <>
+                <h2 className="text-lg font-bold text-white tracking-wide">
+                  Interview Evaluation Could Not Be Completed
+                </h2>
+                <p className="text-xs text-slate-300 font-medium leading-relaxed">
+                  Your interview answers have been safely saved to the database, but automated AI evaluation encountered a temporary issue.
+                </p>
+              </>
+            )}
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 pt-2">
-            <button
-              onClick={handleTryAgain}
-              disabled={retrying}
-              className="flex-1 py-3 px-5 rounded-xl bg-orange-600 hover:bg-orange-500 disabled:opacity-50 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer transition"
-            >
-              {retrying && <Loader2 className="w-4 h-4 animate-spin" />}
-              <span>{retrying ? "Calculating..." : "Retry Calculation"}</span>
-            </button>
+          <div className="flex flex-col gap-3 pt-2">
+            {isByokQuotaExhausted ? (
+              <button
+                onClick={() => setByokModalOpen(true)}
+                disabled={retrying}
+                className="w-full py-3.5 px-5 rounded-xl bg-gradient-to-r from-orange-600 to-amber-600 hover:brightness-110 disabled:opacity-50 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer transition shadow-lg shadow-orange-600/20"
+              >
+                <Key className="w-4 h-4" />
+                <span>Enter New API Key</span>
+              </button>
+            ) : isPlatformQuotaExhausted ? (
+              <button
+                onClick={() => setByokModalOpen(true)}
+                disabled={retrying}
+                className="w-full py-3.5 px-5 rounded-xl bg-gradient-to-r from-orange-600 to-amber-600 hover:brightness-110 disabled:opacity-50 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer transition shadow-lg shadow-orange-600/20"
+              >
+                <Key className="w-4 h-4" />
+                <span>Use My API Key</span>
+              </button>
+            ) : (
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={() => handleRetryEvaluation()}
+                  disabled={retrying}
+                  className="flex-1 py-3 px-5 rounded-xl bg-orange-600 hover:bg-orange-500 disabled:opacity-50 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer transition"
+                >
+                  {retrying && <Loader2 className="w-4 h-4 animate-spin" />}
+                  <span>{retrying ? "Calculating..." : "Retry Evaluation"}</span>
+                </button>
+                <button
+                  onClick={() => setByokModalOpen(true)}
+                  disabled={retrying}
+                  className="flex-1 py-3 px-5 rounded-xl bg-[#1b1d2b] hover:bg-[#25283b] text-orange-400 font-bold text-xs uppercase tracking-wider cursor-pointer transition border border-orange-500/30 flex items-center justify-center gap-1.5"
+                >
+                  <Key className="w-3.5 h-3.5" />
+                  <span>Use Custom Key</span>
+                </button>
+              </div>
+            )}
 
             <button
               onClick={() => navigate("/dashboard")}
-              className="flex-1 py-3 px-5 rounded-xl bg-[#1b1d2b] hover:bg-[#25283b] text-slate-200 font-bold text-xs uppercase tracking-wider cursor-pointer transition border border-white/10"
+              className="w-full py-3 px-5 rounded-xl bg-[#1b1d2b] hover:bg-[#25283b] text-slate-300 font-bold text-xs uppercase tracking-wider cursor-pointer transition border border-white/10"
             >
               Back to Dashboard
             </button>
           </div>
         </div>
+
+        <BYOKModal
+          isOpen={byokModalOpen}
+          onClose={() => setByokModalOpen(false)}
+          onSave={(data) => {
+            setByokModalOpen(false);
+            handleRetryEvaluation(data);
+          }}
+        />
       </div>
     );
   }
@@ -714,6 +854,17 @@ export default function Results({ sessionId: propSessionId, initialResultData })
 
           {/* Action buttons */}
           <div className="flex items-center gap-3 w-full sm:w-auto">
+            {showRecalculateButton && (
+              <button
+                onClick={() => setRecalcModalOpen(true)}
+                disabled={retrying}
+                className="flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-gradient-to-r from-orange-600 to-amber-600 hover:brightness-110 disabled:opacity-50 text-white font-bold text-xs uppercase tracking-wider transition cursor-pointer shadow"
+              >
+                {retrying ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RotateCcw className="w-3.5 h-3.5" />}
+                <span>{retrying ? "Recalculating..." : "Recalculate Result"}</span>
+              </button>
+            )}
+
             <button
               onClick={handleDownloadPdf}
               disabled={downloadingPdf}
@@ -738,15 +889,42 @@ export default function Results({ sessionId: propSessionId, initialResultData })
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
 
             {/* Overall score */}
-            <div className="space-y-1">
-              <span className="text-xs font-bold uppercase tracking-widest text-slate-400">OVERALL RESULT</span>
-              <div className="flex items-baseline gap-3">
-                <span className={`text-5xl font-black font-mono tracking-tight ${overallStatus.textColor}`}>
-                  {totalObtained}
-                </span>
-                <span className="text-xl font-bold text-slate-500 font-mono">/ {maxScore}</span>
-                <span className="text-2xl font-black font-mono text-white ml-2">({percentage}%)</span>
+            <div className="space-y-3">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-widest text-slate-400">OVERALL RESULT</span>
+                <div className="flex items-baseline gap-3">
+                  <span className={`text-5xl font-black font-mono tracking-tight ${overallStatus.textColor}`}>
+                    {totalObtained}
+                  </span>
+                  <span className="text-xl font-bold text-slate-500 font-mono">/ {maxScore}</span>
+                  <span className="text-2xl font-black font-mono text-white ml-2">({percentage}%)</span>
+                </div>
               </div>
+
+              {showRecalculateButton && (
+                <div className="flex flex-wrap items-center gap-3 pt-1">
+                  <button
+                    onClick={() => setRecalcModalOpen(true)}
+                    disabled={retrying}
+                    className="py-2.5 px-4 rounded-xl bg-gradient-to-r from-orange-600 to-amber-600 hover:brightness-110 disabled:opacity-50 text-white font-bold text-xs uppercase tracking-wider flex items-center gap-2 cursor-pointer transition shadow-lg shadow-orange-600/20"
+                  >
+                    {retrying ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        <span>Recalculating result...</span>
+                      </>
+                    ) : (
+                      <>
+                        <RotateCcw className="w-3.5 h-3.5" />
+                        <span>Recalculate Result</span>
+                      </>
+                    )}
+                  </button>
+                  <span className="text-[11px] text-slate-400">
+                    Evaluation score is under 30. Re-evaluate existing answers using AI.
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Performance status badge */}
@@ -769,6 +947,7 @@ export default function Results({ sessionId: propSessionId, initialResultData })
           </div>
         </section>
 
+
         {/* --- 3. ROUND PERFORMANCE ASSESSMENT REPORT TABLE --- */}
         <section className="bg-[#12131d] border border-[#252836] rounded-2xl p-6 shadow-md space-y-4">
           <div className="flex justify-between items-center border-b border-white/10 pb-3">
@@ -776,7 +955,7 @@ export default function Results({ sessionId: propSessionId, initialResultData })
               <h2 className="text-xs font-black uppercase tracking-widest text-slate-300">ROUND PERFORMANCE</h2>
               <p className="text-[11px] text-slate-400 mt-0.5">Authoritative performance metrics across all 5 interview stages</p>
             </div>
-            <span className="text-xs font-mono text-slate-500">Maximum Marks: 410</span>
+            <span className="text-xs font-mono text-slate-500">Maximum Marks: {maxScore}</span>
           </div>
 
           <div className="overflow-x-auto">
@@ -1118,6 +1297,17 @@ export default function Results({ sessionId: propSessionId, initialResultData })
 
         {/* --- 6. ACTIONS FOOTER --- */}
         <div className="flex flex-col sm:flex-row justify-center items-center gap-4 pt-2 pb-6">
+          {showRecalculateButton && (
+            <button
+              onClick={() => setRecalcModalOpen(true)}
+              disabled={retrying}
+              className="w-full sm:w-auto py-3 px-8 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 disabled:opacity-50 text-amber-300 font-bold text-xs uppercase tracking-wider transition cursor-pointer border border-amber-500/40 flex items-center justify-center gap-2"
+            >
+              {retrying ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
+              <span>{retrying ? "Recalculating result..." : "Recalculate Result"}</span>
+            </button>
+          )}
+
           <button
             onClick={handleDownloadPdf}
             disabled={downloadingPdf}
@@ -1136,6 +1326,130 @@ export default function Results({ sessionId: propSessionId, initialResultData })
         </div>
 
       </div>
+
+      {/* --- RECALCULATE RESULT CONFIRMATION & RECOVERY MODAL --- */}
+      {recalcModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div
+            className="relative w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden p-6 text-white border border-white/10"
+            style={{ background: "rgba(13, 16, 28, 0.98)" }}
+          >
+            <div className="flex items-start justify-between gap-3 mb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400">
+                  <RotateCcw className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-white font-mono">Recalculate your result using AI?</h3>
+                  <p className="text-xs text-slate-400 mt-0.5">Authoritative AI Re-evaluation</p>
+                </div>
+              </div>
+              <button
+                onClick={() => !retrying && setRecalcModalOpen(false)}
+                disabled={retrying}
+                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition disabled:opacity-40"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4 text-xs font-sans text-slate-300">
+              <div className="p-3.5 rounded-xl bg-[#080a12] border border-white/10 space-y-2">
+                <p className="text-slate-200 font-medium">
+                  Your existing answers will be evaluated again. Your interview questions and answers will remain unchanged.
+                </p>
+                <div className="grid grid-cols-2 gap-2 text-[11px] font-mono text-slate-400 pt-1 border-t border-white/5">
+                  <div>✓ Same interview questions</div>
+                  <div>✓ Same candidate answers</div>
+                  <div>✓ Reuses valid evaluations</div>
+                  <div>✓ Zero fake or bonus marks</div>
+                </div>
+              </div>
+
+              {/* Quota Error / Recovery Instructions if previous evaluation had quota failure */}
+              {quotaError && (
+                <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/25 space-y-2 text-amber-200">
+                  <div className="flex items-center gap-2 font-bold text-amber-300">
+                    <AlertTriangle className="w-4 h-4 shrink-0" />
+                    <span>
+                      {quotaError.requiresNewApiKey
+                        ? "API Key Limit Reached"
+                        : "Platform API Usage Limit Reached"}
+                    </span>
+                  </div>
+                  <p className="text-[11px] leading-relaxed">
+                    {quotaError.requiresNewApiKey
+                      ? "Your API key has reached its usage limit or is no longer available. Please enter a new API key to continue recalculating your result."
+                      : "AI evaluation could not be completed because the platform API usage limit was reached. Please enter your API key to continue the evaluation."}
+                  </p>
+                  <div className="pt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setRecalcModalOpen(false);
+                        if (quotaError.requiresNewApiKey) {
+                          sessionStorage.removeItem("byok_api_key");
+                        }
+                        setByokModalOpen(true);
+                      }}
+                      className="py-1.5 px-4 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-bold text-[11px] uppercase tracking-wider transition cursor-pointer flex items-center gap-1.5"
+                    >
+                      <Key className="w-3.5 h-3.5" />
+                      <span>
+                        {quotaError.requiresNewApiKey ? "Enter New API Key" : "Use My API Key"}
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-5 mt-4 border-t border-white/10">
+              <button
+                type="button"
+                onClick={() => setRecalcModalOpen(false)}
+                disabled={retrying}
+                className="py-2.5 px-5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 font-bold text-xs uppercase tracking-wider transition cursor-pointer border border-white/10 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={async () => {
+                  setRecalcModalOpen(false);
+                  await handleRetryEvaluation();
+                }}
+                disabled={retrying}
+                className="py-2.5 px-6 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold text-xs uppercase tracking-wider transition cursor-pointer shadow-lg disabled:opacity-50 flex items-center gap-2"
+              >
+                {retrying ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Recalculating result...</span>
+                  </>
+                ) : (
+                  <>
+                    <RotateCcw className="w-4 h-4" />
+                    <span>Re-Calculate</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <BYOKModal
+        isOpen={byokModalOpen}
+        onClose={() => setByokModalOpen(false)}
+        onSave={(data) => {
+          setByokModalOpen(false);
+          handleRetryEvaluation(data);
+        }}
+      />
     </div>
   );
 }
+
+

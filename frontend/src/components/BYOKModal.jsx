@@ -4,7 +4,7 @@ import { Key, Eye, EyeOff, ShieldCheck, Check, Sparkles, X } from "lucide-react"
 export const PROVIDER_OPTIONS = [
   { id: "groq", name: "Groq (Fast Llama 3.3)", placeholder: "gsk_...", helpText: "Free fast inference" },
   { id: "openrouter", name: "OpenRouter (Multi-Model)", placeholder: "sk-or-v1-...", helpText: "Unified AI gateway" },
-  { id: "gemini", name: "Google Gemini (Gemini 2.5 Flash)", placeholder: "AIzaSy...", helpText: "Google AI Studio Key" },
+  { id: "gemini", name: "Google Gemini (Gemini 2.0 Flash)", placeholder: "AIzaSy...", helpText: "Google AI Studio Key" },
   { id: "deepseek", name: "DeepSeek (DeepSeek V3/R1)", placeholder: "sk-...", helpText: "DeepSeek API Key" },
   { id: "openai", name: "OpenAI (GPT-4o mini / GPT-4o)", placeholder: "sk-...", helpText: "Official OpenAI Key" }
 ];

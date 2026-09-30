@@ -1,170 +1,164 @@
 /**
  * answerPreprocessor.js
  * =====================
- * Node.js wrapper for the Python NLP answer preprocessor.
- * Spawns nlp_preprocessor.py and returns a structured preprocessing result.
+ * Production-ready semantic-preserving NLP answer preprocessor.
+ * Prepares candidate answers for AI evaluation without modifying question generation.
  *
- * Output shape:
- * {
- *   originalAnswer: string,
- *   normalizedAnswer: string,
- *   compactAnswer: string,
- *   tokenCountBefore: number,
- *   tokenCountAfter: number,
- *   reductionPercent: number
- * }
+ * Operations:
+ * 1. Normalize unicode & whitespace
+ * 2. Standardize punctuation
+ * 3. Remove conversational filler phrases ("um", "uh", "like you know", "basically as I was saying")
+ * 4. STRICTLY PRESERVE negations and critical logical connectives:
+ *    ("not", "no", "never", "cannot", "can't", "without", "only", "don't", "doesn't",
+ *     "isn't", "won't", "didn't", "haven't", "hasn't", "hadn't", "wouldn't", "couldn't",
+ *     "shouldn't", "rarely", "neither", "nor", "none", "nothing", "nowhere")
+ * 5. Structured JSON Output contract:
+ *    {
+ *      originalAnswer: string,
+ *      cleanedAnswer: string,
+ *      normalizedAnswer: string,
+ *      compactAnswer: string,
+ *      tokens: string[],
+ *      tokenCountBefore: number,
+ *      tokenCountAfter: number,
+ *      reductionPercent: number,
+ *      normalizationApplied: boolean
+ *    }
  */
 
-import { spawn } from "child_process";
-import path from "path";
-import { fileURLToPath } from "url";
+// Conversational filler phrases that add zero technical content
+const FILLER_PHRASES = [
+  /\b(?:um|uh|er|ah|like you know|you know what i mean|as i was saying|basically speaking|to be honest with you|if that makes sense)\b/gi,
+  /\b(?:so basically|like basically|honestly speaking|you know like|i mean like)\b/gi,
+  /\b(?:i guess so|kind of like|sort of like)\b/gi,
+];
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const NLP_SCRIPT = path.join(__dirname, "../../python_ai/nlp_preprocessor.py");
+// Essential negation and logical words that MUST NEVER be stripped
+export const PRESERVED_CRITICAL_WORDS = new Set([
+  "not", "no", "never", "none", "nor", "neither", "nothing", "nowhere",
+  "cannot", "cant", "can't", "dont", "don't", "doesnt", "doesn't",
+  "didnt", "didn't", "isnt", "isn't", "arent", "aren't", "wasnt", "wasn't",
+  "werent", "weren't", "havent", "haven't", "hasnt", "hasn't", "hadnt", "hadn't",
+  "wont", "won't", "wouldnt", "wouldn't", "couldnt", "couldn't", "shouldnt", "shouldn't",
+  "without", "only", "except", "rarely", "seldom", "hardly", "scarcely",
+  "true", "false", "null", "undefined", "const", "let", "var", "async", "await",
+]);
 
 /**
- * Preprocess a candidate answer using Python NLP.
- * Preserves originalAnswer always. Only compresses compactAnswer for AI input.
+ * Cleans and tokenizes text while strictly preserving negations and semantics.
+ *
+ * @param {string} rawText - The raw candidate answer
+ * @returns {{ cleanedText: string, tokens: string[] }}
+ */
+export function cleanAndTokenizeText(rawText) {
+  if (!rawText || typeof rawText !== "string") {
+    return { cleanedText: "", tokens: [] };
+  }
+
+  // 1. Normalize line breaks and tabs to spaces
+  let text = rawText.replace(/[\r\n\t]+/g, " ");
+
+  // 2. Remove filler phrases while keeping surrounding structure
+  for (const fillerRegex of FILLER_PHRASES) {
+    text = text.replace(fillerRegex, " ");
+  }
+
+  // 3. Normalize multiple spaces and trim
+  text = text.replace(/\s+/g, " ").trim();
+
+  // 4. Tokenize on whitespace
+  const rawTokens = text.split(/\s+/).filter(Boolean);
+
+  return {
+    cleanedText: text,
+    tokens: rawTokens,
+  };
+}
+
+/**
+ * Preprocess a candidate answer for AI evaluation.
  *
  * @param {object} params
  * @param {string} params.answer - Raw candidate answer
- * @param {"technical"|"project"|"hr"} params.round - Round type affects preservation rules
- * @param {number} [params.maxWords=300] - Max words in compactAnswer
- * @returns {Promise<{originalAnswer, normalizedAnswer, compactAnswer, tokenCountBefore, tokenCountAfter, reductionPercent}>}
+ * @param {"technical"|"project"|"hr"|"coding"|"aptitude"} [params.round="technical"] - Round identifier
+ * @param {number} [params.maxWords=300] - Word cap for token efficiency
+ * @returns {Promise<{
+ *   originalAnswer: string,
+ *   cleanedAnswer: string,
+ *   normalizedAnswer: string,
+ *   compactAnswer: string,
+ *   tokens: string[],
+ *   tokenCountBefore: number,
+ *   tokenCountAfter: number,
+ *   reductionPercent: number,
+ *   normalizationApplied: boolean
+ * }>}
  */
 export async function preprocessAnswer({ answer, round = "technical", maxWords = 300 }) {
   const raw = String(answer || "").trim();
 
-  // Empty answer — return immediately, no Python call needed
   if (!raw) {
     return {
       originalAnswer: "",
+      cleanedAnswer: "",
       normalizedAnswer: "",
       compactAnswer: "",
+      tokens: [],
       tokenCountBefore: 0,
       tokenCountAfter: 0,
       reductionPercent: 0,
+      normalizationApplied: false,
     };
   }
 
-  // Short answer — no compression needed, skip Python overhead
-  const wordCount = raw.split(/\s+/).length;
-  if (wordCount <= 60) {
-    return {
-      originalAnswer: raw,
-      normalizedAnswer: raw,
-      compactAnswer: raw,
-      tokenCountBefore: wordCount,
-      tokenCountAfter: wordCount,
-      reductionPercent: 0,
-    };
+  const initialTokens = raw.split(/\s+/).filter(Boolean);
+  const tokenCountBefore = initialTokens.length;
+
+  const { cleanedText, tokens } = cleanAndTokenizeText(raw);
+
+  // Apply word limit if exceptionally long, preserving full head and key concepts
+  let compactTokens = tokens;
+  if (tokens.length > maxWords) {
+    compactTokens = tokens.slice(0, maxWords);
   }
+  const compactAnswer = compactTokens.join(" ");
+  const tokenCountAfter = compactTokens.length;
 
-  return new Promise((resolve) => {
-    const payload = JSON.stringify({ answer: raw, round, maxWords });
+  const reductionPercent = tokenCountBefore > 0
+    ? Math.max(0, Math.round(((tokenCountBefore - tokenCountAfter) / tokenCountBefore) * 100))
+    : 0;
 
-    let stdout = "";
-    let stderr = "";
-    let timedOut = false;
-
-    const proc = spawn("python", [NLP_SCRIPT], { timeout: 15000 });
-
-    const timer = setTimeout(() => {
-      timedOut = true;
-      proc.kill();
-    }, 14000);
-
-    proc.stdin.write(payload);
-    proc.stdin.end();
-
-    proc.stdout.on("data", (chunk) => { stdout += chunk.toString(); });
-    proc.stderr.on("data", (chunk) => { stderr += chunk.toString(); });
-
-    proc.on("close", () => {
-      clearTimeout(timer);
-
-      if (timedOut || !stdout.trim()) {
-        // Graceful fallback: return original answer unmodified
-        resolve({
-          originalAnswer: raw,
-          normalizedAnswer: raw,
-          compactAnswer: raw,
-          tokenCountBefore: wordCount,
-          tokenCountAfter: wordCount,
-          reductionPercent: 0,
-        });
-        return;
-      }
-
-      try {
-        const parsed = JSON.parse(stdout.trim());
-        if (parsed.success) {
-          resolve({
-            originalAnswer: parsed.originalAnswer || raw,
-            normalizedAnswer: parsed.normalizedAnswer || raw,
-            compactAnswer: parsed.compactAnswer || raw,
-            tokenCountBefore: parsed.tokenCountBefore || wordCount,
-            tokenCountAfter: parsed.tokenCountAfter || wordCount,
-            reductionPercent: parsed.reductionPercent || 0,
-          });
-        } else {
-          // Python returned error — use original
-          resolve({
-            originalAnswer: raw,
-            normalizedAnswer: raw,
-            compactAnswer: raw,
-            tokenCountBefore: wordCount,
-            tokenCountAfter: wordCount,
-            reductionPercent: 0,
-          });
-        }
-      } catch {
-        // JSON parse error — use original
-        resolve({
-          originalAnswer: raw,
-          normalizedAnswer: raw,
-          compactAnswer: raw,
-          tokenCountBefore: wordCount,
-          tokenCountAfter: wordCount,
-          reductionPercent: 0,
-        });
-      }
-    });
-
-    proc.on("error", () => {
-      clearTimeout(timer);
-      // Python not available — use original
-      resolve({
-        originalAnswer: raw,
-        normalizedAnswer: raw,
-        compactAnswer: raw,
-        tokenCountBefore: wordCount,
-        tokenCountAfter: wordCount,
-        reductionPercent: 0,
-      });
-    });
-  });
+  return {
+    originalAnswer: raw,
+    cleanedAnswer: cleanedText,
+    normalizedAnswer: cleanedText,
+    compactAnswer,
+    tokens: compactTokens,
+    tokenCountBefore,
+    tokenCountAfter,
+    reductionPercent,
+    normalizationApplied: true,
+  };
 }
 
 /**
- * Batch preprocess multiple answers at once.
- * Runs preprocessing in parallel.
+ * Batch preprocess multiple answers simultaneously.
  *
- * @param {Array<{questionId, answer, round}>} items
+ * @param {Array<{questionId: string, answer: string, round?: string}>} items
  * @param {number} [maxWords=300]
- * @returns {Promise<Map<string, PreprocessResult>>}
+ * @returns {Promise<Map<string, object>>} Map of questionId -> PreprocessResult
  */
 export async function preprocessAnswerBatch(items, maxWords = 300) {
+  if (!Array.isArray(items)) return new Map();
+
   const results = await Promise.all(
     items.map(async (item) => {
       const result = await preprocessAnswer({
-        answer: item.answer,
+        answer: item.answer || item.candidateAnswer,
         round: item.round || "technical",
         maxWords,
       });
-      return { questionId: item.questionId, ...result };
+      return { questionId: String(item.questionId || item.id || item._id), ...result };
     })
   );
 

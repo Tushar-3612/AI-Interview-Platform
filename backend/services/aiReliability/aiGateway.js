@@ -14,21 +14,23 @@ import { createRequestFingerprint } from "./utils/requestFingerprint.js";
  */
 export function resolveProviderModel(providerName, requestedModel) {
   const p = String(providerName).toLowerCase().trim();
+  const groqDefault = (process.env.GROQ_MODEL || process.env.AI_MODEL || "openai/gpt-oss-120b").trim();
   const providerDefaultModels = {
-    groq: "llama-3.3-70b-versatile",
-    gemini: "gemini-2.5-flash",
+    groq: groqDefault,
+    gemini: "gemini-2.0-flash",
     openrouter: "meta-llama/llama-3.3-70b-instruct",
     deepseek: "deepseek-chat",
     openai: "gpt-4o-mini"
   };
 
   if (!requestedModel || typeof requestedModel !== "string") {
-    return providerDefaultModels[p] || "llama-3.3-70b-versatile";
+    return providerDefaultModels[p] || groqDefault;
   }
 
-  const isGroqModel = requestedModel.includes("gpt-oss") || requestedModel.includes("llama") || requestedModel.includes("groq");
+  // Cross-provider model mismatch corrections
+  const isGroqModel = requestedModel.includes("gpt-oss") || requestedModel.includes("llama") || requestedModel.includes("groq") || requestedModel.includes("qwen") || requestedModel.includes("allam");
   if (p === "gemini" && (isGroqModel || !requestedModel.includes("gemini"))) {
-    return "gemini-2.5-flash";
+    return "gemini-2.0-flash";
   }
   if (p === "deepseek" && (isGroqModel || !requestedModel.includes("deepseek"))) {
     return "deepseek-chat";
@@ -38,6 +40,9 @@ export function resolveProviderModel(providerName, requestedModel) {
   }
   if (p === "openrouter" && isGroqModel && !requestedModel.includes("/")) {
     return "meta-llama/llama-3.3-70b-instruct";
+  }
+  if (p === "groq" && (requestedModel.includes("gemini") || requestedModel.includes("claude"))) {
+    return groqDefault;
   }
 
   return requestedModel;
@@ -171,6 +176,16 @@ export class AIGateway {
           return parsedResult;
         } catch (err) {
           circuitBreaker.recordFailure(activeProviderName, err.category);
+          const isQuota =
+            err.category === "PERMANENT_QUOTA" ||
+            err.category === "RATE_LIMIT" ||
+            (mode === "BYOK" && err.category === "INVALID_AUTH") ||
+            /quota|rate limit|rate_limit|exceeded|credit|balance|billing|429|402|tokens per minute|requests per minute|tpm|rpm|insufficient_quota/i.test(err.message || "");
+          
+          err.keySource = keySource;
+          err.mode = mode;
+          err.provider = activeProviderName;
+          err.isQuotaExhausted = Boolean(isQuota);
           throw err;
         }
       }

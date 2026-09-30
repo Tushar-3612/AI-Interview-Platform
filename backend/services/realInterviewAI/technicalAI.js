@@ -14,7 +14,7 @@ function getTechnicalApiKey() {
 }
 
 function getTechnicalModel() {
-  return (process.env.REAL_INTERVIEW_TECHNICAL_MODEL || process.env.GROQ_MODEL || "openai/gpt-oss-120b").trim();
+  return (process.env.REAL_INTERVIEW_TECHNICAL_MODEL || process.env.GROQ_MODEL || "llama-3.3-70b-versatile").trim();
 }
 
 /**
@@ -281,7 +281,103 @@ import { checkAnswerGate } from "./judgeAnswerGate.js";
 import { calibrateScore, checkContradictions } from "./judgeScoreCalibrator.js";
 
 /**
- * Evaluates candidate technical answers in ONE single AI Gateway Request.
+ * Evaluates a single batch of technical questions (max 5 questions) using AIGateway.
+ */
+export async function evaluateTechnicalAIBatch({ chunk = [], batchNumber = 1, totalBatches = 1, options = {} }) {
+  if (!chunk || chunk.length === 0) return [];
+
+  const provider = options.provider || "groq";
+  console.log(`[AI-EVAL] Technical batch ${batchNumber}/${totalBatches} answers=${chunk.length} provider=${provider}`);
+
+  const prompt = `You are an expert technical interviewer evaluating candidate answers for ${chunk.length} Technical Interview questions (Batch ${batchNumber} of ${totalBatches}).
+
+BATCH ITEMS:
+${JSON.stringify(chunk, null, 2)}
+
+EVALUATION INSTRUCTIONS:
+1. Evaluate each candidate answer (ans) strictly against the question (q) and expected reference knowledge (expected).
+2. For syntax, keyword, command, SQL, or definition questions (e.g., 'def', 'git status', 'SELECT * FROM Products;', 'my_list = []'): award FULL MARKS if the candidate provides the direct correct syntax/keyword/command.
+3. For conceptual questions: evaluate accuracy, core mechanism, and practical depth. Do NOT penalize brevity if the core concept is correct.
+4. MARKS:
+   - Easy (maxScore 3): 0=incorrect, 1=minimal/vague, 2=partially correct, 3=correct (give 3 for direct correct syntax/keywords).
+   - Medium (maxScore 5): 0=incorrect, 1-2=weak/partial, 3=acceptable, 4=strong, 5=excellent.
+   - Hard (maxScore 13): 0=incorrect, 1-4=weak, 5-8=partial, 9-11=strong, 12-13=excellent.
+5. Provide concise feedback and a concise betterAnswer preserving candidate's valid points.
+
+STRICT JSON ONLY:
+{
+  "evaluations": [
+    {
+      "questionId": "string matching id",
+      "score": 4,
+      "maxScore": 5,
+      "difficulty": "medium",
+      "rating": "Strong",
+      "correctPoints": ["Valid point"],
+      "missingPoints": ["Missing point"],
+      "incorrectPoints": [],
+      "grammarIssues": [],
+      "feedback": "Concise feedback",
+      "betterAnswer": "Concise model answer"
+    }
+  ]
+}`;
+
+  try {
+    const parsed = await AIGateway.execute({
+      prompt,
+      systemPrompt: "You are a technical interviewer evaluator. Output ONLY valid JSON starting immediately with {\"evaluations\": [...]}.",
+      provider: options.provider,
+      apiKey: options.apiKey || getTechnicalApiKey(),
+      sessionId: options.sessionId,
+      roundType: "evaluation",
+      orderIndex: batchNumber,
+      options: {
+        model: options.model || getTechnicalModel(),
+        temperature: 0.2,
+        maxRetries: 3,
+      },
+    });
+
+    if (!parsed || !Array.isArray(parsed.evaluations)) {
+      throw new Error(`Technical evaluation AI response missing 'evaluations' array in batch ${batchNumber}`);
+    }
+
+    const batchEvaluated = parsed.evaluations.map((item) => {
+      const matchingQ = chunk.find((q) => q.id === String(item.questionId));
+      const maxScore = matchingQ?.max || Number(item.maxScore) || 5;
+      const contradictions = checkContradictions(matchingQ?.ans || "", `${matchingQ?.expected || ""} ${matchingQ?.q || ""}`);
+
+      const calibrated = calibrateScore({
+        rawScore: item.score,
+        maxMarks: maxScore,
+        status: item.status,
+        evaluationSource: "ai_evaluated",
+        confidence: 0.95,
+        evidence: item.correctPoints || [],
+        missing: item.missingPoints || [],
+        contradictions: item.incorrectPoints?.length ? item.incorrectPoints : contradictions,
+        feedback: item.feedback,
+        betterAnswer: item.betterAnswer || matchingQ?.expected || "",
+        difficulty: item.difficulty || matchingQ?.diff || "medium",
+      });
+
+      return {
+        questionId: String(item.questionId),
+        ...calibrated,
+      };
+    });
+
+    console.log(`[AI-EVAL] Technical batch ${batchNumber}/${totalBatches} SUCCESS evaluated=${batchEvaluated.length}`);
+    return batchEvaluated;
+  } catch (err) {
+    console.error(`[AI-EVAL] Technical batch ${batchNumber}/${totalBatches} status=${err.category || err.code || err.name || 'FAILED'}`);
+    throw err;
+  }
+}
+
+/**
+ * Evaluates candidate technical answers in batches (max 5 questions per batch).
  */
 export async function evaluateTechnicalInterviewAI({ candidateProfile = {}, questions = [], options = {} }) {
   console.log("\n[REAL-INTERVIEW][AI-CALL]\nround=technical\noperation=evaluation\nattempt=1");
@@ -321,7 +417,7 @@ export async function evaluateTechnicalInterviewAI({ candidateProfile = {}, ques
         diff: String(q.difficulty || "medium"),
         max: maxScore,
         ans,
-        expectedKnowledge: expected,
+        expected,
       });
     }
   }
@@ -329,91 +425,25 @@ export async function evaluateTechnicalInterviewAI({ candidateProfile = {}, ques
   let aiEvaluations = [];
 
   if (questionsToAI.length > 0) {
-    const prompt = `You are a fair technical interviewer evaluating candidate responses for a Technical Interview session in ONE assessment.
+    const BATCH_SIZE = 5;
+    const totalBatches = Math.ceil(questionsToAI.length / BATCH_SIZE);
 
-QUESTIONS, EXPECTED KNOWLEDGE & CANDIDATE ANSWERS:
-${JSON.stringify(questionsToAI, null, 2)}
+    for (let batchIdx = 0; batchIdx < totalBatches; batchIdx++) {
+      const chunk = questionsToAI.slice(batchIdx * BATCH_SIZE, (batchIdx + 1) * BATCH_SIZE);
+      const batchNumber = batchIdx + 1;
 
-FAIR EVALUATION INSTRUCTIONS:
-1. TECHNICAL UNDERSTANDING & REFERENCE ALIGNMENT:
-   - Compare candidate's answer against the expectedKnowledge and question context.
-   - For syntax/command/keyword/SQL questions (e.g., 'def', 'git status', 'SELECT * FROM Products;', 'my_list = []'): award FULL MARKS if the candidate provides the direct, correct code/command/keyword/syntax required.
-   - For conceptual/architectural questions: judge conceptual depth, accurate mechanisms, and practical correctness.
-2. DIFFICULTY MARKS:
-   - Easy (maxScore 3): 0=incorrect, 1=partial, 2=mostly correct, 3=correct (give 3 for direct correct syntax/commands/keywords)
-   - Medium (maxScore 5): 0=incorrect, 1=very limited, 2=partial, 3=acceptable, 4=strong, 5=excellent
-   - Hard (maxScore 13): 0=incorrect, 1-3=weak, 4-6=partial, 7-9=acceptable, 10-11=strong, 12-13=excellent
-3. UNANSWERED ITEMS: Set score = 0, rating = "Weak", missingPoints = ["Question was not attempted"].
-4. OVERALL METRICS: totalScore (sum of question scores out of 100), maxScore: 100, percentage, overallRating, strengths, weaknesses, finalFeedback.
-
-JSON SCHEMA ONLY:
-{
-  "evaluations": [
-    {
-      "questionId": "string matching id",
-      "score": 4,
-      "maxScore": 5,
-      "difficulty": "medium",
-      "rating": "Strong",
-      "correctPoints": ["Valid point"],
-      "missingPoints": ["Missing point"],
-      "incorrectPoints": [],
-      "grammarIssues": [],
-      "feedback": "Concise feedback",
-      "betterAnswer": "Refined answer preserving candidate ideas"
-    }
-  ],
-  "totalScore": 78,
-  "maxScore": 100,
-  "percentage": 78,
-  "overallRating": "Strong",
-  "strengths": ["Solid React state understanding"],
-  "weaknesses": ["Shallow async error handling"],
-  "finalFeedback": "Overall candidate summary..."
-}`;
-
-    const parsed = await AIGateway.execute({
-      prompt,
-      systemPrompt: "You are a technical interviewer evaluator. Output ONLY valid JSON matching the requested schema.",
-      provider: options.provider,
-      apiKey: options.apiKey || getTechnicalApiKey(),
-      sessionId: options.sessionId,
-      roundType: "evaluation",
-      orderIndex: 1,
-      options: {
-        model: options.model || getTechnicalModel(),
-        temperature: 0.2,
-        maxRetries: 3,
-      },
-    });
-
-    if (parsed && Array.isArray(parsed.evaluations)) {
-      aiEvaluations = parsed.evaluations.map((item) => {
-        const matchingQ = questionsToAI.find((q) => q.id === String(item.questionId));
-        const maxScore = matchingQ?.max || Number(item.maxScore) || 5;
-        const contradictions = checkContradictions(matchingQ?.ans || "", `${matchingQ?.expectedKnowledge || ""} ${matchingQ?.q || ""}`);
-
-        const calibrated = calibrateScore({
-          rawScore: item.score,
-          maxMarks: maxScore,
-          status: item.status,
-          evaluationSource: "ai_evaluated",
-          confidence: 0.95,
-          evidence: item.correctPoints || [],
-          missing: item.missingPoints || [],
-          contradictions: item.incorrectPoints?.length ? item.incorrectPoints : contradictions,
-          feedback: item.feedback,
-          betterAnswer: item.betterAnswer || matchingQ?.expectedKnowledge || "",
-          difficulty: item.difficulty || matchingQ?.diff || "medium",
-        });
-
-        return {
-          questionId: String(item.questionId),
-          ...calibrated,
-        };
+      const batchEvaluated = await evaluateTechnicalAIBatch({
+        chunk,
+        batchNumber,
+        totalBatches,
+        options,
       });
-    } else {
-      throw new Error("Technical evaluation AI response missing 'evaluations' array");
+
+      aiEvaluations.push(...batchEvaluated);
+
+      if (typeof options.onBatchComplete === "function") {
+        await options.onBatchComplete(batchEvaluated, batchNumber, totalBatches);
+      }
     }
   }
 

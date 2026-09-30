@@ -13,13 +13,14 @@ export class AISessionManager {
    * Binds BYOK API key and provider to an interview session.
    * Encrypts key before keeping in memory map.
    */
-  setSessionBYOK(sessionId, providerName, apiKey) {
+  setSessionBYOK(sessionId, providerName, apiKey, userId = null) {
     if (!sessionId || !providerName || !apiKey) {
       return;
     }
 
     const encrypted = encryptSecret(apiKey);
     this.sessionKeys.set(sessionId, {
+      userId: userId ? String(userId) : null,
       providerName: String(providerName).toLowerCase().trim(),
       encryptedKey: encrypted,
       timestamp: Date.now()
@@ -30,13 +31,19 @@ export class AISessionManager {
 
   /**
    * Retrieves decrypted BYOK API key and provider for a session.
+   * Validates optional userId against bound owner.
    */
-  getSessionBYOK(sessionId) {
+  getSessionBYOK(sessionId, userId = null) {
     if (!sessionId || !this.sessionKeys.has(sessionId)) {
       return null;
     }
 
     const entry = this.sessionKeys.get(sessionId);
+    if (userId && entry.userId && String(userId) !== String(entry.userId)) {
+      safeLogger.warn(`[AISessionManager] Unauthorized BYOK access attempt for session [${sessionId}] by user [${userId}].`);
+      return null;
+    }
+
     const decryptedKey = decryptSecret(entry.encryptedKey);
 
     return {
@@ -53,6 +60,10 @@ export class AISessionManager {
       this.sessionKeys.delete(sessionId);
       safeLogger.info(`[AISessionManager] Cleared BYOK keys for session [${sessionId}].`);
     }
+  }
+
+  clearSessionBYOK(sessionId) {
+    this.clearSession(sessionId);
   }
 
   /**

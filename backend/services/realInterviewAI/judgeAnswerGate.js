@@ -39,7 +39,7 @@ const REFUSAL_PATTERNS = [
 const FILLER_PATTERNS = [
   /^(?:thank\s+you|thanks|thank\s+you\s+so\s+much|thanks\s+a\s+lot|thx)(?:\s+(?:sir|ma'am|interviewer))?(?:\s*[\.,!])*$/i,
   /^(?:hi|hello|hey|good\s+morning|good\s+afternoon|good\s+evening)(?:\s+(?:sir|ma'am|interviewer))?(?:\s*[\.,!])*$/i,
-  /^(?:ok|okay|yes|yeah|sure|alright|fine|understood|got\s+it)(?:\s*[\.,!])*$/i,
+  /^(?:ok|okay|yeah|sure|alright|fine|understood|got\s+it)(?:\s*[\.,!])*$/i,
   /^(?:na|n\/a|none|nil|nothing|null|undefined|nan)(?:\s*[\.,!])*$/i,
 ];
 
