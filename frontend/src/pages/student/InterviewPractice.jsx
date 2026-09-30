@@ -408,7 +408,7 @@ function InterviewPractice() {
               <button
                 onClick={clearFilters}
                 className="flex items-center gap-1 text-xs font-semibold px-3 py-2 rounded-[10px] cursor-pointer transition ml-auto"
-                style={{ color: "#FF9800" }}
+                style={{ color: "#916422ff" }}
               >
                 <X className="w-3.5 h-3.5" /> Clear Filters
               </button>

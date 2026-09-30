@@ -208,12 +208,12 @@ function AptitudeRound() {
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <button
           type="button"
-          onClick={() => navigate(`/interview-practice/${companyId}`)}
+          onClick={() => navigate(companyId ? `/interview-practice/${companyId}` : "/aptitude")}
           className="flex items-center gap-2 text-sm font-medium mb-8 cursor-pointer hover:opacity-80"
           style={{ color: "var(--text-secondary)" }}
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to Rounds
+          {companyId ? "Back to Rounds" : "Back to Aptitude Hub"}
         </button>
 
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="student-card p-8">
@@ -426,8 +426,8 @@ function AptitudeRound() {
           </div>
 
           <div className="flex items-center justify-center gap-3">
-            <Button onClick={() => navigate(`/interview-practice/${companyId}`)} className="px-8 py-2.5 text-sm">
-              Back to Rounds
+            <Button onClick={() => navigate(companyId ? `/interview-practice/${companyId}` : "/aptitude")} className="px-8 py-2.5 text-sm">
+              {companyId ? "Back to Rounds" : "Back to Aptitude Hub"}
             </Button>
             <Button onClick={() => setPhase("config")} className="px-8 py-2.5 text-sm" variant="secondary">
               Practice Again

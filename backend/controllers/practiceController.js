@@ -436,7 +436,7 @@ export const submitCoding = async (req, res) => {
       cpuTimeLimit: timeLimit,
     });
 
-    const isAccepted = suiteResult.status === "completed" || suiteResult.passed === suiteResult.total;
+    const isAccepted = suiteResult.total > 0 && suiteResult.passed === suiteResult.total;
 
     const submission = await CodingSubmission.create({
       userId,
@@ -517,15 +517,32 @@ export const getCodingProgress = async (req, res) => {
   try {
     const userId = req.user.id;
     const { companyId } = req.params;
-    if (!companyId) return res.status(400).json({ message: "companyId is required" });
+    const { difficulty } = req.query;
+
+    const qFilter = { isDeleted: { $ne: true }, isActive: true };
+    const sFilter = {
+      userId,
+      status: "accepted",
+      totalCount: { $gt: 0 },
+      $expr: { $eq: ["$passedCount", "$totalCount"] },
+    };
+
+    if (companyId && companyId !== "all" && companyId !== "general" && companyId !== "practice" && companyId !== "undefined") {
+      qFilter.companyId = companyId;
+      sFilter.companyId = companyId;
+    }
+    if (difficulty && difficulty !== "all" && difficulty !== "All") {
+      qFilter.difficulty = new RegExp(`^${difficulty}$`, "i");
+    }
+
     const [completedIds, totalQuestions] = await Promise.all([
-      CodingSubmission.distinct("questionId", { userId, companyId, status: "accepted" }),
-      CodingQuestion.countDocuments({ companyId, isDeleted: { $ne: true }, isActive: true }),
+      CodingSubmission.distinct("questionId", sFilter),
+      CodingQuestion.countDocuments(qFilter),
     ]);
     res.json({
       completedCount: completedIds.length,
       totalCount: totalQuestions,
-      remainingCount: totalQuestions - completedIds.length,
+      remainingCount: Math.max(0, totalQuestions - completedIds.length),
       completedQuestionIds: completedIds.map(String),
     });
   } catch (error) {

@@ -29,6 +29,8 @@ import AuditLogs from "../pages/admin/AuditLogs";
 import SystemConfig from "../pages/admin/SystemConfig";
 
 import AptitudeRound from "../pages/student/AptitudeRound";
+import AptitudeHub from "../pages/student/AptitudeHub";
+import AptitudeAssessment from "../pages/student/AptitudeAssessment";
 import CodingRound from "../pages/student/CodingRound";
 import AptitudeHistory from "../pages/student/AptitudeHistory";
 import CodingHistory from "../pages/student/CodingHistory";
@@ -57,6 +59,14 @@ import IndividualTechnicalResult from "../pages/student/IndividualTechnicalResul
 import IndividualProjectPractice from "../pages/student/IndividualProjectPractice";
 import IndividualProjectResult from "../pages/student/IndividualProjectResult";
 import CodingRoundSelect from "../pages/student/CodingRoundSelect";
+
+import CodingAssessment from "../pages/student/CodingAssessment";
+import CodingAssessmentList from "../pages/student/CodingAssessmentList";
+import CodingResult from "../pages/student/CodingResult";
+import CodingAssessmentHistory from "../pages/student/CodingAssessmentHistory";
+
+import AdminCodingAssessments from "../pages/admin/AdminCodingAssessments";
+import AdminCodingResults from "../pages/admin/AdminCodingResults";
 
 function AppRoutes() {
   return (
@@ -89,6 +99,9 @@ function AppRoutes() {
       <Route path="/company-mock" element={<CompanyMockInterview />} />
       <Route path="/company-mock/result/:attemptId" element={<CompanyMockResult />} />
 
+      {/* Dedicated Coding Assessment IDE Control Room (Standalone without website navbar) */}
+      <Route path="/coding-assessment/:assessmentId" element={<CodingAssessment />} />
+
       <Route element={<StudentLayout />}>
         <Route path="/dashboard" element={<StudentDashboard />} />
         <Route path="/profile" element={<Profile />} />
@@ -96,6 +109,11 @@ function AppRoutes() {
         <Route path="/interview-practice/:companyId" element={<RoundSelection />} />
         <Route path="/interview-practice/:companyId/aptitude" element={<AptitudeRound />} />
         <Route path="/interview-practice/:companyId/coding" element={<CodingRound />} />
+        <Route path="/aptitude" element={<AptitudeHub />} />
+        <Route path="/aptitude-round" element={<AptitudeHub />} />
+        <Route path="/aptitude/practice" element={<AptitudeRound />} />
+        <Route path="/aptitude/assessment" element={<AptitudeAssessment />} />
+        <Route path="/aptitude/history" element={<AptitudeHistory />} />
         <Route path="/practice/aptitude/history" element={<AptitudeHistory />} />
         <Route path="/practice/coding/history" element={<CodingHistory />} />
         <Route path="/practice/bookmarks" element={<Bookmarks />} />
@@ -111,6 +129,11 @@ function AppRoutes() {
         <Route path="/mock-interview" element={<MockInterview />} />
         <Route path="/mock-interview/history" element={<CompanyMockHistory />} />
         <Route path="/coding-round" element={<CodingRoundSelect />} />
+        <Route path="/coding-round/test" element={<CodingRound />} />
+        <Route path="/coding-round/test/:difficulty" element={<CodingRound />} />
+        <Route path="/coding-assessments" element={<CodingAssessmentList />} />
+        <Route path="/coding-assessment/result/:attemptId" element={<CodingResult />} />
+        <Route path="/coding-assessment/history" element={<CodingAssessmentHistory />} />
         <Route path="/placement/company-analytics" element={<CompanyAnalytics />} />
         <Route path="/placement/performance" element={<PerformanceGraphs />} />
         <Route path="/placement/question-analytics" element={<QuestionAnalytics />} />
@@ -127,6 +150,8 @@ function AppRoutes() {
         <Route path="/admin/companies" element={<CompanyManagement />} />
         <Route path="/admin/mock-questions" element={<MockQuestionManagement />} />
         <Route path="/admin/coding-questions" element={<CodingQuestionManagement />} />
+        <Route path="/admin/coding-assessments" element={<AdminCodingAssessments />} />
+        <Route path="/admin/coding-assessments/:id/results" element={<AdminCodingResults />} />
         <Route path="/admin/aptitude-questions" element={<AptitudeManagement />} />
         <Route path="/admin/audit-logs" element={<AuditLogs />} />
         <Route path="/admin/config" element={<SystemConfig />} />

@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 import {
   Play, Send, Loader2, Check, CheckCircle2, Maximize2, Minimize2, Copy,
-  Timer, AlertTriangle, ChevronDown,
+  Timer, AlertTriangle, ChevronDown, ChevronLeft, ChevronRight,
   Code2, Save, Split, RefreshCw, ArrowLeft,
 } from "lucide-react";
 import api from "../../utils/api";
@@ -105,11 +105,18 @@ int main() {
 
 
 function CodingRound() {
-  const { companyId } = useParams();
+  const { companyId, difficulty: pathDifficulty } = useParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
   const navigate = useNavigate();
   const { theme } = useTheme();
   const token = getAuthToken();
   const headers = useMemo(() => token ? { Authorization: `Bearer ${token}` } : {}, [token]);
+
+  const isTestSession = location.pathname.includes("/coding-round/test") || !companyId;
+  const initialDifficulty = pathDifficulty || searchParams.get("difficulty") || "Medium";
+  const [selectedDifficulty, setSelectedDifficulty] = useState(initialDifficulty);
+  const initialLang = searchParams.get("lang");
 
   // ─── Data state ─────────────────────────────────────────────────────────────
   const [questions, setQuestions]       = useState([]);
@@ -121,7 +128,11 @@ function CodingRound() {
 
   // ─── Editor state ───────────────────────────────────────────────────────────
   const [code, setCode]                 = useState("");
-  const [language, setLanguage]         = useState("python");
+  const [language, setLanguage]         = useState(() => {
+    return initialLang && ["python", "cpp", "java", "c", "javascript"].includes(initialLang)
+      ? initialLang
+      : "python";
+  });
   const [customInput, setCustomInput]   = useState("");
   const [output, setOutput]             = useState(null);
   const [bottomTab, setBottomTab]       = useState("Testcase");
@@ -174,31 +185,82 @@ function CodingRound() {
   const lintOutputText = lintState.output;
 
   // ─── Fetch questions ────────────────────────────────────────────────────────
-  const fetchQuestions = useCallback(async () => {
+  const fetchQuestions = useCallback(async (diffToFetch = selectedDifficulty) => {
     setQuestionsLoading(true);
     setQuestionsError(false);
     try {
+      const params = { limit: 100 };
+      if (companyId && companyId !== "all" && companyId !== "general" && companyId !== "practice") {
+        params.companyId = companyId;
+      }
+      if (diffToFetch && diffToFetch.toLowerCase() !== "all") {
+        params.difficulty = diffToFetch;
+      }
+
       const [questionsRes, progressRes] = await Promise.all([
         api.get("/api/coding-questions", {
           headers,
-          params: { companyId: companyId || "", limit: 100 },
+          params,
         }),
-        api.get(`/api/practice/coding/progress/${companyId}`, { headers }).catch(() => ({ data: { completedQuestionIds: [] } })),
+        api.get("/api/practice/coding/progress" + (companyId ? `/${companyId}` : ""), {
+          headers,
+          params: { difficulty: diffToFetch },
+        }).catch(() => ({ data: { completedQuestionIds: [] } })),
       ]);
-      const list = questionsRes.data?.questions || [];
-      if (list.length === 0) { setQuestionsError(true); return; }
+      let list = questionsRes.data?.questions || [];
+
+      // Filter by chosen difficulty if specific track selected
+      if (diffToFetch && diffToFetch.toLowerCase() !== "all") {
+        list = list.filter(
+          (q) => !q.difficulty || q.difficulty.toLowerCase() === diffToFetch.toLowerCase()
+        );
+      }
+
+      const rawLimit = searchParams.get("limit");
+      const queryLimit = parseInt(rawLimit, 10);
+      if (rawLimit !== "all") {
+        const effectiveLimit = !isNaN(queryLimit) && queryLimit > 0 ? queryLimit : (isTestSession ? 5 : 0);
+        if (effectiveLimit > 0 && list.length > effectiveLimit) {
+          list = list.slice(0, effectiveLimit);
+        }
+      }
+
+      if (list.length === 0) {
+        setQuestions([]);
+        setQuestionsError(true);
+        return;
+      }
       setQuestions(list);
       setActiveIndex(0);
-      const completedIds = new Set(progressRes.data?.completedQuestionIds || []);
-      setSolved(completedIds);
+
+      // In a test session, start with a fresh 0 solved count so unattempted questions never show false ticks
+      if (isTestSession) {
+        setSolved(new Set());
+      } else {
+        const completedIds = new Set((progressRes.data?.completedQuestionIds || []).map(String));
+        setSolved(completedIds);
+      }
     } catch {
       setQuestionsError(true);
     } finally {
       setQuestionsLoading(false);
     }
-  }, [companyId, headers]);
+  }, [companyId, selectedDifficulty, headers, searchParams, isTestSession]);
 
-  useEffect(() => { fetchQuestions(); }, [fetchQuestions]);
+  useEffect(() => {
+    fetchQuestions(selectedDifficulty);
+  }, [fetchQuestions, selectedDifficulty]);
+
+  const handleDifficultyChange = (newDiff) => {
+    if (newDiff === selectedDifficulty) return;
+    setSelectedDifficulty(newDiff);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set("difficulty", newDiff);
+      return next;
+    });
+    fetchQuestions(newDiff);
+  };
 
   // ─── Close language dropdown on outside click ─────────────────────────────
   useEffect(() => {
@@ -350,7 +412,7 @@ function CodingRound() {
       setDebugMode(false);
       setDebugLine(null);
       setRunStage(null);
-      loadDraft(q._id, q.starterCode || STARTER_CODE[language], language);
+      loadDraft(q, language);
     }
     startTime.current = Date.now();
   }, [activeIndex, questions]);
@@ -498,9 +560,9 @@ function CodingRound() {
     if (!q || !code) return;
 
     // Validate language
-    const supportedLanguages = ["python", "java", "c", "cpp"];
+    const supportedLanguages = ["python", "java", "c", "cpp", "javascript"];
     if (!supportedLanguages.includes(language)) {
-      setOutput({ type: "submit", data: { status: "unsupported", message: `Language "${language}" is not supported. Please use Python, Java, C, or C++.` } });
+      setOutput({ type: "submit", data: { status: "unsupported", message: `Language "${language}" is not supported. Please use Python, Java, C, C++, or JavaScript.` } });
       setBottomTab("Test Result");
       return;
     }
@@ -532,10 +594,12 @@ function CodingRound() {
       setRunStage(null);
       setOutput({ type: "submit", data: res.data });
       if (res.data.status === "accepted") {
-        toast.success("All test cases passed!");
+        toast.success(`🎉 Problem Solved! All ${res.data.passedCount || res.data.totalCount}/${res.data.totalCount} test cases passed.`);
         setSolved((prev) => new Set(prev).add(q._id));
       } else if (res.data.status === "unsupported") {
         toast.error("This language is not supported for evaluation.");
+      } else {
+        toast.error(`Evaluation: ${res.data.passedCount || 0}/${res.data.totalCount || 0} test cases passed. Review details in Test Result tab.`);
       }
       fetchSubmissionsForQuestion(q._id);
     } catch (err) {
@@ -570,9 +634,10 @@ function CodingRound() {
   // ─── Copy link ──────────────────────────────────────────────────────────────
   const copyLink = () => {
     if (!activeQuestion) return;
-    navigator.clipboard.writeText(
-      `${window.location.origin}/interview-practice/${companyId}/coding?q=${activeQuestion._id}`
-    ).then(() => {
+    const path = companyId
+      ? `/interview-practice/${companyId}/coding?q=${activeQuestion._id}`
+      : `/coding-round/test?difficulty=${selectedDifficulty}&q=${activeQuestion._id}`;
+    navigator.clipboard.writeText(`${window.location.origin}${path}`).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     });
@@ -616,30 +681,48 @@ function CodingRound() {
   if (questionsError && questions.length === 0) {
     return (
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="flex flex-col items-center justify-center text-center p-12 student-card max-w-lg mx-auto my-8 bg-[var(--card-bg)]">
-          <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5" style={{ background: "rgba(239, 68, 68, 0.08)" }}>
+        <div className="flex flex-col items-center justify-center text-center p-8 sm:p-12 student-card max-w-lg mx-auto my-8 bg-[var(--card-bg)] rounded-3xl border border-[var(--border)] shadow-xl space-y-4">
+          <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ background: "rgba(239, 68, 68, 0.08)" }}>
             <AlertTriangle className="w-8 h-8" style={{ color: "var(--error)" }} />
           </div>
-          <h3 className="text-lg font-bold mb-2 text-[var(--text-primary)]">Could Not Load Data</h3>
-          <p className="text-sm mb-6 max-w-sm text-[var(--text-secondary)] leading-relaxed">
-            No coding questions found for this company, or the server is unreachable.
+          <h3 className="text-lg font-bold text-[var(--text-primary)]">No Coding Questions Available</h3>
+          <p className="text-sm max-w-sm text-[var(--text-secondary)] leading-relaxed">
+            No questions found for {selectedDifficulty ? `difficulty track "${selectedDifficulty}"` : "the selected track"}. You can switch to another difficulty below or return to the launchpad.
           </p>
-          <div className="flex items-center gap-3 justify-center">
+
+          <div className="flex items-center gap-2 flex-wrap justify-center pt-2">
+            {["All", "Easy", "Medium", "Hard"].map((diff) => (
+              <button
+                key={diff}
+                type="button"
+                onClick={() => handleDifficultyChange(diff)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition cursor-pointer ${
+                  selectedDifficulty.toLowerCase() === diff.toLowerCase()
+                    ? "bg-[#06B6D4] text-white border-[#06B6D4] shadow-sm"
+                    : "border-[var(--border)] text-[var(--text-secondary)] hover:border-cyan-500/40 bg-[var(--bg-secondary)]"
+                }`}
+              >
+                {diff} Track
+              </button>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-3 justify-center pt-2">
             <button
               type="button"
-              onClick={fetchQuestions}
+              onClick={() => fetchQuestions(selectedDifficulty)}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white transition hover:opacity-90 cursor-pointer shadow-sm btn-gradient"
             >
               <RefreshCw className="w-3.5 h-3.5" />
-              Retry Connection
+              Retry Fetch
             </button>
             <button
               type="button"
-              onClick={() => navigate(`/interview-practice/${companyId}`)}
+              onClick={() => navigate(companyId ? `/interview-practice/${companyId}` : "/coding-round")}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold border transition hover:bg-[var(--border)]/20 cursor-pointer"
               style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
             >
-              Go Back
+              Back to Difficulties
             </button>
           </div>
         </div>
@@ -668,24 +751,42 @@ function CodingRound() {
       {/* ── Top bar (hidden in fullscreen) ── */}
       {!fullscreen && (
         <div
-          className="flex items-center justify-between gap-3 px-4 py-2 border-b shrink-0 flex-wrap"
+          className="flex items-center justify-between gap-3 px-4 py-2.5 border-b shrink-0 flex-wrap"
           style={{ borderColor: "var(--border)", background: "var(--card-bg)" }}
         >
-          <button
-            type="button"
-            onClick={() => navigate(`/interview-practice/${companyId}`)}
-            className="flex items-center gap-1.5 text-sm font-medium cursor-pointer hover:opacity-80"
-            style={{ color: "var(--text-secondary)" }}
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Rounds
-          </button>
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <button
+              type="button"
+              onClick={() => navigate(companyId ? `/interview-practice/${companyId}` : "/coding-round")}
+              className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold cursor-pointer hover:opacity-80 transition px-2.5 py-1.5 rounded-xl border"
+              style={{ borderColor: "var(--border)", color: "var(--text-secondary)", background: "var(--bg-secondary)" }}
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Exit Test
+            </button>
+
+            {selectedDifficulty && (
+              <span
+                className="text-xs font-bold px-2.5 py-1 rounded-xl border bg-[var(--bg-secondary)]"
+                style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
+              >
+                {selectedDifficulty} Track
+              </span>
+            )}
+          </div>
 
           <div className="flex items-center gap-3 text-xs" style={{ color: "var(--text-muted)" }}>
-            <span className="flex items-center gap-1">
+            {/* Solved Progress Counter */}
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold">
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              <span>{solved.size} of {questions.length} Solved</span>
+            </div>
+
+            <span className="flex items-center gap-1 font-mono font-medium">
               <Timer className="w-3.5 h-3.5" />
               {elapsed} min
             </span>
+
             {draftState === "saved" && (
               <span className="flex items-center gap-1 text-green-500 font-semibold">
                 <CheckCircle2 className="w-3.5 h-3.5" /> Saved
@@ -716,6 +817,7 @@ function CodingRound() {
         </div>
       )}
 
+
       {/* ── Main split layout ── */}
       <div className="flex flex-col lg:flex-row flex-1 overflow-hidden" style={{ minHeight: 0 }}>
 
@@ -724,28 +826,65 @@ function CodingRound() {
           className="lg:w-[42%] flex flex-col overflow-y-auto border-r"
           style={{ borderColor: "var(--border)", background: "var(--card-bg)" }}
         >
-          {/* Question tabs */}
-          <div className="flex items-center gap-1.5 px-4 pt-3 pb-0 flex-wrap shrink-0">
-            {questions.map((q, idx) => {
-              const active = idx === activeIndex;
-              const done = solved.has(q._id);
-              return (
-                <button
-                  key={q._id || idx}
-                  type="button"
-                  onClick={() => { setActiveIndex(idx); }}
-                  className="w-8 h-8 rounded-lg text-xs font-bold cursor-pointer transition mb-2"
-                  style={{
-                    background: active ? "#6366f1" : done ? "rgba(34,197,94,0.12)" : "var(--input-bg)",
-                    color: active ? "#fff" : done ? "#22c55e" : "var(--text-secondary)",
-                    border: active ? "2px solid #6366f1" : "1px solid var(--border)",
-                  }}
-                  title={q.title}
-                >
-                  {done && !active ? "✓" : idx + 1}
-                </button>
-              );
-            })}
+          {/* Compact Question Navigation Header */}
+          <div
+            className="flex items-center justify-between gap-3 px-4 py-2 border-b shrink-0 bg-[var(--bg-secondary)]/40"
+            style={{ borderColor: "var(--border)" }}
+          >
+            <div className="flex items-center gap-1.5 min-w-0">
+              <button
+                type="button"
+                onClick={() => setActiveIndex((prev) => Math.max(0, prev - 1))}
+                disabled={activeIndex === 0}
+                className="p-1.5 rounded-lg border text-xs font-bold cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[var(--bg-secondary)] transition"
+                style={{ borderColor: "var(--border)", background: "var(--card-bg)" }}
+                title="Previous Question"
+              >
+                <ChevronLeft className="w-3.5 h-3.5" />
+              </button>
+
+              <select
+                value={activeIndex}
+                onChange={(e) => setActiveIndex(Number(e.target.value))}
+                className="text-xs font-bold px-2.5 py-1.5 rounded-lg border cursor-pointer outline-none max-w-[220px] truncate"
+                style={{
+                  borderColor: "var(--border)",
+                  background: "var(--card-bg)",
+                  color: "var(--text-primary)",
+                }}
+              >
+                {questions.map((q, idx) => {
+                  const done = solved.has(q._id) || solved.has(String(q._id));
+                  return (
+                    <option key={q._id || idx} value={idx}>
+                      Q{idx + 1}: {q.title || `Problem ${idx + 1}`} {done ? "✓" : ""}
+                    </option>
+                  );
+                })}
+              </select>
+
+              <button
+                type="button"
+                onClick={() => setActiveIndex((prev) => Math.min(questions.length - 1, prev + 1))}
+                disabled={activeIndex === questions.length - 1}
+                className="p-1.5 rounded-lg border text-xs font-bold cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[var(--bg-secondary)] transition"
+                style={{ borderColor: "var(--border)", background: "var(--card-bg)" }}
+                title="Next Question"
+              >
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="text-xs font-mono font-medium text-[var(--text-muted)]">
+                {activeIndex + 1} / {questions.length}
+              </span>
+              {(solved.has(activeQuestion?._id) || solved.has(String(activeQuestion?._id))) && (
+                <span className="flex items-center gap-1 text-[11px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 px-2 py-0.5 rounded-md">
+                  <CheckCircle2 className="w-3 h-3" /> Solved
+                </span>
+              )}
+            </div>
           </div>
 
           <ProblemDescription

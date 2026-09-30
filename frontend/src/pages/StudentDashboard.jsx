@@ -221,6 +221,7 @@ function StudentDashboard() {
       subtext: isWeekly ? "Accepted past 7 days" : (codingProblemsSolved !== null ? "Problems accepted" : "No Data"),
       color: "#10B981",
       icon: Code2,
+      onClick: () => navigate("/coding-assessment/history"),
     },
     {
       id: "streak",

@@ -124,6 +124,14 @@ function InterviewHistory() {
               Persistent attempt records and evaluation scorecards.
             </p>
           </div>
+          <button
+            onClick={() => navigate("/coding-assessment/history")}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-500/30 transition cursor-pointer"
+          >
+            <Code2 className="w-4 h-4 text-indigo-400" />
+            <span>Coding Assessment History</span>
+            <ExternalLink className="w-3.5 h-3.5 opacity-60" />
+          </button>
         </div>
 
         {/* Filters & Sorting Bar */}
