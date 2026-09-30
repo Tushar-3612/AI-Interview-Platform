@@ -19,7 +19,7 @@
 import { FaceDetector, FilesetResolver } from "@mediapipe/tasks-vision";
 
 const DETECTION_INTERVAL_MS = 750;
-const MIN_FACE_CONFIDENCE = 0.52;
+const FACE_DETECTION_CONFIDENCE_THRESHOLD = 0.52;
 const STABILITY_WINDOW_SIZE = 3;
 
 class PersonDetector {
@@ -81,7 +81,7 @@ class PersonDetector {
               delegate: "GPU",
             },
             runningMode: "IMAGE",
-            minDetectionConfidence: MIN_FACE_CONFIDENCE,
+            minDetectionConfidence: FACE_DETECTION_CONFIDENCE_THRESHOLD,
           });
         } catch (gpuErr) {
           console.warn("[PersonDetector] GPU delegate failed, falling back to CPU:", gpuErr?.message || gpuErr);
@@ -92,7 +92,7 @@ class PersonDetector {
               delegate: "CPU",
             },
             runningMode: "IMAGE",
-            minDetectionConfidence: MIN_FACE_CONFIDENCE,
+            minDetectionConfidence: FACE_DETECTION_CONFIDENCE_THRESHOLD,
           });
         }
 
@@ -201,7 +201,7 @@ class PersonDetector {
         const detectionsResult = this.detector.detect(this.videoElement);
         const validDetections = (detectionsResult?.detections || []).filter((d) => {
           const score = d.categories?.[0]?.score ?? 1;
-          return score >= MIN_FACE_CONFIDENCE;
+          return score >= FACE_DETECTION_CONFIDENCE_THRESHOLD;
         });
         detectedCount = validDetections.length;
       } catch (err) {
