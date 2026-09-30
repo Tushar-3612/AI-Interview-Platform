@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { CameraOff, RefreshCw, Users, User, AlertTriangle } from "lucide-react";
+import { CameraOff, RefreshCw, Users, User, AlertTriangle, Eye } from "lucide-react";
 
 /**
  * WebcamCard — Live webcam feed via getUserMedia with proctoring detection overlay.
@@ -10,7 +10,7 @@ import { CameraOff, RefreshCw, Users, User, AlertTriangle } from "lucide-react";
  *   userName       {string}         — user name for fallback avatar initials
  *   onRetryCamera  {function}       — callback to attempt re-acquiring camera
  *   personCount    {number}         — detected person count (0, 1, 2+)
- *   personStatus   {string}         — "ONE_PERSON" | "NO_PERSON" | "MULTIPLE_PEOPLE"
+ *   personStatus   {string}         — "CHECKING" | "ONE_PERSON" | "NO_PERSON" | "MULTIPLE_PEOPLE" | "CAMERA_OFF"
  *   onVideoElement {function}       — callback to pass video element reference for detection
  */
 function WebcamCard({
@@ -18,30 +18,38 @@ function WebcamCard({
   stream = null,
   userName = "You",
   onRetryCamera,
-  personCount = 1,
-  personStatus = "ONE_PERSON",
+  personCount = 0,
+  personStatus = "CHECKING",
   onVideoElement,
 }) {
   const videoRef = useRef(null);
 
   // Attach stream to video element whenever stream OR isCameraOn state changes
   useEffect(() => {
+    let isMounted = true;
     if (videoRef.current && stream && isCameraOn) {
       videoRef.current.srcObject = stream;
       videoRef.current
         .play()
         .then(() => {
-          if (onVideoElement && videoRef.current) {
+          if (isMounted && onVideoElement && videoRef.current) {
             onVideoElement(videoRef.current);
           }
         })
-        .catch((err) => console.warn("Video play error:", err));
+        .catch((err) => {
+          if (isMounted) {
+            console.warn("[WebcamCard] Video play warning:", err?.message || err);
+          }
+        });
     } else if (onVideoElement) {
       onVideoElement(null);
     }
+    return () => {
+      isMounted = false;
+    };
   }, [stream, isCameraOn, onVideoElement]);
 
-  const initials = userName
+  const initials = (userName || "You")
     .split(" ")
     .map((w) => w[0])
     .join("")
@@ -57,9 +65,9 @@ function WebcamCard({
         <div
           className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-lg flex items-center gap-1.5 shadow-lg animate-pulse"
           style={{
-            background: "rgba(239, 68, 68, 0.85)",
+            background: "rgba(239, 68, 68, 0.90)",
             backdropFilter: "blur(8px)",
-            border: "1px solid rgba(255, 255, 255, 0.2)",
+            border: "1px solid rgba(255, 255, 255, 0.25)",
           }}
         >
           <AlertTriangle className="w-3 h-3 text-white" />
@@ -70,12 +78,12 @@ function WebcamCard({
       );
     }
 
-    if (personStatus === "NO_PERSON" || personCount === 0) {
+    if (personStatus === "NO_PERSON" || (personStatus !== "CHECKING" && personCount === 0)) {
       return (
         <div
           className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-lg flex items-center gap-1.5 shadow-lg"
           style={{
-            background: "rgba(245, 158, 11, 0.85)",
+            background: "rgba(245, 158, 11, 0.90)",
             backdropFilter: "blur(8px)",
             border: "1px solid rgba(255, 255, 255, 0.2)",
           }}
@@ -88,11 +96,29 @@ function WebcamCard({
       );
     }
 
+    if (personStatus === "CHECKING" || personStatus === "DETECTING") {
+      return (
+        <div
+          className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-lg flex items-center gap-1.5 shadow-md"
+          style={{
+            background: "rgba(59, 130, 246, 0.85)",
+            backdropFilter: "blur(8px)",
+            border: "1px solid rgba(255, 255, 255, 0.2)",
+          }}
+        >
+          <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+          <span className="text-[9.5px] font-bold text-white tracking-wide">
+            Detecting...
+          </span>
+        </div>
+      );
+    }
+
     return (
       <div
         className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-lg flex items-center gap-1.5 shadow-md"
         style={{
-          background: "rgba(16, 185, 129, 0.75)",
+          background: "rgba(16, 185, 129, 0.85)",
           backdropFilter: "blur(8px)",
           border: "1px solid rgba(255, 255, 255, 0.15)",
         }}
@@ -132,6 +158,7 @@ function WebcamCard({
               <span className="text-[11px] text-white/50">Camera disconnected</span>
               {onRetryCamera && (
                 <button
+                  type="button"
                   onClick={onRetryCamera}
                   className="mt-1 px-3 py-1 rounded-lg text-[10px] font-bold bg-[#FF6B35]/15 hover:bg-[#FF6B35]/25 text-[#FF6B35] border border-[#FF6B35]/30 flex items-center gap-1.5 cursor-pointer transition-all"
                 >
@@ -172,7 +199,7 @@ function WebcamCard({
           }`}
         />
         <span className="text-[10px] font-bold text-white/90">
-          {userName || "Tushar Nagare"} (You)
+          {userName || "Candidate"} (You)
         </span>
       </div>
     </div>

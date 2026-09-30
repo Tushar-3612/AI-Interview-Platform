@@ -32,6 +32,7 @@ import MonacoCodeEditor from "../../components/coding/MonacoCodeEditor";
 import OutputPanel from "../../components/coding/OutputPanel";
 import { getStarterCode } from "../../utils/coding/starterGenerator";
 import formatSpeechTranscript from "../../utils/interview/transcriptFormatter";
+import DeviceCheckModal from "../../components/interview/DeviceCheckModal";
 import PersonDetector from "../../utils/proctor/personDetector";
 
 
@@ -174,6 +175,7 @@ function StartInterview({
   const [sessionError, setSessionError] = useState(null);
 
   // Media & STT state
+  const [isDeviceCheckPassed, setIsDeviceCheckPassed] = useState(false);
   const [isCameraOn, setIsCameraOn] = useState(true);
   const [isMicOn, setIsMicOn] = useState(true);
   const isMicOnRef = useRef(true);
@@ -181,9 +183,9 @@ function StartInterview({
   const isSpeakerOnRef = useRef(true);
   const [micPermissionDenied, setMicPermissionDenied] = useState(false);
 
-  // Proctoring & Person Detection State (0, 1, 2+)
-  const [personCount, setPersonCount] = useState(1);
-  const [personStatus, setPersonStatus] = useState("ONE_PERSON");
+  // Proctoring & Person Detection State (0, 1, 2+) — default to CHECKING on startup
+  const [personCount, setPersonCount] = useState(0);
+  const [personStatus, setPersonStatus] = useState("CHECKING");
   const personDetectorRef = useRef(null);
   const lastIntegrityAlertRef = useRef({});
   const videoElementRef = useRef(null);
@@ -222,21 +224,23 @@ function StartInterview({
     } catch (e) {}
   }, []);
 
-  // Synchronized state refs for callbacks
+  // Synchronized state refs for callbacks (decoupling callbacks from question progression re-renders)
   const aiStatusRef = useRef("SPEAKING");
   const inputModeRef = useRef("speak");
   const typedResponseRef = useRef("");
   const isCompletedRef = useRef(false);
   const isFullscreenExitedRef = useRef(false);
   const currentSectionRef = useRef("APTITUDE");
+  const currentIndexRef = useRef(currentIndex);
+  const currentQuestion = questions[currentIndex - 1] || {};
+  const currentQuestionRef = useRef(currentQuestion);
+  const currentSection = currentQuestion.section || "APTITUDE";
+
   // Track when TTS last finished — used to discard mic bleed within 600ms of AI speech ending
   const ttsEndedAtRef = useRef(0);
 
   // TTS Hook
   const { speak: ttsSpeak, stop: ttsStop } = useTextToSpeech();
-
-  const currentQuestion = questions[currentIndex - 1] || {};
-  const currentSection = currentQuestion.section || "APTITUDE";
 
   // Keep refs in sync
   useEffect(() => { isMicOnRef.current = isMicOn; }, [isMicOn]);
@@ -246,23 +250,30 @@ function StartInterview({
   useEffect(() => { isCompletedRef.current = isCompleted; }, [isCompleted]);
   useEffect(() => { isFullscreenExitedRef.current = isFullscreenExited; }, [isFullscreenExited]);
   useEffect(() => { currentSectionRef.current = currentSection; }, [currentSection]);
+  useEffect(() => { currentIndexRef.current = currentIndex; }, [currentIndex]);
+  useEffect(() => { currentQuestionRef.current = currentQuestion; }, [currentQuestion]);
 
   // ─── PHASE 2E: LOG INTEGRITY EVENT TO BACKEND ───
   const logIntegrityEvent = useCallback(async (eventType, details = "") => {
     const currentSessionId = sessionIdRef.current || sessionId;
     if (!currentSessionId) return;
+    const q = currentQuestionRef.current || {};
+    const qId = q.id || q.questionId || "";
+    const qIdx = currentIndexRef.current || 1;
+    const sec = currentSectionRef.current || "APTITUDE";
     try {
+      const activeToken = token || getAuthToken();
       await api.post(`/api/student/interviews/${currentSessionId}/integrity-event`, {
         eventType,
-        questionId: currentQuestion.id || currentQuestion.questionId || "",
-        questionIndex: currentIndex,
-        section: currentSection,
-        details
-      }, { headers: { Authorization: `Bearer ${token}` } });
+        questionId: qId,
+        questionIndex: qIdx,
+        section: sec,
+        details,
+      }, { headers: activeToken ? { Authorization: `Bearer ${activeToken}` } : {} });
     } catch (err) {
       console.warn("Failed to log integrity event:", err);
     }
-  }, [sessionId, currentQuestion, currentIndex, currentSection, token]);
+  }, [sessionId, token]);
 
   // ─── PHASE 2E: FULLSCREEN ENFORCEMENT & PAUSE OVERLAY ───
   const handleReenterFullscreen = useCallback(() => {
@@ -276,7 +287,7 @@ function StartInterview({
   }, []);
 
   useEffect(() => {
-    if (isLoadingInterview || isCompleted) return;
+    if (isLoadingInterview || isCompleted || !isDeviceCheckPassed) return;
 
     // Request fullscreen on startup (user-initiated Start Interview gesture)
     const timer = setTimeout(() => {
@@ -285,7 +296,7 @@ function StartInterview({
     }, 400);
 
     return () => clearTimeout(timer);
-  }, [isLoadingInterview, isCompleted, handleReenterFullscreen]);
+  }, [isLoadingInterview, isCompleted, isDeviceCheckPassed, handleReenterFullscreen]);
 
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -300,9 +311,9 @@ function StartInterview({
       if (isFS) {
         everEnteredFsRef.current = true;
         setIsFullscreenExited(false);
-      } else if (everEnteredFsRef.current && !isCompleted && !isLoadingInterview) {
+      } else if (everEnteredFsRef.current && !isCompleted && !isLoadingInterview && isDeviceCheckPassed) {
         // Only treat as an integrity "exit" pause once the candidate has been
-        // in fullscreen at least once (otherwise it's the initial requirement).
+        // in fullscreen at least once and passed device check.
         setIsFullscreenExited(true);
         window.self?.speechSynthesis?.cancel();
         logIntegrityEvent("FULLSCREEN_EXIT", "Candidate exited browser fullscreen mode");
@@ -320,7 +331,7 @@ function StartInterview({
       document.removeEventListener("mozfullscreenchange", handleFullscreenChange);
       document.removeEventListener("MSFullscreenChange", handleFullscreenChange);
     };
-  }, [isCompleted, isLoadingInterview, logIntegrityEvent]);
+  }, [isCompleted, isLoadingInterview, isDeviceCheckPassed, logIntegrityEvent]);
 
   // ─── Hide the website navbar while inside the dedicated interview room ───
   useEffect(() => {
@@ -331,7 +342,12 @@ function StartInterview({
   // Blocking fullscreen-required gate: shown only before the candidate has
   // entered fullscreen and the browser refused the automatic request.
   const showFullscreenGate =
-    fullscreenRequested && !isInFullscreen && !isFullscreenExited && !isCompleted && !isLoadingInterview;
+    fullscreenRequested &&
+    !isInFullscreen &&
+    !isFullscreenExited &&
+    !isCompleted &&
+    !isLoadingInterview &&
+    isDeviceCheckPassed;
 
   // ─── PHASE 2E: TAB VISIBILITY SWITCH DETECTION ───
   useEffect(() => {
@@ -407,7 +423,7 @@ function StartInterview({
     }
   }, [ttsStop]);
 
-  // ─── Webcam acquisition & Proctoring Detection Loop ───
+  // ─── Pre-Interview Device Check & Webcam Acquisition Lifecycle ───
   const hasAttemptedWebcamRef = useRef(false);
   const webcamDeniedRef = useRef(false);
 
@@ -424,10 +440,19 @@ function StartInterview({
         setPersonStatus(result.status);
 
         const now = Date.now();
-        if (result.status === "MULTIPLE_PEOPLE" && (!lastIntegrityAlertRef.current.multiple || now - lastIntegrityAlertRef.current.multiple > 10000)) {
+        if (
+          result.status === "MULTIPLE_PEOPLE" &&
+          (!lastIntegrityAlertRef.current.multiple || now - lastIntegrityAlertRef.current.multiple > 10000)
+        ) {
           lastIntegrityAlertRef.current.multiple = now;
-          logIntegrityEvent("MULTIPLE_PEOPLE_DETECTED", `Multiple persons (${result.count}) detected in candidate camera frame`);
-        } else if (result.status === "NO_PERSON" && (!lastIntegrityAlertRef.current.noPerson || now - lastIntegrityAlertRef.current.noPerson > 15000)) {
+          logIntegrityEvent(
+            "MULTIPLE_PEOPLE_DETECTED",
+            `Multiple persons (${result.count}) detected in candidate camera frame`
+          );
+        } else if (
+          result.status === "NO_PERSON" &&
+          (!lastIntegrityAlertRef.current.noPerson || now - lastIntegrityAlertRef.current.noPerson > 15000)
+        ) {
           lastIntegrityAlertRef.current.noPerson = now;
           logIntegrityEvent("NO_PERSON_DETECTED", "No candidate face detected in camera frame");
         }
@@ -437,11 +462,56 @@ function StartInterview({
     }
   }, [isCameraOn, logIntegrityEvent]);
 
+  // Handler for proceeding from mandatory Pre-Interview Device Check Gate
+  const handleDeviceCheckProceed = useCallback((verifiedStream) => {
+    if (webcamStreamRef.current && webcamStreamRef.current !== verifiedStream) {
+      webcamStreamRef.current.getTracks().forEach((t) => {
+        try { t.stop(); } catch (e) {}
+      });
+    }
+
+    webcamStreamRef.current = verifiedStream;
+    setWebcamStream(verifiedStream);
+    setIsCameraOn(true);
+    setIsMicOn(true);
+    setIsDeviceCheckPassed(true);
+
+    const vTrack = verifiedStream.getVideoTracks?.()[0];
+    if (vTrack) {
+      vTrack.onended = () => {
+        setIsCameraOn(false);
+        if (personDetectorRef.current) {
+          personDetectorRef.current.stop();
+        }
+        setPersonStatus("CAMERA_DISCONNECTED");
+        logIntegrityEvent("CAMERA_DISCONNECTED", "Candidate camera track ended unexpectedly");
+      };
+    }
+
+    const aTrack = verifiedStream.getAudioTracks?.()[0];
+    if (aTrack) {
+      aTrack.onended = () => {
+        setIsMicOn(false);
+        toast.error("Microphone disconnected", { id: "mic-disconnected-toast" });
+      };
+    }
+
+    // Enter fullscreen mode upon successful device check pass
+    handleReenterFullscreen();
+    setFullscreenRequested(true);
+  }, [handleReenterFullscreen, logIntegrityEvent]);
+
+  // Re-acquire camera on explicit retry
   const startWebcam = useCallback(async () => {
-    if (webcamDeniedRef.current || hasAttemptedWebcamRef.current) {
-      return;
+    if (webcamStreamRef.current) {
+      webcamStreamRef.current.getTracks().forEach((t) => {
+        try { t.stop(); } catch (e) {}
+      });
+      webcamStreamRef.current = null;
     }
     hasAttemptedWebcamRef.current = true;
+    webcamDeniedRef.current = false;
+
     try {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         setIsCameraOn(false);
@@ -462,13 +532,14 @@ function StartInterview({
           if (personDetectorRef.current) {
             personDetectorRef.current.stop();
           }
+          setPersonStatus("CAMERA_DISCONNECTED");
           logIntegrityEvent("CAMERA_DISCONNECTED", "Candidate camera track ended unexpectedly");
         };
       }
     } catch (err) {
       webcamDeniedRef.current = true;
       setIsCameraOn(false);
-      console.warn("Webcam access warning (permission denied or unavailable):", err?.name || err);
+      console.warn("[StartInterview] Webcam retry error:", err?.name || err);
     }
   }, [logIntegrityEvent]);
 
@@ -478,8 +549,10 @@ function StartInterview({
     }
     if (webcamStreamRef.current) {
       webcamStreamRef.current.getTracks().forEach((t) => {
-        t.stop();
-        t.enabled = false;
+        try {
+          t.stop();
+          t.enabled = false;
+        } catch (e) {}
       });
       webcamStreamRef.current = null;
       setWebcamStream(null);
@@ -540,10 +613,8 @@ function StartInterview({
     }
   }, [stopSpeechRecognition]);
 
+  // Teardown camera & ML resources on unmount
   useEffect(() => {
-    if (!hasAttemptedWebcamRef.current && !webcamDeniedRef.current) {
-      startWebcam();
-    }
     return () => {
       stopWebcam();
       if (personDetectorRef.current) {
@@ -553,7 +624,7 @@ function StartInterview({
       stopSpeechRecognition();
       window.speechSynthesis?.cancel();
     };
-  }, [startWebcam, stopWebcam, stopSpeechRecognition]);
+  }, [stopWebcam, stopSpeechRecognition]);
 
   // Shut down camera & mic hardware immediately when interview completes
   useEffect(() => {
@@ -2353,6 +2424,13 @@ function StartInterview({
 
   return (
     <div className="relative bg-slate-950 min-h-screen text-white select-none">
+
+      {/* Mandatory Pre-Interview Device Check Gate */}
+      <DeviceCheckModal
+        isOpen={!isDeviceCheckPassed && !isLoadingInterview && !isCompleted}
+        onProceed={handleDeviceCheckProceed}
+        candidateName={candidateInfo.name}
+      />
 
       {/* Phase 2E Fullscreen Exit Blocking Overlay */}
       <FullscreenExitOverlay
