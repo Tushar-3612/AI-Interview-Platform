@@ -7,8 +7,8 @@ import {
 const TABS = ["Testcase", "Test Result", "Submissions"];
 
 const TERMINAL_HEIGHT_KEY = "codingide_terminal_height";
-const MIN_HEIGHT = 120;
-const DEFAULT_HEIGHT = 220;
+const MIN_HEIGHT = 100;
+const DEFAULT_HEIGHT = 180;
 const MAX_HEIGHT_VH = 70;
 
 function OutputPanel({
@@ -37,22 +37,17 @@ function OutputPanel({
   const panelRef = useRef(null);
 
   const clampH = (v) => {
-    // Hard cap from spec (share of viewport)...
     let maxH =
       typeof window !== "undefined" ? (window.innerHeight * MAX_HEIGHT_VH) / 100 : 700;
-    // ...but never let the panel grow taller than the available space above it
-    // (so the editor keeps a usable minimum height and the page never overflows).
     const parent = panelRef.current?.parentElement;
     if (parent) {
-      const available = parent.clientHeight - 160; // toolbar + min editor + chrome
+      const available = parent.clientHeight - 130; // toolbar + min editor + chrome
       if (available > MIN_HEIGHT) maxH = Math.min(maxH, available);
     }
     return Math.max(MIN_HEIGHT, Math.min(maxH, v));
   };
 
   // ── Pointer-event based resize (VS Code-like draggable divider) ──
-  // Pointer capture keeps move/up events flowing to the handle even if the
-  // cursor leaves it, so dragging is smooth and never "stuck".
   const handleResizeStart = useCallback(
     (e) => {
       e.preventDefault();
@@ -68,7 +63,6 @@ function OutputPanel({
   const handleResizeMove = useCallback(
     (e) => {
       if (!isDragging) return;
-      // Drag UP (clientY decreases) => panel gets taller.
       const delta = dragStartRef.current.startY - e.clientY;
       const newHeight = clampH(dragStartRef.current.startHeight + delta);
       setPanelHeight(newHeight);
@@ -106,13 +100,10 @@ function OutputPanel({
       ref={panelRef}
       className="flex flex-col"
       style={{
-        // Keep the panel at its own (controlled) height so the editor above
-        // shrinks/grows to fill the remaining space instead of the panel being
-        // squished by flex.
         flexShrink: 0,
-        background: "#1a1a2e",
+        background: "rgba(10, 14, 26, 0.95)",
         color: "#e2e8f0",
-        borderTop: "1px solid #2d2d44",
+        borderTop: "1px solid rgba(255, 255, 255, 0.08)",
         userSelect: isDragging ? "none" : "auto",
         cursor: isDragging ? "row-resize" : "default",
       }}
@@ -124,17 +115,16 @@ function OutputPanel({
         onPointerUp={handleResizeEnd}
         onPointerCancel={handleResizeEnd}
         onDoubleClick={handleSeparatorDoubleClick}
-        className="shrink-0 flex items-center justify-center cursor-row-resize group touch-none select-none"
+        className="shrink-0 flex items-center justify-center cursor-row-resize group touch-none select-none hover:bg-[#FF6B35]/20 transition-colors"
         style={{
           height: "8px",
-          background: isDragging ? "#6366f1" : "#2d2d44",
-          transition: isDragging ? "none" : "background 0.15s",
+          background: isDragging ? "#FF6B35" : "rgba(255, 255, 255, 0.06)",
         }}
-        title="Drag to resize. Double-click to reset."
+        title="Drag to resize terminal. Double-click to reset."
       >
         <div
-          className="flex items-center gap-[3px] opacity-0 group-hover:opacity-100 transition-opacity"
-          style={{ background: isDragging ? "#fff" : "#6b7280" }}
+          className="flex items-center gap-[3px] opacity-60 group-hover:opacity-100 transition-opacity"
+          style={{ color: isDragging ? "#fff" : "rgba(255, 255, 255, 0.6)" }}
         >
           <span className="block w-[3px] h-[3px] rounded-full" style={{ background: "currentColor" }} />
           <span className="block w-[3px] h-[3px] rounded-full" style={{ background: "currentColor" }} />
@@ -146,8 +136,8 @@ function OutputPanel({
       <div
         className="flex items-center shrink-0"
         style={{
-          background: "#16162a",
-          borderBottom: "1px solid #2d2d44",
+          background: "rgba(10, 14, 26, 0.95)",
+          borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
         }}
       >
         {TABS.map((tab) => {
@@ -157,9 +147,9 @@ function OutputPanel({
               key={tab}
               type="button"
               onClick={() => setActiveTab(tab)}
-              className="relative px-4 py-2.5 text-[13px] font-medium cursor-pointer transition-colors"
+              className="relative px-4 py-2.5 text-xs font-semibold cursor-pointer transition-colors"
               style={{
-                color: active ? "#e2e8f0" : "#64748b",
+                color: active ? "#ffffff" : "rgba(255, 255, 255, 0.5)",
                 background: "transparent",
               }}
             >
@@ -167,7 +157,7 @@ function OutputPanel({
               {active && (
                 <div
                   className="absolute bottom-0 left-0 right-0 h-[2px]"
-                  style={{ background: "#6366f1" }}
+                  style={{ background: "#FF6B35" }}
                 />
               )}
             </button>
@@ -182,7 +172,7 @@ function OutputPanel({
           height: panelHeight,
           flex: "0 0 auto",
           minHeight: 0,
-          background: "#1a1a2e",
+          background: "rgba(8, 11, 20, 0.98)",
         }}
       >
         {/* Test Cases Tab */}
@@ -227,7 +217,10 @@ function TestCasesContent({ testCases, run, submit }) {
   return (
     <div className="p-3 space-y-2 text-[13px]" style={{ minWidth: "fit-content" }}>
       {visibleCases.length === 0 && (
-        <p style={{ color: "#64748b" }}>No sample test cases available.</p>
+        <div className="py-4 text-center space-y-1">
+          <p className="text-xs font-semibold text-slate-400">No sample test cases</p>
+          <p className="text-[11px] text-slate-500">Run your solution to see execution results.</p>
+        </div>
       )}
 
       {visibleCases.map((tc, i) => (

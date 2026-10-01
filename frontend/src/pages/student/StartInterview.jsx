@@ -2,12 +2,20 @@ import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
-import { Bot, Sparkles, Mic, MicOff, CheckCircle2, Keyboard, Loader2, Play, Code2, AlertTriangle, UserCheck, Target, BrainCircuit, Maximize2, RotateCcw, Radio, Send, Volume2, ChevronLeft, ChevronRight, SkipForward } from "lucide-react";
+import { Bot, Sparkles, Mic, MicOff, CheckCircle2, Keyboard, Loader2, Play, Code2, AlertTriangle, UserCheck, Target, BrainCircuit, FileText, Maximize2, RotateCcw, Radio, Send, Volume2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, SkipForward, Terminal } from "lucide-react";
 
 import api from "../../utils/api";
 import { getAuthToken, useStudentProfile } from "../../hooks/useStudentProfile";
 import { useTextToSpeech } from "../../hooks/useTextToSpeech";
 import { getVoiceProfile, selectOptimalVoice } from "../../config/voiceProfiles";
+
+const ROUND_TABS = [
+  { id: "APTITUDE", name: "Aptitude", icon: Target, defaultTotal: 15 },
+  { id: "RESUME_PROJECT", name: "Resume / Project", icon: FileText, defaultTotal: 5 },
+  { id: "TECHNICAL", name: "Technical", icon: BrainCircuit, defaultTotal: 20 },
+  { id: "CODING", name: "Coding", icon: Code2, defaultTotal: 3 },
+  { id: "HR", name: "HR", icon: UserCheck, defaultTotal: 5 },
+];
 
 // Import reusable components
 import InterviewLayout from "../../components/interview/InterviewLayout";
@@ -138,6 +146,40 @@ function StartInterview({
   const [isSubmittingCode, setIsSubmittingCode] = useState(false);
   const [outputTab, setOutputTab] = useState("Testcase");
 
+  // Coding Round IDE layout state (horizontal split + collapse)
+  const [codingLeftWidthPercent, setCodingLeftWidthPercent] = useState(40);
+  const [isProblemCollapsed, setIsProblemCollapsed] = useState(false);
+  const [isCustomInputOpen, setIsCustomInputOpen] = useState(true);
+  const [isDraggingH, setIsDraggingH] = useState(false);
+  const hDragStartRef = useRef({ startX: 0, startPercent: 40 });
+  const splitWorkspaceRef = useRef(null);
+
+  const handleHResizeStart = useCallback((e) => {
+    e.preventDefault();
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {}
+    hDragStartRef.current = { startX: e.clientX, startPercent: codingLeftWidthPercent };
+    setIsDraggingH(true);
+  }, [codingLeftWidthPercent]);
+
+  const handleHResizeMove = useCallback((e) => {
+    if (!isDraggingH || !splitWorkspaceRef.current) return;
+    const rect = splitWorkspaceRef.current.getBoundingClientRect();
+    if (!rect.width) return;
+    const newPercent = ((e.clientX - rect.left) / rect.width) * 100;
+    const clamped = Math.max(20, Math.min(75, newPercent));
+    setCodingLeftWidthPercent(clamped);
+  }, [isDraggingH]);
+
+  const handleHResizeEnd = useCallback((e) => {
+    if (!isDraggingH) return;
+    setIsDraggingH(false);
+    try {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    } catch {}
+  }, [isDraggingH]);
+
   // Target Round State ("all", "aptitude", "technical", "coding", "hr")
   const queryParams = new URLSearchParams(location.search);
   const initialTargetRound = routerState.targetRound || queryParams.get("round") || "all";
@@ -149,7 +191,7 @@ function StartInterview({
     resumeName: routerState.resumeFileName || profile.resumeFileName || MOCK_CANDIDATE.resumeName,
     interviewType: "Real AI Interview Room",
     difficulty: "Adaptive",
-    totalTimeMinutes: 150,
+    totalTimeMinutes: 120,
   });
 
   const memoizedCandidateProfile = useMemo(() => {
@@ -194,8 +236,8 @@ function StartInterview({
   const [webcamStream, setWebcamStream] = useState(null);
   const webcamStreamRef = useRef(null);
 
-  // Session timer (dynamic minutes based on round: 150m for all, 30m for aptitude, 45m for technical/coding, 15m for hr)
-  const [interviewDurationMin, setInterviewDurationMin] = useState(150);
+  // Session timer (ONE continuous active-time timer across all rounds: 2 hours = 120 min for Real Interview)
+  const [interviewDurationMin, setInterviewDurationMin] = useState(120);
   const totalSeconds = interviewDurationMin * 60;
   const [timerSeconds, setTimerSeconds] = useState(totalSeconds);
 
@@ -724,7 +766,25 @@ function StartInterview({
           totalTimeMinutes: 30,
         });
 
-        setTimerSeconds(30 * 60);
+        setInterviewDurationMin(30);
+
+        if (isDbCompleted) {
+          setTimerSeconds(0);
+        } else {
+          const storedRemainingKey = `active_individual_project_remaining_seconds_${targetId}`;
+          let recoveredRemaining = null;
+          try {
+            const val = localStorage.getItem(storedRemainingKey);
+            if (val !== null && !isNaN(Number(val))) {
+              recoveredRemaining = Math.max(0, Math.min(Number(val), 30 * 60));
+            }
+          } catch (e) {}
+          const initialSecs = recoveredRemaining !== null ? recoveredRemaining : 30 * 60;
+          setTimerSeconds(initialSecs);
+          try {
+            localStorage.setItem(storedRemainingKey, String(initialSecs));
+          } catch (e) {}
+        }
         return { isIndividualProject: true, session: sess, generatedQuestions: loadedQs, status: sess.status };
       }
 
@@ -794,7 +854,25 @@ function StartInterview({
           totalTimeMinutes: 45,
         });
 
-        setTimerSeconds(45 * 60);
+        setInterviewDurationMin(45);
+
+        if (isDbCompleted) {
+          setTimerSeconds(0);
+        } else {
+          const storedRemainingKey = `active_individual_technical_remaining_seconds_${targetId}`;
+          let recoveredRemaining = null;
+          try {
+            const val = localStorage.getItem(storedRemainingKey);
+            if (val !== null && !isNaN(Number(val))) {
+              recoveredRemaining = Math.max(0, Math.min(Number(val), 45 * 60));
+            }
+          } catch (e) {}
+          const initialSecs = recoveredRemaining !== null ? recoveredRemaining : 45 * 60;
+          setTimerSeconds(initialSecs);
+          try {
+            localStorage.setItem(storedRemainingKey, String(initialSecs));
+          } catch (e) {}
+        }
         return { isIndividualTechnical: true, session: sess, generatedQuestions: loadedQs, status: sess.status };
       }
 
@@ -839,7 +917,11 @@ function StartInterview({
       const activeTarget = data.targetRound || initialTargetRound || "all";
       setTargetRound(activeTarget);
 
-      const durMin = data.durationMinutes || (activeTarget === "aptitude" ? 20 : activeTarget === "technical" ? 30 : activeTarget === "coding" ? 35 : activeTarget === "hr" ? 20 : 105);
+      const durMin = isIndividualProject
+        ? 30
+        : isIndividualTechnical
+        ? 45
+        : (data.durationMinutes || 120);
       setInterviewDurationMin(durMin);
 
       let loadedQs = data.generatedQuestions || [];
@@ -875,13 +957,22 @@ function StartInterview({
         });
       }
 
-      if (isDbCompleted && data.startedAt) {
-        const startTs = new Date(data.startedAt).getTime();
-        sessionEndTimeRef.current = startTs + durMin * 60000;
-        const remaining = Math.max(0, Math.round((sessionEndTimeRef.current - Date.now()) / 1000));
-        setTimerSeconds(remaining);
+      if (isDbCompleted) {
+        setTimerSeconds(0);
       } else {
-        setTimerSeconds(durMin * 60);
+        const storedRemainingKey = `active_real_interview_remaining_seconds_${targetId}`;
+        let recoveredRemaining = null;
+        try {
+          const val = localStorage.getItem(storedRemainingKey);
+          if (val !== null && !isNaN(Number(val))) {
+            recoveredRemaining = Math.max(0, Math.min(Number(val), durMin * 60));
+          }
+        } catch (e) {}
+        const initialSecs = recoveredRemaining !== null ? recoveredRemaining : durMin * 60;
+        setTimerSeconds(initialSecs);
+        try {
+          localStorage.setItem(storedRemainingKey, String(initialSecs));
+        } catch (e) {}
       }
       return data;
     } catch (err) {
@@ -1153,39 +1244,73 @@ function StartInterview({
     }
   }, [stopSpeechRecognition, currentQuestion, currentIndex, currentCode, typedResponse, inputMode, sessionId, token, triggerFollowUp, isIndividualTechnical]);
 
-  // ─── SECTION NAVIGATION & ON-DEMAND LAZY LOAD HANDLER ───
-  const handleSelectSection = async (targetSection) => {
-    let currentQuestions = [...questions];
-    let sectionQuestions = currentQuestions.filter((q) => q.section === targetSection);
+  // Keep questionsRef in sync
+  const questionsRef = useRef(questions);
+  useEffect(() => {
+    questionsRef.current = questions;
+  }, [questions]);
 
-    const currentSessionId = sessionIdRef.current || sessionId;
-    if (!sectionQuestions.length && currentSessionId) {
-      const toastId = toast.loading(`Preparing ${targetSection} round questions…`);
-      try {
-        const normSec = targetSection.toLowerCase();
-        const { data } = await api.get(`/api/interview/${currentSessionId}/round/${normSec}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const newRoundQs = data.questions || [];
-        if (newRoundQs.length > 0) {
-          const existingIds = new Set(currentQuestions.map(q => String(q.id || q.questionId)));
-          const toAdd = newRoundQs.filter(q => !existingIds.has(String(q.id || q.questionId)));
-          currentQuestions = [...currentQuestions, ...toAdd];
-          setQuestions(currentQuestions);
-          sectionQuestions = currentQuestions.filter((q) => q.section === targetSection);
-          toast.success(`${targetSection} round ready!`, { id: toastId });
-        } else {
-          toast.error(`No questions found for ${targetSection}`, { id: toastId });
-          return;
-        }
-      } catch (err) {
-        console.error(`Error loading ${targetSection} round:`, err);
-        toast.error(`Failed to load ${targetSection} round`, { id: toastId });
-        return;
-      }
+  // ─── SECTION QUESTION MATCHER HELPER ───
+  const isQuestionInSection = useCallback((q, secId) => {
+    if (!q) return false;
+    const target = String(secId || "").toUpperCase();
+    const qSec = String(q.section || q.category || q.type || "").toUpperCase();
+    const qType = String(q.type || q.questionType || "").toLowerCase();
+
+    if (target === "APTITUDE") {
+      return qSec === "APTITUDE" || qType === "aptitude" || (Array.isArray(q.options) && q.options.length > 0 && qType !== "coding");
+    }
+    if (target === "RESUME_PROJECT" || target === "PROJECT") {
+      return qSec === "RESUME_PROJECT" || qSec === "PROJECT" || qSec === "RESUME" || qType === "project" || qType === "resume_project";
+    }
+    if (target === "TECHNICAL") {
+      return qSec === "TECHNICAL" || qType === "technical";
+    }
+    if (target === "CODING") {
+      return qSec === "CODING" || qType === "coding";
+    }
+    if (target === "HR") {
+      return qSec === "HR" || qType === "hr";
+    }
+    return qSec === target;
+  }, []);
+
+  // ─── SECTION NAVIGATION & TAB SWITCHING HANDLER ───
+  const handleSelectSection = useCallback(async (targetSection) => {
+    if (!targetSection) return;
+    const normTarget = String(targetSection).toUpperCase();
+
+    let canonicalTarget = normTarget;
+    if (canonicalTarget === "PROJECT" || canonicalTarget === "RESUME") canonicalTarget = "RESUME_PROJECT";
+    if (canonicalTarget === "APTI") canonicalTarget = "APTITUDE";
+    if (canonicalTarget === "TECH") canonicalTarget = "TECHNICAL";
+
+    const currentQuestions = questionsRef.current || questions;
+    const sectionQuestions = currentQuestions.filter((q) => isQuestionInSection(q, canonicalTarget));
+
+    if (!sectionQuestions.length) {
+      toast(`No questions found for ${canonicalTarget} round.`, { icon: "ℹ️" });
+      return;
     }
 
-    if (!sectionQuestions.length) return;
+    // Immediately stop voice playback and recording
+    stopSpeechRecognition();
+    window.speechSynthesis?.cancel();
+
+    // Persist current answer before switching if candidate provided one
+    const isCurrentCoding = currentSectionRef.current === "CODING";
+    const currentAnswerText = isCurrentCoding ? currentCode : (typedResponseRef.current || typedResponse);
+    const starter = currentQuestionRef.current?.starterCode || "def solution():\n    pass";
+    const hasRealAnswer =
+      currentAnswerText &&
+      String(currentAnswerText).trim().length > 0 &&
+      (!isCurrentCoding || String(currentAnswerText).trim() !== String(starter).trim());
+
+    if (hasRealAnswer) {
+      try {
+        await handleSaveAnswer("answered", currentAnswerText);
+      } catch (e) {}
+    }
 
     const answeredIds = new Set(
       savedAnswers
@@ -1195,43 +1320,53 @@ function StartInterview({
 
     const firstUnanswered = sectionQuestions.find((q) => !answeredIds.has(String(q.id || q.questionId)));
     const targetQuestion = firstUnanswered || sectionQuestions[0];
-    const targetIdx = currentQuestions.findIndex((q) => (q.id || q.questionId) === (targetQuestion.id || targetQuestion.questionId));
+    const targetIdx = currentQuestions.findIndex(
+      (q) => String(q.id || q.questionId) === String(targetQuestion.id || targetQuestion.questionId)
+    );
 
     if (targetIdx !== -1) {
-      stopSpeechRecognition();
-      window.speechSynthesis?.cancel();
+      setCurrentIndex(targetIdx + 1);
+      const displayNames = {
+        APTITUDE: "Aptitude",
+        RESUME_PROJECT: "Resume / Project",
+        TECHNICAL: "Technical",
+        CODING: "Coding",
+        HR: "HR",
+      };
+      toast.success(`Switched to ${displayNames[canonicalTarget] || canonicalTarget} round`, { duration: 2000 });
+    }
+  }, [questions, isQuestionInSection, savedAnswers, currentCode, typedResponse, handleSaveAnswer, stopSpeechRecognition]);
 
-      // Persist only a genuinely-provided answer for the CURRENT question.
-      // Navigation alone must NOT increment progress (no blank/starter-code
-      // submissions), so we guard against empty and unmodified starter code.
-      const isCurrentCoding = currentSection === "CODING";
-      const currentAnswerText = isCurrentCoding ? currentCode : typedResponse;
-      const starter = currentQuestion.starterCode || "def solution():\n    pass";
-      const hasRealAnswer =
-        currentAnswerText &&
-        currentAnswerText.trim().length > 0 &&
-        (!isCurrentCoding || currentAnswerText.trim() !== starter.trim());
+  // ─── ACTIVE INTERVIEW TIMER COUNTDOWN (visible tab only, pauses when hidden) ───
+  useEffect(() => {
+    if (isLoadingInterview || !isDeviceCheckPassed || isCompleted || isEvaluating) return;
 
-      if (hasRealAnswer) {
-        handleSaveAnswer("answered");
+    const interval = setInterval(() => {
+      // Pause countdown if the tab/window is hidden or minimized
+      if (document.hidden || document.visibilityState === "hidden") {
+        return;
       }
 
-      setCurrentIndex(targetIdx + 1);
-      toast.success(`Switched to ${targetSection} section`);
-    }
-  };
+      setTimerSeconds((prev) => {
+        if (prev <= 0) return 0;
+        const next = prev - 1;
+        const currentSessionId = sessionIdRef.current || sessionId;
+        if (currentSessionId) {
+          const storageKey = isIndividualProject
+            ? `active_individual_project_remaining_seconds_${currentSessionId}`
+            : isIndividualTechnical
+            ? `active_individual_technical_remaining_seconds_${currentSessionId}`
+            : `active_real_interview_remaining_seconds_${currentSessionId}`;
+          try {
+            localStorage.setItem(storageKey, String(next));
+          } catch (e) {}
+        }
+        return next;
+      });
+    }, 1000);
 
-  // ─── TIMER COUNTDOWN (session-based, pauses outside fullscreen) ───
-  useEffect(() => {
-    if (isLoadingInterview || isFullscreenExited || !isInFullscreen) return;
-    let interval;
-    if (!isPaused && !isCompleted && !isGeneratingQuestion && timerSeconds > 0) {
-      interval = setInterval(() => {
-        setTimerSeconds((prev) => (prev > 0 ? prev - 1 : 0));
-      }, 1000);
-    }
     return () => clearInterval(interval);
-  }, [isPaused, isCompleted, isGeneratingQuestion, timerSeconds, isFullscreenExited, isLoadingInterview, isInFullscreen]);
+  }, [isLoadingInterview, isDeviceCheckPassed, isCompleted, isEvaluating, isIndividualProject, isIndividualTechnical, sessionId]);
 
   // ─── FINAL SUBMIT INTERVIEW HANDLER ───
   const handleFinalSubmitInterview = useCallback(async () => {
@@ -1252,6 +1387,7 @@ function StartInterview({
           });
           try {
             localStorage.removeItem("active_individual_project_session_id");
+            localStorage.removeItem(`active_individual_project_remaining_seconds_${currentSessionId}`);
           } catch (e) {}
           navigate(`/student/individual-project/result/${currentSessionId}`);
         } else if (isIndividualTechnical) {
@@ -1260,6 +1396,7 @@ function StartInterview({
           });
           try {
             localStorage.removeItem("active_individual_technical_session_id");
+            localStorage.removeItem(`active_individual_technical_remaining_seconds_${currentSessionId}`);
           } catch (e) {}
           navigate(`/individual-practice/technical/result/${currentSessionId}`);
         } else {
@@ -1268,6 +1405,7 @@ function StartInterview({
           });
           try {
             localStorage.removeItem("active_real_interview_session_id");
+            localStorage.removeItem(`active_real_interview_remaining_seconds_${currentSessionId}`);
           } catch (e) {}
         }
       } catch (err) {
@@ -1276,13 +1414,20 @@ function StartInterview({
     }
   }, [sessionId, token, handleSaveAnswer, stopSpeechRecognition, isIndividualTechnical, isIndividualProject, navigate]);
 
-  // ─── AUTO-SUBMIT WHEN TIME EXPIRES ───
+  // ─── TIME ELAPSED NOTIFICATION (strictly non-submitting) ───
+  const timeUpLoggedRef = useRef(false);
   useEffect(() => {
     if (timerSeconds === 0 && !isCompleted && !isEvaluating && !isLoadingInterview) {
-      logIntegrityEvent("TIME_UP", "Interview duration elapsed — auto-submitting");
-      handleFinalSubmitInterview();
+      if (!timeUpLoggedRef.current) {
+        timeUpLoggedRef.current = true;
+        logIntegrityEvent("TIME_UP", "Interview duration elapsed");
+        toast.error("Interview time has expired. Please submit your interview when ready.", {
+          id: "time-expired-toast",
+          duration: 6000,
+        });
+      }
     }
-  }, [timerSeconds, isCompleted, isEvaluating, isLoadingInterview, logIntegrityEvent, handleFinalSubmitInterview]);
+  }, [timerSeconds, isCompleted, isEvaluating, isLoadingInterview, logIntegrityEvent]);
 
 
   // ─── AI INTERVIEWER SPEECH PLAYBACK LAYER ───
@@ -1635,7 +1780,58 @@ function StartInterview({
 
   // CENTER WORKSPACE: Unified across all 5 rounds (Aptitude, Resume, Tech, Coding, HR)
   const centerWorkspace = (
-    <div className="flex flex-col h-full min-h-0 gap-2.5 overflow-hidden">
+    <div className="flex flex-col h-full min-h-0 gap-2 overflow-hidden">
+      {/* ─── TOP ROUND / SECTION TABS (Direct Round Switcher) ─── */}
+      {!isIndividualTechnical && !isIndividualProject && (
+        <div className="shrink-0 flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-2xl bg-slate-900/90 border border-white/10 shadow-lg backdrop-blur-xl">
+          <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar flex-1 py-0.5">
+            {ROUND_TABS.map((tab) => {
+              const Icon = tab.icon;
+              const isActive = currentSection === tab.id;
+              const progress = sessionProgress[tab.id] || { completed: 0, total: tab.defaultTotal };
+              const isDone = progress.completed >= progress.total && progress.total > 0;
+
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => handleSelectSection(tab.id)}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer shrink-0 ${
+                    isActive
+                      ? "bg-gradient-to-r from-[#FF6B35] to-[#FF8A3D] text-white shadow-md shadow-[#FF6B35]/30 scale-[1.02]"
+                      : isDone
+                      ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 hover:bg-emerald-500/20"
+                      : "bg-white/[0.03] text-slate-300 hover:text-white hover:bg-white/[0.08] border border-white/5"
+                  }`}
+                  title={`Switch to ${tab.name} Round`}
+                >
+                  <Icon className="w-3.5 h-3.5 shrink-0" />
+                  <span className="whitespace-nowrap">{tab.name}</span>
+                  <span
+                    className={`text-[9.5px] font-mono px-1.5 py-0.2 rounded-full font-extrabold ${
+                      isActive
+                        ? "bg-black/30 text-white"
+                        : isDone
+                        ? "bg-emerald-400/20 text-emerald-300"
+                        : "bg-white/10 text-slate-400"
+                    }`}
+                  >
+                    {isDone ? "✓" : `${progress.completed}/${progress.total}`}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="hidden md:flex items-center gap-2 px-2.5 py-1 rounded-xl bg-white/5 border border-white/10 shrink-0">
+            <span className="text-[10px] font-medium text-slate-400">Current:</span>
+            <span className="font-mono text-xs font-black text-[#FF6B35]">
+              {formattedSectionQuestionIndex} / {String(sectionTotal).padStart(2, "0")}
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* ─── Compact AI Avatar Banner (Resume / Project, Technical, HR) ─── */}
       {showAI && (
         <div className="shrink-0 h-[80px] sm:h-[84px] rounded-2xl overflow-hidden border border-white/10">
@@ -1918,130 +2114,350 @@ function StartInterview({
                 })}
               </div>
             ) : isCoding ? (
-              /* ── 2. CODING: Problem Statement + Monaco Sandbox + Output Terminal ── */
-              <div className="flex-1 min-h-0 flex flex-col gap-2 overflow-y-auto pr-1" style={{ scrollbarWidth: "thin" }}>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-2.5">
-                  {/* Left: Problem Statement & Specs */}
-                  <div className="p-3 rounded-xl bg-slate-950/60 border border-white/10 space-y-2 max-h-56 overflow-y-auto text-xs">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-xs font-bold text-white flex items-center gap-1.5">
-                        <Code2 className="w-3.5 h-3.5 text-emerald-400" />
-                        {currentQuestion.title || "Coding Problem"}
-                      </h3>
-                      <span className="text-[9.5px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase">
-                        {currentQuestion.difficulty || "Medium"}
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-white/80 leading-relaxed whitespace-pre-line">
-                      {currentQuestion.problemStatement || currentQuestion.description || currentQuestion.question}
-                    </p>
-                    {currentQuestion.sampleInput && (
-                      <div className="text-[10.5px] text-white/70 bg-white/5 p-2 rounded-lg border border-white/5 font-mono">
-                        <div><span className="text-white/40">Input: </span>{currentQuestion.sampleInput}</div>
-                        <div><span className="text-white/40">Output: </span>{currentQuestion.sampleOutput}</div>
-                      </div>
-                    )}
+              /* ── 2. CODING: LeetCode-Style IDE Workspace with Horizontal Resizer, Collapsible Problem & Top Action Bar ── */
+              <div
+                ref={splitWorkspaceRef}
+                onPointerMove={handleHResizeMove}
+                onPointerUp={handleHResizeEnd}
+                onPointerCancel={handleHResizeEnd}
+                className="flex-1 min-h-0 flex flex-row items-stretch gap-0 overflow-hidden relative select-none"
+                style={{ userSelect: isDraggingH ? "none" : "auto" }}
+              >
+                {/* ── LEFT PANEL: Problem Statement + Collapsible Custom Input (STDIN) ── */}
+                {isProblemCollapsed ? (
+                  <div className="w-12 h-full shrink-0 rounded-2xl bg-slate-950/85 border border-white/10 flex flex-col items-center py-4 gap-4 justify-between shadow-xl mr-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsProblemCollapsed(false)}
+                      className="p-2 rounded-xl bg-white/5 hover:bg-[#FF6B35]/20 text-slate-300 hover:text-[#FF6B35] transition cursor-pointer"
+                      title="Expand Problem Statement"
+                    >
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
+                    <span className="text-[11px] font-bold text-slate-400 tracking-widest uppercase [writing-mode:vertical-rl] rotate-180">
+                      Problem Statement
+                    </span>
+                    <div className="w-2 h-2 rounded-full bg-[#FF6B35]" />
                   </div>
-
-                  {/* Right: Monaco Editor */}
-                  <div className="flex flex-col rounded-xl bg-slate-950/60 border border-white/10 overflow-hidden">
-                    <div className="flex items-center justify-between p-2 border-b border-white/10 bg-slate-950/80">
-                      <span className="text-[11px] font-bold text-white flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                        Judge0 Sandbox
-                      </span>
+                ) : (
+                  <div
+                    className="h-full min-h-0 rounded-2xl bg-slate-950/85 border border-white/10 flex flex-col overflow-hidden shadow-xl"
+                    style={{ width: `calc(${codingLeftWidthPercent}% - 6px)` }}
+                  >
+                    {/* Problem Top Header with Collapse Button */}
+                    <div className="px-4 py-2.5 border-b border-white/10 bg-slate-900/90 flex items-center justify-between shrink-0">
                       <div className="flex items-center gap-2">
-                        <select
-                          value={codingLanguage}
-                          onChange={(e) => {
-                            const newLang = e.target.value;
-                            codingCodeByLangRef.current[codingLanguage] = currentCode;
-                            setCodingLanguage(newLang);
-                            const saved = codingCodeByLangRef.current[newLang];
-                            if (saved && saved.trim() !== "") {
-                              setCurrentCode(saved);
-                            } else {
-                              const newStarter = getStarterCode(currentQuestion, newLang);
-                              setCurrentCode(newStarter);
-                              codingCodeByLangRef.current[newLang] = newStarter;
-                            }
-                          }}
-                          className="bg-slate-800 border border-white/10 text-[11px] text-white rounded-lg px-2 py-0.5 outline-none cursor-pointer"
-                        >
-                          <option value="python">Python (3.8.1)</option>
-                          <option value="cpp">C++ (GCC 9.2.0)</option>
-                          <option value="java">Java (OpenJDK 13)</option>
-                          <option value="javascript">JavaScript (Node 12)</option>
-                        </select>
+                        <Code2 className="w-4 h-4 text-[#FF6B35] shrink-0" />
+                        <span className="text-xs font-bold text-white">Problem Statement</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setIsProblemCollapsed(true)}
+                        className="p-1 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition cursor-pointer"
+                        title="Collapse Problem Panel"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    {/* Problem Content (Independently Scrollable) */}
+                    <div
+                      className="flex-1 min-h-0 p-4 sm:p-5 flex flex-col gap-3.5 overflow-y-auto text-xs"
+                      style={{ scrollbarWidth: "thin", scrollbarColor: "rgba(255,255,255,0.12) transparent" }}
+                    >
+                      {/* Problem Header & Badges */}
+                      <div className="space-y-2 pb-2 border-b border-white/10">
+                        <div className="flex items-start justify-between gap-2">
+                          <h3 className="text-sm sm:text-base font-bold text-white leading-snug">
+                            {currentQuestion.title || "Coding Problem"}
+                          </h3>
+                          <span
+                            className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase shrink-0 border ${
+                              (currentQuestion.difficulty || "Medium").toLowerCase() === "hard"
+                                ? "bg-red-500/10 text-red-400 border-red-500/20"
+                                : (currentQuestion.difficulty || "Medium").toLowerCase() === "medium"
+                                ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                                : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                            }`}
+                          >
+                            {currentQuestion.difficulty || "Medium"}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-2 flex-wrap text-[11px]">
+                          {(currentQuestion.topic || currentQuestion.category) && (
+                            <span className="px-2 py-0.5 rounded-md bg-white/[0.06] border border-white/10 text-slate-300 font-medium">
+                              {currentQuestion.topic || currentQuestion.category}
+                            </span>
+                          )}
+                          {(currentQuestion.marks || currentQuestion.maxMarks) && (
+                            <span className="px-2 py-0.5 rounded-md bg-[#FF6B35]/10 border border-[#FF6B35]/20 text-[#FF6B35] font-semibold">
+                              {currentQuestion.marks || currentQuestion.maxMarks} Marks
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Description */}
+                      <div className="space-y-1">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                          Description
+                        </span>
+                        <p className="text-xs sm:text-[13px] text-slate-200 leading-relaxed whitespace-pre-line">
+                          {currentQuestion.problemStatement || currentQuestion.description || currentQuestion.question}
+                        </p>
+                      </div>
+
+                      {/* Input Format */}
+                      {currentQuestion.inputFormat && (
+                        <div className="space-y-1 pt-1">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                            Input Format
+                          </span>
+                          <div className="text-xs text-slate-300 leading-relaxed whitespace-pre-line bg-white/[0.02] p-2.5 rounded-xl border border-white/5">
+                            {currentQuestion.inputFormat}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Output Format */}
+                      {currentQuestion.outputFormat && (
+                        <div className="space-y-1 pt-1">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                            Output Format
+                          </span>
+                          <div className="text-xs text-slate-300 leading-relaxed whitespace-pre-line bg-white/[0.02] p-2.5 rounded-xl border border-white/5">
+                            {currentQuestion.outputFormat}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Constraints */}
+                      {currentQuestion.constraints && (
+                        <div className="space-y-1 pt-1">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                            Constraints
+                          </span>
+                          <div className="p-2.5 rounded-xl bg-amber-500/[0.04] border border-amber-500/20 text-amber-200/90 font-mono text-[11px] leading-relaxed whitespace-pre-line">
+                            {Array.isArray(currentQuestion.constraints) ? currentQuestion.constraints.join("\n") : String(currentQuestion.constraints)}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Examples / Sample Cases */}
+                      {(() => {
+                        const exList = Array.isArray(currentQuestion.examples) && currentQuestion.examples.length > 0
+                          ? currentQuestion.examples
+                          : (currentQuestion.sampleInput || currentQuestion.sampleOutput)
+                            ? [{ input: currentQuestion.sampleInput, output: currentQuestion.sampleOutput, explanation: currentQuestion.explanation }]
+                            : (currentQuestion.testCases && currentQuestion.testCases.filter((tc) => !tc.isHidden).length > 0)
+                              ? currentQuestion.testCases.filter((tc) => !tc.isHidden).slice(0, 2).map((tc) => ({ input: tc.input, output: tc.expected }))
+                              : [];
+
+                        if (exList.length === 0) return null;
+
+                        return (
+                          <div className="space-y-2.5 pt-1">
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                              Examples
+                            </span>
+                            {exList.map((ex, idx) => (
+                              <div key={idx} className="p-3 rounded-xl bg-slate-900/90 border border-white/10 space-y-2">
+                                <div className="text-[11px] font-bold text-[#FF6B35]">Example {idx + 1}</div>
+                                {ex.input !== undefined && ex.input !== null && (
+                                  <div className="space-y-1">
+                                    <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Input</span>
+                                    <pre className="p-2 rounded-lg bg-black/60 border border-white/5 font-mono text-[11px] text-emerald-300 overflow-x-auto whitespace-pre-wrap">
+                                      {typeof ex.input === "object" ? JSON.stringify(ex.input, null, 2) : String(ex.input)}
+                                    </pre>
+                                  </div>
+                                )}
+                                {ex.output !== undefined && ex.output !== null && (
+                                  <div className="space-y-1">
+                                    <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Output</span>
+                                    <pre className="p-2 rounded-lg bg-black/60 border border-white/5 font-mono text-[11px] text-sky-300 overflow-x-auto whitespace-pre-wrap">
+                                      {typeof ex.output === "object" ? JSON.stringify(ex.output, null, 2) : String(ex.output)}
+                                    </pre>
+                                  </div>
+                                )}
+                                {ex.explanation && (
+                                  <div className="text-[11px] text-slate-400 pt-0.5">
+                                    <span className="text-slate-300 font-medium">Explanation: </span>{ex.explanation}
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })()}
+
+                      {/* ── CUSTOM INPUT (STDIN) SECTION MOVED TO LEFT PANEL ── */}
+                      <div className="rounded-xl border border-white/10 bg-slate-900/80 overflow-hidden shrink-0 mt-2">
                         <button
                           type="button"
-                          onClick={() => {
-                            const resetCode = getStarterCode(currentQuestion, codingLanguage);
-                            setCurrentCode(resetCode);
-                            codingCodeByLangRef.current[codingLanguage] = resetCode;
-                          }}
-                          className="text-[10px] text-white/50 hover:text-white px-1.5 py-0.5 rounded bg-white/5 hover:bg-white/10 cursor-pointer"
+                          onClick={() => setIsCustomInputOpen((v) => !v)}
+                          className="w-full px-3 py-2 flex items-center justify-between text-left cursor-pointer hover:bg-white/5 transition border-b border-white/5"
                         >
-                          Reset
+                          <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                            <Terminal className="w-3.5 h-3.5 text-[#FF6B35]" />
+                            Custom Input (stdin)
+                          </span>
+                          <div className="flex items-center gap-1.5 text-slate-400">
+                            <span className="text-[9.5px] font-medium opacity-70">{isCustomInputOpen ? "Hide" : "Show"}</span>
+                            {isCustomInputOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                          </div>
                         </button>
+
+                        {isCustomInputOpen && (
+                          <div className="p-3 space-y-2 bg-slate-950/90">
+                            <textarea
+                              value={customInput}
+                              onChange={(e) => setCustomInput(e.target.value)}
+                              placeholder={(currentQuestion.testCases?.[0]?.input || currentQuestion.sampleInput || "3 5").replace(/\b[a-zA-Z_]\w*\s*=\s*/g, "").trim()}
+                              rows={2}
+                              className="w-full bg-slate-900 border border-white/10 rounded-lg p-2 text-xs font-mono text-white placeholder:text-slate-500 outline-none focus:border-[#FF6B35]/70 resize-none transition"
+                            />
+                            <div className="flex items-center justify-between pt-0.5">
+                              <span className="text-[10px] text-slate-400">Test with custom arguments</span>
+                              <button
+                                type="button"
+                                onClick={handleRunCoding}
+                                disabled={isRunningCode || isSubmittingCode}
+                                className="px-3 py-1 rounded-lg text-xs font-bold text-white flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 transition shadow-sm cursor-pointer disabled:opacity-50"
+                              >
+                                {isRunningCode ? <Loader2 className="w-3 h-3 animate-spin" /> : <Play className="w-3 h-3 fill-current" />}
+                                Run Code
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
-                    <div className="h-44">
-                      <MonacoCodeEditor
-                        value={currentCode}
-                        onChange={(val) => setCurrentCode(val || "")}
-                        language={codingLanguage}
-                        theme="dark"
-                      />
-                    </div>
                   </div>
-                </div>
+                )}
 
-                {/* Custom Input & Run/Submit */}
-                <div className="p-2.5 rounded-xl bg-slate-950/60 border border-white/10 space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold text-white/60 uppercase">Custom Input (Stdin)</span>
+                {/* ── DRAGGABLE VERTICAL DIVIDER BETWEEN LEFT & RIGHT ── */}
+                {!isProblemCollapsed && (
+                  <div
+                    onPointerDown={handleHResizeStart}
+                    className="w-2.5 shrink-0 flex items-center justify-center cursor-col-resize group touch-none select-none hover:bg-[#FF6B35]/20 transition-colors mx-0.5"
+                    style={{
+                      background: isDraggingH ? "#FF6B35" : "transparent",
+                    }}
+                    title="Drag horizontally to resize Problem ↔ Code panels"
+                  >
+                    <div
+                      className="w-[3px] h-10 rounded-full transition-colors group-hover:bg-[#FF6B35]"
+                      style={{ background: isDraggingH ? "#fff" : "rgba(255, 255, 255, 0.2)" }}
+                    />
                   </div>
-                  <textarea
-                    value={customInput}
-                    onChange={(e) => setCustomInput(e.target.value)}
-                    placeholder={(currentQuestion.testCases?.[0]?.input || currentQuestion.sampleInput || "3 5").replace(/\b[a-zA-Z_]\w*\s*=\s*/g, "").trim()}
-                    rows={1}
-                    className="w-full bg-slate-900 border border-white/10 rounded-lg p-1.5 text-xs font-mono text-white placeholder:text-white/30 outline-none focus:border-[#FF6B35]/50 resize-none"
-                  />
-                  <div className="flex items-center justify-between pt-1">
-                    <div className="flex items-center gap-2">
+                )}
+
+                {/* ── RIGHT PANEL: Monaco Editor + Draggable Output Terminal ── */}
+                <div
+                  className="h-full min-h-0 rounded-2xl bg-slate-950/85 border border-white/10 flex flex-col overflow-hidden shadow-xl"
+                  style={{
+                    width: isProblemCollapsed ? "calc(100% - 56px)" : `calc(${100 - codingLeftWidthPercent}% - 6px)`,
+                    flex: 1,
+                  }}
+                >
+                  {/* Editor Toolbar: Language Selector + Reset + Run Code + Submit Solution (Top Right LeetCode-style) */}
+                  <div className="flex flex-wrap items-center justify-between px-3.5 py-2 border-b border-white/10 bg-slate-900/90 shrink-0 gap-2">
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                        <Code2 className="w-4 h-4 text-[#FF6B35]" />
+                        Code Editor
+                      </span>
+                      <span className="hidden sm:inline-flex items-center gap-1.5 text-[10px] text-emerald-400 font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                        Judge0 Sandbox
+                      </span>
+                    </div>
+
+                    {/* Right Controls: Language Selector + Reset + Run Code + Submit Solution */}
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <select
+                        value={codingLanguage}
+                        onChange={(e) => {
+                          const newLang = e.target.value;
+                          codingCodeByLangRef.current[codingLanguage] = currentCode;
+                          setCodingLanguage(newLang);
+                          const saved = codingCodeByLangRef.current[newLang];
+                          if (saved && saved.trim() !== "") {
+                            setCurrentCode(saved);
+                          } else {
+                            const newStarter = getStarterCode(currentQuestion, newLang);
+                            setCurrentCode(newStarter);
+                            codingCodeByLangRef.current[newLang] = newStarter;
+                          }
+                        }}
+                        className="bg-slate-800 hover:bg-slate-750 border border-white/15 text-xs text-white font-medium rounded-lg px-2.5 py-1.5 outline-none cursor-pointer focus:border-[#FF6B35] transition shadow-sm"
+                      >
+                        <option value="python">Python 3.8.1 ▼</option>
+                        <option value="cpp">C++ GCC 9.2.0 ▼</option>
+                        <option value="java">Java OpenJDK 13 ▼</option>
+                        <option value="javascript">JavaScript Node 12 ▼</option>
+                      </select>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const resetCode = getStarterCode(currentQuestion, codingLanguage);
+                          setCurrentCode(resetCode);
+                          codingCodeByLangRef.current[codingLanguage] = resetCode;
+                        }}
+                        className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-white px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 cursor-pointer transition"
+                        title="Reset code template"
+                      >
+                        <RotateCcw className="w-3 h-3" />
+                        <span>Reset</span>
+                      </button>
+
                       <button
                         type="button"
                         onClick={handleRunCoding}
                         disabled={isRunningCode || isSubmittingCode}
-                        className="px-3 py-1.5 rounded-lg text-xs font-bold text-white flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-                        style={{ background: "#059669" }}
+                        className="px-3.5 py-1.5 rounded-xl text-xs font-bold text-white flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 transition-all shadow-md shadow-emerald-900/30 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        {isRunningCode ? <Loader2 className="w-3 h-3 animate-spin" /> : <Play className="w-3 h-3" />}
+                        {isRunningCode ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5 fill-current" />}
                         Run Code
                       </button>
+
                       <button
                         type="button"
                         onClick={handleSubmitCoding}
                         disabled={isRunningCode || isSubmittingCode}
-                        className="px-3 py-1.5 rounded-lg text-xs font-bold text-white flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-                        style={{ background: "linear-gradient(135deg, #FF6B35, #FF8A3D)" }}
+                        className="px-3.5 py-1.5 rounded-xl text-xs font-bold text-white flex items-center gap-1.5 bg-gradient-to-r from-[#FF6B35] to-[#FF8A3D] hover:brightness-110 transition-all shadow-md shadow-[#FF6B35]/25 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        {isSubmittingCode ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
+                        {isSubmittingCode ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
                         Submit Solution
                       </button>
-                    </div>
-                    {codingSubmissionResult && (
-                      <span className={`font-bold px-2 py-0.5 rounded text-xs border ${codingSubmissionResult.score === 100 ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/30" : "bg-amber-500/20 text-amber-300 border-amber-500/30"}`}>
-                        {codingSubmissionResult.passed}/{codingSubmissionResult.total} ({codingSubmissionResult.score}%)
-                      </span>
-                    )}
-                  </div>
-                </div>
 
-                {/* Compiler Output */}
-                <div className="rounded-xl overflow-hidden border border-white/10">
+                      {codingSubmissionResult && (
+                        <div className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold border ${
+                          codingSubmissionResult.score === 100
+                            ? "bg-emerald-500/15 text-emerald-300 border-emerald-500/30"
+                            : "bg-amber-500/15 text-amber-300 border-amber-500/30"
+                        }`}>
+                          <span>Score:</span>
+                          <span className="font-mono">{codingSubmissionResult.passed}/{codingSubmissionResult.total}</span>
+                          <span className="text-[10px] opacity-75">({codingSubmissionResult.score}%)</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Monaco Code Editor Canvas (Takes flex-1 of remaining space) */}
+                  <div className="flex-1 min-h-[140px] overflow-hidden">
+                    <MonacoCodeEditor
+                      value={currentCode}
+                      onChange={(val) => setCurrentCode(val || "")}
+                      language={codingLanguage}
+                      theme="dark"
+                    />
+                  </div>
+
+                  {/* Draggable Output Terminal (Testcase | Test Result | Submissions) */}
                   <OutputPanel
                     activeTab={outputTab}
                     setActiveTab={setOutputTab}
@@ -2126,16 +2542,18 @@ function StartInterview({
 
           {/* ─── Bottom Anchored Action Bar: Listen Again + Progress + Prev/Skip/Next ─── */}
           <div className="shrink-0 pt-2 border-t border-white/10 space-y-2">
-            {/* Listen Again banner */}
-            <button
-              type="button"
-              onClick={() => speakCurrentQuestion(currentQuestion?.aiSpeechText || currentQuestion?.question, currentQuestion?.section, currentQuestion?.topic)}
-              disabled={isPaused || !isSpeakerOn}
-              className="w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-[#FF6B35]/30 bg-[#FF6B35]/5 hover:bg-[#FF6B35]/10 text-[#FF6B35] font-bold text-xs cursor-pointer transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-            >
-              <Volume2 className="w-3.5 h-3.5 text-[#FF6B35]" />
-              <span>Listen Again</span>
-            </button>
+            {/* Listen Again banner (Non-Coding Rounds) */}
+            {!isCoding && (
+              <button
+                type="button"
+                onClick={() => speakCurrentQuestion(currentQuestion?.aiSpeechText || currentQuestion?.question, currentQuestion?.section, currentQuestion?.topic)}
+                disabled={isPaused || !isSpeakerOn}
+                className="w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-[#FF6B35]/30 bg-[#FF6B35]/5 hover:bg-[#FF6B35]/10 text-[#FF6B35] font-bold text-xs cursor-pointer transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                <Volume2 className="w-3.5 h-3.5 text-[#FF6B35]" />
+                <span>Listen Again</span>
+              </button>
+            )}
 
             {/* Progress indicator + Prev / Skip / Next buttons */}
             <div className="flex items-center justify-between gap-3">

@@ -117,7 +117,7 @@ export const createInterviewSession = async (req, res) => {
       return res.status(401).json({ success: false, message: "Unauthorized: User ID missing" });
     }
 
-    const { interviewType = "actual", targetRound = "all", durationMinutes = 150 } = req.body || {};
+    const { interviewType = "actual", targetRound = "all", durationMinutes = 120 } = req.body || {};
 
     // Check if student ALREADY has an active IN_PROGRESS session of this interviewType
     const existingActive = await Interview.findOne({
@@ -356,7 +356,7 @@ export const getInterviewSession = async (req, res) => {
         interviewId: sessionId,
         interviewType: "actual",
         targetRound: "all",
-        durationMinutes: 150,
+        durationMinutes: 120,
         startedAt: new Date(),
         status: "IN_PROGRESS",
         generatedQuestions: realInterviewQuestions,
@@ -388,7 +388,7 @@ export const getInterviewSession = async (req, res) => {
       interviewId: session ? session._id.toString() : sessionId,
       interviewType: session ? (session.interviewType || "actual") : "actual",
       targetRound: session ? (session.targetRound || "all") : "all",
-      durationMinutes: session ? (session.durationMinutes || 150) : 150,
+      durationMinutes: session ? (session.durationMinutes || 120) : 120,
       startedAt: session ? (session.startedAt || session.createdAt) : new Date(),
       status: session ? (session.status || "IN_PROGRESS") : "IN_PROGRESS",
       candidateProfile: session ? (session.candidateProfile || {}) : {},

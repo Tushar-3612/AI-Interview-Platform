@@ -27,7 +27,7 @@ const interviewSchema = new mongoose.Schema(
     },
     durationMinutes: {
       type: Number,
-      default: 150,
+      default: 120,
     },
     companyId: { type: String, default: "" },
     status: {
