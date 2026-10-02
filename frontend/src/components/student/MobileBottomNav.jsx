@@ -1,5 +1,4 @@
 import { Link, useLocation } from "react-router-dom";
-import { motion } from "framer-motion";
 import { Home, Code2, UserCheck, Menu } from "lucide-react";
 import { useTheme } from "../../hooks/useTheme";
 
@@ -127,10 +126,8 @@ export default function MobileBottomNav({ onOpenMobileDrawer = () => {} }) {
                   }}
                 />
                 {active && (
-                  <motion.span
-                    layoutId="mobileActiveDot"
-                    className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-[#FF6B35]"
-                    transition={{ type: "spring", stiffness: 350, damping: 28 }}
+                  <span
+                    className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[#FF6B35]"
                   />
                 )}
               </div>

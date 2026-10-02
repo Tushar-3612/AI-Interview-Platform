@@ -19,17 +19,17 @@ import toast from "react-hot-toast";
 // Helper to get breadcrumb subtitle based on pathname
 const getBreadcrumbTitle = (pathname) => {
   if (pathname === "/dashboard" || pathname === "/") return "Dashboard";
-  if (pathname.startsWith("/tests")) return "My Tests";
-  if (pathname.startsWith("/aptitude")) return "Aptitude";
+  if (pathname.startsWith("/aptitude")) return "Aptitude Round";
+  if (pathname.startsWith("/interview-practice")) return "Question Tracker";
   if (pathname.startsWith("/coding-round")) return "Coding Round";
-  if (pathname.startsWith("/coding-assessment") || pathname.startsWith("/coding-assessments")) return "Coding Assessment";
-  if (pathname.startsWith("/interview-practice")) return "Interview Practice";
-  if (pathname.startsWith("/mock-interview") || pathname.startsWith("/company-mock")) return "Mock Interview";
-  if (pathname.startsWith("/placement/leaderboard")) return "Leaderboard";
-  if (pathname.startsWith("/placement-dashboard") || pathname.startsWith("/placement")) return "Placement";
+  if (pathname.startsWith("/coding-assessments")) return "Coding Assessment";
+  if (pathname.startsWith("/mock-interview")) return "Mock Interview";
+  if (pathname.startsWith("/tests")) return "My Tests";
+  if (pathname.startsWith("/placement-dashboard")) return "Placement";
   if (pathname.startsWith("/profile")) return "Profile";
-  if (pathname.startsWith("/about")) return "About";
-  if (pathname.startsWith("/contact")) return "Contact";
+  if (pathname.startsWith("/about")) return "Help Center";
+  if (pathname.startsWith("/contact")) return "Feedback";
+  if (pathname.startsWith("/placement/leaderboard")) return "Leaderboard";
   return "Dashboard";
 };
 

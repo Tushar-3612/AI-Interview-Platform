@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Outlet, Navigate, useLocation } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import Navbar from "../components/student/Navbar";
 import StudentSidebar from "../components/student/StudentSidebar";
@@ -17,11 +17,6 @@ function StudentLayout() {
   const { profile, isLoading, updateProfile, saveProfile, refetchProfile, addSkill, removeSkill, getProfileForInterview } =
     useStudentProfile();
   const [interviewModalOpen, setInterviewModalOpen] = useState(false);
-
-  // Smooth scroll to top on nav route switch
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [location.pathname]);
 
   // Desktop sidebar collapse state with localStorage persistence
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
@@ -107,30 +102,26 @@ function StudentLayout() {
           onStartInterview={() => setInterviewModalOpen(true)}
         />
 
-        <AnimatePresence mode="wait">
-          <motion.main
-            key={location.pathname}
-            className="flex-1 pb-20 lg:pb-8"
-            initial={{ opacity: 0, y: 14, filter: "blur(3px)" }}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            exit={{ opacity: 0, y: -10, filter: "blur(3px)" }}
-            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <Outlet
-              context={{
-                profile,
-                isLoading,
-                updateProfile,
-                saveProfile,
-                refetchProfile,
-                addSkill,
-                removeSkill,
-                getProfileForInterview,
-                openInterviewModal: () => setInterviewModalOpen(true),
-              }}
-            />
-          </motion.main>
-        </AnimatePresence>
+        <motion.main
+          className="flex-1 pb-20 lg:pb-8"
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35 }}
+        >
+      <Outlet
+        context={{
+          profile,
+          isLoading,
+          updateProfile,
+          saveProfile,
+          refetchProfile,
+          addSkill,
+          removeSkill,
+          getProfileForInterview,
+          openInterviewModal: () => setInterviewModalOpen(true),
+        }}
+      />
+        </motion.main>
       </div>
 
       {/* Mobile Bottom Quick Navigation */}

@@ -211,7 +211,7 @@ export const login = async (req, res) => {
 /* ================================
    FORGOT PASSWORD (OTP Generation)
    ================================ */
-import { sendReportEmail } from "../utils/emailSender.js";
+import { sendReportEmail, maskEmail } from "../utils/emailSender.js";
 import { getForgotPasswordOtpEmail } from "../services/emailTemplates.js";
 
 export const forgotPassword = async (req, res) => {
@@ -242,6 +242,7 @@ export const forgotPassword = async (req, res) => {
 
     // Prepare and send email
     const emailData = getForgotPasswordOtpEmail(user.name, otp);
+    console.log(`[Auth] Dispatching password reset OTP email to ${maskEmail(user.email)}`);
     await sendReportEmail(
       user.email,
       emailData.subject,
@@ -251,7 +252,7 @@ export const forgotPassword = async (req, res) => {
 
     res.status(200).json({ message: "OTP sent to your registered email" });
   } catch (error) {
-    console.error("Forgot Password Error:", error.message);
+    console.error(`[Auth] Forgot Password Error for ${maskEmail(req.body?.email)}:`, error.message);
     res.status(500).json({ message: "Failed to send OTP. Please try again." });
   }
 };

@@ -335,6 +335,27 @@ function CodingRound() {
     }
   }, [fullscreen, enterFullscreen, exitFullscreen]);
 
+  const handleExitTest = useCallback(async () => {
+    if (getFullscreenElement()) {
+      try {
+        await exitFullscreenAPI();
+      } catch {}
+    }
+    navigate(companyId ? `/interview-practice/${companyId}` : "/coding-round");
+  }, [companyId, navigate]);
+
+  // ─── Try to enter browser fullscreen on initial mount ───────────────────
+  useEffect(() => {
+    const el = fullscreenContainerRef.current || document.documentElement;
+    if (!getFullscreenElement() && el) {
+      if (el.requestFullscreen) {
+        el.requestFullscreen().catch(() => {});
+      } else if (el.webkitRequestFullscreen) {
+        el.webkitRequestFullscreen().catch(() => {});
+      }
+    }
+  }, []);
+
   // ─── Sync fullscreen state from browser API ─────────────────────────────
   useEffect(() => {
     const onFsChange = () => {
@@ -736,86 +757,82 @@ function CodingRound() {
   return (
     <div
       ref={fullscreenContainerRef}
-      className={
-        fullscreen
-          ? useFallback
-            ? "fixed inset-0 z-[999999] flex flex-col overflow-hidden"
-            : "flex flex-col h-screen w-screen overflow-hidden"
-          : "flex flex-col h-[calc(100vh-64px)]"
-      }
+      className="fixed inset-0 z-50 flex flex-col h-screen w-screen overflow-hidden select-none"
       style={{
         background: "var(--bg-primary)",
         minHeight: 0,
       }}
     >
-      {/* ── Top bar (hidden in fullscreen) ── */}
-      {!fullscreen && (
-        <div
-          className="flex items-center justify-between gap-3 px-4 py-2.5 border-b shrink-0 flex-wrap"
-          style={{ borderColor: "var(--border)", background: "var(--card-bg)" }}
-        >
-          <div className="flex items-center gap-2.5 flex-wrap">
-            <button
-              type="button"
-              onClick={() => navigate(companyId ? `/interview-practice/${companyId}` : "/coding-round")}
-              className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold cursor-pointer hover:opacity-80 transition px-2.5 py-1.5 rounded-xl border"
-              style={{ borderColor: "var(--border)", color: "var(--text-secondary)", background: "var(--bg-secondary)" }}
+      {/* ── Top Control & Status Bar (Always Visible) ── */}
+      <div
+        className="flex items-center justify-between gap-3 px-4 py-2.5 border-b shrink-0 flex-wrap"
+        style={{ borderColor: "var(--border)", background: "var(--card-bg)" }}
+      >
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <button
+            type="button"
+            onClick={handleExitTest}
+            className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold cursor-pointer hover:opacity-80 transition px-2.5 py-1.5 rounded-xl border"
+            style={{ borderColor: "var(--border)", color: "var(--text-secondary)", background: "var(--bg-secondary)" }}
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Exit Test
+          </button>
+
+          {selectedDifficulty && (
+            <span
+              className="text-xs font-bold px-2.5 py-1 rounded-xl border bg-[var(--bg-secondary)]"
+              style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
             >
-              <ArrowLeft className="w-4 h-4" />
-              Exit Test
-            </button>
-
-            {selectedDifficulty && (
-              <span
-                className="text-xs font-bold px-2.5 py-1 rounded-xl border bg-[var(--bg-secondary)]"
-                style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
-              >
-                {selectedDifficulty} Track
-              </span>
-            )}
-          </div>
-
-          <div className="flex items-center gap-3 text-xs" style={{ color: "var(--text-muted)" }}>
-            {/* Solved Progress Counter */}
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold">
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>{solved.size} of {questions.length} Solved</span>
-            </div>
-
-            <span className="flex items-center gap-1 font-mono font-medium">
-              <Timer className="w-3.5 h-3.5" />
-              {elapsed} min
+              {selectedDifficulty} Track
             </span>
-
-            {draftState === "saved" && (
-              <span className="flex items-center gap-1 text-green-500 font-semibold">
-                <CheckCircle2 className="w-3.5 h-3.5" /> Saved
-              </span>
-            )}
-            {draftState === "dirty" && (
-              <span className="flex items-center gap-1" style={{ color: "var(--text-muted)" }}>
-                <Save className="w-3.5 h-3.5" /> Saving…
-              </span>
-            )}
-            <button
-              type="button"
-              onClick={copyLink}
-              className="p-1.5 rounded-lg cursor-pointer hover:opacity-80"
-              title="Copy problem link"
-            >
-              {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" style={{ color: "var(--text-muted)" }} />}
-            </button>
-            <button
-              type="button"
-              onClick={toggleFullscreen}
-              className="p-1.5 rounded-lg cursor-pointer hover:opacity-80"
-              title="Fullscreen"
-            >
-              <Maximize2 className="w-4 h-4" style={{ color: "var(--text-muted)" }} />
-            </button>
-          </div>
+          )}
         </div>
-      )}
+
+        <div className="flex items-center gap-3 text-xs" style={{ color: "var(--text-muted)" }}>
+          {/* Solved Progress Counter */}
+          <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold">
+            <CheckCircle2 className="w-3.5 h-3.5" />
+            <span>{solved.size} of {questions.length} Solved</span>
+          </div>
+
+          <span className="flex items-center gap-1 font-mono font-medium">
+            <Timer className="w-3.5 h-3.5" />
+            {elapsed} min
+          </span>
+
+          {draftState === "saved" && (
+            <span className="flex items-center gap-1 text-green-500 font-semibold">
+              <CheckCircle2 className="w-3.5 h-3.5" /> Saved
+            </span>
+          )}
+          {draftState === "dirty" && (
+            <span className="flex items-center gap-1" style={{ color: "var(--text-muted)" }}>
+              <Save className="w-3.5 h-3.5" /> Saving…
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={copyLink}
+            className="p-1.5 rounded-lg cursor-pointer hover:opacity-80 transition"
+            title="Copy problem link"
+          >
+            {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" style={{ color: "var(--text-muted)" }} />}
+          </button>
+          <button
+            type="button"
+            onClick={toggleFullscreen}
+            className="p-1.5 rounded-lg cursor-pointer hover:opacity-80 transition"
+            title={fullscreen ? "Exit Fullscreen" : "Fullscreen"}
+          >
+            {fullscreen ? (
+              <Minimize2 className="w-4 h-4" style={{ color: "var(--text-muted)" }} />
+            ) : (
+              <Maximize2 className="w-4 h-4" style={{ color: "var(--text-muted)" }} />
+            )}
+          </button>
+        </div>
+      </div>
 
 
       {/* ── Main split layout ── */}

@@ -8,59 +8,63 @@ import {
   Code2,
   Play,
   History,
+  Timer,
   ArrowRight,
   CheckCircle2,
-  ShieldCheck,
-  Sparkles,
   Terminal,
   Cpu,
   Layers,
   Flame,
   Zap,
   Award,
+  Clock,
   Filter,
 } from "lucide-react";
 
 const DIFFICULTY_CONFIG = [
   {
     id: "Easy",
-    name: "Easy",
+    name: "Easy Track",
     color: "#10B981",
-    gradient: "linear-gradient(135deg, #10B981 0%, #059669 100%)",
-    bg: "rgba(16, 185, 129, 0.12)",
-    border: "rgba(16, 185, 129, 0.35)",
-    glow: "rgba(16, 185, 129, 0.4)",
+    bg: "rgba(16, 185, 129, 0.08)",
+    border: "rgba(16, 185, 129, 0.25)",
     icon: Zap,
+    duration: "30-45 mins",
+    target: "Beginner & Freshers",
+    description: "Core algorithms, strings, basic math, and linear scans.",
   },
   {
     id: "Medium",
-    name: "Medium",
+    name: "Medium Track",
     color: "#F59E0B",
-    gradient: "linear-gradient(135deg, #F59E0B 0%, #EA580C 55%, #FF6B35 100%)",
-    bg: "rgba(245, 158, 11, 0.12)",
-    border: "rgba(245, 158, 11, 0.35)",
-    glow: "rgba(245, 158, 11, 0.4)",
+    bg: "rgba(245, 158, 11, 0.08)",
+    border: "rgba(245, 158, 11, 0.25)",
     icon: Flame,
+    duration: "45-60 mins",
+    target: "Standard OAs",
+    description: "Two pointers, binary search, trees, and hash maps.",
   },
   {
     id: "Hard",
-    name: "Hard",
+    name: "Hard Track",
     color: "#EF4444",
-    gradient: "linear-gradient(135deg, #EF4444 0%, #DC2626 50%, #991B1B 100%)",
-    bg: "rgba(239, 68, 68, 0.12)",
-    border: "rgba(239, 68, 68, 0.35)",
-    glow: "rgba(239, 68, 68, 0.4)",
+    bg: "rgba(239, 68, 68, 0.08)",
+    border: "rgba(239, 68, 68, 0.25)",
     icon: Cpu,
+    duration: "60-90 mins",
+    target: "Tier-1 & High CTC",
+    description: "Dynamic programming, graph algorithms, and edge cases.",
   },
   {
     id: "All",
-    name: "Mixed",
+    name: "Mixed Track",
     color: "#6366F1",
-    gradient: "linear-gradient(135deg, #6366F1 0%, #8B5CF6 60%, #A855F7 100%)",
-    bg: "rgba(99, 102, 241, 0.12)",
-    border: "rgba(99, 102, 241, 0.35)",
-    glow: "rgba(99, 102, 241, 0.4)",
+    bg: "rgba(99, 102, 241, 0.08)",
+    border: "rgba(99, 102, 241, 0.25)",
     icon: Layers,
+    duration: "60 mins",
+    target: "Full OA Simulation",
+    description: "Balanced multi-tier test replicating full screening rounds.",
   },
 ];
 
@@ -85,7 +89,7 @@ export default function CodingRoundSelect() {
 
   const [selectedDifficulty, setSelectedDifficulty] = useState("Medium");
   const [selectedLanguage, setSelectedLanguage] = useState("python");
-  const [questionLimit, setQuestionLimit] = useState("5");
+  const [questionLimit, setQuestionLimit] = useState("all");
   const [stats, setStats] = useState({ total: 0, byDifficulty: [] });
   const [loadingStats, setLoadingStats] = useState(true);
   const [recentSubmissions, setRecentSubmissions] = useState([]);
@@ -148,7 +152,16 @@ export default function CodingRoundSelect() {
     const params = new URLSearchParams();
     params.set("difficulty", selectedDifficulty);
     if (selectedLanguage) params.set("lang", selectedLanguage);
-    params.set("limit", questionLimit || "5");
+    if (questionLimit && questionLimit !== "all") params.set("limit", questionLimit);
+
+    try {
+      const el = document.documentElement;
+      if (el.requestFullscreen) {
+        el.requestFullscreen().catch(() => {});
+      } else if (el.webkitRequestFullscreen) {
+        el.webkitRequestFullscreen().catch(() => {});
+      }
+    } catch {}
 
     toast.success(`Starting ${activeTrack.name}...`);
     navigate(`/coding-round/test?${params.toString()}`);
@@ -177,25 +190,10 @@ export default function CodingRoundSelect() {
                 <h1 className="text-xl sm:text-2xl font-black tracking-tight" style={{ color: "var(--text-primary)" }}>
                   Coding Round Assessment
                 </h1>
-                <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-cyan-500/15 text-cyan-400 border border-cyan-500/30 tracking-wider">
-                  Automated Judge0 IDE
-                </span>
               </div>
               <p className="text-xs sm:text-sm text-[var(--text-secondary)] mt-1 max-w-2xl leading-relaxed">
                 Select your desired difficulty level to begin. Write solutions in Python, C++, Java, C, or JavaScript with instant testcase evaluation, runtime profiling, and error diagnostics.
               </p>
-            </div>
-          </div>
-
-          {/* Quick Metrics Badges */}
-          <div className="flex items-center gap-2 flex-wrap self-start md:self-auto">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border)] text-xs font-semibold text-[var(--text-secondary)]">
-              <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-              <span>{loadingStats ? "Counting..." : `${countMap.All} Total Questions`}</span>
-            </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border)] text-xs font-semibold text-[var(--text-secondary)]">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Hidden & Public Testcases</span>
             </div>
           </div>
         </div>
@@ -212,7 +210,7 @@ export default function CodingRoundSelect() {
             </span>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {DIFFICULTY_CONFIG.map((diff) => {
               const Icon = diff.icon;
               const isSelected = selectedDifficulty === diff.id;
@@ -222,52 +220,73 @@ export default function CodingRoundSelect() {
                 <motion.div
                   key={diff.id}
                   whileHover={{ y: -2 }}
-                  whileTap={{ scale: 0.98 }}
+                  whileTap={{ scale: 0.99 }}
                   onClick={() => setSelectedDifficulty(diff.id)}
-                  className={`relative p-3.5 sm:p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-3 overflow-hidden ${
+                  className={`relative p-5 rounded-2xl transition-all cursor-pointer flex flex-col justify-between overflow-hidden ${
                     isSelected
-                      ? "ring-2 shadow-md"
-                      : "hover:border-[var(--border)] bg-[var(--bg-secondary)]/50 hover:bg-[var(--bg-secondary)]/80"
+                      ? "border-2 shadow-sm"
+                      : "border hover:border-[var(--text-muted)]/40 bg-[var(--card-bg)]"
                   }`}
                   style={{
                     borderColor: isSelected ? diff.color : "var(--border)",
-                    background: isSelected ? `color-mix(in srgb, ${diff.color} 10%, var(--card-bg))` : undefined,
-                    boxShadow: isSelected ? `0 6px 18px -3px ${diff.glow}` : undefined,
+                    background: isSelected
+                      ? `color-mix(in srgb, ${diff.color} 4%, var(--card-bg))`
+                      : "var(--card-bg)",
                   }}
                 >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div
-                      className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border"
-                      style={{
-                        background: diff.bg,
-                        borderColor: diff.border,
-                        color: diff.color,
-                      }}
-                    >
-                      <Icon className="w-4 h-4" />
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div
+                        className="w-10 h-10 rounded-xl flex items-center justify-center border"
+                        style={{
+                          background: diff.bg,
+                          borderColor: diff.border,
+                          color: diff.color,
+                        }}
+                      >
+                        <Icon className="w-5 h-5" />
+                      </div>
+                      <div className="text-right">
+                        <span className="text-xs font-bold font-mono px-2 py-0.5 rounded-md border"
+                          style={{
+                            color: diff.color,
+                            borderColor: diff.border,
+                            background: diff.bg,
+                          }}
+                        >
+                          {loadingStats ? "..." : `${questionCount} Questions`}
+                        </span>
+                      </div>
                     </div>
-                    <div className="min-w-0">
-                      <h3 className="text-sm font-extrabold text-[var(--text-primary)] truncate">
+
+                    <div>
+                      <h3 className="text-base font-extrabold text-[var(--text-primary)]">
                         {diff.name}
                       </h3>
-                      <p className="text-[11px] font-mono text-[var(--text-muted)] truncate">
-                        {loadingStats ? "..." : `${questionCount} Questions`}
+                      <p className="text-xs text-[var(--text-secondary)] mt-1 leading-relaxed">
+                        {diff.description}
                       </p>
                     </div>
                   </div>
 
-                  <div className="shrink-0">
-                    <div
-                      className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${
-                        isSelected ? "scale-100" : "scale-90 opacity-30"
-                      }`}
+                  <div
+                    className="pt-3 border-t mt-3 flex items-center justify-between text-[11px]"
+                    style={{ borderColor: "var(--border)" }}
+                  >
+                    <span className="flex items-center gap-1 text-[var(--text-muted)] font-medium">
+                      <Timer className="w-3.5 h-3.5" />
+                      {diff.duration}
+                    </span>
+                    <span
+                      className="font-semibold px-2 py-0.5 rounded-md text-[10px]"
                       style={{
-                        borderColor: isSelected ? diff.color : "var(--border)",
-                        background: isSelected ? diff.color : "transparent",
+                        background: diff.bg,
+                        color: diff.color,
+                        border: `1px solid ${diff.border}`,
                       }}
                     >
-                      {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-                    </div>
+                      {diff.target}
+                    </span>
                   </div>
                 </motion.div>
               );
@@ -333,13 +352,9 @@ export default function CodingRoundSelect() {
           <div className="space-y-0.5">
             <div className="flex items-center gap-2">
               <span className="text-xs text-[var(--text-muted)]">Selected Track:</span>
-              <motion.span
-                animate={{ color: activeTrack.color }}
-                transition={{ duration: 0.8, ease: "easeInOut" }}
-                className="text-sm font-extrabold"
-              >
+              <span className="text-sm font-extrabold" style={{ color: activeTrack.color }}>
                 {activeTrack.name}
-              </motion.span>
+              </span>
               <span className="text-[11px] text-[var(--text-secondary)]">
                 ({countMap[selectedDifficulty] || 0} questions available)
               </span>
@@ -350,63 +365,18 @@ export default function CodingRoundSelect() {
           </div>
 
           <motion.button
-            whileHover={{ scale: 1.025, translateY: -1 }}
+            whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={handleStartTest}
-            animate={{
-              boxShadow: `0 8px 24px -2px ${activeTrack.glow}, 0 2px 8px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.25)`,
+            className="flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-2xl text-sm font-black text-white shadow-lg cursor-pointer transition-all shrink-0"
+            style={{
+              background: `linear-gradient(135deg, ${activeTrack.color} 0%, #06B6D4 100%)`,
+              boxShadow: `0 8px 25px -4px ${activeTrack.glow}`,
             }}
-            transition={{
-              boxShadow: { duration: 0.8, ease: "easeInOut" },
-            }}
-            className="group relative flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-2xl text-sm font-black text-white cursor-pointer transition-transform shrink-0 border border-white/20 shadow-xl overflow-hidden bg-slate-900"
           >
-            {/* Base fallback gradient */}
-            <div
-              className="absolute inset-0 z-0 pointer-events-none"
-              style={{ background: activeTrack.gradient }}
-            />
-
-            {/* Smooth slow crossfade background gradient animation layer */}
-            <AnimatePresence initial={false}>
-              <motion.div
-                key={activeTrack.id}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.85, ease: "easeInOut" }}
-                className="absolute inset-0 z-0 pointer-events-none"
-                style={{
-                  background: activeTrack.gradient,
-                }}
-              />
-            </AnimatePresence>
-
-            {/* Shimmer light sweep on hover */}
-            <div className="absolute inset-0 z-10 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 pointer-events-none" />
-
-            <div className="relative z-10 w-5 h-5 rounded-lg bg-black/20 backdrop-blur-xs flex items-center justify-center shadow-inner">
-              <Play className="w-3 h-3 fill-white text-white ml-0.5" />
-            </div>
-
-            <div className="relative z-10 flex items-center gap-1.5">
-              <span className="tracking-wide drop-shadow-sm">Start</span>
-              <AnimatePresence mode="wait" initial={false}>
-                <motion.span
-                  key={activeTrack.id}
-                  initial={{ opacity: 0, y: 3 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -3 }}
-                  transition={{ duration: 0.35, ease: "easeInOut" }}
-                  className="tracking-wide drop-shadow-sm"
-                >
-                  {activeTrack.name}
-                </motion.span>
-              </AnimatePresence>
-              <span className="tracking-wide drop-shadow-sm">Test</span>
-            </div>
-
-            <ArrowRight className="relative z-10 w-4 h-4 ml-0.5 transition-transform group-hover:translate-x-1" />
+            <Play className="w-4 h-4 fill-white" />
+            <span>Start {activeTrack.name} Test</span>
+            <ArrowRight className="w-4 h-4 ml-1" />
           </motion.button>
         </div>
       </section>

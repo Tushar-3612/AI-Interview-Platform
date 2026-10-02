@@ -211,16 +211,27 @@ function AuthLayout({
 
             {/* Right Side Desk / Student Studio Composition Visual (7 cols) */}
             <div className="col-span-7 relative flex items-end justify-center lg:justify-end">
-              {/* Soft Ambient Halo behind illustration */}
-              <div className="absolute -inset-6 rounded-full bg-gradient-to-tr from-orange-400/20 via-orange-200/20 to-transparent blur-2xl pointer-events-none select-none" />
+              {/* Soft Ambient Halo behind visual */}
+              <div className="absolute -inset-4 rounded-full bg-gradient-to-tr from-orange-500/20 via-orange-400/10 to-transparent blur-2xl pointer-events-none select-none opacity-70" />
 
-              <div className="animate-natural-idle relative z-10 w-full max-w-[340px] xl:max-w-[420px] 2xl:max-w-[480px] flex justify-end items-end">
-                <img
-                  src="/images/student-learning.png"
-                  alt="Student studying with laptop and books"
-                  className="w-full h-auto max-h-[190px] xl:max-h-[235px] 2xl:max-h-[265px] object-contain drop-shadow-xl select-none"
-                  draggable="false"
-                />
+              <div className="animate-natural-idle relative z-10 w-full max-w-[340px] xl:max-w-[410px] 2xl:max-w-[460px] flex justify-end items-end">
+                <div
+                  className="relative w-full aspect-[3/2] overflow-hidden select-none"
+                  style={{
+                    maskImage:
+                      "radial-gradient(ellipse 90% 86% at 50% 48%, black 45%, rgba(0, 0, 0, 0.85) 68%, rgba(0, 0, 0, 0.35) 86%, transparent 100%)",
+                    WebkitMaskImage:
+                      "radial-gradient(ellipse 90% 86% at 50% 48%, black 45%, rgba(0, 0, 0, 0.85) 68%, rgba(0, 0, 0, 0.35) 86%, transparent 100%)",
+                  }}
+                >
+                  <img
+                    src="/images/student1.png"
+                    alt="PrepHire Student preparing for placement interview"
+                    className="w-full h-full object-cover select-none pointer-events-none transition-transform duration-500 hover:scale-[1.02]"
+                    style={{ objectPosition: "46% 36%" }}
+                    draggable="false"
+                  />
+                </div>
               </div>
             </div>
           </footer>
