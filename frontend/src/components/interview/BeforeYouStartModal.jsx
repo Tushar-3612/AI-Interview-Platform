@@ -27,9 +27,7 @@ export default function BeforeYouStartModal({
 
   if (!isOpen) return null;
 
-  const effectiveEmail = String(userEmail || "").trim().toLowerCase();
-  const isPrephire = Boolean(effectiveEmail && effectiveEmail.endsWith("@prephire.com"));
-  const hasUnlimitedAccess = isPrephire || Boolean(isPremium);
+  const hasUnlimitedAccess = Boolean(isPremium);
 
   const handleAgreeAndStart = () => {
     if (!agreed || isStarting || (dailyLimitReached && !hasUnlimitedAccess)) return;
@@ -100,17 +98,7 @@ export default function BeforeYouStartModal({
             </div>
 
             {/* 2. Attempt Policy Box */}
-            {isPrephire ? (
-              <div className="p-3.5 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-transparent border border-emerald-500/30 text-emerald-200/90 space-y-1">
-                <div className="flex items-center gap-1.5 text-emerald-400 font-extrabold text-[11px] uppercase tracking-wider">
-                  <Sparkles className="w-3.5 h-3.5 shrink-0" />
-                  <span>✨ PREPHIRE MEMBER ACCESS</span>
-                </div>
-                <p className="text-[11.5px] leading-relaxed text-emerald-100/80">
-                  As a Prephire member, you have access to multiple Real Interview attempts. Please answer honestly and treat each session like a real placement interview.
-                </p>
-              </div>
-            ) : isPremium ? (
+            {isPremium ? (
               <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-amber-500/5 to-transparent border border-amber-500/30 text-amber-200/90 space-y-1">
                 <div className="flex items-center gap-1.5 text-amber-400 font-extrabold text-[11px] uppercase tracking-wider">
                   <Crown className="w-3.5 h-3.5 shrink-0 text-amber-400 fill-amber-400" />

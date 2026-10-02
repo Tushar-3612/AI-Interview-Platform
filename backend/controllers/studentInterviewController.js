@@ -109,7 +109,9 @@ async function fetchAllRealInterviewQuestions(sessionId) {
 
 /**
  * GET /api/student/interviews/eligibility
- * Returns daily attempt eligibility based on normalized email domain (@prephire.com vs non-Prephire).
+ * Returns daily attempt eligibility based on persistent User.isPremium database status.
+ * System Admin granted Premium (user.isPremium === true) receives unlimited attempts regardless of email domain.
+ * Non-Premium users (user.isPremium === false) receive 1 Real Interview attempt per calendar day.
  */
 export const checkInterviewEligibility = async (req, res) => {
   try {
@@ -119,23 +121,17 @@ export const checkInterviewEligibility = async (req, res) => {
     }
 
     const user = await User.findById(userId).select("email isPremium").lean();
-    const rawEmail = req.user?.email || user?.email || "";
-    const normalizedEmail = String(rawEmail).trim().toLowerCase();
-    const isPrephire = Boolean(normalizedEmail && normalizedEmail.endsWith("@prephire.com"));
     const isPremium = Boolean(user?.isPremium === true);
-    const hasUnlimitedRealInterviewAccess = isPrephire || isPremium;
+    const hasUnlimitedRealInterviewAccess = isPremium;
 
     if (hasUnlimitedRealInterviewAccess) {
       return res.status(200).json({
         success: true,
-        isPrephire,
-        isPremium,
+        isPremium: true,
         allowed: true,
         dailyLimit: null,
         usedToday: 0,
-        message: isPrephire
-          ? "Prephire members have unlimited Real Interview attempts."
-          : "Premium members have unlimited Real Interview attempts.",
+        message: "Premium members have unlimited Real Interview attempts.",
       });
     }
 
@@ -165,7 +161,6 @@ export const checkInterviewEligibility = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      isPrephire: false,
       isPremium: false,
       allowed,
       hasActiveSessionToday,
@@ -173,7 +168,9 @@ export const checkInterviewEligibility = async (req, res) => {
       dailyLimit: 1,
       usedToday: hasCompletedAttemptToday ? 1 : (hasActiveSessionToday ? 1 : 0),
       message: allowed
-        ? "You have 1 Real Interview attempt available for today."
+        ? (hasActiveSessionToday
+            ? "You have an active Real Interview in progress."
+            : "You have 1 Real Interview attempt available for today.")
         : "You have already used your Real Interview attempt today. You can take your next Real Interview tomorrow.",
     });
   } catch (error) {
@@ -186,8 +183,8 @@ export const checkInterviewEligibility = async (req, res) => {
  * POST /api/student/interviews
  * Initializes or reuses an active student Real Interview session.
  * Enforces:
- * - @prephire.com or Premium students: Unlimited Real Interview attempts.
- * - Standard non-Premium users: Only 1 Real Interview attempt per calendar day.
+ * - Premium students (User.isPremium === true): Unlimited Real Interview attempts.
+ * - Standard non-Premium users (User.isPremium === false): Exactly 1 Real Interview attempt per calendar day.
  */
 export const createInterviewSession = async (req, res) => {
   try {
@@ -197,11 +194,8 @@ export const createInterviewSession = async (req, res) => {
     }
 
     const user = await User.findById(userId).select("email isPremium").lean();
-    const rawEmail = req.user?.email || user?.email || "";
-    const normalizedEmail = String(rawEmail).trim().toLowerCase();
-    const isPrephire = Boolean(normalizedEmail && normalizedEmail.endsWith("@prephire.com"));
     const isPremium = Boolean(user?.isPremium === true);
-    const hasUnlimitedRealInterviewAccess = isPrephire || isPremium;
+    const hasUnlimitedRealInterviewAccess = isPremium;
 
     const { interviewType = "actual", targetRound = "all", durationMinutes = 120 } = req.body || {};
 
@@ -227,7 +221,7 @@ export const createInterviewSession = async (req, res) => {
         // If there is an in-progress session started today, allow student to resume it
         if (existingAttemptToday.status === "IN_PROGRESS") {
           const sessionId = existingAttemptToday._id.toString();
-          console.log(`[StudentInterviewController] Reusing today's active session ${sessionId} for user ${userId} (${normalizedEmail})`);
+          console.log(`[StudentInterviewController] Reusing today's active session ${sessionId} for user ${userId}`);
           return res.status(200).json({
             success: true,
             sessionId,
@@ -240,7 +234,7 @@ export const createInterviewSession = async (req, res) => {
         }
 
         // Already completed or submitted an interview today -> Block new attempt
-        console.warn(`[StudentInterviewController] Blocked daily limit for standard user ${userId} (${normalizedEmail}, isPremium=${isPremium})`);
+        console.warn(`[StudentInterviewController] Blocked daily limit for standard user ${userId} (isPremium=${isPremium})`);
         return res.status(403).json({
           success: false,
           code: "DAILY_INTERVIEW_LIMIT_REACHED",
@@ -249,7 +243,7 @@ export const createInterviewSession = async (req, res) => {
       }
     }
 
-    // Check if student ALREADY has an active IN_PROGRESS session of this interviewType
+    // Check if student ALREADY has an active IN_PROGRESS session of this interviewType (preserves resume behavior)
     const existingActive = await Interview.findOne({
       userId,
       interviewType,
@@ -259,7 +253,7 @@ export const createInterviewSession = async (req, res) => {
     let interview;
     if (existingActive) {
       interview = existingActive;
-      console.log(`[StudentInterviewController] Reusing existing active session ${interview._id} for user ${userId} (${normalizedEmail})`);
+      console.log(`[StudentInterviewController] Reusing existing active session ${interview._id} for user ${userId}`);
     } else {
       interview = await Interview.create({
         userId,
@@ -269,7 +263,7 @@ export const createInterviewSession = async (req, res) => {
         startedAt: new Date(),
         status: "IN_PROGRESS",
       });
-      console.log(`[StudentInterviewController] Created Real Interview session ${interview._id} for user ${userId} (${normalizedEmail}, isPrephire=${isPrephire})`);
+      console.log(`[StudentInterviewController] Created Real Interview session ${interview._id} for user ${userId} (isPremium=${isPremium})`);
     }
 
     const sessionId = interview._id.toString();
