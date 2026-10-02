@@ -11,8 +11,8 @@ const upload = multer({
 const GROQ_STT_URL = "https://api.groq.com/openai/v1/audio/transcriptions";
 
 // Technical vocabulary bias prompt to guide Whisper towards accurate tech spelling
-const TECH_PROMPT =
-  "React, React.js, Node, Node.js, Express, Express.js, MongoDB, MySQL, PostgreSQL, SQLite, JWT, JSON Web Token, Java, JavaScript, TypeScript, Python, C++, C#, Spring Boot, Django, Flask, Docker, Kubernetes, Git, GitHub, GitLab, REST API, GraphQL, SQL, NoSQL, Redis, Kafka, AWS, Azure, GCP, CI/CD, DevOps, Microservices, API Gateway, Linux, HTML, CSS, Redux, Tailwind CSS.";
+const BASE_TECH_PROMPT =
+  "SQL, NoSQL, MySQL, PostgreSQL, MongoDB, SQLite, JavaScript, TypeScript, React, React.js, Node, Node.js, Express, Express.js, REST API, JSON, JWT, Python, Java, C++, OOP, API, Docker, Kubernetes, AWS, Machine Learning, Deep Learning, Neural Network, Random Forest, XGBoost, Linear Regression, Logistic Regression, Null Hypothesis, Alternative Hypothesis, Primary Key, Foreign Key.";
 
 /**
  * Helper to select the active Groq API key from environment variables.
@@ -44,11 +44,14 @@ function conservativeFormat(text) {
     { pattern: /\bexpress\s*js\b/gi, replacement: "Express.js" },
     { pattern: /\bjavascript\b/gi, replacement: "JavaScript" },
     { pattern: /\btypescript\b/gi, replacement: "TypeScript" },
+    { pattern: /\bpython\b/gi, replacement: "Python" },
     { pattern: /\bmongodb\b/gi, replacement: "MongoDB" },
     { pattern: /\bpostgresql\b/gi, replacement: "PostgreSQL" },
     { pattern: /\bpostgres\b/gi, replacement: "PostgreSQL" },
     { pattern: /\bmysql\b/gi, replacement: "MySQL" },
     { pattern: /\bsqlite\b/gi, replacement: "SQLite" },
+    { pattern: /\bsql\b/gi, replacement: "SQL" },
+    { pattern: /\bnosql\b/gi, replacement: "NoSQL" },
     { pattern: /\bjwt\b/gi, replacement: "JWT" },
     { pattern: /\brest\s*api\b/gi, replacement: "REST API" },
     { pattern: /\brest\s*apis\b/gi, replacement: "REST APIs" },
@@ -61,6 +64,18 @@ function conservativeFormat(text) {
     { pattern: /\bapi\b/gi, replacement: "API" },
     { pattern: /\bapis\b/gi, replacement: "APIs" },
     { pattern: /\bjson\b/gi, replacement: "JSON" },
+    { pattern: /\boops\b/gi, replacement: "OOP" },
+    { pattern: /\bnull\s*hypothesis\b/gi, replacement: "null hypothesis" },
+    { pattern: /\balternative\s*hypothesis\b/gi, replacement: "alternative hypothesis" },
+    { pattern: /\bprimary\s*key\b/gi, replacement: "primary key" },
+    { pattern: /\bforeign\s*key\b/gi, replacement: "foreign key" },
+    { pattern: /\bmachine\s*learning\b/gi, replacement: "machine learning" },
+    { pattern: /\bdeep\s*learning\b/gi, replacement: "deep learning" },
+    { pattern: /\bneural\s*network(s)?\b/gi, replacement: "neural network$1" },
+    { pattern: /\brandom\s*forest\b/gi, replacement: "random forest" },
+    { pattern: /\blinear\s*regression\b/gi, replacement: "linear regression" },
+    { pattern: /\blogistic\s*regression\b/gi, replacement: "logistic regression" },
+    { pattern: /\bxgboost\b/gi, replacement: "XGBoost" },
   ];
 
   for (const { pattern, replacement } of safeReplacements) {
@@ -100,12 +115,15 @@ function conservativeFormat(text) {
 
 /**
  * POST /api/interview/stt
- * Transcribes an audio segment using Groq Whisper Large V3.
+ * Transcribes an audio segment using Groq Whisper Large V3 with VAD and confidence evaluation.
  */
 router.post("/stt", authMiddleware, upload.single("audio"), async (req, res) => {
   try {
     if (!req.file || !req.file.buffer || req.file.buffer.length < 500) {
-      return res.json({ success: true, transcript: "", message: "Audio chunk too small or empty" });
+      if (process.env.NODE_ENV !== "production") {
+        console.log("[VAD] Rejected empty or sub-500 byte audio buffer.");
+      }
+      return res.json({ success: true, transcript: "", confidence: 0, message: "Audio chunk too small or empty" });
     }
 
     const apiKey = getGroqKey();
@@ -128,20 +146,33 @@ router.post("/stt", authMiddleware, upload.single("audio"), async (req, res) => 
 
     const fileName = `speech_${Date.now()}.${ext}`;
 
+    // Extract contextual prompts from request body if available
+    const questionContext = req.body?.questionContext ? String(req.body.questionContext).slice(0, 150) : "";
+    const topic = req.body?.topic ? String(req.body.topic).slice(0, 50) : "";
+    const contextPrompt = [BASE_TECH_PROMPT, topic, questionContext].filter(Boolean).join(". ");
+    const language = req.body?.language || "en";
+
+    if (process.env.NODE_ENV !== "production") {
+      console.log(`[STT] Processing audio buffer (${req.file.buffer.length} bytes, format: ${mimeType}, lang: ${language})`);
+      if (questionContext) {
+        console.log(`[CONTEXT CORRECTION] Question context provided: "${questionContext.slice(0, 60)}..."`);
+      }
+    }
+
     // Construct FormData for Groq / OpenAI transcription endpoint
     const formData = new FormData();
     const audioBlob = new Blob([req.file.buffer], { type: mimeType });
     formData.append("file", audioBlob, fileName);
     formData.append("model", "whisper-large-v3");
     formData.append("temperature", "0.0");
-    formData.append("language", "en");
-    formData.append("prompt", TECH_PROMPT);
-    formData.append("response_format", "json");
+    formData.append("language", language);
+    formData.append("prompt", contextPrompt);
+    formData.append("response_format", "verbose_json");
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 20000); // 20s timeout
 
-    const groqRes = await fetch(GROQ_STT_URL, {
+    let groqRes = await fetch(GROQ_STT_URL, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${apiKey}`,
@@ -152,32 +183,27 @@ router.post("/stt", authMiddleware, upload.single("audio"), async (req, res) => 
 
     clearTimeout(timeout);
 
+    // Fallback to whisper-large-v3-turbo if rate limited or model error
+    if (!groqRes.ok && (groqRes.status === 400 || groqRes.status === 404)) {
+      console.warn(`[STT] whisper-large-v3 returned ${groqRes.status}. Retrying with whisper-large-v3-turbo...`);
+      const fallbackFormData = new FormData();
+      fallbackFormData.append("file", audioBlob, fileName);
+      fallbackFormData.append("model", "whisper-large-v3-turbo");
+      fallbackFormData.append("temperature", "0.0");
+      fallbackFormData.append("language", language);
+      fallbackFormData.append("prompt", contextPrompt);
+      fallbackFormData.append("response_format", "verbose_json");
+
+      groqRes = await fetch(GROQ_STT_URL, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${apiKey}` },
+        body: fallbackFormData,
+      });
+    }
+
     if (!groqRes.ok) {
       const errText = await groqRes.text().catch(() => "");
       console.error("[STT] Groq transcription error:", groqRes.status, errText);
-
-      // Fallback to whisper-large-v3-turbo if whisper-large-v3 hit rate-limit or model error
-      if (groqRes.status === 400 || groqRes.status === 404) {
-        const fallbackFormData = new FormData();
-        fallbackFormData.append("file", audioBlob, fileName);
-        fallbackFormData.append("model", "whisper-large-v3-turbo");
-        fallbackFormData.append("temperature", "0.0");
-        fallbackFormData.append("language", "en");
-        fallbackFormData.append("prompt", TECH_PROMPT);
-
-        const fallbackRes = await fetch(GROQ_STT_URL, {
-          method: "POST",
-          headers: { Authorization: `Bearer ${apiKey}` },
-          body: fallbackFormData,
-        });
-
-        if (fallbackRes.ok) {
-          const fallbackData = await fallbackRes.json();
-          const transcript = conservativeFormat(fallbackData?.text || "");
-          return res.json({ success: true, transcript, raw: fallbackData?.text || "" });
-        }
-      }
-
       return res.status(502).json({
         success: false,
         error: "STT_PROVIDER_ERROR",
@@ -187,11 +213,44 @@ router.post("/stt", authMiddleware, upload.single("audio"), async (req, res) => 
 
     const data = await groqRes.json();
     const rawText = (data?.text || "").trim();
+
+    // VAD silence detection via Whisper verbose_json segments
+    if (data?.segments && Array.isArray(data.segments) && data.segments.length > 0) {
+      const allSilence = data.segments.every((s) => (s.no_speech_prob || 0) > 0.75);
+      if (allSilence) {
+        if (process.env.NODE_ENV !== "production") {
+          console.log("[VAD] Whisper silence detected (high no_speech_prob). Discarding chunk.");
+        }
+        return res.json({
+          success: true,
+          transcript: "",
+          confidence: 0,
+          language: data.language || language,
+          raw: "",
+        });
+      }
+    }
+
+    // Confidence calculation from average log probabilities
+    let confidence = 0.92;
+    if (data?.segments && Array.isArray(data.segments) && data.segments.length > 0) {
+      const sumLogProbs = data.segments.reduce((acc, seg) => acc + (seg.avg_logprob || 0), 0);
+      const meanLogProb = sumLogProbs / data.segments.length;
+      confidence = Math.min(1.0, Math.max(0.1, Math.round(Math.exp(meanLogProb) * 100) / 100));
+    }
+
     const formattedTranscript = conservativeFormat(rawText);
+
+    if (process.env.NODE_ENV !== "production") {
+      console.log(`[CONFIDENCE] Estimated transcript confidence: ${confidence}`);
+      console.log(`[FINAL TRANSCRIPT] Result: "${formattedTranscript}"`);
+    }
 
     return res.json({
       success: true,
       transcript: formattedTranscript,
+      confidence,
+      language: data?.language || language,
       raw: rawText,
     });
   } catch (error) {
