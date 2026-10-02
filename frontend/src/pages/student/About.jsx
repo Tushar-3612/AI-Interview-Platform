@@ -32,7 +32,7 @@ const TEAM = [
     role: "Backend & Systems",
     tag: "Node & MongoDB",
     initials: "AL",
-    photo: "/images/team/amol-lende.jpg",
+    photo: "/images/team/amol-lende.png",
   },
 ];
 
