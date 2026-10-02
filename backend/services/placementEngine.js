@@ -17,6 +17,9 @@ import AptitudeQuestion from "../models/AptitudeQuestion.js";
 import Result from "../models/Result.js";
 import StudentPreference from "../models/StudentPreference.js";
 import MockOAAttempt from "../models/MockOAAttempt.js";
+import CompanyMockAttempt from "../models/CompanyMockAttempt.js";
+import Interview from "../models/Interview.js";
+import TestAttempt from "../models/TestAttempt.js";
 import AchievementUnlock from "../models/AchievementUnlock.js";
 import { yearQuery } from "../utils/academicConfig.js";
 import Notification from "../models/Notification.js";
@@ -148,39 +151,60 @@ function computeStreaks(activeDays) {
   return { current, best, missedDays, weekly, monthly, activeDays30: monthly.filter((m) => m.count > 0).length };
 }
 
-function buildHeatmap(activeDays) {
-  const weeks = 26;
+export function getContributionLevel(count) {
+  if (!count || count <= 0) return 0;
+  if (count === 1) return 1;
+  if (count <= 3) return 2;
+  if (count <= 6) return 3;
+  return 4;
+}
+
+function buildHeatmap(activeDays, activityCounts = {}) {
+  const weeks = 53;
   const days = [];
   const today = startOfDay();
   const end = addDays(today, 6 - today.getDay());
   const start = addDays(end, -(weeks * 7 - 1));
 
-  const counts = {};
-  for (const k of activeDays) counts[k] = (counts[k] || 0) + 1;
-
   for (let i = 0; i < weeks * 7; i++) {
     const d = addDays(start, i);
     const k = dateKey(d);
-    const count = counts[k] || 0;
-    let level = 0;
-    if (count > 0) level = count >= 10 ? 4 : count >= 6 ? 3 : count >= 3 ? 2 : 1;
+    const count = activityCounts[k] || 0;
+    const level = getContributionLevel(count);
     days.push({ date: k, count, level, day: d.getDay(), month: d.toLocaleDateString("en-US", { month: "short" }) });
   }
   return days;
 }
 
-async function getActivityDays(userId) {
+async function getActivityData(userId) {
   const oid = new mongoose.Types.ObjectId(userId);
   const days = new Set();
-  const [attempts, submissions, results, mockOAs] = await Promise.all([
+  const counts = {};
+
+  const [attempts, submissions, results, mockOAs, companyMocks, interviews, testAttempts] = await Promise.all([
     PracticeAttempt.find({ userId: oid }).select("createdAt").lean(),
-    CodingSubmission.find({ userId: oid }).select("createdAt").lean(),
+    CodingSubmission.find({ $or: [{ userId: oid }, { candidateId: oid }] }).select("createdAt").lean(),
     Result.find({ userId: oid }).select("createdAt").lean(),
     MockOAAttempt.find({ userId: oid }).select("createdAt").lean(),
+    CompanyMockAttempt.find({ userId: oid }).select("createdAt").lean(),
+    Interview.find({ userId: oid }).select("createdAt").lean(),
+    TestAttempt.find({ userId: oid }).select("createdAt").lean(),
   ]);
-  for (const docs of [attempts, submissions, results, mockOAs]) {
-    for (const d of docs) days.add(dateKey(d.createdAt));
+
+  for (const docs of [attempts, submissions, results, mockOAs, companyMocks, interviews, testAttempts]) {
+    for (const d of docs || []) {
+      if (!d.createdAt) continue;
+      const k = dateKey(d.createdAt);
+      days.add(k);
+      counts[k] = (counts[k] || 0) + 1;
+    }
   }
+
+  return { days, counts };
+}
+
+async function getActivityDays(userId) {
+  const { days } = await getActivityData(userId);
   return days;
 }
 
@@ -270,7 +294,7 @@ async function computeScores(userId) {
   const mockInterview = allMockScores.length > 0 ? round(allMockScores.reduce((s, v) => s + v, 0) / allMockScores.length) : 0;
 
   // Consistency
-  const activeDays = await getActivityDays(userId);
+  const { days: activeDays, counts: activityCounts } = await getActivityData(userId);
   const streaks = computeStreaks(activeDays);
   const consistency = streaks.activeDays30 > 0 || streaks.current > 0
     ? round((streaks.activeDays30 / 30) * 60 + (Math.min(streaks.current, 30) / 30) * 40)
@@ -314,7 +338,8 @@ async function computeScores(userId) {
       hasActivity: attempts.length + submissions.length > 0,
     },
     streaks,
-    heatmap: buildHeatmap(activeDays),
+    heatmap: buildHeatmap(activeDays, activityCounts),
+    activityMap: activityCounts,
     activeDays,
   };
 }
@@ -1167,6 +1192,7 @@ export async function getStudentPlacementData(userId) {
       monthly: scoresBundle.streaks.monthly,
     },
     heatmap: scoresBundle.heatmap,
+    activityMap: scoresBundle.activityMap,
     achievements: {
       unlocked: ACHIEVEMENT_DEFS.filter((d) => unlockedKeys.has(d.key)).map((d) => ({
         ...d,

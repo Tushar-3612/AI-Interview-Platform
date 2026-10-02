@@ -493,7 +493,7 @@ function PlacementDashboard() {
       <AIRecommendationsCard recommendations={data.recommendations} weakTopics={data.weakTopics} />
 
       <SectionCard title="Daily Practice Heatmap" subtitle="Last 6 months of practice activity" icon={Calendar}>
-        <Heatmap days={data.heatmap} />
+        <Heatmap days={data.heatmap} activityMap={data.activityMap} />
       </SectionCard>
     </div>
     </div>
