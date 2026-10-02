@@ -80,12 +80,29 @@ app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" }, contentS
 app.use(compression());
 app.use(mongoSanitize());
 
-// CORS setup - Frontend URL ke saath
+// CORS setup - Support FRONTEND_URL / CORS_ORIGIN in production & localhost in development
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  process.env.CLIENT_URL,
+  process.env.CORS_ORIGIN,
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "http://localhost:3000"
+].filter(Boolean);
+
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    const normalized = origin.replace(/\/$/, "");
+    const isAllowed = allowedOrigins.some((o) => o.replace(/\/$/, "") === normalized);
+    if (isAllowed || process.env.NODE_ENV !== "production") {
+      return callback(null, true);
+    }
+    return callback(new Error(`CORS policy does not allow access from origin: ${origin}`), false);
+  },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
 }));
 app.use(express.json({ limit: "10mb" }));
 

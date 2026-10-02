@@ -99,8 +99,9 @@ function Interview() {
     try {
       setIsLoading(true);
 
+      const apiUrl = import.meta.env.VITE_API_URL || "";
       const response = await fetch(
-        "http://localhost:5000/api/resume/upload",
+        `${apiUrl}/api/resume/upload`,
         {
           method: "POST",
           body: formData,

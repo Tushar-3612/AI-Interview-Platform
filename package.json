@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@google/genai": "^1.0.0",
+    "@google/generative-ai": "^0.24.1",
     "@openrouter/agent": "^0.11.0",
     "@openrouter/sdk": "^1.2.54",
     "bcryptjs": "^2.4.3",
