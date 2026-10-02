@@ -96,7 +96,7 @@ function StartInterviewModal({ open, onClose, isStarting: externalIsStarting = f
           </div>
 
           {/* Body */}
-          <div className="p-5 sm:p-6 space-y-5 max-h-[78vh] overflow-y-auto custom-scrollbar">
+          <div className="p-5 sm:p-6 space-y-5 max-h-[50vh] overflow-y-auto custom-scrollbar">
             {/* Stats Summary Bar */}
             <div className="grid grid-cols-3 gap-2.5 p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 text-center">
               <div className="space-y-0.5">

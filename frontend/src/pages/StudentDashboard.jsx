@@ -804,7 +804,11 @@ function StudentDashboard() {
                 <motion.div
                   key={round.id}
                   onClick={() => {
-                    if (round.id === "technical") {
+                    if (round.id === "aptitude") {
+                      navigate("/aptitude");
+                    } else if (round.id === "coding") {
+                      navigate("/coding-round");
+                    } else if (round.id === "technical") {
                       setIsTechModalOpen(true);
                     } else if (round.id === "project") {
                       setIsProjModalOpen(true);

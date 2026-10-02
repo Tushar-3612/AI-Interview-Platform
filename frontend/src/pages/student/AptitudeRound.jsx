@@ -197,7 +197,7 @@ function AptitudeRound() {
           statusCode={error}
           message="Failed to load or generate questions for this assessment."
           onRetry={handleStart}
-          onGoBack={() => navigate(`/interview-practice/${companyId}`)}
+          onGoBack={() => navigate(companyId ? `/interview-practice/${companyId}` : "/aptitude")}
         />
       </div>
     );

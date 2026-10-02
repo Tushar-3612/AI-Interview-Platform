@@ -1,8 +1,6 @@
 @import "tailwindcss";
 @import "./theme.css";
 
-@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *, .dark, .dark *));
-
 /* ================================
    GLOBAL STYLES
    ================================ */
@@ -48,7 +46,6 @@ select, .admin-select {
   -moz-appearance: none;
 }
 
-select, .admin-select,
 [data-theme="dark"] select, [data-theme="dark"] .admin-select {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2371717A' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
 }
@@ -58,22 +55,19 @@ select option, .admin-select option {
   color: var(--text-primary);
 }
 
-select, .admin-select,
 [data-theme="dark"] select, [data-theme="dark"] .admin-select {
-  background-color: var(--input-bg);
-  color: var(--text-primary);
-  border-color: var(--border);
+  background-color: #111827;
+  color: #ffffff;
+  border-color: #374151;
 }
 
-select:hover, .admin-select:hover,
 [data-theme="dark"] select:hover, [data-theme="dark"] .admin-select:hover {
-  background-color: #1E232F;
+  background-color: #1f2937;
 }
 
 [data-theme="light"] select, [data-theme="light"] .admin-select {
   background-color: #ffffff;
   color: #000000;
-  border-color: #EFE9DF;
 }
 
 /* Gradient button */
@@ -311,12 +305,10 @@ select:hover, .admin-select:hover,
 }
 
 /* ── Hero mountain image theme switching ── */
-.mountain-light { display: none; }
-.mountain-dark  { display: block; }
+.mountain-light { display: block; }
+.mountain-dark  { display: none; }
 [data-theme="dark"] .mountain-light { display: none; }
 [data-theme="dark"] .mountain-dark  { display: block; }
-[data-theme="light"] .mountain-light { display: block; }
-[data-theme="light"] .mountain-dark  { display: none; }
 @media (max-width: 1023px) {
   .mountain-light, .mountain-dark { display: none !important; }
 }
@@ -337,10 +329,6 @@ select:hover, .admin-select:hover,
 
 /* ── Light hero left→center text readability gradient ── */
 .hero-light-text-gradient {
-  display: none;
-}
-[data-theme="light"] .hero-light-text-gradient {
-  display: block;
   position: absolute;
   inset: 0;
   z-index: 1;
@@ -357,10 +345,6 @@ select:hover, .admin-select:hover,
 
 /* ── Light hero right-side card readability gradient ── */
 .hero-light-card-gradient {
-  display: none;
-}
-[data-theme="light"] .hero-light-card-gradient {
-  display: block;
   position: absolute;
   inset: 0;
   z-index: 1;
@@ -378,7 +362,6 @@ select:hover, .admin-select:hover,
 }
 
 /* ── Dark theme mountain blending ── */
-.mountain-dark,
 [data-theme="dark"] .mountain-dark {
   mask-image:
     linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%),
@@ -393,7 +376,9 @@ select:hover, .admin-select:hover,
 }
 
 /* ── Dark hero left→center text readability gradient ── */
-.hero-dark-text-gradient,
+.hero-dark-text-gradient {
+  display: none;
+}
 [data-theme="dark"] .hero-dark-text-gradient {
   display: block;
   position: absolute;
@@ -409,12 +394,11 @@ select:hover, .admin-select:hover,
     transparent 65%
   );
 }
-[data-theme="light"] .hero-dark-text-gradient {
-  display: none;
-}
 
 /* ── Dark hero right-side card readability gradient ── */
-.hero-dark-card-gradient,
+.hero-dark-card-gradient {
+  display: none;
+}
 [data-theme="dark"] .hero-dark-card-gradient {
   display: block;
   position: absolute;
@@ -427,9 +411,6 @@ select:hover, .admin-select:hover,
     rgba(11, 18, 32, 0.40) 20%,
     transparent 40%
   );
-}
-[data-theme="light"] .hero-dark-card-gradient {
-  display: none;
 }
 
 /* ── Premium Hero background ── */

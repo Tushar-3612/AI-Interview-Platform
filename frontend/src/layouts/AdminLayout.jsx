@@ -103,29 +103,14 @@ function AdminLayout() {
               <Link
                 key={item.label}
                 to={item.path}
-                className="relative flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-medium transition-all group"
+                className="flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-medium transition-all group"
                 style={{
                   color: isActive ? "var(--primary)" : "var(--text-secondary)",
-                  background: "transparent",
+                  background: isActive ? "color-mix(in srgb, var(--primary) 10%, transparent)" : "transparent",
                 }}
               >
-                {isActive && (
-                  <motion.div
-                    layoutId="activeAdminNavPill"
-                    className="absolute inset-0 rounded-xl pointer-events-none"
-                    style={{
-                      background: "color-mix(in srgb, var(--primary) 12%, transparent)",
-                      border: "1px solid color-mix(in srgb, var(--primary) 28%, transparent)",
-                    }}
-                    transition={{
-                      type: "spring",
-                      stiffness: 260,
-                      damping: 28,
-                    }}
-                  />
-                )}
-                <Icon className="w-5 h-5 transition-transform group-hover:scale-105 relative z-10" style={{ color: isActive ? "var(--primary)" : "var(--text-muted)" }} />
-                <span className="relative z-10">{item.label}</span>
+                <Icon className="w-5 h-5 transition-transform group-hover:scale-105" style={{ color: isActive ? "var(--primary)" : "var(--text-muted)" }} />
+                <span>{item.label}</span>
               </Link>
             );
           })}
@@ -167,18 +152,9 @@ function AdminLayout() {
           </div>
         </header>
 
-        <AnimatePresence mode="wait">
-          <motion.main
-            key={location.pathname}
-            initial={{ opacity: 0, y: 12, filter: "blur(3px)" }}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            exit={{ opacity: 0, y: -8, filter: "blur(3px)" }}
-            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-            className="flex-1 p-6 sm:p-8 overflow-y-auto"
-          >
-            <Outlet />
-          </motion.main>
-        </AnimatePresence>
+        <main className="flex-1 p-6 sm:p-8 overflow-y-auto">
+          <Outlet />
+        </main>
       </div>
     </div>
   );
