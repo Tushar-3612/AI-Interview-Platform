@@ -99,7 +99,6 @@ export default function CompanyMockInterview() {
   const [loading, setLoading] = useState(false);
   const [confirmEnd, setConfirmEnd] = useState(false);
   const [tabWarnings, setTabWarnings] = useState(0);
-  const [technicalInputMode, setTechnicalInputMode] = useState("type");
 
   // ── Anti-cheat ──
   const securityEventsRef = useRef([]);
@@ -1155,14 +1154,9 @@ export default function CompanyMockInterview() {
               </div>
             ) : (
               <InterviewAnswerInput
-                key={question._id}
                 value={answers[currentSection]?.[question._id] || ""}
                 onChange={(text) => updateTechnicalText(question._id, text)}
                 questionId={question._id}
-                questionContext={question.text || question.question || question.title || ""}
-                questionTopic={question.category || question.topic || "Technical"}
-                defaultMode={technicalInputMode}
-                onModeChange={setTechnicalInputMode}
                 rows={8}
                 accentColor={meta.color || "#FF6B35"}
                 textareaStyle={{
