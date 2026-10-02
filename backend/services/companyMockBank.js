@@ -252,16 +252,17 @@ export function loadCompanyMockCoding(company) {
 }
 
 /**
- * Load exclusive company mock aptitude/MCQ questions from companyMock/<folder>/mcq.json
+ * Load exclusive company mock aptitude questions from companyMock/<folder>/aptitude.json.
+ * mcq.json is intentionally NOT loaded here because mcq.json contains company Technical MCQs.
  */
 export function loadCompanyMockAptitude(company) {
   const folder = toFolderName(company);
   const dir = companyMockDir();
   if (!dir) return [];
-  const mcqFile = path.join(dir, folder, "mcq.json");
-  if (!fs.existsSync(mcqFile)) return [];
+  const aptFile = path.join(dir, folder, "aptitude.json");
+  if (!fs.existsSync(aptFile)) return [];
   try {
-    const raw = JSON.parse(fs.readFileSync(mcqFile, "utf8"));
+    const raw = JSON.parse(fs.readFileSync(aptFile, "utf8"));
     const arr = Array.isArray(raw) ? raw : Array.isArray(raw.questions) ? raw.questions : [];
     return arr
       .filter((q) => q && (q.question || q.title) && (q.questionId || q._id))
@@ -271,7 +272,7 @@ export function loadCompanyMockAptitude(company) {
         questionType: "MCQ",
       }));
   } catch (err) {
-    console.warn(`[COMPANY MOCK] Failed to parse ${folder}/mcq.json for aptitude:`, err.message);
+    console.warn(`[COMPANY MOCK] Failed to parse ${folder}/aptitude.json for aptitude:`, err.message);
     return [];
   }
 }

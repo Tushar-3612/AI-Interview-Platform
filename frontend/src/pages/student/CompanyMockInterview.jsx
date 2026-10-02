@@ -1102,7 +1102,7 @@ export default function CompanyMockInterview() {
             {/* Question Details Bar */}
             <div className="flex flex-wrap items-center gap-2 mb-4">
               <span className="text-xs font-bold uppercase tracking-wide" style={{ color: meta.color }}>
-                {question.questionType === "MCQ" ? "MCQ" : "Technical"}
+                {currentSection === "aptitude" ? (question.category || "Aptitude") : question.questionType === "MCQ" ? "MCQ" : "Technical"}
               </span>
               {question.difficulty && (
                 <span className="text-[10px] px-2 py-0.5 rounded-full font-bold" style={{

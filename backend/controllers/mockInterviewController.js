@@ -65,14 +65,15 @@ function pickFromPool(pool, usedIds, count) {
 
 // Client-safe shapes the Company Mock page renders (text/options/title/description).
 const toClientAptitude = (q) => ({
-  _id: q._id,
+  _id: q._id ? String(q._id) : String(q.questionId),
   questionId: q.questionId || String(q._id),
   question: q.question,
   text: q.question,
   options: Array.isArray(q.options) ? q.options : [],
-  category: q.category || "General",
-  difficulty: q.difficulty,
-  marks: q.marks,
+  category: q.category || "Aptitude",
+  difficulty: q.difficulty || "Medium",
+  marks: q.marks || 1,
+  questionType: "MCQ",
 });
 
 const toClientTechnical = (q) => {
@@ -318,10 +319,12 @@ export const startMockInterview = async (req, res) => {
       return { questions: picked, resetType: null };
     }
 
-    /* ── 1) APTITUDE — Company-specific exclusive Mock Interview MCQ pool, distinct from practice bank ── */
+    /* ── 1) APTITUDE — Company-specific or standard Aptitude bank (Quantitative, Logical, Verbal) ── */
     const mockAptitude = (await loadCompanyMockAptitudeAsync(company.id)).map((q) => ({
       ...q,
       _id: q.questionId || String(q._id),
+      category: q.category || "Aptitude",
+      questionType: "MCQ",
     }));
 
     let aptitudePool = mockAptitude;
@@ -329,7 +332,12 @@ export const startMockInterview = async (req, res) => {
     if (aptitudePool.length < config.aptitudeCount) {
       const dbAptitude = (
         await AptitudeQuestion.find({ isActive: true, isDeleted: false }).lean()
-      ).map((q) => ({ ...q, _id: String(q._id || q.questionId) }));
+      ).map((q) => ({
+        ...q,
+        _id: String(q._id || q.questionId),
+        category: q.category || "Aptitude",
+        questionType: "MCQ",
+      }));
       const usedIds = new Set(aptitudePool.map((q) => String(q._id)));
       aptitudePool = aptitudePool.concat(
         pickFromPool(dbAptitude, usedIds, config.aptitudeCount - aptitudePool.length)
