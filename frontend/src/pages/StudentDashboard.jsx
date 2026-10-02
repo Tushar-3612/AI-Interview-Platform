@@ -31,6 +31,7 @@ import AnimatedProgressBar from "../components/ui/AnimatedProgressBar";
 import { CAREER_QUOTES } from "../data/careerQuotes";
 import IndividualTechnicalStartModal from "../components/individualRound/technical/IndividualTechnicalStartModal";
 import IndividualProjectStartModal from "../components/individualRound/project/IndividualProjectStartModal";
+import BeforeYouStartModal from "../components/interview/BeforeYouStartModal";
 
 /**
  * Circular progress ring component for Placement Readiness.
@@ -92,6 +93,7 @@ function StudentDashboard() {
   const [dashboardStats, setDashboardStats] = useState(null);
   const [assignedTests, setAssignedTests] = useState([]);
   const [showInterviewModeModal, setShowInterviewModeModal] = useState(false);
+  const [showConsentModal, setShowConsentModal] = useState(false);
   const [isTechModalOpen, setIsTechModalOpen] = useState(false);
   const [isProjModalOpen, setIsProjModalOpen] = useState(false);
   const [isStartingInterview, setIsStartingInterview] = useState(false);
@@ -310,6 +312,7 @@ function StudentDashboard() {
       const sessionId = data.sessionId || data.interviewId || data._id;
       if (sessionId) {
         toast.success("Real Interview session ready!", { id: toastId });
+        setShowConsentModal(false);
         setShowInterviewModeModal(false);
         navigate(`/interview/${sessionId}`);
       } else {
@@ -1292,7 +1295,7 @@ function StudentDashboard() {
 
                 {/* Primary Launch Action Button */}
                 <motion.button
-                  onClick={handleStartRealInterview}
+                  onClick={() => setShowConsentModal(true)}
                   disabled={isStartingInterview}
                   className="w-full py-3.5 px-6 rounded-2xl text-sm font-bold text-white cursor-pointer shadow-lg flex items-center justify-center gap-2 transition-all disabled:opacity-50"
                   style={{
@@ -1320,6 +1323,14 @@ function StudentDashboard() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Mandatory "Before You Start" Consent & Guidelines Modal */}
+      <BeforeYouStartModal
+        isOpen={showConsentModal}
+        onClose={() => !isStartingInterview && setShowConsentModal(false)}
+        onAgreeAndStart={handleStartRealInterview}
+        isStarting={isStartingInterview}
+      />
 
       {/* Individual Technical Start Modal */}
       <IndividualTechnicalStartModal

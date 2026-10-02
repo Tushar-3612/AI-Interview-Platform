@@ -6,12 +6,15 @@ import toast from "react-hot-toast";
 import api from "../../utils/api";
 import { getAuthToken } from "../../hooks/useStudentProfile";
 
+import BeforeYouStartModal from "../interview/BeforeYouStartModal";
+
 function StartInterviewModal({ open, onClose, isStarting: externalIsStarting = false }) {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [showConsentModal, setShowConsentModal] = useState(false);
   const isStarting = externalIsStarting || loading;
 
-  if (!open) return null;
+  if (!open && !showConsentModal) return null;
 
   const handleStartRealInterview = async () => {
     setLoading(true);
@@ -28,6 +31,7 @@ function StartInterviewModal({ open, onClose, isStarting: externalIsStarting = f
       const sessionId = data.sessionId || data.interviewId || data._id;
       if (sessionId) {
         toast.success("Real Interview session ready!", { id: toastId });
+        setShowConsentModal(false);
         onClose?.();
         navigate(`/interview/${sessionId}`);
       } else {
@@ -160,7 +164,7 @@ function StartInterviewModal({ open, onClose, isStarting: externalIsStarting = f
 
             {/* Primary Action Button */}
             <motion.button
-              onClick={handleStartRealInterview}
+              onClick={() => setShowConsentModal(true)}
               disabled={isStarting}
               className="w-full py-3.5 px-6 rounded-2xl text-sm font-bold text-white cursor-pointer shadow-lg flex items-center justify-center gap-2 transition-all disabled:opacity-50"
               style={{
@@ -186,6 +190,14 @@ function StartInterviewModal({ open, onClose, isStarting: externalIsStarting = f
           </div>
         </motion.div>
       </div>
+
+      {/* Mandatory "Before You Start" Consent & Guidelines Modal */}
+      <BeforeYouStartModal
+        isOpen={showConsentModal}
+        onClose={() => !isStarting && setShowConsentModal(false)}
+        onAgreeAndStart={handleStartRealInterview}
+        isStarting={isStarting}
+      />
     </AnimatePresence>
   );
 }
