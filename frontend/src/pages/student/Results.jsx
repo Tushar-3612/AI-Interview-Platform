@@ -397,7 +397,7 @@ export default function Results({ sessionId: propSessionId, initialResultData })
 
           const resData = res?.data;
 
-          if (resData?.status === "EVALUATION_FAILED" || resData?.errorType) {
+          if (resData?.status === "EVALUATION_FAILED" || resData?.status === "PARTIAL_EVALUATION" || resData?.errorType) {
             setQuotaError({
               errorType: resData.errorType || (resData.result?.errorType),
               keySource: resData.keySource || (resData.result?.keySource) || "PLATFORM",
@@ -486,7 +486,7 @@ export default function Results({ sessionId: propSessionId, initialResultData })
         setResult(norm);
         setEvalFailed(false);
         setQuotaError(null);
-      } else if (data.status === "EVALUATION_FAILED" || data.errorType) {
+      } else if (data.status === "EVALUATION_FAILED" || data.status === "PARTIAL_EVALUATION" || data.errorType) {
         setQuotaError({
           errorType: data.errorType,
           keySource: data.keySource || "PLATFORM",

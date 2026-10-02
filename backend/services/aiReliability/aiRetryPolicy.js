@@ -56,9 +56,14 @@ export class AIRetryPolicy {
           }
         }
 
+        // For RATE_LIMIT errors (429 / TPM / RPM), cap retries to at most 1 attempt (total 2 attempts) to prevent BYOK quota exhaustion
+        const effectiveMaxRetries = lastClassification.category === ERROR_CATEGORIES.RATE_LIMIT
+          ? Math.min(1, maxRetries)
+          : maxRetries;
+
         // If maximum attempts reached, break loop and throw
-        if (attempt > maxRetries) {
-          safeLogger.error(`[AIRetryPolicy] Maximum retries (${maxRetries}) exhausted for ${providerName}.`);
+        if (attempt > effectiveMaxRetries) {
+          safeLogger.error(`[AIRetryPolicy] Maximum retries (${effectiveMaxRetries}) exhausted for [${lastClassification.category}] on ${providerName}.`);
           break;
         }
 

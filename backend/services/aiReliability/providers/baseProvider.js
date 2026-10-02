@@ -44,8 +44,10 @@ export class BaseProvider {
 
     if (!result.success) {
       const err = new Error(result.rawSafeError || `${this.name} completion failed`);
-      err.status = result.rateLimited ? 429 : (result.authenticationError ? 401 : (result.quotaError ? 402 : (result.timeout ? 408 : 500)));
+      err.status = result.status || result.statusCode || (result.rateLimited ? 429 : (result.authenticationError ? 401 : (result.quotaError ? 402 : (result.timeout ? 408 : 500))));
+      err.statusCode = err.status;
       err.retryable = result.retryable;
+      err.category = result.category;
       throw err;
     }
 

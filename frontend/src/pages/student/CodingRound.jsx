@@ -501,9 +501,9 @@ function CodingRound() {
     if (!code || !q) return;
 
     // Validate language
-    const supportedLanguages = ["python", "java", "cpp", "javascript"];
+    const supportedLanguages = ["python", "java", "c", "cpp", "javascript"];
     if (!supportedLanguages.includes(language)) {
-      setOutput({ type: "run", data: { type: "error", output: `Language "${language}" is not supported. Please use Python, C++, Java, or JavaScript.`, timeMs: 0 } });
+      setOutput({ type: "run", data: { type: "error", output: `Language "${language}" is not supported. Please use Python, C, C++, Java, or JavaScript.`, timeMs: 0 } });
       setBottomTab("Test Result");
       return;
     }

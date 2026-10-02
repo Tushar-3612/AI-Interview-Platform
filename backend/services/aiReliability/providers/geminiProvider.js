@@ -35,12 +35,20 @@ export class GeminiProvider extends BaseProvider {
 
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${activeModel}:generateContent?key=${encodeURIComponent(keyToUse)}`;
 
-    const contents = messages.map((m) => ({
-      role: m.role === "system" ? "user" : (m.role === "assistant" ? "model" : "user"),
-      parts: [{ text: m.role === "system" ? `SYSTEM: ${m.content}` : m.content }]
+    const systemMessages = messages.filter((m) => m.role === "system");
+    const nonSystemMessages = messages.filter((m) => m.role !== "system");
+
+    const systemInstruction = systemMessages.length > 0
+      ? { parts: systemMessages.map((m) => ({ text: m.content })) }
+      : undefined;
+
+    const contents = (nonSystemMessages.length > 0 ? nonSystemMessages : messages).map((m) => ({
+      role: m.role === "assistant" ? "model" : "user",
+      parts: [{ text: m.content }]
     }));
 
     const body = {
+      ...(systemInstruction ? { systemInstruction } : {}),
       contents,
       generationConfig: {
         temperature,
@@ -88,6 +96,8 @@ export class GeminiProvider extends BaseProvider {
             model: activeModel,
             finishReason,
             category: "AI_SAFETY_BLOCKED",
+            status: 200,
+            statusCode: 200,
             retryable: false,
             rateLimited: false,
             authenticationError: false,
@@ -108,6 +118,8 @@ export class GeminiProvider extends BaseProvider {
             model: activeModel,
             finishReason,
             category: finishReason === "MAX_TOKENS" ? "AI_TRUNCATED_JSON" : "AI_EMPTY_RESPONSE",
+            status: 200,
+            statusCode: 200,
             retryable: true,
             rateLimited: false,
             authenticationError: false,
@@ -126,6 +138,8 @@ export class GeminiProvider extends BaseProvider {
           provider: "gemini",
           model: activeModel,
           finishReason: finishReason || "STOP",
+          status: 200,
+          statusCode: 200,
           retryable: false,
           rateLimited: false,
           authenticationError: false,
@@ -148,13 +162,17 @@ export class GeminiProvider extends BaseProvider {
           // ignore json parse failure on non-json error responses
         }
 
+        // Safe raw error logging without logging any API keys
+        console.error(`[RAW-GEMINI-ERROR] status=${res.status} message=${errMessage}`);
+
         const err = new Error(errMessage);
         err.status = res.status;
+        err.statusCode = res.status;
         err.details = errDetails;
         const norm = normalizeProviderError(err);
         let category = "AI_PROVIDER_UNKNOWN";
         if (norm.rateLimited) category = "AI_PROVIDER_RATE_LIMIT";
-        else if (norm.authenticationError) category = "AI_PROVIDER_AUTH_ERROR";
+        else if (norm.authenticationError) category = "INVALID_AUTH";
         else if (norm.quotaExceeded) category = "PERMANENT_QUOTA";
         else if (norm.modelUnavailable) category = "MODEL_NOT_FOUND";
 
@@ -166,6 +184,8 @@ export class GeminiProvider extends BaseProvider {
           model: activeModel,
           finishReason: null,
           category,
+          status: res.status,
+          statusCode: res.status,
           retryable: norm.transientFailure,
           rateLimited: norm.rateLimited,
           authenticationError: norm.authenticationError,
@@ -179,6 +199,7 @@ export class GeminiProvider extends BaseProvider {
     } catch (err) {
       clearTimeout(timer);
       const norm = normalizeProviderError(err);
+      console.error(`[RAW-GEMINI-ERROR] status=${norm.status || 0} message=${norm.rawSafeError}`);
       return {
         success: false,
         text: null,
@@ -186,7 +207,9 @@ export class GeminiProvider extends BaseProvider {
         provider: "gemini",
         model: activeModel,
         finishReason: null,
-        category: "AI_PROVIDER_UNKNOWN",
+        category: norm.authenticationError ? "INVALID_AUTH" : (norm.rateLimited ? "AI_PROVIDER_RATE_LIMIT" : "AI_PROVIDER_UNKNOWN"),
+        status: norm.status || 0,
+        statusCode: norm.status || 0,
         retryable: norm.transientFailure,
         rateLimited: norm.rateLimited,
         authenticationError: norm.authenticationError,

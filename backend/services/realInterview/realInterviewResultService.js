@@ -24,6 +24,10 @@ import { evaluateHRInterviewSession } from "./hrService.js";
 import { evaluateCodingInterviewSession } from "./codingService.js";
 import { resolveCandidateAnswer } from "./answerResolver.js";
 import { getOrBuildCandidateResumeContext } from "../../utils/resumeContextBuilder.js";
+import { sessionManager } from "../aiReliability/index.js";
+
+// Server-side in-flight evaluation mutex: sessionId -> Promise
+const activeEvaluationPromises = new Map();
 
 /**
  * Single authoritative backend service for Real Interview result calculation.
@@ -34,12 +38,33 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
     throw new Error("sessionId is required to calculate interview result");
   }
 
-  // 1. Idempotency check: Return existing result if completed unless forceRecalculate is true
+  // 1. Idempotency check: Return existing result if completed unless forceRecalculate is explicitly true
   let resultDoc = await RealInterviewResult.findOne({ sessionId });
   if (resultDoc && resultDoc.status === "COMPLETED" && !forceRecalculate) {
     console.log(`[RealInterviewResultService] Session ${sessionId} result already COMPLETED. Reusing stored result.`);
     return resultDoc;
   }
+
+  // 2. In-Flight Mutex: If an evaluation pipeline is already running for this session, reuse in-flight promise
+  if (activeEvaluationPromises.has(sessionId)) {
+    console.log(`[RealInterviewResultService] Session ${sessionId} evaluation already IN_PROGRESS. Joining active evaluation pipeline.`);
+    return await activeEvaluationPromises.get(sessionId);
+  }
+
+  const pipelinePromise = (async () => {
+    try {
+      return await executeEvaluationPipeline({ sessionId, userId, candidateProfile, forceRecalculate, existingResultDoc: resultDoc });
+    } finally {
+      activeEvaluationPromises.delete(sessionId);
+    }
+  })();
+
+  activeEvaluationPromises.set(sessionId, pipelinePromise);
+  return await pipelinePromise;
+}
+
+async function executeEvaluationPipeline({ sessionId, userId, candidateProfile = null, forceRecalculate = false, existingResultDoc = null }) {
+  let resultDoc = existingResultDoc || (await RealInterviewResult.findOne({ sessionId }));
 
   // Snapshot previous valid result for fallback safety
   const previousValidResult = resultDoc && resultDoc.status === "COMPLETED" ? {
@@ -51,7 +76,7 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
     status: resultDoc.status,
   } : null;
 
-  // 2. Fetch main Interview session if available
+  // Fetch main Interview session if available
   let mainInterviewSession = null;
   if (Interview.db?.models?.Interview) {
     mainInterviewSession = await Interview.findOne({ _id: sessionId }).catch(() => null);
@@ -78,11 +103,15 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
     await resultDoc.save();
   }
 
-  if (mainInterviewSession) {
+  if (mainInterviewSession && mainInterviewSession.status !== "completed") {
     mainInterviewSession.status = "SUBMITTED";
     await mainInterviewSession.save();
   }
 
+  const sessionBYOK = sessionManager.getSessionBYOK(sessionId);
+  if (sessionBYOK && sessionBYOK.apiKey) {
+    console.log(`[BYOK] evaluationUsingSessionKey=true`);
+  }
 
   const successfulRounds = [];
   const failedRounds = [];
@@ -122,18 +151,24 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
     // 1. APTITUDE ROUND CALCULATION (Deterministic)
     // =============================================================
     let aptitudeSessionResult = { evaluations: [] };
-    try {
-      aptitudeSessionResult = await evaluateAptitudeSession({
-        sessionId,
-        candidateAnswers: aptSessionDoc?.answers || mainInterviewAnswers,
-        userId: effectiveUserId,
-      });
+    const isAptAlreadyComplete = (aptSessionDoc?.evaluationCompleted || aptSessionDoc?.status === "completed") && Array.isArray(aptSessionDoc?.answers);
+
+    if (isAptAlreadyComplete && !forceRecalculate) {
       successfulRounds.push("aptitude");
-    } catch (err) {
-      console.warn(`[RESULT-EVALUATION] round=aptitude status=AI_FAILED errorCode=${err.message} fallback=LOCAL_OR_UNAVAILABLE`);
-      console.log(`[RESULT-EVALUATION] round=aptitude status=CONTINUING_AFTER_FAILURE`);
-      failedRounds.push("aptitude");
-      evaluationWarnings.push(`Aptitude evaluation note: ${err.message}`);
+      aptitudeSessionResult = { evaluations: aptSessionDoc.answers };
+    } else {
+      try {
+        aptitudeSessionResult = await evaluateAptitudeSession({
+          sessionId,
+          candidateAnswers: aptSessionDoc?.answers || mainInterviewAnswers,
+          userId: effectiveUserId,
+        });
+        successfulRounds.push("aptitude");
+      } catch (err) {
+        console.warn(`[RESULT-EVALUATION] round=aptitude status=AI_FAILED errorCode=${err.message} fallback=LOCAL_OR_UNAVAILABLE`);
+        failedRounds.push("aptitude");
+        evaluationWarnings.push(`Aptitude evaluation note: ${err.message}`);
+      }
     }
 
     const aptitudeQuestionResults = [];
@@ -197,25 +232,36 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
     // 2. TECHNICAL ROUND CALCULATION (Strict AI Evaluation)
     // =============================================================
     let techSessionResult = { evaluations: [] };
-    try {
-      techSessionResult = await evaluateTechnicalInterviewSession({
-        sessionId,
-        candidateProfile: effectiveProfile,
-        forceRecalculate,
-      });
+    const isTechAlreadyComplete = (techSessionDoc?.evaluationCompleted || techSessionDoc?.evaluationStatus === "COMPLETED") &&
+      Array.isArray(techSessionDoc?.answers) &&
+      techSessionDoc.answers.length >= techQuestions.length &&
+      techSessionDoc.answers.every((a) => a.status !== "EVALUATION_FAILED" && a.evaluationSource !== "AI_FAILED");
+
+    if (isTechAlreadyComplete && !forceRecalculate) {
+      console.log(`[RealInterviewResultService] Session ${sessionId} Technical round already COMPLETED. Skipping AI calls.`);
       successfulRounds.push("technical");
-    } catch (err) {
-      console.error(`[RESULT-EVALUATION] round=technical status=AI_FAILED errorCode=${err.message}`);
-      failedRounds.push("technical");
-      evaluationWarnings.push(`Technical AI evaluation unavailable: ${err.message}`);
-      if (err.isQuotaExhausted || /quota|rate limit|rate_limit|credit|billing|429|402|tokens per minute|requests per minute|tpm|rpm|insufficient_quota/i.test(err.message || "")) {
-        quotaErrorInfo = {
-          round: "technical",
-          keySource: err.keySource || "PLATFORM_ENV",
-          mode: err.mode || "PLATFORM",
-          category: err.category || "PERMANENT_QUOTA",
-          message: err.message,
-        };
+      techSessionResult = { evaluations: techSessionDoc.answers };
+    } else {
+      try {
+        techSessionResult = await evaluateTechnicalInterviewSession({
+          sessionId,
+          candidateProfile: effectiveProfile,
+          forceRecalculate: false,
+        });
+        successfulRounds.push("technical");
+      } catch (err) {
+        console.error(`[RESULT-EVALUATION] round=technical status=AI_FAILED errorCode=${err.message}`);
+        failedRounds.push("technical");
+        evaluationWarnings.push(`Technical AI evaluation unavailable: ${err.message}`);
+        if (err.isQuotaExhausted || /quota|rate limit|rate_limit|credit|billing|429|402|tokens per minute|requests per minute|tpm|rpm|insufficient_quota/i.test(err.message || "")) {
+          quotaErrorInfo = {
+            round: "technical",
+            keySource: err.keySource || "PLATFORM_ENV",
+            mode: err.mode || "PLATFORM",
+            category: err.category || "PERMANENT_QUOTA",
+            message: err.message,
+          };
+        }
       }
     }
 
@@ -286,25 +332,36 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
     // 3. PROJECT ROUND CALCULATION (Strict AI Evaluation)
     // =============================================================
     let projectSessionResult = { evaluations: [] };
-    try {
-      projectSessionResult = await evaluateProjectInterviewSession({
-        sessionId,
-        candidateProfile: effectiveProfile,
-        forceRecalculate,
-      });
+    const isProjAlreadyComplete = (projSessionDoc?.evaluationCompleted || projSessionDoc?.evaluationStatus === "COMPLETED") &&
+      Array.isArray(projSessionDoc?.answers) &&
+      projSessionDoc.answers.length >= projectQuestions.length &&
+      projSessionDoc.answers.every((a) => a.status !== "EVALUATION_FAILED" && a.evaluationSource !== "AI_FAILED");
+
+    if (isProjAlreadyComplete && !forceRecalculate) {
+      console.log(`[RealInterviewResultService] Session ${sessionId} Project round already COMPLETED. Skipping AI calls.`);
       successfulRounds.push("project");
-    } catch (err) {
-      console.error(`[RESULT-EVALUATION] round=project status=AI_FAILED errorCode=${err.message}`);
-      failedRounds.push("project");
-      evaluationWarnings.push(`Project AI evaluation unavailable: ${err.message}`);
-      if (err.isQuotaExhausted || /quota|rate limit|rate_limit|credit|billing|429|402|tokens per minute|requests per minute|tpm|rpm|insufficient_quota/i.test(err.message || "")) {
-        quotaErrorInfo = quotaErrorInfo || {
-          round: "project",
-          keySource: err.keySource || "PLATFORM_ENV",
-          mode: err.mode || "PLATFORM",
-          category: err.category || "PERMANENT_QUOTA",
-          message: err.message,
-        };
+      projectSessionResult = { evaluations: projSessionDoc.answers };
+    } else {
+      try {
+        projectSessionResult = await evaluateProjectInterviewSession({
+          sessionId,
+          candidateProfile: effectiveProfile,
+          forceRecalculate: false,
+        });
+        successfulRounds.push("project");
+      } catch (err) {
+        console.error(`[RESULT-EVALUATION] round=project status=AI_FAILED errorCode=${err.message}`);
+        failedRounds.push("project");
+        evaluationWarnings.push(`Project AI evaluation unavailable: ${err.message}`);
+        if (err.isQuotaExhausted || /quota|rate limit|rate_limit|credit|billing|429|402|tokens per minute|requests per minute|tpm|rpm|insufficient_quota/i.test(err.message || "")) {
+          quotaErrorInfo = quotaErrorInfo || {
+            round: "project",
+            keySource: err.keySource || "PLATFORM_ENV",
+            mode: err.mode || "PLATFORM",
+            category: err.category || "PERMANENT_QUOTA",
+            message: err.message,
+          };
+        }
       }
     }
 
@@ -380,25 +437,36 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
     // 4. HR ROUND CALCULATION (Strict AI Evaluation)
     // =============================================================
     let hrSessionResult = { evaluations: [] };
-    try {
-      hrSessionResult = await evaluateHRInterviewSession({
-        sessionId,
-        candidateProfile: effectiveProfile,
-        forceRecalculate,
-      });
+    const isHRAlreadyComplete = (hrSessionDoc?.evaluationCompleted || hrSessionDoc?.evaluationStatus === "COMPLETED") &&
+      Array.isArray(hrSessionDoc?.answers) &&
+      hrSessionDoc.answers.length >= hrQuestions.length &&
+      hrSessionDoc.answers.every((a) => a.status !== "EVALUATION_FAILED" && a.evaluationSource !== "AI_FAILED");
+
+    if (isHRAlreadyComplete && !forceRecalculate) {
+      console.log(`[RealInterviewResultService] Session ${sessionId} HR round already COMPLETED. Skipping AI calls.`);
       successfulRounds.push("hr");
-    } catch (err) {
-      console.error(`[RESULT-EVALUATION] round=hr status=AI_FAILED errorCode=${err.message}`);
-      failedRounds.push("hr");
-      evaluationWarnings.push(`HR AI evaluation unavailable: ${err.message}`);
-      if (err.isQuotaExhausted || /quota|rate limit|rate_limit|credit|billing|429|402|tokens per minute|requests per minute|tpm|rpm|insufficient_quota/i.test(err.message || "")) {
-        quotaErrorInfo = quotaErrorInfo || {
-          round: "hr",
-          keySource: err.keySource || "PLATFORM_ENV",
-          mode: err.mode || "PLATFORM",
-          category: err.category || "PERMANENT_QUOTA",
-          message: err.message,
-        };
+      hrSessionResult = { evaluations: hrSessionDoc.answers };
+    } else {
+      try {
+        hrSessionResult = await evaluateHRInterviewSession({
+          sessionId,
+          candidateProfile: effectiveProfile,
+          forceRecalculate: false,
+        });
+        successfulRounds.push("hr");
+      } catch (err) {
+        console.error(`[RESULT-EVALUATION] round=hr status=AI_FAILED errorCode=${err.message}`);
+        failedRounds.push("hr");
+        evaluationWarnings.push(`HR AI evaluation unavailable: ${err.message}`);
+        if (err.isQuotaExhausted || /quota|rate limit|rate_limit|credit|billing|429|402|tokens per minute|requests per minute|tpm|rpm|insufficient_quota/i.test(err.message || "")) {
+          quotaErrorInfo = quotaErrorInfo || {
+            round: "hr",
+            keySource: err.keySource || "PLATFORM_ENV",
+            mode: err.mode || "PLATFORM",
+            category: err.category || "PERMANENT_QUOTA",
+            message: err.message,
+          };
+        }
       }
     }
 
@@ -693,9 +761,13 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
     await resultDoc.save();
 
     if (mainInterviewSession) {
-      mainInterviewSession.status = "completed";
-      mainInterviewSession.completedAt = new Date();
-      mainInterviewSession.overallScore = percentage;
+      if (documentStatus === "COMPLETED") {
+        mainInterviewSession.status = "completed";
+        mainInterviewSession.completedAt = new Date();
+        mainInterviewSession.overallScore = percentage;
+      } else {
+        mainInterviewSession.status = "SUBMITTED";
+      }
       await mainInterviewSession.save();
     }
 
@@ -721,7 +793,7 @@ export async function calculateRealInterviewResult({ sessionId, userId, candidat
     await resultDoc.save().catch(() => {});
 
     if (mainInterviewSession) {
-      mainInterviewSession.status = previousValidResult ? "completed" : "in_progress";
+      mainInterviewSession.status = previousValidResult ? "completed" : "EVALUATION_FAILED";
       await mainInterviewSession.save().catch(() => {});
     }
 

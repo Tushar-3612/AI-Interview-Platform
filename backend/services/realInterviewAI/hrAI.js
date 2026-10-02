@@ -283,7 +283,15 @@ Evaluate all HR answers in valid JSON.`;
       throw new Error(`HR evaluation AI response missing 'evaluations' array in batch ${batchNumber}`);
     }
 
-    const batchEvaluated = parsed.evaluations.map((item) => {
+    const batchEvaluated = parsed.evaluations.map((item, itemIdx) => {
+      const itemQId = String(item.questionId || item.id || "");
+      const matchingQ =
+        chunk.find((q) => q.id === itemQId) ||
+        chunk.find((q) => String(q.i) === itemQId) ||
+        chunk.find((q) => q.id.endsWith(itemQId)) ||
+        chunk[itemIdx] ||
+        chunk[0];
+
       const calibrated = calibrateScore({
         rawScore: item.score,
         maxMarks: 20,
@@ -299,7 +307,8 @@ Evaluate all HR answers in valid JSON.`;
       });
 
       return {
-        questionId: String(item.questionId),
+        questionId: String(matchingQ?.id || item.questionId),
+        question: matchingQ?.q || "",
         behavioralDimensions: item.behavioralDimensions || {
           confidence: 4.0,
           selfAwareness: 4.0,

@@ -435,13 +435,77 @@ export const completeInterviewSession = async (req, res) => {
 
 /**
  * GET /api/student/interviews
- * Fetches list of all interview sessions for current student.
+ * Fetches list of all Real Interview sessions for current authenticated student.
  */
 export const getStudentInterviews = async (req, res) => {
   try {
     const userId = req.user?.id || req.user?._id;
-    const interviews = await Interview.find({ userId }).sort({ createdAt: -1 }).lean();
-    res.status(200).json(interviews || []);
+    if (!userId) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+
+    const oid = mongoose.Types.ObjectId.isValid(userId) ? new mongoose.Types.ObjectId(userId) : userId;
+
+    const interviews = await Interview.find({
+      userId: oid,
+      interviewType: { $in: ["actual", "real"] },
+    })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    if (!interviews || interviews.length === 0) {
+      return res.status(200).json([]);
+    }
+
+    const sessionIds = interviews.map((i) => i._id.toString());
+    const interviewObjIds = interviews.map((i) => i._id);
+
+    const results = await RealInterviewResult.find({
+      $or: [
+        { sessionId: { $in: sessionIds } },
+        { interviewId: { $in: interviewObjIds } },
+      ],
+    }).lean();
+
+    const resultMap = new Map();
+    for (const r of results) {
+      if (r.sessionId) resultMap.set(String(r.sessionId), r);
+      if (r.interviewId) resultMap.set(String(r.interviewId), r);
+    }
+
+    const enriched = interviews.map((item) => {
+      const sId = item._id.toString();
+      const r = resultMap.get(sId) || null;
+      const isCompleted = String(item.status).toLowerCase() === "completed" || r?.status === "COMPLETED";
+
+      return {
+        ...item,
+        _id: sId,
+        id: sId,
+        sessionId: sId,
+        interviewId: sId,
+        status: isCompleted ? "completed" : item.status,
+        overallScore: r?.totalObtained != null ? r.totalObtained : (item.overallScore != null ? item.overallScore : null),
+        percentage: r?.percentage != null ? r.percentage : (item.overallScore != null ? item.overallScore : null),
+        startedAt: item.startedAt || item.createdAt,
+        completedAt: item.completedAt || r?.completedAt || null,
+        result: r
+          ? {
+              sessionId: r.sessionId,
+              status: r.status,
+              totalObtained: r.totalObtained,
+              maximumMarks: r.maximumMarks || 100,
+              percentage: r.percentage,
+              rounds: r.rounds || null,
+              attemptedQuestionsCount: r.attemptedQuestionsCount || 0,
+              totalQuestionsCount: r.totalQuestionsCount || 41,
+              completedAt: r.completedAt || null,
+            }
+          : null,
+      };
+    });
+
+    res.status(200).json(enriched);
   } catch (error) {
     console.error("[StudentInterviewController] Get student interviews error:", error.message);
     res.status(500).json({ success: false, message: error.message || "Failed to fetch interviews list" });

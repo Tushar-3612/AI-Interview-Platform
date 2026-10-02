@@ -565,21 +565,27 @@ export async function evaluateProjectInterviewSession({ sessionId, candidateProf
         onBatchComplete: async (batchEvaluated) => {
           for (const item of batchEvaluated) {
             const qIdStr = String(item.questionId);
-            const targetQ = allQuestions.find((q) => q._id.toString() === qIdStr);
-            const baseObj = questionsToEvaluate.find((q) => q.questionId === qIdStr);
-            const maxScore = targetQ?.maxMarks || (targetQ?.difficulty === "easy" ? 5 : targetQ?.difficulty === "hard" ? 20 : 10);
+            const targetQ =
+              allQuestions.find((q) => q._id.toString() === qIdStr) ||
+              allQuestions.find((q) => q.question === item.question);
+            const baseObj =
+              questionsToEvaluate.find((q) => q.questionId === qIdStr) ||
+              questionsToEvaluate.find((q) => q.question === item.question);
+            const maxScore = targetQ?.maxMarks || baseObj?.maxScore || (targetQ?.difficulty === "easy" ? 5 : targetQ?.difficulty === "hard" ? 20 : 10);
 
             const rawScore = Number(item.score);
             const score = isNaN(rawScore) ? 0 : Math.max(0, Math.min(maxScore, Math.round(rawScore)));
             const rating = item.rating || (score >= maxScore * 0.8 ? "Strong" : score >= maxScore * 0.5 ? "Acceptable" : "Weak");
 
+            const finalQuestionText = String(targetQ?.question || baseObj?.question || item.question || "").trim();
+
             const answerData = {
-              questionId: targetQ ? targetQ._id : item.questionId,
-              question: targetQ?.question || baseObj?.question || "",
-              difficulty: targetQ?.difficulty || "medium",
+              questionId: targetQ ? targetQ._id : baseObj?.questionId || qIdStr,
+              question: finalQuestionText || "Project question",
+              difficulty: targetQ?.difficulty || baseObj?.difficulty || item.difficulty || "medium",
               maxScore,
-              topic: targetQ?.topic || "",
-              category: targetQ?.category || "resume_project",
+              topic: targetQ?.topic || baseObj?.topic || "",
+              category: targetQ?.category || baseObj?.category || "resume_project",
               projectName: targetQ?.projectName || baseObj?.projectName || "Project",
               candidateAnswer: baseObj?.candidateAnswer || "(No answer submitted)",
               score,
@@ -591,11 +597,11 @@ export async function evaluateProjectInterviewSession({ sessionId, candidateProf
               incorrectPoints: Array.isArray(item.incorrectPoints) ? item.incorrectPoints : [],
               grammarIssues: Array.isArray(item.grammarIssues) ? item.grammarIssues : [],
               feedback: String(item.feedback || "Evaluation complete.").trim(),
-              betterAnswer: String(item.betterAnswer || targetQ?.expectedKnowledge || "").trim(),
+              betterAnswer: String(item.betterAnswer || targetQ?.expectedKnowledge || baseObj?.expectedKnowledge || "").trim(),
               submittedAt: new Date(),
             };
 
-            const existingAnsIndex = session.answers.findIndex((a) => a.questionId.toString() === qIdStr);
+            const existingAnsIndex = session.answers.findIndex((a) => a.questionId.toString() === String(answerData.questionId));
             if (existingAnsIndex !== -1) {
               answerData.submittedAt = session.answers[existingAnsIndex].submittedAt || answerData.submittedAt;
               session.answers[existingAnsIndex] = answerData;

@@ -43,9 +43,12 @@ export class AIErrorClassifier {
     if (
       statusCode === 401 ||
       statusCode === 403 ||
+      normalized.authenticationError ||
       lowerMsg.includes("invalid api key") ||
       lowerMsg.includes("api key not valid") ||
       lowerMsg.includes("api_key_invalid") ||
+      lowerMsg.includes("permission_denied") ||
+      lowerMsg.includes("permission denied") ||
       lowerMsg.includes("incorrect api key") ||
       lowerMsg.includes("unauthorized") ||
       lowerMsg.includes("authentication failed") ||

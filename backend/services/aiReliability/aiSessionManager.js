@@ -27,6 +27,7 @@ export class AISessionManager {
     });
 
     safeLogger.info(`[AISessionManager] Bound BYOK provider [${providerName}] to session [${sessionId}].`);
+    console.log(`[BYOK] provider=${providerName}\n[BYOK] sessionId=${sessionId}\n[BYOK] apiKeyReceived=true\n[BYOK] sessionKeyAttached=true`);
   }
 
   /**

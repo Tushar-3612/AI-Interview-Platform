@@ -209,6 +209,7 @@ export const submitCode = async (req, res) => {
       questionIndex,
       directTestCases = null,
       questionTitle: clientTitle = "",
+      timeTakenMs = 0,
     } = req.body;
 
     const userId = req.user?._id || req.user?.id || null;
@@ -265,6 +266,11 @@ export const submitCode = async (req, res) => {
       memoryLimit,
     });
 
+    const resolvedTimeTakenMs =
+      Number(timeTakenMs) ||
+      Math.round(Number(suiteResult.executionTime || 0) * 1000) ||
+      0;
+
     // 3. Persist submission record in database
     let savedSubmission = null;
     try {
@@ -286,7 +292,7 @@ export const submitCode = async (req, res) => {
         memory: suiteResult.memory,
         compileOutput: suiteResult.compileOutput || "",
         results: suiteResult.testResults,
-        timeTakenMs,
+        timeTakenMs: resolvedTimeTakenMs,
       });
     } catch (saveErr) {
       console.warn("Failed to persist submission record:", saveErr.message);

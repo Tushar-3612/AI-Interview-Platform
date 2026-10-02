@@ -513,19 +513,25 @@ export async function evaluateHRInterviewSession({ sessionId, candidateProfile =
         onBatchComplete: async (batchEvaluated) => {
           for (const item of batchEvaluated) {
             const qIdStr = String(item.questionId);
-            const targetQ = questionsWithAnswers.find((q) => q._id.toString() === qIdStr);
-            const baseObj = questionsToEvaluate.find((q) => q.questionId.toString() === qIdStr);
+            const targetQ =
+              questionsWithAnswers.find((q) => q._id.toString() === qIdStr) ||
+              questionsWithAnswers.find((q) => q.question === item.question);
+            const baseObj =
+              questionsToEvaluate.find((q) => q.questionId.toString() === qIdStr) ||
+              questionsToEvaluate.find((q) => q.question === item.question);
 
             const rawScore = Number(item.score);
             const score = isNaN(rawScore) ? 0 : Math.max(0, Math.min(20, Math.round(rawScore)));
             const status = score >= 16 ? "CORRECT" : score >= 8 ? "PARTIALLY_CORRECT" : score > 0 ? "PARTIALLY_CORRECT" : "INCORRECT";
             const rating = score >= 16 ? "Exceptional" : score >= 11 ? "Strong" : score >= 6 ? "Average" : "Weak";
 
+            const finalQuestionText = String(targetQ?.question || baseObj?.question || item.question || "").trim();
+
             const answerData = {
-              questionId: targetQ ? targetQ._id : item.questionId,
-              question: targetQ?.question || baseObj?.question || "",
-              difficulty: targetQ?.difficulty || "medium",
-              category: targetQ?.category || "Behavioral",
+              questionId: targetQ ? targetQ._id : baseObj?.questionId || qIdStr,
+              question: finalQuestionText || "HR behavioral question",
+              difficulty: targetQ?.difficulty || baseObj?.difficulty || item.difficulty || "medium",
+              category: targetQ?.category || baseObj?.category || "Behavioral",
               candidateAnswer: baseObj?.candidateAnswer || "(No answer provided)",
               score,
               maxScore: 20,
@@ -539,7 +545,7 @@ export async function evaluateHRInterviewSession({ sessionId, candidateProfile =
               submittedAt: new Date(),
             };
 
-            const existingAnsIndex = session.answers.findIndex((a) => String(a.questionId) === qIdStr);
+            const existingAnsIndex = session.answers.findIndex((a) => String(a.questionId) === String(answerData.questionId));
             if (existingAnsIndex !== -1) {
               answerData.submittedAt = session.answers[existingAnsIndex].submittedAt || answerData.submittedAt;
               session.answers[existingAnsIndex] = answerData;

@@ -10,7 +10,7 @@ export function normalizeProviderError(error) {
   const isAuth =
     status === 401 ||
     status === 403 ||
-    /unauthorized|invalid api key|api key not valid|api_key_invalid|invalid_key|forbidden|401|403/i.test(errMsg);
+    /unauthorized|invalid api key|api key not valid|api_key_invalid|permission_denied|permission denied|invalid_key|forbidden|401|403/i.test(errMsg);
 
   const isQuota =
     status === 402 ||

@@ -50,11 +50,12 @@ export const setSessionBYOKController = async (req, res) => {
     const userId = req.user?._id || req.user?.id;
     if (userId) {
       const interview = await Interview.findById(sessionId).lean().catch(() => null);
-      if (interview && interview.user && String(interview.user) !== String(userId)) {
+      if (interview && interview.userId && String(interview.userId) !== String(userId) && interview.user && String(interview.user) !== String(userId)) {
         return res.status(403).json({ success: false, message: "Unauthorized: You do not own this interview session" });
       }
     }
 
+    console.log(`[BYOK] provider=${provider}\n[BYOK] sessionId=${sessionId}\n[BYOK] apiKeyReceived=true\n[BYOK] sessionKeyAttached=true`);
     sessionManager.setSessionBYOK(sessionId, provider, apiKey, userId);
     res.status(200).json({
       success: true,
@@ -781,6 +782,10 @@ export const getRealInterviewResultStatus = async (req, res) => {
 
     const resultDoc = await RealInterviewResult.findOne({ sessionId }).lean();
     if (resultDoc) {
+      const authUserId = req.user?.id || req.user?._id;
+      if (authUserId && resultDoc.userId && resultDoc.userId.toString() !== authUserId.toString() && req.user?.role !== "admin") {
+        return res.status(403).json({ success: false, message: "Unauthorized. You are not permitted to access another candidate's interview." });
+      }
       return res.status(200).json({
         success: true,
         sessionId,
@@ -806,6 +811,11 @@ export const getRealInterviewResultStatus = async (req, res) => {
         status: "NOT_FOUND",
         message: "Interview session not found",
       });
+    }
+
+    const authUserId = req.user?.id || req.user?._id;
+    if (authUserId && interviewDoc.userId && interviewDoc.userId.toString() !== authUserId.toString() && req.user?.role !== "admin") {
+      return res.status(403).json({ success: false, message: "Unauthorized. You are not permitted to access another candidate's interview." });
     }
 
     let status = "NOT_SUBMITTED";
@@ -843,6 +853,11 @@ export const getRealInterviewResult = async (req, res) => {
     const resultDoc = await RealInterviewResult.findOne({ sessionId }).lean();
     if (!resultDoc) {
       return res.status(404).json({ success: false, message: "Result not found for this session" });
+    }
+
+    const authUserId = req.user?.id || req.user?._id;
+    if (authUserId && resultDoc.userId && resultDoc.userId.toString() !== authUserId.toString() && req.user?.role !== "admin") {
+      return res.status(403).json({ success: false, message: "Unauthorized. You are not permitted to access another candidate's interview result." });
     }
 
     if (resultDoc.status === "EVALUATION_FAILED" || resultDoc.status === "PARTIAL_EVALUATION") {
@@ -897,12 +912,13 @@ export const retryRealInterviewEvaluation = async (req, res) => {
       return res.status(400).json({ success: false, message: "sessionId is required to retry evaluation" });
     }
 
-    const { provider, apiKey, forceRecalculate = true } = req.body || {};
+    const { provider, apiKey, forceRecalculate = false } = req.body || {};
     if (provider && apiKey) {
-      sessionManager.setSessionBYOK(sessionId, provider, apiKey);
+      console.log(`[BYOK] provider=${provider}\n[BYOK] sessionId=${sessionId}\n[BYOK] apiKeyReceived=true\n[BYOK] sessionKeyAttached=true`);
+      sessionManager.setSessionBYOK(sessionId, provider, apiKey, userId);
     }
 
-    const result = await calculateRealInterviewResult({ sessionId, userId, forceRecalculate: true });
+    const result = await calculateRealInterviewResult({ sessionId, userId, forceRecalculate: Boolean(forceRecalculate) });
     res.status(200).json({
       success: result.status === "COMPLETED",
       sessionId,

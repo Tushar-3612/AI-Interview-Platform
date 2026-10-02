@@ -24,6 +24,7 @@ const starterCodeSchema = new mongoose.Schema(
     javascript: { type: String, default: "" },
     java: { type: String, default: "" },
     cpp: { type: String, default: "" },
+    c: { type: String, default: "" },
   },
   { _id: false }
 );

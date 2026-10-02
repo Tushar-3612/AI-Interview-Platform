@@ -14,6 +14,7 @@ import {
   X,
   Terminal,
   BrainCircuit,
+  History,
 } from "lucide-react";
 import { useTheme } from "../../hooks/useTheme";
 import { getAuthUser } from "../../hooks/useStudentProfile";
@@ -27,6 +28,7 @@ const NAV_ITEMS = [
   { label: "Coding Assessment", path: "/coding-assessments", icon: Terminal },
   { label: "Interview Practice", path: "/interview-practice", icon: BookOpen },
   { label: "Mock Interview", path: "/mock-interview", icon: Sparkles },
+  { label: "Interview History", path: "/interview-history", icon: History },
   { label: "Placement", path: "/placement-dashboard", icon: Compass },
   { label: "About", path: "/about", icon: HelpCircle },
   { label: "Contact", path: "/contact", icon: MessageSquare },

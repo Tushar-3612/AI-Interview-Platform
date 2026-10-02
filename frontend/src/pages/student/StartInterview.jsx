@@ -1601,37 +1601,60 @@ function StartInterview({
     setOutputTab("Test Result");
     const toastId = toast.loading("Executing code via Judge0 online compiler...");
     try {
-      const rawInput = customInput.trim() || currentQuestion.testCases?.[0]?.input || currentQuestion.sampleInput || "3 5";
-      const effectiveInput = rawInput.replace(/\b[a-zA-Z_]\w*\s*=\s*/g, "").trim();
-      const { data } = await api.post(
-        "/api/code/run",
-        {
-          language: codingLanguage,
-          code: currentCode,
-          input: effectiveInput,
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const currentSessionId = sessionIdRef.current || sessionId;
+      const qId = currentQuestion._id || currentQuestion.id || currentQuestion.questionId;
+      const customIn = customInput.trim();
 
-      const isErr = data.status === "error" || data.status === "compile_error" || data.status === "runtime_error" || data.status === "time_limit";
+      let data;
+      if (customIn) {
+        // Run against candidate's custom stdin input
+        const res = await api.post(
+          "/api/code/run",
+          {
+            language: codingLanguage,
+            code: currentCode,
+            input: customIn,
+          },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        data = res.data;
+      } else {
+        // Run against question's visible test cases via Real Interview coding runner
+        const res = await api.post(
+          "/api/real-interview/coding/run",
+          {
+            sessionId: currentSessionId,
+            questionId: qId,
+            language: codingLanguage,
+            sourceCode: currentCode,
+          },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        data = res.data;
+      }
+
+      const isErr = data.status === "error" || data.status === "compile_error" || data.status === "runtime_error" || data.status === "time_limit" || data.status === "Compilation Error";
       const normalizedRun = {
         type: isErr ? "error" : "success",
         status: data.status,
         statusDescription: data.statusDescription || (isErr ? "Error" : "Accepted"),
-        output: data.output || data.stdout || data.compileOutput || data.stderr || "No output produced",
+        output: data.output || data.stdout || data.compileOutput || data.stderr || (data.passed !== undefined ? `Passed ${data.passed}/${data.total} visible test cases` : "No output produced"),
         stdout: data.stdout || "",
         stderr: data.stderr || "",
         compileOutput: data.compileOutput || "",
-        timeMs: data.timeMs || 0,
-        timeSeconds: data.timeSeconds || "0.00",
-        memoryKB: data.memoryKB || 0,
+        timeMs: data.timeMs || (data.executionTime ? Math.round(parseFloat(data.executionTime) * 1000) : 0),
+        timeSeconds: data.timeSeconds || (data.executionTime ? String(data.executionTime) : "0.00"),
+        memoryKB: data.memoryKB || data.memory || 0,
+        testResults: data.testResults || [],
       };
 
       setCompilerOutput(normalizedRun);
       if (isErr) {
-        toast.error(data.statusDescription || "Execution encountered errors", { id: toastId });
+        toast.error(data.statusDescription || data.status || "Execution encountered errors", { id: toastId });
+      } else if (data.passed !== undefined) {
+        toast.success(`Passed ${data.passed}/${data.total} visible test cases`, { id: toastId });
       } else {
-        toast.success(`Executed in ${data.timeSeconds || "0.0"}s`, { id: toastId });
+        toast.success(`Executed in ${normalizedRun.timeSeconds}s`, { id: toastId });
       }
     } catch (err) {
       console.error("Compiler error:", err);
@@ -1660,40 +1683,54 @@ function StartInterview({
     setIsSubmittingCode(true);
     setCompilerOutput(null);
     setOutputTab("Test Result");
-    const toastId = toast.loading("Evaluating solution against all test cases...");
+    const toastId = toast.loading("Evaluating solution against test cases...");
 
     try {
-      const qTestCases = (currentQuestion.testCases && currentQuestion.testCases.length > 0)
-        ? currentQuestion.testCases
-        : [
-            { input: currentQuestion.sampleInput || "3 5", expected: currentQuestion.sampleOutput || "8", isHidden: false },
-            { input: "10 20", expected: "30", isHidden: false },
-            { input: "100 200", expected: "300", isHidden: true },
-          ];
+      const currentSessionId = sessionIdRef.current || sessionId;
+      const qId = currentQuestion._id || currentQuestion.id || currentQuestion.questionId;
 
       const { data } = await api.post(
-        "/api/code/submit",
+        "/api/real-interview/coding/submit",
         {
+          sessionId: currentSessionId,
+          questionId: qId,
           language: codingLanguage,
-          code: currentCode,
-          interviewId: sessionId,
-          roundId: "coding",
-          questionId: currentQuestion.id || currentQuestion.questionId || `Q-${currentIndex}`,
-          directTestCases: qTestCases,
-          questionTitle: currentQuestion.title || currentQuestion.question || "Coding Problem",
+          sourceCode: currentCode,
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      setCodingSubmissionResult(data);
+      const passed = data.passedTests !== undefined ? data.passedTests : data.passed || 0;
+      const total = data.totalTests !== undefined ? data.totalTests : data.total || 0;
+      const maxMarks = data.maxMarks || currentQuestion.marks || 20;
+      const questionScore = data.score !== undefined ? data.score : 0;
+      const scorePercentage = maxMarks > 0 ? Math.round((questionScore / maxMarks) * 100) : 0;
+
+      const normalizedSubmission = {
+        status: data.status,
+        passed,
+        total,
+        passedCount: passed,
+        totalCount: total,
+        score: scorePercentage,
+        questionScore,
+        maxMarks,
+        execution_time: data.executionTime,
+        memory: data.memory,
+        compileOutput: data.compileOutput || "",
+        test_results: data.testResults || [],
+        results: data.testResults || [],
+      };
+
+      setCodingSubmissionResult(normalizedSubmission);
       handleSaveAnswer("answered", currentCode);
 
-      if (data.status === "completed" || data.passed === data.total) {
-        toast.success(`🎉 Perfect! Passed ${data.passed}/${data.total} test cases (${data.score}%)`, { id: toastId, duration: 4000 });
-      } else if (data.status === "compile_error") {
+      if (data.status === "Accepted" || (passed === total && total > 0)) {
+        toast.success(`🎉 Perfect! Passed all ${passed}/${total} test cases (${scorePercentage}%)`, { id: toastId, duration: 4000 });
+      } else if (data.status === "Compilation Error" || data.status === "compile_error") {
         toast.error(`Compilation Error: ${data.compileOutput?.slice(0, 80) || "Build failed"}`, { id: toastId });
       } else {
-        toast(`Passed ${data.passed}/${data.total} test cases (${data.score}%)`, { id: toastId, icon: "⚠️" });
+        toast(`Passed ${passed}/${total} test cases (${scorePercentage}%) [${data.status}]`, { id: toastId, icon: "⚠️" });
       }
     } catch (err) {
       console.error("Submit error:", err);
@@ -2248,11 +2285,13 @@ function StartInterview({
                       {(() => {
                         const exList = Array.isArray(currentQuestion.examples) && currentQuestion.examples.length > 0
                           ? currentQuestion.examples
-                          : (currentQuestion.sampleInput || currentQuestion.sampleOutput)
-                            ? [{ input: currentQuestion.sampleInput, output: currentQuestion.sampleOutput, explanation: currentQuestion.explanation }]
+                          : (currentQuestion.visibleTestCases && currentQuestion.visibleTestCases.length > 0)
+                            ? currentQuestion.visibleTestCases.map((tc) => ({ input: tc.input, output: tc.expected }))
                             : (currentQuestion.testCases && currentQuestion.testCases.filter((tc) => !tc.isHidden).length > 0)
                               ? currentQuestion.testCases.filter((tc) => !tc.isHidden).slice(0, 2).map((tc) => ({ input: tc.input, output: tc.expected }))
-                              : [];
+                              : (currentQuestion.sampleInput || currentQuestion.sampleOutput)
+                                ? [{ input: currentQuestion.sampleInput, output: currentQuestion.sampleOutput, explanation: currentQuestion.explanation }]
+                                : [];
 
                         if (exList.length === 0) return null;
 
@@ -2313,7 +2352,7 @@ function StartInterview({
                             <textarea
                               value={customInput}
                               onChange={(e) => setCustomInput(e.target.value)}
-                              placeholder={(currentQuestion.testCases?.[0]?.input || currentQuestion.sampleInput || "3 5").replace(/\b[a-zA-Z_]\w*\s*=\s*/g, "").trim()}
+                              placeholder={(currentQuestion.visibleTestCases?.[0]?.input || currentQuestion.examples?.[0]?.input || currentQuestion.testCases?.[0]?.input || currentQuestion.sampleInput || "").replace(/\b[a-zA-Z_]\w*\s*=\s*/g, "").trim()}
                               rows={2}
                               className="w-full bg-slate-900 border border-white/10 rounded-lg p-2 text-xs font-mono text-white placeholder:text-slate-500 outline-none focus:border-[#FF6B35]/70 resize-none transition"
                             />
@@ -2473,11 +2512,13 @@ function StartInterview({
                       } : null,
                     }}
                     testCases={
-                      (currentQuestion.testCases && currentQuestion.testCases.length > 0)
-                        ? currentQuestion.testCases
-                        : (currentQuestion.sampleInput || currentQuestion.sampleOutput)
-                          ? [{ input: currentQuestion.sampleInput || "3 5", expected: currentQuestion.sampleOutput || "8", isHidden: false }]
-                          : []
+                      (currentQuestion.visibleTestCases && currentQuestion.visibleTestCases.length > 0)
+                        ? currentQuestion.visibleTestCases
+                        : (currentQuestion.testCases && currentQuestion.testCases.length > 0)
+                          ? currentQuestion.testCases
+                          : (currentQuestion.examples && currentQuestion.examples.length > 0)
+                            ? currentQuestion.examples.map((ex) => ({ input: ex.input, expected: ex.output, isHidden: false }))
+                            : []
                     }
                     running={isRunningCode}
                     submitting={isSubmittingCode}
