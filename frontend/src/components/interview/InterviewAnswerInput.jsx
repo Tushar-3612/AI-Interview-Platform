@@ -1,126 +1,22 @@
 import React, { useState, useEffect, useRef, useCallback, forwardRef, useImperativeHandle } from "react";
-import { Mic, MicOff, Keyboard } from "lucide-react";
+import { Mic, MicOff, Loader2, Sparkles, Volume2 } from "lucide-react";
 import toast from "react-hot-toast";
 import api from "../../utils/api";
 
 /**
- * Filter out pure Whisper / STT hallucinations during silence
- * (e.g. "Thank you.", "Thanks for watching.", "Bye.", etc.)
- */
-const filterHallucinations = (str) => {
-  if (!str || typeof str !== "string") return "";
-  const trimmed = str.trim();
-  const lower = trimmed.toLowerCase().replace(/[.,!?;:"'\-]/g, "").trim();
-  const bad = new Set([
-    "thank you",
-    "thank you so much",
-    "thank you very much",
-    "thanks",
-    "thanks for watching",
-    "thank you for watching",
-    "bye",
-    "goodbye",
-    "you",
-    "so",
-    "subtitles by",
-    "translated by",
-    "subscribe",
-    "like and subscribe",
-    "mbc",
-    "silence",
-    "silence.",
-    "okay thank you",
-    "watching",
-    "please subscribe",
-  ]);
-  if (bad.has(lower)) return "";
-  return trimmed;
-};
-
-/**
- * NLP Text Post-Processing & Entity Normalization Pipeline
- * 1. Technical Entity Recognition (NER) & Casing (SQL, Null Hypothesis, Python, Machine Learning, etc.)
- * 2. Verbal Filler & Noise Removal (disfluency cleaning: "um", "uh", "err")
- * 3. Stutter / Repeated word deduplication ("the the" -> "the")
- * 4. Sentence Capitalization & Grammar normalization
- */
-export function applyNLPTextPipeline(rawText) {
-  if (!rawText || typeof rawText !== "string") return "";
-
-  let text = rawText.trim();
-  if (!text) return "";
-
-  // 1. Remove verbal fillers if at start or standalone: "um", "uh", "uhh", "err"
-  text = text.replace(/^(um+|uh+|uhh+|err+)\b\s*/gi, "");
-  text = text.replace(/\s+\b(um+|uh+|uhh+|err+)\b(?=\s+)/gi, " ");
-
-  // 2. Deduplicate stuttered adjacent words: "the the" -> "the", "is is" -> "is"
-  text = text.replace(/\b(\w+)\s+\1\b/gi, "$1");
-
-  // 3. Technical Named Entity Recognition (NER) & Normalization
-  const techEntities = [
-    { pattern: /\bnull\s*hypothesis\b/gi, replacement: "null hypothesis" },
-    { pattern: /\balternative\s*hypothesis\b/gi, replacement: "alternative hypothesis" },
-    { pattern: /\bprimary\s*key\b/gi, replacement: "primary key" },
-    { pattern: /\bforeign\s*key\b/gi, replacement: "foreign key" },
-    { pattern: /\bmachine\s*learning\b/gi, replacement: "machine learning" },
-    { pattern: /\bdeep\s*learning\b/gi, replacement: "deep learning" },
-    { pattern: /\bneural\s*network(s)?\b/gi, replacement: "neural network$1" },
-    { pattern: /\bartificial\s*intelligence\b/gi, replacement: "artificial intelligence" },
-    { pattern: /\bnode\s*js\b/gi, replacement: "Node.js" },
-    { pattern: /\breact\s*js\b/gi, replacement: "React" },
-    { pattern: /\bnext\s*js\b/gi, replacement: "Next.js" },
-    { pattern: /\bexpress\s*js\b/gi, replacement: "Express.js" },
-    { pattern: /\bjavascript\b/gi, replacement: "JavaScript" },
-    { pattern: /\btypescript\b/gi, replacement: "TypeScript" },
-    { pattern: /\bpython\b/gi, replacement: "Python" },
-    { pattern: /\bmongodb\b/gi, replacement: "MongoDB" },
-    { pattern: /\bpostgresql\b/gi, replacement: "PostgreSQL" },
-    { pattern: /\bpostgres\b/gi, replacement: "PostgreSQL" },
-    { pattern: /\bmysql\b/gi, replacement: "MySQL" },
-    { pattern: /\bsqlite\b/gi, replacement: "SQLite" },
-    { pattern: /\bsql\b/gi, replacement: "SQL" },
-    { pattern: /\bnosql\b/gi, replacement: "NoSQL" },
-    { pattern: /\bjwt\b/gi, replacement: "JWT" },
-    { pattern: /\brest\s*api\b/gi, replacement: "REST API" },
-    { pattern: /\brest\s*apis\b/gi, replacement: "REST APIs" },
-    { pattern: /\bgraphql\b/gi, replacement: "GraphQL" },
-    { pattern: /\bdocker\b/gi, replacement: "Docker" },
-    { pattern: /\bkubernetes\b/gi, replacement: "Kubernetes" },
-    { pattern: /\bapi\b/gi, replacement: "API" },
-    { pattern: /\bapis\b/gi, replacement: "APIs" },
-    { pattern: /\bjson\b/gi, replacement: "JSON" },
-    { pattern: /\bhtml\b/gi, replacement: "HTML" },
-    { pattern: /\bcss\b/gi, replacement: "CSS" },
-    { pattern: /\bgit\b/gi, replacement: "Git" },
-    { pattern: /\bgithub\b/gi, replacement: "GitHub" },
-    { pattern: /\bgitlab\b/gi, replacement: "GitLab" },
-    { pattern: /\bci\/cd\b/gi, replacement: "CI/CD" },
-    { pattern: /\boops\b/gi, replacement: "OOP" },
-  ];
-
-  for (const { pattern, replacement } of techEntities) {
-    text = text.replace(pattern, replacement);
-  }
-
-  // 4. Capitalize standalone pronoun " i " -> " I "
-  text = text.replace(/\b(i)\b/g, "I");
-
-  // 5. Sentence casing: capitalize first letter of string and after ., !, ?
-  text = text.replace(/(^\s*|\.\s*|\?\s*|\!\s*)([a-z])/g, (_, prefix, char) => {
-    return prefix + char.toUpperCase();
-  });
-
-  return text.trim();
-}
-
-/**
  * InterviewAnswerInput
  * 
- * Continuous Speech-to-Text with Non-Destructive Appending:
- * - When speaking, stopping, and speaking again, previous text is NEVER cleared.
- * - Words stream continuously and append directly into the input field.
- * - Real-time NLP entity recognition and formatting applied.
+ * Production-quality, unified Speech-to-Text answer input component.
+ * Shared across Real Interview and Company Mock / Technical Interview.
+ * 
+ * Features:
+ * 1. High-accuracy backend transcription via Groq Whisper Large V3 with technical vocabulary biasing.
+ * 2. Adaptive Voice Activity Detection (VAD) with ambient noise floor calibration.
+ * 3. Pre-roll & post-roll buffering to prevent clipping beginning and trailing syllables of words.
+ * 4. Silence rejection designed to minimize background noise and hallucination during pauses.
+ * 5. Pause resilience: 1–8 second natural pauses do not disconnect or reset the answer.
+ * 6. Non-destructive manual typing: users can edit, delete, type, or clear anytime without loss.
+ * 7. Live audio amplitude visualizer for immediate visual feedback.
  */
 const InterviewAnswerInput = forwardRef(function InterviewAnswerInput(
   {
@@ -138,17 +34,15 @@ const InterviewAnswerInput = forwardRef(function InterviewAnswerInput(
     showCharacterCount = true,
     showClearButton = true,
     disabled = false,
-    defaultMode = "type", // "type" | "listen"
-    mode: controlledMode,
-    onModeChange,
     onListeningChange,
     actions,
   },
   ref
 ) {
-  // Active mode: "type" | "listen"
-  const [currentMode, setCurrentMode] = useState(controlledMode || defaultMode || "type");
-  const [isListening, setIsListening] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
+  const [audioLevel, setAudioLevel] = useState(0); // 0 to 100 for visual meter
+  const [speechStatus, setSpeechStatus] = useState("idle"); // "idle" | "listening" | "speaking" | "processing"
 
   // Synchronization refs
   const valueRef = useRef(value);
@@ -156,267 +50,295 @@ const InterviewAnswerInput = forwardRef(function InterviewAnswerInput(
     valueRef.current = value;
   }, [value]);
 
-  const textareaRef = useRef(null);
+  // Hardware & Audio processing refs
+  const mediaStreamRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const audioContextRef = useRef(null);
+  const analyserRef = useRef(null);
+  const animFrameRef = useRef(null);
 
-  // Dictation streaming buffers
-  // committedTextRef stores all text committed prior to current speech utterance
-  const committedTextRef = useRef(value || "");
-  const currentSessionSpeechRef = useRef("");
-  const isListeningModeRef = useRef(false);
-  const restartTimeoutRef = useRef(null);
-  const fallbackRecorderRef = useRef(null);
-  const fallbackStreamRef = useRef(null);
+  // VAD & Buffering refs
+  const isSpeechActiveRef = useRef(false);
+  const speechFramesCountRef = useRef(0);
+  const silenceTimerRef = useRef(null);
+  const preRollChunksRef = useRef([]); // holds last ~500ms of audio before speech
+  const currentSegmentChunksRef = useRef([]); // holds audio of active speech segment
+  const activeMimeTypeRef = useRef("audio/webm");
+  const segmentSeqRef = useRef(0);
+  const isRecordingRef = useRef(false);
 
-  // Hardware & Recognition refs
-  const recognitionRef = useRef(null);
-
-  // Stop listening completely
+  // Stop & Flush Recording
   const stopVoiceRecording = useCallback(() => {
-    isListeningModeRef.current = false;
-    setIsListening(false);
+    isRecordingRef.current = false;
+    setIsRecording(false);
+    setAudioLevel(0);
+    setSpeechStatus("idle");
     onListeningChange?.(false);
 
-    if (restartTimeoutRef.current) {
-      clearTimeout(restartTimeoutRef.current);
-      restartTimeoutRef.current = null;
+    if (silenceTimerRef.current) {
+      clearTimeout(silenceTimerRef.current);
+      silenceTimerRef.current = null;
     }
 
-    if (recognitionRef.current) {
+    if (animFrameRef.current) {
+      cancelAnimationFrame(animFrameRef.current);
+      animFrameRef.current = null;
+    }
+
+    // Flush any pending active speech segment before stopping
+    if (currentSegmentChunksRef.current.length > 0 && speechFramesCountRef.current > 2) {
+      const finalChunks = [...currentSegmentChunksRef.current];
+      currentSegmentChunksRef.current = [];
+      const blob = new Blob(finalChunks, { type: activeMimeTypeRef.current });
+      if (blob.size > 800) {
+        sendAudioToSTT(blob, ++segmentSeqRef.current);
+      }
+    }
+
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
       try {
-        recognitionRef.current.onend = null;
-        recognitionRef.current.onerror = null;
-        recognitionRef.current.onresult = null;
-        recognitionRef.current.stop();
+        mediaRecorderRef.current.stop();
       } catch {}
-      recognitionRef.current = null;
+      mediaRecorderRef.current = null;
     }
 
-    if (fallbackRecorderRef.current && fallbackRecorderRef.current.state !== "inactive") {
+    if (mediaStreamRef.current) {
       try {
-        fallbackRecorderRef.current.stop();
+        mediaStreamRef.current.getTracks().forEach((track) => track.stop());
       } catch {}
-      fallbackRecorderRef.current = null;
+      mediaStreamRef.current = null;
     }
 
-    if (fallbackStreamRef.current) {
+    if (audioContextRef.current && audioContextRef.current.state !== "closed") {
       try {
-        fallbackStreamRef.current.getTracks().forEach((t) => t.stop());
+        audioContextRef.current.close();
       } catch {}
-      fallbackStreamRef.current = null;
+      audioContextRef.current = null;
     }
 
-    // Commit final text cleanly
-    if (valueRef.current) {
-      committedTextRef.current = valueRef.current;
-    }
-    currentSessionSpeechRef.current = "";
+    isSpeechActiveRef.current = false;
+    speechFramesCountRef.current = 0;
+    preRollChunksRef.current = [];
+    currentSegmentChunksRef.current = [];
   }, [onListeningChange]);
 
-  // Restart native recognition seamlessly on pause without dropping committed text
-  const restartListening = useCallback(() => {
-    if (!isListeningModeRef.current) return;
-    if (restartTimeoutRef.current) clearTimeout(restartTimeoutRef.current);
-    restartTimeoutRef.current = setTimeout(() => {
-      if (isListeningModeRef.current) {
-        startNativeRecognition();
-      }
-    }, 60);
-  }, []);
+  // Send audio segment to backend Groq Whisper STT endpoint
+  const sendAudioToSTT = async (audioBlob, segmentId) => {
+    if (!audioBlob || audioBlob.size < 600) return;
 
-  // Backend Whisper NLP Fallback
-  const startWhisperFallback = async () => {
-    if (!isListeningModeRef.current || fallbackRecorderRef.current) return;
+    setIsTranscribing(true);
+    setSpeechStatus("processing");
+
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      fallbackStreamRef.current = stream;
+      const formData = new FormData();
+      formData.append("audio", audioBlob, `speech_segment_${segmentId}.webm`);
 
-      const recorder = new MediaRecorder(stream);
-      fallbackRecorderRef.current = recorder;
+      const res = await api.post("/api/interview/stt", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+        timeout: 25000,
+      });
 
-      recorder.ondataavailable = async (e) => {
-        if (e.data && e.data.size > 800 && isListeningModeRef.current) {
-          const formData = new FormData();
-          formData.append("audio", e.data, "audio_segment.webm");
-          try {
-            const res = await api.post("/api/interview/stt", formData, {
-              headers: { "Content-Type": "multipart/form-data" },
-            });
-            if (res.data?.success && res.data.transcript) {
-              const text = applyNLPTextPipeline(filterHallucinations(res.data.transcript));
-              if (text && isListeningModeRef.current) {
-                const current = (valueRef.current || "").trim();
-                const updated = current ? `${current} ${text}` : text;
-                valueRef.current = updated;
-                committedTextRef.current = updated;
-                onChange?.(updated);
-              }
-            }
-          } catch (err) {
-            console.warn("[Whisper Fallback] STT error:", err?.message);
-          }
+      if (res.data?.success && res.data.transcript) {
+        const text = res.data.transcript.trim();
+        if (text) {
+          const current = valueRef.current || "";
+          const updated = current ? `${current.trim()} ${text}` : text;
+          valueRef.current = updated;
+          onChange?.(updated);
         }
-      };
-
-      recorder.start(2500);
+      }
     } catch (err) {
-      console.warn("[Whisper Fallback] Mic error:", err?.message);
+      console.warn("[STT] Transcription error:", err?.response?.data?.message || err.message);
+      // Non-blocking toast: keep existing transcript safe
+      if (err?.response?.status === 503) {
+        toast.error("STT service not configured on backend. You can continue typing.", { id: "stt-err" });
+      }
+    } finally {
+      setIsTranscribing(false);
+      if (isRecordingRef.current) {
+        setSpeechStatus(isSpeechActiveRef.current ? "speaking" : "listening");
+      }
     }
   };
 
-  // Native SpeechRecognition
-  const startNativeRecognition = useCallback(() => {
-    if (!isListeningModeRef.current) return false;
+  // Start Voice Recording with Adaptive VAD & Ring Buffering
+  const startVoiceRecording = async () => {
+    if (disabled) return;
 
-    const SpeechRecognition =
-      typeof window !== "undefined" &&
-      (window.SpeechRecognition || window.webkitSpeechRecognition);
-
-    if (!SpeechRecognition) {
-      startWhisperFallback();
-      return false;
+    // Check browser MediaDevices support
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      toast.error("Microphone access is not supported in this browser.");
+      return;
     }
 
     try {
-      if (recognitionRef.current) {
-        try {
-          recognitionRef.current.onend = null;
-          recognitionRef.current.onerror = null;
-          recognitionRef.current.onresult = null;
-          recognitionRef.current.abort();
-        } catch {}
-        recognitionRef.current = null;
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        },
+      });
+
+      mediaStreamRef.current = stream;
+
+      // Determine best supported MIME type dynamically
+      const candidateTypes = [
+        "audio/webm;codecs=opus",
+        "audio/webm",
+        "audio/ogg;codecs=opus",
+        "audio/mp4",
+        "audio/wav",
+      ];
+      let selectedMime = "";
+      if (typeof MediaRecorder !== "undefined") {
+        for (const type of candidateTypes) {
+          if (MediaRecorder.isTypeSupported(type)) {
+            selectedMime = type;
+            break;
+          }
+        }
+      }
+      activeMimeTypeRef.current = selectedMime || "audio/webm";
+
+      // Initialize Web Audio Context for RMS Energy VAD
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      const audioCtx = new AudioCtx();
+      audioContextRef.current = audioCtx;
+      if (audioCtx.state === "suspended") {
+        await audioCtx.resume();
       }
 
-      const recognition = new SpeechRecognition();
-      recognition.continuous = true;
-      recognition.interimResults = true;
-      recognition.lang = navigator.language || "en-US";
-      recognition.maxAlternatives = 1;
+      const source = audioCtx.createMediaStreamSource(stream);
+      const analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 512;
+      analyser.smoothingTimeConstant = 0.2;
+      source.connect(analyser);
+      analyserRef.current = analyser;
 
-      recognition.onstart = () => {
-        setIsListening(true);
-      };
+      // Initialize MediaRecorder in time-sliced mode (250ms chunks)
+      const options = selectedMime ? { mimeType: selectedMime } : {};
+      const recorder = new MediaRecorder(stream, options);
+      mediaRecorderRef.current = recorder;
 
-      recognition.onresult = (event) => {
-        let interimText = "";
-        let newlyFinal = "";
+      preRollChunksRef.current = [];
+      currentSegmentChunksRef.current = [];
+      isSpeechActiveRef.current = false;
+      speechFramesCountRef.current = 0;
 
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          const trans = event.results[i][0]?.transcript || "";
-          if (event.results[i].isFinal) {
-            newlyFinal += trans + " ";
+      recorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) {
+          if (isSpeechActiveRef.current) {
+            // Actively recording a spoken segment
+            currentSegmentChunksRef.current.push(e.data);
           } else {
-            interimText += trans;
+            // Idle/quiet: maintain pre-roll ring buffer (last ~2-3 slices = ~500-750ms)
+            preRollChunksRef.current.push(e.data);
+            if (preRollChunksRef.current.length > 3) {
+              preRollChunksRef.current.shift();
+            }
+          }
+        }
+      };
+
+      recorder.start(250); // Emit audio data every 250ms
+      isRecordingRef.current = true;
+      setIsRecording(true);
+      setSpeechStatus("listening");
+      onListeningChange?.(true);
+      toast.success("Microphone active. Speak your answer...", { icon: "🎙️", duration: 2000 });
+
+      // Adaptive VAD loop
+      const buffer = new Float32Array(analyser.fftSize);
+      let ambientNoise = 0.004; // initial ambient floor baseline
+
+      const vadLoop = () => {
+        if (!isRecordingRef.current) return;
+
+        analyser.getFloatTimeDomainData(buffer);
+
+        // Calculate Root Mean Square (RMS) energy
+        let sumSquares = 0;
+        for (let i = 0; i < buffer.length; i++) {
+          sumSquares += buffer[i] * buffer[i];
+        }
+        const rms = Math.sqrt(sumSquares / buffer.length);
+
+        // Update visual audio meter (scaled 0-100)
+        const meterLevel = Math.min(100, Math.round(rms * 500));
+        setAudioLevel(meterLevel);
+
+        // Adaptive threshold relative to ambient background noise with hysteresis
+        const speechThreshold = Math.max(0.007, ambientNoise * 2.2 + 0.003);
+        const silenceThreshold = Math.max(0.005, ambientNoise * 1.5 + 0.002);
+
+        if (rms > speechThreshold) {
+          // Voice activity detected
+          if (!isSpeechActiveRef.current) {
+            isSpeechActiveRef.current = true;
+            setSpeechStatus("speaking");
+            // Prepend pre-roll buffer so beginning of words is never clipped
+            currentSegmentChunksRef.current = [...preRollChunksRef.current];
+            preRollChunksRef.current = [];
+          }
+
+          speechFramesCountRef.current++;
+
+          // Clear any pending silence timeout while user is actively speaking
+          if (silenceTimerRef.current) {
+            clearTimeout(silenceTimerRef.current);
+            silenceTimerRef.current = null;
+          }
+        } else if (rms < silenceThreshold) {
+          // Slowly track ambient noise floor during quiet periods
+          ambientNoise = ambientNoise * 0.95 + rms * 0.05;
+
+          if (isSpeechActiveRef.current && !silenceTimerRef.current) {
+            // Candidate paused or finished phrase: wait 1300ms post-roll window
+            silenceTimerRef.current = setTimeout(() => {
+              if (isSpeechActiveRef.current) {
+                isSpeechActiveRef.current = false;
+                setSpeechStatus("listening");
+
+                const segmentChunks = [...currentSegmentChunksRef.current];
+                currentSegmentChunksRef.current = [];
+                const frameCount = speechFramesCountRef.current;
+                speechFramesCountRef.current = 0;
+
+                // Send segment if it contained legitimate speech duration (> 3 frames ~= 350ms)
+                if (segmentChunks.length > 0 && frameCount >= 3) {
+                  const blob = new Blob(segmentChunks, { type: activeMimeTypeRef.current });
+                  sendAudioToSTT(blob, ++segmentSeqRef.current);
+                }
+              }
+              silenceTimerRef.current = null;
+            }, 1300); // 1.3s natural pause window
           }
         }
 
-        if (newlyFinal) {
-          const cleanFinal = filterHallucinations(newlyFinal);
-          if (cleanFinal) {
-            currentSessionSpeechRef.current = (
-              currentSessionSpeechRef.current ? currentSessionSpeechRef.current.trim() + " " : ""
-            ) + cleanFinal.trim();
-          }
-        }
-
-        // Base text is everything previously committed in the textarea
-        const base = (committedTextRef.current || "").trim();
-        const sessionFinal = (currentSessionSpeechRef.current || "").trim();
-        const interim = (interimText || "").trim();
-
-        // Concatenate previous text + session finalized + live interim
-        const parts = [base, sessionFinal, interim].filter(Boolean);
-        const rawCombined = parts.join(" ");
-        const nlpProcessed = applyNLPTextPipeline(rawCombined);
-
-        if (nlpProcessed && nlpProcessed !== valueRef.current) {
-          valueRef.current = nlpProcessed;
-          onChange?.(nlpProcessed);
-        }
+        animFrameRef.current = requestAnimationFrame(vadLoop);
       };
 
-      recognition.onerror = (event) => {
-        console.warn("[SpeechRecognition] error:", event.error);
-        if (event.error === "not-allowed" || event.error === "service-not-allowed") {
-          toast.error("Microphone permission denied. Please allow microphone access.");
-          stopVoiceRecording();
-          return;
-        }
-
-        if (event.error === "network") {
-          startWhisperFallback();
-          return;
-        }
-
-        if (isListeningModeRef.current) {
-          restartListening();
-        }
-      };
-
-      recognition.onend = () => {
-        // Crucial: Commit the current full text into committedTextRef so pauses NEVER clear previous words!
-        if (valueRef.current) {
-          committedTextRef.current = valueRef.current;
-        }
-        currentSessionSpeechRef.current = "";
-
-        if (isListeningModeRef.current) {
-          restartListening();
-        } else {
-          setIsListening(false);
-        }
-      };
-
-      recognition.start();
-      setIsListening(true);
-      return true;
+      animFrameRef.current = requestAnimationFrame(vadLoop);
     } catch (err) {
-      console.warn("[SpeechRecognition] start exception, using fallback:", err);
-      startWhisperFallback();
-      return false;
-    }
-  }, [onChange, restartListening, stopVoiceRecording]);
-
-  // Start continuous listening
-  const startContinuousListening = () => {
-    if (disabled) return;
-
-    isListeningModeRef.current = true;
-    setIsListening(true);
-    onListeningChange?.(true);
-
-    // Snapshot existing text in textarea as committed base
-    committedTextRef.current = valueRef.current || "";
-    currentSessionSpeechRef.current = "";
-
-    startNativeRecognition();
-  };
-
-  // Switch between Typing Mode and Listening Mode
-  const switchMode = (newMode) => {
-    if (disabled) return;
-    if (newMode === currentMode) return;
-
-    setCurrentMode(newMode);
-    onModeChange?.(newMode);
-
-    if (newMode === "type") {
+      console.error("[STT] Failed to start microphone recording:", err);
+      toast.error("Could not access microphone. Please check permissions.");
       stopVoiceRecording();
-      setTimeout(() => {
-        textareaRef.current?.focus();
-      }, 50);
-      toast("Typing Mode active.", { icon: "⌨️", duration: 1500 });
-    } else if (newMode === "listen") {
-      startContinuousListening();
-      toast("Listening Mode active — speak your answer...", { icon: "🎙️", duration: 2000 });
     }
   };
 
-  // Clear Answer Text
+  // Toggle Speech Recording Callback
+  const toggleVoiceRecording = useCallback(() => {
+    if (disabled) return;
+    if (isRecording) {
+      stopVoiceRecording();
+    } else {
+      startVoiceRecording();
+    }
+  }, [disabled, isRecording, stopVoiceRecording]);
+
+  // Clear Text Callback
   const handleClear = useCallback(() => {
-    committedTextRef.current = "";
-    currentSessionSpeechRef.current = "";
-    valueRef.current = "";
     onChange?.("");
     toast("Answer cleared.", { duration: 1500 });
   }, [onChange]);
@@ -426,24 +348,16 @@ const InterviewAnswerInput = forwardRef(function InterviewAnswerInput(
     ref,
     () => ({
       stopVoiceRecording,
-      isListening,
-      mode: currentMode,
-      setMode: switchMode,
+      toggleVoiceRecording,
+      isListening: isRecording,
     }),
-    [stopVoiceRecording, isListening, currentMode]
+    [stopVoiceRecording, toggleVoiceRecording, isRecording]
   );
 
-  // Stop recording when switching questions
+  // Reset microphone when switching questions
   useEffect(() => {
     stopVoiceRecording();
-    committedTextRef.current = "";
-    currentSessionSpeechRef.current = "";
-    if (currentMode === "listen") {
-      setTimeout(() => {
-        startContinuousListening();
-      }, 100);
-    }
-  }, [questionId]);
+  }, [questionId, stopVoiceRecording]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -456,8 +370,8 @@ const InterviewAnswerInput = forwardRef(function InterviewAnswerInput(
 
   return (
     <div className={`space-y-2.5 flex flex-col ${className}`}>
-      {/* Header bar: Helper text + Mode Selector Tabs */}
-      <div className="flex flex-wrap items-center justify-between gap-3 shrink-0">
+      {/* Header bar: Helper text + Speak Answer button */}
+      <div className="flex flex-wrap items-center justify-between gap-2.5 shrink-0">
         {showHelperText && (
           <p
             className="text-xs sm:text-sm font-medium leading-tight flex-1 min-w-[200px]"
@@ -467,102 +381,124 @@ const InterviewAnswerInput = forwardRef(function InterviewAnswerInput(
           </p>
         )}
 
-        {/* Mode Selector Pill: Typing Mode & Listening Mode */}
-        <div className="flex items-center p-1 rounded-xl bg-white/5 border border-white/10 shrink-0 shadow-inner">
-          {/* Typing Mode Tab */}
-          <button
-            type="button"
-            onClick={() => switchMode("type")}
-            disabled={disabled}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer select-none ${
-              currentMode === "type"
-                ? "bg-white/15 text-white shadow-sm border border-white/20"
-                : "text-white/60 hover:text-white hover:bg-white/5"
-            }`}
-            title="Switch to typing mode (keyboard input)"
-          >
-            <Keyboard className="w-3.5 h-3.5" />
-            <span>Typing Mode</span>
-          </button>
-
-          {/* Listening Mode Tab */}
-          <button
-            type="button"
-            onClick={() => switchMode("listen")}
-            disabled={disabled}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer select-none ${
-              currentMode === "listen"
-                ? "bg-orange-500/20 text-orange-400 border border-orange-500/40 shadow-sm shadow-orange-500/10"
-                : "text-white/60 hover:text-white hover:bg-white/5"
-            }`}
-            title="Switch to listening mode (continuous voice input)"
-          >
-            <Mic className="w-3.5 h-3.5" />
-            <span>Listening Mode</span>
-            {currentMode === "listen" && isListening && (
-              <span className="relative flex h-2 w-2 ml-0.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+        {/* Voice Dictation (Speak Answer) Button */}
+        <button
+          type="button"
+          onClick={toggleVoiceRecording}
+          disabled={disabled}
+          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold cursor-pointer transition-all border shadow-sm select-none shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+          style={{
+            background: isRecording
+              ? "rgba(239, 68, 68, 0.15)"
+              : "rgba(255, 107, 53, 0.12)",
+            borderColor: isRecording
+              ? "rgba(239, 68, 68, 0.50)"
+              : "rgba(255, 107, 53, 0.35)",
+            color: isRecording ? "#EF4444" : accentColor,
+          }}
+          title={isRecording ? "Click to stop recording" : "Click to speak your answer"}
+        >
+          {isRecording ? (
+            <>
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
               </span>
-            )}
-          </button>
-        </div>
+              <MicOff className="w-3.5 h-3.5" />
+              <span>Listening... (Stop)</span>
+            </>
+          ) : (
+            <>
+              <Mic className="w-3.5 h-3.5" />
+              <span>Speak Answer</span>
+            </>
+          )}
+        </button>
       </div>
 
-      {/* Direct Input Field (Textarea) */}
+      {/* Real-time Voice & Audio Status Banner when Recording or Transcribing */}
+      {(isRecording || isTranscribing) && (
+        <div
+          className="p-2.5 rounded-xl border flex items-center justify-between gap-3 transition-all duration-200 shadow-sm shrink-0"
+          style={{
+            background: "rgba(255, 107, 53, 0.06)",
+            borderColor: "rgba(255, 107, 53, 0.35)",
+          }}
+        >
+          <div className="flex items-center gap-2 text-xs font-bold" style={{ color: accentColor }}>
+            {isTranscribing ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin" style={{ color: accentColor }} />
+                <span>Transcribing speech...</span>
+              </>
+            ) : speechStatus === "speaking" ? (
+              <>
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                </span>
+                <Volume2 className="w-3.5 h-3.5 text-red-400 animate-pulse" />
+                <span className="text-red-400">Capturing voice...</span>
+              </>
+            ) : (
+              <>
+                <Mic className="w-3.5 h-3.5" style={{ color: accentColor }} />
+                <span>Microphone active (Listening for speech)</span>
+              </>
+            )}
+          </div>
+
+          {/* Real-time Audio Level Bar Indicator */}
+          {isRecording && (
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] text-gray-400 font-mono">Mic Level</span>
+              <div className="w-16 sm:w-24 h-2 bg-white/10 rounded-full overflow-hidden p-0.5 flex items-center">
+                <div
+                  className="h-full rounded-full transition-all duration-75"
+                  style={{
+                    width: `${Math.max(4, Math.min(100, audioLevel))}%`,
+                    background: audioLevel > 40 ? "#EF4444" : accentColor,
+                  }}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Textarea container */}
       <div className="relative flex-1 min-h-0 flex flex-col">
         <textarea
-          ref={textareaRef}
           value={value || ""}
           onChange={(e) => {
             const nextVal = e.target.value;
             valueRef.current = nextVal;
-            committedTextRef.current = nextVal;
-            currentSessionSpeechRef.current = "";
             onChange?.(nextVal);
           }}
           disabled={disabled}
           placeholder={
             placeholder ||
-            (currentMode === "listen"
-              ? "Listening continuously... speak freely and your words will append here directly."
-              : "Type your answer here using your keyboard...")
+            (isRecording
+              ? "Speak or type your answer here..."
+              : "Write or speak your answer here...")
           }
           rows={rows}
-          className={`w-full flex-1 p-3.5 border rounded-xl resize-y focus:outline-none focus:ring-2 font-normal leading-relaxed transition-all text-xs sm:text-sm ${textareaClassName}`}
+          className={`w-full flex-1 p-3.5 border rounded-xl resize-y focus:outline-none focus:ring-2 font-normal leading-relaxed transition-colors text-xs sm:text-sm ${textareaClassName}`}
           style={{
             background: "var(--input-bg, var(--card-bg, rgba(15, 18, 28, 0.7)))",
-            borderColor:
-              currentMode === "listen"
-                ? isListening
-                  ? "#10B981"
-                  : "rgba(16, 185, 129, 0.45)"
-                : "var(--card-border, rgba(255, 255, 255, 0.1))",
+            borderColor: isRecording ? accentColor : "var(--card-border, rgba(255, 255, 255, 0.1))",
             color: "var(--text-primary, #ffffff)",
             ...textareaStyle,
           }}
         />
       </div>
 
-      {/* Footer bar: Status, Character count, Clear button, and extra actions */}
+      {/* Footer bar: Character count, Clear button, and extra actions (like Save) */}
       <div
         className="flex items-center justify-between text-xs pt-1 shrink-0"
         style={{ color: "var(--text-muted, rgba(255, 255, 255, 0.4))" }}
       >
         <div className="flex items-center gap-3">
-          <span className="text-[11px] font-medium text-white/40 flex items-center gap-1.5">
-            {currentMode === "listen" ? (
-              <>
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-emerald-400/80">Continuous Speech Appending Active</span>
-              </>
-            ) : (
-              <>
-                <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
-                <span>Typing Mode Active</span>
-              </>
-            )}
-          </span>
           {showCharacterCount && <span>{currentLength} characters</span>}
           {showClearButton && currentLength > 0 && !disabled && (
             <button

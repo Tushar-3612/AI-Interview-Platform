@@ -67,34 +67,6 @@ function conservativeFormat(text) {
     cleaned = cleaned.replace(pattern, replacement);
   }
 
-  // Reject known Whisper hallucinations during silence / ambient noise
-  const normalized = cleaned.toLowerCase().replace(/[.,!?;:"'\-]/g, "").trim();
-  const hallucinations = [
-    "thank you",
-    "thank you so much",
-    "thank you very much",
-    "thanks for watching",
-    "thank you for watching",
-    "thanks",
-    "bye",
-    "goodbye",
-    "you",
-    "so",
-    "subtitles by",
-    "translated by",
-    "subscribe",
-    "like and subscribe",
-    "mbc",
-    "silence",
-    "silence.",
-    "okay thank you",
-    "watching",
-    "please subscribe",
-  ];
-  if (hallucinations.includes(normalized)) {
-    return "";
-  }
-
   return cleaned;
 }
 
