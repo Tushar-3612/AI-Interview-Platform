@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { AlertTriangle, X, Key, Sparkles, ArrowRight, ShieldCheck } from "lucide-react";
+import { AlertTriangle, X, Key, Sparkles, ArrowRight, ShieldCheck, Crown } from "lucide-react";
 
 /**
  * BeforeYouStartModal — Simplified consent & guidelines modal for AI Real Interview.
@@ -11,7 +11,8 @@ import { AlertTriangle, X, Key, Sparkles, ArrowRight, ShieldCheck } from "lucide
  * - onAgreeAndStart: () => Promise<void> | void (callback to start interview)
  * - isStarting: boolean (loading state during session initialization)
  * - userEmail: string (authenticated user's email)
- * - dailyLimitReached: boolean (whether 1 attempt per day has been consumed for non-Prephire)
+ * - isPremium: boolean (whether student has active Premium membership)
+ * - dailyLimitReached: boolean (whether 1 attempt per day has been consumed for standard non-Prephire/non-Premium)
  */
 export default function BeforeYouStartModal({
   isOpen,
@@ -19,6 +20,7 @@ export default function BeforeYouStartModal({
   onAgreeAndStart,
   isStarting = false,
   userEmail = "",
+  isPremium = false,
   dailyLimitReached = false,
 }) {
   const [agreed, setAgreed] = useState(false);
@@ -27,9 +29,10 @@ export default function BeforeYouStartModal({
 
   const effectiveEmail = String(userEmail || "").trim().toLowerCase();
   const isPrephire = Boolean(effectiveEmail && effectiveEmail.endsWith("@prephire.com"));
+  const hasUnlimitedAccess = isPrephire || Boolean(isPremium);
 
   const handleAgreeAndStart = () => {
-    if (!agreed || isStarting || (dailyLimitReached && !isPrephire)) return;
+    if (!agreed || isStarting || (dailyLimitReached && !hasUnlimitedAccess)) return;
     onAgreeAndStart?.();
   };
 
@@ -107,6 +110,16 @@ export default function BeforeYouStartModal({
                   As a Prephire member, you have access to multiple Real Interview attempts. Please answer honestly and treat each session like a real placement interview.
                 </p>
               </div>
+            ) : isPremium ? (
+              <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-amber-500/5 to-transparent border border-amber-500/30 text-amber-200/90 space-y-1">
+                <div className="flex items-center gap-1.5 text-amber-400 font-extrabold text-[11px] uppercase tracking-wider">
+                  <Crown className="w-3.5 h-3.5 shrink-0 text-amber-400 fill-amber-400" />
+                  <span>👑 PRO PREMIUM MEMBER ACCESS</span>
+                </div>
+                <p className="text-[11.5px] leading-relaxed text-amber-100/80">
+                  As a Premium member, you have unlimited Real Interview attempts. Please answer honestly and treat each session like a real placement interview.
+                </p>
+              </div>
             ) : dailyLimitReached ? (
               <div className="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-200/90 space-y-1">
                 <div className="flex items-center gap-1.5 text-rose-400 font-extrabold text-[11px] uppercase tracking-wider">
@@ -160,7 +173,7 @@ export default function BeforeYouStartModal({
                   type="checkbox"
                   checked={agreed}
                   onChange={(e) => setAgreed(e.target.checked)}
-                  disabled={isStarting || (dailyLimitReached && !isPrephire)}
+                  disabled={isStarting || (dailyLimitReached && !hasUnlimitedAccess)}
                   className="mt-0.5 h-4 w-4 rounded border-white/20 bg-white/5 text-[#FF6B35] focus:ring-[#FF6B35] focus:ring-offset-0 cursor-pointer accent-[#FF6B35] shrink-0 disabled:opacity-40"
                 />
                 <span className="text-[11.5px] text-gray-300 leading-snug">
@@ -183,23 +196,23 @@ export default function BeforeYouStartModal({
               <motion.button
                 type="button"
                 onClick={handleAgreeAndStart}
-                disabled={!agreed || isStarting || (dailyLimitReached && !isPrephire)}
+                disabled={!agreed || isStarting || (dailyLimitReached && !hasUnlimitedAccess)}
                 className="flex-1 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold text-white shadow-lg flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                 style={{
-                  background: agreed && !isStarting && (!dailyLimitReached || isPrephire)
+                  background: agreed && !isStarting && (!dailyLimitReached || hasUnlimitedAccess)
                     ? "linear-gradient(135deg, #FF6B35 0%, #FF8A3D 100%)"
                     : "rgba(255, 255, 255, 0.08)",
-                  boxShadow: agreed && !isStarting && (!dailyLimitReached || isPrephire) ? "0 4px 16px rgba(255, 107, 53, 0.35)" : "none",
+                  boxShadow: agreed && !isStarting && (!dailyLimitReached || hasUnlimitedAccess) ? "0 4px 16px rgba(255, 107, 53, 0.35)" : "none",
                 }}
-                whileHover={agreed && !isStarting && (!dailyLimitReached || isPrephire) ? { scale: 1.01 } : {}}
-                whileTap={agreed && !isStarting && (!dailyLimitReached || isPrephire) ? { scale: 0.99 } : {}}
+                whileHover={agreed && !isStarting && (!dailyLimitReached || hasUnlimitedAccess) ? { scale: 1.01 } : {}}
+                whileTap={agreed && !isStarting && (!dailyLimitReached || hasUnlimitedAccess) ? { scale: 0.99 } : {}}
               >
                 {isStarting ? (
                   <>
                     <Sparkles className="w-4 h-4 animate-spin" />
                     <span>Launching Session...</span>
                   </>
-                ) : dailyLimitReached && !isPrephire ? (
+                ) : dailyLimitReached && !hasUnlimitedAccess ? (
                   <span>Daily Limit Reached</span>
                 ) : (
                   <>

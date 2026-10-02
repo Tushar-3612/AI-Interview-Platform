@@ -117,6 +117,19 @@ const userSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    isPremium: {
+      type: Boolean,
+      default: false,
+    },
+    premiumGrantedAt: {
+      type: Date,
+      default: null,
+    },
+    premiumGrantedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Admin",
+      default: null,
+    },
   },
   {
     timestamps: true,

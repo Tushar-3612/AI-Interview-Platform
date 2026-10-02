@@ -211,6 +211,7 @@ function StartInterviewModal({ open, onClose, profile, isStarting: externalIsSta
         onAgreeAndStart={handleStartRealInterview}
         isStarting={isStarting}
         userEmail={profile?.email || ""}
+        isPremium={Boolean(profile?.isPremium)}
         dailyLimitReached={dailyLimitReached}
       />
     </AnimatePresence>

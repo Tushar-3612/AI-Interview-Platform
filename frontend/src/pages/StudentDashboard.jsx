@@ -1344,6 +1344,7 @@ function StudentDashboard() {
         onAgreeAndStart={handleStartRealInterview}
         isStarting={isStartingInterview}
         userEmail={profile?.email || ""}
+        isPremium={Boolean(profile?.isPremium)}
         dailyLimitReached={dailyLimitReached}
       />
 

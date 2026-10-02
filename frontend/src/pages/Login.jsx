@@ -80,7 +80,9 @@ function Login() {
 
       toast.success(data.message);
 
-      if (data.user.role === "admin") {
+      if (data.user.role === "system_admin" || data.user.role === "admin") {
+        navigate("/admin/system-dashboard");
+      } else if (data.user.role === "teacher") {
         navigate("/admin/dashboard");
       } else {
         navigate("/dashboard");

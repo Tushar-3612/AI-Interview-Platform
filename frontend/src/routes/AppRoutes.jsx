@@ -18,6 +18,9 @@ import StartInterview from "../pages/student/StartInterview";
 
 import AdminLayout from "../layouts/AdminLayout";
 import AdminDashboard from "../pages/admin/AdminDashboard";
+import SystemAdminDashboard from "../pages/admin/SystemAdminDashboard";
+import TeacherManagement from "../pages/admin/TeacherManagement";
+import PremiumManagement from "../pages/admin/PremiumManagement";
 import StudentsList from "../pages/admin/StudentsList";
 import StudentDetails from "../pages/admin/StudentDetails";
 import CreateTest from "../pages/admin/CreateTest";
@@ -143,7 +146,10 @@ function AppRoutes() {
       </Route>
 
       <Route element={<AdminLayout />}>
+        <Route path="/admin/system-dashboard" element={<SystemAdminDashboard />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/teachers" element={<TeacherManagement />} />
+        <Route path="/admin/premium" element={<PremiumManagement />} />
         <Route path="/admin/students" element={<StudentsList />} />
         <Route path="/admin/students/:id" element={<StudentDetails />} />
         <Route path="/admin/analytics" element={<AnalyticsDashboard />} />

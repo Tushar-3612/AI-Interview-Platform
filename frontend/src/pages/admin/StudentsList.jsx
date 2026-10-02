@@ -6,18 +6,20 @@ import {
   Download, FileText, AlertTriangle, X, Filter, SlidersHorizontal,
 } from "lucide-react";
 import api from "../../utils/api";
-import { getAuthToken } from "../../hooks/useStudentProfile";
+import { getAuthToken, getAuthUser } from "../../hooks/useStudentProfile";
 import toast from "react-hot-toast";
 import { DEPARTMENT_VALUES as DEPARTMENTS, YEAR_VALUES as YEARS } from "../../utils/constants";
 
 function StudentsList() {
   const navigate = useNavigate();
   const token = getAuthToken();
+  const user = getAuthUser();
+  const isTeacher = user?.role === "teacher";
 
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [department, setDepartment] = useState("");
+  const [department, setDepartment] = useState(isTeacher ? user.department : "");
   const [year, setYear] = useState("");
   const [sortBy, setSortBy] = useState("");
   const [page, setPage] = useState(1);
@@ -137,9 +139,18 @@ function StudentsList() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>Students</h1>
-          <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
-            {total} registered student{total !== 1 ? "s" : ""}
+          <div className="flex items-center gap-2 mb-0.5">
+            <h1 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>
+              {isTeacher ? `${user?.department} Students` : "Students"}
+            </h1>
+            {isTeacher && (
+              <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+                {user?.department}
+              </span>
+            )}
+          </div>
+          <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+            {total} registered student{total !== 1 ? "s" : ""}{isTeacher ? ` in ${user?.department}` : ""}
           </p>
         </div>
         <button onClick={() => setShowFilters(!showFilters)}
@@ -177,10 +188,17 @@ function StudentsList() {
             <SlidersHorizontal className="w-3.5 h-3.5" style={{ color: "var(--text-muted)" }} />
             <span className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>Filter by</span>
           </div>
-          <select value={department} onChange={(e) => handleDept(e.target.value)} className={selCls} style={{ color: "var(--text-primary)" }}>
-            <option value="">All Departments</option>
-            {DEPARTMENTS.map(d => <option key={d}>{d}</option>)}
-          </select>
+          {isTeacher ? (
+            <div className="px-3 py-2 text-xs font-semibold rounded-lg border border-blue-500/30 bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
+              <span>Department:</span>
+              <span>{user?.department} (Locked)</span>
+            </div>
+          ) : (
+            <select value={department} onChange={(e) => handleDept(e.target.value)} className={selCls} style={{ color: "var(--text-primary)" }}>
+              <option value="">All Departments</option>
+              {DEPARTMENTS.map(d => <option key={d}>{d}</option>)}
+            </select>
+          )}
           <select value={year} onChange={(e) => handleYear(e.target.value)} className={selCls} style={{ color: "var(--text-primary)" }}>
             <option value="">All Years</option>
             {YEARS.map(y => <option key={y}>{y}</option>)}
@@ -192,7 +210,7 @@ function StudentsList() {
             <option value="date">Recently Joined</option>
           </select>
           {(department || year || sortBy) && (
-              <button onClick={() => { setDepartment(""); setYear(""); setSortBy(""); setPage(1); }}
+              <button onClick={() => { if (!isTeacher) setDepartment(""); setYear(""); setSortBy(""); setPage(1); }}
                 className="px-3 py-1.5 text-xs font-medium rounded-lg cursor-pointer admin-error-hover"
                 style={{ color: "var(--badge-error-text)" }}>
               Clear all

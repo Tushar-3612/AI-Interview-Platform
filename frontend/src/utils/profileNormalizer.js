@@ -120,5 +120,6 @@ export function normalizeProfileData(data) {
     targetCompany: safeStringOrNull(root.targetCompany),
     profilePicture: safeStringOrNull(root.profilePicture),
     attemptUsed: safeNumberOrNull(root.attemptUsed) || 0,
+    isPremium: Boolean(root.isPremium),
   };
 }

@@ -116,12 +116,27 @@ const technicalQuestionSchema = new mongoose.Schema(
     },
     lastEditedBy: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Admin",
       default: null,
     },
     lastEditedAt: {
       type: Date,
       default: null,
+    },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Admin",
+      default: null,
+    },
+    departmentScope: {
+      type: String,
+      default: "global",
+      trim: true,
+    },
+    creatorRole: {
+      type: String,
+      enum: ["system_admin", "teacher", "admin"],
+      default: "system_admin",
     },
   },
   { timestamps: true }

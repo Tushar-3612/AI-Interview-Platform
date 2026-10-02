@@ -37,12 +37,46 @@ import {
   deleteMockQuestion,
   importMockQuestions,
 } from "../controllers/adminMockQuestionsController.js";
+import {
+  createTeacher,
+  getTeachers,
+  updateTeacher,
+  toggleTeacherStatus,
+  resetTeacherPassword,
+  deleteTeacher,
+} from "../controllers/adminTeacherController.js";
+import {
+  getPremiumUsers,
+  grantPremium,
+  revokePremium,
+  searchStudentsForPremium,
+  getPremiumStats,
+} from "../controllers/adminPremiumController.js";
 
 const router = express.Router();
 
-// Protect all admin endpoints
+// Protect all admin endpoints with base auth
 router.use(authMiddleware);
-router.use(authorizeRoles("admin"));
+
+// ─── System Admin ONLY: Teacher Management ───
+router.post("/teachers", authorizeRoles("system_admin"), createTeacher);
+router.get("/teachers", authorizeRoles("system_admin"), getTeachers);
+router.put("/teachers/:id", authorizeRoles("system_admin"), updateTeacher);
+router.patch("/teachers/:id/status", authorizeRoles("system_admin"), toggleTeacherStatus);
+router.post("/teachers/:id/reset-password", authorizeRoles("system_admin"), resetTeacherPassword);
+router.delete("/teachers/:id", authorizeRoles("system_admin"), deleteTeacher);
+
+// ─── System Admin ONLY: Premium Membership Management ───
+router.get("/premium/users", authorizeRoles("system_admin"), getPremiumUsers);
+router.post("/premium/grant", authorizeRoles("system_admin"), grantPremium);
+router.post("/premium/revoke", authorizeRoles("system_admin"), revokePremium);
+router.post("/premium/revoke/:studentId", authorizeRoles("system_admin"), revokePremium);
+router.get("/premium/search", authorizeRoles("system_admin"), searchStudentsForPremium);
+router.get("/premium/search-students", authorizeRoles("system_admin"), searchStudentsForPremium);
+router.get("/premium/stats", authorizeRoles("system_admin"), getPremiumStats);
+
+// Allow access for both System Admin and Teacher Admins for standard admin management
+router.use(authorizeRoles("system_admin", "teacher"));
 
 // Statistics Dashboard
 router.get("/stats", getStats);

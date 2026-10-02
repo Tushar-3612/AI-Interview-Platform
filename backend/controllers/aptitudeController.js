@@ -256,9 +256,14 @@ export const createAptitudeQuestion = async (req, res) => {
       num = match ? parseInt(match[0]) + 1 : 1;
     }
     const questionId = `AQ${String(num).padStart(4, "0")}`;
+    const departmentScope = req.user?.role === "teacher" ? req.user.department : (req.body.departmentScope || "global");
+    const creatorRole = req.user?.role === "teacher" ? "teacher" : "system_admin";
     const question = await AptitudeQuestion.create({
       ...req.body,
       questionId,
+      departmentScope,
+      creatorRole,
+      createdBy: req.user?._id || req.user?.id || null,
       lastEditedBy: req.user?._id || req.user?.id || null,
       lastEditedAt: new Date(),
     });
@@ -272,12 +277,20 @@ export const createAptitudeQuestion = async (req, res) => {
 
 export const updateAptitudeQuestion = async (req, res) => {
   try {
+    const existing = await AptitudeQuestion.findById(req.params.id);
+    if (!existing) return res.status(404).json({ message: "Question not found" });
+
+    if (req.user?.role === "teacher") {
+      if (existing.departmentScope && existing.departmentScope !== "global" && existing.departmentScope !== req.user.department) {
+        return res.status(403).json({ message: "You are not authorized to modify questions outside your department." });
+      }
+    }
+
     const question = await AptitudeQuestion.findByIdAndUpdate(
       req.params.id,
       { ...req.body, lastEditedBy: req.user?._id || req.user?.id || null, lastEditedAt: new Date() },
       { new: true, runValidators: true }
     );
-    if (!question) return res.status(404).json({ message: "Question not found" });
     await syncAptitudeQuestionToBank(question);
     if (req.body.companyId) await touchCompany(req.body.companyId);
     res.json(question);
@@ -288,12 +301,20 @@ export const updateAptitudeQuestion = async (req, res) => {
 
 export const deleteAptitudeQuestion = async (req, res) => {
   try {
+    const existing = await AptitudeQuestion.findById(req.params.id);
+    if (!existing) return res.status(404).json({ message: "Question not found" });
+
+    if (req.user?.role === "teacher") {
+      if (existing.departmentScope && existing.departmentScope !== "global" && existing.departmentScope !== req.user.department) {
+        return res.status(403).json({ message: "You are not authorized to delete questions outside your department." });
+      }
+    }
+
     const question = await AptitudeQuestion.findByIdAndUpdate(
       req.params.id,
       { isDeleted: true, deletedAt: new Date() },
       { new: true }
     );
-    if (!question) return res.status(404).json({ message: "Question not found" });
     deactivateBankQuestion(question.questionId);
     res.json({ message: "Question moved to trash" });
   } catch (error) {

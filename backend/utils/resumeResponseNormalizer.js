@@ -119,5 +119,6 @@ export function normalizeProfileResponse(student) {
     targetCompany: safeStringOrNull(userObj.targetCompany),
     profilePicture: safeStringOrNull(userObj.profilePicture),
     attemptUsed: safeNumberOrNull(userObj.attemptUsed) || 0,
+    isPremium: Boolean(userObj.isPremium),
   };
 }

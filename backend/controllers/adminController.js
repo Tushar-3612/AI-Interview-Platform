@@ -16,15 +16,54 @@ import { normalizeYear, normalizeDepartment, yearQuery } from "../utils/academic
  */
 export const getStats = async (req, res) => {
   try {
-    const totalStudents = await User.countDocuments();
-    const totalPracticeInterviews = await Interview.countDocuments({ interviewType: "practice" });
-    const totalRealInterviews = await Interview.countDocuments({ interviewType: "real" });
-    const totalResumes = await User.countDocuments({ resumeFileName: { $ne: "" } });
-    const totalActiveTests = await Test.countDocuments({ status: { $in: ["live", "scheduled"] } });
-    const totalCompletedTests = await Test.countDocuments({ status: "completed" });
+    const isTeacher = req.user?.role === "teacher";
+    const teacherDept = req.user?.department;
+
+    let userQuery = {};
+    let deptStudentIds = null;
+
+    if (isTeacher && teacherDept) {
+      userQuery.department = teacherDept;
+      const deptStudents = await User.find(userQuery).select("_id").lean();
+      deptStudentIds = deptStudents.map((s) => s._id);
+    }
+
+    const totalStudents = await User.countDocuments(userQuery);
+
+    const interviewMatch = {};
+    if (deptStudentIds) {
+      interviewMatch.userId = { $in: deptStudentIds };
+    }
+
+    const totalPracticeInterviews = await Interview.countDocuments({
+      ...interviewMatch,
+      interviewType: "practice",
+    });
+    const totalRealInterviews = await Interview.countDocuments({
+      ...interviewMatch,
+      interviewType: "real",
+    });
+    const totalResumes = await User.countDocuments({
+      ...userQuery,
+      resumeFileName: { $ne: "" },
+    });
+
+    const testScopeQuery = isTeacher && teacherDept
+      ? { $or: [{ departmentScope: "global" }, { departmentScope: teacherDept }] }
+      : {};
+
+    const totalActiveTests = await Test.countDocuments({
+      ...testScopeQuery,
+      status: { $in: ["live", "scheduled"] },
+    });
+    const totalCompletedTests = await Test.countDocuments({
+      ...testScopeQuery,
+      status: "completed",
+    });
 
     // Average Score
-    const results = await Result.find();
+    const resultQuery = deptStudentIds ? { userId: { $in: deptStudentIds } } : {};
+    const results = await Result.find(resultQuery).lean();
     const totalResults = results.length;
     const avgScore = totalResults > 0 
       ? Math.round(results.reduce((sum, r) => sum + (r.overallScore || 0), 0) / totalResults) 
@@ -33,7 +72,7 @@ export const getStats = async (req, res) => {
     // Top Performer
     let topPerformer = { name: "N/A", score: 0 };
     if (totalResults > 0) {
-      const topResult = await Result.findOne().sort({ overallScore: -1 }).populate("userId");
+      const topResult = await Result.findOne(resultQuery).sort({ overallScore: -1 }).populate("userId");
       if (topResult && topResult.userId) {
         topPerformer = {
           name: topResult.userId.name,
@@ -43,13 +82,18 @@ export const getStats = async (req, res) => {
     }
 
     // Recent Activity
-    const recentStudents = await User.find().sort({ createdAt: -1 }).limit(5).lean();
-    const recentInterviews = await Interview.find({ status: "completed" })
+    const recentStudents = await User.find(userQuery).sort({ createdAt: -1 }).limit(5).lean();
+    const recentInterviews = await Interview.find({ ...interviewMatch, status: "completed" })
       .sort({ updatedAt: -1 })
       .limit(5)
       .populate("userId")
       .lean();
-    const recentAssignments = await TestAssignment.find()
+
+    const assignmentFilter = isTeacher && teacherDept
+      ? { $or: [{ department: teacherDept }, ...(deptStudentIds ? [{ studentIds: { $in: deptStudentIds } }] : [])] }
+      : {};
+
+    const recentAssignments = await TestAssignment.find(assignmentFilter)
       .populate("testId", "title")
       .sort({ createdAt: -1 })
       .limit(5)
@@ -112,6 +156,7 @@ export const getStats = async (req, res) => {
       endOfDay.setHours(23, 59, 59, 999);
 
       const count = await Interview.countDocuments({
+        ...interviewMatch,
         createdAt: { $gte: startOfDay, $lte: endOfDay }
       });
 
@@ -122,17 +167,22 @@ export const getStats = async (req, res) => {
     }));
 
     // Department Breakdown
-    const departments = await User.aggregate([
-      { $group: { _id: "$department", count: { $sum: 1 } } }
-    ]);
-    const deptBreakdown = departments.map(d => ({
-      name: d._id || "Other",
-      value: d.count,
-    }));
+    let deptBreakdown = [];
+    if (isTeacher && teacherDept) {
+      deptBreakdown = [{ name: teacherDept, value: totalStudents }];
+    } else {
+      const departments = await User.aggregate([
+        { $group: { _id: "$department", count: { $sum: 1 } } }
+      ]);
+      deptBreakdown = departments.map(d => ({
+        name: d._id || "Other",
+        value: d.count,
+      }));
+    }
 
     // Company Overview
     const companies = await Company.find().lean();
-    const allInterviews = await Interview.find({ interviewType: "practice" }).lean();
+    const allInterviews = await Interview.find({ ...interviewMatch, interviewType: "practice" }).lean();
     const companyOverview = companies.map(c => {
       const runs = allInterviews.filter(i => i.companyId === c.id);
       return {
@@ -146,7 +196,7 @@ export const getStats = async (req, res) => {
     }).sort((a, b) => b.attempts - a.attempts).slice(0, 8);
 
     // Recent Assigned Tests for widget
-    const recentAssignedTests = await TestAssignment.find()
+    const recentAssignedTests = await TestAssignment.find(assignmentFilter)
       .populate("testId", "title testType duration")
       .sort({ createdAt: -1 })
       .limit(5)
@@ -199,10 +249,13 @@ export const getStudents = async (req, res) => {
 
     const query = {};
 
-    // Apply filters
-    if (department) {
+    // Enforce teacher department scope or apply requested department filter
+    if (req.user?.role === "teacher") {
+      query.department = req.user.department;
+    } else if (department) {
       query.department = department;
     }
+
     if (year) {
       query.year = yearQuery(year);
     }
@@ -264,6 +317,11 @@ export const getStudentDetails = async (req, res) => {
     const student = await User.findById(id).select("-password").lean();
     if (!student) {
       return res.status(404).json({ message: "Student not found" });
+    }
+
+    // Backend department authorization check for Teacher
+    if (req.user?.role === "teacher" && student.department !== req.user.department) {
+      return res.status(403).json({ message: "You are not authorized to access students outside your department." });
     }
 
     // Get interviews and results
@@ -340,6 +398,16 @@ export const updateStudent = async (req, res) => {
       return res.status(404).json({ message: "Student not found" });
     }
 
+    // Backend department authorization check for Teacher
+    if (req.user?.role === "teacher") {
+      if (student.department !== req.user.department) {
+        return res.status(403).json({ message: "You are not authorized to update students outside your department." });
+      }
+      if (department && normalizeDepartment(department) !== req.user.department) {
+        return res.status(403).json({ message: "Teachers cannot reassign a student to another department." });
+      }
+    }
+
     if (name) student.name = name;
     if (department) student.department = normalizeDepartment(department);
     if (year) student.year = normalizeYear(year);
@@ -371,6 +439,11 @@ export const deleteStudent = async (req, res) => {
       return res.status(404).json({ message: "Student not found" });
     }
 
+    // Backend department authorization check for Teacher
+    if (req.user?.role === "teacher" && student.department !== req.user.department) {
+      return res.status(403).json({ message: "You are not authorized to delete students outside your department." });
+    }
+
     // Cascade delete
     await Answer.deleteMany({ userId: id });
     await Result.deleteMany({ userId: id });
@@ -394,6 +467,11 @@ export const emailReport = async (req, res) => {
     const student = await User.findById(id);
     if (!student) {
       return res.status(404).json({ message: "Student not found" });
+    }
+
+    // Backend department authorization check for Teacher
+    if (req.user?.role === "teacher" && student.department !== req.user.department) {
+      return res.status(403).json({ message: "You are not authorized to access reports for students outside your department." });
     }
 
     const interviews = await Interview.find({ userId: id }).sort({ createdAt: -1 });
@@ -488,14 +566,17 @@ export const emailReport = async (req, res) => {
  */
 export const exportAllReport = async (req, res) => {
   try {
-    const students = await User.find().select("-password").lean();
-    const interviews = await Interview.find().lean();
-    const results = await Result.find().lean();
+    const studentQuery = req.user?.role === "teacher" ? { department: req.user.department } : {};
+    const students = await User.find(studentQuery).select("-password").lean();
+    const studentIds = students.map((s) => s._id);
+
+    const interviews = await Interview.find(studentIds.length > 0 ? { userId: { $in: studentIds } } : {}).lean();
+    const results = await Result.find(studentIds.length > 0 ? { userId: { $in: studentIds } } : {}).lean();
 
     const csvContent = exportAllStudentsCSV(students, interviews, results);
 
     res.setHeader("Content-Type", "text/csv");
-    res.setHeader("Content-Disposition", "attachment; filename=all_students_report.csv");
+    res.setHeader("Content-Disposition", "attachment; filename=students_report.csv");
     res.status(200).send(csvContent);
   } catch (error) {
     console.error("Export All CSV Error:", error.message);
@@ -513,6 +594,11 @@ export const exportSingleReport = async (req, res) => {
     const student = await User.findById(id).lean();
     if (!student) {
       return res.status(404).json({ message: "Student not found" });
+    }
+
+    // Backend department authorization check for Teacher
+    if (req.user?.role === "teacher" && student.department !== req.user.department) {
+      return res.status(403).json({ message: "You are not authorized to export reports for students outside your department." });
     }
 
     const interviews = await Interview.find({ userId: id }).lean();
@@ -539,6 +625,11 @@ export const downloadSinglePDF = async (req, res) => {
     const student = await User.findById(id);
     if (!student) {
       return res.status(404).json({ message: "Student not found" });
+    }
+
+    // Backend department authorization check for Teacher
+    if (req.user?.role === "teacher" && student.department !== req.user.department) {
+      return res.status(403).json({ message: "You are not authorized to download reports for students outside your department." });
     }
 
     const interviews = await Interview.find({ userId: id }).sort({ createdAt: -1 });
@@ -578,14 +669,15 @@ export const downloadSinglePDF = async (req, res) => {
         latestScore: i.overallScore,
       })),
     };
+
     const pdfBuffer = await generateStudentReportBuffer(reportData);
 
     res.setHeader("Content-Type", "application/pdf");
-    res.setHeader("Content-Disposition", `attachment; filename=${student.name.replace(/\s+/g, "_")}_report.pdf`);
+    res.setHeader("Content-Disposition", `attachment; filename=${student.name.replace(/\s+/g, "_")}_Performance_Report.pdf`);
     res.status(200).send(pdfBuffer);
   } catch (error) {
     console.error("Download PDF Error:", error.message);
-    res.status(500).json({ message: "Failed to generate PDF download" });
+    res.status(500).json({ message: "Failed to generate PDF report" });
   }
 };
 
@@ -716,12 +808,28 @@ export const getCompanyAnalytics = async (req, res) => {
  */
 export const getInterviewsReport = async (req, res) => {
   try {
-    const interviews = await Interview.find()
-      .populate("userId", "name email")
+    const isTeacher = req.user?.role === "teacher";
+    const teacherDept = req.user?.department;
+
+    let userFilter = {};
+    if (isTeacher && teacherDept) {
+      userFilter.department = teacherDept;
+    }
+
+    const students = await User.find(userFilter).select("_id").lean();
+    const studentIds = students.map((s) => s._id);
+
+    const interviewQuery = {};
+    if (isTeacher) {
+      interviewQuery.userId = { $in: studentIds };
+    }
+
+    const interviews = await Interview.find(interviewQuery)
+      .populate("userId", "name email department year")
       .sort({ createdAt: -1 })
       .lean();
 
-    const results = await Result.find().lean();
+    const results = await Result.find(isTeacher ? { userId: { $in: studentIds } } : {}).lean();
     const companies = await Company.find().lean();
 
     const formattedPractice = [];
@@ -749,6 +857,7 @@ export const getInterviewsReport = async (req, res) => {
           _id: interview._id,
           studentName: interview.userId.name,
           studentEmail: interview.userId.email,
+          department: interview.userId.department,
           companyId: interview.companyId,
           companyName: comp.name || interview.companyId || "General",
           color: comp.color || "#2563EB",
@@ -763,6 +872,7 @@ export const getInterviewsReport = async (req, res) => {
           _id: interview._id,
           studentName: interview.userId.name,
           studentEmail: interview.userId.email,
+          department: interview.userId.department,
           status: interview.status,
           score: interview.overallScore || 0,
           resumeScore: resObj.resumeScore || 0,
@@ -790,35 +900,50 @@ export const getInterviewsReport = async (req, res) => {
 
 export const getAnalytics = async (req, res) => {
   try {
-    const students = await User.find().select("-password").lean();
-    const interviews = await Interview.find().lean();
-    const results = await Result.find().lean();
+    const isTeacher = req.user?.role === "teacher";
+    const teacherDept = req.user?.department;
+
+    const studentFilter = isTeacher && teacherDept ? { department: teacherDept } : {};
+    const students = await User.find(studentFilter).select("-password").lean();
+    const studentIds = students.map((s) => s._id);
+
+    const interviewFilter = isTeacher ? { userId: { $in: studentIds } } : {};
+    const resultFilter = isTeacher ? { userId: { $in: studentIds } } : {};
+
+    const interviews = await Interview.find(interviewFilter).lean();
+    const results = await Result.find(resultFilter).lean();
     const companies = await Company.find().lean();
 
     const totalStudents = students.length;
     const totalResults = results.length;
 
     // Department-wise performance
-    const deptMap = {};
-    students.forEach(s => {
-      if (!deptMap[s.department]) deptMap[s.department] = { count: 0, totalScore: 0, scoreCount: 0 };
-      deptMap[s.department].count++;
-    });
-
-    const deptResults = await Result.aggregate([
-      { $lookup: { from: "users", localField: "userId", foreignField: "_id", as: "user" } },
-      { $unwind: "$user" },
-      { $group: { _id: "$user.department", avgScore: { $avg: "$overallScore" }, count: { $sum: 1 } } }
-    ]);
-
-    const departmentWise = deptResults.map(d => ({
-      department: d._id || "Unknown",
-      averageScore: Math.round(d.avgScore || 0),
-      studentCount: d.count,
-    }));
+    let departmentWise = [];
+    if (isTeacher && teacherDept) {
+      const avgScore = totalResults > 0
+        ? Math.round(results.reduce((s, r) => s + (r.overallScore || 0), 0) / totalResults)
+        : 0;
+      departmentWise = [{
+        department: teacherDept,
+        averageScore: avgScore,
+        studentCount: totalStudents,
+      }];
+    } else {
+      const deptResults = await Result.aggregate([
+        { $lookup: { from: "users", localField: "userId", foreignField: "_id", as: "user" } },
+        { $unwind: "$user" },
+        { $group: { _id: "$user.department", avgScore: { $avg: "$overallScore" }, count: { $sum: 1 } } }
+      ]);
+      departmentWise = deptResults.map(d => ({
+        department: d._id || "Unknown",
+        averageScore: Math.round(d.avgScore || 0),
+        studentCount: d.count,
+      }));
+    }
 
     // Year-wise performance
     const yearResults = await Result.aggregate([
+      ...(isTeacher ? [{ $match: { userId: { $in: studentIds } } }] : []),
       { $lookup: { from: "users", localField: "userId", foreignField: "_id", as: "user" } },
       { $unwind: "$user" },
       { $group: { _id: "$user.year", avgScore: { $avg: "$overallScore" }, count: { $sum: 1 } } }
@@ -898,7 +1023,12 @@ export const getAnalytics = async (req, res) => {
     const now = new Date();
     const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
     const monthlyInterviews = await Interview.aggregate([
-      { $match: { createdAt: { $gte: sixMonthsAgo } } },
+      {
+        $match: {
+          createdAt: { $gte: sixMonthsAgo },
+          ...(isTeacher ? { userId: { $in: studentIds } } : {}),
+        }
+      },
       {
         $group: {
           _id: { year: { $year: "$createdAt" }, month: { $month: "$createdAt" } },
@@ -943,7 +1073,15 @@ export const getAnalytics = async (req, res) => {
 
 export const getResumes = async (req, res) => {
   try {
-    const students = await User.find({ resumeFileName: { $ne: "" } })
+    const isTeacher = req.user?.role === "teacher";
+    const teacherDept = req.user?.department;
+
+    const query = { resumeFileName: { $ne: "" } };
+    if (isTeacher && teacherDept) {
+      query.department = teacherDept;
+    }
+
+    const students = await User.find(query)
       .select("name email department year resumeFileName resumeUploadedAt atsScore skills profilePicture")
       .sort({ resumeUploadedAt: -1 })
       .lean();

@@ -29,17 +29,26 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 export const createTest = async (req, res) => {
   try {
+    const isTeacher = req.user?.role === "teacher";
+    const teacherDept = req.user?.department;
+
     const {
       title, description, testType, companyId, difficulty,
       duration, passingMarks, attemptLimit, questionSource,
       subjects, codingLanguages, questions, status, scheduledAt,
-      startAt, endAt, evaluationMethod,
+      startAt, endAt, evaluationMethod, departmentScope,
     } = req.body;
 
     const safeQuestions = (questions || []).map((q) => ({
       ...q,
       question: q.question || q.problemTitle || "",
     }));
+
+    const resolvedDepartmentScope = isTeacher
+      ? teacherDept
+      : (departmentScope ? normalizeDepartment(departmentScope) : "global");
+
+    const resolvedCreatorRole = isTeacher ? "teacher" : "system_admin";
 
     const test = await Test.create({
       title, description, testType, companyId, difficulty,
@@ -52,6 +61,8 @@ export const createTest = async (req, res) => {
       startAt: startAt || undefined,
       endAt: endAt || undefined,
       evaluationMethod: evaluationMethod || "ai",
+      departmentScope: resolvedDepartmentScope,
+      creatorRole: resolvedCreatorRole,
       createdBy: req.user.id,
     });
 
@@ -64,7 +75,14 @@ export const createTest = async (req, res) => {
 
 export const getTests = async (req, res) => {
   try {
-    const tests = await Test.find().sort({ createdAt: -1 }).lean();
+    const isTeacher = req.user?.role === "teacher";
+    const teacherDept = req.user?.department;
+
+    const query = isTeacher
+      ? { $or: [{ departmentScope: "global" }, { departmentScope: teacherDept }] }
+      : {};
+
+    const tests = await Test.find(query).sort({ createdAt: -1 }).lean();
     res.json(tests);
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch tests" });
@@ -75,6 +93,11 @@ export const getTestById = async (req, res) => {
   try {
     const test = await Test.findById(req.params.id).lean();
     if (!test) return res.status(404).json({ message: "Test not found" });
+
+    if (req.user?.role === "teacher" && test.departmentScope && test.departmentScope !== "global" && test.departmentScope !== req.user.department) {
+      return res.status(403).json({ message: "You are not authorized to view tests from another department." });
+    }
+
     res.json(test);
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch test" });
@@ -83,9 +106,21 @@ export const getTestById = async (req, res) => {
 
 export const updateTest = async (req, res) => {
   try {
-    const test = await Test.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const test = await Test.findById(req.params.id);
     if (!test) return res.status(404).json({ message: "Test not found" });
-    res.json({ message: "Test updated", test });
+
+    // Authorization check for Teacher
+    if (req.user?.role === "teacher") {
+      if (test.departmentScope && test.departmentScope !== "global" && test.departmentScope !== req.user.department) {
+        return res.status(403).json({ message: "You are not authorized to modify tests from another department." });
+      }
+      if (test.creatorRole === "system_admin" && test.departmentScope === "global") {
+        return res.status(403).json({ message: "Teachers cannot modify global platform tests." });
+      }
+    }
+
+    const updated = await Test.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.json({ message: "Test updated", test: updated });
   } catch (error) {
     res.status(500).json({ message: "Failed to update test" });
   }
@@ -93,6 +128,19 @@ export const updateTest = async (req, res) => {
 
 export const deleteTest = async (req, res) => {
   try {
+    const test = await Test.findById(req.params.id);
+    if (!test) return res.status(404).json({ message: "Test not found" });
+
+    // Authorization check for Teacher
+    if (req.user?.role === "teacher") {
+      if (test.departmentScope && test.departmentScope !== "global" && test.departmentScope !== req.user.department) {
+        return res.status(403).json({ message: "You are not authorized to delete tests from another department." });
+      }
+      if (test.creatorRole === "system_admin" && test.departmentScope === "global") {
+        return res.status(403).json({ message: "Teachers cannot delete global platform tests." });
+      }
+    }
+
     await TestAssignment.deleteMany({ testId: req.params.id });
     await TestAttempt.deleteMany({ testId: req.params.id });
     await Test.findByIdAndDelete(req.params.id);
@@ -262,6 +310,9 @@ export const closeTest = async (req, res) => {
 
 export const assignTest = async (req, res) => {
   try {
+    const isTeacher = req.user?.role === "teacher";
+    const teacherDept = req.user?.department;
+
     const { testId, assignType, assignValue, studentIds, department, year, section } = req.body;
 
     if (!testId) {
@@ -271,12 +322,17 @@ export const assignTest = async (req, res) => {
     const test = await Test.findById(testId);
     if (!test) return res.status(404).json({ message: "Test does not exist." });
 
-    const normalizedDepartment = department ? normalizeDepartment(department) : "";
+    // Authorization check for Teacher
+    if (isTeacher && test.departmentScope && test.departmentScope !== "global" && test.departmentScope !== teacherDept) {
+      return res.status(403).json({ message: "You cannot assign tests belonging to another department." });
+    }
+
+    const normalizedDepartment = isTeacher ? teacherDept : (department ? normalizeDepartment(department) : "");
     const normalizedYear = year ? normalizeYear(year) : "";
 
     let targetStudents = [];
     let resolvedAssignType = assignType;
-    let resolvedAssignValue = assignValue || "";
+    let resolvedAssignValue = isTeacher ? teacherDept : (assignValue || "");
     let resolvedDepartment = normalizedDepartment;
     let resolvedYear = normalizedYear;
     let resolvedSection = section || "";
@@ -284,36 +340,59 @@ export const assignTest = async (req, res) => {
     if (assignType === "department_year") {
       resolvedAssignType = "department";
       resolvedAssignValue = normalizedDepartment;
-      const query = {};
-      if (department) query.department = normalizedDepartment;
+      const query = { department: normalizedDepartment };
       if (year) query.year = yearQuery(year);
-      targetStudents = await User.find(query).select("_id");
+      targetStudents = await User.find(query).select("_id department");
     } else if (assignType === "all") {
-      targetStudents = await User.find().select("_id");
+      if (isTeacher) {
+        resolvedAssignType = "department";
+        resolvedAssignValue = teacherDept;
+        resolvedDepartment = teacherDept;
+        targetStudents = await User.find({ department: teacherDept }).select("_id department");
+      } else {
+        targetStudents = await User.find().select("_id department");
+      }
     } else if (assignType === "department") {
-      if (!assignValue) {
+      const targetDept = isTeacher ? teacherDept : normalizeDepartment(assignValue);
+      if (!targetDept) {
         return res.status(400).json({ message: "Please select a department." });
       }
-      targetStudents = await User.find({ department: normalizeDepartment(assignValue) }).select("_id");
-      resolvedDepartment = normalizeDepartment(assignValue);
+      targetStudents = await User.find({ department: targetDept }).select("_id department");
+      resolvedDepartment = targetDept;
+      resolvedAssignValue = targetDept;
     } else if (assignType === "year") {
       if (!assignValue) {
         return res.status(400).json({ message: "Please select an academic year." });
       }
-      targetStudents = await User.find({ year: yearQuery(assignValue) }).select("_id");
+      const query = { year: yearQuery(assignValue) };
+      if (isTeacher) query.department = teacherDept;
+      targetStudents = await User.find(query).select("_id department");
       resolvedYear = normalizeYear(assignValue);
+      if (isTeacher) resolvedDepartment = teacherDept;
     } else if (assignType === "section") {
       if (!assignValue) {
         return res.status(400).json({ message: "Please select a section." });
       }
-      targetStudents = await User.find({ section: assignValue }).select("_id");
+      const query = { section: assignValue };
+      if (isTeacher) query.department = teacherDept;
+      targetStudents = await User.find(query).select("_id department");
       resolvedSection = assignValue;
+      if (isTeacher) resolvedDepartment = teacherDept;
     } else if (assignType === "individual" || assignType === "multiple") {
       const providedIds = Array.isArray(studentIds) ? studentIds : [];
       if (providedIds.length === 0) {
         return res.status(400).json({ message: "No students were selected." });
       }
-      const valid = await User.find({ _id: { $in: providedIds } }).select("_id");
+      const valid = await User.find({ _id: { $in: providedIds } }).select("_id department");
+
+      // Verify no students outside teacher department
+      if (isTeacher) {
+        const outside = valid.filter((u) => u.department !== teacherDept);
+        if (outside.length > 0) {
+          return res.status(403).json({ message: "You cannot assign tests to students outside your department." });
+        }
+      }
+
       const validIds = valid.map((u) => u._id.toString());
       const invalidCount = providedIds.length - validIds.length;
       if (validIds.length === 0) {

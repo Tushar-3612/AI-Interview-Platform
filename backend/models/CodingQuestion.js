@@ -56,6 +56,8 @@ const codingQuestionSchema = new mongoose.Schema({
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "Admin", default: null },
   lastEditedBy: { type: mongoose.Schema.Types.ObjectId, ref: "Admin", default: null },
   lastEditedAt: { type: Date, default: null },
+  departmentScope: { type: String, default: "global", trim: true },
+  creatorRole: { type: String, enum: ["system_admin", "teacher", "admin"], default: "system_admin" },
 }, { timestamps: true });
 
 codingQuestionSchema.index({ questionId: 1 });

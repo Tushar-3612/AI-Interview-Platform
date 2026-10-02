@@ -6,18 +6,21 @@ import {
   Star, Target, BrainCircuit, Code2,
 } from "lucide-react";
 import api from "../../utils/api";
-import { getAuthToken } from "../../hooks/useStudentProfile";
+import { getAuthToken, getAuthUser } from "../../hooks/useStudentProfile";
 import toast from "react-hot-toast";
 
 const ACCENT = "var(--admin-accent)";
 const NAVY = "var(--admin-navy)";
 
 function AdminDashboard() {
+  const user = getAuthUser();
   const [data, setData] = useState(null);
   const [analytics, setAnalytics] = useState(null);
   const [aptStats, setAptStats] = useState(null);
   const [codingStats, setCodingStats] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const isTeacher = user?.role === "teacher";
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -54,13 +57,13 @@ function AdminDashboard() {
   const { departmentWise = [], top10 = [] } = analytics || {};
 
   const statCards = [
-    { label: "Total Students", value: metrics.totalStudents || 0, icon: Users },
+    { label: isTeacher ? `${user?.department?.split(" ")[0]} Students` : "Total Students", value: metrics.totalStudents || 0, icon: Users },
     { label: "Practice Interviews", value: metrics.totalPracticeInterviews || 0, icon: Play },
     { label: "Real Interviews", value: metrics.totalRealInterviews || 0, icon: Briefcase },
     { label: "Uploaded Resumes", value: metrics.totalResumes || 0, icon: FileText },
     { label: "Active Tests", value: metrics.totalActiveTests || 0, icon: ClipboardCheck },
     { label: "Completed Tests", value: metrics.totalCompletedTests || 0, icon: CheckCircle },
-    { label: "Avg Platform Score", value: `${metrics.avgScore || 0}%`, icon: Percent },
+    { label: isTeacher ? "Dept Avg Score" : "Avg Platform Score", value: `${metrics.avgScore || 0}%`, icon: Percent },
   ];
 
   const deptData = charts.deptBreakdown || [];
@@ -79,8 +82,21 @@ function AdminDashboard() {
       {/* ── Header ── */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>Dashboard</h1>
-          <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>Platform overview and key metrics</p>
+          <div className="flex items-center gap-2 mb-0.5">
+            <h1 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>
+              {isTeacher ? `${user?.department || "Department"} Dashboard` : "Platform Dashboard"}
+            </h1>
+            {isTeacher && user?.department && (
+              <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+                Department Scope
+              </span>
+            )}
+          </div>
+          <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+            {isTeacher
+              ? `Real-time performance analytics and assessment intelligence for ${user?.department || "your department"}`
+              : "Platform overview and global key metrics"}
+          </p>
         </div>
         <div className="flex items-center gap-2 text-xs px-3 py-1.5 rounded-lg border" style={{ color: "var(--text-muted)", borderColor: "var(--border)" }}>
           <div className="w-1.5 h-1.5 rounded-full" style={{ background: "var(--success)" }} />

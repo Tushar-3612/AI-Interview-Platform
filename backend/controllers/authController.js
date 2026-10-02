@@ -146,36 +146,66 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: "Please enter a valid email address" });
     }
 
-    /* --- Admin Login (hardcoded credentials, stored Admin doc) --- */
-    if (email.toLowerCase() === ADMIN_CREDENTIALS.email) {
-      if (password !== ADMIN_CREDENTIALS.password) {
+    /* --- 1. Check Admin / Teacher Accounts in Admin collection --- */
+    let admin = await Admin.findOne({ email: email.toLowerCase() });
+
+    // Handle initial / fallback System Admin seeding if logging in with hardcoded master admin credentials
+    if (!admin && email.toLowerCase() === ADMIN_CREDENTIALS.email) {
+      if (password === ADMIN_CREDENTIALS.password) {
+        admin = await Admin.create({
+          name: "System Admin",
+          email: ADMIN_CREDENTIALS.email,
+          password: ADMIN_CREDENTIALS.password,
+          role: "system_admin",
+          department: null,
+          isActive: true,
+        });
+      }
+    }
+
+    if (admin) {
+      // Check account activation
+      if (admin.isActive === false) {
+        return res.status(403).json({ message: "Your account is deactivated. Please contact the System Administrator." });
+      }
+
+      // Verify password
+      let isMatch = false;
+      if (admin.password) {
+        isMatch = await admin.matchPassword(password);
+      }
+      // Fallback for initial legacy admin record if plain password existed
+      if (!isMatch && email.toLowerCase() === ADMIN_CREDENTIALS.email && password === ADMIN_CREDENTIALS.password) {
+        admin.password = ADMIN_CREDENTIALS.password;
+        admin.role = "system_admin";
+        await admin.save();
+        isMatch = true;
+      }
+
+      if (!isMatch) {
         return res.status(401).json({ message: "Invalid email or password" });
       }
 
-      let admin = await Admin.findOne({ email: ADMIN_CREDENTIALS.email });
-      if (!admin) {
-        admin = await Admin.create({
-          name: "Admin",
-          email: ADMIN_CREDENTIALS.email,
-          role: "admin",
-        });
-      }
+      admin.lastLogin = new Date();
+      await admin.save();
 
-      const token = generateToken(admin._id.toString(), "admin");
+      const normalizedRole = admin.role === "admin" ? "system_admin" : admin.role;
+      const token = generateToken(admin._id.toString(), normalizedRole, admin.department);
 
       return res.json({
-        message: "Admin login successful",
+        message: `${normalizedRole === "system_admin" ? "System Admin" : "Teacher"} login successful`,
         token,
         user: {
           id: admin._id,
           name: admin.name,
           email: admin.email,
-          role: "admin",
+          role: normalizedRole,
+          department: admin.department || null,
         },
       });
     }
 
-    /* --- Student Login --- */
+    /* --- 2. Student Login --- */
     const user = await User.findOne({ email: email.toLowerCase() });
 
     if (!user) {
@@ -188,7 +218,7 @@ export const login = async (req, res) => {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    const token = generateToken(user._id.toString(), "student");
+    const token = generateToken(user._id.toString(), "student", user.department);
 
     res.json({
       message: "Login successful",
@@ -200,6 +230,7 @@ export const login = async (req, res) => {
         department: user.department,
         year: user.year,
         role: "student",
+        isPremium: Boolean(user.isPremium),
       },
     });
   } catch (error) {

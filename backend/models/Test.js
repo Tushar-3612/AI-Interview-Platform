@@ -75,6 +75,16 @@ const testSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Admin",
     },
+    departmentScope: {
+      type: String,
+      default: "global",
+      trim: true,
+    },
+    creatorRole: {
+      type: String,
+      enum: ["system_admin", "teacher", "admin"],
+      default: "system_admin",
+    },
   },
   { timestamps: true }
 );

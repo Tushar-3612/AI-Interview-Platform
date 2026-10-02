@@ -99,6 +99,7 @@ export const createTechnicalQuestion = async (req, res) => {
       expectedAnswer,
       explanation,
       marks,
+      departmentScope: reqDeptScope,
     } = req.body;
 
     if (!companyId || !question || !expectedAnswer) {
@@ -112,6 +113,9 @@ export const createTechnicalQuestion = async (req, res) => {
     const count = await TechnicalQuestion.countDocuments({ companyId });
     const questionId = `TECH-${topicPrefix}-${String(count + 1).padStart(3, "0")}`;
 
+    const departmentScope = req.user?.role === "teacher" ? req.user.department : (reqDeptScope || "global");
+    const creatorRole = req.user?.role === "teacher" ? "teacher" : "system_admin";
+
     const newQuestion = await TechnicalQuestion.create({
       questionId,
       companyId,
@@ -124,7 +128,10 @@ export const createTechnicalQuestion = async (req, res) => {
       expectedAnswer,
       explanation: explanation || "",
       marks: marks || 1,
-      lastEditedBy: req.user.id,
+      departmentScope,
+      creatorRole,
+      createdBy: req.user?._id || req.user?.id || null,
+      lastEditedBy: req.user?.id || req.user?._id,
       lastEditedAt: new Date(),
     });
 
@@ -142,16 +149,22 @@ export const createTechnicalQuestion = async (req, res) => {
 export const updateTechnicalQuestion = async (req, res) => {
   try {
     const { id } = req.params;
-    const updates = req.body;
-
-    updates.lastEditedBy = req.user.id;
-    updates.lastEditedAt = new Date();
-
-    const question = await TechnicalQuestion.findByIdAndUpdate(id, updates, { new: true });
-    if (!question) {
+    const existing = await TechnicalQuestion.findById(id);
+    if (!existing) {
       return res.status(404).json({ message: "Question not found" });
     }
 
+    if (req.user?.role === "teacher") {
+      if (existing.departmentScope && existing.departmentScope !== "global" && existing.departmentScope !== req.user.department) {
+        return res.status(403).json({ message: "You are not authorized to modify questions outside your department." });
+      }
+    }
+
+    const updates = req.body;
+    updates.lastEditedBy = req.user.id || req.user._id;
+    updates.lastEditedAt = new Date();
+
+    const question = await TechnicalQuestion.findByIdAndUpdate(id, updates, { new: true });
     res.json(question);
   } catch (error) {
     console.error("Update Technical Question Error:", error.message);
@@ -166,16 +179,22 @@ export const updateTechnicalQuestion = async (req, res) => {
 export const deleteTechnicalQuestion = async (req, res) => {
   try {
     const { id } = req.params;
+    const existing = await TechnicalQuestion.findById(id);
+    if (!existing) {
+      return res.status(404).json({ message: "Question not found" });
+    }
+
+    if (req.user?.role === "teacher") {
+      if (existing.departmentScope && existing.departmentScope !== "global" && existing.departmentScope !== req.user.department) {
+        return res.status(403).json({ message: "You are not authorized to delete questions outside your department." });
+      }
+    }
 
     const question = await TechnicalQuestion.findByIdAndUpdate(
       id,
       { isDeleted: true, deletedAt: new Date() },
       { new: true }
     );
-
-    if (!question) {
-      return res.status(404).json({ message: "Question not found" });
-    }
 
     res.json({ message: "Question deleted" });
   } catch (error) {

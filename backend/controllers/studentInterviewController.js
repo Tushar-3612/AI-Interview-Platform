@@ -118,19 +118,24 @@ export const checkInterviewEligibility = async (req, res) => {
       return res.status(401).json({ success: false, message: "Unauthorized: User ID missing" });
     }
 
-    const user = await User.findById(userId).select("email").lean();
+    const user = await User.findById(userId).select("email isPremium").lean();
     const rawEmail = req.user?.email || user?.email || "";
     const normalizedEmail = String(rawEmail).trim().toLowerCase();
     const isPrephire = Boolean(normalizedEmail && normalizedEmail.endsWith("@prephire.com"));
+    const isPremium = Boolean(user?.isPremium === true);
+    const hasUnlimitedRealInterviewAccess = isPrephire || isPremium;
 
-    if (isPrephire) {
+    if (hasUnlimitedRealInterviewAccess) {
       return res.status(200).json({
         success: true,
-        isPrephire: true,
+        isPrephire,
+        isPremium,
         allowed: true,
         dailyLimit: null,
         usedToday: 0,
-        message: "Prephire members have unlimited Real Interview attempts.",
+        message: isPrephire
+          ? "Prephire members have unlimited Real Interview attempts."
+          : "Premium members have unlimited Real Interview attempts.",
       });
     }
 
@@ -161,6 +166,7 @@ export const checkInterviewEligibility = async (req, res) => {
     return res.status(200).json({
       success: true,
       isPrephire: false,
+      isPremium: false,
       allowed,
       hasActiveSessionToday,
       activeSessionId: hasActiveSessionToday ? existingAttemptToday._id.toString() : null,
@@ -180,8 +186,8 @@ export const checkInterviewEligibility = async (req, res) => {
  * POST /api/student/interviews
  * Initializes or reuses an active student Real Interview session.
  * Enforces:
- * - @prephire.com: Multiple Real Interview attempts allowed (no 1-attempt-per-day limit).
- * - Other domains: Only 1 Real Interview attempt per calendar day.
+ * - @prephire.com or Premium students: Unlimited Real Interview attempts.
+ * - Standard non-Premium users: Only 1 Real Interview attempt per calendar day.
  */
 export const createInterviewSession = async (req, res) => {
   try {
@@ -190,10 +196,12 @@ export const createInterviewSession = async (req, res) => {
       return res.status(401).json({ success: false, message: "Unauthorized: User ID missing" });
     }
 
-    const user = await User.findById(userId).select("email").lean();
+    const user = await User.findById(userId).select("email isPremium").lean();
     const rawEmail = req.user?.email || user?.email || "";
     const normalizedEmail = String(rawEmail).trim().toLowerCase();
     const isPrephire = Boolean(normalizedEmail && normalizedEmail.endsWith("@prephire.com"));
+    const isPremium = Boolean(user?.isPremium === true);
+    const hasUnlimitedRealInterviewAccess = isPrephire || isPremium;
 
     const { interviewType = "actual", targetRound = "all", durationMinutes = 120 } = req.body || {};
 
@@ -204,8 +212,8 @@ export const createInterviewSession = async (req, res) => {
     const endOfToday = new Date(now);
     endOfToday.setHours(23, 59, 59, 999);
 
-    // For non-Prephire users: Enforce 1 attempt per calendar day
-    if (!isPrephire && (interviewType === "actual" || interviewType === "real")) {
+    // For standard users without unlimited access: Enforce 1 attempt per calendar day
+    if (!hasUnlimitedRealInterviewAccess && (interviewType === "actual" || interviewType === "real")) {
       const existingAttemptToday = await Interview.findOne({
         userId,
         interviewType: { $in: ["actual", "real"] },
@@ -232,7 +240,7 @@ export const createInterviewSession = async (req, res) => {
         }
 
         // Already completed or submitted an interview today -> Block new attempt
-        console.warn(`[StudentInterviewController] Blocked daily limit for non-Prephire user ${userId} (${normalizedEmail})`);
+        console.warn(`[StudentInterviewController] Blocked daily limit for standard user ${userId} (${normalizedEmail}, isPremium=${isPremium})`);
         return res.status(403).json({
           success: false,
           code: "DAILY_INTERVIEW_LIMIT_REACHED",

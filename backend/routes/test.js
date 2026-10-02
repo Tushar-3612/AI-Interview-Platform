@@ -37,7 +37,7 @@ import {
 const router = express.Router();
 
 router.use(authMiddleware);
-router.use(authorizeRoles("admin"));
+router.use(authorizeRoles("system_admin", "teacher"));
 
 router.post("/", createTest);
 router.get("/", getTests);

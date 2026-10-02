@@ -7,17 +7,36 @@ import Company from "../models/Company.js";
 import { normalizeDepartment } from "../utils/academicConfig.js";
 
 /**
+ * Helper to get student IDs for a teacher's department, or null for system_admin.
+ */
+async function getScopedStudentIds(req) {
+  if (req.user?.role === "teacher" && req.user?.department) {
+    const students = await User.find({ department: req.user.department }).select("_id").lean();
+    return students.map((s) => s._id);
+  }
+  return null;
+}
+
+/**
  * 1. Summary Cards Overview (Real Data Only)
  */
 export const getAnalyticsOverview = async (req, res) => {
   try {
-    // Total Students
-    const totalStudents = await User.countDocuments({ role: { $ne: "admin" } });
+    const isTeacher = req.user?.role === "teacher";
+    const teacherDept = req.user?.department;
+    const scopedUserIds = await getScopedStudentIds(req);
+
+    const userFilter = isTeacher ? { department: teacherDept, role: { $ne: "admin" } } : { role: { $ne: "admin" } };
+    const totalStudents = await User.countDocuments(userFilter);
 
     // Active Students (students with at least 1 mock or test attempt or interview)
-    const activeMockUserIds = await CompanyMockAttempt.distinct("userId");
-    const activeInterviewUserIds = await Interview.distinct("userId");
-    const activeTestUserIds = await TestAttempt.distinct("userId");
+    const mockFilter = scopedUserIds ? { userId: { $in: scopedUserIds } } : {};
+    const interviewFilter = scopedUserIds ? { userId: { $in: scopedUserIds } } : {};
+    const testFilter = scopedUserIds ? { userId: { $in: scopedUserIds } } : {};
+
+    const activeMockUserIds = await CompanyMockAttempt.distinct("userId", mockFilter);
+    const activeInterviewUserIds = await Interview.distinct("userId", interviewFilter);
+    const activeTestUserIds = await TestAttempt.distinct("userId", testFilter);
 
     const allActiveUserIds = new Set([
       ...activeMockUserIds.map((id) => String(id)),
@@ -27,22 +46,23 @@ export const getAnalyticsOverview = async (req, res) => {
     const activeStudents = allActiveUserIds.size;
 
     // Total Assessments
-    const totalMockAttempts = await CompanyMockAttempt.countDocuments();
+    const totalMockAttempts = await CompanyMockAttempt.countDocuments(mockFilter);
     const totalRealInterviews = await Interview.countDocuments({
+      ...interviewFilter,
       interviewType: { $in: ["actual", "real"] },
     });
-    const totalTestAttempts = await TestAttempt.countDocuments();
+    const totalTestAttempts = await TestAttempt.countDocuments(testFilter);
     const totalAssessments = totalMockAttempts + totalRealInterviews + totalTestAttempts;
 
     // Completed Assessments
-    const completedMocks = await CompanyMockAttempt.countDocuments({ status: "completed" });
-    const completedInterviews = await Interview.countDocuments({ status: "completed" });
-    const completedTests = await TestAttempt.countDocuments({ status: "completed" });
+    const completedMocks = await CompanyMockAttempt.countDocuments({ ...mockFilter, status: "completed" });
+    const completedInterviews = await Interview.countDocuments({ ...interviewFilter, status: "completed" });
+    const completedTests = await TestAttempt.countDocuments({ ...testFilter, status: "completed" });
     const completedAssessments = completedMocks + completedInterviews + completedTests;
 
     // Calculate Average Score across completed Company Mocks & Results
-    const completedMockDocs = await CompanyMockAttempt.find({ status: "completed" }).select("scores");
-    const completedResultDocs = await Result.find().select("overallScore overall");
+    const completedMockDocs = await CompanyMockAttempt.find({ ...mockFilter, status: "completed" }).select("scores");
+    const completedResultDocs = await Result.find(scopedUserIds ? { userId: { $in: scopedUserIds } } : {}).select("overallScore overall");
 
     let totalScoreSum = 0;
     let scoreCount = 0;
@@ -101,10 +121,16 @@ export const getAnalyticsOverview = async (req, res) => {
  */
 export const getDepartmentAnalytics = async (req, res) => {
   try {
+    const isTeacher = req.user?.role === "teacher";
+    const teacherDept = req.user?.department;
     const { department, year, section, startDate, endDate } = req.query;
 
     const userMatch = { role: { $ne: "admin" } };
-    if (department) userMatch.department = normalizeDepartment(department);
+    if (isTeacher) {
+      userMatch.department = teacherDept;
+    } else if (department) {
+      userMatch.department = normalizeDepartment(department);
+    }
     if (year) userMatch.year = String(year).trim();
     if (section) userMatch.section = String(section).trim();
 
@@ -202,10 +228,16 @@ export const getDepartmentAnalytics = async (req, res) => {
  */
 export const getStudentPerformanceAnalytics = async (req, res) => {
   try {
+    const isTeacher = req.user?.role === "teacher";
+    const teacherDept = req.user?.department;
     const { search, department, year, section, page = 1, limit = 15 } = req.query;
 
     const userMatch = { role: { $ne: "admin" } };
-    if (department) userMatch.department = normalizeDepartment(department);
+    if (isTeacher) {
+      userMatch.department = teacherDept;
+    } else if (department) {
+      userMatch.department = normalizeDepartment(department);
+    }
     if (year) userMatch.year = String(year).trim();
     if (section) userMatch.section = String(section).trim();
     if (search) {
@@ -315,8 +347,17 @@ export const getStudentPerformanceAnalytics = async (req, res) => {
  */
 export const getRealInterviewAnalytics = async (req, res) => {
   try {
-    const interviews = await Interview.find({ interviewType: { $in: ["actual", "real"] } }).lean();
-    const results = await Result.find().lean();
+    const isTeacher = req.user?.role === "teacher";
+    const scopedUserIds = await getScopedStudentIds(req);
+
+    const interviewMatch = { interviewType: { $in: ["actual", "real"] } };
+    if (scopedUserIds) {
+      interviewMatch.userId = { $in: scopedUserIds };
+    }
+
+    const interviews = await Interview.find(interviewMatch).lean();
+    const resultMatch = scopedUserIds ? { userId: { $in: scopedUserIds } } : {};
+    const results = await Result.find(resultMatch).lean();
 
     const totalSessions = interviews.length;
     const completedInterviews = interviews.filter((i) => i.status === "completed").length;
@@ -324,7 +365,6 @@ export const getRealInterviewAnalytics = async (req, res) => {
     const completionRate = totalSessions > 0 ? Math.round((completedInterviews / totalSessions) * 100) : 0;
 
     let overallScoreSum = 0;
-    let evalScoreSum = 0;
     let scoreCount = 0;
 
     for (const r of results) {
@@ -385,6 +425,8 @@ export const getRealInterviewAnalytics = async (req, res) => {
  */
 export const getCompanyMockAnalytics = async (req, res) => {
   try {
+    const scopedUserIds = await getScopedStudentIds(req);
+
     const supportedCompanies = [
       { id: "celebal", name: "Celebal" },
       { id: "tcs", name: "TCS" },
@@ -397,7 +439,8 @@ export const getCompanyMockAnalytics = async (req, res) => {
       { id: "infosys", name: "Infosys" },
     ];
 
-    const attempts = await CompanyMockAttempt.find().select("companyId companyName status scores userId").lean();
+    const match = scopedUserIds ? { userId: { $in: scopedUserIds } } : {};
+    const attempts = await CompanyMockAttempt.find(match).select("companyId companyName status scores userId").lean();
 
     const companyStatsMap = new Map();
     for (const c of supportedCompanies) {
@@ -418,8 +461,8 @@ export const getCompanyMockAnalytics = async (req, res) => {
       let stat = companyStatsMap.get(cid);
       if (!stat) {
         // Fallback matching by name
-        const match = supportedCompanies.find((sc) => sc.name.toLowerCase() === (att.companyName || "").toLowerCase());
-        if (match) stat = companyStatsMap.get(match.id);
+        const matchComp = supportedCompanies.find((sc) => sc.name.toLowerCase() === (att.companyName || "").toLowerCase());
+        if (matchComp) stat = companyStatsMap.get(matchComp.id);
       }
 
       if (stat) {
@@ -476,7 +519,13 @@ export const getCompanyMockAnalytics = async (req, res) => {
  */
 export const getMockSectionAnalytics = async (req, res) => {
   try {
-    const attempts = await CompanyMockAttempt.find({ status: "completed" }).select("scores").lean();
+    const scopedUserIds = await getScopedStudentIds(req);
+    const match = { status: "completed" };
+    if (scopedUserIds) {
+      match.userId = { $in: scopedUserIds };
+    }
+
+    const attempts = await CompanyMockAttempt.find(match).select("scores").lean();
 
     let aptScores = [], techScores = [], codingScores = [];
 
@@ -508,7 +557,13 @@ export const getMockSectionAnalytics = async (req, res) => {
  */
 export const getPerformanceDistribution = async (req, res) => {
   try {
-    const attempts = await CompanyMockAttempt.find({ status: "completed" }).select("scores").lean();
+    const scopedUserIds = await getScopedStudentIds(req);
+    const match = { status: "completed" };
+    if (scopedUserIds) {
+      match.userId = { $in: scopedUserIds };
+    }
+
+    const attempts = await CompanyMockAttempt.find(match).select("scores").lean();
 
     const buckets = {
       "0–20%": 0,
@@ -546,7 +601,13 @@ export const getPerformanceDistribution = async (req, res) => {
  */
 export const getTimeBasedAnalytics = async (req, res) => {
   try {
-    const attempts = await CompanyMockAttempt.find()
+    const scopedUserIds = await getScopedStudentIds(req);
+    const match = {};
+    if (scopedUserIds) {
+      match.userId = { $in: scopedUserIds };
+    }
+
+    const attempts = await CompanyMockAttempt.find(match)
       .select("createdAt status")
       .sort({ createdAt: 1 })
       .lean();

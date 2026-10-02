@@ -16,6 +16,9 @@ const aptitudeQuestionSchema = new mongoose.Schema({
   deletedAt: { type: Date, default: null },
   lastEditedBy: { type: mongoose.Schema.Types.ObjectId, ref: "Admin", default: null },
   lastEditedAt: { type: Date, default: null },
+  departmentScope: { type: String, default: "global", trim: true },
+  creatorRole: { type: String, enum: ["system_admin", "teacher", "admin"], default: "system_admin" },
+  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "Admin", default: null },
 }, { timestamps: true });
 
 aptitudeQuestionSchema.index({ difficulty: 1, isActive: 1 });
