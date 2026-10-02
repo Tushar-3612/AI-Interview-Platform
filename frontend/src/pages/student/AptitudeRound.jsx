@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
-import { ArrowLeft, Clock, ChevronLeft, CheckCircle, XCircle, HelpCircle, BarChart3, Timer, BrainCircuit, Bookmark, BookmarkCheck, Percent, History } from "lucide-react";
+import { ArrowLeft, Clock, ChevronLeft, CheckCircle, XCircle, HelpCircle, BarChart3, Timer, BrainCircuit, Bookmark, BookmarkCheck, Percent, History, AlertTriangle } from "lucide-react";
 import api from "../../utils/api";
 import { getAuthToken } from "../../hooks/useStudentProfile";
 import Button from "../../components/ui/Button";
@@ -46,6 +46,7 @@ function AptitudeRound() {
   const [result, setResult] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [company, setCompany] = useState(null);
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchCompany = async () => {
@@ -94,7 +95,7 @@ function AptitudeRound() {
         if (prev <= 1) {
           clearInterval(timerRef.current);
           toast.error("Time's up! Submitting automatically.");
-          handleSubmit("auto");
+          handleSubmit();
           return 0;
         }
         return prev - 1;
@@ -158,8 +159,7 @@ function AptitudeRound() {
     }
   };
 
-  const handleSubmit = async (mode = "manual") => {
-    if (mode === "manual" && !window.confirm("Submit your answers?")) return;
+  const handleSubmit = async () => {
     setSubmitting(true);
     try {
       const res = await api.post(
@@ -491,7 +491,7 @@ function AptitudeRound() {
           <div className="student-card p-4 lg:sticky lg:top-24">
             <QuestionNavigator {...navigatorProps} />
             <div className="mt-4 pt-4 border-t" style={{ borderColor: "var(--border)" }}>
-              <Button onClick={() => handleSubmit("manual")} disabled={submitting} className="w-full py-2 text-xs">
+              <Button onClick={() => setConfirmModalOpen(true)} disabled={submitting} className="w-full py-2 text-xs">
                 {submitting ? "Submitting..." : "Submit Test"}
               </Button>
             </div>
@@ -590,7 +590,7 @@ function AptitudeRound() {
               </button>
 
               {isLastQuestion ? (
-                <Button onClick={() => handleSubmit("manual")} disabled={submitting} className="px-5 py-2 text-xs">
+                <Button onClick={() => setConfirmModalOpen(true)} disabled={submitting} className="px-5 py-2 text-xs">
                   {submitting ? "Submitting..." : "Submit Test"}
                 </Button>
               ) : (
@@ -602,6 +602,77 @@ function AptitudeRound() {
           </motion.div>
         </div>
       </div>
+
+      {/* ── Confirm Submit Modal ── */}
+      {confirmModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            className="max-w-md w-full p-6 sm:p-7 rounded-3xl border shadow-2xl space-y-5 text-center relative"
+            style={{
+              background: "var(--card-bg)",
+              borderColor: "var(--border)",
+            }}
+          >
+            <div
+              className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto"
+              style={{
+                background: "rgba(245, 158, 11, 0.12)",
+                color: "#F59E0B",
+                border: "1px solid rgba(245, 158, 11, 0.3)",
+              }}
+            >
+              <AlertTriangle className="w-7 h-7" />
+            </div>
+
+            <div>
+              <h3 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>
+                Submit Your Test?
+              </h3>
+              <p className="text-xs mt-1.5 leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+                You have answered <strong style={{ color: "var(--text-primary)" }}>{answeredCount}</strong> of{" "}
+                <strong style={{ color: "var(--text-primary)" }}>{questions.length}</strong> questions.
+                {questions.length - answeredCount > 0 && (
+                  <span className="block mt-1 font-semibold text-amber-400">
+                    ⚠️ {questions.length - answeredCount} unanswered question{questions.length - answeredCount > 1 ? "s" : ""} remaining.
+                  </span>
+                )}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setConfirmModalOpen(false)}
+                className="flex-1 py-2.5 rounded-xl border text-xs font-bold transition cursor-pointer hover:opacity-80"
+                style={{
+                  borderColor: "var(--border)",
+                  color: "var(--text-secondary)",
+                  background: "var(--input-bg)",
+                }}
+              >
+                Review Answers
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setConfirmModalOpen(false);
+                  handleSubmit();
+                }}
+                disabled={submitting}
+                className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white shadow-md transition hover:opacity-90 cursor-pointer disabled:opacity-50"
+                style={{
+                  background: "linear-gradient(135deg, #FF6B35 0%, #EA580C 100%)",
+                }}
+              >
+                {submitting ? "Submitting..." : "Yes, Submit Test"}
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }

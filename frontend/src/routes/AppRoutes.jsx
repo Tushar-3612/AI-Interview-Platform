@@ -102,13 +102,17 @@ function AppRoutes() {
       {/* Dedicated Coding Assessment IDE Control Room (Standalone without website navbar) */}
       <Route path="/coding-assessment/:assessmentId" element={<CodingAssessment />} />
 
+      {/* Dedicated Coding Round IDE Workspace (Full-Screen Standalone without website navbar/sidebar) */}
+      <Route path="/coding-round/test" element={<CodingRound />} />
+      <Route path="/coding-round/test/:difficulty" element={<CodingRound />} />
+      <Route path="/interview-practice/:companyId/coding" element={<CodingRound />} />
+
       <Route element={<StudentLayout />}>
         <Route path="/dashboard" element={<StudentDashboard />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/interview-practice" element={<InterviewPractice />} />
         <Route path="/interview-practice/:companyId" element={<RoundSelection />} />
         <Route path="/interview-practice/:companyId/aptitude" element={<AptitudeRound />} />
-        <Route path="/interview-practice/:companyId/coding" element={<CodingRound />} />
         <Route path="/aptitude" element={<AptitudeHub />} />
         <Route path="/aptitude-round" element={<AptitudeHub />} />
         <Route path="/aptitude/practice" element={<AptitudeRound />} />
@@ -129,8 +133,6 @@ function AppRoutes() {
         <Route path="/mock-interview" element={<MockInterview />} />
         <Route path="/mock-interview/history" element={<CompanyMockHistory />} />
         <Route path="/coding-round" element={<CodingRoundSelect />} />
-        <Route path="/coding-round/test" element={<CodingRound />} />
-        <Route path="/coding-round/test/:difficulty" element={<CodingRound />} />
         <Route path="/coding-assessments" element={<CodingAssessmentList />} />
         <Route path="/coding-assessment/result/:attemptId" element={<CodingResult />} />
         <Route path="/coding-assessment/history" element={<CodingAssessmentHistory />} />

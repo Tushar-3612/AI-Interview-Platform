@@ -154,6 +154,15 @@ export default function CodingRoundSelect() {
     if (selectedLanguage) params.set("lang", selectedLanguage);
     if (questionLimit && questionLimit !== "all") params.set("limit", questionLimit);
 
+    try {
+      const el = document.documentElement;
+      if (el.requestFullscreen) {
+        el.requestFullscreen().catch(() => {});
+      } else if (el.webkitRequestFullscreen) {
+        el.webkitRequestFullscreen().catch(() => {});
+      }
+    } catch {}
+
     toast.success(`Starting ${activeTrack.name}...`);
     navigate(`/coding-round/test?${params.toString()}`);
   };
