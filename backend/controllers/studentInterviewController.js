@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import User from "../models/User.js";
 import Interview from "../models/Interview.js";
 import RealInterviewAptitudeQuestion from "../models/RealInterviewAptitudeQuestion.js";
 import RealInterviewTechnicalQuestion from "../models/RealInterviewTechnicalQuestion.js";
@@ -107,8 +108,80 @@ async function fetchAllRealInterviewQuestions(sessionId) {
 }
 
 /**
+ * GET /api/student/interviews/eligibility
+ * Returns daily attempt eligibility based on normalized email domain (@prephire.com vs non-Prephire).
+ */
+export const checkInterviewEligibility = async (req, res) => {
+  try {
+    const userId = req.user?.id || req.user?._id;
+    if (!userId) {
+      return res.status(401).json({ success: false, message: "Unauthorized: User ID missing" });
+    }
+
+    const user = await User.findById(userId).select("email").lean();
+    const rawEmail = req.user?.email || user?.email || "";
+    const normalizedEmail = String(rawEmail).trim().toLowerCase();
+    const isPrephire = Boolean(normalizedEmail && normalizedEmail.endsWith("@prephire.com"));
+
+    if (isPrephire) {
+      return res.status(200).json({
+        success: true,
+        isPrephire: true,
+        allowed: true,
+        dailyLimit: null,
+        usedToday: 0,
+        message: "Prephire members have unlimited Real Interview attempts.",
+      });
+    }
+
+    const now = new Date();
+    const startOfToday = new Date(now);
+    startOfToday.setHours(0, 0, 0, 0);
+
+    const endOfToday = new Date(now);
+    endOfToday.setHours(23, 59, 59, 999);
+
+    const existingAttemptToday = await Interview.findOne({
+      userId,
+      interviewType: { $in: ["actual", "real"] },
+      $or: [
+        { startedAt: { $gte: startOfToday, $lte: endOfToday } },
+        { createdAt: { $gte: startOfToday, $lte: endOfToday } },
+      ],
+    }).sort({ createdAt: -1 });
+
+    const hasCompletedAttemptToday = Boolean(
+      existingAttemptToday && existingAttemptToday.status !== "IN_PROGRESS"
+    );
+    const hasActiveSessionToday = Boolean(
+      existingAttemptToday && existingAttemptToday.status === "IN_PROGRESS"
+    );
+    const allowed = !hasCompletedAttemptToday;
+
+    return res.status(200).json({
+      success: true,
+      isPrephire: false,
+      allowed,
+      hasActiveSessionToday,
+      activeSessionId: hasActiveSessionToday ? existingAttemptToday._id.toString() : null,
+      dailyLimit: 1,
+      usedToday: hasCompletedAttemptToday ? 1 : (hasActiveSessionToday ? 1 : 0),
+      message: allowed
+        ? "You have 1 Real Interview attempt available for today."
+        : "You have already used your Real Interview attempt today. You can take your next Real Interview tomorrow.",
+    });
+  } catch (error) {
+    console.error("[StudentInterviewController] Check eligibility error:", error.message);
+    res.status(500).json({ success: false, message: "Failed to check eligibility" });
+  }
+};
+
+/**
  * POST /api/student/interviews
- * Initializes or reuses an active student Real Interview session (IDEMPOTENT).
+ * Initializes or reuses an active student Real Interview session.
+ * Enforces:
+ * - @prephire.com: Multiple Real Interview attempts allowed (no 1-attempt-per-day limit).
+ * - Other domains: Only 1 Real Interview attempt per calendar day.
  */
 export const createInterviewSession = async (req, res) => {
   try {
@@ -117,7 +190,56 @@ export const createInterviewSession = async (req, res) => {
       return res.status(401).json({ success: false, message: "Unauthorized: User ID missing" });
     }
 
+    const user = await User.findById(userId).select("email").lean();
+    const rawEmail = req.user?.email || user?.email || "";
+    const normalizedEmail = String(rawEmail).trim().toLowerCase();
+    const isPrephire = Boolean(normalizedEmail && normalizedEmail.endsWith("@prephire.com"));
+
     const { interviewType = "actual", targetRound = "all", durationMinutes = 120 } = req.body || {};
+
+    const now = new Date();
+    const startOfToday = new Date(now);
+    startOfToday.setHours(0, 0, 0, 0);
+
+    const endOfToday = new Date(now);
+    endOfToday.setHours(23, 59, 59, 999);
+
+    // For non-Prephire users: Enforce 1 attempt per calendar day
+    if (!isPrephire && (interviewType === "actual" || interviewType === "real")) {
+      const existingAttemptToday = await Interview.findOne({
+        userId,
+        interviewType: { $in: ["actual", "real"] },
+        $or: [
+          { startedAt: { $gte: startOfToday, $lte: endOfToday } },
+          { createdAt: { $gte: startOfToday, $lte: endOfToday } },
+        ],
+      }).sort({ createdAt: -1 });
+
+      if (existingAttemptToday) {
+        // If there is an in-progress session started today, allow student to resume it
+        if (existingAttemptToday.status === "IN_PROGRESS") {
+          const sessionId = existingAttemptToday._id.toString();
+          console.log(`[StudentInterviewController] Reusing today's active session ${sessionId} for user ${userId} (${normalizedEmail})`);
+          return res.status(200).json({
+            success: true,
+            sessionId,
+            interviewId: sessionId,
+            interviewType: existingAttemptToday.interviewType,
+            targetRound: existingAttemptToday.targetRound,
+            durationMinutes: existingAttemptToday.durationMinutes,
+            startedAt: existingAttemptToday.startedAt,
+          });
+        }
+
+        // Already completed or submitted an interview today -> Block new attempt
+        console.warn(`[StudentInterviewController] Blocked daily limit for non-Prephire user ${userId} (${normalizedEmail})`);
+        return res.status(403).json({
+          success: false,
+          code: "DAILY_INTERVIEW_LIMIT_REACHED",
+          message: "You have already used your Real Interview attempt for today. Please try again tomorrow.",
+        });
+      }
+    }
 
     // Check if student ALREADY has an active IN_PROGRESS session of this interviewType
     const existingActive = await Interview.findOne({
@@ -129,7 +251,7 @@ export const createInterviewSession = async (req, res) => {
     let interview;
     if (existingActive) {
       interview = existingActive;
-      console.log(`[StudentInterviewController] Reusing existing active session ${interview._id} for user ${userId}`);
+      console.log(`[StudentInterviewController] Reusing existing active session ${interview._id} for user ${userId} (${normalizedEmail})`);
     } else {
       interview = await Interview.create({
         userId,
@@ -139,7 +261,7 @@ export const createInterviewSession = async (req, res) => {
         startedAt: new Date(),
         status: "IN_PROGRESS",
       });
-      console.log(`[StudentInterviewController] Created Real Interview session ${interview._id} for user ${userId}`);
+      console.log(`[StudentInterviewController] Created Real Interview session ${interview._id} for user ${userId} (${normalizedEmail}, isPrephire=${isPrephire})`);
     }
 
     const sessionId = interview._id.toString();

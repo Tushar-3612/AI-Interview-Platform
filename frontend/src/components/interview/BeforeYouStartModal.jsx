@@ -1,28 +1,35 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { AlertTriangle, X, Key, Sparkles, ArrowRight } from "lucide-react";
+import { AlertTriangle, X, Key, Sparkles, ArrowRight, ShieldCheck } from "lucide-react";
 
 /**
- * BeforeYouStartModal — Simplified, concise consent & guidelines modal for AI Real Interview.
+ * BeforeYouStartModal — Simplified consent & guidelines modal for AI Real Interview.
  * 
  * Props:
  * - isOpen: boolean (whether modal is visible)
  * - onClose: () => void (cancel/close handler)
  * - onAgreeAndStart: () => Promise<void> | void (callback to start interview)
  * - isStarting: boolean (loading state during session initialization)
+ * - userEmail: string (authenticated user's email)
+ * - dailyLimitReached: boolean (whether 1 attempt per day has been consumed for non-Prephire)
  */
 export default function BeforeYouStartModal({
   isOpen,
   onClose,
   onAgreeAndStart,
   isStarting = false,
+  userEmail = "",
+  dailyLimitReached = false,
 }) {
   const [agreed, setAgreed] = useState(false);
 
   if (!isOpen) return null;
 
+  const effectiveEmail = String(userEmail || "").trim().toLowerCase();
+  const isPrephire = Boolean(effectiveEmail && effectiveEmail.endsWith("@prephire.com"));
+
   const handleAgreeAndStart = () => {
-    if (!agreed || isStarting) return;
+    if (!agreed || isStarting || (dailyLimitReached && !isPrephire)) return;
     onAgreeAndStart?.();
   };
 
@@ -89,16 +96,38 @@ export default function BeforeYouStartModal({
               </p>
             </div>
 
-            {/* 2. One Attempt Warning (Highlighted) */}
-            <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-200/90 space-y-1">
-              <div className="flex items-center gap-1.5 text-amber-400 font-extrabold text-[11px] uppercase tracking-wider">
-                <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
-                <span>⚠️ ONE ATTEMPT ONLY</span>
+            {/* 2. Attempt Policy Box */}
+            {isPrephire ? (
+              <div className="p-3.5 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-transparent border border-emerald-500/30 text-emerald-200/90 space-y-1">
+                <div className="flex items-center gap-1.5 text-emerald-400 font-extrabold text-[11px] uppercase tracking-wider">
+                  <Sparkles className="w-3.5 h-3.5 shrink-0" />
+                  <span>✨ PREPHIRE MEMBER ACCESS</span>
+                </div>
+                <p className="text-[11.5px] leading-relaxed text-emerald-100/80">
+                  As a Prephire member, you have access to multiple Real Interview attempts. Please answer honestly and treat each session like a real placement interview.
+                </p>
               </div>
-              <p className="text-[11.5px] leading-relaxed text-amber-100/80">
-                Please start only when you are ready. You get one attempt, so answer honestly and treat it like a real interview.
-              </p>
-            </div>
+            ) : dailyLimitReached ? (
+              <div className="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-200/90 space-y-1">
+                <div className="flex items-center gap-1.5 text-rose-400 font-extrabold text-[11px] uppercase tracking-wider">
+                  <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                  <span>⚠️ DAILY LIMIT REACHED</span>
+                </div>
+                <p className="text-[11.5px] leading-relaxed text-rose-100/80">
+                  You have already used your Real Interview attempt today. You can take your next Real Interview tomorrow.
+                </p>
+              </div>
+            ) : (
+              <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-200/90 space-y-1">
+                <div className="flex items-center gap-1.5 text-amber-400 font-extrabold text-[11px] uppercase tracking-wider">
+                  <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                  <span>⚠️ 1 ATTEMPT PER DAY</span>
+                </div>
+                <p className="text-[11.5px] leading-relaxed text-amber-100/80">
+                  Please start only when you are ready. You get 1 Real Interview attempt per day, so answer honestly and treat it like a real interview.
+                </p>
+              </div>
+            )}
 
             {/* 3. AI API Information */}
             <div className="p-3.5 rounded-2xl bg-white/[0.02] border border-white/10 space-y-2">
@@ -131,8 +160,8 @@ export default function BeforeYouStartModal({
                   type="checkbox"
                   checked={agreed}
                   onChange={(e) => setAgreed(e.target.checked)}
-                  disabled={isStarting}
-                  className="mt-0.5 h-4 w-4 rounded border-white/20 bg-white/5 text-[#FF6B35] focus:ring-[#FF6B35] focus:ring-offset-0 cursor-pointer accent-[#FF6B35] shrink-0"
+                  disabled={isStarting || (dailyLimitReached && !isPrephire)}
+                  className="mt-0.5 h-4 w-4 rounded border-white/20 bg-white/5 text-[#FF6B35] focus:ring-[#FF6B35] focus:ring-offset-0 cursor-pointer accent-[#FF6B35] shrink-0 disabled:opacity-40"
                 />
                 <span className="text-[11.5px] text-gray-300 leading-snug">
                   I have read and understood the above information and agree to take this interview honestly without external assistance.
@@ -154,22 +183,24 @@ export default function BeforeYouStartModal({
               <motion.button
                 type="button"
                 onClick={handleAgreeAndStart}
-                disabled={!agreed || isStarting}
+                disabled={!agreed || isStarting || (dailyLimitReached && !isPrephire)}
                 className="flex-1 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold text-white shadow-lg flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                 style={{
-                  background: agreed && !isStarting
+                  background: agreed && !isStarting && (!dailyLimitReached || isPrephire)
                     ? "linear-gradient(135deg, #FF6B35 0%, #FF8A3D 100%)"
                     : "rgba(255, 255, 255, 0.08)",
-                  boxShadow: agreed && !isStarting ? "0 4px 16px rgba(255, 107, 53, 0.35)" : "none",
+                  boxShadow: agreed && !isStarting && (!dailyLimitReached || isPrephire) ? "0 4px 16px rgba(255, 107, 53, 0.35)" : "none",
                 }}
-                whileHover={agreed && !isStarting ? { scale: 1.01 } : {}}
-                whileTap={agreed && !isStarting ? { scale: 0.99 } : {}}
+                whileHover={agreed && !isStarting && (!dailyLimitReached || isPrephire) ? { scale: 1.01 } : {}}
+                whileTap={agreed && !isStarting && (!dailyLimitReached || isPrephire) ? { scale: 0.99 } : {}}
               >
                 {isStarting ? (
                   <>
                     <Sparkles className="w-4 h-4 animate-spin" />
                     <span>Launching Session...</span>
                   </>
+                ) : dailyLimitReached && !isPrephire ? (
+                  <span>Daily Limit Reached</span>
                 ) : (
                   <>
                     <span>I Agree & Start Interview</span>

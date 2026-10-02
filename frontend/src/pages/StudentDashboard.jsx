@@ -94,6 +94,7 @@ function StudentDashboard() {
   const [assignedTests, setAssignedTests] = useState([]);
   const [showInterviewModeModal, setShowInterviewModeModal] = useState(false);
   const [showConsentModal, setShowConsentModal] = useState(false);
+  const [dailyLimitReached, setDailyLimitReached] = useState(false);
   const [isTechModalOpen, setIsTechModalOpen] = useState(false);
   const [isProjModalOpen, setIsProjModalOpen] = useState(false);
   const [isStartingInterview, setIsStartingInterview] = useState(false);
@@ -320,7 +321,19 @@ function StudentDashboard() {
       }
     } catch (err) {
       console.error("Start Real Interview error:", err);
-      toast.error(err.response?.data?.message || "Failed to start Real Interview session", { id: toastId });
+      const isDailyLimit =
+        err.response?.data?.code === "DAILY_INTERVIEW_LIMIT_REACHED" ||
+        err.response?.status === 403;
+      if (isDailyLimit) {
+        setDailyLimitReached(true);
+        toast.error(
+          err.response?.data?.message ||
+            "You have already used your Real Interview attempt for today. Please try again tomorrow.",
+          { id: toastId, duration: 6000 }
+        );
+      } else {
+        toast.error(err.response?.data?.message || "Failed to start Real Interview session", { id: toastId });
+      }
     } finally {
       setIsStartingInterview(false);
     }
@@ -1330,6 +1343,8 @@ function StudentDashboard() {
         onClose={() => !isStartingInterview && setShowConsentModal(false)}
         onAgreeAndStart={handleStartRealInterview}
         isStarting={isStartingInterview}
+        userEmail={profile?.email || ""}
+        dailyLimitReached={dailyLimitReached}
       />
 
       {/* Individual Technical Start Modal */}

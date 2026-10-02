@@ -27,6 +27,7 @@ import {
 import { getDashboardStats } from "../controllers/dashboardStatsController.js";
 
 import {
+  checkInterviewEligibility,
   createInterviewSession,
   getInterviewSession,
   completeInterviewSession,
@@ -57,6 +58,7 @@ router.get("/resume/view", viewResume);
 router.get("/dashboard-stats", getDashboardStats);
 
 // ─── Real Interview Sessions ───
+router.get("/interviews/eligibility", checkInterviewEligibility);
 router.post("/interviews", createInterviewSession);
 router.get("/interviews", getStudentInterviews);
 router.get("/interviews/:sessionId", getInterviewSession);

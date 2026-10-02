@@ -8,10 +8,11 @@ import { getAuthToken } from "../../hooks/useStudentProfile";
 
 import BeforeYouStartModal from "../interview/BeforeYouStartModal";
 
-function StartInterviewModal({ open, onClose, isStarting: externalIsStarting = false }) {
+function StartInterviewModal({ open, onClose, profile, isStarting: externalIsStarting = false }) {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [showConsentModal, setShowConsentModal] = useState(false);
+  const [dailyLimitReached, setDailyLimitReached] = useState(false);
   const isStarting = externalIsStarting || loading;
 
   if (!open && !showConsentModal) return null;
@@ -39,7 +40,19 @@ function StartInterviewModal({ open, onClose, isStarting: externalIsStarting = f
       }
     } catch (err) {
       console.error("Start Real Interview error:", err);
-      toast.error(err.response?.data?.message || "Failed to start Real Interview session", { id: toastId });
+      const isDailyLimit =
+        err.response?.data?.code === "DAILY_INTERVIEW_LIMIT_REACHED" ||
+        err.response?.status === 403;
+      if (isDailyLimit) {
+        setDailyLimitReached(true);
+        toast.error(
+          err.response?.data?.message ||
+            "You have already used your Real Interview attempt for today. Please try again tomorrow.",
+          { id: toastId, duration: 6000 }
+        );
+      } else {
+        toast.error(err.response?.data?.message || "Failed to start Real Interview session", { id: toastId });
+      }
     } finally {
       setLoading(false);
     }
@@ -197,6 +210,8 @@ function StartInterviewModal({ open, onClose, isStarting: externalIsStarting = f
         onClose={() => !isStarting && setShowConsentModal(false)}
         onAgreeAndStart={handleStartRealInterview}
         isStarting={isStarting}
+        userEmail={profile?.email || ""}
+        dailyLimitReached={dailyLimitReached}
       />
     </AnimatePresence>
   );
