@@ -461,8 +461,10 @@ function McqDetail({ q }) {
         <div className="space-y-1.5">
           <div className="text-xs font-bold uppercase tracking-wide mb-1" style={{ color: "var(--text-muted)" }}>Options</div>
           {q.options.map((opt, i) => {
-            const isUser = q.selectedOption === opt;
-            const isCorrectOpt = String(opt) === String(q.correctAnswer);
+            const clean = (val) => String(val ?? "").trim().toLowerCase();
+            const stripPrefix = (val) => clean(val).replace(/^[a-d]\s*[:.)-]?\s*/i, "").replace(/^option\s*[a-d]\s*[:.)-]?\s*/i, "");
+            const isUser = clean(q.selectedOption) !== "" && (clean(q.selectedOption) === clean(opt) || stripPrefix(q.selectedOption) === stripPrefix(opt));
+            const isCorrectOpt = clean(q.correctAnswer) !== "" && (clean(opt) === clean(q.correctAnswer) || stripPrefix(opt) === stripPrefix(q.correctAnswer));
             return (
               <div
                 key={i}

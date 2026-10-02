@@ -82,8 +82,11 @@ function normalizeQuestion(q, company) {
   if (qType === "Conceptual") qType = isMCQ ? "MCQ" : "Technical";
   if (isMCQ) qType = "MCQ";
 
+  const qId = String(q.questionId || q._id || "");
+
   return {
-    questionId: String(q.questionId || q._id || ""),
+    _id: q._id ? String(q._id) : qId,
+    questionId: qId,
     topic: q.topic || q.category || q.subtopic || "Technical Fundamentals",
     subtopic: q.subtopic || "",
     difficulty: q.difficulty || "Medium",
@@ -208,6 +211,7 @@ export function loadCompanyMockCoding(company) {
     return arr
       .filter((q) => q && (q.title || q.problemStatement) && !!q.questionId)
       .map((q) => ({
+        _id: q._id ? String(q._id) : String(q.questionId),
         questionId: String(q.questionId),
         title: q.title || q.problemStatement || "",
         company: String(q.company || company || ""),

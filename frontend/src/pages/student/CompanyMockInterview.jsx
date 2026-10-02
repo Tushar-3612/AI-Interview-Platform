@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef, useMemo } from "react"
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import api from "../../utils/api";
+import { getAuthToken } from "../../hooks/useStudentProfile";
 import CompanyMockCodingIDE from "../../components/coding/CompanyMockCodingIDE";
 import InterviewAnswerInput from "../../components/interview/InterviewAnswerInput";
 import {

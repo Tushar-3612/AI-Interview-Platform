@@ -7,6 +7,8 @@ import CodingQuestion from "../models/CodingQuestion.js";
 import { createAuditLog } from "../middleware/auditMiddleware.js";
 import { createNotification } from "../services/notificationService.js";
 
+import { loadMergedCompanyQuestions, toFolderName } from "../services/companyMockBank.js";
+
 const TRASH_RETENTION_DAYS = 30;
 
 function isValidObjectId(value) {
@@ -39,15 +41,38 @@ export const getCompanies = async (req, res) => {
     ]);
     const aptMap = Object.fromEntries(aptCounts.map((a) => [a._id, a.count]));
     const codMap = Object.fromEntries(codCounts.map((a) => [a._id, a.count]));
-    res.json(
-      companies.map((c) => ({
-        ...c,
-        aptitudeCount: aptMap[c.id] || 0,
-        codingCount: codMap[c.id] || 0,
-        supportedRounds: c.supportedRounds && c.supportedRounds.length > 0 ? c.supportedRounds : ["aptitude", "coding", "technical", "hr"],
-        lastUpdated: c.lastUpdated || c.updatedAt,
-      }))
+
+    const enriched = await Promise.all(
+      companies.map(async (c) => {
+        let aptCount = aptMap[c.id] || 0;
+        let codCount = codMap[c.id] || 0;
+        let techCount = 0;
+        try {
+          const folder = toFolderName(c.id);
+          const mockData = await loadMergedCompanyQuestions(folder, "all");
+          if (mockData.mcq && mockData.mcq.length > 0) {
+            aptCount = Math.max(aptCount, mockData.mcq.length);
+          }
+          if (mockData.coding && mockData.coding.length > 0) {
+            codCount = Math.max(codCount, mockData.coding.length);
+          }
+          if (mockData.technical && mockData.technical.length > 0) {
+            techCount = mockData.technical.length;
+          }
+        } catch {}
+
+        return {
+          ...c,
+          aptitudeCount: aptCount,
+          codingCount: codCount,
+          technicalCount: techCount,
+          supportedRounds: c.supportedRounds && c.supportedRounds.length > 0 ? c.supportedRounds : ["aptitude", "coding", "technical", "hr"],
+          lastUpdated: c.lastUpdated || c.updatedAt,
+        };
+      })
     );
+
+    res.json(enriched);
   } catch (error) {
     console.error("Get Companies Error:", error.message);
     res.status(500).json({ message: "Failed to fetch companies" });
