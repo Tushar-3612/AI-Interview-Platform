@@ -111,7 +111,7 @@ function Login() {
       });
       toast.success(data.message || "OTP sent successfully");
       setViewMode("enter-otp");
-      setCountdown(60);
+      setCountdown(180);
       setOtpDigits(["", "", "", "", "", ""]);
     } catch (error) {
       toast.error(
@@ -185,7 +185,7 @@ function Login() {
         email: forgotEmail,
       });
       toast.success(data.message || "New OTP sent successfully");
-      setCountdown(60);
+      setCountdown(180);
       setOtpDigits(["", "", "", "", "", ""]);
       if (otpRefs.current[0]) otpRefs.current[0].focus();
     } catch (error) {
@@ -254,7 +254,7 @@ function Login() {
 
   const getLayoutSubtitle = () => {
     if (viewMode === "forgot-password") return "Enter your registered email to receive an OTP";
-    if (viewMode === "enter-otp") return "Enter the 6-digit code sent to your email";
+    if (viewMode === "enter-otp") return "Enter the 6-digit code sent to your email (valid for 3 minutes)";
     if (viewMode === "reset-password") return "Enter your new password below";
     return "Sign in to continue your placement journey.";
   };

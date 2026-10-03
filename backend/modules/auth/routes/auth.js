@@ -1,5 +1,13 @@
 import express from "express";
-import { signup, login, forgotPassword, verifyOtp, resetPassword } from "../controllers/authController.js";
+import {
+  signup,
+  login,
+  sendRegistrationOtp,
+  verifyRegistrationOtp,
+  forgotPassword,
+  verifyOtp,
+  resetPassword,
+} from "../controllers/authController.js";
 import { authLimiter } from "../../../core/middleware/rateLimiter.js";
 
 const router = express.Router();
@@ -11,7 +19,13 @@ const router = express.Router();
 // Apply authLimiter across all auth endpoints
 router.use(authLimiter);
 
-// POST /api/auth/signup — Register a new student account
+// POST /api/auth/send-registration-otp — Send OTP for new student email verification
+router.post("/send-registration-otp", sendRegistrationOtp);
+
+// POST /api/auth/verify-registration-otp — Verify registration OTP & issue registration token
+router.post("/verify-registration-otp", verifyRegistrationOtp);
+
+// POST /api/auth/signup — Register a new student account (requires verified registrationToken)
 router.post("/signup", signup);
 
 // POST /api/auth/login — Student or admin login
