@@ -4,7 +4,7 @@ import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const BRIDGE_SCRIPT_PATH = path.resolve(__dirname, "../../python_ai/groq_bridge.py");
+const BRIDGE_SCRIPT_PATH = path.resolve(__dirname, "./groq_bridge.py");
 
 /**
  * Executes a Groq API request via the Python bridge.
@@ -35,8 +35,10 @@ export async function callPythonGroqBridge({
 
   console.log(`\n[PYTHON-AI-BRIDGE]\nround=${round}\nrequestStarted=true`);
 
+  const pythonCmd = process.env.PYTHON_PATH || (process.platform === "win32" ? "python" : "python3");
+
   return new Promise((resolve, reject) => {
-    const pythonProcess = spawn("python", [BRIDGE_SCRIPT_PATH], {
+    const pythonProcess = spawn(pythonCmd, [BRIDGE_SCRIPT_PATH], {
       windowsHide: true,
       stdio: ["pipe", "pipe", "pipe"],
     });

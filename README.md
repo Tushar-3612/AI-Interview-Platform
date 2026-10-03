@@ -44,8 +44,9 @@
 - [19. Technology Stack](#19-technology-stack)
 - [20. Installation & Setup Guide](#20-installation--setup-guide)
 - [21. Environment Variable Configuration](#21-environment-variable-configuration)
-- [22. Testing & Quality Assurance](#22-testing--quality-assurance)
-- [23. Project Highlights & Future Scope](#23-project-highlights--future-scope)
+- [22. Production Deployment Guide](#22-production-deployment-guide)
+- [23. Testing & Quality Assurance](#23-testing--quality-assurance)
+- [24. Project Highlights & Future Scope](#24-project-highlights--future-scope)
 
 ---
 
@@ -640,10 +641,59 @@ Create a `.env` file in the project root with the following keys:
 | `SMTP_PORT` | SMTP server port | Optional | `587` |
 | `SMTP_USER` | SMTP username / email address | Optional | `placement@sanjivani.edu.in` |
 | `SMTP_PASS` | SMTP password / App password | Optional | `your_app_password` |
+| `FRONTEND_URL` | Production Frontend Origin for CORS | **Yes (Prod)** | `https://your-app.vercel.app` |
 
 ---
 
-## 22. Testing & Quality Assurance
+## 22. Production Deployment Guide
+
+### Architecture Overview
+- **Frontend**: Deployed on **Vercel** (Static SPA with client-side rewrites)
+- **Backend**: Deployed on **Render Web Service** (Node.js runtime with `render.yaml`)
+- **Database**: **MongoDB Atlas** (Managed Cloud Database)
+- **AI & External APIs**: Groq Cloud, Google Gemini, OpenRouter, Judge0
+
+---
+
+### Backend Deployment (Render Web Service)
+
+1. **Connect Repository**: In the [Render Dashboard](https://dashboard.render.com), create a **New Web Service** linked to this repository (or deploy automatically via the included `render.yaml` Blueprint).
+2. **Service Configuration**:
+   - **Environment / Runtime**: `Node`
+   - **Root Directory**: `.` (Repository root)
+   - **Build Command**: `npm install`
+   - **Start Command**: `npm start`
+   - **Health Check Path**: `/health`
+   - **Auto-Deploy**: `Yes`
+3. **Environment Variables**:
+   Add the following in the Render Environment tab:
+   - `NODE_ENV`: `production`
+   - `MONGO_URI`: `mongodb+srv://<user>:<password>@cluster.mongodb.net/ai_interview`
+   - `JWT_SECRET`: `<secure-random-secret>`
+   - `FRONTEND_URL`: `https://your-frontend.vercel.app`
+   - `AI_PROVIDER`: `groq` (or `openrouter` / `gemini`)
+   - `AI_API_KEY`: `<your-ai-api-key>`
+   - `AI_MODEL`: `llama-3.3-70b-versatile` (or provider model)
+   - `MOCK_INTERVIEW_API_KEY`, `MOCK_INTERVIEW_API_KEY2`, `TCS_MOCK_KEY`, etc. (Optional overrides)
+   - `JUDGE0_API_URL`, `RAPIDAPI_KEY` (Optional code execution)
+
+---
+
+### Frontend Deployment (Vercel)
+
+1. **Import Project**: In [Vercel](https://vercel.com), import the repository and set the **Root Directory** to `frontend`.
+2. **Framework Preset**: `Vite`
+3. **Build Settings**:
+   - **Build Command**: `npm run build`
+   - **Output Directory**: `dist`
+   - **Install Command**: `npm install`
+4. **Environment Variables**:
+   - `VITE_API_URL`: `https://your-backend-service.onrender.com`
+5. **SPA Routing**: Handled automatically via [frontend/vercel.json](file:///c:/Users/Tushar%20Nagare/Basic%20To%20Advance/Projects/Final_year_Project/ai-interview-engine/frontend/vercel.json) rewrite rules (`/(.*) -> /index.html`).
+
+---
+
+## 23. Testing & Quality Assurance
 
 The repository includes test suites and build verification commands:
 
@@ -666,7 +716,7 @@ node backend/scripts/testSmtp.js
 
 ---
 
-## 23. Project Highlights & Future Scope
+## 24. Project Highlights & Future Scope
 
 ### Implemented Project Highlights
 - **Dual Assessment Architecture**: Seamlessly integrates personalized resume interviews with standardized corporate hiring mocks.
