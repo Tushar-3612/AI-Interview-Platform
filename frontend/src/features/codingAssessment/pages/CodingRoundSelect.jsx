@@ -25,9 +25,10 @@ const DIFFICULTY_CONFIG = [
   {
     id: "Easy",
     name: "Easy Track",
-    color: "#06B6D4",
-    bg: "rgba(6, 182, 212, 0.15)",
-    border: "rgba(6, 182, 212, 0.25)",
+    color: "#FF6B35",
+    bg: "rgba(255, 107, 53, 0.12)",
+    border: "rgba(255, 107, 53, 0.30)",
+    glow: "rgba(255, 107, 53, 0.35)",
     icon: Zap,
     duration: "30-45 mins",
     target: "Beginner & Freshers",
@@ -36,9 +37,10 @@ const DIFFICULTY_CONFIG = [
   {
     id: "Medium",
     name: "Medium Track",
-    color: "#06B6D4",
-    bg: "rgba(6, 182, 212, 0.15)",
-    border: "rgba(6, 182, 212, 0.25)",
+    color: "#FF6B35",
+    bg: "rgba(255, 107, 53, 0.12)",
+    border: "rgba(255, 107, 53, 0.30)",
+    glow: "rgba(255, 107, 53, 0.35)",
     icon: Flame,
     duration: "45-60 mins",
     target: "Standard OAs",
@@ -47,9 +49,10 @@ const DIFFICULTY_CONFIG = [
   {
     id: "Hard",
     name: "Hard Track",
-    color: "#06B6D4",
-    bg: "rgba(6, 182, 212, 0.15)",
-    border: "rgba(6, 182, 212, 0.25)",
+    color: "#FF6B35",
+    bg: "rgba(255, 107, 53, 0.12)",
+    border: "rgba(255, 107, 53, 0.30)",
+    glow: "rgba(255, 107, 53, 0.35)",
     icon: Cpu,
     duration: "60-90 mins",
     target: "Tier-1 & High CTC",
@@ -58,9 +61,10 @@ const DIFFICULTY_CONFIG = [
   {
     id: "All",
     name: "Mixed Track",
-    color: "#06B6D4",
-    bg: "rgba(6, 182, 212, 0.15)",
-    border: "rgba(6, 182, 212, 0.25)",
+    color: "#FF6B35",
+    bg: "rgba(255, 107, 53, 0.12)",
+    border: "rgba(255, 107, 53, 0.30)",
+    glow: "rgba(255, 107, 53, 0.35)",
     icon: Layers,
     duration: "60 mins",
     target: "Full OA Simulation",
@@ -176,9 +180,9 @@ export default function CodingRoundSelect() {
             <div
               className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border shadow-inner"
               style={{
-                background: "rgba(6, 182, 212, 0.12)",
-                borderColor: "rgba(6, 182, 212, 0.35)",
-                color: "#06B6D4",
+                background: "rgba(255, 107, 53, 0.12)",
+                borderColor: "rgba(255, 107, 53, 0.35)",
+                color: "#FF6B35",
               }}
             >
               <Code2 className="w-6 h-6" />
@@ -200,8 +204,8 @@ export default function CodingRoundSelect() {
         <div className="space-y-3 pt-2">
           <div className="flex items-center justify-between">
             <h2 className="text-sm sm:text-base font-bold text-[var(--text-primary)] flex items-center gap-2">
-              <Filter className="w-4 h-4 text-cyan-400" />
-              Select Coding Difficulty <span className="text-cyan-400">*</span>
+              <Filter className="w-4 h-4 text-[#FF6B35]" />
+              Select Coding Difficulty <span className="text-[#FF6B35]">*</span>
             </h2>
             <span className="text-xs text-[var(--text-muted)] hidden sm:inline-block">
               Click a card to choose your assessment difficulty
@@ -306,7 +310,7 @@ export default function CodingRoundSelect() {
             {/* Preferred Language */}
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-[var(--text-primary)] flex items-center gap-1.5">
-                <Terminal className="w-3.5 h-3.5 text-cyan-400" />
+                <Terminal className="w-3.5 h-3.5 text-[#FF6B35]" />
                 Default Programming Language:
               </label>
               <div className="flex items-center gap-1.5 flex-wrap">
@@ -317,8 +321,8 @@ export default function CodingRoundSelect() {
                     onClick={() => setSelectedLanguage(lang.id)}
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
                       selectedLanguage === lang.id
-                        ? "bg-[#06B6D4] text-white border-[#06B6D4] shadow-sm shadow-[#06B6D4]/30"
-                        : "bg-[var(--card-bg)] text-[var(--text-secondary)] border-[var(--border)] hover:border-cyan-500/40"
+                        ? "bg-[#FF6B35] text-white border-[#FF6B35] shadow-sm shadow-[#FF6B35]/30"
+                        : "bg-[var(--card-bg)] text-[var(--text-secondary)] border-[var(--border)] hover:border-[#FF6B35]/40"
                     }`}
                   >
                     {lang.label}
@@ -330,7 +334,7 @@ export default function CodingRoundSelect() {
             {/* Question Count / Mode */}
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-[var(--text-primary)] flex items-center gap-1.5">
-                <Layers className="w-3.5 h-3.5 text-cyan-400" />
+                <Layers className="w-3.5 h-3.5 text-[#FF6B35]" />
                 Session Question Set:
               </label>
               <div className="flex items-center gap-1.5">
@@ -376,8 +380,8 @@ export default function CodingRoundSelect() {
             onClick={handleStartTest}
             className="flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-2xl text-sm font-black text-white shadow-lg cursor-pointer transition-all shrink-0"
             style={{
-              background: `linear-gradient(135deg, ${activeTrack.color} 0%, #06B6D4 100%)`,
-              boxShadow: `0 8px 25px -4px ${activeTrack.glow}`,
+              background: "linear-gradient(135deg, #FF6B35 0%, #FF8A3D 100%)",
+              boxShadow: "0 8px 25px -4px rgba(255, 107, 53, 0.4)",
             }}
           >
             <Play className="w-4 h-4 fill-white" />
@@ -405,7 +409,7 @@ export default function CodingRoundSelect() {
           </div>
           <button
             onClick={() => navigate("/practice/coding/history")}
-            className="text-xs font-bold text-cyan-400 hover:text-cyan-300 flex items-center gap-1 cursor-pointer transition"
+            className="text-xs font-bold text-[#FF6B35] hover:text-[#FF8A3D] flex items-center gap-1 cursor-pointer transition"
           >
             View Full History
             <ArrowRight className="w-3.5 h-3.5" />
@@ -436,7 +440,7 @@ export default function CodingRoundSelect() {
               return (
                 <div
                   key={sub._id || idx}
-                  className="p-3.5 rounded-xl border bg-[var(--bg-secondary)]/40 hover:border-cyan-500/30 transition flex flex-col justify-between gap-2"
+                  className="p-3.5 rounded-xl border bg-[var(--bg-secondary)]/40 hover:border-[#FF6B35]/30 transition flex flex-col justify-between gap-2"
                   style={{ borderColor: "var(--border)" }}
                 >
                   <div className="flex items-start justify-between gap-2">
@@ -476,7 +480,7 @@ export default function CodingRoundSelect() {
                       Testcases: <strong className="text-[var(--text-primary)]">{passed}/{total}</strong>
                     </span>
                     {sub.score !== undefined && (
-                      <span className="font-bold text-cyan-400">Score: {sub.score}%</span>
+                      <span className="font-bold text-[#FF6B35]">Score: {sub.score}%</span>
                     )}
                   </div>
                 </div>

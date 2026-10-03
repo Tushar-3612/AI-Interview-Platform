@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   UserCheck, Plus, Search, Building2, Mail, Lock, Shield,
-  Power, KeyRound, Edit3, Trash2, X, Check, AlertTriangle, RefreshCw
+  Power, PowerOff, KeyRound, Edit3, Trash2, X, Check, AlertTriangle, RefreshCw
 } from "lucide-react";
 import api from "../../../core/api/api.js";
 import { getAuthToken } from "../../student/hooks/useStudentProfile.js";
@@ -279,7 +279,7 @@ export default function TeacherManagement() {
                         }`}
                         title="Click to toggle active status"
                       >
-                        <Power className="w-3 h-3" />
+                        {teacher.isActive ? <Power className="w-3 h-3" /> : <PowerOff className="w-3 h-3" />}
                         {teacher.isActive ? "Active" : "Inactive"}
                       </button>
                     </td>
