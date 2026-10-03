@@ -6,7 +6,7 @@ import {
   sendReportEmail,
   getSMTPConfig,
   maskEmail,
-} from "../utils/emailSender.js";
+} from "../modules/administration/utils/emailSender.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

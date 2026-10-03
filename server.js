@@ -7,40 +7,40 @@ import mongoSanitize from "express-mongo-sanitize";
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
-import connectDB from "./backend/config/db.js";
-import authRoutes from "./backend/routes/auth.js";
-import adminRoutes from "./backend/routes/admin.js";
-import studentRoutes from "./backend/routes/student.js";
-import testRoutes from "./backend/routes/test.js";
-import aiEvaluationRoutes from "./backend/routes/aiEvaluation.js";
+import connectDB from "./backend/core/database/db.js";
+import authRoutes from "./backend/modules/auth/routes/auth.js";
+import adminRoutes from "./backend/modules/administration/routes/admin.js";
+import studentRoutes from "./backend/modules/student/routes/student.js";
+import testRoutes from "./backend/modules/testEngine/routes/test.js";
+import aiEvaluationRoutes from "./backend/modules/ai/routes/aiEvaluation.js";
 
-import companyRoutes from "./backend/routes/company.js";
-import auditLogRoutes from "./backend/routes/auditLog.js";
-import systemConfigRoutes from "./backend/routes/systemConfig.js";
-import aptitudeRoutes from "./backend/routes/aptitude.js";
-import codingQuestionRoutes from "./backend/routes/codingQuestions.js";
-import practiceRoutes from "./backend/routes/practice.js";
-import codeExecutionRoutes from "./backend/routes/codeExecution.js";
-import placementRoutes from "./backend/routes/placement.js";
-import mockInterviewRoutes from "./backend/routes/mockInterviewRoutes.js";
-import technicalQuestionRoutes from "./backend/routes/technicalQuestions.js";
-import realInterviewRoutes from "./backend/routes/realInterviewRoutes.js";
-import individualTechnicalRoutes from "./backend/routes/individualRound/technical/individualTechnicalRoutes.js";
-import individualProjectRoutes from "./backend/routes/individualRound/project/individualProjectRoutes.js";
+import companyRoutes from "./backend/modules/companyMock/routes/company.js";
+import auditLogRoutes from "./backend/modules/administration/routes/auditLog.js";
+import systemConfigRoutes from "./backend/modules/administration/routes/systemConfig.js";
+import aptitudeRoutes from "./backend/modules/testEngine/routes/aptitude.js";
+import codingQuestionRoutes from "./backend/modules/codingAssessment/routes/codingQuestions.js";
+import practiceRoutes from "./backend/modules/testEngine/routes/practice.js";
+import codeExecutionRoutes from "./backend/modules/codingAssessment/routes/codeExecution.js";
+import placementRoutes from "./backend/modules/placement/routes/placement.js";
+import mockInterviewRoutes from "./backend/modules/companyMock/routes/mockInterviewRoutes.js";
+import technicalQuestionRoutes from "./backend/modules/testEngine/routes/technicalQuestions.js";
+import realInterviewRoutes from "./backend/modules/realInterview/routes/realInterviewRoutes.js";
+import individualTechnicalRoutes from "./backend/modules/individualPractice/technical/routes/individualTechnicalRoutes.js";
+import individualProjectRoutes from "./backend/modules/individualPractice/project/routes/individualProjectRoutes.js";
 
-import interviewSTTRoutes from "./backend/routes/interviewSTT.js";
+import interviewSTTRoutes from "./backend/modules/realInterview/routes/interviewSTT.js";
 
-import adminCodingAssessmentRoutes from "./backend/routes/adminCodingAssessmentRoutes.js";
-import candidateCodingAssessmentRoutes from "./backend/routes/candidateCodingAssessmentRoutes.js";
+import adminCodingAssessmentRoutes from "./backend/modules/codingAssessment/routes/adminCodingAssessmentRoutes.js";
+import candidateCodingAssessmentRoutes from "./backend/modules/codingAssessment/routes/candidateCodingAssessmentRoutes.js";
 
 
-import { initializeCSVExports } from "./backend/utils/csvExporter.js"; // ← Path sahi hai
-import { apiLimiter } from "./backend/middleware/rateLimiter.js";
-import { runSeeds } from "./backend/utils/seedDefaults.js";
-import { cleanupExpiredTrash } from "./backend/controllers/aptitudeController.js";
-import { cleanupExpiredCodingTrash } from "./backend/controllers/codingQuestionController.js";
-import { cleanupExpiredCompanyTrash } from "./backend/controllers/companyEnhancedController.js";
-import { initRedis, closeRedis, isRedisReady } from "./backend/services/redisService.js";
+import { initializeCSVExports } from "./backend/modules/administration/utils/csvExporter.js"; // ← Path sahi hai
+import { apiLimiter } from "./backend/core/middleware/rateLimiter.js";
+import { runSeeds } from "./backend/modules/administration/utils/seedDefaults.js";
+import { cleanupExpiredTrash } from "./backend/modules/testEngine/controllers/aptitudeController.js";
+import { cleanupExpiredCodingTrash } from "./backend/modules/codingAssessment/controllers/codingQuestionController.js";
+import { cleanupExpiredCompanyTrash } from "./backend/modules/companyMock/controllers/companyEnhancedController.js";
+import { initRedis, closeRedis, isRedisReady } from "./backend/core/redis/redisService.js";
 
 // Load .env from root using absolute path (works regardless of cwd)
 const __filename = fileURLToPath(import.meta.url);

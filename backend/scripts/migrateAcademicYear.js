@@ -10,13 +10,13 @@
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
-import connectDB from "../config/db.js";
-import User from "../models/User.js";
-import TestAssignment from "../models/TestAssignment.js";
-import TestResult from "../models/TestResult.js";
-import Result from "../models/Result.js";
-import ReportHistory from "../models/ReportHistory.js";
-import { normalizeYear, normalizeDepartment, LEGACY_YEARS } from "../utils/academicConfig.js";
+import connectDB from "../core/database/db.js";
+import User from "../modules/auth/models/User.js";
+import TestAssignment from "../modules/testEngine/models/TestAssignment.js";
+import TestResult from "../modules/testEngine/models/TestResult.js";
+import Result from "../modules/testEngine/models/Result.js";
+import ReportHistory from "../modules/placement/models/ReportHistory.js";
+import { normalizeYear, normalizeDepartment, LEGACY_YEARS } from "../modules/student/utils/academicConfig.js";
 
 const __filename = fileURLToPath(import.meta.url);
 dotenv.config({ path: path.resolve(__filename, "../../../.env") });
