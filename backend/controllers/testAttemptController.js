@@ -4,8 +4,12 @@ import TestAttempt from "../models/TestAttempt.js";
 import User from "../models/User.js";
 import { processResult } from "../services/resultProcessor.js";
 import { computePassingMarks, calculatePassFail } from "../utils/gradeCalculator.js";
+import { withInFlightLock } from "../services/realInterview/inFlightLock.js";
 
-function sanitizeTestForStudent(testDoc) {
+const testCache = new Map();
+const TEST_CACHE_TTL_MS = 60000; // 60s cache for static test metadata during active tests
+
+export function sanitizeTestForStudent(testDoc) {
   if (!testDoc) return null;
   const t = typeof testDoc.toObject === "function" ? testDoc.toObject() : JSON.parse(JSON.stringify(testDoc));
   if (Array.isArray(t.questions)) {
@@ -20,20 +24,34 @@ function sanitizeTestForStudent(testDoc) {
   return t;
 }
 
+export async function getCachedTest(testId) {
+  const key = testId.toString();
+  const cached = testCache.get(key);
+  if (cached && (Date.now() - cached.timestamp < TEST_CACHE_TTL_MS)) {
+    return cached;
+  }
+  const raw = await Test.findById(testId).lean();
+  if (!raw) return null;
+  const sanitized = sanitizeTestForStudent(raw);
+  const cacheEntry = { raw, sanitized, timestamp: Date.now() };
+  testCache.set(key, cacheEntry);
+  return cacheEntry;
+}
+
 export const getAssignedTests = async (req, res) => {
   try {
     const userId = req.user.id;
-    const user = await User.findById(userId).lean();
+    const user = await User.findById(userId).select("_id").lean();
     if (!user) return res.status(404).json({ message: "User not found" });
 
     const assignments = await TestAssignment.find({
       studentIds: userId,
       status: { $nin: ["archived"] },
     })
-      .populate("testId")
+      .populate("testId", "title description companyId testType difficulty duration passingMarks attemptLimit subjects status scheduledAt startAt endAt closedAt questions.marks")
       .lean();
 
-    const attempts = await TestAttempt.find({ userId }).lean();
+    const attempts = await TestAttempt.find({ userId }).select("testId status").lean();
     const attemptMap = {};
     attempts.forEach(a => { attemptMap[a.testId.toString()] = a; });
 
@@ -98,89 +116,115 @@ export const getAssignedTests = async (req, res) => {
 };
 
 export const startTest = async (req, res) => {
+  const { testId } = req.params;
+  const userId = req.user.id;
+  const lockKey = `test_start:${userId}:${testId}`;
+
   try {
-    const { testId } = req.params;
-    const userId = req.user.id;
-
-    const test = await Test.findById(testId).lean();
-    if (!test) return res.status(404).json({ message: "Test not found" });
-    if (test.status !== "live" && test.status !== "scheduled") {
-      return res.status(400).json({ message: "Test is not available" });
-    }
-
-    const assignment = await TestAssignment.findOne({
-      testId,
-      studentIds: userId,
-      status: { $nin: ["archived"] },
-    }).lean();
-    if (!assignment) return res.status(403).json({ message: "Test not assigned to you" });
-
-    const now = new Date();
-    if (test.startAt && now < new Date(test.startAt)) {
-      return res.status(403).json({
-        message: `This test has not started yet. It will be available from ${new Date(test.startAt).toLocaleString()}.`,
-        status: "UPCOMING",
-      });
-    }
-    if (test.endAt && now >= new Date(test.endAt)) {
-      return res.status(403).json({
-        message: `This test has ended. The test window closed on ${new Date(test.endAt).toLocaleString()}.`,
-        status: "EXPIRED",
-      });
-    }
-
-    const computeEndTime = () => {
-      const base = new Date(now.getTime() + test.duration * 60000);
-      if (test.endAt && new Date(test.endAt) < base) return new Date(test.endAt);
-      return base;
-    };
-
-    let attempt = await TestAttempt.findOne({ testId, userId });
-    if (attempt) {
-      if (attempt.status === "completed" || attempt.status === "auto_submitted") {
-        return res.status(400).json({ message: "Test already completed" });
+    const responsePayload = await withInFlightLock(lockKey, async () => {
+      const cached = await getCachedTest(testId);
+      if (!cached || !cached.raw) {
+        return { statusCode: 404, data: { message: "Test not found" } };
       }
-      // Resume existing in-progress attempt without resetting timer
-      if (attempt.endTime && now.getTime() > new Date(attempt.endTime).getTime()) {
-        attempt.status = "auto_submitted";
-        attempt.autoSubmitReason = "Time expired";
-        attempt.submittedAt = now;
-        await attempt.save();
-        return res.status(400).json({ message: "Test time has expired", attempt });
-      }
-      return res.json({ attempt, test: sanitizeTestForStudent(test) });
-    }
+      const test = cached.raw;
+      const sanitizedTest = cached.sanitized;
 
-    attempt = await TestAttempt.create({
-      testId,
-      assignmentId: assignment._id,
-      userId,
-      status: "started",
-      startTime: now,
-      endTime: computeEndTime(),
-      lastHeartbeatAt: now,
-      answers: test.questions.map((q, idx) => ({
-        questionIndex: idx,
-        questionId: q._id?.toString() || "",
-        type: q.type === "Coding" || q.problemTitle || (q.testCases && q.testCases.length > 0)
-          ? "Coding"
-          : q.options?.length
-            ? "MCQ"
-            : "Descriptive",
-        answer: "",
-        code: "",
-        language: "",
-        status: "not_visited",
-        marks: q.marks || 1,
-        scoredMarks: 0,
-      })),
+      if (test.status !== "live" && test.status !== "scheduled") {
+        return { statusCode: 400, data: { message: "Test is not available" } };
+      }
+
+      const assignment = await TestAssignment.findOne({
+        testId,
+        studentIds: userId,
+        status: { $nin: ["archived"] },
+      }).select("_id").lean();
+      if (!assignment) {
+        return { statusCode: 403, data: { message: "Test not assigned to you" } };
+      }
+
+      const now = new Date();
+      if (test.startAt && now < new Date(test.startAt)) {
+        return {
+          statusCode: 403,
+          data: {
+            message: `This test has not started yet. It will be available from ${new Date(test.startAt).toLocaleString()}.`,
+            status: "UPCOMING",
+          },
+        };
+      }
+      if (test.endAt && now >= new Date(test.endAt)) {
+        return {
+          statusCode: 403,
+          data: {
+            message: `This test has ended. The test window closed on ${new Date(test.endAt).toLocaleString()}.`,
+            status: "EXPIRED",
+          },
+        };
+      }
+
+      const computeEndTime = () => {
+        const base = new Date(now.getTime() + test.duration * 60000);
+        if (test.endAt && new Date(test.endAt) < base) return new Date(test.endAt);
+        return base;
+      };
+
+      let attempt = await TestAttempt.findOne({ testId, userId });
+      if (attempt) {
+        if (attempt.status === "completed" || attempt.status === "auto_submitted") {
+          return { statusCode: 400, data: { message: "Test already completed" } };
+        }
+        // Resume existing in-progress attempt without resetting timer
+        if (attempt.endTime && now.getTime() > new Date(attempt.endTime).getTime()) {
+          attempt.status = "auto_submitted";
+          attempt.autoSubmitReason = "Time expired";
+          attempt.submittedAt = now;
+          await attempt.save();
+          return { statusCode: 400, data: { message: "Test time has expired", attempt } };
+        }
+        return { statusCode: 200, data: { attempt, test: sanitizedTest } };
+      }
+
+      try {
+        attempt = await TestAttempt.create({
+          testId,
+          assignmentId: assignment._id,
+          userId,
+          status: "started",
+          startTime: now,
+          endTime: computeEndTime(),
+          lastHeartbeatAt: now,
+          answers: test.questions.map((q, idx) => ({
+            questionIndex: idx,
+            questionId: q._id?.toString() || "",
+            type: q.type === "Coding" || q.problemTitle || (q.testCases && q.testCases.length > 0)
+              ? "Coding"
+              : q.options?.length
+                ? "MCQ"
+                : "Descriptive",
+            answer: "",
+            code: "",
+            language: "",
+            status: "not_visited",
+            marks: q.marks || 1,
+            scoredMarks: 0,
+          })),
+        });
+
+        await TestAssignment.findByIdAndUpdate(assignment._id, {
+          $inc: { startedCount: 1 },
+        });
+
+        return { statusCode: 201, data: { attempt, test: sanitizedTest } };
+      } catch (createErr) {
+        if (createErr.code === 11000) {
+          const existingAttempt = await TestAttempt.findOne({ testId, userId });
+          return { statusCode: 200, data: { attempt: existingAttempt, test: sanitizedTest } };
+        }
+        throw createErr;
+      }
     });
 
-    await TestAssignment.findByIdAndUpdate(assignment._id, {
-      $inc: { startedCount: 1 },
-    });
-
-    res.status(201).json({ attempt, test: sanitizeTestForStudent(test) });
+    return res.status(responsePayload.statusCode).json(responsePayload.data);
   } catch (error) {
     console.error("Start Test Error:", error.message);
     res.status(500).json({ message: "Failed to start test" });
@@ -193,6 +237,27 @@ export const saveAnswer = async (req, res) => {
     const { questionIndex, answer, code, language, status } = req.body;
     const userId = req.user.id;
 
+    const updateFields = {};
+    if (answer !== undefined) updateFields["answers.$.answer"] = answer;
+    if (code !== undefined) updateFields["answers.$.code"] = code;
+    if (language !== undefined) updateFields["answers.$.language"] = language;
+    if (status) updateFields["answers.$.status"] = status;
+
+    const result = await TestAttempt.updateOne(
+      {
+        _id: attemptId,
+        userId,
+        status: "started",
+        "answers.questionIndex": questionIndex,
+      },
+      { $set: updateFields }
+    );
+
+    if (result.matchedCount > 0) {
+      return res.json({ message: "Answer saved" });
+    }
+
+    // Fallback: Check if attempt exists / ended / expired
     const attempt = await TestAttempt.findOne({ _id: attemptId, userId });
     if (!attempt) return res.status(404).json({ message: "Attempt not found" });
     if (attempt.status === "completed" || attempt.status === "auto_submitted") {
@@ -200,7 +265,6 @@ export const saveAnswer = async (req, res) => {
     }
 
     const now = new Date();
-    // Enforce server deadline with a 60-second grace period for latency
     if (attempt.endTime && now.getTime() > new Date(attempt.endTime).getTime() + 60000) {
       attempt.status = "auto_submitted";
       attempt.autoSubmitReason = "Time expired";
@@ -216,7 +280,6 @@ export const saveAnswer = async (req, res) => {
       if (language !== undefined) ans.language = language;
       if (status) ans.status = status;
     }
-
     await attempt.save();
     res.json({ message: "Answer saved" });
   } catch (error) {
@@ -224,6 +287,7 @@ export const saveAnswer = async (req, res) => {
     res.status(500).json({ message: "Failed to save answer" });
   }
 };
+
 
 export const getAttemptState = async (req, res) => {
   try {
@@ -318,50 +382,63 @@ export const recordHeartbeat = async (req, res) => {
   try {
     const { attemptId } = req.params;
     const userId = req.user.id;
+    const now = new Date();
 
-    const attempt = await TestAttempt.findOne({ _id: attemptId, userId });
+    const attempt = await TestAttempt.findOne({ _id: attemptId, userId })
+      .select("status endTime lastHeartbeatAt tabSwitchCount totalAwayTimeSeconds assignmentId")
+      .lean();
     if (!attempt) return res.status(404).json({ message: "Attempt not found" });
 
-    const now = new Date();
     let autoSubmit = attempt.status === "auto_submitted";
 
-    // Detect if client was absent / frozen (> 45s gap between heartbeats)
-    if (attempt.lastHeartbeatAt) {
-      const gapSec = Math.round((now.getTime() - new Date(attempt.lastHeartbeatAt).getTime()) / 1000);
-      if (gapSec > 45 && attempt.status === "started") {
-        attempt.integrityEvents = attempt.integrityEvents || [];
-        attempt.integrityEvents.push({
-          eventType: "heartbeat_gap",
-          timestamp: now,
-          durationSeconds: gapSec,
-          details: { gapSeconds: gapSec },
-        });
-        attempt.totalAwayTimeSeconds = (attempt.totalAwayTimeSeconds || 0) + gapSec;
-      }
-    }
-
-    attempt.lastHeartbeatAt = now;
-
-    // Check if test deadline expired on server
     if (attempt.status === "started" && attempt.endTime && now.getTime() > new Date(attempt.endTime).getTime() + 60000) {
-      attempt.status = "auto_submitted";
-      attempt.autoSubmitReason = "Time expired";
-      attempt.submittedAt = now;
-      autoSubmit = true;
-
+      await TestAttempt.updateOne(
+        { _id: attemptId, userId, status: "started" },
+        { $set: { status: "auto_submitted", autoSubmitReason: "Time expired", submittedAt: now } }
+      );
       if (attempt.assignmentId) {
         await TestAssignment.findByIdAndUpdate(attempt.assignmentId, {
           $inc: { completedCount: 1, autoSubmittedCount: 1 },
         });
       }
-    }
+      autoSubmit = true;
+    } else if (attempt.status === "started") {
+      let extraAwayTime = 0;
+      if (attempt.lastHeartbeatAt) {
+        const gapSec = Math.round((now.getTime() - new Date(attempt.lastHeartbeatAt).getTime()) / 1000);
+        if (gapSec > 45) {
+          extraAwayTime = gapSec;
+        }
+      }
 
-    await attempt.save();
+      if (extraAwayTime > 0) {
+        await TestAttempt.updateOne(
+          { _id: attemptId, userId },
+          {
+            $set: { lastHeartbeatAt: now },
+            $inc: { totalAwayTimeSeconds: extraAwayTime },
+            $push: {
+              integrityEvents: {
+                eventType: "heartbeat_gap",
+                timestamp: now,
+                durationSeconds: extraAwayTime,
+                details: { gapSeconds: extraAwayTime },
+              },
+            },
+          }
+        );
+      } else {
+        await TestAttempt.updateOne(
+          { _id: attemptId, userId },
+          { $set: { lastHeartbeatAt: now } }
+        );
+      }
+    }
 
     res.json({
       success: true,
       serverTime: now.toISOString(),
-      status: attempt.status,
+      status: autoSubmit ? "auto_submitted" : attempt.status,
       autoSubmitted: autoSubmit,
       tabSwitchCount: attempt.tabSwitchCount || 0,
       totalAwayTimeSeconds: attempt.totalAwayTimeSeconds || 0,
@@ -386,12 +463,25 @@ export const submitTest = async (req, res) => {
     ).populate("testId");
 
     if (!attempt) {
-      const existing = await TestAttempt.findOne({ _id: attemptId, userId });
+      const existing = await TestAttempt.findOne({ _id: attemptId, userId }).populate("testId");
       if (existing && (existing.status === "completed" || existing.status === "auto_submitted")) {
-        return res.status(400).json({ message: "Test already submitted" });
+        const existingTest = existing.testId;
+        const totalM = existingTest?.questions?.reduce((s, q) => s + (q.marks || 0), 0) || 0;
+        return res.json({
+          message: "Test already submitted",
+          attempt: {
+            _id: existing._id,
+            status: existing.status,
+            totalScore: existing.totalScore,
+            totalMarks: totalM,
+            submittedAt: existing.submittedAt,
+          },
+          resultProcessed: true,
+        });
       }
       return res.status(404).json({ message: "Attempt not found or invalid status" });
     }
+
 
     const test = attempt.testId;
     const now = new Date();
@@ -431,27 +521,32 @@ export const submitTest = async (req, res) => {
 
     await attempt.save();
 
-    await TestAssignment.findByIdAndUpdate(attempt.assignmentId, {
-      $inc: { completedCount: 1, ...(finalStatus === "auto_submitted" ? { autoSubmittedCount: 1 } : {}) },
-      averageScore: totalScore,
-    });
-
-    let result = null;
-    try {
-      const processed = await processResult(attempt._id);
-      result = processed.result;
-
-      if (result && result.questions) {
-        let recalculatedScore = 0;
-        for (const qr of result.questions) {
-          recalculatedScore += qr.obtainedMarks || 0;
-        }
-        attempt.totalScore = Math.max(0, recalculatedScore);
-        await attempt.save();
-      }
-    } catch (procErr) {
-      console.error("Auto-process result error (non-blocking):", procErr.message);
+    if (attempt.assignmentId) {
+      await TestAssignment.findByIdAndUpdate(attempt.assignmentId, {
+        $inc: { completedCount: 1, ...(finalStatus === "auto_submitted" ? { autoSubmittedCount: 1 } : {}) },
+        averageScore: totalScore,
+      });
     }
+
+    // Process result asynchronously in background to ensure immediate sub-second HTTP responses under heavy concurrency
+    setImmediate(async () => {
+      try {
+        const processed = await processResult(attempt._id);
+        const result = processed?.result;
+        if (result && result.questions) {
+          let recalculatedScore = 0;
+          for (const qr of result.questions) {
+            recalculatedScore += qr.obtainedMarks || 0;
+          }
+          await TestAttempt.updateOne(
+            { _id: attempt._id },
+            { $set: { totalScore: Math.max(0, recalculatedScore) } }
+          );
+        }
+      } catch (procErr) {
+        console.error("Auto-process result background error:", procErr.message);
+      }
+    });
 
     res.json({
       message: "Test submitted",
@@ -462,14 +557,15 @@ export const submitTest = async (req, res) => {
         totalMarks: test.questions.reduce((s, q) => s + (q.marks || 0), 0),
         submittedAt: attempt.submittedAt,
       },
-      resultProcessed: !!result,
-      resultId: result?._id || null,
+      resultProcessed: true,
+      resultId: null,
     });
   } catch (error) {
     console.error("Submit Test Error:", error.message);
     res.status(500).json({ message: "Failed to submit test" });
   }
 };
+
 
 export const getTestResult = async (req, res) => {
   try {

@@ -1,4 +1,5 @@
 import express from "express";
+import mongoose from "mongoose";
 import cors from "cors";
 import helmet from "helmet";
 import compression from "compression";
@@ -104,7 +105,9 @@ app.use(cors({
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
+
 app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 // Rate limiting (applied after CORS)
 app.use("/api", apiLimiter);
@@ -137,17 +140,106 @@ app.use("/api/interview", interviewSTTRoutes);
 app.use("/api/admin/coding", adminCodingAssessmentRoutes);
 app.use("/api/coding", candidateCodingAssessmentRoutes);
 
-// Health Check Route (Add this for testing)
-app.get("/api/health", (req, res) => {
-  res.json({
-    status: "OK",
-    message: "Server is running",
-    timestamp: new Date().toISOString()
+// Comprehensive Production Health & Readiness Checks
+const healthCheckHandler = (req, res) => {
+  const isDbConnected = mongoose.connection.readyState === 1;
+  const mem = process.memoryUsage();
+
+  const healthData = {
+    status: isDbConnected ? "healthy" : "degraded",
+    uptimeSeconds: Math.floor(process.uptime()),
+    timestamp: new Date().toISOString(),
+    database: {
+      status: isDbConnected ? "connected" : "disconnected",
+      readyState: mongoose.connection.readyState,
+    },
+    system: {
+      memoryRssMb: Math.round(mem.rss / (1024 * 1024)),
+      memoryHeapUsedMb: Math.round(mem.heapUsed / (1024 * 1024)),
+      memoryHeapTotalMb: Math.round(mem.heapTotal / (1024 * 1024)),
+      nodeVersion: process.version,
+    },
+  };
+
+  const statusCode = isDbConnected ? 200 : 503;
+  res.status(statusCode).json(healthData);
+};
+
+app.get("/health", healthCheckHandler);
+app.get("/api/health", healthCheckHandler);
+
+// Centralized Production Error Handling Middleware
+app.use((err, req, res, next) => {
+  const statusCode = err.statusCode || err.status || 500;
+  console.error(`[UnhandledError] ${req.method} ${req.originalUrl}:`, err.message || err);
+
+  if (res.headersSent) {
+    return next(err);
+  }
+
+  const isProd = process.env.NODE_ENV === "production";
+  const message = isProd && statusCode === 500
+    ? "An unexpected internal server error occurred. Please try again later."
+    : err.message || "Internal server error";
+
+  res.status(statusCode).json({
+    success: false,
+    message,
+    code: err.code || "SERVER_ERROR",
+  });
+});
+
+// 404 Catch-all for API endpoints
+app.use("/api/*", (req, res) => {
+  res.status(404).json({
+    success: false,
+    message: `Endpoint not found: ${req.method} ${req.originalUrl}`,
   });
 });
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Backend server running on port ${PORT}`);
+});
+
+/* ================================
+   GRACEFUL SHUTDOWN & CRASH PROTECTION
+   ================================ */
+let isShuttingDown = false;
+const gracefulShutdown = async (signal) => {
+  if (isShuttingDown) return;
+  isShuttingDown = true;
+  console.log(`\n🛑 Received ${signal}. Starting graceful shutdown...`);
+
+  server.close(async () => {
+    console.log("🔒 HTTP server closed.");
+    try {
+      if (mongoose.connection.readyState === 1) {
+        await mongoose.connection.close(false);
+        console.log("🔒 MongoDB connection pool closed cleanly.");
+      }
+      process.exit(0);
+    } catch (e) {
+      console.error("❌ Error closing MongoDB connection:", e.message);
+      process.exit(1);
+    }
+  });
+
+  // Force close after 10s timeout if active requests take too long
+  setTimeout(() => {
+    console.error("⚠️ Graceful shutdown timed out (10s). Forcing process exit.");
+    process.exit(1);
+  }, 10000).unref();
+};
+
+process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+process.on("SIGINT", () => gracefulShutdown("SIGINT"));
+
+process.on("unhandledRejection", (reason) => {
+  console.error("❌ Unhandled Promise Rejection:", reason?.message || reason);
+});
+
+process.on("uncaughtException", (error) => {
+  console.error("❌ Uncaught Exception:", error.message || error);
 });

@@ -136,6 +136,11 @@ const userSchema = new mongoose.Schema(
   }
 );
 
+// High-frequency query indexes
+userSchema.index({ department: 1, createdAt: -1 });
+userSchema.index({ isPremium: 1, department: 1 });
+userSchema.index({ name: "text", email: "text", department: "text" });
+
 /**
  * Hash password before saving to the database.
  */

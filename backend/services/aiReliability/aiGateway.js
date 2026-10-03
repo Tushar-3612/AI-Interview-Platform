@@ -8,6 +8,7 @@ import { AIResponseValidator } from "./aiResponseValidator.js";
 import { sessionManager } from "./aiSessionManager.js";
 import { safeLogger } from "./utils/safeLogger.js";
 import { createRequestFingerprint } from "./utils/requestFingerprint.js";
+import { aiConcurrencyLimiter } from "./utils/aiConcurrencyLimiter.js";
 
 /**
  * Resolves appropriate model for given provider to avoid provider/model mismatch.
@@ -147,13 +148,18 @@ export class AIGateway {
 
               safeLogger.info(`[AIGateway] Executing request via provider [${activeProviderName}] model [${resolvedModel}] for ${roundType} Q${orderIndex || "N/A"}`);
 
-              // 9. Call Provider Adapter
-              const rawCompletion = await providerAdapter.generateCompletion({
-                prompt: optPrompt,
-                systemPrompt: optSystem,
-                options: activeOptions,
-                apiKey: activeApiKey
-              });
+              // 9. Call Provider Adapter under Concurrency Control
+              const rawCompletion = await aiConcurrencyLimiter.runWithConcurrencyLimit(
+                activeProviderName,
+                async () => {
+                  return await providerAdapter.generateCompletion({
+                    prompt: optPrompt,
+                    systemPrompt: optSystem,
+                    options: activeOptions,
+                    apiKey: activeApiKey
+                  });
+                }
+              );
 
               // 10. JSON Repair
               const parsedJSON = AIJsonRepair.parseAndRepair(rawCompletion);

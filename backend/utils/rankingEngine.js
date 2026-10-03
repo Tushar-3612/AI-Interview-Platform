@@ -1,52 +1,25 @@
 export async function computeRankings(testId, userId, department, TestResultModel) {
-  const allResults = await TestResultModel.find({
-    testId,
-    processedAt: { $ne: null },
-  })
-    .populate("userId", "department")
-    .lean();
+  const userResult = await TestResultModel.findOne({ testId, userId }).select("percentage").lean();
+  const userPercentage = userResult?.percentage ?? 0;
 
-  const sorted = allResults
-    .filter(r => r.percentage != null)
-    .sort((a, b) => (b.percentage || 0) - (a.percentage || 0));
-
-  const totalParticipants = sorted.length;
-
-  const userResultIndex = sorted.findIndex(
-    r => r.userId && (r.userId._id ? r.userId._id.toString() === userId.toString() : r.userId.toString() === userId.toString())
-  );
-
-  const testRank = userResultIndex >= 0 ? userResultIndex + 1 : 0;
-
-  const deptResults = sorted.filter(r => {
-    const rDept = r.studentInfo?.department || (r.userId && r.userId.department) || "";
-    return rDept === department;
-  });
-
-  const departmentParticipants = deptResults.length;
-  const deptUserIndex = deptResults.findIndex(
-    r => r.userId && (r.userId._id ? r.userId._id.toString() === userId.toString() : r.userId.toString() === userId.toString())
-  );
-  const departmentRank = deptUserIndex >= 0 ? deptUserIndex + 1 : 0;
-
-  const overallResults = await TestResultModel.find({
-    processedAt: { $ne: null },
-  })
-    .lean();
-
-  const overallSorted = overallResults
-    .filter(r => r.percentage != null)
-    .sort((a, b) => (b.percentage || 0) - (a.percentage || 0));
-
-  const overallIndex = overallSorted.findIndex(
-    r => r.userId && (r.userId._id ? r.userId._id.toString() === userId.toString() : r.userId.toString() === userId.toString())
-  );
-  const overallRank = overallIndex >= 0 ? overallIndex + 1 : 0;
+  const [
+    totalParticipants,
+    higherTestCount,
+    departmentParticipants,
+    higherDeptCount,
+    higherOverallCount,
+  ] = await Promise.all([
+    TestResultModel.countDocuments({ testId, processedAt: { $ne: null } }),
+    TestResultModel.countDocuments({ testId, processedAt: { $ne: null }, percentage: { $gt: userPercentage } }),
+    department ? TestResultModel.countDocuments({ testId, processedAt: { $ne: null }, "studentInfo.department": department }) : Promise.resolve(0),
+    department ? TestResultModel.countDocuments({ testId, processedAt: { $ne: null }, "studentInfo.department": department, percentage: { $gt: userPercentage } }) : Promise.resolve(0),
+    TestResultModel.countDocuments({ processedAt: { $ne: null }, percentage: { $gt: userPercentage } }),
+  ]);
 
   return {
-    testRank,
-    departmentRank,
-    overallRank,
+    testRank: userResult ? higherTestCount + 1 : 0,
+    departmentRank: userResult && department ? higherDeptCount + 1 : 0,
+    overallRank: userResult ? higherOverallCount + 1 : 0,
     totalParticipants,
     departmentParticipants,
   };
@@ -57,7 +30,7 @@ export async function computeAllTestRankings(testId, TestResultModel) {
     testId,
     processedAt: { $ne: null },
   })
-    .populate("userId", "department")
+    .select("_id userId percentage studentInfo.department")
     .lean();
 
   const sorted = allResults
@@ -68,14 +41,15 @@ export async function computeAllTestRankings(testId, TestResultModel) {
 
   const departmentGroups = {};
   sorted.forEach(r => {
-    const dept = r.studentInfo?.department || (r.userId && r.userId.department) || "unknown";
+    const dept = r.studentInfo?.department || "unknown";
     if (!departmentGroups[dept]) departmentGroups[dept] = [];
     departmentGroups[dept].push(r);
   });
 
+  const bulkOps = [];
   for (let i = 0; i < sorted.length; i++) {
     const r = sorted[i];
-    const dept = r.studentInfo?.department || (r.userId && r.userId.department) || "unknown";
+    const dept = r.studentInfo?.department || "unknown";
     const deptRank = (departmentGroups[dept] || []).findIndex(dr => {
       const drId = dr._id ? dr._id.toString() : "";
       const rId = r._id ? r._id.toString() : "";
@@ -84,14 +58,26 @@ export async function computeAllTestRankings(testId, TestResultModel) {
 
     const rid = r._id ? r._id.toString() : null;
     if (rid) {
-      await TestResultModel.findByIdAndUpdate(rid, {
-        "ranking.testRank": i + 1,
-        "ranking.departmentRank": deptRank,
-        "ranking.totalParticipants": totalParticipants,
-        "ranking.departmentParticipants": (departmentGroups[dept] || []).length,
+      bulkOps.push({
+        updateOne: {
+          filter: { _id: rid },
+          update: {
+            $set: {
+              "ranking.testRank": i + 1,
+              "ranking.departmentRank": deptRank,
+              "ranking.totalParticipants": totalParticipants,
+              "ranking.departmentParticipants": (departmentGroups[dept] || []).length,
+            },
+          },
+        },
       });
     }
   }
 
+  if (bulkOps.length > 0) {
+    await TestResultModel.bulkWrite(bulkOps, { ordered: false });
+  }
+
   return { totalParticipants, updatedCount: sorted.length };
 }
+

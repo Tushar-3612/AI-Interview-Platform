@@ -12,7 +12,7 @@ const FAQ = [
   { q: "How do I update my resume?", a: "Go to Profile → Resume section and upload or replace your PDF resume." },
 ];
 
-const SUPPORT_EMAIL = "support@sanjivani.edu.in";
+const SUPPORT_EMAIL = "tusharnagare2006@gmail.com";
 
 function Contact() {
   const [openFaq, setOpenFaq] = useState(null);

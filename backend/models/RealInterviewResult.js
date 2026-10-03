@@ -98,6 +98,9 @@ const realInterviewResultSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+realInterviewResultSchema.index({ userId: 1, createdAt: -1 });
+realInterviewResultSchema.index({ status: 1, createdAt: -1 });
+
 // Virtual getters for compatibility with existing components / API endpoints
 realInterviewResultSchema.virtual("overallScore").get(function () {
   return this.totalObtained;

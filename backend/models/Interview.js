@@ -96,6 +96,13 @@ const interviewSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// High-frequency query indexes for student sessions & admin analytics
+interviewSchema.index({ userId: 1, createdAt: -1 });
+interviewSchema.index({ userId: 1, interviewType: 1, status: 1 });
+interviewSchema.index({ userId: 1, interviewType: 1, startedAt: -1 });
+interviewSchema.index({ companyId: 1, interviewType: 1 });
+interviewSchema.index({ status: 1, createdAt: -1 });
+
 const Interview = mongoose.model("Interview", interviewSchema);
 
 export default Interview;

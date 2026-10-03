@@ -12,16 +12,25 @@ try {
 dotenv.config();
 
 const MONGOOSE_OPTIONS = {
-  tls: true,
-  tlsAllowInvalidCertificates: false,
-  serverSelectionTimeoutMS: 30000,
+  maxPoolSize: 100,
+  minPoolSize: 10,
+  maxIdleTimeMS: 30000,
+  serverSelectionTimeoutMS: 10000,
+  connectTimeoutMS: 10000,
   socketTimeoutMS: 45000,
   heartbeatFrequencyMS: 10000,
   retryWrites: true,
   w: "majority",
+  autoIndex: process.env.NODE_ENV !== "production",
 };
 
+let isConnected = false;
+
 const connectDB = async () => {
+  if (isConnected && mongoose.connection.readyState === 1) {
+    return mongoose.connection;
+  }
+
   try {
     const mongoURI = process.env.MONGO_URI;
 
@@ -34,21 +43,22 @@ const connectDB = async () => {
     });
 
     mongoose.connection.on("disconnected", () => {
+      isConnected = false;
       console.warn("⚠️ MongoDB disconnected. Attempting to reconnect...");
     });
 
     mongoose.connection.on("reconnected", () => {
+      isConnected = true;
       console.log("✅ MongoDB reconnected");
     });
 
-    await mongoose.connect(mongoURI, {
-      serverSelectionTimeoutMS: 5000,
-      socketTimeoutMS: 45000,
-    });
+    await mongoose.connect(mongoURI, MONGOOSE_OPTIONS);
+    isConnected = true;
 
-    console.log("✅ MongoDB Connected Successfully");
+    console.log("✅ MongoDB Connected Successfully with connection pool (maxPoolSize: 100, minPoolSize: 10)");
     return mongoose.connection;
   } catch (error) {
+    isConnected = false;
     console.warn("⚠️ MongoDB Connection Warning:", error.message);
     console.warn("Backend server running in standalone mode...");
   }

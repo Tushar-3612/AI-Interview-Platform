@@ -1,11 +1,15 @@
 import express from "express";
 import { signup, login, forgotPassword, verifyOtp, resetPassword } from "../controllers/authController.js";
+import { authLimiter } from "../middleware/rateLimiter.js";
 
 const router = express.Router();
 
 /* ================================
    AUTH ROUTES
    ================================ */
+
+// Apply authLimiter across all auth endpoints
+router.use(authLimiter);
 
 // POST /api/auth/signup — Register a new student account
 router.post("/signup", signup);

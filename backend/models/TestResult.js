@@ -140,6 +140,12 @@ const testResultSchema = new mongoose.Schema({
 
 testResultSchema.index({ testId: 1, "ranking.testRank": 1 });
 testResultSchema.index({ userId: 1, testId: 1 });
+testResultSchema.index({ userId: 1, createdAt: -1 });
+testResultSchema.index({ testId: 1, processedAt: -1 });
+testResultSchema.index({ testId: 1, processedAt: 1, percentage: -1 });
+testResultSchema.index({ testId: 1, "studentInfo.department": 1, percentage: -1 });
+testResultSchema.index({ processedAt: 1, percentage: -1 });
 
 const TestResult = mongoose.model("TestResult", testResultSchema);
 export default TestResult;
+

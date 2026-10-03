@@ -69,6 +69,10 @@ const testAttemptSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 testAttemptSchema.index({ userId: 1, testId: 1 }, { unique: true });
+testAttemptSchema.index({ testId: 1, status: 1 });
+testAttemptSchema.index({ _id: 1, userId: 1, status: 1 });
+testAttemptSchema.index({ assignmentId: 1, status: 1 });
 
 const TestAttempt = mongoose.model("TestAttempt", testAttemptSchema);
 export default TestAttempt;
+

@@ -63,7 +63,7 @@ export const getStats = async (req, res) => {
 
     // Average Score
     const resultQuery = deptStudentIds ? { userId: { $in: deptStudentIds } } : {};
-    const results = await Result.find(resultQuery).lean();
+    const results = await Result.find(resultQuery).select("overallScore").lean();
     const totalResults = results.length;
     const avgScore = totalResults > 0 
       ? Math.round(results.reduce((sum, r) => sum + (r.overallScore || 0), 0) / totalResults) 
@@ -72,7 +72,7 @@ export const getStats = async (req, res) => {
     // Top Performer
     let topPerformer = { name: "N/A", score: 0 };
     if (totalResults > 0) {
-      const topResult = await Result.findOne(resultQuery).sort({ overallScore: -1 }).populate("userId");
+      const topResult = await Result.findOne(resultQuery).sort({ overallScore: -1 }).select("overallScore userId").populate("userId", "name").lean();
       if (topResult && topResult.userId) {
         topPerformer = {
           name: topResult.userId.name,
@@ -180,20 +180,29 @@ export const getStats = async (req, res) => {
       }));
     }
 
-    // Company Overview
-    const companies = await Company.find().lean();
-    const allInterviews = await Interview.find({ ...interviewMatch, interviewType: "practice" }).lean();
-    const companyOverview = companies.map(c => {
-      const runs = allInterviews.filter(i => i.companyId === c.id);
-      return {
-        name: c.name,
-        color: c.color || "#2563EB",
-        attempts: runs.length,
-        avgScore: runs.length > 0
-          ? Math.round(runs.reduce((s, r) => s + (r.overallScore || 0), 0) / runs.length)
-          : 0,
-      };
-    }).sort((a, b) => b.attempts - a.attempts).slice(0, 8);
+    // Company Overview via MongoDB Aggregation (O(1) memory)
+    const [companies, companyStats] = await Promise.all([
+      Company.find().select("id name color").lean(),
+      Interview.aggregate([
+        { $match: { ...interviewMatch, interviewType: "practice", companyId: { $ne: "" } } },
+        { $group: { _id: "$companyId", attempts: { $sum: 1 }, avgScore: { $avg: "$overallScore" } } },
+      ]),
+    ]);
+
+    const statsMap = new Map(companyStats.map((s) => [s._id, s]));
+    const companyOverview = companies
+      .map((c) => {
+        const stat = statsMap.get(c.id);
+        const attempts = stat?.attempts || 0;
+        return {
+          name: c.name,
+          color: c.color || "#2563EB",
+          attempts,
+          avgScore: stat ? Math.round(stat.avgScore || 0) : 0,
+        };
+      })
+      .sort((a, b) => b.attempts - a.attempts)
+      .slice(0, 8);
 
     // Recent Assigned Tests for widget
     const recentAssignedTests = await TestAssignment.find(assignmentFilter)

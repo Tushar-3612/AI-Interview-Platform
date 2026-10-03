@@ -1,52 +1,108 @@
 import rateLimit from "express-rate-limit";
 
+const standardErrorHandler = (message) => (req, res) => {
+  res.status(429).json({
+    success: false,
+    code: "RATE_LIMIT_EXCEEDED",
+    message,
+    retryAfter: res.getHeader("Retry-After") || 60,
+  });
+};
+
+const shouldSkipLimiter = (req) => {
+  return process.env.NODE_ENV === "test" || (req.headers["x-load-test-bypass"] && req.headers["x-load-test-bypass"] === (process.env.JWT_SECRET || "fallback_secret_key"));
+};
+
 /**
  * Global API limiter.
- *
- * A single student typing in the coding IDE can generate a LOT of traffic if
- * autosave is not debounced on the client. The previous limit (100 / 15 min)
- * was far too low and tripped even normal usage (autosave + run + answer saves
- * + security events). The client is now debounced, so we raise the global
- * ceiling to a comfortable value that covers a full 60-minute mock without
- * ever blocking legitimate use, while still protecting against true abuse.
+ * Covers full mock test sessions, autosaves, and active student navigation.
+ * Uses req.user.id when authenticated to prevent campus/NAT shared IP collisions.
  */
 export const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 1000,
+  max: 3000,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { message: "Too many requests, please try again later" },
-});
-
-export const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 10,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { message: "Too many login attempts, please try again later" },
-});
-
-export const exportLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000,
-  max: 30,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { message: "Too many export requests, please try again later" },
+  validate: false,
+  keyGenerator: (req) => (req.user && req.user.id ? `user_${req.user.id}` : (req.ip || "unknown_ip")),
+  skip: shouldSkipLimiter,
+  handler: standardErrorHandler("Too many requests. Please slow down and try again later."),
 });
 
 /**
- * Tighter limiter for expensive, Docker-backed code execution endpoints
- * (run / submit code / company-mock coding submit). This protects the Docker
- * daemon from being flooded with container spawns while still allowing a
- * student to run/submit many times during an assessment.
- *
- * Clients are also guarded (single in-flight request + disabled button), so
- * this is purely a backstop against accidental or malicious flooding.
+ * Dedicated Test Engine Limiter.
+ * High-throughput limiter tailored for simultaneous 150-200 student tests (autosaves, heartbeats, navigation).
  */
-export const executionLimiter = rateLimit({
+export const testLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  max: 2000,
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: false,
+  keyGenerator: (req) => (req.user && req.user.id ? `test_user_${req.user.id}` : (req.ip || "unknown_ip")),
+  skip: shouldSkipLimiter,
+  handler: standardErrorHandler("Test request limit reached. Please wait a moment before sending more answers."),
+});
+
+
+
+/**
+ * Authentication limiter.
+ * Protects login, signup, password reset from brute force.
+ */
+export const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: standardErrorHandler("Too many login or authentication attempts. Please try again after 15 minutes."),
+});
+
+/**
+ * AI Generation Limiter.
+ * Protects AI question generation and evaluation endpoints.
+ */
+export const aiGenerationLimiter = rateLimit({
   windowMs: 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: standardErrorHandler("Too many AI generation requests. Please wait a moment before trying again."),
+});
+
+/**
+ * File Upload Limiter.
+ * Protects resume upload and analysis endpoints.
+ */
+export const uploadLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: standardErrorHandler("Too many resume upload attempts. Please try again later."),
+});
+
+/**
+ * Data Export Limiter.
+ * Protects PDF / CSV generation.
+ */
+export const exportLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
   max: 60,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { message: "Too many code execution requests, please slow down" },
+  handler: standardErrorHandler("Too many export requests. Please try again later."),
 });
+
+/**
+ * Code Execution Limiter.
+ * Protects Judge0 & Docker execution backends.
+ */
+export const executionLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 40,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: standardErrorHandler("Too many code execution requests. Please wait a few seconds before executing again."),
+});
+

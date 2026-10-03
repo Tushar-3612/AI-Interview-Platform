@@ -36,8 +36,33 @@ import {
   saveInterviewIntegrityEvent,
 } from "../controllers/studentInterviewController.js";
 
+import { uploadLimiter, testLimiter } from "../middleware/rateLimiter.js";
+
 const router = express.Router();
-const upload = multer({ storage: multer.memoryStorage() });
+
+// Secure multer configuration for resume uploads (5MB limit, strict MIME filter)
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB maximum file size
+    files: 1,
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedMimeTypes = [
+      "application/pdf",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/msword",
+    ];
+    const originalName = (file.originalname || "").toLowerCase();
+    const isAllowedExt = originalName.endsWith(".pdf") || originalName.endsWith(".docx") || originalName.endsWith(".doc");
+
+    if (allowedMimeTypes.includes(file.mimetype) || isAllowedExt) {
+      cb(null, true);
+    } else {
+      cb(new Error("Invalid file type. Only PDF and DOC/DOCX files are supported."));
+    }
+  },
+});
 
 // Protect all routes with authMiddleware
 router.use(authMiddleware);
@@ -50,7 +75,7 @@ router.put("/profile", updateProfile);
 router.put("/target-company", updateTargetCompany);
 
 // Resume upload, view, download
-router.post("/resume/upload", upload.single("resume"), uploadResumeAndAnalyze);
+router.post("/resume/upload", uploadLimiter, upload.single("resume"), uploadResumeAndAnalyze);
 router.get("/resume/download", downloadResume);
 router.get("/resume/view", viewResume);
 
@@ -68,14 +93,15 @@ router.post("/interviews/:sessionId/complete", completeInterviewSession);
 
 // ─── Test Engine ───
 router.get("/tests", getAssignedTests);
-router.post("/tests/:testId/start", startTest);
-router.get("/tests/attempt/:attemptId", getAttemptState);
-router.post("/tests/attempt/:attemptId/answer", saveAnswer);
-router.post("/tests/attempt/:attemptId/tab-switch", recordTabSwitch);
-router.post("/tests/attempt/:attemptId/integrity-event", recordIntegrityEvent);
-router.post("/tests/attempt/:attemptId/heartbeat", recordHeartbeat);
-router.post("/tests/attempt/:attemptId/submit", submitTest);
-router.get("/tests/attempt/:attemptId/result", getTestResult);
+router.post("/tests/:testId/start", testLimiter, startTest);
+router.get("/tests/attempt/:attemptId", testLimiter, getAttemptState);
+router.post("/tests/attempt/:attemptId/answer", testLimiter, saveAnswer);
+router.post("/tests/attempt/:attemptId/tab-switch", testLimiter, recordTabSwitch);
+router.post("/tests/attempt/:attemptId/integrity-event", testLimiter, recordIntegrityEvent);
+router.post("/tests/attempt/:attemptId/heartbeat", testLimiter, recordHeartbeat);
+router.post("/tests/attempt/:attemptId/submit", testLimiter, submitTest);
+router.get("/tests/attempt/:attemptId/result", testLimiter, getTestResult);
+
 
 // ─── Test Results (Student) ───
 router.get("/results", getStudentResults);

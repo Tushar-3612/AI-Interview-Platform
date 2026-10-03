@@ -7,6 +7,7 @@ import RealInterviewProjectQuestion from "../models/RealInterviewProjectQuestion
 import RealInterviewHRQuestion from "../models/RealInterviewHRQuestion.js";
 import RealInterviewCodingQuestion from "../models/RealInterviewCodingQuestion.js";
 import RealInterviewResult from "../models/RealInterviewResult.js";
+import { withInFlightLock } from "../services/realInterview/inFlightLock.js";
 
 /**
  * Aggregates questions from all 5 Real Interview round collections for a given session.
@@ -193,90 +194,103 @@ export const createInterviewSession = async (req, res) => {
       return res.status(401).json({ success: false, message: "Unauthorized: User ID missing" });
     }
 
-    const user = await User.findById(userId).select("email isPremium").lean();
-    const isPremium = Boolean(user?.isPremium === true);
-    const hasUnlimitedRealInterviewAccess = isPremium;
+    const result = await withInFlightLock(`session_create:${userId}`, async () => {
+      const user = await User.findById(userId).select("email isPremium").lean();
+      const isPremium = Boolean(user?.isPremium === true);
+      const hasUnlimitedRealInterviewAccess = isPremium;
 
-    const { interviewType = "actual", targetRound = "all", durationMinutes = 120 } = req.body || {};
+      const { interviewType = "actual", targetRound = "all", durationMinutes = 120 } = req.body || {};
 
-    const now = new Date();
-    const startOfToday = new Date(now);
-    startOfToday.setHours(0, 0, 0, 0);
+      const now = new Date();
+      const startOfToday = new Date(now);
+      startOfToday.setHours(0, 0, 0, 0);
 
-    const endOfToday = new Date(now);
-    endOfToday.setHours(23, 59, 59, 999);
+      const endOfToday = new Date(now);
+      endOfToday.setHours(23, 59, 59, 999);
 
-    // For standard users without unlimited access: Enforce 1 attempt per calendar day
-    if (!hasUnlimitedRealInterviewAccess && (interviewType === "actual" || interviewType === "real")) {
-      const existingAttemptToday = await Interview.findOne({
-        userId,
-        interviewType: { $in: ["actual", "real"] },
-        $or: [
-          { startedAt: { $gte: startOfToday, $lte: endOfToday } },
-          { createdAt: { $gte: startOfToday, $lte: endOfToday } },
-        ],
-      }).sort({ createdAt: -1 });
+      // For standard users without unlimited access: Enforce 1 attempt per calendar day
+      if (!hasUnlimitedRealInterviewAccess && (interviewType === "actual" || interviewType === "real")) {
+        const existingAttemptToday = await Interview.findOne({
+          userId,
+          interviewType: { $in: ["actual", "real"] },
+          $or: [
+            { startedAt: { $gte: startOfToday, $lte: endOfToday } },
+            { createdAt: { $gte: startOfToday, $lte: endOfToday } },
+          ],
+        }).sort({ createdAt: -1 });
 
-      if (existingAttemptToday) {
-        // If there is an in-progress session started today, allow student to resume it
-        if (existingAttemptToday.status === "IN_PROGRESS") {
-          const sessionId = existingAttemptToday._id.toString();
-          console.log(`[StudentInterviewController] Reusing today's active session ${sessionId} for user ${userId}`);
-          return res.status(200).json({
-            success: true,
-            sessionId,
-            interviewId: sessionId,
-            interviewType: existingAttemptToday.interviewType,
-            targetRound: existingAttemptToday.targetRound,
-            durationMinutes: existingAttemptToday.durationMinutes,
-            startedAt: existingAttemptToday.startedAt,
-          });
+        if (existingAttemptToday) {
+          // If there is an in-progress session started today, allow student to resume it
+          if (existingAttemptToday.status === "IN_PROGRESS") {
+            const sessionId = existingAttemptToday._id.toString();
+            console.log(`[StudentInterviewController] Reusing today's active session ${sessionId} for user ${userId}`);
+            return {
+              statusCode: 200,
+              data: {
+                success: true,
+                sessionId,
+                interviewId: sessionId,
+                interviewType: existingAttemptToday.interviewType,
+                targetRound: existingAttemptToday.targetRound,
+                durationMinutes: existingAttemptToday.durationMinutes,
+                startedAt: existingAttemptToday.startedAt,
+              },
+            };
+          }
+
+          // Already completed or submitted an interview today -> Block new attempt
+          console.warn(`[StudentInterviewController] Blocked daily limit for standard user ${userId} (isPremium=${isPremium})`);
+          return {
+            statusCode: 403,
+            data: {
+              success: false,
+              code: "DAILY_INTERVIEW_LIMIT_REACHED",
+              message: "You have already used your Real Interview attempt for today. Please try again tomorrow.",
+            },
+          };
         }
-
-        // Already completed or submitted an interview today -> Block new attempt
-        console.warn(`[StudentInterviewController] Blocked daily limit for standard user ${userId} (isPremium=${isPremium})`);
-        return res.status(403).json({
-          success: false,
-          code: "DAILY_INTERVIEW_LIMIT_REACHED",
-          message: "You have already used your Real Interview attempt for today. Please try again tomorrow.",
-        });
       }
-    }
 
-    // Check if student ALREADY has an active IN_PROGRESS session of this interviewType (preserves resume behavior)
-    const existingActive = await Interview.findOne({
-      userId,
-      interviewType,
-      status: "IN_PROGRESS",
-    }).sort({ createdAt: -1 });
-
-    let interview;
-    if (existingActive) {
-      interview = existingActive;
-      console.log(`[StudentInterviewController] Reusing existing active session ${interview._id} for user ${userId}`);
-    } else {
-      interview = await Interview.create({
+      // Check if student ALREADY has an active IN_PROGRESS session of this interviewType (preserves resume behavior)
+      const existingActive = await Interview.findOne({
         userId,
         interviewType,
-        targetRound,
-        durationMinutes,
-        startedAt: new Date(),
         status: "IN_PROGRESS",
-      });
-      console.log(`[StudentInterviewController] Created Real Interview session ${interview._id} for user ${userId} (isPremium=${isPremium})`);
-    }
+      }).sort({ createdAt: -1 });
 
-    const sessionId = interview._id.toString();
+      let interview;
+      if (existingActive) {
+        interview = existingActive;
+        console.log(`[StudentInterviewController] Reusing existing active session ${interview._id} for user ${userId}`);
+      } else {
+        interview = await Interview.create({
+          userId,
+          interviewType,
+          targetRound,
+          durationMinutes,
+          startedAt: new Date(),
+          status: "IN_PROGRESS",
+        });
+        console.log(`[StudentInterviewController] Created Real Interview session ${interview._id} for user ${userId} (isPremium=${isPremium})`);
+      }
 
-    res.status(201).json({
-      success: true,
-      sessionId,
-      interviewId: sessionId,
-      interviewType: interview.interviewType,
-      targetRound: interview.targetRound,
-      durationMinutes: interview.durationMinutes,
-      startedAt: interview.startedAt,
+      const sessionId = interview._id.toString();
+
+      return {
+        statusCode: 201,
+        data: {
+          success: true,
+          sessionId,
+          interviewId: sessionId,
+          interviewType: interview.interviewType,
+          targetRound: interview.targetRound,
+          durationMinutes: interview.durationMinutes,
+          startedAt: interview.startedAt,
+        },
+      };
     });
+
+    return res.status(result.statusCode).json(result.data);
   } catch (error) {
     console.error("[StudentInterviewController] Create session error:", error.message);
     res.status(500).json({
