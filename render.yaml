@@ -1,0 +1,64 @@
+services:
+  - type: web
+    name: ai-interview-backend
+    runtime: node
+    plan: starter
+    region: oregon
+    rootDir: .
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: CLIENT_URL
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false
+      - key: AI_PROVIDER
+        value: groq
+      - key: AI_API_KEY
+        sync: false
+      - key: AI_MODEL
+        value: llama-3.3-70b-versatile
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: MOCK_INTERVIEW_API_KEY
+        sync: false
+      - key: MOCK_INTERVIEW_API_KEY2
+        sync: false
+      - key: TCS_MOCK_KEY
+        sync: false
+      - key: ACCENTURE_MOCK_KEY
+        sync: false
+      - key: BENCHMARK_MOCK_KEY
+        sync: false
+      - key: INDIVIDUAL_TECHNICAL_API_KEY
+        sync: false
+      - key: INDIVIDUAL_PROJECT_API_KEY
+        sync: false
+      - key: JUDGE0_API_URL
+        sync: false
+      - key: JUDGE0_API_KEY
+        sync: false
+      - key: RAPIDAPI_KEY
+        sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: REDIS_URL
+        sync: false

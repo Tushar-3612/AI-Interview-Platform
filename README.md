@@ -5,7 +5,7 @@
 <h1 align="center">AI Interview Platform</h1>
 
 <p align="center">
-  <b>A Production-Grade, Dual-Engine AI Platform for Technical Interview Simulation & Company-Specific Mock Hiring Assessments</b>
+  <b>A Production-Grade, Dual-Engine AI Assessment Platform with Two-Level Administration & Premium Candidate Entitlement</b>
 </p>
 
 <p align="center">
@@ -14,8 +14,8 @@
   <img src="https://img.shields.io/badge/Node.js-22.x-339933?style=for-the-badge&logo=node.js&logoColor=white" alt="Node.js" />
   <img src="https://img.shields.io/badge/Express-4.22-000000?style=for-the-badge&logo=express&logoColor=white" alt="Express" />
   <img src="https://img.shields.io/badge/MongoDB-8.9-47A248?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB" />
-  <img src="https://img.shields.io/badge/JavaScript-ES2024-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black" alt="JavaScript" />
   <img src="https://img.shields.io/badge/Tailwind_CSS-4.3-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind CSS" />
+  <img src="https://img.shields.io/badge/Groq-Llama_3.3_70B-F55036?style=for-the-badge&logo=fastapi&logoColor=white" alt="Groq" />
   <img src="https://img.shields.io/badge/Google_Gemini-GenAI-4285F4?style=for-the-badge&logo=google&logoColor=white" alt="Gemini" />
 </p>
 
@@ -23,472 +23,717 @@
 
 ## 📋 Table of Contents
 
-- [Project Overview](#-project-overview)
-- [Problem Statement & Solution](#-problem-statement--solution)
-- [High-Level Platform Architecture](#-high-level-platform-architecture)
-- [End-to-End System Workflow](#-end-to-end-system-workflow)
-- [Real Interview Engine](#-real-interview-engine)
-- [Company Mock Assessment Engine](#-company-mock-assessment-engine)
-- [Supported Company Hiring Tracks](#-supported-company-hiring-tracks)
-- [Assessment Question Formats](#-assessment-question-formats)
-- [Adaptive Difficulty Mechanism](#-adaptive-difficulty-mechanism)
-- [Zero-Repeat Exposure System](#-zero-repeat-exposure-system)
-- [AI Technical Evaluation & Fallback Pipeline](#-ai-technical-evaluation--fallback-pipeline)
-- [Company AI Key Isolation Architecture](#-company-ai-key-isolation-architecture)
-- [Coding Assessment & Execution Engine](#-coding-assessment--execution-engine)
-- [Assessment Timer & Attempt Persistence](#-assessment-timer--attempt-persistence)
-- [Assessment Security & Integrity](#-assessment-security--integrity)
-- [Submission, Scoring & Detailed Analytics](#-submission-scoring--detailed-analytics)
-- [Real Interview vs. Company Mock Comparison](#-real-interview-vs-company-mock-comparison)
-- [Student & Admin Portals](#-student--admin-portals)
-- [Technology Stack](#-technology-stack)
-- [Getting Started & Installation](#-getting-started--installation)
-- [Environment Variable Configuration](#-environment-variable-configuration)
-- [API Capability Overview](#-api-capability-overview)
-- [Testing & Quality Assurance](#-testing--quality-assurance)
-- [Project Highlights & Future Scope](#-project-highlights--future-scope)
+- [1. Platform Overview](#1-platform-overview)
+- [2. Dual Assessment Engine Architecture](#2-dual-assessment-engine-architecture)
+- [3. Multi-Tier Role & Access Architecture](#3-multi-tier-role--access-architecture)
+- [4. Premium Membership & Access Entitlement](#4-premium-membership--access-entitlement)
+- [5. System Admin & Teacher Portals](#5-system-admin--teacher-portals)
+- [6. Real Interview Simulation Engine](#6-real-interview-simulation-engine)
+- [7. Company Mock Assessment Engine (9 Tracks)](#7-company-mock-assessment-engine-9-tracks)
+- [8. Coding Assessment & Execution IDE](#8-coding-assessment--execution-ide)
+- [9. AI Architecture & Multi-Tier Reliability](#9-ai-architecture--multi-tier-reliability)
+- [10. Test Engine & Assignment Management](#10-test-engine--assignment-management)
+- [11. Centralized Question Bank Management](#11-centralized-question-bank-management)
+- [12. Platform Security, Integrity & Anti-Cheating](#12-platform-security-integrity--anti-cheating)
+- [13. Database Architecture & Schema Design](#13-database-architecture--schema-design)
+- [14. Role & Permission Security Matrix](#14-role--permission-security-matrix)
+- [15. Real Interview vs. Company Mock Comparison](#15-real-interview-vs-company-mock-comparison)
+- [16. End-to-End System Workflows](#16-end-to-end-system-workflows)
+- [17. API Architecture & Endpoint Reference](#17-api-architecture--endpoint-reference)
+- [18. Project Directory Structure](#18-project-directory-structure)
+- [19. Technology Stack](#19-technology-stack)
+- [20. Installation & Setup Guide](#20-installation--setup-guide)
+- [21. Environment Variable Configuration](#21-environment-variable-configuration)
+- [22. Production Deployment Guide](#22-production-deployment-guide)
+- [23. Testing & Quality Assurance](#23-testing--quality-assurance)
+- [24. Project Highlights & Future Scope](#24-project-highlights--future-scope)
 
 ---
 
-## 🚀 Project Overview
+## 1. Platform Overview
 
-**AI Interview Platform** is a full-stack, production-grade Web platform engineered to solve the challenges of technical interview preparation and standardized mock hiring assessments. The platform combines conversational AI engines, automated code compilation environments, adaptive difficulty algorithms, and security anti-cheat controls to deliver realistic, high-fidelity assessment experiences for students, job applicants, and recruiters.
+**AI Interview Platform** is an enterprise-grade technical interview simulation and campus placement assessment system. Designed for engineering institutes, training academies, and placement cells, it bridges the gap between classroom learning and competitive corporate hiring.
 
-The platform provides two completely distinct interview experiences:
-1. **Real Interview Engine**: A personalized, dynamic AI voice/speech interview simulator that parses candidate resumes (PDF/DOCX), extracts candidate skills and project experience, generates tailored interview rounds (Project, Technical, HR), and evaluates candidate verbal responses using Google Gemini GenAI models.
-2. **Company Mock Assessment Engine**: A standardized hiring assessment pipeline supporting **9 major corporate recruitment tracks** (Celebal Technologies, TCS, Wipro, Accenture, Benchmark IT Solutions, Capgemini, Cognizant, Deloitte, Infosys). It evaluates candidates across MCQs, TITA (Type-In-The-Answer) technical questions, and interactive coding challenges with automated test-case evaluation.
+The platform unites two distinct assessment paradigms:
+1. **Personalized Resume-Driven Real AI Interviews**: Conversational AI evaluates candidate verbal responses across Project Architecture, Core Technical domains, Coding, and HR Behavioral rounds based on extracted resume intelligence.
+2. **Standardized Corporate Mock Assessments**: 9 dedicated company tracks (TCS, Infosys, Cognizant, Wipro, Accenture, Capgemini, Deloitte, Celebal, Benchmark IT Solutions) matching exact corporate Online Assessment (OA) patterns with 3,624 curated questions, adaptive difficulty, and zero-repeat exposure control.
 
----
-
-## 🎯 Problem Statement & Solution
-
-### The Challenge
-- **Lack of Realistic Practice**: Job seekers often lack access to simulated technical interviews that mimic real candidate-interviewer dynamics or company-specific Online Assessments (OAs).
-- **Generic Questioning**: Traditional platforms use fixed question banks that fail to probe a candidate's actual projects or resume-declared technical skills.
-- **Inconsistent Evaluation**: Human mock interview feedback is often subjective, non-standardized, and delayed.
-- **Lack of Integrated Coding & Theory**: Most preparation platforms isolate coding from aptitude or theoretical technical questions.
-
-### The AI Interview Platform Solution
-- **Personalized Resume-Driven Interviews**: Real Interview mode analyzes candidate resumes and generates contextual questions about listed projects and tech stacks.
-- **Standardized Company Recruitment Tracks**: Company Mock mode replicates the real hiring assessment structures of 9 leading tech employers.
-- **Instant AI & Fallback Scoring**: Candidate free-text technical answers receive immediate evaluation against gold-standard benchmarks, backed by a 100% reliable deterministic fallback engine during API disruptions.
-- **Unified Assessment Environment**: Integrates MCQs, conceptual free-text questions, and an inline browser Monaco coding IDE in a single timed environment.
+Administration is powered by a **Two-Level Multi-Tenant Architecture** separating institute-wide governance (**System Admin**) from department-isolated management (**Teacher / Department Admin**), backed by an authoritative **Premium Membership Entitlement Engine**.
 
 ---
 
-## 🏗️ High-Level Platform Architecture
+## 2. Dual Assessment Engine Architecture
 
 ```mermaid
 flowchart TD
-    subgraph Client["Web Client Layer (React 19 + Vite 8)"]
-        AUTH_UI["Authentication & Profile Portal"]
-        STUDENT_UI["Student Assessment & Dashboard UI"]
-        ADMIN_UI["Admin Management & Analytics Portal"]
-        VOICE_UI["Voice & Audio Visualizer Interface"]
-        MONACO_IDE["Monaco Browser Code Editor"]
+    subgraph Client["Frontend Client Layer (React 19 + Vite 8 + Tailwind CSS 4)"]
+        AUTH_VIEW["Authentication & Onboarding"]
+        STUDENT_PORTAL["Student Assessment Workspace"]
+        SYS_ADMIN_PORTAL["System Admin Command Dashboard"]
+        TEACHER_PORTAL["Teacher Department Dashboard"]
+        MONACO_VIEW["Monaco Multi-Language IDE"]
+        VOICE_VIEW["Voice / Audio STT Interface"]
     end
 
-    subgraph Server["Express Backend Application Server"]
-        API_GW["Express API Gateway & Rate Limiters"]
-        REAL_ENG["Real Interview Engine & Resume Parser"]
-        MOCK_ENG["Company Mock Engine & Router"]
-        EVAL_ENG["Technical Evaluator & Scoring Engine"]
-        ADAPT_ENG["Adaptive Difficulty & Exposure Control"]
-        CODE_ENG["Judge0 / Docker Code Execution Service"]
+    subgraph API["Backend Service Layer (Node.js 22 + Express 4.22)"]
+        GATEWAY["API Gateway & Rate Limiters (express-rate-limit)"]
+        AUTH_MW["JWT & Multi-Role Auth Middleware"]
+        DEPT_GUARD["Department Scoping & Isolation Engine"]
+        
+        REAL_SVC["Real Interview Engine & Resume Parser"]
+        MOCK_SVC["Company Mock Router & Exposure Engine"]
+        JUDGE_SVC["Interview Judge & Calibration Engine"]
+        CODE_SVC["Judge0 & Code Execution Service"]
+        TEST_SVC["Test Assignment & Proctoring Engine"]
+        PREM_SVC["Premium Membership Controller"]
     end
 
-    subgraph DataAI["Data & External AI Services Layer"]
-        MONGO[("MongoDB Atlas Database")]
-        BANKS[("3,624 Question Bank JSONs")]
-        GEMINI["Google Gemini GenAI SDK (@google/genai)"]
-        GROQ["Groq / OpenRouter AI Providers"]
-        JUDGE0["Judge0 REST API Engine"]
+    subgraph DataAI["Data Persistence & External AI Services"]
+        MONGO[("MongoDB Database (Mongoose 8.9)")]
+        JSON_BANKS[("3,624 Curated Company Question Banks")]
+        GROQ_LLM["Groq Cloud (Llama-3.3-70B-Versatile / JSON Mode)"]
+        GROQ_STT["Groq Whisper Audio Transcription (STT)"]
+        GEMINI_LLM["Google Gemini GenAI SDK (@google/genai)"]
+        JUDGE0_API["Judge0 Multi-Language Code Compilation API"]
     end
 
-    Client --> API_GW
-    API_GW --> REAL_ENG & MOCK_ENG & EVAL_ENG & CODE_ENG
-    REAL_ENG --> GEMINI
-    MOCK_ENG --> ADAPT_ENG --> BANKS
-    EVAL_ENG --> GROQ
-    CODE_ENG --> JUDGE0
-    API_GW --> MONGO
-```
-
----
-
-## 🔄 End-to-End System Workflow
-
-```mermaid
-flowchart LR
-    USER["Student / Applicant"] --> AUTH["Authenticate & Access Dashboard"]
-    AUTH --> CHOICE{"Select Assessment Mode"}
+    Client --> GATEWAY
+    GATEWAY --> AUTH_MW
+    AUTH_MW --> DEPT_GUARD
     
-    CHOICE -- Real Interview --> RESUME["Upload Resume (PDF/DOCX)"]
-    RESUME --> PARSE["AI Resume Parsing & Skill Extraction"]
-    PARSE --> REAL_ROUNDS["Personalized Project, Tech & HR Rounds"]
-    REAL_ROUNDS --> VOICE_EVAL["Voice Speech Input & Gemini Evaluation"]
-    VOICE_EVAL --> REAL_RES["Detailed Scorecard & Feedback"]
-
-    CHOICE -- Company Mock --> COMPANY["Select 1 of 9 Company Mocks"]
-    COMPANY --> MOCK_START["Fullscreen & Security Integrity Gate"]
-    MOCK_START --> POOL["Adaptive Question Selection & Exposure Control"]
-    POOL --> MOCK_ROUNDS["MCQs + Technical TITA + Coding Round"]
-    MOCK_ROUNDS --> SUBMIT["Final Submission & Automated Evaluation"]
-    SUBMIT --> MOCK_RES["Section-Wise Performance Analytics"]
+    DEPT_GUARD --> REAL_SVC & MOCK_SVC & JUDGE_SVC & CODE_SVC & TEST_SVC & PREM_SVC
+    
+    REAL_SVC --> GROQ_LLM & GROQ_STT & GEMINI_LLM
+    MOCK_SVC --> JSON_BANKS
+    JUDGE_SVC --> GROQ_LLM
+    CODE_SVC --> JUDGE0_API
+    
+    DEPT_GUARD --> MONGO
 ```
 
 ---
 
-## 🎙️ Real Interview Engine
+## 3. Multi-Tier Role & Access Architecture
 
-The **Real Interview Engine** replicates a high-stakes, one-on-one technical interview tailored specifically to the candidate's unique resume background.
+The platform enforces three distinct user roles with strict backend authorization:
 
 ```mermaid
-flowchart TD
-    A["Resume Upload (PDF/DOCX)"] --> B["Resume Text Extraction & Project Mining"]
-    B --> C["Skill & Tech Stack Classification"]
-    C --> D["AI Question Generation (Project + Tech + HR)"]
-    D --> E["Interactive Voice / Speech Interview Session"]
-    E --> F["AI Technical & Communication Evaluation"]
-    F --> G["Candidate Feedback & Performance Breakdown"]
+graph TD
+    SYS_ADMIN["👑 System Admin<br/>(Full Global Platform Governance)"]
+    TEACHER["👨‍🏫 Teacher / Department Admin<br/>(Strict Department-Isolated Scoping)"]
+    STUDENT["🎓 Student / Candidate<br/>(Personal Profile & Assessments)"]
+
+    SYS_ADMIN -->|Global Control| ALL_DEPTS["All Departments (CS, IT, ENTC, etc.)"]
+    SYS_ADMIN -->|Exclusive Authority| TEACHER_MGMT["Teacher Account Creation & Lifecycle"]
+    SYS_ADMIN -->|Exclusive Authority| PREM_MGMT["Grant / Revoke Premium Memberships"]
+    SYS_ADMIN -->|Global Visibility| ALL_STUDENTS["Platform-Wide Student Roster & Analytics"]
+    SYS_ADMIN -->|Global Publishing| GLOBAL_TESTS["Institute-Wide Tests & Questions"]
+
+    TEACHER -->|Isolated Scope| OWN_DEPT["Assigned Department Only"]
+    TEACHER -->|Read & Manage| DEPT_STUDENTS["Department Enrolled Students Only"]
+    TEACHER -->|Scoped Creation| DEPT_TESTS["Department-Scoped Tests & Assignments"]
+    TEACHER -->|Scoped Analytics| DEPT_ANALYTICS["Department Placement Analytics & PDF Reports"]
+    TEACHER -.->|BLOCKED 403| OTHER_DEPTS["Other Department Data"]
+    TEACHER -.->|BLOCKED 403| PREM_MGMT
+
+    STUDENT -->|Self Access| ASSESSMENTS["Real Interviews & Company Mocks"]
+    STUDENT -->|Self Access| CODING_PRACTICE["Monaco Coding & Aptitude Hub"]
+    STUDENT -->|Self Access| RESULTS_HISTORY["Personal Scorecards & PDF Downloads"]
 ```
 
-### Key Workflow Capabilities:
-1. **Resume & Project Parsing**: Extracts text from PDF and DOCX files using `pdfjs-dist` and `mammoth`. It parses listed projects, frameworks, databases, and work experiences.
-2. **Dynamic Round Generation**: Leverages the Google Gemini GenAI SDK (`@google/genai`) to generate personalized interview rounds:
-   - **Project Round**: Deep-dive questions probing architecture choices, challenges, and implementation details of candidate-listed projects.
-   - **Technical Round**: Core domain questions based on languages and frameworks declared in the candidate's resume.
-   - **HR / Behavioral Round**: Situational questions evaluating problem-solving mindset and soft skills.
-3. **Conversational Speech Interface**: Candidates respond verbally using the interactive `VoiceInterviewInterface.jsx` component.
-4. **AI Evaluation & Scorecard**: Provides instant candidate feedback, highlighting strengths, identifying knowledge gaps, and suggesting actionable improvements.
+### Role Descriptions
+1. **System Admin (`system_admin`)**: Highest platform administrative level. Holds global access across all departments, manages Teacher credentials and active status, creates global assessments, and manages Pro candidate memberships.
+2. **Teacher / Department Admin (`teacher`)**: Scoped to an assigned academic department (e.g., Computer Engineering, Information Technology, Electronics & Telecommunication). Access is strictly restricted server-side to students, test assignments, and performance data belonging to their own department.
+3. **Student (`student`)**: Candidate account with access to practice modules, corporate assessments, personalized AI interviews, code playgrounds, and PDF result exports.
 
 ---
 
-## 🏢 Company Mock Assessment Engine
-
-The **Company Mock Engine** provides standardized hiring assessments patterned after major IT services and product company recruitment drives.
-
-### Core Assessment Capabilities:
-- **Standardized Format**: Unlike Real Interview, Company Mock deliberately uses standardized company-specific question pools to simulate official Online Assessments (OAs).
-- **Multi-Section Flow**: Assessments combine Aptitude/CS MCQs, conceptual free-text Technical (TITA) questions, and real-world Coding problems.
-- **Attempt Persistence**: Progress, selected options, draft code, and remaining timer state are saved automatically to MongoDB. Candidates can safely exit and resume unfinished attempts without losing data.
-
----
-
-## 🏢 Supported Company Hiring Tracks
-
-The platform features **9 dedicated company mock assessment environments**. Each track maintains independent question banks, category distributions, and key isolation settings:
-
-| Company Track | Target Hiring Role | MCQ Pool | Technical Pool | Coding Pool | Dedicated AI Client & Key |
-| :--- | :--- | :---: | :---: | :---: | :--- |
-| **Celebal Technologies** | Software / Data Engineer | 200+ | 150+ | 30+ | `mockAiClient.js` (`MOCK_INTERVIEW_API_KEY`) |
-| **TCS** | Ninja / Digital Developer | 150+ | 150+ | 30+ | `tcsAiClient.js` (`TCS_MOCK_KEY`) |
-| **Wipro** | Elite / NLTH Candidate | 150+ | 150+ | 30+ | `mockAiClient.js` (`MOCK_INTERVIEW_API_KEY`) |
-| **Accenture** | Associate Software Engineer | 200+ | 160+ | 30+ | `accentureAiClient.js` (`ACCENTURE_MOCK_KEY`) |
-| **Benchmark IT Solutions** | Full-Stack Software Developer | 200+ | 150+ | 30+ | `benchmarkAiClient.js` (`BENCHMARK_MOCK_KEY`) |
-| **Capgemini** | Software Analyst / Engineer | 200+ | 160+ | 30+ | `shared2AiClient.js` (`MOCK_INTERVIEW_API_KEY2`) |
-| **Cognizant** | GenC / GenC Next Engineer | 200+ | 160+ | 30+ | `shared2AiClient.js` (`MOCK_INTERVIEW_API_KEY2`) |
-| **Deloitte** | Analyst / Technology Advisor | 201+ | 160+ | 32+ | `shared2AiClient.js` (`MOCK_INTERVIEW_API_KEY2`) |
-| **Infosys** | SE / Specialist Programmer | 200+ | 160+ | 30+ | `shared2AiClient.js` (`MOCK_INTERVIEW_API_KEY2`) |
-
----
-
-## 📝 Assessment Question Formats
-
-1. **Multiple Choice Questions (MCQs)**:
-   - 4 options per question with single correct answer.
-   - Evaluates Quantitative Aptitude, Logical Reasoning, Verbal Ability, and Core CS (DSA, OS, DBMS, Networks).
-   - Deterministic grading with instant scoring.
-
-2. **Technical Type-In-The-Answer (TITA) Questions**:
-   - Free-text input fields allowing candidates to explain conceptual technical topics.
-   - Evaluated by AI evaluators against gold-standard reference criteria (`expectedAnswer`, `explanation`, `betterAnswer`).
-   - Supports difficulty marks (Easy: 2 marks, Medium: 3 marks, Hard: 5 marks).
-
-3. **Coding Assessment Problems**:
-   - Algorithmic problems complete with problem descriptions, input/output constraints, sample test cases, and hidden test cases.
-   - Evaluated using automated compilation and test case runners (10 marks per problem).
-
----
-
-## 📈 Adaptive Difficulty Mechanism
-
-The platform features an intelligent adaptive difficulty engine (`adaptiveDifficulty.js`) that dynamically adjusts question difficulty based on candidate real-time performance:
+## 4. Premium Membership & Access Entitlement
 
 ```mermaid
 flowchart LR
-    PERF["Candidate Performance Accuracy"] --> COND{"Performance Accuracy Level"}
-    COND -- "High (≥ 75%)" --> HARD["Increase Hard Questions (Probing Depth)"]
-    COND -- "Moderate (50% - 74%)" --> MED["Serve Balanced Medium Questions"]
-    COND -- "Low (< 50%)" --> EASY["Serve Easy Questions (Reinforce Basics)"]
+    ADMIN["System Admin"] -->|Grant / Revoke| MONGODB[("User.isPremium = true/false")]
+    
+    MONGODB --> AUTH_CHECK{"Evaluate Real Interview<br/>Entitlement"}
+    
+    AUTH_CHECK -- "isPrephire === true OR isPremium === true" --> UNLIMITED["✅ UNLIMITED ACCESS<br/>Unlimited Real Interview Attempts"]
+    
+    AUTH_CHECK -- "Standard Student (Non-Prephire & isPremium=false)" --> DAILY_LIMIT{"Check Today's Attempts"}
+    
+    DAILY_LIMIT -- "Attempt 1 Today" --> ALLOW["✅ ALLOWED<br/>First Attempt of the Day"]
+    DAILY_LIMIT -- "Attempt 2+ Today" --> BLOCK["❌ 403 BLOCKED<br/>DAILY_INTERVIEW_LIMIT_REACHED"]
 ```
 
-- **Confidence Building**: The system ensures struggling candidates are served manageable questions to build confidence, while strong candidates are pushed with advanced concepts.
-- **Fair Weight Distribution**: Final scores calculate total earned marks divided by total available marks, maintaining exact mathematical accuracy regardless of difficulty path.
+### Business Rules & Entitlement Matrix
+- **Authoritative Security**: Access is evaluated directly against the MongoDB `User` record on every session initialization request. Client-side state tampering is prevented.
+- **Normal Candidate**: Non-`@prephire.com` students without Premium status receive **1 Real Interview attempt per calendar day**.
+- **Premium Candidate (`isPremium === true`)**: Receives **unlimited Real Interview attempts** regardless of department or email domain.
+- **Prephire Member (`@prephire.com`)**: Receives **unlimited Real Interview attempts** under platform domain partnership rules.
+- **Active Session Resume**: Any candidate with an existing `IN_PROGRESS` session started on the current calendar day is permitted to resume their session without consuming an extra attempt.
 
 ---
 
-## 🔄 Zero-Repeat Exposure System
+## 5. System Admin & Teacher Portals
 
-To guarantee assessment fairness and prevent candidates from memorizing static question orders across repeated attempts, the platform implements strict question exposure tracking (`questionExposureService.js`):
+### System Admin Capabilities (`/admin/system-dashboard`)
+- **Teacher Account Lifecycle (`/admin/teachers`)**: Create teacher accounts with department binding, toggle active status, reset passwords, or delete teachers.
+- **Premium Candidate Management (`/admin/premium`)**: Search students across any department, grant Pro privileges, revoke memberships, and view real-time premium conversion ratios.
+- **Global Student Roster (`/admin/students`)**: Search, inspect detailed resumes, edit student profiles, download PDF performance reports, and email scorecards.
+- **Global Assessment Studio (`/admin/tests/create`, `/admin/tests/assigned`)**: Build and publish institute-wide mock exams with manual or AI question sources.
+- **Cross-Department Analytics (`/admin/analytics`)**: Department comparison heatmaps, mock test completion metrics, score distributions, and time-based trends.
+- **Company Mock Question Studio (`/admin/mock-questions`, `/admin/coding-questions`, `/admin/technical-questions`, `/admin/aptitude-questions`)**: Full CRUD over central question repositories with duplicate detection and bulk CSV imports.
 
-- **MongoDB Exposure Records**: Stores candidate-wise and company-wise served question IDs in the `QuestionExposure` collection.
-- **Exclusion Filter**: On starting a new mock attempt, served question IDs are filtered out during pool selection.
-- **Cycle Reset**: When a candidate exhausts a company's available question bank, the exposure engine automatically clears exposure records for that candidate and initiates a new fresh cycle.
+### Teacher / Department Admin Capabilities (`/admin/dashboard`)
+- **Department Student Directory**: View, filter, and inspect performance records exclusively for students enrolled in the teacher's department.
+- **Department Test Management**: Author tests scoped to the teacher's department (`departmentScope: "<department>"`), assign tests to specific academic years, and monitor completion.
+- **Department Placement Analytics**: Access performance analytics, score distributions, and PDF reports filtered strictly to department cohort metrics.
+- **Department Question Authoring**: Add aptitude, technical, and coding questions tagged with department ownership.
 
 ---
 
-## 🧠 AI Technical Evaluation & Fallback Pipeline
+## 6. Real Interview Simulation Engine
 
-Candidate free-text technical answers are evaluated through a robust, dual-stage evaluation architecture:
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Candidate as Student Candidate
+    participant UI as StartInterview.jsx / VoiceInterface
+    participant API as studentInterviewController.js
+    participant Parser as resumeParser.js
+    participant AI as Groq / Gemini GenAI
+    participant Judge as interviewJudgeEngine.js
+    participant DB as MongoDB
+
+    Candidate->>UI: Upload Resume (PDF / DOCX)
+    UI->>API: POST /api/student/resume/upload
+    API->>Parser: Parse 6 Intelligence Phases (Skills, Projects, Experience, ATS)
+    Parser-->>API: Normalized Candidate Profile Object
+    API->>DB: Persist Resume Snapshot & ATS Score
+
+    Candidate->>UI: Click "Start Real Interview"
+    UI->>API: POST /api/student/interviews (Check Entitlement)
+    API->>DB: Verify isPremium / isPrephire & Daily Quota
+    API-->>UI: Session Initialized (sessionId)
+
+    loop Interview Rounds (Project -> Technical -> Coding -> HR -> Aptitude)
+        UI->>API: POST /api/real-interview/<round>/generate
+        API->>AI: Generate Contextual Question from Resume Intel
+        AI-->>API: Structured JSON Question
+        API-->>UI: Serve Question + Audio Voice Synthesis
+        Candidate->>UI: Speak Verbal Answer / Write Code
+        UI->>API: POST /api/interview/stt (Groq Whisper Audio Transcription)
+        UI->>API: POST /api/real-interview/<round>/submit-answer
+        API->>Judge: Multi-Dimensional Evaluation (Technical Depth, Communication)
+        Judge-->>API: Calibrated Marks + Actionable Recommendations
+    end
+
+    UI->>API: POST /api/real-interview/submit
+    API->>DB: Compile Final Scorecard & Store Result Document
+    API-->>UI: Deliver Comprehensive Result Report & PDF
+```
+
+### Real Interview Round Structure
+1. **Resume & Project Round**: Probes architectural decisions, trade-offs, technologies, and individual contributions on candidate-declared projects.
+2. **Core Technical Round**: Questions targeting declared skills, frameworks, database designs, and system concepts.
+3. **Live Coding Round**: Monaco editor workspace with automated test cases and runtime execution analysis.
+4. **HR & Behavioral Round**: Situational, leadership, conflict-resolution, and culture-fit assessments.
+5. **Aptitude Round**: Timed quantitative, logical reasoning, and verbal ability evaluation.
+
+---
+
+## 7. Company Mock Assessment Engine (9 Tracks)
+
+The platform includes **9 dedicated corporate mock hiring tracks** patterned after official Online Assessments (OAs). Assessments feature **3,624 verified questions** distributed across Aptitude MCQs, Technical TITA/MCQ questions, and Coding challenges.
+
+| Company Track | Target Corporate Role | Total Questions | Assessment Breakdown | Key Isolation Client |
+| :--- | :--- | :---: | :--- | :--- |
+| **TCS** | Ninja / Digital Developer | 380 | 175 Aptitude + 170 Technical + 35 Coding | `tcsAiClient.js` |
+| **Infosys** | SE / Specialist Programmer | 395 | 201 Aptitude + 162 Technical + 32 Coding | `shared2AiClient.js` |
+| **Cognizant** | GenC / GenC Next Engineer | 402 | 210 Aptitude + 160 Technical + 32 Coding | `shared2AiClient.js` |
+| **Wipro** | Elite / NLTH Candidate | 533 | 150 Aptitude + 380 Technical + 3 Coding | `mockAiClient.js` |
+| **Accenture** | Associate Software Engineer | 417 | 210 Aptitude + 175 Technical + 32 Coding | `accentureAiClient.js` |
+| **Capgemini** | Software Analyst / Engineer | 402 | 210 Aptitude + 160 Technical + 32 Coding | `shared2AiClient.js` |
+| **Deloitte** | Analyst / Technology Advisor | 395 | 201 Aptitude + 162 Technical + 32 Coding | `shared2AiClient.js` |
+| **Celebal Tech** | Software / Data Engineer | 448 | 238 Aptitude + 210 Technical | `mockAiClient.js` |
+| **Benchmark IT** | Full-Stack Software Developer | 402 | 210 Aptitude + 160 Technical + 32 Coding | `benchmarkAiClient.js` |
+| **Total** | **9 Hiring Tracks** | **3,624** | **Standard 60-Minute Assessment Format** | **Strict API Key Isolation** |
+
+### Zero-Repeat Exposure Control (`QuestionExposure.js`)
+To prevent memorization across repeated attempts, candidate question exposure is tracked in the `QuestionExposure` collection. On subsequent attempts, previously answered questions are filtered out. When the company pool is fully exhausted, the candidate's exposure cycle resets automatically.
+
+---
+
+## 8. Coding Assessment & Execution IDE
+
+```mermaid
+flowchart LR
+    CODE_INPUT["Candidate Code<br/>(Monaco Editor)"] --> LANG_SELECT{"Language Runtime"}
+    
+    LANG_SELECT -- C / C++ --> RUNNER["Judge0 API / Local Runner"]
+    LANG_SELECT -- Java --> RUNNER
+    LANG_SELECT -- Python --> RUNNER
+    LANG_SELECT -- JavaScript --> RUNNER
+    
+    RUNNER --> EXEC["Compile & Execute against Test Cases"]
+    EXEC --> COMP_CHECK{"Execution Status"}
+    
+    COMP_CHECK -- Accepted --> PASS["✅ All Test Cases Passed<br/>(Execution Time & Memory Tracked)"]
+    COMP_CHECK -- Wrong Answer --> FAIL["❌ Failed Test Case Output Diff"]
+    COMP_CHECK -- Compile Error --> ERR["⚠️ Compiler Diagnostics Reported"]
+    COMP_CHECK -- TLE / Memory --> LIMIT["⏱️ Time / Memory Limit Exceeded"]
+```
+
+### Monaco Editor Features (`MonacoCodeEditor.jsx`)
+- **Supported Languages**: Java (OpenJDK 17), Python (Python 3.10), C++ (GCC 11), C (GCC 11), JavaScript (Node.js 20).
+- **Boilerplate Generators**: Pre-populates class definitions, standard input (`Scanner`/`cin`/`sys.stdin`) readers, and starter functions.
+- **Test Case Runner**: Executes against public sample cases and hidden verification test cases with execution time (ms) and memory (KB) metrics.
+- **Autosave Engine**: Periodically saves editor buffer state to `CodingAutosave` to prevent code loss.
+
+---
+
+## 9. AI Architecture & Multi-Tier Reliability
 
 ```mermaid
 flowchart TD
-    ANS["Candidate Submits Free-Text Answer"] --> CHECK_KEY{"Is Company AI Key Available?"}
-    CHECK_KEY -- Yes --> AI_EVAL["Execute Key-Isolated AI Evaluator"]
-    AI_EVAL -- Success --> JSON_RES["Parse AI Evaluation (Marks + Feedback + Better Answer)"]
-    CHECK_KEY -- No --> FALLBACK["Trigger Algorithmic Fallback Evaluator"]
-    AI_EVAL -- API Timeout / Rate Limit --> FALLBACK
-    FALLBACK --> RULE_MATCH["Perform Concept Keyword Matching & Semantic Scoring"]
-    RULE_MATCH --> TIER_BOUND["Enforce Strict Marks Bounds (Easy: ≤2, Med: ≤3, Hard: ≤5)"]
-    JSON_RES & TIER_BOUND --> STORE["Persist Evaluation Result to Database"]
+    REQUEST["Evaluation / Generation Request"] --> CIRCUIT{"Circuit Breaker Open?"}
+    
+    CIRCUIT -- No --> GROQ_EXEC["Primary AI Provider (Groq / Llama-3.3-70B)"]
+    GROQ_EXEC -- Success --> JSON_VALIDATE{"JSON Schema Validation"}
+    JSON_VALIDATE -- Valid --> RETURN["Return Structured Result"]
+    
+    JSON_VALIDATE -- Invalid --> JSON_REPAIR["Run AI JSON Repair Utility"]
+    JSON_REPAIR -- Repaired --> RETURN
+    
+    CIRCUIT -- Yes --> FALLBACK["Deterministic Algorithmic Fallback Engine"]
+    GROQ_EXEC -- Rate Limit / 5xx / Timeout --> RETRY{"Retry Policy (Max 2 Attempts)"}
+    RETRY -- Exhausted --> FALLBACK
+    
+    FALLBACK --> CONCEPT_MATCH["Keyword & Concept Coverage Analyzer"]
+    CONCEPT_MATCH --> BOUND_SCORE["Tiered Marks Bounding & Calibration"]
+    BOUND_SCORE --> RETURN
 ```
 
-### Deterministic Fallback Engine (`technicalFallback.js`)
-If an AI provider encounters rate limits or network downtime, the system seamlessly routes evaluation to an algorithmic fallback engine. This fallback calculates concept coverage against reference answers without failing the candidate's test session.
+### BYOK (Bring Your Own Key) Support
+Candidates can optionally provide their own personal AI API key (Groq, Gemini, or OpenRouter) via the BYOK interface (`/api/real-interview/byok/set-session-key`). When supplied, the session securely routes evaluation traffic through the candidate's personal API quota while falling back to platform keys if needed.
 
 ---
 
-## ⚡ Company AI Key Isolation Architecture
+## 10. Test Engine & Assignment Management
 
-To ensure high availability and prevent cross-company API dependency issues, backend AI services enforce strict environment variable key isolation:
-
-- **Celebal & Wipro**: `MOCK_INTERVIEW_API_KEY` (`mockAiClient.js`)
-- **TCS**: `TCS_MOCK_KEY` (`tcsAiClient.js`)
-- **Accenture**: `ACCENTURE_MOCK_KEY` (`accentureAiClient.js`)
-- **Benchmark IT Solutions**: `BENCHMARK_MOCK_KEY` (`benchmarkAiClient.js`)
-- **Capgemini, Cognizant, Deloitte, Infosys**: `MOCK_INTERVIEW_API_KEY2` (`shared2AiClient.js`)
-
-This isolation ensures that an API quota limit reached for one company track never impacts the operation of other company tracks.
+- **Scheduled & Live Testing**: Tests support scheduled start/end windows, automatic status transitions (`draft` $\to$ `scheduled` $\to$ `live` $\to$ `completed`), and strict durations.
+- **Department-Scoped Assignments**: Tests can be assigned institute-wide or restricted to specific academic departments and years.
+- **Anti-Cheat Strike Limit**: Tab switches, window minimizations, and fullscreen exits are tracked in real time. Exceeding 3 strikes triggers automatic test submission.
 
 ---
 
-## 💻 Coding Assessment & Execution Engine
+## 11. Centralized Question Bank Management
 
-The coding environment provides a complete, browser-based development and compilation workflow:
-
-- **Monaco Code Editor (`MonacoCodeEditor.jsx`)**: Full-featured IDE supporting Java, Python, C++, C, and JavaScript. Includes syntax highlighting, indentation, line numbers, and theme toggling.
-- **Starter Boilerplate Generators (`starterGenerator.js`)**: Automatically generates class definitions and standard input reading templates for each language.
-- **Judge0 & Docker Execution Service (`codeExecutionService.js`)**: Transmits code submissions to Judge0 REST API or local container runners. Measures runtime execution time (ms), memory footprint (KB), stdout, stderr, and test case pass rates.
-
----
-
-## ⏱️ Assessment Timer & Attempt Persistence
-
-- **Real-Time Countdown Timer**: Tracks remaining test duration per section and auto-submits when time expires.
-- **Autosave Engine**: Draft selections, typed answers, and code buffer changes are periodically synced to MongoDB.
-- **Attempt Resume**: Candidates who experience unexpected disconnects can safely reopen the assessment and resume from their exact question position, remaining time, and draft state.
+The platform maintains centralized repositories for all assessment modalities:
+- **Aptitude Questions (`AptitudeQuestion.js`)**: Quantitative, Logical, Verbal, and CS core topics with category filters, difficulty tags, and duplicate detection.
+- **Technical Questions (`TechnicalQuestion.js`)**: Conceptual, scenario-based, and code-tracing questions with expected answers and explanations.
+- **Coding Problems (`CodingQuestion.js`)**: Full algorithmic challenges with problem statements, constraints, sample I/O, hidden test cases, and starter code templates.
+- **Ownership Scoping**: Questions support `departmentScope: "global"` (System Admin) or `departmentScope: "<department>"` (Teacher-owned).
 
 ---
 
-## 🛡️ Assessment Security & Integrity
+## 12. Platform Security, Integrity & Anti-Cheating
 
-- **Fullscreen Lock Enforcer (`FullscreenExitOverlay.jsx`)**: Forces candidates into browser fullscreen mode before beginning any company mock assessment.
-- **Tab-Switch Monitor**: Detects window blur and visibility changes (`visibilitychange`), warning candidates upon tab-switching and logging integrity violations.
-- **Submission Guards**: Prevents double submission, parameter tampering, and post-timer modifications.
-
----
-
-## 📊 Submission, Scoring & Detailed Analytics
-
-Upon submitting an assessment, the system generates a comprehensive performance report:
-- **Total Marks & Percentage**: Earned score vs. total maximum marks.
-- **Section-Wise Breakdown**: Individual performance breakdown across Aptitude, Technical, and Coding rounds.
-- **Question-by-Question Review**: Review candidate responses alongside correct answers, detailed model explanations (`expectedAnswer`), and AI-recommended improvements (`betterAnswer`).
-- **Historical Tracking**: Candidate attempt history tracked by company and date in MongoDB (`CompanyMockAttempt` model).
-
----
-
-## ⚖️ Real Interview vs. Company Mock Comparison
-
-| Capability / Feature | Real Interview | Company Mock Interview |
-| :--- | :---: | :---: |
-| **Primary Objective** | Personalized Candidate Practice | Standardized Company Hiring Assessment |
-| **Resume & Project Questions** | ✅ Yes (Extracted from PDF/DOCX) | ❌ No (Strictly Standardized Banks) |
-| **Question Source** | Dynamic AI Generation (Gemini GenAI) | Curated 3,624 Question Bank JSONs |
-| **Company Hiring Tracks** | ❌ Generic Technical Rounds | ✅ 9 Company Mock Hiring Tracks |
-| **Interaction Format** | Conversational Speech / Audio | MCQs + Technical TITA + Coding IDE |
-| **Coding IDE & Test Cases** | Optional | ✅ Mandatory Coding Round |
-| **Adaptive Difficulty** | Dynamic Following | ✅ Performance-Based Difficulty Shifting |
-| **Zero-Repeat Exposure System** | Dynamic Prompts | ✅ MongoDB Exposure Tracking |
-| **Deterministic Fallback Evaluator** | Rule-Based Fallback | ✅ Multi-Tier Algorithmic Fallback |
+- **JWT Authentication**: Signed with `HMAC-SHA256` containing user ID, normalized role, and department claim.
+- **Password Protection**: `bcryptjs` salted hashing with 10 salt rounds.
+- **Express Middleware Security**:
+  - `helmet`: Secure HTTP response headers.
+  - `express-rate-limit`: Global API rate limiting.
+  - `express-mongo-sanitize`: Sanitizes request data against MongoDB operator injection (`$`, `.`).
+  - `cors`: Restricted cross-origin resource sharing.
+- **Assessment Proctoring Controls**:
+  - Fullscreen enforcement with `FullscreenExitOverlay.jsx`.
+  - Tab switch and window blur tracking via `visibilitychange` listeners.
+  - Copy/paste and right-click context menu restrictions.
+  - Post-timer submission lockout.
 
 ---
 
-## 👥 Student & Admin Portals
+## 13. Database Architecture & Schema Design
 
-### Student Portal Workflow
-1. **Login & Dashboard**: View available tests, company mocks, recent history, and skill analytics.
-2. **Launch Assessment**: Select Real Interview or Company Mock, pass security check, and enter assessment mode.
-3. **Assessment & Coding**: Answer MCQs, type technical responses, and write code in Monaco IDE.
-4. **Results & Performance Review**: Inspect detailed scorecards, model answers, and historical progress graphs.
+```mermaid
+erDiagram
+    User ||--o{ Interview : "initiates"
+    User ||--o{ CompanyMockAttempt : "attempts"
+    User ||--o{ QuestionExposure : "tracks"
+    User ||--o{ CodingSubmission : "submits"
+    User ||--o{ TestAttempt : "undertakes"
+    
+    Admin ||--o{ Admin : "creates (teacher lifecycle)"
+    Admin ||--o{ User : "grants premium"
+    Admin ||--o{ Test : "authors"
+    Admin ||--o{ AptitudeQuestion : "creates"
+    Admin ||--o{ TechnicalQuestion : "creates"
+    Admin ||--o{ CodingQuestion : "creates"
+    
+    Test ||--o{ TestAssignment : "assigned via"
+    Test ||--o{ TestAttempt : "evaluated through"
+    TestAttempt ||--|| TestResult : "generates"
+    
+    Company ||--o{ CompanyMockAttempt : "hosts track"
+```
 
-### Admin Portal Workflow
-1. **Admin Authentication**: Secure JWT-based admin authentication with role protection (`adminMiddleware.js`).
-2. **Question Management**: Create, view, edit, and soft-delete Aptitude, Technical, and Coding questions.
-3. **Test Management & Assignment**: Build custom tests, assign tests to students, set time limits, and publish results.
-4. **Analytics & System Logs**: Inspect student performance metrics, company mock completion rates, and system audit logs.
+### Core Models Summary
+- **`User.js`**: Student profiles, resume data, ATS score, academic details, and `isPremium` status.
+- **`Admin.js`**: Administrative accounts for `system_admin` and `teacher` with department binding and active status.
+- **`Interview.js`**: Master session state for Real Interviews across all 5 assessment rounds.
+- **`CompanyMockAttempt.js`**: Section scores, question answers, and completion status for corporate mock assessments.
+- **`QuestionExposure.js`**: Per-student company question exposure records for zero-repeat selection.
+- **`Test.js` & `TestAssignment.js`**: Configured online tests, schedules, attempt limits, and assigned cohorts.
+- **`CodingQuestion.js` & `CodingSubmission.js`**: Coding challenge definitions, test cases, and compilation logs.
 
 ---
 
-## 🛠️ Technology Stack
+## 14. Role & Permission Security Matrix
 
-| Layer | Technologies Used |
-| :--- | :--- |
-| **Frontend Core** | React 19.2, Vite 8.1, React Router DOM 7.1, JavaScript (ES2024) |
-| **Styling & UI** | Tailwind CSS 4.3, Lucide React, Framer Motion 12, Custom Glassmorphism |
-| **Code Editor** | Monaco Editor (`@monaco-editor/react` 4.7, `monaco-editor` 0.56) |
-| **Data Visualization** | Recharts 3.10 |
-| **Backend Core** | Node.js 22.x, Express 4.22 |
-| **Database & ORM** | MongoDB Atlas, Mongoose 8.9 |
-| **Authentication & Security** | JSON Web Tokens (`jsonwebtoken` 9.0), `bcryptjs` 2.4, `helmet` 8.3, `express-rate-limit` 8.6, `express-mongo-sanitize` 2.2, `cors` 2.8 |
-| **AI Providers** | Google Gemini GenAI SDK (`@google/genai` 1.0), Groq API, OpenRouter SDK |
-| **Code Compilation** | Judge0 REST API, Docker Container Service |
-| **Document Parsing & Generation** | `pdfjs-dist` 4.10, `mammoth` 1.12, `pdfkit` 0.19, `nodemailer` 9.0 |
+| Feature / Action | Student | Teacher / Dept Admin | System Admin |
+| :--- | :---: | :---: | :---: |
+| **Authentication & Profile Management** | ✅ Self Only | ✅ Self Only | ✅ Full Platform |
+| **Real AI Interview Simulation** | ✅ Subject to Quota | ❌ | ❌ |
+| **Company Mock Hiring Assessments** | ✅ (9 Tracks) | ❌ | ❌ |
+| **Monaco Coding IDE & Practice Hub** | ✅ Unlimited | ❌ | ❌ |
+| **Student Roster Management** | ❌ | ✅ Own Department Only | ✅ All Departments |
+| **Student Detail & Resume Inspection** | ❌ | ✅ Own Department Only | ✅ All Departments |
+| **Teacher Account Management** | ❌ | ❌ (Blocked 403) | ✅ Create, Edit, Toggle, Delete |
+| **Premium Membership Management** | ❌ | ❌ (Blocked 403) | ✅ Grant, Revoke, Analytics |
+| **Question Authoring (Aptitude/Tech/Coding)** | ❌ | ✅ Department Scoped | ✅ Global / All Departments |
+| **Test Creation & Scheduling** | ❌ | ✅ Department Scoped | ✅ Global / All Departments |
+| **Test Assignment to Cohorts** | ❌ | ✅ Own Department Cohorts | ✅ Institute-Wide Cohorts |
+| **Cross-Department Analytics** | ❌ | ❌ (Own Dept Only) | ✅ All Departments Comparison |
+| **PDF & CSV Report Export** | ✅ Own Reports | ✅ Department Cohorts | ✅ Global Cohorts |
+| **System Audit Logs & Platform Config** | ❌ | ❌ (Blocked 403) | ✅ Full Access |
 
 ---
 
-## 🚦 Getting Started & Installation
+## 15. Real Interview vs. Company Mock Comparison
+
+| Dimension | Real Interview Engine | Company Mock Engine |
+| :--- | :--- | :--- |
+| **Primary Objective** | Personalized candidate practice | Standardized corporate hiring simulation |
+| **Question Source** | Dynamic AI generated from resume | Curated 3,624 company question banks |
+| **Resume Dependency** | **Mandatory** (PDF/DOCX extraction) | None (Standardized hiring criteria) |
+| **Corporate Tracks** | Candidate's personal background | 9 Corporate Tracks (TCS, Infosys, etc.) |
+| **Assessment Format** | Conversational verbal voice Q&A + Coding | 15 Aptitude MCQs + 15 Tech TITA + 3 Coding |
+| **Time Limit** | Dynamic round pacing | Strict 60-minute countdown timer |
+| **Attempt Quota** | 1/day for standard; Unlimited for Pro & Prephire | Maximum 2 concurrent unfinished attempts |
+| **Exposure Control** | Dynamic prompt generation | MongoDB-backed `QuestionExposure` tracking |
+| **Evaluation Method** | Multi-dimensional AI judge & rubric | Automated MCQ key + AI TITA + Judge0 |
+
+---
+
+## 16. End-to-End System Workflows
+
+### A. Real Interview Lifecycle
+```mermaid
+flowchart TD
+    START["Student Logged In"] --> UPLOAD["Upload Resume (PDF/DOCX)"]
+    UPLOAD --> EXTRACT["Extract 6-Phase Intel & ATS Score"]
+    EXTRACT --> START_INT["Click Start Real Interview"]
+    START_INT --> ENTITLEMENT{"Check Entitlement<br/>(isPrephire || isPremium || First Attempt Today)"}
+    
+    ENTITLEMENT -- Denied --> BLOCKED["403 Daily Limit Reached Modal"]
+    ENTITLEMENT -- Allowed --> CONSENT["Consent & Guidelines Modal"]
+    CONSENT --> SESSION["Create Interview Session (MongoDB)"]
+    SESSION --> ROUNDS["Execute 5 Assessment Rounds"]
+    ROUNDS --> EVALUATE["Run AI Evaluation & Scorecard"]
+    EVALUATE --> REPORT["Display Scorecard & Download PDF"]
+```
+
+### B. Premium Grant & Revoke Flow
+```mermaid
+flowchart TD
+    SYS_ADMIN["System Admin"] --> SEARCH["Search Student (Name / Email / Dept)"]
+    SEARCH --> SELECT["Select Candidate"]
+    SELECT --> GRANT["Click 'Grant Pro'"]
+    GRANT --> DB_UPDATE["MongoDB: User.isPremium = true"]
+    DB_UPDATE --> SYNC["Profile Sync: /api/student/profile"]
+    SYNC --> UNLOCK["Student Dashboard: Unlimited Access Unlocked"]
+    
+    SYS_ADMIN -.-> REVOKE["Click 'Revoke'"]
+    REVOKE --> DB_REVOKE["MongoDB: User.isPremium = false"]
+    DB_REVOKE --> RELOCK["Student Returns to 1 Attempt/Day Policy"]
+```
+
+---
+
+## 17. API Architecture & Endpoint Reference
+
+### Authentication Routes (`/api/auth`)
+- `POST /api/auth/signup`: Register new student account.
+- `POST /api/auth/login`: Authenticate student, teacher, or system admin.
+- `POST /api/auth/forgot-password`: Send password reset OTP via email.
+- `POST /api/auth/verify-otp`: Validate 6-digit OTP.
+- `POST /api/auth/reset-password`: Reset account password with token.
+
+### System Admin & Teacher Routes (`/api/admin`)
+- `POST /api/admin/teachers`: Create teacher account (`system_admin` only).
+- `GET /api/admin/teachers`: List all teachers with department and status filters (`system_admin` only).
+- `PUT /api/admin/teachers/:id`: Update teacher details (`system_admin` only).
+- `PATCH /api/admin/teachers/:id/status`: Toggle teacher active status (`system_admin` only).
+- `POST /api/admin/teachers/:id/reset-password`: Reset teacher password (`system_admin` only).
+- `DELETE /api/admin/teachers/:id`: Delete teacher account (`system_admin` only).
+- `GET /api/admin/premium/users`: Paginated list of active Premium members (`system_admin` only).
+- `POST /api/admin/premium/grant`: Grant Premium membership to student (`system_admin` only).
+- `POST /api/admin/premium/revoke`: Revoke Premium membership (`system_admin` only).
+- `GET /api/admin/premium/search`: Search candidate students for Premium modal (`system_admin` only).
+- `GET /api/admin/premium/stats`: Platform premium ratio and department breakdowns (`system_admin` only).
+- `GET /api/admin/students`: Department-filtered (Teacher) or global (System Admin) student roster.
+- `GET /api/admin/students/:id`: Detailed student profile, ATS intelligence, and attempt history.
+- `GET /api/admin/analytics/overview`: High-level platform assessment KPIs.
+- `GET /api/admin/analytics/departments`: Cross-department comparative analytics.
+
+### Student Real Interview Routes (`/api/student`, `/api/real-interview`)
+- `GET /api/student/profile`: Retrieve student profile and ATS resume intelligence.
+- `PUT /api/student/profile`: Update contact details, skills, and target company.
+- `POST /api/student/resume/upload`: Upload PDF/DOCX resume and trigger intelligence parsing.
+- `GET /api/student/interviews/eligibility`: Check daily attempt eligibility based on Premium / Prephire status.
+- `POST /api/student/interviews`: Initialize or resume an active Real Interview session.
+- `POST /api/interview/stt`: Transcribe verbal answer audio via Groq Whisper with technical biasing.
+- `POST /api/real-interview/submit`: Finalize Real Interview and trigger multi-round evaluation.
+- `GET /api/real-interview/result/:sessionId`: Retrieve comprehensive result scorecard.
+- `GET /api/real-interview/result/:sessionId/pdf`: Download formatted PDF performance report.
+- `POST /api/real-interview/byok/set-session-key`: Bind personal API key for BYOK execution.
+
+### Company Mock Assessment Routes (`/api/mock-interview`)
+- `POST /api/mock-interview/start`: Load company question pool with exposure control.
+- `POST /api/mock-interview/save`: Autosave draft answers and timer state.
+- `GET /api/mock-interview/resume`: Resume in-progress company mock attempt.
+- `POST /api/mock-interview/submit`: Grade MCQs, evaluate TITA responses, and store results.
+- `GET /api/mock-interview/result/:attemptId`: Retrieve detailed mock assessment scorecard.
+
+### Code Compilation Routes (`/api/code`)
+- `POST /api/code/run`: Execute code with custom inputs via Judge0 API.
+- `POST /api/code/submit`: Execute code against hidden test cases and calculate scores.
+
+---
+
+## 18. Project Directory Structure
+
+```text
+ai-interview-engine/
+├── backend/
+│   ├── config/             # Database connection (connectDB)
+│   ├── controllers/        # Route controllers (Auth, Admin, Student, Premium, Mock, Coding)
+│   ├── data/companyMock/   # 3,624 Curated JSON question banks (9 company folders)
+│   ├── middleware/         # authMiddleware, role authorization, rate limiters
+│   ├── models/             # 46 Mongoose models (User, Admin, Interview, Test, Questions)
+│   ├── routes/             # RESTful API route definitions
+│   ├── services/           # AI services, Judge0 client, resume parser, placement engine
+│   │   ├── ai/             # Centralized AI clients (Groq)
+│   │   ├── aiReliability/  # Circuit breakers, retry policies, JSON repair, providers
+│   │   └── realInterviewAI/# Question generators, answer preprocessors, judge engine
+│   └── utils/              # PDF generators, normalizers, token generators, seed defaults
+├── frontend/
+│   ├── src/
+│   │   ├── components/     # UI components (Monaco editor, modals, timers, charts)
+│   │   ├── hooks/          # Custom hooks (useStudentProfile, useFullscreen)
+│   │   ├── layouts/        # AdminLayout, StudentLayout
+│   │   ├── pages/          # Student & Admin dashboards, interview control rooms, reports
+│   │   │   ├── admin/      # SystemAdminDashboard, TeacherManagement, PremiumManagement
+│   │   │   └── student/    # StartInterview, CompanyMockInterview, CodingRound, Results
+│   │   ├── routes/         # AppRoutes route definitions & protections
+│   │   └── utils/          # Axios API instance, data normalizers, coding configs
+│   ├── package.json        # Frontend dependencies (React 19, Tailwind 4, Monaco, Recharts)
+│   └── vite.config.js      # Vite build configuration and backend proxy
+├── package.json            # Backend dependencies (Express, Mongoose, @google/genai, Groq)
+├── realinterviewcodingque.json # 152 Curated Real Interview coding questions
+├── server.js               # Express application entry point & route mounting
+└── README.md               # Master technical documentation
+```
+
+---
+
+## 19. Technology Stack
+
+### Frontend
+- **Framework**: React 19.2.7 + Vite 8.1.1
+- **Styling**: Tailwind CSS 4.3.2 + Framer Motion 12.42.2 + Lucide React 1.24.0
+- **Code Editor**: Monaco Editor (`@monaco-editor/react` 4.7.0, `monaco-editor` 0.56.0)
+- **Data Visualization**: Recharts 3.10.1
+- **HTTP Client**: Axios 1.18.1
+- **Notifications**: React Hot Toast 2.6.0
+
+### Backend
+- **Runtime & Framework**: Node.js 22.x + Express 4.22.3 (ES Modules)
+- **Database & ODM**: MongoDB Atlas + Mongoose 8.9.0
+- **Authentication**: JSON Web Tokens (`jsonwebtoken` 9.0.0) + `bcryptjs` 2.4.3
+- **Security**: `helmet` 8.3.0 + `express-rate-limit` 8.6.0 + `express-mongo-sanitize` 2.2.0 + `cors` 2.8.5
+- **Document & PDF Processing**: `pdfjs-dist` 4.10.38 + `mammoth` 1.12.1 + `pdfkit` 0.19.1 + `jspdf` 4.2.1
+- **Email Delivery**: `nodemailer` 9.0.3
+- **Spreadsheets**: `xlsx` 0.18.5 + `file-saver` 2.0.5
+
+### AI & Code Execution
+- **LLM Engine**: Groq Cloud (`Llama-3.3-70b-versatile` in JSON mode) + Google Gemini GenAI SDK (`@google/genai` 1.0.0) + OpenRouter SDK (`@openrouter/sdk` 1.2.54)
+- **Audio STT**: Groq Whisper (`whisper-large-v3` / `whisper-large-v3-turbo`)
+- **Code Compilation**: Judge0 REST API Engine
+
+---
+
+## 20. Installation & Setup Guide
 
 ### Prerequisites
 - **Node.js**: v18.0.0 or higher (v22.x recommended)
 - **npm**: v9.0.0 or higher
 - **MongoDB**: Local MongoDB instance or MongoDB Atlas URI
 
-### Installation & Setup
+### 1. Clone the Repository
+```bash
+git clone https://github.com/Tushar-3612/AI-Interview-Platform.git
+cd AI-Interview-Platform
+```
 
-1. **Clone the Repository**:
-   ```bash
-   git clone https://github.com/Tushar-3612/AI-Interview-Platform.git
-   cd AI-Interview-Platform
-   ```
+### 2. Install Dependencies
+```bash
+# Install backend dependencies
+npm install
 
-2. **Install Backend Dependencies**:
-   ```bash
-   npm install
-   ```
+# Install frontend dependencies
+cd frontend
+npm install
+cd ..
+```
 
-3. **Install Frontend Dependencies**:
-   ```bash
-   cd frontend
-   npm install
-   cd ..
-   ```
+### 3. Configure Environment Variables
+Create a `.env` file in the root directory (see [Environment Variable Configuration](#21-environment-variable-configuration)).
 
-4. **Configure Environment Variables**:
-   Create a `.env` file in the root directory (see [Environment Variable Configuration](#-environment-variable-configuration)).
+### 4. Launch Development Servers
+```bash
+# Terminal 1: Start Backend Server (Port 5000)
+npm run dev
 
-5. **Start Development Servers**:
+# Terminal 2: Start Frontend Vite Server (Port 5173)
+cd frontend
+npm run dev
+```
 
-   *Start Backend Express Server (Port 5000)*:
-   ```bash
-   npm run dev
-   ```
-
-   *Start Frontend Vite Server (Port 5173)*:
-   ```bash
-   npm --prefix frontend run dev
-   ```
-
-6. **Access Application**:
-   Open browser at `http://localhost:5173`.
+### 5. Access the Platform
+- **Student & Admin Login**: `http://localhost:5173`
+- **Default System Admin Credentials**:
+  - **Email**: `sanjivani@admin.org.in`
+  - **Password**: `Admin@123`
 
 ---
 
-## 🔑 Environment Variable Configuration
+## 21. Environment Variable Configuration
 
-Create a `.env` file in the project root containing the following configuration keys:
+Create a `.env` file in the project root with the following keys:
 
-| Environment Variable | Purpose | Required |
-| :--- | :--- | :---: |
-| `PORT` | Express backend server port (Default: 5000) | Yes |
-| `MONGO_URI` | MongoDB Atlas database connection string | Yes |
-| `JWT_SECRET` | Secret key for signing JWT authentication tokens | Yes |
-| `AI_PROVIDER` | Primary AI provider selection (`gemini` / `groq`) | Yes |
-| `GEMINI_API_KEY` | Google Gemini API key for Real Interview generation | Yes |
-| `AI_API_KEY` | Fallback AI API key for evaluation services | Yes |
-| `MOCK_INTERVIEW_API_KEY` | Dedicated key for Celebal & Wipro Company Mocks | Yes |
-| `MOCK_INTERVIEW_API_KEY2` | Dedicated key for Capgemini, Cognizant, Deloitte, Infosys | Yes |
-| `TCS_MOCK_KEY` | Dedicated key for TCS Company Mock | Yes |
-| `ACCENTURE_MOCK_KEY` | Dedicated key for Accenture Company Mock | Yes |
-| `BENCHMARK_MOCK_KEY` | Dedicated key for Benchmark IT Solutions Company Mock | Yes |
-| `JUDGE0_API_URL` | Judge0 compilation API endpoint | Optional |
-
-> [!CAUTION]
-> **Security Requirement**: Never expose actual API keys or secret values in public source repositories. Always manage credentials safely inside server-side environment files.
-
----
-
-## 🌐 API Capability Overview
-
-The Express backend exposes RESTful endpoints structured across dedicated resource modules:
-
-| API Module | Base Path | Core Capabilities |
-| :--- | :--- | :--- |
-| **Authentication** | `/api/auth` | User registration, login authentication, user profile management |
-| **Real Interview** | `/api/interview` | Resume parsing, dynamic question generation, voice answer evaluation |
-| **Company Mock** | `/api/mock-interview` | Load company pool, adaptive question selection, submission, result history |
-| **Code Execution** | `/api/code` | Submit candidate code, execute Judge0 test cases, compile output |
-| **Aptitude Practice** | `/api/aptitude` | Fetch aptitude question categories, evaluate aptitude submissions |
-| **Coding Questions** | `/api/coding-questions` | Admin coding problem CRUD, list practice coding challenges |
-| **Placement Analytics** | `/api/placement` | Calculate placement metrics, generate activity heatmaps, track stats |
-| **Admin Portal** | `/api/admin` | Test creation, student management, test assignment, system audit logs |
+| Variable | Purpose | Required | Example / Format |
+| :--- | :--- | :---: | :--- |
+| `PORT` | Express server port | No (Default: 5000) | `5000` |
+| `MONGO_URI` | MongoDB connection string | **Yes** | `mongodb+srv://<user>:<password>@cluster.mongodb.net/ai_interview` |
+| `JWT_SECRET` | Secret for signing JWT authentication tokens | **Yes** | `your_super_secret_jwt_key_2026` |
+| `AI_PROVIDER` | Active AI provider flag | **Yes** | `groq` |
+| `AI_API_KEY` | Primary Groq API Key (starts with `gsk_`) | **Yes** | `gsk_xxxxxxxxxxxxxxxxxxxx` |
+| `AI_MODEL` | Groq LLM model identifier | **Yes** | `llama-3.3-70b-versatile` |
+| `GEMINI_API_KEY` | Google Gemini API key for GenAI SDK | Optional | `AIzaSyxxxxxxxxxxxxxxxxxxxx` |
+| `MOCK_INTERVIEW_API_KEY` | Dedicated key for Celebal & Wipro tracks | Optional | `gsk_xxxxxxxxxxxxxxxxxxxx` |
+| `MOCK_INTERVIEW_API_KEY2`| Dedicated key for Capgemini, Deloitte, Infosys | Optional | `gsk_xxxxxxxxxxxxxxxxxxxx` |
+| `TCS_MOCK_KEY` | Dedicated key for TCS track | Optional | `gsk_xxxxxxxxxxxxxxxxxxxx` |
+| `ACCENTURE_MOCK_KEY` | Dedicated key for Accenture track | Optional | `gsk_xxxxxxxxxxxxxxxxxxxx` |
+| `BENCHMARK_MOCK_KEY` | Dedicated key for Benchmark track | Optional | `gsk_xxxxxxxxxxxxxxxxxxxx` |
+| `JUDGE0_API_URL` | Judge0 code compilation endpoint | Optional | `https://judge0-ce.p.rapidapi.com` |
+| `SMTP_HOST` | SMTP server host for OTP & report delivery | Optional | `smtp.gmail.com` |
+| `SMTP_PORT` | SMTP server port | Optional | `587` |
+| `SMTP_USER` | SMTP username / email address | Optional | `placement@sanjivani.edu.in` |
+| `SMTP_PASS` | SMTP password / App password | Optional | `your_app_password` |
+| `FRONTEND_URL` | Production Frontend Origin for CORS | **Yes (Prod)** | `https://your-app.vercel.app` |
 
 ---
 
-## 🧪 Testing & Quality Assurance
+## 22. Production Deployment Guide
 
-The repository includes standalone validation tools, Python & JS test harnesses, and build verification scripts:
-
-- **Validate All 3,624 Questions**:
-  ```bash
-  node backend/scripts/validateQuestions.js
-  ```
-- **Run Company Mock Regression Tests**:
-  ```bash
-  python backend/scripts/companyMock/validateInfosysQuestionBank.py
-  node backend/scripts/companyMock/testInfosysQuestionBank.js
-  node backend/scripts/companyMock/testDeloitteQuestionBank.js
-  node backend/scripts/companyMock/testCognizantQuestionBank.js
-  node backend/scripts/companyMock/testCapgeminiQuestionBank.js
-  node backend/scripts/companyMock/testBenchmarkQuestionBank.js
-  node backend/scripts/testAccentureQuestionBank.js
-  node backend/scripts/testTcsQuestionBank.js
-  ```
-- **Frontend Build Verification**:
-  ```bash
-  npm --prefix frontend run build
-  ```
+### Architecture Overview
+- **Frontend**: Deployed on **Vercel** (Static SPA with client-side rewrites)
+- **Backend**: Deployed on **Render Web Service** (Node.js runtime with `render.yaml`)
+- **Database**: **MongoDB Atlas** (Managed Cloud Database)
+- **AI & External APIs**: Groq Cloud, Google Gemini, OpenRouter, Judge0
 
 ---
 
-## 🔮 Project Highlights & Future Scope
+### Backend Deployment (Render Web Service)
 
-### Key Project Highlights
-- Dual-engine architecture uniting personalized resume interviews with standardized corporate hiring mocks.
-- 9 fully implemented company recruitment mock tracks with 3,624 validated questions.
-- Adaptive difficulty algorithms and MongoDB-backed zero-repeat exposure control.
-- 100% reliable technical evaluation backed by a multi-tier algorithmic fallback system.
-- Monaco-powered browser IDE with Judge0 automated test-case evaluation.
+1. **Connect Repository**: In the [Render Dashboard](https://dashboard.render.com), create a **New Web Service** linked to this repository (or deploy automatically via the included `render.yaml` Blueprint).
+2. **Service Configuration**:
+   - **Environment / Runtime**: `Node`
+   - **Root Directory**: `.` (Repository root)
+   - **Build Command**: `npm install`
+   - **Start Command**: `npm start`
+   - **Health Check Path**: `/health`
+   - **Auto-Deploy**: `Yes`
+3. **Environment Variables**:
+   Add the following in the Render Environment tab:
+   - `NODE_ENV`: `production`
+   - `MONGO_URI`: `mongodb+srv://<user>:<password>@cluster.mongodb.net/ai_interview`
+   - `JWT_SECRET`: `<secure-random-secret>`
+   - `FRONTEND_URL`: `https://your-frontend.vercel.app`
+   - `AI_PROVIDER`: `groq` (or `openrouter` / `gemini`)
+   - `AI_API_KEY`: `<your-ai-api-key>`
+   - `AI_MODEL`: `llama-3.3-70b-versatile` (or provider model)
+   - `MOCK_INTERVIEW_API_KEY`, `MOCK_INTERVIEW_API_KEY2`, `TCS_MOCK_KEY`, etc. (Optional overrides)
+   - `JUDGE0_API_URL`, `RAPIDAPI_KEY` (Optional code execution)
 
-### Future Scope
-- 👁️ **Multi-Modal AI Proctoring**: Integrating web-cam gaze tracking and audio anomaly detection for automated anti-cheating enforcement.
-- 🌐 **Expanded Company Catalog**: Adding mock assessment tracks for Amazon, Microsoft, and Google hiring patterns.
-- ⚡ **Low-Latency Voice Streaming**: Upgrading to WebSockets for real-time streaming audio during Real Interview rounds.
-- 📊 **Peer Cohort Benchmarking**: University-wide leaderboard rankings and candidate analytics for campus placement drives.
+---
+
+### Frontend Deployment (Vercel)
+
+1. **Import Project**: In [Vercel](https://vercel.com), import the repository and set the **Root Directory** to `frontend`.
+2. **Framework Preset**: `Vite`
+3. **Build Settings**:
+   - **Build Command**: `npm run build`
+   - **Output Directory**: `dist`
+   - **Install Command**: `npm install`
+4. **Environment Variables**:
+   - `VITE_API_URL`: `https://your-backend-service.onrender.com`
+5. **SPA Routing**: Handled automatically via [frontend/vercel.json](file:///c:/Users/Tushar%20Nagare/Basic%20To%20Advance/Projects/Final_year_Project/ai-interview-engine/frontend/vercel.json) rewrite rules (`/(.*) -> /index.html`).
+
+---
+
+## 23. Testing & Quality Assurance
+
+The repository includes test suites and build verification commands:
+
+```bash
+# 1. Verify Frontend Production Build
+npm --prefix frontend run build
+
+# 2. Validate Question Banks Across All 9 Companies
+node backend/scripts/companyMock/testInfosysQuestionBank.js
+node backend/scripts/companyMock/testDeloitteQuestionBank.js
+node backend/scripts/companyMock/testCognizantQuestionBank.js
+node backend/scripts/companyMock/testCapgeminiQuestionBank.js
+node backend/scripts/companyMock/testBenchmarkQuestionBank.js
+node backend/scripts/testAccentureQuestionBank.js
+node backend/scripts/testTcsQuestionBank.js
+
+# 3. Test SMTP Email Delivery
+node backend/scripts/testSmtp.js
+```
+
+---
+
+## 24. Project Highlights & Future Scope
+
+### Implemented Project Highlights
+- **Dual Assessment Architecture**: Seamlessly integrates personalized resume interviews with standardized corporate hiring mocks.
+- **Two-Level Administrative Hierarchy**: Distinguishes institute-wide System Admins from department-isolated Teachers.
+- **Authoritative Premium Entitlement**: Backed by secure MongoDB storage and daily limit bypass logic.
+- **9 Corporate Recruitment Tracks**: 3,624 verified questions with adaptive difficulty and zero-repeat exposure control.
+- **Monaco Multi-Language IDE**: Integrated compilation with Judge0, execution metrics, and hidden test-case verification.
+- **Robust AI Reliability**: Multi-tier evaluation fallback with deterministic concept matching and JSON auto-repair.
+
+### Future Scope (Planned Enhancements)
+- **Multi-Modal AI Proctoring**: Web-cam gaze tracking and background noise detection for automated proctoring.
+- **Expanded Company Catalog**: Additional recruitment tracks for Amazon, Microsoft, and Google hiring patterns.
+- **Low-Latency Full-Duplex Voice Streaming**: WebSockets audio streaming for real-time natural conversational interviews.
+- **Mobile Native Application**: React Native mobile app for on-the-go practice assessments.
 
 ---
 
 <p align="center">
-  <b>Developed for Technical Interview Preparation & Automated Hiring Assessment</b>
+  <b>AI Interview Platform — Developed for Technical Interview Preparation & Automated Hiring Assessment</b>
 </p>

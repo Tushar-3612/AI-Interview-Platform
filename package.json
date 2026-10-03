@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@google/genai": "^1.0.0",
+    "@google/generative-ai": "^0.24.1",
     "@openrouter/agent": "^0.11.0",
     "@openrouter/sdk": "^1.2.54",
     "bcryptjs": "^2.4.3",
@@ -19,6 +20,7 @@
     "express-rate-limit": "^8.6.0",
     "file-saver": "^2.0.5",
     "helmet": "^8.3.0",
+    "ioredis": "^6.0.0",
     "jsonwebtoken": "^9.0.0",
     "jspdf": "^4.2.1",
     "mammoth": "^1.12.1",
@@ -27,6 +29,7 @@
     "nodemailer": "^9.0.3",
     "pdfjs-dist": "^4.10.38",
     "pdfkit": "^0.19.1",
+    "rate-limit-redis": "^6.0.1",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
