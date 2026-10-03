@@ -105,22 +105,6 @@ const userSchema = new mongoose.Schema(
       default: "",
       trim: true,
     },
-    resetPasswordOtp: {
-      type: String,
-      default: null,
-    },
-    resetPasswordOtpExpires: {
-      type: Date,
-      default: null,
-    },
-    resetPasswordOtpAttempts: {
-      type: Number,
-      default: 0,
-    },
-    emailVerified: {
-      type: Boolean,
-      default: true,
-    },
     isPremium: {
       type: Boolean,
       default: false,

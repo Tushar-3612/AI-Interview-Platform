@@ -1,7 +1,6 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import Admin from "../../administration/models/Admin.js";
-import RegistrationOtp from "../models/RegistrationOtp.js";
 import generateToken from "../utils/generateToken.js";
 import { onUserRegistered } from "../../administration/utils/csvExporter.js";
 import { normalizeYear, normalizeDepartment } from "../../student/utils/academicConfig.js";
@@ -10,21 +9,6 @@ import {
   recordFailedLogin,
   resetLoginAttempts,
 } from "../services/loginSecurityService.js";
-import {
-  checkOtpSendEligibility,
-  recordOtpDispatched,
-  clearActiveOtpState,
-  acquireOtpLock,
-  releaseOtpLock,
-  normalizeEmail,
-  normalizeIp,
-  OTP_VALIDITY_SECONDS,
-} from "../services/otpSecurityService.js";
-import { sendReportEmail, maskEmail } from "../../administration/utils/emailSender.js";
-import {
-  getForgotPasswordOtpEmail,
-  getRegistrationOtpEmail,
-} from "../../administration/services/emailTemplates.js";
 
 /* ================================
    VALIDATION HELPERS
@@ -39,6 +23,16 @@ const validateEmail = (email) => EMAIL_REGEX.test(email);
 
 const validatePassword = (password) => PASSWORD_REGEX.test(password);
 
+const normalizeEmail = (email) => String(email || "").toLowerCase().trim();
+
+const normalizeIp = (ip) => {
+  if (!ip) return "unknown_ip";
+  let clean = String(ip).trim();
+  if (clean.startsWith("::ffff:")) clean = clean.substring(7);
+  if (clean === "::1") clean = "127.0.0.1";
+  return clean;
+};
+
 /* ================================
    HARDCODED ADMIN CREDENTIALS
    Admin is NOT stored in MongoDB.
@@ -50,165 +44,7 @@ const ADMIN_CREDENTIALS = {
 };
 
 /* ================================
-   1. SEND REGISTRATION OTP
-   Pre-verification before account creation
-   ================================ */
-export const sendRegistrationOtp = async (req, res) => {
-  const clientIp = normalizeIp(req.ip || req.headers["x-forwarded-for"]);
-  const rawEmail = req.body?.email;
-  const rawName = req.body?.name;
-
-  if (!rawEmail) {
-    return res.status(400).json({ message: "Email is required" });
-  }
-
-  if (!validateEmail(rawEmail)) {
-    return res.status(400).json({ message: "Please enter a valid email address" });
-  }
-
-  const cleanEmail = normalizeEmail(rawEmail);
-
-  // Check if account already exists
-  const existingUser = await User.findOne({ email: cleanEmail });
-  if (existingUser) {
-    return res.status(409).json({ message: "An account with this email already exists" });
-  }
-
-  // Acquire concurrency lock to prevent race conditions
-  const lockToken = await acquireOtpLock(cleanEmail);
-
-  try {
-    // Check eligibility: active OTP (no new OTP while active), 2-per-2-hour limit, IP anti-abuse
-    const eligibility = await checkOtpSendEligibility(cleanEmail, clientIp, "registration");
-    if (!eligibility.allowed) {
-      if (lockToken) await releaseOtpLock(cleanEmail, lockToken);
-      res.setHeader("Retry-After", eligibility.retryAfterSeconds || 60);
-      return res.status(eligibility.statusCode || 429).json({
-        success: false,
-        code: eligibility.code,
-        message: eligibility.message,
-        retryAfter: eligibility.retryAfterSeconds,
-      });
-    }
-
-    // Generate secure 6-digit OTP with EXACTLY 3-minute validity
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = new Date(Date.now() + OTP_VALIDITY_SECONDS * 1000);
-
-    // Persist registration OTP
-    await RegistrationOtp.findOneAndUpdate(
-      { email: cleanEmail },
-      {
-        otp,
-        name: rawName || "Student",
-        expiresAt,
-        attempts: 0,
-      },
-      { upsert: true, new: true }
-    );
-
-    // Dispatch email
-    const emailData = getRegistrationOtpEmail(rawName, otp);
-    console.log(`[Auth] Dispatching registration OTP email to ${maskEmail(cleanEmail)} from IP ${clientIp}`);
-
-    await sendReportEmail(
-      cleanEmail,
-      emailData.subject,
-      `Your registration verification code is ${otp}. It is valid for 3 minutes.`,
-      emailData.html
-    );
-
-    // Record dispatched OTP in distributed store
-    await recordOtpDispatched(cleanEmail, clientIp, "registration");
-
-    if (lockToken) await releaseOtpLock(cleanEmail, lockToken);
-
-    return res.status(200).json({
-      success: true,
-      message: "OTP sent. It is valid for 3 minutes.",
-      expiresInSeconds: OTP_VALIDITY_SECONDS,
-    });
-  } catch (error) {
-    if (lockToken) await releaseOtpLock(cleanEmail, lockToken);
-    // Cleanup pending OTP on delivery failure so user is not locked
-    await RegistrationOtp.deleteOne({ email: cleanEmail }).catch(() => {});
-    await clearActiveOtpState(cleanEmail, "registration").catch(() => {});
-    console.error(`[Auth] Send Registration OTP Error for ${maskEmail(cleanEmail)}:`, error.message);
-    return res.status(500).json({ message: "Failed to send verification OTP. Please try again." });
-  }
-};
-
-/* ================================
-   2. VERIFY REGISTRATION OTP
-   Issues short-lived verification token
-   ================================ */
-export const verifyRegistrationOtp = async (req, res) => {
-  try {
-    const { email, otp } = req.body;
-
-    if (!email || !otp) {
-      return res.status(400).json({ message: "Email and OTP are required" });
-    }
-
-    const cleanEmail = normalizeEmail(email);
-    const cleanOtp = String(otp).trim();
-
-    const record = await RegistrationOtp.findOne({ email: cleanEmail });
-    if (!record || new Date() > record.expiresAt) {
-      if (record) await RegistrationOtp.deleteOne({ _id: record._id });
-      await clearActiveOtpState(cleanEmail, "registration");
-      return res.status(400).json({ message: "OTP has expired. Please request a new one." });
-    }
-
-    // Check max attempts (3 max)
-    if (record.attempts >= 3) {
-      await RegistrationOtp.deleteOne({ _id: record._id });
-      await clearActiveOtpState(cleanEmail, "registration");
-      return res.status(400).json({ message: "Too many incorrect attempts. Please request a new OTP." });
-    }
-
-    // Validate OTP
-    if (record.otp !== cleanOtp) {
-      record.attempts += 1;
-      await record.save();
-      const remaining = 3 - record.attempts;
-      if (remaining <= 0) {
-        await RegistrationOtp.deleteOne({ _id: record._id });
-        await clearActiveOtpState(cleanEmail, "registration");
-        return res.status(400).json({
-          message: "Incorrect OTP. Too many incorrect attempts. Please request a new OTP.",
-        });
-      }
-      return res.status(400).json({
-        message: `Incorrect OTP. You have ${remaining} attempt${remaining > 1 ? "s" : ""} remaining.`,
-      });
-    }
-
-    // OTP Verified Successfully -> CONSUME/DELETE IMMEDIATELY (Single Use)
-    await RegistrationOtp.deleteOne({ _id: record._id });
-    await clearActiveOtpState(cleanEmail, "registration");
-
-    // Issue short-lived email verification token (15m) tied strictly to normalized email
-    const registrationToken = jwt.sign(
-      { email: cleanEmail, purpose: "email-verification" },
-      process.env.JWT_SECRET,
-      { expiresIn: "15m" }
-    );
-
-    return res.status(200).json({
-      success: true,
-      message: "Email verified successfully",
-      registrationToken,
-    });
-  } catch (error) {
-    console.error(`[Auth] Verify Registration OTP Error:`, error.message);
-    return res.status(500).json({ message: "Failed to verify OTP. Please try again." });
-  }
-};
-
-/* ================================
-   3. STUDENT SIGNUP
-   Requires server-authoritative registrationToken
+   1. STUDENT SIGNUP (Direct Account Creation)
    ================================ */
 export const signup = async (req, res) => {
   try {
@@ -222,7 +58,6 @@ export const signup = async (req, res) => {
       portfolio,
       github,
       linkedin,
-      registrationToken,
     } = req.body;
 
     // Required field validation
@@ -235,31 +70,6 @@ export const signup = async (req, res) => {
     // Email format validation
     if (!validateEmail(cleanEmail)) {
       return res.status(400).json({ message: "Please enter a valid email address" });
-    }
-
-    // CRITICAL: Require verified email ownership via server-authoritative token
-    if (!registrationToken) {
-      return res.status(400).json({
-        message: "Email verification required. Please verify your email with OTP before creating your account.",
-      });
-    }
-
-    let decoded;
-    try {
-      decoded = jwt.verify(registrationToken, process.env.JWT_SECRET);
-    } catch (err) {
-      return res.status(400).json({
-        message: "Invalid or expired email verification token. Please verify your email again.",
-      });
-    }
-
-    if (
-      decoded.purpose !== "email-verification" ||
-      normalizeEmail(decoded.email) !== cleanEmail
-    ) {
-      return res.status(400).json({
-        message: "Verification token does not match the registration email.",
-      });
     }
 
     // Optional fields URL validation
@@ -302,7 +112,7 @@ export const signup = async (req, res) => {
       return res.status(409).json({ message: "An account with this email already exists" });
     }
 
-    // Create and save user with emailVerified: true
+    // Create and save user directly
     const user = await User.create({
       name: name.trim(),
       email: cleanEmail,
@@ -312,7 +122,6 @@ export const signup = async (req, res) => {
       portfolio: portfolio || "",
       github: github || "",
       linkedin: linkedin || "",
-      emailVerified: true,
     });
 
     /* Auto-update users.csv for admin export */
@@ -340,7 +149,7 @@ export const signup = async (req, res) => {
 };
 
 /* ================================
-   4. LOGIN (Student + Admin)
+   2. LOGIN (Student + Admin)
    ================================ */
 export const login = async (req, res) => {
   try {
@@ -473,228 +282,31 @@ export const login = async (req, res) => {
 };
 
 /* ================================
-   5. FORGOT PASSWORD (OTP Generation)
-   Applies 3-minute validity, active OTP blocking, 2-per-2-hour limit
+   3. FORGOT PASSWORD (Disabled notice)
    ================================ */
 export const forgotPassword = async (req, res) => {
-  const clientIp = normalizeIp(req.ip || req.headers["x-forwarded-for"]);
-  const rawEmail = req.body?.email;
-
-  if (!rawEmail) {
-    return res.status(400).json({ message: "Email is required" });
-  }
-
-  if (!validateEmail(rawEmail)) {
-    return res.status(400).json({ message: "Please enter a valid email address" });
-  }
-
-  const cleanEmail = normalizeEmail(rawEmail);
-
-  const user = await User.findOne({ email: cleanEmail });
-  if (!user) {
-    return res.status(404).json({ message: "No account found with this email" });
-  }
-
-  // Acquire concurrency lock
-  const lockToken = await acquireOtpLock(cleanEmail);
-
-  try {
-    // Check eligibility: active OTP (no new OTP while active), 2-per-2-hour limit, IP anti-abuse
-    const eligibility = await checkOtpSendEligibility(cleanEmail, clientIp, "forgot-password");
-    if (!eligibility.allowed) {
-      if (lockToken) await releaseOtpLock(cleanEmail, lockToken);
-      res.setHeader("Retry-After", eligibility.retryAfterSeconds || 60);
-      return res.status(eligibility.statusCode || 429).json({
-        success: false,
-        code: eligibility.code,
-        message: eligibility.message,
-        retryAfter: eligibility.retryAfterSeconds,
-      });
-    }
-
-    // Also check active DB state (fallback for active OTP)
-    if (user.resetPasswordOtp && user.resetPasswordOtpExpires && new Date() < user.resetPasswordOtpExpires) {
-      if (lockToken) await releaseOtpLock(cleanEmail, lockToken);
-      return res.status(429).json({
-        success: false,
-        code: "ACTIVE_OTP_EXISTS",
-        message: "Your current OTP is still valid. Please use it.",
-      });
-    }
-
-    // Generate secure 6-digit OTP with EXACTLY 3-minute validity
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const otpExpires = new Date(Date.now() + OTP_VALIDITY_SECONDS * 1000);
-
-    user.resetPasswordOtp = otp;
-    user.resetPasswordOtpExpires = otpExpires;
-    user.resetPasswordOtpAttempts = 0;
-    await user.save();
-
-    // Prepare and send email
-    const emailData = getForgotPasswordOtpEmail(user.name, otp);
-    console.log(`[Auth] Dispatching password reset OTP email to ${maskEmail(user.email)} from IP ${clientIp}`);
-
-    await sendReportEmail(
-      user.email,
-      emailData.subject,
-      `Your password reset OTP is ${otp}. It is valid for 3 minutes.`,
-      emailData.html
-    );
-
-    // Record dispatched OTP in distributed store
-    await recordOtpDispatched(cleanEmail, clientIp, "forgot-password");
-
-    if (lockToken) await releaseOtpLock(cleanEmail, lockToken);
-
-    res.status(200).json({
-      success: true,
-      message: "OTP sent. It is valid for 3 minutes.",
-      expiresInSeconds: OTP_VALIDITY_SECONDS,
-    });
-  } catch (error) {
-    if (lockToken) await releaseOtpLock(cleanEmail, lockToken);
-    // Cleanup DB state on delivery failure so user is not locked out
-    user.resetPasswordOtp = null;
-    user.resetPasswordOtpExpires = null;
-    await user.save().catch(() => {});
-    await clearActiveOtpState(cleanEmail, "forgot-password").catch(() => {});
-    console.error(`[Auth] Forgot Password Error for ${maskEmail(cleanEmail)}:`, error.message);
-    res.status(500).json({ message: "Failed to send OTP. Please try again." });
-  }
+  return res.status(200).json({
+    success: false,
+    message: "Password reset is currently unavailable. Please contact the administrator.",
+  });
 };
 
 /* ================================
-   6. VERIFY FORGOT PASSWORD OTP
+   4. VERIFY OTP (Disabled notice)
    ================================ */
 export const verifyOtp = async (req, res) => {
-  try {
-    const { email, otp } = req.body;
-
-    if (!email || !otp) {
-      return res.status(400).json({ message: "Email and OTP are required" });
-    }
-
-    const cleanEmail = normalizeEmail(email);
-    const cleanOtp = String(otp).trim();
-
-    const user = await User.findOne({ email: cleanEmail });
-    if (!user) {
-      return res.status(404).json({ message: "No account found with this email" });
-    }
-
-    // Check if OTP was generated
-    if (!user.resetPasswordOtp || !user.resetPasswordOtpExpires) {
-      return res.status(400).json({ message: "No active OTP request found for this account" });
-    }
-
-    // Check OTP expiry (3 minutes)
-    if (new Date() > user.resetPasswordOtpExpires) {
-      user.resetPasswordOtp = null;
-      user.resetPasswordOtpExpires = null;
-      user.resetPasswordOtpAttempts = 0;
-      await user.save();
-      await clearActiveOtpState(cleanEmail, "forgot-password");
-      return res.status(400).json({ message: "OTP has expired. Please request a new one." });
-    }
-
-    // Check max attempts
-    if (user.resetPasswordOtpAttempts >= 3) {
-      user.resetPasswordOtp = null;
-      user.resetPasswordOtpExpires = null;
-      user.resetPasswordOtpAttempts = 0;
-      await user.save();
-      await clearActiveOtpState(cleanEmail, "forgot-password");
-      return res.status(400).json({ message: "Too many incorrect attempts. Please request a new OTP." });
-    }
-
-    // Validate OTP
-    if (user.resetPasswordOtp !== cleanOtp) {
-      user.resetPasswordOtpAttempts += 1;
-      await user.save();
-      const remaining = 3 - user.resetPasswordOtpAttempts;
-      if (remaining <= 0) {
-        user.resetPasswordOtp = null;
-        user.resetPasswordOtpExpires = null;
-        user.resetPasswordOtpAttempts = 0;
-        await user.save();
-        await clearActiveOtpState(cleanEmail, "forgot-password");
-        return res.status(400).json({
-          message: "Incorrect OTP. Too many incorrect attempts. Please request a new OTP.",
-        });
-      }
-      return res.status(400).json({
-        message: `Incorrect OTP. You have ${remaining} attempt${remaining > 1 ? "s" : ""} remaining.`,
-      });
-    }
-
-    // Verification successful - CLEAR OTP IMMEDIATELY (Single Use)
-    user.resetPasswordOtp = null;
-    user.resetPasswordOtpExpires = null;
-    user.resetPasswordOtpAttempts = 0;
-    await user.save();
-    await clearActiveOtpState(cleanEmail, "forgot-password");
-
-    // Create a short-lived password reset token (15m)
-    const resetToken = jwt.sign(
-      { id: user._id, purpose: "password-reset" },
-      process.env.JWT_SECRET,
-      { expiresIn: "15m" }
-    );
-
-    res.status(200).json({
-      message: "OTP verified successfully",
-      resetToken,
-    });
-  } catch (error) {
-    console.error("Verify OTP Error:", error.message);
-    res.status(500).json({ message: "Failed to verify OTP. Please try again." });
-  }
+  return res.status(400).json({
+    success: false,
+    message: "OTP verification is disabled. Please contact the administrator.",
+  });
 };
 
 /* ================================
-   7. RESET PASSWORD (Final update)
+   5. RESET PASSWORD (Disabled notice)
    ================================ */
 export const resetPassword = async (req, res) => {
-  try {
-    const { resetToken, newPassword } = req.body;
-
-    if (!resetToken || !newPassword) {
-      return res.status(400).json({ message: "Reset token and new password are required" });
-    }
-
-    // Verify token
-    let decoded;
-    try {
-      decoded = jwt.verify(resetToken, process.env.JWT_SECRET);
-    } catch (err) {
-      return res.status(400).json({ message: "Invalid or expired reset token" });
-    }
-
-    if (decoded.purpose !== "password-reset") {
-      return res.status(400).json({ message: "Invalid reset token purpose" });
-    }
-
-    // Validate strong password
-    if (!validatePassword(newPassword)) {
-      return res.status(400).json({
-        message:
-          "Password must be at least 8 characters with uppercase, lowercase, number, and special character",
-      });
-    }
-
-    const user = await User.findById(decoded.id);
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    // Update password
-    user.password = newPassword;
-    await user.save();
-
-    res.status(200).json({ message: "Password reset successful. You can now login with your new password." });
-  } catch (error) {
-    console.error("Reset Password Error:", error.message);
-    res.status(500).json({ message: "Failed to reset password. Please try again." });
-  }
+  return res.status(400).json({
+    success: false,
+    message: "Password reset is currently unavailable. Please contact the administrator.",
+  });
 };

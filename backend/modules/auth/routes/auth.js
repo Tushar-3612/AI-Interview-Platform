@@ -2,8 +2,6 @@ import express from "express";
 import {
   signup,
   login,
-  sendRegistrationOtp,
-  verifyRegistrationOtp,
   forgotPassword,
   verifyOtp,
   resetPassword,
@@ -19,25 +17,19 @@ const router = express.Router();
 // Apply authLimiter across all auth endpoints
 router.use(authLimiter);
 
-// POST /api/auth/send-registration-otp — Send OTP for new student email verification
-router.post("/send-registration-otp", sendRegistrationOtp);
-
-// POST /api/auth/verify-registration-otp — Verify registration OTP & issue registration token
-router.post("/verify-registration-otp", verifyRegistrationOtp);
-
-// POST /api/auth/signup — Register a new student account (requires verified registrationToken)
+// POST /api/auth/signup — Register a new student account directly
 router.post("/signup", signup);
 
 // POST /api/auth/login — Student or admin login
 router.post("/login", login);
 
-// POST /api/auth/forgot-password — Request password reset OTP
+// POST /api/auth/forgot-password — Request password reset (notice response)
 router.post("/forgot-password", forgotPassword);
 
-// POST /api/auth/verify-otp — Verify password reset OTP
+// POST /api/auth/verify-otp — Verify password reset OTP (notice response)
 router.post("/verify-otp", verifyOtp);
 
-// POST /api/auth/reset-password — Reset password using token
+// POST /api/auth/reset-password — Reset password (notice response)
 router.post("/reset-password", resetPassword);
 
 export default router;
