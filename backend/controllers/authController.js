@@ -3,6 +3,11 @@ import Admin from "../models/Admin.js";
 import generateToken from "../utils/generateToken.js";
 import { onUserRegistered } from "../utils/csvExporter.js";
 import { normalizeYear, normalizeDepartment } from "../utils/academicConfig.js";
+import {
+  checkLoginRateLimit,
+  recordFailedLogin,
+  resetLoginAttempts,
+} from "../services/loginSecurityService.js";
 
 /* ================================
    VALIDATION HELPERS
@@ -136,6 +141,7 @@ export const signup = async (req, res) => {
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
+    const clientIp = req.ip || req.headers["x-forwarded-for"] || "unknown_ip";
 
     // Required field validation
     if (!email || !password) {
@@ -144,6 +150,18 @@ export const login = async (req, res) => {
 
     if (!validateEmail(email)) {
       return res.status(400).json({ message: "Please enter a valid email address" });
+    }
+
+    // Check distributed failed login rate limits (10/IP, 5/Account per 15 min)
+    const rateLimitStatus = await checkLoginRateLimit(clientIp, email);
+    if (!rateLimitStatus.allowed) {
+      res.setHeader("Retry-After", rateLimitStatus.retryAfterSeconds);
+      return res.status(429).json({
+        success: false,
+        code: "TOO_MANY_FAILED_LOGINS",
+        message: `Too many failed login attempts. Please try again after ${Math.ceil(rateLimitStatus.retryAfterSeconds / 60)} minutes.`,
+        retryAfter: rateLimitStatus.retryAfterSeconds,
+      });
     }
 
     /* --- 1. Check Admin / Teacher Accounts in Admin collection --- */
@@ -183,8 +201,12 @@ export const login = async (req, res) => {
       }
 
       if (!isMatch) {
+        await recordFailedLogin(clientIp, email);
         return res.status(401).json({ message: "Invalid email or password" });
       }
+
+      // Successful login: reset failed login attempts counter
+      await resetLoginAttempts(clientIp, email);
 
       admin.lastLogin = new Date();
       await admin.save();
@@ -209,14 +231,19 @@ export const login = async (req, res) => {
     const user = await User.findOne({ email: email.toLowerCase() });
 
     if (!user) {
+      await recordFailedLogin(clientIp, email);
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
     const isMatch = await user.matchPassword(password);
 
     if (!isMatch) {
+      await recordFailedLogin(clientIp, email);
       return res.status(401).json({ message: "Invalid email or password" });
     }
+
+    // Successful login: reset failed login attempts counter
+    await resetLoginAttempts(clientIp, email);
 
     const token = generateToken(user._id.toString(), "student", user.department);
 
