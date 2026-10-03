@@ -40,8 +40,8 @@ const ENTERPRISE_COMPANIES = [
     codingCount: 2,
     codingLabel: "Coding",
     duration: "90 Mins",
-    color: "#9333EA",
-    bg: "#2A154A",
+    color: "#FF6B35",
+    bg: "rgba(255, 107, 53, 0.15)",
   },
   {
     id: "deloitte",
@@ -56,8 +56,8 @@ const ENTERPRISE_COMPANIES = [
     codingCount: 1,
     codingLabel: "Coding",
     duration: "75 Mins",
-    color: "#10B981",
-    bg: "#063028",
+    color: "#FF6B35",
+    bg: "rgba(255, 107, 53, 0.15)",
   },
   {
     id: "tcs",
@@ -72,8 +72,8 @@ const ENTERPRISE_COMPANIES = [
     codingCount: 2,
     codingLabel: "Coding",
     duration: "110 Mins",
-    color: "#3B82F6",
-    bg: "#0F284E",
+    color: "#FF6B35",
+    bg: "rgba(255, 107, 53, 0.15)",
   },
   {
     id: "capgemini",
@@ -88,8 +88,8 @@ const ENTERPRISE_COMPANIES = [
     codingCount: 25,
     codingLabel: "Pseudo",
     duration: "80 Mins",
-    color: "#06B6D4",
-    bg: "#083344",
+    color: "#FF6B35",
+    bg: "rgba(255, 107, 53, 0.15)",
   },
   {
     id: "cognizant",
@@ -104,8 +104,8 @@ const ENTERPRISE_COMPANIES = [
     codingCount: 2,
     codingLabel: "Coding",
     duration: "90 Mins",
-    color: "#6366F1",
-    bg: "#1E1B4B",
+    color: "#FF6B35",
+    bg: "rgba(255, 107, 53, 0.15)",
   },
   {
     id: "infosys",
@@ -120,8 +120,8 @@ const ENTERPRISE_COMPANIES = [
     codingCount: 3,
     codingLabel: "Coding",
     duration: "100 Mins",
-    color: "#0284C7",
-    bg: "#082F49",
+    color: "#FF6B35",
+    bg: "rgba(255, 107, 53, 0.15)",
   },
   {
     id: "wipro",
@@ -136,8 +136,8 @@ const ENTERPRISE_COMPANIES = [
     codingCount: 2,
     codingLabel: "Coding",
     duration: "95 Mins",
-    color: "#A855F7",
-    bg: "#3B0764",
+    color: "#FF6B35",
+    bg: "rgba(255, 107, 53, 0.15)",
   },
   {
     id: "benchmark",
@@ -152,8 +152,8 @@ const ENTERPRISE_COMPANIES = [
     codingCount: 3,
     codingLabel: "Coding",
     duration: "85 Mins",
-    color: "#F59E0B",
-    bg: "#451A03",
+    color: "#FF6B35",
+    bg: "rgba(255, 107, 53, 0.15)",
   },
   {
     id: "celebal",
@@ -168,8 +168,8 @@ const ENTERPRISE_COMPANIES = [
     codingCount: 2,
     codingLabel: "Coding",
     duration: "75 Mins",
-    color: "#EC4899",
-    bg: "#500724",
+    color: "#FF6B35",
+    bg: "rgba(255, 107, 53, 0.15)",
   },
 ];
 
@@ -268,8 +268,8 @@ export default function MockInterview() {
         ? (typeof c.duration === "number" ? `${c.duration} Mins` : c.duration)
         : (preset?.duration || "90 Mins");
 
-      const color = c.color || preset?.color || "#FF6B35";
-      const bg = preset?.bg || (color ? `${color}22` : "rgba(255,107,53,0.15)");
+      const color = "#FF6B35";
+      const bg = "rgba(255, 107, 53, 0.15)";
 
       return {
         id: realId,
@@ -378,9 +378,6 @@ export default function MockInterview() {
       <section 
         className="bg-[var(--card-bg)] border border-[var(--border)] rounded-[24px] sm:rounded-[28px] p-5 sm:p-7 shadow-[var(--shadow-card)] relative overflow-hidden space-y-6"
       >
-        {/* Top glowing orange accent line */}
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#FF6B35] to-transparent opacity-80" />
-
         {/* ── Top Header Row ── */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-start gap-3.5">
@@ -518,8 +515,8 @@ export default function MockInterview() {
                   whileTap={{ scale: 0.99 }}
                   className={`p-4 rounded-2xl cursor-pointer transition-all flex flex-col justify-between space-y-3.5 ${
                     isSelected
-                      ? "bg-[#FF6B35]/5 border-2 border-[#FF6B35] shadow-[0_0_20px_rgba(255,107,53,0.18)]"
-                      : "bg-[var(--bg-secondary)] border border-[var(--border)] hover:border-[#FF6B35]/40"
+                      ? "bg-[#FF6B35]/15 shadow-[0_0_20px_rgba(255,107,53,0.18)]"
+                      : "bg-[var(--bg-secondary)]"
                   }`}
                 >
                   <div>
@@ -528,7 +525,7 @@ export default function MockInterview() {
                       <div className="flex items-center gap-2.5">
                         <div
                           className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-xs sm:text-sm shrink-0 shadow-xs"
-                          style={{ background: c.bg, color: c.color, border: `1px solid ${c.color}33` }}
+                          style={{ background: c.bg, color: c.color }}
                         >
                           {c.code}
                         </div>
@@ -546,13 +543,7 @@ export default function MockInterview() {
 
                       {/* Tag */}
                       <span
-                        className={`text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full border ${
-                          c.tagType === "active"
-                            ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
-                            : c.tagType === "popular"
-                            ? "bg-amber-500/15 text-amber-400 border-amber-500/30"
-                            : "bg-[var(--card-bg)] text-[var(--text-muted)] border-[var(--border)]"
-                        }`}
+                        className="text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-[#FF6B35]/15 text-[#FF6B35]"
                       >
                         {c.tag}
                       </span>

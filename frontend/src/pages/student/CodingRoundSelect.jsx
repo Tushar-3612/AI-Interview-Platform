@@ -25,9 +25,9 @@ const DIFFICULTY_CONFIG = [
   {
     id: "Easy",
     name: "Easy Track",
-    color: "#10B981",
-    bg: "rgba(16, 185, 129, 0.08)",
-    border: "rgba(16, 185, 129, 0.25)",
+    color: "#06B6D4",
+    bg: "rgba(6, 182, 212, 0.15)",
+    border: "rgba(6, 182, 212, 0.25)",
     icon: Zap,
     duration: "30-45 mins",
     target: "Beginner & Freshers",
@@ -36,9 +36,9 @@ const DIFFICULTY_CONFIG = [
   {
     id: "Medium",
     name: "Medium Track",
-    color: "#F59E0B",
-    bg: "rgba(245, 158, 11, 0.08)",
-    border: "rgba(245, 158, 11, 0.25)",
+    color: "#06B6D4",
+    bg: "rgba(6, 182, 212, 0.15)",
+    border: "rgba(6, 182, 212, 0.25)",
     icon: Flame,
     duration: "45-60 mins",
     target: "Standard OAs",
@@ -47,9 +47,9 @@ const DIFFICULTY_CONFIG = [
   {
     id: "Hard",
     name: "Hard Track",
-    color: "#EF4444",
-    bg: "rgba(239, 68, 68, 0.08)",
-    border: "rgba(239, 68, 68, 0.25)",
+    color: "#06B6D4",
+    bg: "rgba(6, 182, 212, 0.15)",
+    border: "rgba(6, 182, 212, 0.25)",
     icon: Cpu,
     duration: "60-90 mins",
     target: "Tier-1 & High CTC",
@@ -58,9 +58,9 @@ const DIFFICULTY_CONFIG = [
   {
     id: "All",
     name: "Mixed Track",
-    color: "#6366F1",
-    bg: "rgba(99, 102, 241, 0.08)",
-    border: "rgba(99, 102, 241, 0.25)",
+    color: "#06B6D4",
+    bg: "rgba(6, 182, 212, 0.15)",
+    border: "rgba(6, 182, 212, 0.25)",
     icon: Layers,
     duration: "60 mins",
     target: "Full OA Simulation",
@@ -171,8 +171,6 @@ export default function CodingRoundSelect() {
     <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-8 space-y-7 pb-24 lg:pb-8">
       {/* ── TOP HERO HEADER ── */}
       <section className="bg-[var(--card-bg)] border border-[var(--border)] rounded-[24px] sm:rounded-[28px] p-5 sm:p-7 shadow-[var(--shadow-card)] relative overflow-hidden space-y-6">
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#06B6D4] to-transparent opacity-90" />
-
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
           <div className="flex items-start gap-4">
             <div
@@ -222,15 +220,10 @@ export default function CodingRoundSelect() {
                   whileHover={{ y: -2 }}
                   whileTap={{ scale: 0.99 }}
                   onClick={() => setSelectedDifficulty(diff.id)}
-                  className={`relative p-5 rounded-2xl transition-all cursor-pointer flex flex-col justify-between overflow-hidden ${
-                    isSelected
-                      ? "border-2 shadow-sm"
-                      : "border hover:border-[var(--text-muted)]/40 bg-[var(--card-bg)]"
-                  }`}
+                  className="relative p-5 rounded-2xl transition-all cursor-pointer flex flex-col justify-between overflow-hidden bg-[var(--card-bg)]"
                   style={{
-                    borderColor: isSelected ? diff.color : "var(--border)",
                     background: isSelected
-                      ? `color-mix(in srgb, ${diff.color} 4%, var(--card-bg))`
+                      ? `color-mix(in srgb, ${diff.color} 18%, var(--card-bg))`
                       : "var(--card-bg)",
                   }}
                 >

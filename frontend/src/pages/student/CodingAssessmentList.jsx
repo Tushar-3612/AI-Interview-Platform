@@ -76,8 +76,6 @@ export default function CodingAssessmentList() {
     <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 pb-24 lg:pb-8">
       {/* Hero Header */}
       <section className="bg-[var(--card-bg)] border border-[var(--border)] rounded-[24px] p-6 sm:p-8 shadow-[var(--shadow-card)] relative overflow-hidden space-y-4">
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#06B6D4] to-transparent opacity-90" />
-
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border bg-cyan-500/10 border-cyan-500/30 text-cyan-400">
