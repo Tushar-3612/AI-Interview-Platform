@@ -1,3 +1,10 @@
+import dns from "dns";
+try {
+  dns.setDefaultResultOrder("ipv4first");
+} catch (_) {
+  // Ignore if not supported in running environment
+}
+
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
