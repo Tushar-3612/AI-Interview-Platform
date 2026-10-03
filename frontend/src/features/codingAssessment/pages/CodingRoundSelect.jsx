@@ -208,7 +208,7 @@ export default function CodingRoundSelect() {
             </span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
             {DIFFICULTY_CONFIG.map((diff) => {
               const Icon = diff.icon;
               const isSelected = selectedDifficulty === diff.id;
@@ -220,54 +220,67 @@ export default function CodingRoundSelect() {
                   whileHover={{ y: -2 }}
                   whileTap={{ scale: 0.99 }}
                   onClick={() => setSelectedDifficulty(diff.id)}
-                  className="relative p-5 rounded-2xl transition-all cursor-pointer flex flex-col justify-between overflow-hidden bg-[var(--card-bg)]"
+                  className="relative p-2.5 sm:p-4 lg:p-5 rounded-xl sm:rounded-2xl transition-all cursor-pointer flex flex-col overflow-hidden"
                   style={{
                     background: isSelected
                       ? `color-mix(in srgb, ${diff.color} 18%, var(--card-bg))`
                       : "var(--card-bg)",
+                    border: `1px solid ${isSelected ? diff.border : "var(--border)"}`,
                   }}
                 >
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div
-                        className="w-10 h-10 rounded-xl flex items-center justify-center border"
-                        style={{
-                          background: diff.bg,
-                          borderColor: diff.border,
-                          color: diff.color,
-                        }}
-                      >
-                        <Icon className="w-5 h-5" />
-                      </div>
-                      <div className="text-right">
-                        <span className="text-xs font-bold font-mono px-2 py-0.5 rounded-md border"
-                          style={{
-                            color: diff.color,
-                            borderColor: diff.border,
-                            background: diff.bg,
-                          }}
-                        >
-                          {loadingStats ? "..." : `${questionCount} Questions`}
-                        </span>
-                      </div>
+                  {/* Icon + count */}
+                  <div className="flex items-start justify-between gap-1 sm:block sm:space-y-3">
+                    <div
+                      className="w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center border shrink-0"
+                      style={{
+                        background: diff.bg,
+                        borderColor: diff.border,
+                        color: diff.color,
+                      }}
+                    >
+                      <Icon className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
                     </div>
-
-                    <div>
-                      <h3 className="text-base font-extrabold text-[var(--text-primary)]">
-                        {diff.name}
-                      </h3>
-                      <p className="text-xs text-[var(--text-secondary)] mt-1 leading-relaxed">
-                        {diff.description}
-                      </p>
-                    </div>
+                    <span
+                      className="text-[9px] sm:text-xs font-bold font-mono px-1.5 py-0.5 rounded-md border sm:hidden"
+                      style={{
+                        color: diff.color,
+                        borderColor: diff.border,
+                        background: diff.bg,
+                      }}
+                    >
+                      {loadingStats ? "..." : questionCount}Q
+                    </span>
                   </div>
 
+                  {/* Name + count badge (desktop) */}
+                  <div className="mt-2 sm:mt-0">
+                    <div className="hidden sm:flex items-center justify-between mb-2">
+                      <span
+                        className="text-xs font-bold font-mono px-2 py-0.5 rounded-md border"
+                        style={{
+                          color: diff.color,
+                          borderColor: diff.border,
+                          background: diff.bg,
+                        }}
+                      >
+                        {loadingStats ? "..." : `${questionCount} Questions`}
+                      </span>
+                    </div>
+                    <h3 className="text-[11px] sm:text-base font-extrabold text-[var(--text-primary)] leading-tight">
+                      {diff.name}
+                    </h3>
+                    <p className="hidden sm:block text-xs text-[var(--text-secondary)] mt-1 leading-relaxed">
+                      {diff.description}
+                    </p>
+                  </div>
+
+                  {/* Footer — hidden on mobile to avoid truncation */}
                   <div
-                    className="pt-3 border-t mt-3 flex items-center justify-between text-[11px]"
+                    className="hidden sm:flex pt-3 border-t mt-3 items-center justify-between text-[11px]"
                     style={{ borderColor: "var(--border)" }}
                   >
                     <span className="flex items-center gap-1 text-[var(--text-muted)] font-medium">
-                      <Timer className="w-3.5 h-3.5" />
+                      <Timer className="w-3.5 h-3.5 shrink-0" />
                       {diff.duration}
                     </span>
                     <span
