@@ -1,4 +1,17 @@
 import rateLimit from "express-rate-limit";
+import { RedisStore } from "rate-limit-redis";
+import { getRedisClient } from "../services/redisService.js";
+
+const getStore = (prefix) => {
+  const client = getRedisClient();
+  if (client) {
+    return new RedisStore({
+      sendCommand: (...args) => client.call(...args),
+      prefix: `rl:${prefix}:`,
+    });
+  }
+  return undefined; // Falls back to default express-rate-limit MemoryStore
+};
 
 const standardErrorHandler = (message) => (req, res) => {
   res.status(429).json({
@@ -24,6 +37,7 @@ export const apiLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   validate: false,
+  store: getStore("api"),
   keyGenerator: (req) => (req.user && req.user.id ? `user_${req.user.id}` : (req.ip || "unknown_ip")),
   skip: shouldSkipLimiter,
   handler: standardErrorHandler("Too many requests. Please slow down and try again later."),
@@ -39,12 +53,11 @@ export const testLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   validate: false,
+  store: getStore("test"),
   keyGenerator: (req) => (req.user && req.user.id ? `test_user_${req.user.id}` : (req.ip || "unknown_ip")),
   skip: shouldSkipLimiter,
   handler: standardErrorHandler("Test request limit reached. Please wait a moment before sending more answers."),
 });
-
-
 
 /**
  * Authentication limiter.
@@ -55,6 +68,7 @@ export const authLimiter = rateLimit({
   max: 30,
   standardHeaders: true,
   legacyHeaders: false,
+  store: getStore("auth"),
   handler: standardErrorHandler("Too many login or authentication attempts. Please try again after 15 minutes."),
 });
 
@@ -67,6 +81,7 @@ export const aiGenerationLimiter = rateLimit({
   max: 30,
   standardHeaders: true,
   legacyHeaders: false,
+  store: getStore("ai"),
   handler: standardErrorHandler("Too many AI generation requests. Please wait a moment before trying again."),
 });
 
@@ -79,6 +94,7 @@ export const uploadLimiter = rateLimit({
   max: 20,
   standardHeaders: true,
   legacyHeaders: false,
+  store: getStore("upload"),
   handler: standardErrorHandler("Too many resume upload attempts. Please try again later."),
 });
 
@@ -91,6 +107,7 @@ export const exportLimiter = rateLimit({
   max: 60,
   standardHeaders: true,
   legacyHeaders: false,
+  store: getStore("export"),
   handler: standardErrorHandler("Too many export requests. Please try again later."),
 });
 
@@ -103,6 +120,7 @@ export const executionLimiter = rateLimit({
   max: 40,
   standardHeaders: true,
   legacyHeaders: false,
+  store: getStore("exec"),
   handler: standardErrorHandler("Too many code execution requests. Please wait a few seconds before executing again."),
 });
 

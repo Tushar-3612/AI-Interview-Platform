@@ -40,11 +40,15 @@ import { runSeeds } from "./backend/utils/seedDefaults.js";
 import { cleanupExpiredTrash } from "./backend/controllers/aptitudeController.js";
 import { cleanupExpiredCodingTrash } from "./backend/controllers/codingQuestionController.js";
 import { cleanupExpiredCompanyTrash } from "./backend/controllers/companyEnhancedController.js";
+import { initRedis, closeRedis, isRedisReady } from "./backend/services/redisService.js";
 
 // Load .env from root using absolute path (works regardless of cwd)
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.join(__dirname, ".env") });
+
+// Initialize optional Redis distributed layer
+initRedis();
 
 // Debug - Check if .env loaded
 console.log('📁 Current directory:', process.cwd());
@@ -75,6 +79,9 @@ connectDB().then(() => {
 initializeCSVExports();
 
 const app = express();
+
+// Enable trust proxy for Load Balancer IP & Protocol preservation
+app.set("trust proxy", 1);
 
 // Security middleware
 app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" }, contentSecurityPolicy: false }));
@@ -140,18 +147,54 @@ app.use("/api/interview", interviewSTTRoutes);
 app.use("/api/admin/coding", adminCodingAssessmentRoutes);
 app.use("/api/coding", candidateCodingAssessmentRoutes);
 
-// Comprehensive Production Health & Readiness Checks
+/* ================================
+   LOAD BALANCER HEALTH & READINESS PROBES
+   ================================ */
+let isShuttingDown = false;
+
+// 1. Lightweight Liveness Probe
+const livenessHandler = (req, res) => {
+  res.status(200).json({ status: "alive", uptimeSeconds: Math.floor(process.uptime()) });
+};
+app.get("/live", livenessHandler);
+app.get("/api/live", livenessHandler);
+
+// 2. Deep Readiness Probe (Used by Load Balancers for traffic routing)
+const readinessHandler = (req, res) => {
+  if (isShuttingDown) {
+    return res.status(503).json({ ready: false, message: "Instance is shutting down and draining traffic." });
+  }
+
+  const isDbConnected = mongoose.connection.readyState === 1;
+  if (!isDbConnected) {
+    return res.status(503).json({ ready: false, message: "Database connection not ready." });
+  }
+
+  return res.status(200).json({
+    ready: true,
+    database: "connected",
+    redis: isRedisReady() ? "connected" : "standalone-mongodb",
+    timestamp: new Date().toISOString(),
+  });
+};
+app.get("/ready", readinessHandler);
+app.get("/api/ready", readinessHandler);
+
+// 3. Comprehensive Diagnostics Health Check
 const healthCheckHandler = (req, res) => {
   const isDbConnected = mongoose.connection.readyState === 1;
   const mem = process.memoryUsage();
 
   const healthData = {
-    status: isDbConnected ? "healthy" : "degraded",
+    status: isDbConnected && !isShuttingDown ? "healthy" : "degraded",
     uptimeSeconds: Math.floor(process.uptime()),
     timestamp: new Date().toISOString(),
     database: {
       status: isDbConnected ? "connected" : "disconnected",
       readyState: mongoose.connection.readyState,
+    },
+    redis: {
+      status: isRedisReady() ? "connected" : "standalone-mongodb",
     },
     system: {
       memoryRssMb: Math.round(mem.rss / (1024 * 1024)),
@@ -161,7 +204,7 @@ const healthCheckHandler = (req, res) => {
     },
   };
 
-  const statusCode = isDbConnected ? 200 : 503;
+  const statusCode = isDbConnected && !isShuttingDown ? 200 : 503;
   res.status(statusCode).json(healthData);
 };
 
@@ -206,22 +249,22 @@ const server = app.listen(PORT, () => {
 /* ================================
    GRACEFUL SHUTDOWN & CRASH PROTECTION
    ================================ */
-let isShuttingDown = false;
 const gracefulShutdown = async (signal) => {
   if (isShuttingDown) return;
   isShuttingDown = true;
-  console.log(`\n🛑 Received ${signal}. Starting graceful shutdown...`);
+  console.log(`\n🛑 Received ${signal}. Draining active connections and shutting down...`);
 
   server.close(async () => {
-    console.log("🔒 HTTP server closed.");
+    console.log("🔒 HTTP server closed to new connections.");
     try {
+      await closeRedis();
       if (mongoose.connection.readyState === 1) {
         await mongoose.connection.close(false);
         console.log("🔒 MongoDB connection pool closed cleanly.");
       }
       process.exit(0);
     } catch (e) {
-      console.error("❌ Error closing MongoDB connection:", e.message);
+      console.error("❌ Error during graceful shutdown cleanup:", e.message);
       process.exit(1);
     }
   });
@@ -243,3 +286,4 @@ process.on("unhandledRejection", (reason) => {
 process.on("uncaughtException", (error) => {
   console.error("❌ Uncaught Exception:", error.message || error);
 });
+
