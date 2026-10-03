@@ -257,11 +257,41 @@ function StudentDashboard() {
 
   const formatDate = (d) => {
     if (!d) return "";
-    return new Date(d).toLocaleDateString("en-US", {
+    const dt = new Date(d);
+    if (isNaN(dt.getTime())) return "";
+    return dt.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
       year: "numeric",
     });
+  };
+
+  const formatTime = (d) => {
+    if (!d) return "";
+    const dt = new Date(d);
+    if (isNaN(dt.getTime())) return "";
+    return dt.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
+
+  const formatDateTime = (d) => {
+    if (!d) return "";
+    const dt = new Date(d);
+    if (isNaN(dt.getTime())) return "";
+    const dateStr = dt.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+    const timeStr = dt.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+    return `${dateStr} · ${timeStr}`;
   };
 
   const getScoreColor = (score) => {
@@ -900,9 +930,9 @@ function StudentDashboard() {
                         className="border border-[var(--border)] rounded-2xl p-4 bg-[var(--bg-primary)] space-y-3 flex flex-col justify-between"
                       >
                         <div>
-                          <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center justify-between gap-2 mb-2">
                             <span
-                              className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded"
+                              className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded shrink-0"
                               style={{
                                 background: `color-mix(in srgb, ${testColor} 12%, transparent)`,
                                 color: testColor,
@@ -910,13 +940,14 @@ function StudentDashboard() {
                             >
                               {statusLabel}
                             </span>
-                            {test.scheduledAt && (
+                            {(test.startAt || test.scheduledAt) && (
                               <span
-                                className="text-[10px] font-medium flex items-center gap-1"
+                                className="text-[10px] font-medium flex items-center gap-1 text-right"
                                 style={{ color: "var(--text-muted)" }}
+                                title={formatDateTime(test.startAt || test.scheduledAt)}
                               >
-                                <Clock className="w-3 h-3" />
-                                {formatDate(test.scheduledAt)}
+                                <Clock className="w-3 h-3 shrink-0" />
+                                <span>{formatDateTime(test.startAt || test.scheduledAt)}</span>
                               </span>
                             )}
                           </div>
@@ -929,6 +960,23 @@ function StudentDashboard() {
                               : "Mixed"}
                             {test.duration ? ` · ${test.duration} min` : ""}
                           </p>
+
+                          {/* Explicit Timing Window */}
+                          {(test.startAt || test.scheduledAt || test.endAt) && (
+                            <div
+                              className="mt-2.5 pt-2 border-t border-[var(--border)] flex items-center justify-between text-[11px]"
+                              style={{ color: "var(--text-secondary)" }}
+                            >
+                              <span className="flex items-center gap-1">
+                                <Calendar className="w-3 h-3 text-[var(--text-muted)] shrink-0" />
+                                <span>{formatDate(test.startAt || test.scheduledAt)}</span>
+                              </span>
+                              <span className="font-semibold" style={{ color: "var(--text-primary)" }}>
+                                {formatTime(test.startAt || test.scheduledAt)}
+                                {test.endAt ? ` – ${formatTime(test.endAt)}` : ""}
+                              </span>
+                            </div>
+                          )}
                         </div>
 
                         {test.testStatus === "available" && (

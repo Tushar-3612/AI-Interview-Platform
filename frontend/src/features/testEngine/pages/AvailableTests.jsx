@@ -79,11 +79,15 @@ function formatDeadline(test) {
   }
   if (test.startAt && test.testStatus === "upcoming") {
     const start = new Date(test.startAt);
-    return `Unlocks ${start.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+    const dateStr = start.toLocaleDateString([], { month: "short", day: "numeric" });
+    const timeStr = start.toLocaleTimeString([], { hour: "numeric", minute: "2-digit", hour12: true });
+    return `Unlocks ${dateStr}, ${timeStr}`;
   }
   if (test.scheduledAt && test.testStatus === "upcoming") {
     const sch = new Date(test.scheduledAt);
-    return `Scheduled ${sch.toLocaleDateString([], { month: "short", day: "numeric" })}`;
+    const dateStr = sch.toLocaleDateString([], { month: "short", day: "numeric" });
+    const timeStr = sch.toLocaleTimeString([], { hour: "numeric", minute: "2-digit", hour12: true });
+    return `Scheduled ${dateStr}, ${timeStr}`;
   }
   return null;
 }
@@ -889,6 +893,21 @@ export default function AvailableTests() {
                         <span className="truncate">{test.totalQuestions || 0} questions</span>
                       </div>
                     </div>
+
+                    {(test.startAt || test.scheduledAt) && (
+                      <div className="pt-1.5 border-t border-white/5 flex items-center justify-between text-gray-300 text-[11px]">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-3.5 h-3.5 text-[#FF6B35] shrink-0" />
+                          <span>
+                            {new Date(test.startAt || test.scheduledAt).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })}
+                          </span>
+                        </span>
+                        <span className="font-semibold text-white">
+                          {new Date(test.startAt || test.scheduledAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit", hour12: true })}
+                          {test.endAt ? ` – ${new Date(test.endAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit", hour12: true })}` : ""}
+                        </span>
+                      </div>
+                    )}
 
                     {(test.companyId || test.assignValue) && (
                       <div className="pt-1 border-t border-white/5 flex items-center gap-1.5 text-gray-400 text-[11px]">

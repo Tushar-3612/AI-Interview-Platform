@@ -549,7 +549,7 @@ function ViewTestModal({ assignment, onClose, onEdit, onDelete, onReschedule, on
       <div className="bg-white dark:bg-[#111] rounded-xl border border-gray-200 dark:border-zinc-800 w-full max-w-5xl mx-4"
         onClick={e => e.stopPropagation()}>
         <div className="sticky top-0 z-10 bg-white dark:bg-[#111] rounded-t-xl border-b border-gray-200 dark:border-zinc-800 px-5 py-4 flex items-center justify-between">
-          <h2 className="text-sm font-bold truncate pr-4" style={{ color: "var(--text-primary)" }}>{test.title || "Test Details"}</h2>
+          <h2 className="text-sm font-bold break-words pr-4 leading-snug" style={{ color: "var(--text-primary)" }}>{test.title || "Test Details"}</h2>
           <div className="flex items-center gap-2 shrink-0">
             <button onClick={() => onEdit(test)} className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium border admin-border rounded-lg admin-hover cursor-pointer">
               <Edit className="w-3 h-3" /> Edit
@@ -592,9 +592,9 @@ function ViewTestModal({ assignment, onClose, onEdit, onDelete, onReschedule, on
                   ["Created", test.createdAt ? new Date(test.createdAt).toLocaleDateString() : "N/A"],
                   ["Status", test.status],
                 ].map(([label, value]) => (
-                  <div key={label} className="flex items-center gap-2">
-                    <span style={{ color: "var(--text-muted)" }}>{label}:</span>
-                    <span className="font-medium truncate" style={{ color: "var(--text-primary)" }}>{value}</span>
+                  <div key={label} className="flex items-start gap-2">
+                    <span className="shrink-0" style={{ color: "var(--text-muted)" }}>{label}:</span>
+                    <span className="font-medium break-words" style={{ color: "var(--text-primary)" }}>{value}</span>
                   </div>
                 ))}
               </div>
@@ -1115,12 +1115,13 @@ function AssignedTests() {
       {/* Table */}
       {filtered.length > 0 && (
         <div className="border admin-border admin-card rounded-xl overflow-hidden">
-          <div className="overflow-x-auto">
+          {/* ── Desktop Table ── */}
+        <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
                 <tr className="border-b admin-table-divider" style={{ color: "var(--text-muted)" }}>
                   {[
-                    { key: "title", label: "Test Name", align: "text-left", minW: "170px" },
+                    { key: "title", label: "Test Name", align: "text-left", minW: "240px" },
                     { key: null, label: "Company", align: "text-left", minW: "120px" },
                     { key: "testType", label: "Type", align: "text-left", minW: "90px" },
                     { key: null, label: "Department", align: "text-left", minW: "130px" },
@@ -1129,14 +1130,14 @@ function AssignedTests() {
                     { key: "totalStudents", label: "Students", align: "text-center", minW: "80px" },
                     { key: null, label: "Started", align: "text-center", minW: "70px" },
                     { key: "completedCount", label: "Completed", align: "text-center", minW: "90px" },
-                    { key: null, label: "Not Attempted", align: "text-center", minW: "100px" },
-                    { key: null, label: "Auto Submitted", align: "text-center", minW: "100px" },
+                    { key: null, label: "Not Attempted", align: "text-center", minW: "110px" },
+                    { key: null, label: "Auto Submitted", align: "text-center", minW: "110px" },
                     { key: "averageScore", label: "Avg Score", align: "text-center", minW: "90px" },
                     { key: null, label: "Schedule", align: "text-left", minW: "140px" },
                     { key: "status", label: "Status", align: "text-center", minW: "90px" },
-                    { key: null, label: "Actions", align: "text-center", minW: "160px" },
+                    { key: null, label: "Actions", align: "text-center", minW: "170px" },
                   ].map(col => (
-                    <th key={col.label} className={`pb-2.5 pr-2 font-semibold whitespace-nowrap ${col.align} ${col.key ? "cursor-pointer select-none" : ""}`}
+                    <th key={col.label} className={`py-3 px-3 font-semibold whitespace-nowrap ${col.align} ${col.key ? "cursor-pointer select-none" : ""}`}
                       onClick={() => col.key && handleSort(col.key)}
                       style={{ color: sortField === col.key ? "var(--primary)" : "var(--text-muted)", minWidth: col.minW }}>
                       {col.label}{col.key && toggleSort(col.key)}
@@ -1149,38 +1150,32 @@ function AssignedTests() {
                   const test = a.testId || {};
                   return (
                     <tr key={a._id} className="border-b admin-table-divider admin-hover">
-                      <td className="py-2.5 pr-2">
+                      <td className="py-2.5 px-3">
                         <button onClick={() => setViewModal(a)} title={test.title || "Untitled"}
-                          className="font-medium text-left hover:underline cursor-pointer truncate max-w-[160px] block"
+                          className="font-medium text-left hover:underline cursor-pointer block break-words whitespace-normal min-w-[200px] leading-snug"
                           style={{ color: "var(--text-primary)" }}>
                           {test.title || "Untitled"}
                         </button>
                       </td>
-                      <td className="py-2.5 pr-2" style={{ color: "var(--text-secondary)" }}>{test.companyId || "-"}</td>
-                      <td className="py-2.5 pr-2">
+                      <td className="py-2.5 px-3" style={{ color: "var(--text-secondary)" }}>{test.companyId || "-"}</td>
+                      <td className="py-2.5 px-3">
                         <span className="capitalize text-[10px] font-medium px-1.5 py-0.5 rounded"
                           style={{ background: "color-mix(in srgb, var(--primary) 10%, transparent)", color: "var(--primary)" }}>
                           {test.testType || "N/A"}
                         </span>
                       </td>
-                      <td className="py-2.5 pr-2" style={{ color: "var(--text-secondary)" }}>
-                        {a.department || "All"}
-                      </td>
-                      <td className="py-2.5 pr-2 text-center" style={{ color: "var(--text-secondary)" }}>
-                        {a.year || "All"}
-                      </td>
-                      <td className="py-2.5 pr-2 text-center" style={{ color: "var(--text-secondary)" }}>
-                        {a.section || "All"}
-                      </td>
-                      <td className="py-2.5 pr-2 text-center font-medium" style={{ color: "var(--text-primary)" }}>{a.totalStudents || 0}</td>
-                      <td className="py-2.5 pr-2 text-center" style={{ color: "var(--badge-warning-text)" }}>{a.startedCount || 0}</td>
-                      <td className="py-2.5 pr-2 text-center" style={{ color: "var(--badge-success-text)" }}>{a.completedCount || 0}</td>
-                      <td className="py-2.5 pr-2 text-center" style={{ color: "var(--badge-error-text)" }}>{a.notAttemptedCount || 0}</td>
-                      <td className="py-2.5 pr-2 text-center" style={{ color: "var(--badge-warning-text)" }}>{a.autoSubmittedCount || 0}</td>
-                      <td className="py-2.5 pr-2 text-center font-medium" style={{ color: (a.averageScore || 0) >= 40 ? "var(--badge-success-text)" : "var(--badge-error-text)" }}>
+                      <td className="py-2.5 px-3" style={{ color: "var(--text-secondary)" }}>{a.department || "All"}</td>
+                      <td className="py-2.5 px-3 text-center" style={{ color: "var(--text-secondary)" }}>{a.year || "All"}</td>
+                      <td className="py-2.5 px-3 text-center" style={{ color: "var(--text-secondary)" }}>{a.section || "All"}</td>
+                      <td className="py-2.5 px-3 text-center font-medium" style={{ color: "var(--text-primary)" }}>{a.totalStudents || 0}</td>
+                      <td className="py-2.5 px-3 text-center" style={{ color: "var(--badge-warning-text)" }}>{a.startedCount || 0}</td>
+                      <td className="py-2.5 px-3 text-center" style={{ color: "var(--badge-success-text)" }}>{a.completedCount || 0}</td>
+                      <td className="py-2.5 px-3 text-center" style={{ color: "var(--badge-error-text)" }}>{a.notAttemptedCount || 0}</td>
+                      <td className="py-2.5 px-3 text-center" style={{ color: "var(--badge-warning-text)" }}>{a.autoSubmittedCount || 0}</td>
+                      <td className="py-2.5 px-3 text-center font-medium" style={{ color: (a.averageScore || 0) >= 40 ? "var(--badge-success-text)" : "var(--badge-error-text)" }}>
                         {a.averageScore ? `${a.averageScore}%` : "0%"}
                       </td>
-                      <td className="py-2.5 pr-2" style={{ color: "var(--text-secondary)" }}>
+                      <td className="py-2.5 px-3" style={{ color: "var(--text-secondary)" }}>
                         <div className="whitespace-nowrap text-[11px] leading-tight">
                           <div style={{ color: "var(--text-primary)" }}>{fmtDateOnly(test.startAt)}</div>
                           <div>{fmtTimeOnly(test.startAt)}</div>
@@ -1189,45 +1184,21 @@ function AssignedTests() {
                           <div style={{ color: "var(--text-muted)" }}>{fmtTimeOnly(test.endAt || test.scheduledAt)}</div>
                         </div>
                       </td>
-                      <td className="py-2.5 pr-2 text-center">
+                      <td className="py-2.5 px-3 text-center">
                         <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded border ${statusBadge(getEffectiveTestStatus(test, a))}`}>
                           {getEffectiveTestStatus(test, a)}
                         </span>
                       </td>
-                      <td className="py-2.5 pr-2">
+                      <td className="py-2.5 px-3">
                         <div className="flex items-center justify-center gap-1">
-                          <button onClick={() => setViewModal(a)}
-                            className="p-1 rounded admin-hover cursor-pointer" title="View Details">
-                            <Eye className="w-3.5 h-3.5" style={{ color: "var(--text-secondary)" }} />
-                          </button>
-                          <button onClick={() => navigate(`/admin/tests/create?edit=${test._id}`)}
-                            className="p-1 rounded admin-hover cursor-pointer" title="Edit Test">
-                            <Edit className="w-3.5 h-3.5" style={{ color: "var(--text-secondary)" }} />
-                          </button>
-                          <button onClick={() => setDeleteConfirm(a)}
-                            className="p-1 rounded admin-hover cursor-pointer" title="Delete Test">
-                            <Trash2 className="w-3.5 h-3.5" style={{ color: "var(--badge-error-text)" }} />
-                          </button>
-                          <button onClick={() => setRescheduleModal(a)}
-                            className="p-1 rounded admin-hover cursor-pointer" title="View Schedule">
-                            <Calendar className="w-3.5 h-3.5" style={{ color: "var(--text-secondary)" }} />
-                          </button>
-                          <button onClick={() => handleOpenMonitoring(a)}
-                            className="p-1 rounded admin-hover cursor-pointer" title="Monitor Performance">
-                            <BarChart className="w-3.5 h-3.5" style={{ color: "var(--badge-info-text)" }} />
-                          </button>
-                          <button
-                            onClick={() => handleExportStudents(a)}
-                            disabled={!(a.effectiveStatus === "completed" || a.effectiveStatus === "expired")}
-                            className="p-1 rounded admin-hover cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
-                            title={(a.effectiveStatus === "completed" || a.effectiveStatus === "expired") ? "Export Student Excel" : "Results available after the test is completed"}>
-                            <Download className="w-3.5 h-3.5" style={{ color: "var(--success)" }} />
-                          </button>
+                          <button onClick={() => setViewModal(a)} className="p-1 rounded admin-hover cursor-pointer" title="View Details"><Eye className="w-3.5 h-3.5" style={{ color: "var(--text-secondary)" }} /></button>
+                          <button onClick={() => navigate(`/admin/tests/create?edit=${test._id}`)} className="p-1 rounded admin-hover cursor-pointer" title="Edit Test"><Edit className="w-3.5 h-3.5" style={{ color: "var(--text-secondary)" }} /></button>
+                          <button onClick={() => setDeleteConfirm(a)} className="p-1 rounded admin-hover cursor-pointer" title="Delete Test"><Trash2 className="w-3.5 h-3.5" style={{ color: "var(--badge-error-text)" }} /></button>
+                          <button onClick={() => setRescheduleModal(a)} className="p-1 rounded admin-hover cursor-pointer" title="View Schedule"><Calendar className="w-3.5 h-3.5" style={{ color: "var(--text-secondary)" }} /></button>
+                          <button onClick={() => handleOpenMonitoring(a)} className="p-1 rounded admin-hover cursor-pointer" title="Monitor Performance"><BarChart className="w-3.5 h-3.5" style={{ color: "var(--badge-info-text)" }} /></button>
+                          <button onClick={() => handleExportStudents(a)} disabled={!(a.effectiveStatus === "completed" || a.effectiveStatus === "expired")} className="p-1 rounded admin-hover cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed" title={(a.effectiveStatus === "completed" || a.effectiveStatus === "expired") ? "Export Student Excel" : "Results available after the test is completed"}><Download className="w-3.5 h-3.5" style={{ color: "var(--success)" }} /></button>
                           {a.status !== "completed" && (
-                            <button onClick={() => handleCloseAssignment(a._id)}
-                              className="p-1 rounded admin-hover cursor-pointer" title="Close">
-                              <Ban className="w-3.5 h-3.5" style={{ color: "var(--badge-warning-text)" }} />
-                            </button>
+                            <button onClick={() => handleCloseAssignment(a._id)} className="p-1 rounded admin-hover cursor-pointer" title="Close"><Ban className="w-3.5 h-3.5" style={{ color: "var(--badge-warning-text)" }} /></button>
                           )}
                         </div>
                       </td>
@@ -1237,6 +1208,78 @@ function AssignedTests() {
               </tbody>
             </table>
           </div>
+
+        {/* ── Mobile Cards ── */}
+        <div className="md:hidden divide-y admin-table-divider">
+          {paginated.map((a) => {
+            const test = a.testId || {};
+            const effectiveStatus = getEffectiveTestStatus(test, a);
+            return (
+              <div key={a._id} className="p-4 space-y-3">
+                {/* Header row */}
+                <div className="flex items-start justify-between gap-2">
+                  <button onClick={() => setViewModal(a)}
+                    className="font-semibold text-sm text-left hover:underline cursor-pointer leading-tight break-words"
+                    style={{ color: "var(--text-primary)" }}>
+                    {test.title || "Untitled"}
+                  </button>
+                  <span className={`text-[10px] font-medium px-2 py-0.5 rounded border shrink-0 ${statusBadge(effectiveStatus)}`}>
+                    {effectiveStatus}
+                  </span>
+                </div>
+
+                {/* Type + Dept row */}
+                <div className="flex flex-wrap gap-2 text-xs">
+                  <span className="capitalize font-medium px-2 py-0.5 rounded"
+                    style={{ background: "color-mix(in srgb, var(--primary) 10%, transparent)", color: "var(--primary)" }}>
+                    {test.testType || "N/A"}
+                  </span>
+                  <span style={{ color: "var(--text-secondary)" }}>{a.department || "All"} · {a.year || "All"} · {a.section || "All"}</span>
+                </div>
+
+                {/* Stats grid */}
+                <div className="grid grid-cols-3 gap-2 text-xs text-center">
+                  {[
+                    { label: "Students", value: a.totalStudents || 0, color: "var(--text-primary)" },
+                    { label: "Started", value: a.startedCount || 0, color: "var(--badge-warning-text)" },
+                    { label: "Completed", value: a.completedCount || 0, color: "var(--badge-success-text)" },
+                    { label: "Not Tried", value: a.notAttemptedCount || 0, color: "var(--badge-error-text)" },
+                    { label: "Auto Sub", value: a.autoSubmittedCount || 0, color: "var(--badge-warning-text)" },
+                    { label: "Avg Score", value: `${a.averageScore || 0}%`, color: (a.averageScore || 0) >= 40 ? "var(--badge-success-text)" : "var(--badge-error-text)" },
+                  ].map(s => (
+                    <div key={s.label} className="rounded-lg p-2" style={{ background: "var(--bg-secondary, var(--card-bg))" }}>
+                      <div className="font-bold text-sm" style={{ color: s.color }}>{s.value}</div>
+                      <div style={{ color: "var(--text-muted)" }}>{s.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Schedule */}
+                {(test.startAt || test.endAt) && (
+                  <div className="text-xs" style={{ color: "var(--text-muted)" }}>
+                    <span style={{ color: "var(--text-secondary)" }}>📅 </span>
+                    {fmtDateTime(test.startAt)} → {fmtDateTime(test.endAt || test.scheduledAt)}
+                  </div>
+                )}
+
+                {/* Actions */}
+                <div className="flex items-center gap-2 pt-1">
+                  <button onClick={() => setViewModal(a)} className="p-1.5 rounded admin-hover cursor-pointer" title="View"><Eye className="w-4 h-4" style={{ color: "var(--text-secondary)" }} /></button>
+                  <button onClick={() => navigate(`/admin/tests/create?edit=${test._id}`)} className="p-1.5 rounded admin-hover cursor-pointer" title="Edit"><Edit className="w-4 h-4" style={{ color: "var(--text-secondary)" }} /></button>
+                  <button onClick={() => setDeleteConfirm(a)} className="p-1.5 rounded admin-hover cursor-pointer" title="Delete"><Trash2 className="w-4 h-4" style={{ color: "var(--badge-error-text)" }} /></button>
+                  <button onClick={() => setRescheduleModal(a)} className="p-1.5 rounded admin-hover cursor-pointer" title="Schedule"><Calendar className="w-4 h-4" style={{ color: "var(--text-secondary)" }} /></button>
+                  <button onClick={() => handleOpenMonitoring(a)} className="p-1.5 rounded admin-hover cursor-pointer" title="Monitor"><BarChart className="w-4 h-4" style={{ color: "var(--badge-info-text)" }} /></button>
+                  <button onClick={() => handleExportStudents(a)} disabled={!(a.effectiveStatus === "completed" || a.effectiveStatus === "expired")} className="p-1.5 rounded admin-hover cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed" title="Export"><Download className="w-4 h-4" style={{ color: "var(--success)" }} /></button>
+                  {a.status !== "completed" && (
+                    <button onClick={() => handleCloseAssignment(a._id)} className="p-1.5 rounded admin-hover cursor-pointer" title="Close"><Ban className="w-4 h-4" style={{ color: "var(--badge-warning-text)" }} /></button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+
 
           {/* Pagination */}
           <div className="flex items-center justify-between px-4 py-3 border-t admin-table-divider">
