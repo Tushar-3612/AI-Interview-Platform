@@ -10,7 +10,6 @@ import {
   Edit2,
   Trash2,
   Power,
-  PowerOff,
 } from "lucide-react";
 
 /**
@@ -205,16 +204,12 @@ export default function CompanyCard({
               className={`w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer ${
                 company.status === "active"
                   ? "text-emerald-500 hover:text-emerald-600 hover:bg-emerald-500/10 dark:hover:bg-emerald-500/20"
-                  : "text-rose-500 hover:text-emerald-500 hover:bg-rose-500/10 dark:hover:bg-rose-500/20"
+                  : "text-slate-400 hover:text-emerald-500 hover:bg-emerald-500/10 dark:hover:bg-emerald-500/20"
               }`}
-              title={company.status === "active" ? "Disable Company (Currently Active)" : "Enable Company (Currently Disabled)"}
-              aria-label={company.status === "active" ? "Disable company" : "Enable company"}
+              title={company.status === "active" ? "Deactivate Company" : "Activate Company"}
+              aria-label={company.status === "active" ? "Deactivate company" : "Activate company"}
             >
-              {company.status === "active" ? (
-                <Power className="w-4 h-4" />
-              ) : (
-                <PowerOff className="w-4 h-4" />
-              )}
+              <Power className="w-4 h-4" />
             </button>
 
             {/* 3. Edit Button */}

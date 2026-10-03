@@ -110,6 +110,9 @@ function AppRoutes() {
       <Route path="/coding-round/test/:difficulty" element={<CodingRound />} />
       <Route path="/interview-practice/:companyId/coding" element={<CodingRound />} />
 
+      {/* Dedicated Proctored Assessment Control Room (Fullscreen Standalone without website navbar/sidebar) */}
+      <Route path="/tests/attempt/:attemptId" element={<TestEngine />} />
+
       <Route element={<StudentLayout />}>
         <Route path="/dashboard" element={<StudentDashboard />} />
         <Route path="/profile" element={<Profile />} />
@@ -125,7 +128,6 @@ function AppRoutes() {
         <Route path="/practice/coding/history" element={<CodingHistory />} />
         <Route path="/practice/bookmarks" element={<Bookmarks />} />
         <Route path="/tests" element={<AvailableTests />} />
-        <Route path="/tests/attempt/:attemptId" element={<TestEngine />} />
         <Route path="/tests/result/:attemptId" element={<TestResult />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />

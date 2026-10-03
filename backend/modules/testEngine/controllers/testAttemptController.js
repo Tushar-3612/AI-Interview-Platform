@@ -51,7 +51,7 @@ export const getAssignedTests = async (req, res) => {
       .populate("testId", "title description companyId testType difficulty duration passingMarks attemptLimit subjects status scheduledAt startAt endAt closedAt questions.marks")
       .lean();
 
-    const attempts = await TestAttempt.find({ userId }).select("testId status").lean();
+    const attempts = await TestAttempt.find({ userId }).select("testId status attemptCount").lean();
     const attemptMap = {};
     attempts.forEach(a => { attemptMap[a.testId.toString()] = a; });
 
@@ -66,12 +66,18 @@ export const getAssignedTests = async (req, res) => {
       .map(a => {
         const test = a.testId;
         const attempt = attemptMap[test._id.toString()];
+        const attemptLimit = test.attemptLimit || 1;
+        const attemptsUsed = (attempt?.status === "completed" || attempt?.status === "auto_submitted")
+          ? (attempt.attemptCount || 1)
+          : (attempt?.status === "started" ? (attempt.attemptCount || 1) : 0);
+        const canRetake = (attempt?.status === "completed" || attempt?.status === "auto_submitted") && attemptsUsed < attemptLimit;
+
         let testStatus = "available";
 
-        if (attempt?.status === "completed" || attempt?.status === "auto_submitted") {
-          testStatus = "completed";
-        } else if (attempt?.status === "started") {
+        if (attempt?.status === "started") {
           testStatus = "started";
+        } else if (attempt?.status === "completed" || attempt?.status === "auto_submitted") {
+          testStatus = "completed";
         } else if (test.status === "completed" || test.closedAt) {
           testStatus = "expired";
         } else if (test.startAt && new Date(test.startAt) > now) {
@@ -93,7 +99,10 @@ export const getAssignedTests = async (req, res) => {
           difficulty: test.difficulty,
           duration: test.duration,
           passingMarks: test.passingMarks,
-          attemptLimit: test.attemptLimit,
+          attemptLimit,
+          attemptCount: attemptsUsed,
+          canRetake,
+          attemptsRemaining: Math.max(0, attemptLimit - attemptsUsed),
           subjects: test.subjects,
           totalQuestions: test.questions?.length || 0,
           totalMarks: test.questions?.reduce((s, q) => s + (q.marks || 0), 0) || 0,
@@ -171,8 +180,52 @@ export const startTest = async (req, res) => {
       let attempt = await TestAttempt.findOne({ testId, userId });
       if (attempt) {
         if (attempt.status === "completed" || attempt.status === "auto_submitted") {
-          return { statusCode: 400, data: { message: "Test already completed" } };
+          const attemptLimit = test.attemptLimit || 1;
+          const currentCount = attempt.attemptCount || 1;
+          if (currentCount >= attemptLimit) {
+            return { statusCode: 400, data: { message: `Attempt limit reached (${currentCount}/${attemptLimit} attempts used)` } };
+          }
+
+          // Retake: reset attempt fields for new attempt session
+          attempt.status = "started";
+          attempt.attemptCount = currentCount + 1;
+          attempt.startTime = now;
+          attempt.endTime = computeEndTime();
+          attempt.lastHeartbeatAt = now;
+          attempt.currentQuestionIndex = 0;
+          attempt.tabSwitchCount = 0;
+          attempt.tabSwitches = [];
+          attempt.integrityEvents = [];
+          attempt.totalAwayTimeSeconds = 0;
+          attempt.browserCloseDetected = false;
+          attempt.networkFailureDetected = false;
+          attempt.totalScore = 0;
+          attempt.autoSubmitReason = "";
+          attempt.submittedAt = null;
+          attempt.answers = test.questions.map((q, idx) => ({
+            questionIndex: idx,
+            questionId: q._id?.toString() || "",
+            type: q.type === "Coding" || q.problemTitle || (q.testCases && q.testCases.length > 0)
+              ? "Coding"
+              : q.options?.length
+                ? "MCQ"
+                : "Descriptive",
+            answer: "",
+            code: "",
+            language: "",
+            status: "not_visited",
+            marks: q.marks || 1,
+            scoredMarks: 0,
+          }));
+          await attempt.save();
+
+          await TestAssignment.findByIdAndUpdate(assignment._id, {
+            $inc: { startedCount: 1 },
+          });
+
+          return { statusCode: 200, data: { attempt, test: sanitizedTest } };
         }
+
         // Resume existing in-progress attempt without resetting timer
         if (attempt.endTime && now.getTime() > new Date(attempt.endTime).getTime()) {
           attempt.status = "auto_submitted";
@@ -606,15 +659,20 @@ export const getTestResult = async (req, res) => {
         submittedAt: attempt.submittedAt,
         tabSwitchCount: attempt.tabSwitchCount,
         autoSubmitReason: attempt.autoSubmitReason,
+        attemptCount: attempt.attemptCount || 1,
       },
       test: {
+        _id: test._id,
         title: test.title,
         companyId: test.companyId,
         testType: test.testType,
         difficulty: test.difficulty,
         duration: test.duration,
         passingMarks: test.passingMarks,
+        attemptLimit: test.attemptLimit || 1,
       },
+      canRetake: (attempt.attemptCount || 1) < (test.attemptLimit || 1),
+      attemptsRemaining: Math.max(0, (test.attemptLimit || 1) - (attempt.attemptCount || 1)),
     });
   } catch (error) {
     console.error("Get Result Error:", error.message);

@@ -10,24 +10,39 @@ import { getAuthToken } from "../../student/hooks/useStudentProfile.js";
 import toast from "react-hot-toast";
 import CodingQuestionRenderer from "../../codingAssessment/components/CodingQuestionRenderer.jsx";
 
-function Timer({ endTime, serverOffset = 0, onTimeUp }) {
-  const [display, setDisplay] = useState("");
+function Timer({ endTime, durationMinutes = 30, serverOffset = 0, onTimeUp }) {
+  const [display, setDisplay] = useState("00:00:00");
 
   useEffect(() => {
+    let targetEnd = NaN;
+    if (endTime) {
+      const parsed = new Date(endTime).getTime();
+      if (!isNaN(parsed) && parsed > 0) {
+        targetEnd = parsed;
+      }
+    }
+    if (isNaN(targetEnd)) {
+      targetEnd = Date.now() + (Number(durationMinutes) || 30) * 60000;
+    }
+
     const tick = () => {
       const now = Date.now() + serverOffset;
-      const end = new Date(endTime).getTime();
-      const diff = Math.max(0, end - now);
+      const diff = Math.max(0, targetEnd - now);
       const h = Math.floor(diff / 3600000);
       const m = Math.floor((diff % 3600000) / 60000);
       const s = Math.floor((diff % 60000) / 1000);
-      setDisplay(`${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`);
-      if (diff <= 0) onTimeUp();
+
+      const safeH = isNaN(h) ? "00" : String(h).padStart(2, "0");
+      const safeM = isNaN(m) ? "00" : String(m).padStart(2, "0");
+      const safeS = isNaN(s) ? "00" : String(s).padStart(2, "0");
+
+      setDisplay(`${safeH}:${safeM}:${safeS}`);
+      if (diff <= 0 && onTimeUp) onTimeUp();
     };
     tick();
     const interval = setInterval(tick, 1000);
     return () => clearInterval(interval);
-  }, [endTime, serverOffset, onTimeUp]);
+  }, [endTime, durationMinutes, serverOffset, onTimeUp]);
 
   const isLow = display.startsWith("00:0") || display.startsWith("00:00:");
   return (
@@ -185,13 +200,14 @@ function TestEngine() {
     if (attempt?.answers) {
       setAnswers(attempt.answers);
       setCurrentIdx(attempt.currentQuestionIndex || 0);
-      setEndTime(attempt.endTime);
+      const computedEnd = attempt.endTime || (attempt.startTime ? new Date(new Date(attempt.startTime).getTime() + (test?.duration || 30) * 60000).toISOString() : null);
+      setEndTime(computedEnd);
       setTabWarnings(attempt.tabSwitchCount || 0);
       if (attempt.status === "completed" || attempt.status === "auto_submitted") {
         setSubmitted(true);
       }
     }
-  }, [attempt]);
+  }, [attempt, test]);
 
   // Fullscreen requirement listener
   useEffect(() => {
@@ -583,7 +599,7 @@ function TestEngine() {
           </div>
           <div className="flex items-center gap-3">
             {saving && <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>Saving...</span>}
-            {endTime && <Timer endTime={endTime} serverOffset={serverOffset} onTimeUp={handleTimeUp} />}
+            <Timer endTime={endTime} durationMinutes={test?.duration || 30} serverOffset={serverOffset} onTimeUp={handleTimeUp} />
             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40">
               <ShieldAlert className="w-3.5 h-3.5" /> Proctoring Active
             </div>

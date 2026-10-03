@@ -46,11 +46,12 @@ function StudentLayout() {
     return <Navigate to="/" replace />;
   }
 
-  // Standalone interview room check
+  // Standalone interview & test assessment room check
   const isInterviewRoute =
     location.pathname === "/interview" ||
     location.pathname.startsWith("/interview/") ||
-    location.pathname.startsWith("/company-mock");
+    location.pathname.startsWith("/company-mock") ||
+    location.pathname.startsWith("/tests/attempt/");
 
   const handleStartInterview = (formData) => {
     updateProfile({

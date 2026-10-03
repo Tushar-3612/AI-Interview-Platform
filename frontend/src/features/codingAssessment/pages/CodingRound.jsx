@@ -719,8 +719,8 @@ function CodingRound() {
                 onClick={() => handleDifficultyChange(diff)}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition cursor-pointer ${
                   selectedDifficulty.toLowerCase() === diff.toLowerCase()
-                    ? "bg-[#FF6B35] text-white border-[#FF6B35] shadow-sm shadow-[#FF6B35]/30"
-                    : "border-[var(--border)] text-[var(--text-secondary)] hover:border-[#FF6B35]/40 bg-[var(--bg-secondary)]"
+                    ? "bg-[#06B6D4] text-white border-[#06B6D4] shadow-sm"
+                    : "border-[var(--border)] text-[var(--text-secondary)] hover:border-cyan-500/40 bg-[var(--bg-secondary)]"
                 }`}
               >
                 {diff} Track

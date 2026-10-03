@@ -153,9 +153,9 @@ export default function EditorToolbar({
           disabled={running || submitting}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer border disabled:opacity-50"
           style={{
-            borderColor: "rgba(255, 107, 53, 0.4)",
-            background: "rgba(255, 107, 53, 0.12)",
-            color: "#FF6B35",
+            borderColor: "rgba(6, 182, 212, 0.4)",
+            background: "rgba(6, 182, 212, 0.12)",
+            color: "#06B6D4",
           }}
         >
           {running ? (

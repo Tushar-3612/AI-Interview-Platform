@@ -20,7 +20,7 @@ export default function QuestionNavigator({
       case "hard":
         return "#EF4444";
       default:
-        return "#FF6B35";
+        return "#06B6D4";
     }
   };
 
@@ -34,7 +34,7 @@ export default function QuestionNavigator({
     >
       <div className="p-3 border-b shrink-0 flex items-center justify-between" style={{ borderColor: "var(--border)" }}>
         <h2 className="text-xs font-black uppercase tracking-wider text-[var(--text-muted)] flex items-center gap-1.5">
-          <Award className="w-3.5 h-3.5 text-[#FF6B35]" />
+          <Award className="w-3.5 h-3.5 text-cyan-400" />
           Questions ({questions.length})
         </h2>
       </div>
@@ -54,12 +54,12 @@ export default function QuestionNavigator({
               onClick={() => onSelectQuestion(idx)}
               className={`w-full text-left p-2.5 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-2 ${
                 isActive
-                  ? "ring-2 ring-[#FF6B35]/50 shadow-sm"
+                  ? "ring-2 ring-cyan-500/50 shadow-sm"
                   : "hover:bg-[var(--bg-secondary)] border-transparent"
               }`}
               style={{
-                borderColor: isActive ? "#FF6B35" : "var(--border)",
-                background: isActive ? "rgba(255, 107, 53, 0.08)" : "var(--bg-secondary)",
+                borderColor: isActive ? "#06B6D4" : "var(--border)",
+                background: isActive ? "rgba(6, 182, 212, 0.08)" : "var(--bg-secondary)",
               }}
             >
               <div className="flex items-center gap-2 min-w-0">

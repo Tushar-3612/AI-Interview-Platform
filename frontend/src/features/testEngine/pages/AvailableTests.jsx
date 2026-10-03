@@ -20,6 +20,8 @@ import {
   User,
   Loader2,
   RefreshCw,
+  LayoutGrid,
+  List,
 } from "lucide-react";
 import api from "../../../core/api/api.js";
 import { getAuthToken, useStudentProfile } from "../../student/hooks/useStudentProfile.js";
@@ -79,15 +81,11 @@ function formatDeadline(test) {
   }
   if (test.startAt && test.testStatus === "upcoming") {
     const start = new Date(test.startAt);
-    const dateStr = start.toLocaleDateString([], { month: "short", day: "numeric" });
-    const timeStr = start.toLocaleTimeString([], { hour: "numeric", minute: "2-digit", hour12: true });
-    return `Unlocks ${dateStr}, ${timeStr}`;
+    return `Unlocks ${start.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
   }
   if (test.scheduledAt && test.testStatus === "upcoming") {
     const sch = new Date(test.scheduledAt);
-    const dateStr = sch.toLocaleDateString([], { month: "short", day: "numeric" });
-    const timeStr = sch.toLocaleTimeString([], { hour: "numeric", minute: "2-digit", hour12: true });
-    return `Scheduled ${dateStr}, ${timeStr}`;
+    return `Scheduled ${sch.toLocaleDateString([], { month: "short", day: "numeric" })}`;
   }
   return null;
 }
@@ -97,6 +95,70 @@ function getTierLabel(score) {
   if (score >= 50) return "Tier 2";
   if (score >= 25) return "Tier 3";
   return "Tier 3";
+}
+
+function getStatusBadge(test) {
+  const isLive = test.testStatus === "available";
+  const isInProgress = test.testStatus === "started";
+  const isUpcoming = test.testStatus === "upcoming";
+  const isCompleted = test.testStatus === "completed";
+  const isExpired = test.testStatus === "expired";
+
+  if (isLive) {
+    return (
+      <span className="px-2.5 py-0.5 rounded-full bg-red-500/10 border border-red-500/30 text-red-400 flex items-center gap-1.5 text-[10.5px]">
+        <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+        Live Assessment
+      </span>
+    );
+  }
+  if (isInProgress) {
+    return (
+      <span className="px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center gap-1.5 text-[10.5px]">
+        <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+        In Progress
+      </span>
+    );
+  }
+  if (isUpcoming) {
+    return (
+      <span className="px-2.5 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 flex items-center gap-1.5 text-[10.5px]">
+        <Calendar className="w-3 h-3" />
+        Scheduled
+      </span>
+    );
+  }
+  if (isCompleted) {
+    return (
+      <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center gap-1.5 text-[10.5px]">
+        <CheckCircle className="w-3 h-3 text-emerald-400" />
+        Completed
+      </span>
+    );
+  }
+  if (isExpired) {
+    return (
+      <span className="px-2.5 py-0.5 rounded-full bg-gray-500/10 border border-gray-500/30 text-gray-400 flex items-center gap-1.5 text-[10.5px]">
+        <History className="w-3 h-3" />
+        Expired
+      </span>
+    );
+  }
+  return null;
+}
+
+function getAttemptBadgeText(test) {
+  if (test.canRetake) {
+    return `Attempt ${test.attemptCount || 1}/${test.attemptLimit} (Retake Available)`;
+  }
+  if (test.attemptLimit === 1) return "Single Attempt Only";
+  if (test.attemptLimit > 1) {
+    if (test.testStatus === "completed") {
+      return `All ${test.attemptLimit} Attempts Used`;
+    }
+    return `${test.attemptLimit} Attempts Allowed`;
+  }
+  return "Proctored Environment";
 }
 
 function TestInstructionsModal({ test, onAgree, onClose, starting }) {
@@ -206,6 +268,183 @@ export default function AvailableTests() {
   const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("due_date");
+  const [viewMode, setViewMode] = useState(() => {
+    return localStorage.getItem("tests_view_mode") || "list";
+  });
+
+  const handleViewModeChange = (mode) => {
+    setViewMode(mode);
+    localStorage.setItem("tests_view_mode", mode);
+  };
+
+  const renderActionButton = (test, isFullWidth = false) => {
+    const isLive = test.testStatus === "available";
+    const isInProgress = test.testStatus === "started";
+    const isUpcoming = test.testStatus === "upcoming";
+    const isCompleted = test.testStatus === "completed";
+    const isExpired = test.testStatus === "expired";
+
+    const widthClass = isFullWidth ? "w-full" : "w-full sm:w-auto sm:min-w-[130px]";
+
+    if (isLive) {
+      return (
+        <button
+          type="button"
+          onClick={() => setInstructions(test)}
+          disabled={starting === test._id}
+          className={`${widthClass} px-4 py-2 sm:py-2.5 rounded-xl text-xs font-extrabold text-white flex items-center justify-center gap-1.5 cursor-pointer transition-all shadow-md active:scale-95 uppercase tracking-wider hover:opacity-95`}
+          style={{
+            background: "linear-gradient(135deg, #FF6B35 0%, #FF8A3D 100%)",
+          }}
+        >
+          {starting === test._id ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          ) : (
+            <>
+              <span>Start Assessment</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </>
+          )}
+        </button>
+      );
+    }
+
+    if (isInProgress) {
+      return (
+        <button
+          type="button"
+          onClick={() => handleStart(test._id)}
+          disabled={starting === test._id}
+          className={`${widthClass} px-4 py-2 sm:py-2.5 rounded-xl text-xs font-extrabold border cursor-pointer transition-all active:scale-95 flex items-center justify-center gap-1.5 uppercase tracking-wider hover:bg-amber-500/20`}
+          style={{
+            background: "rgba(245, 158, 11, 0.12)",
+            borderColor: "rgba(245, 158, 11, 0.40)",
+            color: "#F59E0B",
+          }}
+        >
+          {starting === test._id ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          ) : (
+            <>
+              <Play className="w-3.5 h-3.5 fill-current" />
+              <span>Resume Test</span>
+            </>
+          )}
+        </button>
+      );
+    }
+
+    if (isUpcoming) {
+      return (
+        <button
+          type="button"
+          onClick={() => handleRemindMe(test.title)}
+          className={`${widthClass} px-4 py-2 sm:py-2.5 rounded-xl text-xs font-bold border cursor-pointer transition-all active:scale-95 flex items-center justify-center gap-1.5 hover:bg-cyan-500/15`}
+          style={{
+            background: "rgba(6, 182, 212, 0.08)",
+            borderColor: "rgba(6, 182, 212, 0.35)",
+            color: "#06B6D4",
+          }}
+        >
+          <Bell className="w-3.5 h-3.5" />
+          <span>Set Reminder</span>
+        </button>
+      );
+    }
+
+    if (isCompleted) {
+      const canRetake = Boolean(test.canRetake || (test.attemptLimit > 1 && (test.attemptCount || 1) < test.attemptLimit));
+
+      if (canRetake) {
+        return (
+          <div className={`flex items-center gap-2 ${isFullWidth ? "w-full" : "w-full sm:w-auto"}`}>
+            <button
+              type="button"
+              onClick={() => navigate(`/tests/result/${test.attemptId || test._id}`)}
+              className={`${isFullWidth ? "flex-1" : "px-3.5"} py-2 sm:py-2.5 rounded-xl text-xs font-bold border cursor-pointer transition-all active:scale-95 flex items-center justify-center gap-1.5 hover:bg-emerald-500/20`}
+              style={{
+                background: "rgba(16, 185, 129, 0.12)",
+                borderColor: "rgba(16, 185, 129, 0.35)",
+                color: "#10B981",
+              }}
+            >
+              <Check className="w-3.5 h-3.5" />
+              <span>Result</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setInstructions(test)}
+              disabled={starting === test._id}
+              className={`${isFullWidth ? "flex-1" : "px-4"} py-2 sm:py-2.5 rounded-xl text-xs font-extrabold text-white flex items-center justify-center gap-1.5 cursor-pointer transition-all shadow-md active:scale-95 uppercase tracking-wider hover:opacity-95`}
+              style={{
+                background: "linear-gradient(135deg, #FF6B35 0%, #FF8A3D 100%)",
+              }}
+            >
+              {starting === test._id ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <>
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  <span>Retake Test</span>
+                </>
+              )}
+            </button>
+          </div>
+        );
+      }
+
+      return (
+        <button
+          type="button"
+          onClick={() => navigate(`/tests/result/${test.attemptId || test._id}`)}
+          className={`${widthClass} px-4 py-2 sm:py-2.5 rounded-xl text-xs font-bold border cursor-pointer transition-all active:scale-95 flex items-center justify-center gap-1.5 hover:bg-emerald-500/20`}
+          style={{
+            background: "rgba(16, 185, 129, 0.12)",
+            borderColor: "rgba(16, 185, 129, 0.35)",
+            color: "#10B981",
+          }}
+        >
+          <Check className="w-3.5 h-3.5" />
+          <span>View Result</span>
+        </button>
+      );
+    }
+
+    if (isExpired) {
+      return (
+        <button
+          type="button"
+          onClick={() => {
+            if (test.attemptId) {
+              navigate(`/tests/result/${test.attemptId}`);
+            } else {
+              toast.error("This assessment has concluded and is no longer accepting attempts.");
+            }
+          }}
+          className={`${widthClass} px-4 py-2 sm:py-2.5 rounded-xl text-xs font-bold border cursor-pointer transition-all active:scale-95 flex items-center justify-center gap-1.5 hover:bg-white/10`}
+          style={{
+            background: "rgba(255, 255, 255, 0.04)",
+            borderColor: "rgba(255, 255, 255, 0.10)",
+            color: "var(--text-secondary)",
+          }}
+        >
+          {test.attemptId ? (
+            <>
+              <Check className="w-3.5 h-3.5" />
+              <span>View Result</span>
+            </>
+          ) : (
+            <>
+              <History className="w-3.5 h-3.5" />
+              <span>Concluded</span>
+            </>
+          )}
+        </button>
+      );
+    }
+
+    return null;
+  };
 
   const fetchData = async () => {
     setLoading(true);
@@ -301,7 +540,7 @@ export default function AvailableTests() {
 
     if (activeTab === "active") {
       result = result.filter(
-        (t) => t.testStatus === "available" || t.testStatus === "started"
+        (t) => t.testStatus === "available" || t.testStatus === "started" || t.canRetake
       );
     } else if (activeTab === "upcoming") {
       result = result.filter((t) => t.testStatus === "upcoming");
@@ -747,33 +986,90 @@ export default function AvailableTests() {
               <option value="title" className="bg-[#101420]">Title</option>
             </select>
           </div>
+
+          {/* View Mode Toggle (Aligned Vertically List / Compact Grid) */}
+          <div
+            className="flex items-center p-0.5 rounded-xl border shrink-0"
+            style={{
+              background: "var(--card-bg)",
+              borderColor: "var(--border)",
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => handleViewModeChange("list")}
+              className={`p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                viewMode === "list"
+                  ? "bg-[#FF6B35] text-white shadow-sm"
+                  : "text-gray-400 hover:text-white"
+              }`}
+              title="Vertical List View"
+            >
+              <List className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">List</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleViewModeChange("grid")}
+              className={`p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                viewMode === "grid"
+                  ? "bg-[#FF6B35] text-white shadow-sm"
+                  : "text-gray-400 hover:text-white"
+              }`}
+              title="Compact Grid View"
+            >
+              <LayoutGrid className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Grid</span>
+            </button>
+          </div>
         </div>
       </div>
 
       {/* ═══════════════════════════════════════════════
-          TEST CARDS LIST (Screen-Fitted)
+          TEST CARDS (Compact & Aligned Vertically)
       ═══════════════════════════════════════════════ */}
       {loading ? (
-        <div className="space-y-4">
-          {[1, 2, 3].map((n) => (
-            <div
-              key={n}
-              className="p-5 sm:p-6 rounded-2xl border animate-pulse space-y-4"
-              style={{ background: "var(--card-bg)", borderColor: "var(--border)" }}
-            >
-              <div className="flex justify-between items-center">
-                <div className="h-5 w-28 bg-white/10 rounded-full" />
-                <div className="h-4 w-20 bg-white/10 rounded-md" />
+        viewMode === "grid" ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4">
+            {[1, 2, 3].map((n) => (
+              <div
+                key={n}
+                className="p-4 rounded-2xl border animate-pulse space-y-3"
+                style={{ background: "var(--card-bg)", borderColor: "var(--border)" }}
+              >
+                <div className="flex justify-between items-center">
+                  <div className="h-4 w-20 bg-white/10 rounded-full" />
+                  <div className="h-3 w-16 bg-white/10 rounded-md" />
+                </div>
+                <div className="h-5 w-3/4 bg-white/10 rounded-md" />
+                <div className="h-14 w-full bg-white/5 rounded-xl" />
+                <div className="h-8 w-full bg-white/10 rounded-xl" />
               </div>
-              <div className="h-6 w-2/3 bg-white/10 rounded-md" />
-              <div className="h-4 w-full bg-white/5 rounded-md" />
-              <div className="h-16 w-full bg-white/5 rounded-xl" />
-              <div className="h-11 w-full bg-white/10 rounded-xl" />
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="space-y-2.5">
+            {[1, 2, 3, 4].map((n) => (
+              <div
+                key={n}
+                className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border animate-pulse flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
+                style={{ background: "var(--card-bg)", borderColor: "var(--border)" }}
+              >
+                <div className="space-y-2 flex-1 w-full">
+                  <div className="flex gap-2">
+                    <div className="h-4 w-16 bg-white/10 rounded-full" />
+                    <div className="h-4 w-24 bg-white/5 rounded-full" />
+                  </div>
+                  <div className="h-5 w-48 bg-white/10 rounded-md" />
+                  <div className="h-3 w-64 bg-white/5 rounded-md" />
+                </div>
+                <div className="h-9 w-28 bg-white/10 rounded-xl shrink-0" />
+              </div>
+            ))}
+          </div>
+        )
       ) : (
-        <div className="space-y-4">
+        <div className={viewMode === "grid" ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4" : "space-y-2.5"}>
           {filteredTests.map((test, idx) => {
             const deadlineText = formatDeadline(test);
             const isLive = test.testStatus === "available";
@@ -793,240 +1089,175 @@ export default function AvailableTests() {
               ? test.testType.charAt(0).toUpperCase() + test.testType.slice(1)
               : "Assessment";
 
-            return (
-              <motion.div
-                key={test._id || idx}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.04 }}
-                className="p-4 sm:p-6 rounded-2xl border transition-all duration-200"
-                style={{
-                  background: "var(--card-bg)",
-                  borderColor: isLive ? "rgba(255, 107, 53, 0.35)" : "var(--border)",
-                  boxShadow: "var(--shadow-card)",
-                }}
-              >
-                <div className="space-y-3">
-                  {/* Top Badges & Status Row */}
-                  <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] font-bold">
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      {isLive && (
-                        <span className="px-2.5 py-0.5 rounded-full bg-red-500/10 border border-red-500/30 text-red-400 flex items-center gap-1.5">
-                          <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-                          Live Assessment
+            if (viewMode === "grid") {
+              return (
+                <motion.div
+                  key={test._id || idx}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.03 }}
+                  className="p-4 rounded-2xl border transition-all duration-200 hover:border-white/20 flex flex-col justify-between group"
+                  style={{
+                    background: "var(--card-bg)",
+                    borderColor: isLive ? "rgba(255, 107, 53, 0.4)" : "var(--border)",
+                    boxShadow: "var(--shadow-card)",
+                  }}
+                >
+                  <div className="space-y-2.5">
+                    {/* Top Badges & Status Row */}
+                    <div className="flex items-center justify-between gap-1.5 text-[10.5px] font-bold">
+                      <div className="flex items-center gap-1">
+                        {getStatusBadge(test)}
+                      </div>
+                      {deadlineText && (
+                        <span className="text-gray-400 flex items-center gap-1 font-medium text-[10.5px]">
+                          <Clock className="w-3 h-3 text-[#FF6B35]" />
+                          <span>{deadlineText}</span>
                         </span>
                       )}
-                      {isInProgress && (
-                        <span className="px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center gap-1.5">
-                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                          In Progress
-                        </span>
-                      )}
-                      {isUpcoming && (
-                        <span className="px-2.5 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 flex items-center gap-1.5">
-                          <Calendar className="w-3 h-3" />
-                          Scheduled
-                        </span>
-                      )}
-                      {isCompleted && (
-                        <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center gap-1.5">
-                          <CheckCircle className="w-3 h-3 text-emerald-400" />
-                          Completed
-                        </span>
-                      )}
-                      {isExpired && (
-                        <span className="px-2.5 py-0.5 rounded-full bg-gray-500/10 border border-gray-500/30 text-gray-400 flex items-center gap-1.5">
-                          <History className="w-3 h-3" />
-                          Expired
-                        </span>
-                      )}
-
-                      <span className="px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-gray-300">
-                        {attemptBadgeText}
-                      </span>
                     </div>
 
-                    {deadlineText && (
-                      <span className="text-gray-400 flex items-center gap-1 font-medium text-[11px]">
-                        <Clock className="w-3.5 h-3.5 text-[#FF6B35]" />
-                        <span>{deadlineText}</span>
-                      </span>
-                    )}
-                  </div>
+                    {/* Title & Sub */}
+                    <div>
+                      <h3
+                        className="text-base font-bold tracking-tight line-clamp-1"
+                        style={{ color: "var(--text-primary)" }}
+                      >
+                        {test.title}
+                      </h3>
+                      <div className="flex items-center gap-1.5 mt-0.5 text-[11px] text-gray-400">
+                        <span>{attemptBadgeText}</span>
+                        {(test.companyId || test.assignValue) && (
+                          <>
+                            <span>•</span>
+                            <span className="text-[#FF6B35] font-medium truncate">
+                              {test.companyId ? `Partner: ${test.companyId}` : test.assignValue}
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    </div>
 
-                  {/* Title */}
-                  <h3 className="text-base sm:text-xl font-bold tracking-tight" style={{ color: "var(--text-primary)" }}>
-                    {test.title}
-                  </h3>
-
-                  {/* Description */}
-                  {test.description && (
-                    <p className="text-xs sm:text-sm leading-relaxed line-clamp-2 sm:line-clamp-none" style={{ color: "var(--text-secondary)" }}>
-                      {test.description}
-                    </p>
-                  )}
-
-                  {/* Recessed Metadata Box */}
-                  <div
-                    className="p-3 sm:p-3.5 rounded-xl border text-xs space-y-2"
-                    style={{
-                      background: "rgba(0, 0, 0, 0.20)",
-                      borderColor: "rgba(255, 255, 255, 0.05)",
-                      color: "var(--text-secondary)",
-                    }}
-                  >
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 font-medium">
+                    {/* Recessed Mini Specs Box */}
+                    <div
+                      className="p-2.5 rounded-xl border text-[11px] grid grid-cols-2 gap-2"
+                      style={{
+                        background: "rgba(0, 0, 0, 0.20)",
+                        borderColor: "rgba(255, 255, 255, 0.05)",
+                        color: "var(--text-secondary)",
+                      }}
+                    >
                       <div className="flex items-center gap-1.5 min-w-0">
-                        <BookOpen className="w-3.5 h-3.5 text-[#FF6B35] shrink-0" />
+                        <BookOpen className="w-3 h-3 text-[#FF6B35]" />
                         <span className="truncate">{testTypeFormatted}</span>
                       </div>
                       <div className="flex items-center gap-1.5 min-w-0">
-                        <Clock className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                        <Clock className="w-3 h-3 text-gray-400 shrink-0" />
                         <span className="truncate">{test.duration || 30} mins</span>
                       </div>
                       <div className="flex items-center gap-1.5 min-w-0">
-                        <BarChart className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                        <BarChart className="w-3 h-3 text-gray-400 shrink-0" />
                         <span className="truncate">{test.totalMarks || 0} marks</span>
                       </div>
                       <div className="flex items-center gap-1.5 min-w-0">
-                        <FileText className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                        <FileText className="w-3 h-3 text-gray-400 shrink-0" />
                         <span className="truncate">{test.totalQuestions || 0} questions</span>
                       </div>
                     </div>
-
-                    {(test.startAt || test.scheduledAt) && (
-                      <div className="pt-1.5 border-t border-white/5 flex items-center justify-between text-gray-300 text-[11px]">
-                        <span className="flex items-center gap-1">
-                          <Calendar className="w-3.5 h-3.5 text-[#FF6B35] shrink-0" />
-                          <span>
-                            {new Date(test.startAt || test.scheduledAt).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })}
-                          </span>
-                        </span>
-                        <span className="font-semibold text-white">
-                          {new Date(test.startAt || test.scheduledAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit", hour12: true })}
-                          {test.endAt ? ` – ${new Date(test.endAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit", hour12: true })}` : ""}
-                        </span>
-                      </div>
-                    )}
-
-                    {(test.companyId || test.assignValue) && (
-                      <div className="pt-1 border-t border-white/5 flex items-center gap-1.5 text-gray-400 text-[11px]">
-                        <User className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-                        <span className="truncate">
-                          {test.companyId ? `Partner: ${test.companyId}` : `Assigned to: ${test.assignValue}`}
-                        </span>
-                      </div>
-                    )}
                   </div>
 
-                  {/* Full-width CTA Button */}
-                  <div className="pt-1">
-                    {isLive && (
-                      <button
-                        type="button"
-                        onClick={() => setInstructions(test)}
-                        disabled={starting === test._id}
-                        className="w-full py-3 sm:py-3.5 rounded-xl text-xs sm:text-sm font-extrabold text-white flex items-center justify-center gap-2 cursor-pointer transition-all shadow-md active:scale-98 uppercase tracking-wider"
-                        style={{
-                          background: "linear-gradient(135deg, #FF6B35 0%, #FF8A3D 100%)",
-                        }}
-                      >
-                        {starting === test._id ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <>
-                            <span>START ASSESSMENT</span>
-                            <ArrowRight className="w-4 h-4" />
-                          </>
-                        )}
-                      </button>
-                    )}
+                  {/* Action Button at bottom */}
+                  <div className="pt-3 mt-1">
+                    {renderActionButton(test, true)}
+                  </div>
+                </motion.div>
+              );
+            }
 
-                    {isInProgress && (
-                      <button
-                        type="button"
-                        onClick={() => handleStart(test._id)}
-                        disabled={starting === test._id}
-                        className="w-full py-3 sm:py-3.5 rounded-xl text-xs sm:text-sm font-extrabold border cursor-pointer transition-all active:scale-98 flex items-center justify-center gap-2 uppercase tracking-wider"
-                        style={{
-                          background: "rgba(245, 158, 11, 0.12)",
-                          borderColor: "rgba(245, 158, 11, 0.40)",
-                          color: "#F59E0B",
-                        }}
-                      >
-                        {starting === test._id ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <>
-                            <Play className="w-4 h-4 fill-current" />
-                            <span>RESUME TEST</span>
-                          </>
-                        )}
-                      </button>
-                    )}
+            return (
+              /* ── LIST VIEW (Small & Aligned Vertically) ── */
+              <motion.div
+                key={test._id || idx}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.03 }}
+                className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border transition-all duration-200 hover:border-white/20 group relative overflow-hidden"
+                style={{
+                  background: "var(--card-bg)",
+                  borderColor: isLive ? "rgba(255, 107, 53, 0.4)" : "var(--border)",
+                  boxShadow: "var(--shadow-card)",
+                }}
+              >
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                  {/* Left Info Column */}
+                  <div className="flex-1 min-w-0 space-y-1.5">
+                    {/* Badges Row */}
+                    <div className="flex flex-wrap items-center gap-1.5 text-[10.5px] font-bold">
+                      {getStatusBadge(test)}
+                      <span className="px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-gray-300">
+                        {attemptBadgeText}
+                      </span>
+                      {(test.companyId || test.assignValue) && (
+                        <span className="px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-gray-300 flex items-center gap-1">
+                          <User className="w-3 h-3 text-[#FF6B35]" />
+                          <span className="truncate max-w-[140px] sm:max-w-[220px]">
+                            {test.companyId ? test.companyId : test.assignValue}
+                          </span>
+                        </span>
+                      )}
+                      {deadlineText && (
+                        <span className="text-gray-400 flex items-center gap-1 font-medium text-[10.5px] sm:ml-auto lg:ml-2">
+                          <Clock className="w-3 h-3 text-[#FF6B35]" />
+                          <span>{deadlineText}</span>
+                        </span>
+                      )}
+                    </div>
 
-                    {isUpcoming && (
-                      <button
-                        type="button"
-                        onClick={() => handleRemindMe(test.title)}
-                        className="w-full py-3 rounded-xl text-xs sm:text-sm font-bold border cursor-pointer transition-all active:scale-98 flex items-center justify-center gap-2"
-                        style={{
-                          background: "rgba(6, 182, 212, 0.08)",
-                          borderColor: "rgba(6, 182, 212, 0.35)",
-                          color: "#06B6D4",
-                        }}
+                    {/* Title & Description */}
+                    <div className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-3">
+                      <h3
+                        className="text-sm sm:text-base font-bold tracking-tight truncate"
+                        style={{ color: "var(--text-primary)" }}
                       >
-                        <Bell className="w-4 h-4" />
-                        <span>Set Reminder</span>
-                      </button>
-                    )}
+                        {test.title}
+                      </h3>
+                      {test.description && (
+                        <p
+                          className="text-xs line-clamp-1 max-w-xl hidden sm:block"
+                          style={{ color: "var(--text-secondary)" }}
+                        >
+                          {test.description}
+                        </p>
+                      )}
+                    </div>
 
-                    {isCompleted && (
-                      <button
-                        type="button"
-                        onClick={() => navigate(`/tests/result/${test.attemptId || test._id}`)}
-                        className="w-full py-3 rounded-xl text-xs sm:text-sm font-bold border cursor-pointer transition-all active:scale-98 flex items-center justify-center gap-2"
-                        style={{
-                          background: "rgba(16, 185, 129, 0.10)",
-                          borderColor: "rgba(16, 185, 129, 0.35)",
-                          color: "#10B981",
-                        }}
-                      >
-                        <Check className="w-4 h-4" />
-                        <span>View Result</span>
-                      </button>
-                    )}
+                    {/* Specs row */}
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-[11px] text-[var(--text-secondary)] font-medium">
+                      <div className="flex items-center gap-1">
+                        <BookOpen className="w-3 h-3 text-[#FF6B35]" />
+                        <span>{testTypeFormatted}</span>
+                      </div>
+                      <span className="text-white/20">•</span>
+                      <div className="flex items-center gap-1">
+                        <Clock className="w-3 h-3 text-gray-400 shrink-0" />
+                        <span>{test.duration || 30} mins</span>
+                      </div>
+                      <span className="text-white/20">•</span>
+                      <div className="flex items-center gap-1">
+                        <BarChart className="w-3 h-3 text-gray-400 shrink-0" />
+                        <span>{test.totalMarks || 0} marks</span>
+                      </div>
+                      <span className="text-white/20">•</span>
+                      <div className="flex items-center gap-1">
+                        <FileText className="w-3 h-3 text-gray-400 shrink-0" />
+                        <span>{test.totalQuestions || 0} questions</span>
+                      </div>
+                    </div>
+                  </div>
 
-                    {isExpired && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (test.attemptId) {
-                            navigate(`/tests/result/${test.attemptId}`);
-                          } else {
-                            toast.error("This assessment has concluded and is no longer accepting attempts.");
-                          }
-                        }}
-                        className="w-full py-3 rounded-xl text-xs sm:text-sm font-bold border cursor-pointer transition-all active:scale-98 flex items-center justify-center gap-2"
-                        style={{
-                          background: "rgba(255, 255, 255, 0.04)",
-                          borderColor: "rgba(255, 255, 255, 0.10)",
-                          color: "var(--text-secondary)",
-                        }}
-                      >
-                        {test.attemptId ? (
-                          <>
-                            <Check className="w-4 h-4" />
-                            <span>View Submitted Result</span>
-                          </>
-                        ) : (
-                          <>
-                            <History className="w-4 h-4" />
-                            <span>Assessment Concluded</span>
-                          </>
-                        )}
-                      </button>
-                    )}
+                  {/* Right Action Button */}
+                  <div className="shrink-0 flex items-center justify-end pt-1 lg:pt-0 border-t border-white/5 lg:border-t-0">
+                    {renderActionButton(test, false)}
                   </div>
                 </div>
               </motion.div>

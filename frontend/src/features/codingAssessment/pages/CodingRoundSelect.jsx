@@ -26,9 +26,9 @@ const DIFFICULTY_CONFIG = [
     id: "Easy",
     name: "Easy Track",
     color: "#FF6B35",
-    bg: "rgba(255, 107, 53, 0.12)",
-    border: "rgba(255, 107, 53, 0.30)",
     glow: "rgba(255, 107, 53, 0.35)",
+    bg: "rgba(255, 107, 53, 0.12)",
+    border: "rgba(255, 107, 53, 0.28)",
     icon: Zap,
     duration: "30-45 mins",
     target: "Beginner & Freshers",
@@ -38,9 +38,9 @@ const DIFFICULTY_CONFIG = [
     id: "Medium",
     name: "Medium Track",
     color: "#FF6B35",
-    bg: "rgba(255, 107, 53, 0.12)",
-    border: "rgba(255, 107, 53, 0.30)",
     glow: "rgba(255, 107, 53, 0.35)",
+    bg: "rgba(255, 107, 53, 0.12)",
+    border: "rgba(255, 107, 53, 0.28)",
     icon: Flame,
     duration: "45-60 mins",
     target: "Standard OAs",
@@ -50,9 +50,9 @@ const DIFFICULTY_CONFIG = [
     id: "Hard",
     name: "Hard Track",
     color: "#FF6B35",
-    bg: "rgba(255, 107, 53, 0.12)",
-    border: "rgba(255, 107, 53, 0.30)",
     glow: "rgba(255, 107, 53, 0.35)",
+    bg: "rgba(255, 107, 53, 0.12)",
+    border: "rgba(255, 107, 53, 0.28)",
     icon: Cpu,
     duration: "60-90 mins",
     target: "Tier-1 & High CTC",
@@ -62,9 +62,9 @@ const DIFFICULTY_CONFIG = [
     id: "All",
     name: "Mixed Track",
     color: "#FF6B35",
-    bg: "rgba(255, 107, 53, 0.12)",
-    border: "rgba(255, 107, 53, 0.30)",
     glow: "rgba(255, 107, 53, 0.35)",
+    bg: "rgba(255, 107, 53, 0.12)",
+    border: "rgba(255, 107, 53, 0.28)",
     icon: Layers,
     duration: "60 mins",
     target: "Full OA Simulation",
@@ -212,7 +212,7 @@ export default function CodingRoundSelect() {
             </span>
           </div>
 
-          <div className="grid grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {DIFFICULTY_CONFIG.map((diff) => {
               const Icon = diff.icon;
               const isSelected = selectedDifficulty === diff.id;
@@ -224,67 +224,58 @@ export default function CodingRoundSelect() {
                   whileHover={{ y: -2 }}
                   whileTap={{ scale: 0.99 }}
                   onClick={() => setSelectedDifficulty(diff.id)}
-                  className="relative p-2.5 sm:p-4 lg:p-5 rounded-xl sm:rounded-2xl transition-all cursor-pointer flex flex-col overflow-hidden"
+                  className={`relative p-5 rounded-2xl transition-all cursor-pointer flex flex-col justify-between overflow-hidden border ${
+                    isSelected
+                      ? "border-[#FF6B35] ring-2 ring-[#FF6B35]/30 shadow-lg shadow-[#FF6B35]/15"
+                      : "border-[var(--border)] hover:border-[#FF6B35]/40"
+                  }`}
                   style={{
                     background: isSelected
-                      ? `color-mix(in srgb, ${diff.color} 18%, var(--card-bg))`
+                      ? `color-mix(in srgb, ${diff.color} 16%, var(--card-bg))`
                       : "var(--card-bg)",
-                    border: `1px solid ${isSelected ? diff.border : "var(--border)"}`,
                   }}
                 >
-                  {/* Icon + count */}
-                  <div className="flex items-start justify-between gap-1 sm:block sm:space-y-3">
-                    <div
-                      className="w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center border shrink-0"
-                      style={{
-                        background: diff.bg,
-                        borderColor: diff.border,
-                        color: diff.color,
-                      }}
-                    >
-                      <Icon className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
-                    </div>
-                    <span
-                      className="text-[9px] sm:text-xs font-bold font-mono px-1.5 py-0.5 rounded-md border sm:hidden"
-                      style={{
-                        color: diff.color,
-                        borderColor: diff.border,
-                        background: diff.bg,
-                      }}
-                    >
-                      {loadingStats ? "..." : questionCount}Q
-                    </span>
-                  </div>
-
-                  {/* Name + count badge (desktop) */}
-                  <div className="mt-2 sm:mt-0">
-                    <div className="hidden sm:flex items-center justify-between mb-2">
-                      <span
-                        className="text-xs font-bold font-mono px-2 py-0.5 rounded-md border"
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div
+                        className="w-10 h-10 rounded-xl flex items-center justify-center border"
                         style={{
-                          color: diff.color,
-                          borderColor: diff.border,
                           background: diff.bg,
+                          borderColor: diff.border,
+                          color: diff.color,
                         }}
                       >
-                        {loadingStats ? "..." : `${questionCount} Questions`}
-                      </span>
+                        <Icon className="w-5 h-5" />
+                      </div>
+                      <div className="text-right">
+                        <span className="text-xs font-bold font-mono px-2 py-0.5 rounded-md border"
+                          style={{
+                            color: diff.color,
+                            borderColor: diff.border,
+                            background: diff.bg,
+                          }}
+                        >
+                          {loadingStats ? "..." : `${questionCount} Questions`}
+                        </span>
+                      </div>
                     </div>
-                    <h3 className="text-[11px] sm:text-base font-extrabold text-[var(--text-primary)] leading-tight">
-                      {diff.name}
-                    </h3>
-                    <p className="hidden sm:block text-xs text-[var(--text-secondary)] mt-1 leading-relaxed">
-                      {diff.description}
-                    </p>
+
+                    <div>
+                      <h3 className="text-base font-extrabold text-[var(--text-primary)]">
+                        {diff.name}
+                      </h3>
+                      <p className="text-xs text-[var(--text-secondary)] mt-1 leading-relaxed">
+                        {diff.description}
+                      </p>
+                    </div>
                   </div>
 
-                  {/* Footer — hidden on mobile to avoid truncation */}
                   <div
-                    className="hidden sm:flex pt-3 border-t mt-3 items-center justify-between text-[11px]"
+                    className="pt-3 border-t mt-3 flex items-center justify-between text-[11px]"
                     style={{ borderColor: "var(--border)" }}
                   >
                     <span className="flex items-center gap-1 text-[var(--text-muted)] font-medium">
-                      <Timer className="w-3.5 h-3.5 shrink-0" />
+                      <Timer className="w-3.5 h-3.5" />
                       {diff.duration}
                     </span>
                     <span
@@ -345,8 +336,8 @@ export default function CodingRoundSelect() {
                     onClick={() => setQuestionLimit(opt.id)}
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
                       questionLimit === opt.id
-                        ? "bg-[var(--text-primary)] text-[var(--bg-primary)] border-[var(--text-primary)]"
-                        : "bg-[var(--card-bg)] text-[var(--text-secondary)] border-[var(--border)] hover:border-[var(--text-primary)]/40"
+                        ? "bg-[#FF6B35] text-white border-[#FF6B35] shadow-sm shadow-[#FF6B35]/30"
+                        : "bg-[var(--card-bg)] text-[var(--text-secondary)] border-[var(--border)] hover:border-[#FF6B35]/40"
                     }`}
                   >
                     {opt.label}
@@ -381,7 +372,7 @@ export default function CodingRoundSelect() {
             className="flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-2xl text-sm font-black text-white shadow-lg cursor-pointer transition-all shrink-0"
             style={{
               background: "linear-gradient(135deg, #FF6B35 0%, #FF8A3D 100%)",
-              boxShadow: "0 8px 25px -4px rgba(255, 107, 53, 0.4)",
+              boxShadow: "0 8px 25px -4px rgba(255, 107, 53, 0.45)",
             }}
           >
             <Play className="w-4 h-4 fill-white" />
@@ -395,7 +386,7 @@ export default function CodingRoundSelect() {
       <section className="bg-[var(--card-bg)] border border-[var(--border)] rounded-[24px] p-5 sm:p-7 shadow-[var(--shadow-card)] space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400">
+            <div className="w-8 h-8 rounded-xl bg-[#FF6B35]/10 border border-[#FF6B35]/30 flex items-center justify-center text-[#FF6B35]">
               <History className="w-4 h-4" />
             </div>
             <div>
@@ -417,7 +408,7 @@ export default function CodingRoundSelect() {
         </div>
 
         {loadingHistory ? (
-          <div className="py-10 text-center text-xs text-[var(--text-muted)]">
+            <div className="py-10 text-center text-xs text-[var(--text-muted)]">
             Loading submission history...
           </div>
         ) : recentSubmissions.length === 0 ? (

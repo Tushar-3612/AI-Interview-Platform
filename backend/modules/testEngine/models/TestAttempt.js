@@ -66,6 +66,7 @@ const testAttemptSchema = new mongoose.Schema({
   totalScore: { type: Number, default: 0 },
   autoSubmitReason: { type: String, default: "" },
   submittedAt: { type: Date },
+  attemptCount: { type: Number, default: 1 },
 }, { timestamps: true });
 
 testAttemptSchema.index({ userId: 1, testId: 1 }, { unique: true });
