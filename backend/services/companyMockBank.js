@@ -82,8 +82,11 @@ function normalizeQuestion(q, company) {
   if (qType === "Conceptual") qType = isMCQ ? "MCQ" : "Technical";
   if (isMCQ) qType = "MCQ";
 
+  const qId = String(q.questionId || q._id || "");
+
   return {
-    questionId: String(q.questionId || q._id || ""),
+    _id: q._id ? String(q._id) : qId,
+    questionId: qId,
     topic: q.topic || q.category || q.subtopic || "Technical Fundamentals",
     subtopic: q.subtopic || "",
     difficulty: q.difficulty || "Medium",
@@ -208,6 +211,7 @@ export function loadCompanyMockCoding(company) {
     return arr
       .filter((q) => q && (q.title || q.problemStatement) && !!q.questionId)
       .map((q) => ({
+        _id: q._id ? String(q._id) : String(q.questionId),
         questionId: String(q.questionId),
         title: q.title || q.problemStatement || "",
         company: String(q.company || company || ""),
@@ -248,16 +252,17 @@ export function loadCompanyMockCoding(company) {
 }
 
 /**
- * Load exclusive company mock aptitude/MCQ questions from companyMock/<folder>/mcq.json
+ * Load exclusive company mock aptitude questions from companyMock/<folder>/aptitude.json.
+ * mcq.json is intentionally NOT loaded here because mcq.json contains company Technical MCQs.
  */
 export function loadCompanyMockAptitude(company) {
   const folder = toFolderName(company);
   const dir = companyMockDir();
   if (!dir) return [];
-  const mcqFile = path.join(dir, folder, "mcq.json");
-  if (!fs.existsSync(mcqFile)) return [];
+  const aptFile = path.join(dir, folder, "aptitude.json");
+  if (!fs.existsSync(aptFile)) return [];
   try {
-    const raw = JSON.parse(fs.readFileSync(mcqFile, "utf8"));
+    const raw = JSON.parse(fs.readFileSync(aptFile, "utf8"));
     const arr = Array.isArray(raw) ? raw : Array.isArray(raw.questions) ? raw.questions : [];
     return arr
       .filter((q) => q && (q.question || q.title) && (q.questionId || q._id))
@@ -267,7 +272,7 @@ export function loadCompanyMockAptitude(company) {
         questionType: "MCQ",
       }));
   } catch (err) {
-    console.warn(`[COMPANY MOCK] Failed to parse ${folder}/mcq.json for aptitude:`, err.message);
+    console.warn(`[COMPANY MOCK] Failed to parse ${folder}/aptitude.json for aptitude:`, err.message);
     return [];
   }
 }

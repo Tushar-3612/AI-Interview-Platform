@@ -155,19 +155,19 @@ flowchart LR
     
     MONGODB --> AUTH_CHECK{"Evaluate Real Interview<br/>Entitlement"}
     
-    AUTH_CHECK -- "User.isPremium === true" --> UNLIMITED["✅ UNLIMITED ACCESS<br/>Unlimited Real Interview Attempts"]
+    AUTH_CHECK -- "isPrephire === true OR isPremium === true" --> UNLIMITED["✅ UNLIMITED ACCESS<br/>Unlimited Real Interview Attempts"]
     
-    AUTH_CHECK -- "Standard Student (User.isPremium === false)" --> DAILY_LIMIT{"Check Today's Attempts"}
+    AUTH_CHECK -- "Standard Student (Non-Prephire & isPremium=false)" --> DAILY_LIMIT{"Check Today's Attempts"}
     
     DAILY_LIMIT -- "Attempt 1 Today" --> ALLOW["✅ ALLOWED<br/>First Attempt of the Day"]
     DAILY_LIMIT -- "Attempt 2+ Today" --> BLOCK["❌ 403 BLOCKED<br/>DAILY_INTERVIEW_LIMIT_REACHED"]
 ```
 
 ### Business Rules & Entitlement Matrix
-- **Authoritative Security**: Access is evaluated directly against the MongoDB `User` record (`User.isPremium === true`) on every session initialization request. Client-side state tampering and email domain spoofing are prevented.
-- **Normal Candidate (`isPremium === false`)**: Students without System-Admin-granted Premium status receive **1 Real Interview attempt per calendar day** regardless of email domain.
+- **Authoritative Security**: Access is evaluated directly against the MongoDB `User` record on every session initialization request. Client-side state tampering is prevented.
+- **Normal Candidate**: Non-`@prephire.com` students without Premium status receive **1 Real Interview attempt per calendar day**.
 - **Premium Candidate (`isPremium === true`)**: Receives **unlimited Real Interview attempts** regardless of department or email domain.
-- **Account-Based Security**: Email domains (including `@prephire.com`, `@gmail.com`, etc.) do **NOT** determine unlimited access. Only System-Admin-persisted `isPremium: true` status provides unlimited entitlement.
+- **Prephire Member (`@prephire.com`)**: Receives **unlimited Real Interview attempts** under platform domain partnership rules.
 - **Active Session Resume**: Any candidate with an existing `IN_PROGRESS` session started on the current calendar day is permitted to resume their session without consuming an extra attempt.
 
 ---
@@ -211,7 +211,7 @@ sequenceDiagram
 
     Candidate->>UI: Click "Start Real Interview"
     UI->>API: POST /api/student/interviews (Check Entitlement)
-    API->>DB: Verify User.isPremium & Daily Quota
+    API->>DB: Verify isPremium / isPrephire & Daily Quota
     API-->>UI: Session Initialized (sessionId)
 
     loop Interview Rounds (Project -> Technical -> Coding -> HR -> Aptitude)
@@ -432,7 +432,7 @@ flowchart TD
     START["Student Logged In"] --> UPLOAD["Upload Resume (PDF/DOCX)"]
     UPLOAD --> EXTRACT["Extract 6-Phase Intel & ATS Score"]
     EXTRACT --> START_INT["Click Start Real Interview"]
-    START_INT --> ENTITLEMENT{"Check Entitlement<br/>(User.isPremium || First Attempt Today)"}
+    START_INT --> ENTITLEMENT{"Check Entitlement<br/>(isPrephire || isPremium || First Attempt Today)"}
     
     ENTITLEMENT -- Denied --> BLOCKED["403 Daily Limit Reached Modal"]
     ENTITLEMENT -- Allowed --> CONSENT["Consent & Guidelines Modal"]

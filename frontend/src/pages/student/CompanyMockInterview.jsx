@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef, useMemo } from "react"
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import api from "../../utils/api";
+import { getAuthToken } from "../../hooks/useStudentProfile";
 import CompanyMockCodingIDE from "../../components/coding/CompanyMockCodingIDE";
 import InterviewAnswerInput from "../../components/interview/InterviewAnswerInput";
 import {
@@ -1101,7 +1102,7 @@ export default function CompanyMockInterview() {
             {/* Question Details Bar */}
             <div className="flex flex-wrap items-center gap-2 mb-4">
               <span className="text-xs font-bold uppercase tracking-wide" style={{ color: meta.color }}>
-                {question.questionType === "MCQ" ? "MCQ" : "Technical"}
+                {currentSection === "aptitude" ? (question.category || "Aptitude") : question.questionType === "MCQ" ? "MCQ" : "Technical"}
               </span>
               {question.difficulty && (
                 <span className="text-[10px] px-2 py-0.5 rounded-full font-bold" style={{

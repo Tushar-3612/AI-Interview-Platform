@@ -258,11 +258,11 @@ export default function MockInterview() {
         `${c.difficulty || "Standard"} Placement Assessment`;
 
       const aptitudeCount =
-        c.aptitudeCount ??
-        (c.technical != null ? c.technical : preset?.aptitudeCount ?? 30);
+        c.aptitudeCount ||
+        (c.technical != null && c.technical > 0 ? c.technical : preset?.aptitudeCount ?? 30);
       const codingCount =
-        c.codingCount ??
-        (c.coding != null ? c.coding : preset?.codingCount ?? 2);
+        c.codingCount ||
+        (c.coding != null && c.coding > 0 ? c.coding : preset?.codingCount ?? 2);
 
       const duration = c.duration
         ? (typeof c.duration === "number" ? `${c.duration} Mins` : c.duration)

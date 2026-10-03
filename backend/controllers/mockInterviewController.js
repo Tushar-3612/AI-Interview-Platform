@@ -23,6 +23,33 @@ import {
 
 const shuffle = (arr = []) => shuffleArray(arr);
 
+export function isOptionMatch(selected, correct, options = []) {
+  if (selected === undefined || selected === null || correct === undefined || correct === null) return false;
+  const s = String(selected).trim();
+  const c = String(correct).trim();
+  if (!s || !c) return false;
+  if (s.toLowerCase() === c.toLowerCase()) return true;
+
+  // Strip leading numbering or letter like "A. ", "A) ", "1. ", "Option A: "
+  const stripPrefix = (str) => str.replace(/^(option\s*)?[A-Da-d0-9][.)\s-]+/, "").trim();
+  if (stripPrefix(s).toLowerCase() === stripPrefix(c).toLowerCase()) return true;
+
+  // If correct is a single letter like "A" or "B" and selected starts with that letter
+  const letterMatch = s.match(/^([A-Da-d])[.)\s]/);
+  if (letterMatch && letterMatch[1].toLowerCase() === c.toLowerCase()) return true;
+
+  // Index match in options array
+  if (Array.isArray(options) && options.length > 0) {
+    const sIdx = options.findIndex((opt) => String(opt).trim().toLowerCase() === s.toLowerCase());
+    const cIdx = options.findIndex((opt) => String(opt).trim().toLowerCase() === c.toLowerCase());
+    if (sIdx !== -1 && sIdx === cIdx) return true;
+    const letterIdx = ["a", "b", "c", "d"].indexOf(c.toLowerCase());
+    if (letterIdx !== -1 && sIdx === letterIdx) return true;
+  }
+
+  return false;
+}
+
 // Deterministic no-repeat picker across DB docs and local bank objects.
 function pickFromPool(pool, usedIds, count) {
   const result = [];
@@ -38,14 +65,15 @@ function pickFromPool(pool, usedIds, count) {
 
 // Client-safe shapes the Company Mock page renders (text/options/title/description).
 const toClientAptitude = (q) => ({
-  _id: q._id,
+  _id: q._id ? String(q._id) : String(q.questionId),
   questionId: q.questionId || String(q._id),
   question: q.question,
   text: q.question,
   options: Array.isArray(q.options) ? q.options : [],
-  category: q.category || "General",
-  difficulty: q.difficulty,
-  marks: q.marks,
+  category: q.category || "Aptitude",
+  difficulty: q.difficulty || "Medium",
+  marks: q.marks || 1,
+  questionType: "MCQ",
 });
 
 const toClientTechnical = (q) => {
@@ -136,27 +164,43 @@ async function fetchQuestionsByIds(attempt) {
   const technicalIds = idsOf(attempt.selectedQuestions?.technical);
   const codingIds = idsOf(attempt.selectedQuestions?.coding);
 
+  const companyAptPool = attempt.companyId ? await loadCompanyMockAptitudeAsync(attempt.companyId) : [];
+  const companyTechPool = attempt.companyId ? await loadCompanyMockTechnicalAsync(attempt.companyId) : [];
+  const companyCodingPool = attempt.companyId ? await loadCompanyMockCodingAsync(attempt.companyId) : [];
+
   const [aptitudeMap, technicalMap, codingMap] = await Promise.all([
     resolveSectionQuestions({
       ids: aptitudeIds,
       total: config.aptitudeCount,
       queryByObjectIds: (keys) => AptitudeQuestion.find({ _id: { $in: keys } }).lean(),
-      queryByQuestionIds: (keys) => AptitudeQuestion.find({ questionId: { $in: keys }, isDeleted: { $ne: true } }).lean(),
-      substitutePool: await AptitudeQuestion.find({ isActive: { $ne: false }, isDeleted: { $ne: true } }).lean(),
+      queryByQuestionIds: async (keys) => {
+        const dbDocs = await AptitudeQuestion.find({ questionId: { $in: keys }, isDeleted: { $ne: true } }).lean();
+        const jsonDocs = companyAptPool.filter((q) => keys.includes(String(q.questionId || q._id)));
+        return [...dbDocs, ...jsonDocs];
+      },
+      substitutePool: [...companyAptPool, ...(await AptitudeQuestion.find({ isActive: { $ne: false }, isDeleted: { $ne: true } }).lean())],
     }),
     resolveSectionQuestions({
       ids: technicalIds,
       total: config.technicalCount,
       queryByObjectIds: (keys) => TechnicalQuestion.find({ _id: { $in: keys } }).lean(),
-      queryByQuestionIds: (keys) => TechnicalQuestion.find({ questionId: { $in: keys }, isDeleted: { $ne: true } }).lean(),
-      substitutePool: await TechnicalQuestion.find({ isDeleted: { $ne: true }, isActive: { $ne: false }, options: { $ne: [] } }).lean(),
+      queryByQuestionIds: async (keys) => {
+        const dbDocs = await TechnicalQuestion.find({ questionId: { $in: keys }, isDeleted: { $ne: true } }).lean();
+        const jsonDocs = companyTechPool.filter((q) => keys.includes(String(q.questionId || q._id)));
+        return [...dbDocs, ...jsonDocs];
+      },
+      substitutePool: [...companyTechPool, ...(await TechnicalQuestion.find({ isDeleted: { $ne: true }, isActive: { $ne: false } }).lean())],
     }),
     resolveSectionQuestions({
       ids: codingIds,
       total: config.codingCount,
       queryByObjectIds: (keys) => CodingQuestion.find({ _id: { $in: keys } }).lean(),
-      queryByQuestionIds: (keys) => CodingQuestion.find({ questionId: { $in: keys }, isDeleted: { $ne: true } }).lean(),
-      substitutePool: await CodingQuestion.find({ isDeleted: { $ne: true }, isActive: { $ne: false } }).lean(),
+      queryByQuestionIds: async (keys) => {
+        const dbDocs = await CodingQuestion.find({ questionId: { $in: keys }, isDeleted: { $ne: true } }).lean();
+        const jsonDocs = companyCodingPool.filter((q) => keys.includes(String(q.questionId || q._id)));
+        return [...dbDocs, ...jsonDocs];
+      },
+      substitutePool: [...companyCodingPool, ...(await CodingQuestion.find({ isDeleted: { $ne: true }, isActive: { $ne: false } }).lean())],
     }),
   ]);
 
@@ -275,10 +319,12 @@ export const startMockInterview = async (req, res) => {
       return { questions: picked, resetType: null };
     }
 
-    /* ── 1) APTITUDE — Company-specific exclusive Mock Interview MCQ pool, distinct from practice bank ── */
+    /* ── 1) APTITUDE — Company-specific or standard Aptitude bank (Quantitative, Logical, Verbal) ── */
     const mockAptitude = (await loadCompanyMockAptitudeAsync(company.id)).map((q) => ({
       ...q,
       _id: q.questionId || String(q._id),
+      category: q.category || "Aptitude",
+      questionType: "MCQ",
     }));
 
     let aptitudePool = mockAptitude;
@@ -286,7 +332,12 @@ export const startMockInterview = async (req, res) => {
     if (aptitudePool.length < config.aptitudeCount) {
       const dbAptitude = (
         await AptitudeQuestion.find({ isActive: true, isDeleted: false }).lean()
-      ).map((q) => ({ ...q, _id: String(q._id || q.questionId) }));
+      ).map((q) => ({
+        ...q,
+        _id: String(q._id || q.questionId),
+        category: q.category || "Aptitude",
+        questionType: "MCQ",
+      }));
       const usedIds = new Set(aptitudePool.map((q) => String(q._id)));
       aptitudePool = aptitudePool.concat(
         pickFromPool(dbAptitude, usedIds, config.aptitudeCount - aptitudePool.length)
@@ -467,20 +518,33 @@ async function gradeAndFinalizeMock(attempt, { status = "completed" } = {}) {
     return map;
   };
 
-  const [aptitudeById, technicalDbById] = await Promise.all([
+  const [aptitudeDbById, technicalDbById] = await Promise.all([
     resolveGradingDocs(AptitudeQuestion, aptitudeIds),
     resolveGradingDocs(TechnicalQuestion, technicalIds),
   ]);
 
-  // Also load company-specific JSON questions (MCQ + free-text) into the grading map.
-  // JSON questions have string IDs (questionId), not MongoDB ObjectIds.
+  const aptitudeById = new Map(aptitudeDbById);
   const technicalById = new Map(technicalDbById);
+
   if (attempt.companyId) {
-    const companyJsonQuestions = loadCompanyMockTechnical(attempt.companyId);
-    for (const q of companyJsonQuestions) {
-      const qid = String(q.questionId);
-      if (technicalIds.includes(qid)) {
+    const [companyApt, companyTech] = await Promise.all([
+      loadCompanyMockAptitudeAsync(attempt.companyId),
+      loadCompanyMockTechnicalAsync(attempt.companyId),
+    ]);
+
+    for (const q of companyApt || []) {
+      const qid = String(q.questionId || q._id);
+      if (aptitudeIds.includes(qid) || !aptitudeById.has(qid)) {
+        aptitudeById.set(qid, q);
+        if (q._id) aptitudeById.set(String(q._id), q);
+      }
+    }
+
+    for (const q of companyTech || []) {
+      const qid = String(q.questionId || q._id);
+      if (technicalIds.includes(qid) || !technicalById.has(qid)) {
         technicalById.set(qid, q);
+        if (q._id) technicalById.set(String(q._id), q);
       }
     }
   }
@@ -489,7 +553,7 @@ async function gradeAndFinalizeMock(attempt, { status = "completed" } = {}) {
   let aptitudeCorrect = 0;
   (attempt.aptitudeAnswers || []).forEach((a) => {
     const q = aptitudeById.get(String(a.questionId));
-    a.isCorrect = !!(q && a.selectedOption && a.selectedOption === q.correctAnswer);
+    a.isCorrect = !!(q && a.selectedOption && isOptionMatch(a.selectedOption, q.correctAnswer, q.options));
     if (a.isCorrect) aptitudeCorrect++;
   });
 
@@ -508,7 +572,7 @@ async function gradeAndFinalizeMock(attempt, { status = "completed" } = {}) {
 
     if (hasOptions) {
       // MCQ: traditional correct/wrong grading — each MCQ worth its question's marks
-      a.isCorrect = !!(q && a.selectedOption && a.selectedOption === q.correctAnswer);
+      a.isCorrect = !!(q && a.selectedOption && isOptionMatch(a.selectedOption, q.correctAnswer, q.options));
       if (a.isCorrect) {
         technicalCorrect++;
         technicalMcqMarks += qMarks;
@@ -522,6 +586,11 @@ async function gradeAndFinalizeMock(attempt, { status = "completed" } = {}) {
 
   // Evaluate free-text answers with AI (sequentially to avoid rate limits)
   for (const { answer: a, question: q } of freeTextAnswers) {
+    if (typeof a.aiScore === "number" && a.aiScore !== null && a.evaluationStatus === "ai_evaluated") {
+      technicalAiMarks += a.aiScore;
+      technicalAiMaxMarks += a.aiMaxMarks || q?.marks || 3;
+      continue;
+    }
     if (!a.answer || !String(a.answer).trim()) {
       // No answer submitted
       a.aiScore = 0;
@@ -658,10 +727,9 @@ async function gradeAndFinalizeMock(attempt, { status = "completed" } = {}) {
   attempt.submittedAt = attempt.submittedAt || Date.now();
   attempt.pausedAt = null;
 
-  // Atomic final save — only transition from "completing" to final status.
-  // This prevents any concurrent progress save from overwriting the result.
+  // Final save — persist authoritative scores and answers
   await CompanyMockAttempt.findOneAndUpdate(
-    { _id: attempt._id, status: "completing" },
+    { _id: attempt._id },
     {
       $set: {
         status,
@@ -1401,48 +1469,73 @@ async function buildMockReviewData(attempt) {
     return buildMap(docs);
   };
 
-  const aptitudeMap = await resolve(AptitudeQuestion, idsOf(attempt.selectedQuestions?.aptitude));
-  const technicalDbMap = await resolve(TechnicalQuestion, idsOf(attempt.selectedQuestions?.technical));
-  const codingMap = await resolve(CodingQuestion, idsOf(attempt.selectedQuestions?.coding));
+  const [aptitudeDbMap, technicalDbMap, codingDbMap] = await Promise.all([
+    resolve(AptitudeQuestion, idsOf(attempt.selectedQuestions?.aptitude)),
+    resolve(TechnicalQuestion, idsOf(attempt.selectedQuestions?.technical)),
+    resolve(CodingQuestion, idsOf(attempt.selectedQuestions?.coding)),
+  ]);
 
-  // Also load company-specific JSON questions (MCQ + free-text) into the review map.
+  const aptitudeMap = new Map(aptitudeDbMap);
   const technicalMap = new Map(technicalDbMap);
+  const codingMap = new Map(codingDbMap);
+
   if (attempt.companyId) {
-    const companyJsonQuestions = loadCompanyMockTechnical(attempt.companyId);
-    for (const q of companyJsonQuestions) {
-      const qid = String(q.questionId);
-      const selectedIds = (attempt.selectedQuestions?.technical || []).map(String);
-      if (selectedIds.includes(qid)) {
-        technicalMap.set(qid, q);
-      }
+    const [companyApt, companyTech, companyCoding] = await Promise.all([
+      loadCompanyMockAptitudeAsync(attempt.companyId),
+      loadCompanyMockTechnicalAsync(attempt.companyId),
+      loadCompanyMockCodingAsync(attempt.companyId),
+    ]);
+
+    for (const q of companyApt || []) {
+      const qid = String(q.questionId || q._id);
+      aptitudeMap.set(qid, q);
+      if (q._id) aptitudeMap.set(String(q._id), q);
+    }
+
+    for (const q of companyTech || []) {
+      const qid = String(q.questionId || q._id);
+      technicalMap.set(qid, q);
+      if (q._id) technicalMap.set(String(q._id), q);
+    }
+
+    for (const q of companyCoding || []) {
+      const qid = String(q.questionId || q._id);
+      codingMap.set(qid, q);
+      if (q._id) codingMap.set(String(q._id), q);
     }
   }
 
   const answerByKey = (answers) => {
     const m = new Map();
-    (answers || []).forEach((a) => m.set(String(a.questionId), a));
+    (answers || []).forEach((a) => {
+      if (a && a.questionId != null) m.set(String(a.questionId), a);
+    });
     return m;
   };
   const aptAnswers = answerByKey(attempt.aptitudeAnswers);
   const techAnswers = answerByKey(attempt.technicalAnswers);
   const codingAnswers = answerByKey(attempt.codingAnswers);
 
-  const idOf = (doc) => (doc ? String(doc._id) : "");
-  const matches = (key, doc) => key === idOf(doc) || (doc && doc.questionId && key === String(doc.questionId));
+  const idOf = (doc) => (doc ? String(doc._id || doc.questionId || "") : "");
+  const matches = (key, doc) =>
+    (doc && (key === String(doc._id) || key === String(doc.questionId))) || false;
 
   // Aptitude review — MCQ only.
   const aptitude = (attempt.selectedQuestions?.aptitude || []).map((rawKey, i) => {
-    const key = String(rawKey);
-    const doc = aptitudeMap.get(key);
+    const key = String(rawKey?.questionId || rawKey?._id || rawKey || "");
+    const doc = aptitudeMap.get(key) ||
+      [...aptitudeMap.values()].find((d) => String(d._id) === key || String(d.questionId) === key);
     const docKey = idOf(doc);
-    const answer = [...aptAnswers.entries()].find(([k]) => matches(k, doc))?.[1];
+    const answer = aptAnswers.get(key) ||
+      (doc && (aptAnswers.get(String(doc._id)) || aptAnswers.get(String(doc.questionId)))) ||
+      [...aptAnswers.entries()].find(([k]) => matches(k, doc))?.[1];
     const selectedOption = answer ? answer.selectedOption : null;
-    const isCorrect = !!(answer && answer.isCorrect);
-    const attempted = !!(answer && selectedOption !== undefined && selectedOption !== null && String(selectedOption).trim() !== "");
+    const attempted = !!(selectedOption !== undefined && selectedOption !== null && String(selectedOption).trim() !== "");
+    const isCorrect = attempted && doc ? isOptionMatch(selectedOption, doc.correctAnswer, doc.options) : !!(answer && answer.isCorrect);
     const status = attempted ? (isCorrect ? "correct" : "wrong") : "skipped";
     return {
       qn: i + 1,
-      question: doc ? doc.question || "" : "",
+      question: doc ? doc.question || doc.title || "" : "",
       options: Array.isArray(doc?.options) ? doc.options : [],
       correctAnswer: doc ? doc.correctAnswer || "" : "",
       selectedOption: attempted ? selectedOption : null,
@@ -1453,14 +1546,19 @@ async function buildMockReviewData(attempt) {
 
   // Technical review — MCQ or AI-evaluated free-text.
   const technical = (attempt.selectedQuestions?.technical || []).map((rawKey, i) => {
-    const key = String(rawKey);
-    const doc = technicalMap.get(key);
+    const key = String(rawKey?.questionId || rawKey?._id || rawKey || "");
+    const doc = technicalMap.get(key) ||
+      [...technicalMap.values()].find((d) => String(d._id) === key || String(d.questionId) === key);
     const docKey = idOf(doc);
-    const answer = [...techAnswers.entries()].find(([k]) => matches(k, doc))?.[1];
+    const answer = techAnswers.get(key) ||
+      (doc && (techAnswers.get(String(doc._id)) || techAnswers.get(String(doc.questionId)))) ||
+      [...techAnswers.entries()].find(([k]) => matches(k, doc))?.[1];
     const selectedOption = answer ? answer.selectedOption ?? answer.answer : null;
     const hasOptions = Array.isArray(doc?.options) && doc.options.length > 0;
-    const isCorrect = !!(answer && answer.isCorrect);
-    const attempted = !!(answer && selectedOption !== undefined && selectedOption !== null && String(selectedOption).trim() !== "");
+    const attempted = !!(selectedOption !== undefined && selectedOption !== null && String(selectedOption).trim() !== "");
+    const isCorrect = hasOptions
+      ? (attempted && doc ? isOptionMatch(selectedOption, doc.correctAnswer, doc.options) : false)
+      : !!(answer && answer.isCorrect);
     const evalStatus = answer?.evaluationStatus || (hasOptions ? "not_evaluated" : "pending");
     // Normalize questionType
     let qType = doc?.questionType || "Technical";
@@ -1469,7 +1567,7 @@ async function buildMockReviewData(attempt) {
     if (!hasOptions && qType === "MCQ") qType = "Technical";
     return {
       qn: i + 1,
-      question: doc ? doc.question || "" : "",
+      question: doc ? doc.question || doc.title || "" : "",
       options: hasOptions ? doc.options : [],
       questionType: qType,
       difficulty: doc?.difficulty || "Medium",
@@ -1494,10 +1592,13 @@ async function buildMockReviewData(attempt) {
 
   // Coding review — each problem separately.
   const coding = (attempt.selectedQuestions?.coding || []).map((rawKey, i) => {
-    const key = String(rawKey);
-    const doc = codingMap.get(key);
+    const key = String(rawKey?.questionId || rawKey?._id || rawKey || "");
+    const doc = codingMap.get(key) ||
+      [...codingMap.values()].find((d) => String(d._id) === key || String(d.questionId) === key);
     const docKey = idOf(doc);
-    const answer = [...codingAnswers.entries()].find(([k]) => matches(k, doc))?.[1];
+    const answer = codingAnswers.get(key) ||
+      (doc && (codingAnswers.get(String(doc._id)) || codingAnswers.get(String(doc.questionId)))) ||
+      [...codingAnswers.entries()].find(([k]) => matches(k, doc))?.[1];
     const code = (answer && answer.code) || "";
     const submitted = !!(code && String(code).trim());
     const totalCount = Number(answer?.totalCount) || 0;
@@ -1548,6 +1649,13 @@ export const getMockResult = async (req, res) => {
     if (!attempt) {
       return res.status(404).json({ message: "Result not found" });
     }
+
+    // Always re-grade completed attempts to guarantee that any improvements in question
+    // matching or bank loading are immediately reflected on the result screen.
+    if (["completed", "auto_submitted", "expired"].includes(attempt.status)) {
+      await gradeAndFinalizeMock(attempt, { status: attempt.status });
+    }
+
     const review = await buildMockReviewData(attempt);
     res.status(200).json({
       result: {
