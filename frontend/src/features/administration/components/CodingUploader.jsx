@@ -315,7 +315,7 @@ export default function CodingUpload({ source, onAdd, onCancel }) {
             </table>
           </div>
 
-          <div className="flex items-center justify-end gap-3">
+          <div className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-end gap-3 px-6 py-3 border-t admin-border" style={{ background: "var(--admin-surface, var(--card-bg))", backdropFilter: "blur(12px)" }}>
             <button onClick={onCancel}
               className="px-4 py-2 text-xs font-medium border admin-border rounded-lg admin-hover cursor-pointer"
               style={{ color: "var(--text-secondary)" }}>

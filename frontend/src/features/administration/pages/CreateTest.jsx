@@ -6,6 +6,22 @@ import api from "../../../core/api/api.js";
 import { getAuthToken } from "../../student/hooks/useStudentProfile.js";
 import toast from "react-hot-toast";
 
+// Convert datetime-local string (e.g. "2026-10-03T20:00") to ISO with local timezone offset
+function toLocalISOString(datetimeLocalValue) {
+  if (!datetimeLocalValue) return undefined;
+  const d = new Date(datetimeLocalValue);
+  if (isNaN(d.getTime())) return undefined;
+  // Offset in minutes (negative for UTC+)
+  const tzOffset = d.getTimezoneOffset();
+  const sign = tzOffset > 0 ? "-" : "+";
+  const abs = Math.abs(tzOffset);
+  const hh = String(Math.floor(abs / 60)).padStart(2, "0");
+  const mm = String(abs % 60).padStart(2, "0");
+  // Build ISO string manually to embed local timezone
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:00${sign}${hh}:${mm}`;
+}
+
 import Step1GeneralInfo from "../components/testWizard/Step1GeneralInfo.jsx";
 import Step2QuestionSource from "../components/testWizard/Step2QuestionSource.jsx";
 import Step3AssignTest from "../components/testWizard/Step3AssignTest.jsx";
@@ -156,7 +172,10 @@ function CreateTest() {
     }
     setSaving(true);
     try {
-      const publishPayload = { startAt: form.startAt, endAt: form.endAt };
+      const publishPayload = {
+        startAt: toLocalISOString(form.startAt),
+        endAt: toLocalISOString(form.endAt),
+      };
       const res = await api.put(`/api/tests/${testId}/publish`, publishPayload, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -293,21 +312,33 @@ function CreateTest() {
         {steps.map((s, idx) => {
           const isActive = idx === currentStep;
           const isDone = idx < currentStep;
+          const canClick = isDone || idx <= currentStep + 1; // allow going back or one step forward
           return (
-            <button key={s.id} onClick={() => isDone && setCurrentStep(idx)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg cursor-pointer whitespace-nowrap transition-all flex-1 justify-center ${
+            <button
+              key={s.id}
+              onClick={async () => {
+                if (idx < currentStep) {
+                  setCurrentStep(idx); // always allow going back
+                } else if (idx > currentStep) {
+                  if (!validateStep()) return; // validate before going forward
+                  setCurrentStep(idx);
+                }
+              }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg whitespace-nowrap transition-all flex-1 justify-center ${
                 isActive ? "shadow-sm border admin-border admin-card" : ""
-              } ${isDone ? "admin-hover" : ""}`}
+              } ${canClick ? "cursor-pointer admin-hover" : "cursor-not-allowed opacity-50"}`}
               style={{
                 color: isActive ? "var(--primary)" : isDone ? "var(--text-secondary)" : "var(--text-muted)",
               }}
             >
               {isDone ? <Check className="w-3 h-3" style={{ color: "var(--success)" }} /> : (
-                <span className="w-3 h-3 rounded-full flex items-center justify-center text-[8px] font-bold shrink-0"
+                <span
+                  className="w-3 h-3 rounded-full flex items-center justify-center text-[8px] font-bold shrink-0"
                   style={{
                     background: isActive ? "var(--primary)" : "var(--admin-surface-hover)",
                     color: isActive ? "#fff" : "var(--text-muted)",
-                  }}>{idx + 1}</span>
+                  }}
+                >{idx + 1}</span>
               )}
               <span className="hidden sm:inline">{s.label}</span>
             </button>
@@ -315,37 +346,59 @@ function CreateTest() {
         })}
       </div>
 
-      <AnimatePresence mode="wait">
-        <motion.div key={currentStep} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}>
-          {renderStep()}
-        </motion.div>
-      </AnimatePresence>
-
+      {/* ── Sticky Prev/Next Nav ── */}
       {steps[currentStep]?.id !== "publish" && (
-        <div className="flex items-center justify-between pt-2">
+        <div
+          className="sticky top-0 z-10 flex items-center justify-between px-4 py-2.5 rounded-xl border admin-border"
+          style={{ background: "var(--admin-surface, var(--card-bg))", backdropFilter: "blur(12px)" }}
+        >
           <div>
-            {currentStep > 0 && (
-              <button onClick={handlePrev}
-                className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium border admin-border rounded-lg admin-hover cursor-pointer">
+            {currentStep > 0 ? (
+              <button
+                onClick={handlePrev}
+                className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium border admin-border rounded-lg admin-hover cursor-pointer"
+              >
                 <ChevronLeft className="w-3.5 h-3.5" /> Previous
               </button>
+            ) : (
+              <span />
             )}
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs" style={{ color: "var(--text-muted)" }}>
-              {questions.length > 0 && `${questions.length} questions`}
-            </span>
-            <button onClick={handleNext}
+
+          <div className="flex items-center gap-3">
+            {questions.length > 0 && (
+              <span className="text-xs" style={{ color: "var(--text-muted)" }}>
+                {questions.length} question{questions.length !== 1 ? "s" : ""}
+              </span>
+            )}
+            {currentStep < steps.length - 1 && (
+              <button
+                onClick={handleSaveDraft}
+                disabled={saving}
+                className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium border admin-border rounded-lg admin-hover cursor-pointer disabled:opacity-50"
+              >
+                <Save className="w-3.5 h-3.5" /> Save Draft
+              </button>
+            )}
+            <button
+              onClick={handleNext}
               className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-white rounded-lg cursor-pointer"
-              style={{ background: "var(--primary)" }}>
+              style={{ background: "var(--primary)" }}
+            >
               {currentStep === steps.length - 2 ? "Finish" : "Next"} <ChevronRight className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
       )}
 
+      <AnimatePresence mode="wait">
+        <motion.div key={currentStep} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}>
+          {renderStep()}
+        </motion.div>
+      </AnimatePresence>
+
       {testCreated && (
-        <div className="flex justify-center">
+        <div className="flex justify-center pt-2">
           <button onClick={() => navigate("/admin/tests/assigned")}
             className="flex items-center gap-1.5 text-xs font-medium admin-hover px-3 py-1.5 rounded-lg cursor-pointer"
             style={{ color: "var(--text-secondary)" }}>
