@@ -46,6 +46,16 @@ const codingAssessmentSchema = new mongoose.Schema(
       ref: "User",
       default: null,
     },
+    departmentScope: {
+      type: String,
+      default: "global",
+      trim: true,
+    },
+    creatorRole: {
+      type: String,
+      enum: ["system_admin", "teacher", "admin"],
+      default: "system_admin",
+    },
   },
   {
     timestamps: true,

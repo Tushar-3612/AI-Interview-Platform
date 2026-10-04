@@ -29,9 +29,21 @@ export const getResultById = async (req, res) => {
   try {
     const { resultId } = req.params;
     const result = await TestResult.findById(resultId)
-      .populate("testId", "title description testType difficulty duration passingMarks")
+      .populate("testId", "title description testType difficulty duration passingMarks departmentScope")
+      .populate("userId", "name email department year")
       .lean();
     if (!result) return res.status(404).json({ message: "Result not found" });
+
+    if (req.user?.role === "teacher") {
+      const studentDept = result.studentInfo?.department || result.userId?.department;
+      if (studentDept && studentDept !== req.user.department) {
+        return res.status(403).json({ message: "Forbidden: You cannot access test results of another department" });
+      }
+      if (result.testId?.departmentScope && result.testId.departmentScope !== "global" && result.testId.departmentScope !== req.user.department) {
+        return res.status(403).json({ message: "Forbidden: You cannot access test results for another department's test" });
+      }
+    }
+
     res.json(result);
   } catch (error) {
     console.error("Get Result Error:", error.message);
@@ -45,10 +57,33 @@ export const getResultsByTest = async (req, res) => {
     const test = await Test.findById(testId).lean();
     if (!test) return res.status(404).json({ message: "Test not found" });
 
-    const results = await TestResult.find({ testId })
+    if (req.user?.role === "teacher") {
+      if (test.departmentScope && test.departmentScope !== "global" && test.departmentScope !== req.user.department) {
+        return res.status(403).json({ message: "Forbidden: You cannot view results for a test belonging to another department" });
+      }
+    }
+
+    const query = { testId };
+    if (req.user?.role === "teacher" && req.user.department) {
+      query.$or = [
+        { "studentInfo.department": req.user.department },
+        { "studentInfo.department": { $exists: false } },
+        { "studentInfo.department": null },
+        { "studentInfo.department": "" }
+      ];
+    }
+
+    let results = await TestResult.find(query)
       .populate("userId", "name email department year")
       .sort({ percentage: -1 })
       .lean();
+
+    if (req.user?.role === "teacher" && req.user.department) {
+      results = results.filter(r => {
+        const dept = r.studentInfo?.department || r.userId?.department;
+        return !dept || dept === req.user.department;
+      });
+    }
 
     res.json({
       test: {
@@ -113,10 +148,36 @@ export const getStudentResultByAttempt = async (req, res) => {
 export const getTestRankings = async (req, res) => {
   try {
     const { testId } = req.params;
-    const results = await TestResult.find({ testId, processedAt: { $ne: null } })
+    const test = await Test.findById(testId).lean();
+    if (!test) return res.status(404).json({ message: "Test not found" });
+
+    if (req.user?.role === "teacher") {
+      if (test.departmentScope && test.departmentScope !== "global" && test.departmentScope !== req.user.department) {
+        return res.status(403).json({ message: "Forbidden: You cannot view rankings for a test belonging to another department" });
+      }
+    }
+
+    const query = { testId, processedAt: { $ne: null } };
+    if (req.user?.role === "teacher" && req.user.department) {
+      query.$or = [
+        { "studentInfo.department": req.user.department },
+        { "studentInfo.department": { $exists: false } },
+        { "studentInfo.department": null },
+        { "studentInfo.department": "" }
+      ];
+    }
+
+    let results = await TestResult.find(query)
       .populate("userId", "name email department year")
       .sort({ "ranking.testRank": 1 })
       .lean();
+
+    if (req.user?.role === "teacher" && req.user.department) {
+      results = results.filter(r => {
+        const dept = r.studentInfo?.department || r.userId?.department;
+        return !dept || dept === req.user.department;
+      });
+    }
 
     res.json({
       testId,
@@ -143,6 +204,15 @@ export const getTestRankings = async (req, res) => {
 export const recomputeRankings = async (req, res) => {
   try {
     const { testId } = req.params;
+    const test = await Test.findById(testId).lean();
+    if (!test) return res.status(404).json({ message: "Test not found" });
+
+    if (req.user?.role === "teacher") {
+      if (test.departmentScope && test.departmentScope !== "global" && test.departmentScope !== req.user.department) {
+        return res.status(403).json({ message: "Forbidden: You cannot modify rankings for a test belonging to another department" });
+      }
+    }
+
     const result = await computeAllTestRankings(testId, TestResult);
     res.json({
       message: "Rankings recomputed",
@@ -157,7 +227,33 @@ export const recomputeRankings = async (req, res) => {
 export const getResultStats = async (req, res) => {
   try {
     const { testId } = req.params;
-    const results = await TestResult.find({ testId }).lean();
+    const test = await Test.findById(testId).lean();
+    if (!test) return res.status(404).json({ message: "Test not found" });
+
+    if (req.user?.role === "teacher") {
+      if (test.departmentScope && test.departmentScope !== "global" && test.departmentScope !== req.user.department) {
+        return res.status(403).json({ message: "Forbidden: You cannot view statistics for a test belonging to another department" });
+      }
+    }
+
+    const query = { testId };
+    if (req.user?.role === "teacher" && req.user.department) {
+      query.$or = [
+        { "studentInfo.department": req.user.department },
+        { "studentInfo.department": { $exists: false } },
+        { "studentInfo.department": null },
+        { "studentInfo.department": "" }
+      ];
+    }
+
+    let results = await TestResult.find(query).populate("userId", "department").lean();
+    if (req.user?.role === "teacher" && req.user.department) {
+      results = results.filter(r => {
+        const dept = r.studentInfo?.department || r.userId?.department;
+        return !dept || dept === req.user.department;
+      });
+    }
+
     if (!results.length) {
       return res.json({ message: "No results yet", stats: null });
     }

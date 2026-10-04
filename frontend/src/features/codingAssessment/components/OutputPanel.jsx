@@ -17,6 +17,12 @@ function OutputPanel({
   data = {},
   testCases = [],
   submissions = [],
+  selectedCaseIndex = 0,
+  onSelectCase,
+  customInput = "",
+  onCustomInputChange,
+  isCustomInput = false,
+  onToggleCustomInput,
   runStage = null,
   running = false,
   submitting = false,
@@ -92,8 +98,6 @@ function OutputPanel({
     } catch {}
     onResize && onResize();
   }, [onResize]);
-
-  const hasResults = submit != null || run != null;
 
   return (
     <div
@@ -179,6 +183,12 @@ function OutputPanel({
         {activeTab === "Testcase" && (
           <TestCasesContent
             testCases={testCases}
+            selectedCaseIndex={selectedCaseIndex}
+            onSelectCase={onSelectCase}
+            customInput={customInput}
+            onCustomInputChange={onCustomInputChange}
+            isCustomInput={isCustomInput}
+            onToggleCustomInput={onToggleCustomInput}
             run={run}
             submit={submit}
           />
@@ -208,88 +218,114 @@ function OutputPanel({
 }
 
 /* ─── Test Cases Content ───────────────────────────────────────────────── */
-function TestCasesContent({ testCases, run, submit }) {
-  const [expandedIdx, setExpandedIdx] = useState(null);
-
+function TestCasesContent({
+  testCases = [],
+  selectedCaseIndex = 0,
+  onSelectCase,
+  customInput = "",
+  onCustomInputChange,
+  isCustomInput = false,
+  onToggleCustomInput,
+}) {
   const visibleCases = testCases.filter((tc) => !tc.isHidden);
   const hiddenCount = testCases.filter((tc) => tc.isHidden).length;
 
+  const activeIdx = Math.max(0, Math.min(selectedCaseIndex, Math.max(0, visibleCases.length - 1)));
+  const activeCase = visibleCases[activeIdx] || null;
+
   return (
-    <div className="p-3 space-y-2 text-[13px]" style={{ minWidth: "fit-content" }}>
-      {visibleCases.length === 0 && (
+    <div className="p-3.5 space-y-3 text-[13px]">
+      {/* Case Selection Tabs */}
+      <div className="flex items-center gap-2 flex-wrap border-b border-white/10 pb-2.5">
+        {visibleCases.map((tc, idx) => {
+          const isSelected = !isCustomInput && activeIdx === idx;
+          return (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => {
+                onToggleCustomInput?.(false);
+                onSelectCase?.(idx);
+              }}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-all ${
+                isSelected
+                  ? "bg-[#FF6B35]/20 text-[#FF6B35] border border-[#FF6B35]/40 shadow-sm"
+                  : "bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white border border-transparent"
+              }`}
+            >
+              Case {idx + 1}
+            </button>
+          );
+        })}
+
+        <button
+          type="button"
+          onClick={() => onToggleCustomInput?.(!isCustomInput)}
+          className={`px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-all ${
+            isCustomInput
+              ? "bg-[#FF6B35]/20 text-[#FF6B35] border border-[#FF6B35]/40 shadow-sm"
+              : "bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white border border-transparent"
+          }`}
+        >
+          Custom Input
+        </button>
+      </div>
+
+      {/* Case Details / Custom Input Area */}
+      {isCustomInput ? (
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] uppercase tracking-wider font-semibold text-slate-400">
+              Custom Standard Input (stdin)
+            </span>
+            <span className="text-[10px] text-slate-500">Will be passed to your program as stdin</span>
+          </div>
+          <textarea
+            value={customInput}
+            onChange={(e) => onCustomInputChange?.(e.target.value)}
+            placeholder="Enter custom input to pass via stdin (e.g. 9 -2 1 -3 4 -1 2 1 -5 4)..."
+            rows={3}
+            className="w-full bg-[#12122a] border border-white/15 rounded-lg p-2.5 font-mono text-xs text-white placeholder:text-slate-500 outline-none focus:border-[#FF6B35] transition"
+          />
+        </div>
+      ) : activeCase ? (
+        <div className="space-y-2.5">
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[11px] uppercase tracking-wider font-semibold text-slate-400">
+                Input (stdin)
+              </span>
+              <span className="text-[10px] text-slate-500">Passed as stdin on Run</span>
+            </div>
+            <pre className="font-mono text-xs whitespace-pre-wrap p-2.5 rounded-lg bg-[#12122a] border border-white/10 text-emerald-300">
+              {activeCase.input || "(empty input)"}
+            </pre>
+          </div>
+
+          <div>
+            <span className="block text-[11px] uppercase tracking-wider font-semibold text-slate-400 mb-1">
+              Expected Output
+            </span>
+            <pre className="font-mono text-xs whitespace-pre-wrap p-2.5 rounded-lg bg-[#12122a] border border-white/10 text-sky-300">
+              {activeCase.expected || activeCase.expectedOutput || activeCase.output || "(empty output)"}
+            </pre>
+          </div>
+        </div>
+      ) : (
         <div className="py-4 text-center space-y-1">
-          <p className="text-xs font-semibold text-slate-400">No sample test cases</p>
-          <p className="text-[11px] text-slate-500">Run your solution to see execution results.</p>
+          <p className="text-xs font-semibold text-slate-400">No test cases defined</p>
+          <p className="text-[11px] text-slate-500">You can use Custom Input to test your solution.</p>
         </div>
       )}
 
-      {visibleCases.map((tc, i) => (
+      {hiddenCount > 0 && !isCustomInput && (
         <div
-          key={i}
-          className="rounded-lg overflow-hidden"
-          style={{ border: "1px solid #2d2d44" }}
-        >
-          <button
-            type="button"
-            onClick={() => setExpandedIdx(expandedIdx === i ? null : i)}
-            className="w-full flex items-center gap-2 px-3 py-2 text-left cursor-pointer transition-colors"
-            style={{
-              background: expandedIdx === i ? "#16162a" : "#12122a",
-              color: "#e2e8f0",
-            }}
-          >
-            {expandedIdx === i ? (
-              <ChevronDown className="w-3.5 h-3.5 shrink-0" style={{ color: "#64748b" }} />
-            ) : (
-              <ChevronRight className="w-3.5 h-3.5 shrink-0" style={{ color: "#64748b" }} />
-            )}
-            <span className="font-medium">Case {i + 1}</span>
-          </button>
-
-          {expandedIdx === i && (
-            <div className="px-3 py-2.5 space-y-2" style={{ background: "#12122a" }}>
-              <div>
-                <span
-                  className="block text-[11px] uppercase tracking-wider mb-1 font-medium"
-                  style={{ color: "#64748b" }}
-                >
-                  Input
-                </span>
-                <pre
-                  className="font-mono text-[12px] whitespace-pre p-2 rounded-md"
-                  style={{ background: "#1e1e3a", color: "#e2e8f0" }}
-                >
-                  {tc.input || "(empty)"}
-                </pre>
-              </div>
-              <div>
-                <span
-                  className="block text-[11px] uppercase tracking-wider mb-1 font-medium"
-                  style={{ color: "#64748b" }}
-                >
-                  Expected Output
-                </span>
-                <pre
-                  className="font-mono text-[12px] whitespace-pre p-2 rounded-md"
-                  style={{ background: "#1e1e3a", color: "#e2e8f0" }}
-                >
-                  {tc.expected || "(empty)"}
-                </pre>
-              </div>
-            </div>
-          )}
-        </div>
-      ))}
-
-      {hiddenCount > 0 && (
-        <div
-          className="flex items-center gap-2 px-3 py-2 rounded-lg text-[12px]"
+          className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs"
           style={{ background: "#16162a", color: "#64748b" }}
         >
           <Lock className="w-3.5 h-3.5" />
           <span>
-            + {hiddenCount} hidden test case{hiddenCount > 1 ? "s" : ""} will be
-            evaluated against your code when you submit.
+            + {hiddenCount} hidden test case{hiddenCount > 1 ? "s" : ""} will be evaluated on Submit.
           </span>
         </div>
       )}
@@ -301,7 +337,7 @@ function TestCasesContent({ testCases, run, submit }) {
 function TestResultContent({ run, submit, runStage, running, submitting }) {
   if (runStage) {
     return (
-      <div className="flex items-center justify-center h-full gap-3 text-[13px]">
+      <div className="flex items-center justify-center h-full gap-3 text-[13px] py-6">
         <div
           className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin"
           style={{ borderColor: "#6366f1", borderTopColor: "transparent" }}
@@ -313,7 +349,7 @@ function TestResultContent({ run, submit, runStage, running, submitting }) {
 
   if (!run && !submit) {
     return (
-      <div className="flex flex-col items-center justify-center h-full gap-2 text-[13px]">
+      <div className="flex flex-col items-center justify-center h-full gap-2 text-[13px] py-6">
         <AlertTriangle className="w-5 h-5" style={{ color: "#64748b" }} />
         <span style={{ color: "#64748b" }}>
           Run or submit your code to see results here.
@@ -329,70 +365,121 @@ function TestResultContent({ run, submit, runStage, running, submitting }) {
 
 /* ─── Run Result ───────────────────────────────────────────────────────── */
 function RunResult({ run }) {
-  const isError = run.type === "error";
-  const isTimeout = run.type === "timeout";
+  const isError =
+    run.type === "error" ||
+    run.status === "error" ||
+    run.status === "runtime_error" ||
+    run.status === "compile_error";
+  const isTimeout = run.type === "timeout" || run.status === "time_limit";
+  const isWrongAnswer =
+    run.status === "wrong_answer" ||
+    run.type === "wrong_answer" ||
+    (run.passed === false && !isError && !isTimeout);
+  const isAccepted = !isError && !isTimeout && !isWrongAnswer;
 
   return (
-    <div className="p-3 space-y-3 text-[13px]" style={{ minWidth: "fit-content" }}>
+    <div className="p-3.5 space-y-3 text-[13px]">
+      {/* Status Banner */}
       <div
-        className="flex items-center gap-2 px-3 py-2 rounded-lg font-medium"
+        className="flex items-center gap-2 px-3 py-2.5 rounded-lg font-semibold text-[13px]"
         style={{
           background: isError
             ? "rgba(239,68,68,0.1)"
             : isTimeout
             ? "rgba(234,179,8,0.1)"
+            : isWrongAnswer
+            ? "rgba(239,68,68,0.1)"
             : "rgba(34,197,94,0.1)",
           border: `1px solid ${
             isError
               ? "rgba(239,68,68,0.25)"
               : isTimeout
               ? "rgba(234,179,8,0.25)"
+              : isWrongAnswer
+              ? "rgba(239,68,68,0.25)"
               : "rgba(34,197,94,0.25)"
           }`,
         }}
       >
         {isError ? (
           <>
-            <XCircle className="w-4 h-4" style={{ color: "#ef4444" }} />
-            <span style={{ color: "#ef4444" }}>Runtime Error</span>
+            <XCircle className="w-4 h-4 text-red-500" />
+            <span className="text-red-400">
+              {run.status === "compile_error" ? "Compilation Error" : "Runtime Error"}
+            </span>
           </>
         ) : isTimeout ? (
           <>
-            <Clock className="w-4 h-4" style={{ color: "#eab308" }} />
-            <span style={{ color: "#eab308" }}>Time Limit Exceeded</span>
+            <Clock className="w-4 h-4 text-yellow-500" />
+            <span className="text-yellow-400">Time Limit Exceeded</span>
+          </>
+        ) : isWrongAnswer ? (
+          <>
+            <XCircle className="w-4 h-4 text-red-500" />
+            <span className="text-red-400">Wrong Answer</span>
           </>
         ) : (
           <>
-            <CheckCircle2 className="w-4 h-4" style={{ color: "#22c55e" }} />
-            <span style={{ color: "#22c55e" }}>Accepted</span>
+            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+            <span className="text-emerald-400">Accepted</span>
           </>
+        )}
+
+        {run.timeMs > 0 && (
+          <span className="ml-auto text-xs font-normal text-slate-400">
+            Runtime: {run.timeMs} ms
+          </span>
         )}
       </div>
 
-      {run.output && (
+      {/* Input */}
+      {run.input !== undefined && run.input !== null && run.input !== "" && (
         <div>
-          <span
-            className="block text-[11px] uppercase tracking-wider mb-1 font-medium"
-            style={{ color: "#64748b" }}
-          >
-            Output
+          <span className="block text-[11px] uppercase tracking-wider mb-1 font-semibold text-slate-400">
+            Input (stdin)
           </span>
-          <pre
-            className="font-mono text-[12px] whitespace-pre p-2.5 rounded-md"
-            style={{
-              background: "#1e1e3a",
-              color: isError ? "#fca5a5" : "#e2e8f0",
-            }}
-          >
-            {run.output}
+          <pre className="font-mono text-xs whitespace-pre-wrap p-2.5 rounded-lg bg-[#12122a] border border-white/10 text-emerald-300">
+            {run.input}
           </pre>
         </div>
       )}
 
-      {run.timeMs > 0 && (
-        <div className="flex items-center gap-1.5 text-[12px]" style={{ color: "#64748b" }}>
-          <Clock className="w-3.5 h-3.5" />
-          <span>Runtime: {run.timeMs} ms</span>
+      {/* Output */}
+      {run.output !== undefined && run.output !== null && (
+        <div>
+          <span className="block text-[11px] uppercase tracking-wider mb-1 font-semibold text-slate-400">
+            Your Output
+          </span>
+          <pre
+            className="font-mono text-xs whitespace-pre-wrap p-2.5 rounded-lg bg-[#12122a] border border-white/10"
+            style={{ color: isError ? "#fca5a5" : "#e2e8f0" }}
+          >
+            {run.stdout || run.output || "(no output)"}
+          </pre>
+        </div>
+      )}
+
+      {/* Expected Output if available */}
+      {run.expectedOutput && (
+        <div>
+          <span className="block text-[11px] uppercase tracking-wider mb-1 font-semibold text-slate-400">
+            Expected Output
+          </span>
+          <pre className="font-mono text-xs whitespace-pre-wrap p-2.5 rounded-lg bg-[#12122a] border border-white/10 text-sky-300">
+            {run.expectedOutput}
+          </pre>
+        </div>
+      )}
+
+      {/* Compiler / Error Stderr */}
+      {(run.compileOutput || run.stderr) && (
+        <div>
+          <span className="block text-[11px] uppercase tracking-wider mb-1 font-semibold text-red-400">
+            {run.compileOutput ? "Compiler Output" : "Error Log / Stderr"}
+          </span>
+          <pre className="font-mono text-xs whitespace-pre-wrap p-2.5 rounded-lg bg-[#1e1015] border border-red-500/20 text-red-300">
+            {run.compileOutput || run.stderr}
+          </pre>
         </div>
       )}
     </div>
@@ -411,6 +498,20 @@ function SubmitResult({ submit }) {
       label: "Accepted",
       icon: <CheckCircle2 className="w-5 h-5" />,
     },
+    completed: {
+      color: "#22c55e",
+      bg: "rgba(34,197,94,0.1)",
+      border: "rgba(34,197,94,0.25)",
+      label: "Accepted",
+      icon: <CheckCircle2 className="w-5 h-5" />,
+    },
+    success: {
+      color: "#22c55e",
+      bg: "rgba(34,197,94,0.1)",
+      border: "rgba(34,197,94,0.25)",
+      label: "Accepted",
+      icon: <CheckCircle2 className="w-5 h-5" />,
+    },
     wrong: {
       color: "#ef4444",
       bg: "rgba(239,68,68,0.1)",
@@ -419,6 +520,13 @@ function SubmitResult({ submit }) {
       icon: <XCircle className="w-5 h-5" />,
     },
     failed: {
+      color: "#ef4444",
+      bg: "rgba(239,68,68,0.1)",
+      border: "rgba(239,68,68,0.25)",
+      label: "Wrong Answer",
+      icon: <XCircle className="w-5 h-5" />,
+    },
+    wrong_answer: {
       color: "#ef4444",
       bg: "rgba(239,68,68,0.1)",
       border: "rgba(239,68,68,0.25)",
@@ -475,17 +583,33 @@ function SubmitResult({ submit }) {
   const passedCount = submit.passedCount ?? results.filter((r) => r.passed).length;
   const totalCount = submit.totalCount ?? results.length;
 
+  const isCompileError = submit.status === "compile_error" || Boolean(submit.compileError) || (Boolean(submit.compileOutput) && passedCount === 0);
+  const isRuntimeError = submit.status === "runtime_error";
+  const isTimeLimit = submit.status === "time_limit";
+  const isMemoryLimit = submit.status === "memory_limit";
+  const isAllPassed = passedCount === totalCount && totalCount > 0 && !isCompileError && !isRuntimeError && !isTimeLimit && !isMemoryLimit;
+
   let cfg = statusConfig[submit.status] || statusConfig.failed;
-  if (submit.status === "failed" || submit.status === "wrong") {
-    if (passedCount > 0 && totalCount > 0) {
-      cfg = {
-        color: "#f59e0b",
-        bg: "rgba(245,158,11,0.1)",
-        border: "rgba(245,158,11,0.25)",
-        label: `Partial Solution (${passedCount}/${totalCount} Passed)`,
-        icon: <AlertTriangle className="w-5 h-5" />,
-      };
-    }
+  if (isAllPassed) {
+    cfg = statusConfig.accepted;
+  } else if (isCompileError) {
+    cfg = statusConfig.compile_error;
+  } else if (isRuntimeError) {
+    cfg = statusConfig.runtime_error;
+  } else if (isTimeLimit) {
+    cfg = statusConfig.time_limit;
+  } else if (isMemoryLimit) {
+    cfg = statusConfig.memory_limit;
+  } else if (passedCount > 0 && totalCount > 0) {
+    cfg = {
+      color: "#f59e0b",
+      bg: "rgba(245,158,11,0.1)",
+      border: "rgba(245,158,11,0.25)",
+      label: `Partial Solution (${passedCount}/${totalCount} Passed)`,
+      icon: <AlertTriangle className="w-5 h-5" />,
+    };
+  } else {
+    cfg = statusConfig.wrong;
   }
 
   return (

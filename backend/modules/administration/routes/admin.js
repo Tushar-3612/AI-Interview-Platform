@@ -75,6 +75,14 @@ router.get("/premium/search", authorizeRoles("system_admin"), searchStudentsForP
 router.get("/premium/search-students", authorizeRoles("system_admin"), searchStudentsForPremium);
 router.get("/premium/stats", authorizeRoles("system_admin"), getPremiumStats);
 
+// ─── System Admin ONLY: Central Company Mock Questions Management Endpoints ───
+router.get("/mock-questions", authorizeRoles("system_admin"), getMockQuestions);
+router.post("/mock-questions/check-duplicate", authorizeRoles("system_admin"), checkMockQuestionDuplicate);
+router.post("/mock-questions", authorizeRoles("system_admin"), addMockQuestion);
+router.put("/mock-questions/:id", authorizeRoles("system_admin"), editMockQuestion);
+router.delete("/mock-questions/:id", authorizeRoles("system_admin"), deleteMockQuestion);
+router.post("/mock-questions/import", authorizeRoles("system_admin"), importMockQuestions);
+
 // Allow access for both System Admin and Teacher Admins for standard admin management
 router.use(authorizeRoles("system_admin", "teacher"));
 
@@ -91,14 +99,6 @@ router.get("/analytics/company-mocks", getCompanyMockAnalytics);
 router.get("/analytics/sections", getMockSectionAnalytics);
 router.get("/analytics/distribution", getPerformanceDistribution);
 router.get("/analytics/time-based", getTimeBasedAnalytics);
-
-// Central Company Mock Questions Management Endpoints
-router.get("/mock-questions", getMockQuestions);
-router.post("/mock-questions/check-duplicate", checkMockQuestionDuplicate);
-router.post("/mock-questions", addMockQuestion);
-router.put("/mock-questions/:id", editMockQuestion);
-router.delete("/mock-questions/:id", deleteMockQuestion);
-router.post("/mock-questions/import", importMockQuestions);
 
 // Students CRUD & reports
 router.get("/students", getStudents);

@@ -150,18 +150,28 @@ function CreateTest() {
   };
 
   const handlePublish = async () => {
-    if (!testId) {
-      const data = await saveTest("draft");
-      if (!data) return;
+    // Always save the latest test configuration first
+    const saved = await saveTest("draft");
+    if (!saved) return;
+    const currentTestId = testId || saved?.test?._id;
+    if (!currentTestId) {
+      toast.error("Test must be saved before publishing");
+      return;
     }
+
     setSaving(true);
     try {
-      const publishPayload = { startAt: form.startAt, endAt: form.endAt };
-      const res = await api.put(`/api/tests/${testId}/publish`, publishPayload, {
+      const publishPayload = {
+        duration: Number(form.duration),
+        attemptLimit: Number(form.attemptLimit),
+        startAt: form.startAt,
+        endAt: form.endAt,
+      };
+      const res = await api.put(`/api/tests/${currentTestId}/publish`, publishPayload, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setForm(prev => ({ ...prev, status: res.data.test.status }));
-      toast.success(res.data.test.status === "scheduled" ? "Test scheduled!" : "Test published!");
+      toast.success(res.data.test.status === "scheduled" ? "Test scheduled successfully!" : "Test published successfully!");
       navigate("/admin/tests/assigned");
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to publish");

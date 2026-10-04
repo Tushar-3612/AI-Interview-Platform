@@ -79,8 +79,17 @@ function sanitizeText(value) {
     .trim();
 }
 
+function cleanFieldBrackets(val) {
+  if (typeof val !== "string") return val;
+  const trimmed = val.trim();
+  if (/^\[[A-Za-z0-9\s_\-\.]+\]$/.test(trimmed)) {
+    return trimmed.slice(1, -1).trim();
+  }
+  return trimmed;
+}
+
 function normalizeType(raw) {
-  const t = sanitizeTextType(raw);
+  const t = cleanFieldBrackets(sanitizeTextType(raw));
   if (!t) return "";
   if (t.toLowerCase().includes("mcq") || t.toLowerCase().includes("multiple choice")) return "MCQ";
   return t;
@@ -210,7 +219,9 @@ function parseOptions(text) {
 function parseBlock(block) {
   try {
     const qidMatch = block.match(/^\s*question\s*id\s*:\s*(\S+)/i);
-    const questionId = qidMatch ? sanitizeText(qidMatch[1]) : fieldValue(block, "Question ID", true);
+    let questionId = qidMatch ? sanitizeText(qidMatch[1]) : fieldValue(block, "Question ID", true);
+    if (questionId) questionId = cleanFieldBrackets(questionId);
+
     const question = fieldValue(block, "Question");
     const type = normalizeType(fieldValue(block, "Type", true));
     const optionsText = fieldValue(block, "Options");
@@ -220,9 +231,9 @@ function parseBlock(block) {
       questionId,
       question,
       type,
-      marks: fieldValue(block, "Marks", true) || "0",
-      negativeMarks: fieldValue(block, "Negative Marks", true) || "0",
-      difficulty: fieldValue(block, "Difficulty", true),
+      marks: cleanFieldBrackets(fieldValue(block, "Marks", true)) || "0",
+      negativeMarks: cleanFieldBrackets(fieldValue(block, "Negative Marks", true)) || "0",
+      difficulty: cleanFieldBrackets(fieldValue(block, "Difficulty", true)),
       options,
       correctAnswer: normalizeAnswer(rawAnswer, options),
       explanation: fieldValue(block, "Explanation"),
@@ -410,7 +421,20 @@ export function detectFileKind(originalname = "", mimetype = "") {
   return null;
 }
 
-const PLACEHOLDER_RE = /\[|\]/;
+const KNOWN_PLACEHOLDER_PATTERNS = [
+  /\[\s*Enter\b[^\]]*\]/i,
+  /\bEnter\s+(?:your\s+)?(?:technical\s+|aptitude\s+)?(?:question|subject|option|explanation|answer)\b/i,
+  /\[\s*Easy\s*\/\s*Medium\s*\/\s*Hard\s*\]/i,
+  /\[\s*A\s*\/\s*B\s*\/\s*C\s*\/\s*D\s*\]/i,
+  /\[\s*True\s*\/\s*False\s*\]/i,
+];
+
+export function isPlaceholderValue(value) {
+  if (value == null) return false;
+  const str = String(value).trim();
+  if (!str) return false;
+  return KNOWN_PLACEHOLDER_PATTERNS.some((re) => re.test(str));
+}
 
 export function containsPlaceholder(questions) {
   if (!Array.isArray(questions)) return false;
@@ -425,10 +449,7 @@ export function containsPlaceholder(questions) {
       q.correctAnswer,
       q.explanation,
       q.difficulty,
-      q.type,
-      q.marks,
-      q.negativeMarks,
     ];
-    return fields.some((f) => f != null && PLACEHOLDER_RE.test(String(f)));
+    return fields.some((f) => isPlaceholderValue(f));
   });
 }

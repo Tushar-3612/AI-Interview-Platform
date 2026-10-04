@@ -14,6 +14,10 @@ const answerSchema = new mongoose.Schema({
   },
   marks: { type: Number, default: 0 },
   scoredMarks: { type: Number, default: 0 },
+  codingScore: { type: Number, default: 0 },
+  passedCount: { type: Number, default: 0 },
+  totalCount: { type: Number, default: 0 },
+  executionStatus: { type: String, default: "" },
 }, { _id: false });
 
 const tabSwitchSchema = new mongoose.Schema({

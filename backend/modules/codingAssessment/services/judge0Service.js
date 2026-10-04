@@ -71,6 +71,51 @@ export function getSupportedJudge0Languages() {
 }
 
 /**
+ * Safely prepare and normalize stdin for code execution.
+ * Handles multiline inputs, numbers, arrays, objects, strings, whitespace, and empty input.
+ */
+export function prepareExecutionInput(rawInput) {
+  if (rawInput === null || rawInput === undefined) {
+    return "";
+  }
+
+  let str = "";
+  if (typeof rawInput === "string") {
+    str = rawInput;
+  } else if (typeof rawInput === "number" || typeof rawInput === "boolean") {
+    str = String(rawInput);
+  } else if (Array.isArray(rawInput)) {
+    str = rawInput.map((item) => (typeof item === "object" ? JSON.stringify(item) : String(item))).join(" ");
+  } else if (typeof rawInput === "object") {
+    if (rawInput.input !== undefined) {
+      return prepareExecutionInput(rawInput.input);
+    }
+    if (rawInput.stdin !== undefined) {
+      return prepareExecutionInput(rawInput.stdin);
+    }
+    if (rawInput.sampleInput !== undefined) {
+      return prepareExecutionInput(rawInput.sampleInput);
+    }
+    str = JSON.stringify(rawInput);
+  } else {
+    str = String(rawInput);
+  }
+
+  // Normalize line endings to \n
+  return str.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+}
+
+/**
+ * Safely extract expected output from a testcase object in any supported schema
+ * (expected, expectedOutput, output, sampleOutput).
+ */
+export function getTestCaseExpectedOutput(tc) {
+  if (!tc) return "";
+  if (typeof tc === "string") return tc;
+  return tc.expectedOutput ?? tc.expected ?? tc.output ?? tc.sampleOutput ?? "";
+}
+
+/**
  * Normalizes output for fair comparison
  * - Converts CRLF to LF
  * - Trims trailing whitespace on each line
@@ -339,10 +384,11 @@ export async function executeJudge0({
   const { headers, apiUrl } = getJudge0Headers();
   const effectiveSourceCode = wrapFunctionHarness(sourceCode, language);
 
+  const preparedStdin = prepareExecutionInput(stdin);
   const payload = {
     source_code: Buffer.from(effectiveSourceCode || "").toString("base64"),
     language_id: langConfig.id,
-    stdin: Buffer.from(String(stdin || "")).toString("base64"),
+    stdin: Buffer.from(preparedStdin).toString("base64"),
     cpu_time_limit: Math.max(0.5, Math.min(10.0, Number(cpuTimeLimit) || 2.0)),
     memory_limit: Math.max(10000, Math.min(256000, Number(memoryLimit) || 128000)),
   };
@@ -482,12 +528,14 @@ export async function executeJudge0TestSuite({
   for (let i = 0; i < testCases.length; i++) {
     const tc = testCases[i];
     const isHidden = Boolean(tc.isHidden);
+    const tcInput = prepareExecutionInput(tc.input ?? tc.stdin ?? (typeof tc === "string" ? tc : ""));
+    const tcExpected = getTestCaseExpectedOutput(tc);
 
     try {
       const execResult = await executeJudge0({
         sourceCode,
         language,
-        stdin: tc.input,
+        stdin: tcInput,
         cpuTimeLimit,
         memoryLimit,
       });
@@ -510,8 +558,8 @@ export async function executeJudge0TestSuite({
             index: idx + 1,
             passed: false,
             isHidden: Boolean(c.isHidden),
-            input: c.isHidden ? "" : String(c.input || ""),
-            expected: c.isHidden ? "" : String(c.expected || c.expectedOutput || ""),
+            input: c.isHidden ? "" : prepareExecutionInput(c.input ?? c.stdin ?? ""),
+            expected: c.isHidden ? "" : String(getTestCaseExpectedOutput(c)),
             actual: "",
             error: "Compilation Error",
             timeMs: 0,
@@ -519,7 +567,7 @@ export async function executeJudge0TestSuite({
         };
       }
 
-      const passed = execResult.status === "success" && compareOutputs(execResult.stdout, tc.expected || tc.expectedOutput);
+      const passed = execResult.status === "success" && compareOutputs(execResult.stdout, tcExpected);
 
       if (passed) {
         passedCount++;
@@ -529,10 +577,10 @@ export async function executeJudge0TestSuite({
         index: i + 1,
         passed,
         isHidden,
-        input: isHidden ? "" : String(tc.input || ""),
-        expected: isHidden ? "" : String(tc.expected || tc.expectedOutput || ""),
+        input: isHidden ? "" : tcInput,
+        expected: isHidden ? "" : String(tcExpected),
         actual: isHidden ? "" : execResult.stdout || "",
-        error: passed ? "" : execResult.stderr || (execResult.status !== "success" ? execResult.message : ""),
+        error: passed ? "" : execResult.stderr || (execResult.status !== "success" ? (execResult.statusDescription || execResult.output) : ""),
         status: passed ? "Accepted" : execResult.status === "success" ? "Wrong Answer" : execResult.statusDescription || "Failed",
         timeMs: execResult.timeMs,
       });
@@ -541,8 +589,8 @@ export async function executeJudge0TestSuite({
         index: i + 1,
         passed: false,
         isHidden,
-        input: isHidden ? "" : String(tc.input || ""),
-        expected: isHidden ? "" : String(tc.expected || tc.expectedOutput || ""),
+        input: isHidden ? "" : tcInput,
+        expected: isHidden ? "" : String(tcExpected),
         actual: "",
         error: caseErr.message || "Execution Failed",
         status: "Error",
@@ -553,7 +601,7 @@ export async function executeJudge0TestSuite({
 
   const total = testCases.length;
   const score = total > 0 ? Math.round((passedCount / total) * 100) : 0;
-  const overallStatus = passedCount === total && total > 0 ? "completed" : "failed";
+  const overallStatus = passedCount === total && total > 0 ? "accepted" : (passedCount > 0 ? "wrong_answer" : "failed");
 
   return {
     status: overallStatus,

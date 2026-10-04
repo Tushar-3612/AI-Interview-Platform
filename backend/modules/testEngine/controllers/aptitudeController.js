@@ -62,17 +62,36 @@ export const getAptitudeQuestions = async (req, res) => {
     if (difficulty) filter.difficulty = difficulty.toLowerCase();
     if (category) filter.category = category;
     if (companyId) filter.companyId = companyId;
+
+    if (req.user?.role === "teacher" && req.user.department) {
+      filter.$and = [
+        {
+          $or: [
+            { departmentScope: "global" },
+            { departmentScope: req.user.department },
+            { departmentScope: { $exists: false } },
+            { departmentScope: null },
+            { departmentScope: "" }
+          ]
+        }
+      ];
+    }
+
     if (tags) {
       const tagList = tags.split(",").map((t) => t.trim()).filter(Boolean);
       filter.$or = [...(filter.$or || []), { category: { $in: tagList } }];
     }
     if (search) {
-      filter.$or = [
-        ...(filter.$or || []),
+      const searchConditions = [
         { question: { $regex: search, $options: "i" } },
         { category: { $regex: search, $options: "i" } },
         { questionId: { $regex: search, $options: "i" } },
       ];
+      if (filter.$and) {
+        filter.$and.push({ $or: searchConditions });
+      } else {
+        filter.$or = [...(filter.$or || []), ...searchConditions];
+      }
     }
     const skip = (parseInt(page) - 1) * parseInt(limit);
     const [questions, total] = await Promise.all([
@@ -87,7 +106,17 @@ export const getAptitudeQuestions = async (req, res) => {
 
 export const getTrashedAptitudeQuestions = async (req, res) => {
   try {
-    const questions = await AptitudeQuestion.find({ isDeleted: true }).sort({ deletedAt: -1 }).limit(500).lean();
+    const filter = { isDeleted: true };
+    if (req.user?.role === "teacher" && req.user.department) {
+      filter.$or = [
+        { departmentScope: "global" },
+        { departmentScope: req.user.department },
+        { departmentScope: { $exists: false } },
+        { departmentScope: null },
+        { departmentScope: "" }
+      ];
+    }
+    const questions = await AptitudeQuestion.find(filter).sort({ deletedAt: -1 }).limit(500).lean();
     res.json({ questions, total: questions.length });
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch trash", error: error.message });
@@ -96,12 +125,20 @@ export const getTrashedAptitudeQuestions = async (req, res) => {
 
 export const restoreAptitudeQuestion = async (req, res) => {
   try {
+    const existing = await AptitudeQuestion.findById(req.params.id);
+    if (!existing) return res.status(404).json({ message: "Question not found" });
+
+    if (req.user?.role === "teacher") {
+      if (existing.departmentScope && existing.departmentScope !== "global" && existing.departmentScope !== req.user.department) {
+        return res.status(403).json({ message: "You are not authorized to restore questions outside your department." });
+      }
+    }
+
     const question = await AptitudeQuestion.findByIdAndUpdate(
       req.params.id,
       { isDeleted: false, deletedAt: null, lastEditedAt: new Date(), lastEditedBy: req.user?._id || req.user?.id || null },
       { new: true }
     );
-    if (!question) return res.status(404).json({ message: "Question not found" });
     await syncAptitudeQuestionToBank(question);
     res.json({ message: "Question restored", question });
   } catch (error) {
@@ -111,8 +148,16 @@ export const restoreAptitudeQuestion = async (req, res) => {
 
 export const hardDeleteAptitudeQuestion = async (req, res) => {
   try {
+    const existing = await AptitudeQuestion.findById(req.params.id);
+    if (!existing) return res.status(404).json({ message: "Question not found" });
+
+    if (req.user?.role === "teacher") {
+      if (existing.departmentScope && existing.departmentScope !== "global" && existing.departmentScope !== req.user.department) {
+        return res.status(403).json({ message: "You are not authorized to permanently delete questions outside your department." });
+      }
+    }
+
     const question = await AptitudeQuestion.findByIdAndDelete(req.params.id);
-    if (!question) return res.status(404).json({ message: "Question not found" });
     deactivateBankQuestion(question.questionId);
     res.json({ message: "Question permanently deleted" });
   } catch (error) {
@@ -124,6 +169,17 @@ export const bulkRestoreAptitudeQuestions = async (req, res) => {
   try {
     const { ids } = req.body;
     if (!Array.isArray(ids) || ids.length === 0) return res.status(400).json({ message: "ids array is required" });
+
+    if (req.user?.role === "teacher") {
+      const foreign = await AptitudeQuestion.findOne({
+        _id: { $in: ids },
+        departmentScope: { $nin: ["global", req.user.department, null, ""] }
+      });
+      if (foreign) {
+        return res.status(403).json({ message: "You are not authorized to restore questions outside your department." });
+      }
+    }
+
     const questions = await AptitudeQuestion.find({ _id: { $in: ids } });
     await AptitudeQuestion.updateMany({ _id: { $in: ids } }, { isDeleted: false, deletedAt: null });
     questions.forEach((q) => syncAptitudeQuestionToBank(q));
@@ -137,6 +193,17 @@ export const bulkHardDeleteAptitudeQuestions = async (req, res) => {
   try {
     const { ids } = req.body;
     if (!Array.isArray(ids) || ids.length === 0) return res.status(400).json({ message: "ids array is required" });
+
+    if (req.user?.role === "teacher") {
+      const foreign = await AptitudeQuestion.findOne({
+        _id: { $in: ids },
+        departmentScope: { $nin: ["global", req.user.department, null, ""] }
+      });
+      if (foreign) {
+        return res.status(403).json({ message: "You are not authorized to permanently delete questions outside your department." });
+      }
+    }
+
     const questions = await AptitudeQuestion.find({ _id: { $in: ids } });
     questions.forEach((q) => deactivateBankQuestion(q.questionId));
     await AptitudeQuestion.deleteMany({ _id: { $in: ids } });
@@ -155,6 +222,9 @@ export const bulkImportAptitudeQuestions = async (req, res) => {
     let created = 0;
     let updated = 0;
     let skipped = 0;
+    const departmentScope = req.user?.role === "teacher" ? req.user.department : "global";
+    const creatorRole = req.user?.role === "teacher" ? "teacher" : "system_admin";
+
     for (const raw of questions) {
       if (!raw || !raw.question || !Array.isArray(raw.options) || raw.options.length === 0) {
         skipped++;
@@ -181,8 +251,15 @@ export const bulkImportAptitudeQuestions = async (req, res) => {
         companyName: raw.companyName || "",
         isActive: raw.isActive !== false,
         isDeleted: false,
+        departmentScope: req.user?.role === "teacher" ? departmentScope : (raw.departmentScope || "global"),
+        creatorRole,
+        createdBy: req.user?._id || req.user?.id || null,
       };
       if (existing) {
+        if (req.user?.role === "teacher" && existing.departmentScope && existing.departmentScope !== "global" && existing.departmentScope !== req.user.department) {
+          skipped++;
+          continue;
+        }
         await AptitudeQuestion.updateOne({ _id: existing._id }, doc);
         const updatedDoc = await AptitudeQuestion.findById(existing._id);
         await syncAptitudeQuestionToBank(updatedDoc);
@@ -212,6 +289,17 @@ export const bulkAssignAptitudeQuestions = async (req, res) => {
   try {
     const { ids, companyId = "", difficulty = "", category = "", marks = null, explanation = "" } = req.body;
     if (!Array.isArray(ids) || ids.length === 0) return res.status(400).json({ message: "ids array is required" });
+
+    if (req.user?.role === "teacher") {
+      const foreign = await AptitudeQuestion.findOne({
+        _id: { $in: ids },
+        departmentScope: { $nin: ["global", req.user.department, null, ""] }
+      });
+      if (foreign) {
+        return res.status(403).json({ message: "You are not authorized to assign questions outside your department." });
+      }
+    }
+
     const patch = {};
     if (companyId) {
       const company = await Company.findOne({ id: companyId }).lean();
@@ -241,6 +329,13 @@ export const getAptitudeQuestionById = async (req, res) => {
   try {
     const question = await AptitudeQuestion.findById(req.params.id);
     if (!question) return res.status(404).json({ message: "Question not found" });
+
+    if (req.user?.role === "teacher") {
+      if (question.departmentScope && question.departmentScope !== "global" && question.departmentScope !== req.user.department) {
+        return res.status(403).json({ message: "You are not authorized to view questions outside your department." });
+      }
+    }
+
     res.json(question);
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch question", error: error.message });
@@ -286,9 +381,16 @@ export const updateAptitudeQuestion = async (req, res) => {
       }
     }
 
+    const payload = { ...req.body };
+    if (req.user?.role === "teacher") {
+      delete payload.departmentScope;
+      delete payload.creatorRole;
+      delete payload.createdBy;
+    }
+
     const question = await AptitudeQuestion.findByIdAndUpdate(
       req.params.id,
-      { ...req.body, lastEditedBy: req.user?._id || req.user?.id || null, lastEditedAt: new Date() },
+      { ...payload, lastEditedBy: req.user?._id || req.user?.id || null, lastEditedAt: new Date() },
       { new: true, runValidators: true }
     );
     await syncAptitudeQuestionToBank(question);
@@ -328,6 +430,17 @@ export const bulkDeleteAptitudeQuestions = async (req, res) => {
     if (!Array.isArray(ids) || ids.length === 0) {
       return res.status(400).json({ message: "ids array is required" });
     }
+
+    if (req.user?.role === "teacher") {
+      const foreign = await AptitudeQuestion.findOne({
+        _id: { $in: ids },
+        departmentScope: { $nin: ["global", req.user.department, null, ""] }
+      });
+      if (foreign) {
+        return res.status(403).json({ message: "You are not authorized to delete questions outside your department." });
+      }
+    }
+
     await AptitudeQuestion.updateMany(
       { _id: { $in: ids } },
       { isDeleted: true, deletedAt: new Date() }
@@ -344,6 +457,13 @@ export const toggleAptitudeQuestion = async (req, res) => {
   try {
     const question = await AptitudeQuestion.findById(req.params.id);
     if (!question) return res.status(404).json({ message: "Question not found" });
+
+    if (req.user?.role === "teacher") {
+      if (question.departmentScope && question.departmentScope !== "global" && question.departmentScope !== req.user.department) {
+        return res.status(403).json({ message: "You are not authorized to modify questions outside your department." });
+      }
+    }
+
     question.isActive = !question.isActive;
     question.lastEditedBy = req.user?._id || req.user?.id || null;
     question.lastEditedAt = new Date();

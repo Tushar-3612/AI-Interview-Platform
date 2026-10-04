@@ -62,6 +62,13 @@ export function isNoiseLine(line) {
   if (/^Subject:\s*[^|]+\|\s*Question Type:\s*[^|]+\|\s*Marks:/i.test(t)) return true;
   if (/^The following questions follow the field structure/i.test(t)) return true;
   if (/^\s*(?:TECHNICAL|APTITUDE|CODING)\s+QUESTION(?:\s+FORMAT)?\s*$/i.test(t)) return true;
+  if (/^Important Instructions/i.test(t)) return true;
+  if (/^•\s+/i.test(t) && /(?:template|structure|questions|MCQ|options|Admin Panel)/i.test(t)) return true;
+  if (/^Add More Questions/i.test(t)) return true;
+  if (/^To add more questions:/i.test(t)) return true;
+  if (/^Copy the complete question structure/i.test(t)) return true;
+  if (/^Example:\s*$/i.test(t)) return true;
+  if (/^Q\d{3}\s*$/i.test(t) && !/:/.test(t)) return true;
   return false;
 }
 
@@ -86,8 +93,17 @@ function sanitizeText(value) {
     .trim();
 }
 
+function cleanFieldBrackets(val) {
+  if (typeof val !== "string") return val;
+  const trimmed = val.trim();
+  if (/^\[[A-Za-z0-9\s_\-\.]+\]$/.test(trimmed)) {
+    return trimmed.slice(1, -1).trim();
+  }
+  return trimmed;
+}
+
 function normalizeType(raw) {
-  const t = sanitizeText(raw);
+  const t = cleanFieldBrackets(sanitizeText(raw));
   if (!t) return "";
   const lower = t.toLowerCase();
   if (lower.includes("mcq") || lower.includes("multiple choice")) return "MCQ";
@@ -205,14 +221,14 @@ function parseCSV(text) {
     const r = rows[i];
     if (r.length === 1 && !r[0].trim()) continue;
     const get = (idx) => (idx >= 0 && r[idx] !== undefined ? sanitizeText(r[idx]) : "");
-    const type = normalizeType(get(map.type));
+    const type = normalizeType(cleanFieldBrackets(get(map.type)));
     out.push({
       question: get(map.question),
       type,
-      subject: get(map.subject),
-      marks: get(map.marks) || "0",
-      negativeMarks: map.neg >= 0 ? get(map.neg) || "0" : "0",
-      difficulty: get(map.difficulty),
+      subject: cleanFieldBrackets(get(map.subject)),
+      marks: cleanFieldBrackets(get(map.marks)) || "0",
+      negativeMarks: map.neg >= 0 ? cleanFieldBrackets(get(map.neg)) || "0" : "0",
+      difficulty: cleanFieldBrackets(get(map.difficulty)),
       options: {
         A: get(map.oa),
         B: get(map.ob),
@@ -245,6 +261,16 @@ function fieldValue(block, label, singleLine = false) {
       if (candidate < end) end = candidate;
     }
   }
+
+  // Prevent trailing instructional template sections from bleeding into explanation
+  if (label.toLowerCase() === "explanation") {
+    const boundaryRe = /(?:^|\n)\s*(?:Add More Questions|To add more questions:|Important Instructions|Technical Question Format|Aptitude Question Format)\b/i;
+    const mb = boundaryRe.exec(block.slice(start, end));
+    if (mb) {
+      end = start + mb.index;
+    }
+  }
+
   let raw = block.slice(start, end).trim();
   if (singleLine) {
     const lines = raw.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
@@ -294,21 +320,27 @@ function parseOptions(text) {
 function parseBlock(block) {
   try {
     const qidMatch = block.match(/^\s*question\s*id\s*:\s*(\S+)/i);
-    const questionId = qidMatch ? sanitizeText(qidMatch[1]) : fieldValue(block, "Question ID", true);
+    let questionId = qidMatch ? sanitizeText(qidMatch[1]) : fieldValue(block, "Question ID", true);
+    if (questionId) questionId = cleanFieldBrackets(questionId);
+
     const question = fieldValue(block, "Question");
     const type = normalizeType(fieldValue(block, "Type", true));
     const optionsText = fieldValue(block, "Options");
     const options = parseOptions(optionsText);
     const rawAnswer = fieldValue(block, "Correct Answer", true);
+    const difficulty = cleanFieldBrackets(fieldValue(block, "Difficulty", true));
+    const marks = cleanFieldBrackets(fieldValue(block, "Marks", true)) || "0";
+    const negativeMarks = cleanFieldBrackets(fieldValue(block, "Negative Marks", true)) || "0";
+    const subject = cleanFieldBrackets(fieldValue(block, "Subject", true));
 
     const raw = {
       questionId,
       question,
       type,
-      subject: fieldValue(block, "Subject", true),
-      marks: fieldValue(block, "Marks", true) || "0",
-      negativeMarks: fieldValue(block, "Negative Marks", true) || "0",
-      difficulty: fieldValue(block, "Difficulty", true),
+      subject,
+      marks,
+      negativeMarks,
+      difficulty,
       options,
       correctAnswer: normalizeAnswer(rawAnswer, type, options),
       explanation: fieldValue(block, "Explanation"),
@@ -550,13 +582,29 @@ export function detectFileKind(originalname = "", mimetype = "") {
   return null;
 }
 
-const PLACEHOLDER_RE = /\[|\]/;
+/* ============================================================
+   TEMPLATE PLACEHOLDER DETECTION
+   ============================================================ */
+
+const KNOWN_PLACEHOLDER_PATTERNS = [
+  /\[\s*Enter\b[^\]]*\]/i,
+  /\bEnter\s+(?:your\s+)?(?:technical\s+|aptitude\s+)?(?:question|subject|option|explanation|answer)\b/i,
+  /\[\s*Easy\s*\/\s*Medium\s*\/\s*Hard\s*\]/i,
+  /\[\s*A\s*\/\s*B\s*\/\s*C\s*\/\s*D\s*\]/i,
+  /\[\s*True\s*\/\s*False\s*\]/i,
+];
+
+export function isPlaceholderValue(value) {
+  if (value == null) return false;
+  const str = String(value).trim();
+  if (!str) return false;
+  return KNOWN_PLACEHOLDER_PATTERNS.some((re) => re.test(str));
+}
 
 export function containsPlaceholder(questions) {
   if (!Array.isArray(questions)) return false;
   return questions.some((q) => {
     const fields = [
-      q.questionId,
       q.question,
       q.subject,
       q.options?.A,
@@ -566,10 +614,8 @@ export function containsPlaceholder(questions) {
       q.correctAnswer,
       q.explanation,
       q.difficulty,
-      q.type,
-      q.marks,
-      q.negativeMarks,
     ];
-    return fields.some((f) => f != null && PLACEHOLDER_RE.test(String(f)));
+    return fields.some((f) => isPlaceholderValue(f));
   });
 }
+

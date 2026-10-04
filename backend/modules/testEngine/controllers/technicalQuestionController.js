@@ -17,6 +17,24 @@ export const getTechnicalQuestions = async (req, res) => {
     if (difficulty) query.difficulty = difficulty;
     if (isActive !== undefined) query.isActive = isActive === "true";
 
+    if (req.user?.role === "teacher" && req.user.department) {
+      const deptFilter = {
+        $or: [
+          { departmentScope: "global" },
+          { departmentScope: req.user.department },
+          { departmentScope: { $exists: false } },
+          { departmentScope: null },
+          { departmentScope: "" }
+        ]
+      };
+      if (query.$or) {
+        query.$and = [{ $or: query.$or }, deptFilter];
+        delete query.$or;
+      } else {
+        query.$and = [deptFilter];
+      }
+    }
+
     const total = await TechnicalQuestion.countDocuments(query);
     const questions = await TechnicalQuestion.find(query)
       .sort({ companyId: 1, topic: 1, questionId: 1 })
@@ -160,7 +178,12 @@ export const updateTechnicalQuestion = async (req, res) => {
       }
     }
 
-    const updates = req.body;
+    const updates = { ...req.body };
+    if (req.user?.role === "teacher") {
+      delete updates.departmentScope;
+      delete updates.creatorRole;
+      delete updates.createdBy;
+    }
     updates.lastEditedBy = req.user.id || req.user._id;
     updates.lastEditedAt = new Date();
 
@@ -215,6 +238,9 @@ export const bulkCreateTechnicalQuestions = async (req, res) => {
       return res.status(400).json({ message: "Questions array is required" });
     }
 
+    const departmentScope = req.user?.role === "teacher" ? req.user.department : "global";
+    const creatorRole = req.user?.role === "teacher" ? "teacher" : "system_admin";
+
     const created = [];
     const errors = [];
 
@@ -239,6 +265,9 @@ export const bulkCreateTechnicalQuestions = async (req, res) => {
           expectedAnswer: q.expectedAnswer,
           explanation: q.explanation || "",
           marks: q.marks || 1,
+          departmentScope: req.user?.role === "teacher" ? departmentScope : (q.departmentScope || "global"),
+          creatorRole,
+          createdBy: req.user?._id || req.user?.id || null,
           lastEditedBy: req.user.id,
           lastEditedAt: new Date(),
         });

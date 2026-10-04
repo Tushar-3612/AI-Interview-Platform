@@ -26,9 +26,28 @@ const questionResultSchema = new mongoose.Schema({
   questionIndex: { type: Number, required: true },
   questionId: { type: String, default: "" },
   question: { type: String, default: "" },
-  type: { type: String, enum: ["MCQ", "True/False", "Descriptive", "Coding"] },
+  type: {
+    type: String,
+    enum: ["MCQ", "Technical", "Aptitude", "Coding", "Descriptive", "True/False", "mcq", "technical", "aptitude", "coding", "descriptive", "true/false"],
+    set: (v) => {
+      if (!v) return "MCQ";
+      const s = String(v).trim().toLowerCase();
+      if (s === "coding") return "Coding";
+      if (s === "technical") return "Technical";
+      if (s === "aptitude") return "Aptitude";
+      if (s === "descriptive") return "Descriptive";
+      if (s === "true/false" || s === "true_false") return "True/False";
+      return "MCQ";
+    },
+    default: "MCQ",
+  },
   subject: { type: String, default: "" },
-  difficulty: { type: String, enum: ["easy", "medium", "hard"] },
+  difficulty: {
+    type: String,
+    enum: ["easy", "medium", "hard", "Easy", "Medium", "Hard"],
+    set: (v) => (v ? String(v).trim().toLowerCase() : "medium"),
+    default: "medium",
+  },
   studentAnswer: { type: String, default: "" },
   correctAnswer: { type: String, default: "" },
   marks: { type: Number, default: 0 },

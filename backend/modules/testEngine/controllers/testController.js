@@ -119,7 +119,14 @@ export const updateTest = async (req, res) => {
       }
     }
 
-    const updated = await Test.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const updates = { ...req.body };
+    if (req.user?.role === "teacher") {
+      delete updates.departmentScope;
+      delete updates.creatorRole;
+      delete updates.createdBy;
+    }
+
+    const updated = await Test.findByIdAndUpdate(req.params.id, updates, { new: true });
     res.json({ message: "Test updated", test: updated });
   } catch (error) {
     res.status(500).json({ message: "Failed to update test" });
@@ -158,6 +165,16 @@ export const addQuestion = async (req, res) => {
   try {
     const test = await Test.findById(req.params.id);
     if (!test) return res.status(404).json({ message: "Test not found" });
+
+    if (req.user?.role === "teacher") {
+      if (test.departmentScope && test.departmentScope !== "global" && test.departmentScope !== req.user.department) {
+        return res.status(403).json({ message: "You are not authorized to add questions to tests from another department." });
+      }
+      if (test.creatorRole === "system_admin" && test.departmentScope === "global") {
+        return res.status(403).json({ message: "Teachers cannot modify global platform tests." });
+      }
+    }
+
     test.questions.push(req.body);
     await test.save();
     res.json({ message: "Question added", test });
@@ -170,6 +187,16 @@ export const updateQuestion = async (req, res) => {
   try {
     const test = await Test.findById(req.params.id);
     if (!test) return res.status(404).json({ message: "Test not found" });
+
+    if (req.user?.role === "teacher") {
+      if (test.departmentScope && test.departmentScope !== "global" && test.departmentScope !== req.user.department) {
+        return res.status(403).json({ message: "You are not authorized to update questions on tests from another department." });
+      }
+      if (test.creatorRole === "system_admin" && test.departmentScope === "global") {
+        return res.status(403).json({ message: "Teachers cannot modify global platform tests." });
+      }
+    }
+
     const q = test.questions.id(req.params.questionId);
     if (!q) return res.status(404).json({ message: "Question not found" });
     Object.assign(q, req.body);
@@ -184,6 +211,16 @@ export const deleteQuestion = async (req, res) => {
   try {
     const test = await Test.findById(req.params.id);
     if (!test) return res.status(404).json({ message: "Test not found" });
+
+    if (req.user?.role === "teacher") {
+      if (test.departmentScope && test.departmentScope !== "global" && test.departmentScope !== req.user.department) {
+        return res.status(403).json({ message: "You are not authorized to delete questions from tests of another department." });
+      }
+      if (test.creatorRole === "system_admin" && test.departmentScope === "global") {
+        return res.status(403).json({ message: "Teachers cannot modify global platform tests." });
+      }
+    }
+
     test.questions.pull(req.params.questionId);
     await test.save();
     res.json({ message: "Question deleted", test });
@@ -198,9 +235,19 @@ export const deleteQuestion = async (req, res) => {
 
 export const publishTest = async (req, res) => {
   try {
-    const { startAt, endAt } = req.body;
+    const { startAt, endAt, duration, attemptLimit } = req.body;
     const test = await Test.findById(req.params.id);
     if (!test) return res.status(404).json({ message: "Test not found" });
+
+    // Authorization check for Teacher
+    if (req.user?.role === "teacher") {
+      if (test.departmentScope && test.departmentScope !== "global" && test.departmentScope !== req.user.department) {
+        return res.status(403).json({ message: "You are not authorized to publish tests belonging to another department." });
+      }
+      if (test.creatorRole === "system_admin" && test.departmentScope === "global") {
+        return res.status(403).json({ message: "Teachers cannot publish global platform tests." });
+      }
+    }
 
     if (test.status === "completed") {
       return res.status(400).json({ message: "Cannot publish a completed test" });
@@ -224,10 +271,36 @@ export const publishTest = async (req, res) => {
 
     const s = new Date(startAt);
     const e = new Date(endAt);
-    if (isNaN(s.getTime()) || isNaN(e.getTime()) || e.getTime() <= s.getTime()) {
+    if (isNaN(s.getTime()) || isNaN(e.getTime())) {
+      return res.status(400).json({ message: "Invalid start or end date format." });
+    }
+    if (e.getTime() <= s.getTime()) {
       return res.status(400).json({ message: "End date and time must be after the start date and time." });
     }
 
+    // Resolve & validate duration
+    const resolvedDuration = duration !== undefined ? Number(duration) : Number(test.duration);
+    if (isNaN(resolvedDuration) || !Number.isInteger(resolvedDuration) || resolvedDuration < 1) {
+      return res.status(400).json({ message: "Duration must be at least 1 minute." });
+    }
+
+    // Resolve & validate attemptLimit
+    const resolvedAttemptLimit = attemptLimit !== undefined ? Number(attemptLimit) : Number(test.attemptLimit);
+    if (isNaN(resolvedAttemptLimit) || !Number.isInteger(resolvedAttemptLimit) || resolvedAttemptLimit < 1) {
+      return res.status(400).json({ message: "Attempt limit must be at least 1." });
+    }
+
+    // Schedule window vs duration validation
+    const windowDurationMs = e.getTime() - s.getTime();
+    const requiredDurationMs = resolvedDuration * 60000;
+    if (windowDurationMs < requiredDurationMs) {
+      return res.status(400).json({
+        message: "Schedule window must be at least as long as the test duration.",
+      });
+    }
+
+    test.duration = resolvedDuration;
+    test.attemptLimit = resolvedAttemptLimit;
     test.status = "scheduled";
     test.scheduledAt = s;
     test.startAt = s;
@@ -485,7 +558,12 @@ function computeEffectiveStatus(test, assignment) {
 
 export const getAssignedTests = async (req, res) => {
   try {
-    const assignments = await TestAssignment.find()
+    const isTeacher = req.user?.role === "teacher";
+    const teacherDept = req.user?.department;
+
+    const query = isTeacher && teacherDept ? { department: teacherDept } : {};
+
+    const assignments = await TestAssignment.find(query)
       .populate("testId")
       .populate("studentIds", "name email department year")
       .sort({ createdAt: -1 })
@@ -581,6 +659,11 @@ export const getAssignmentById = async (req, res) => {
       .populate("studentIds", "name email department year")
       .lean();
     if (!assignment) return res.status(404).json({ message: "Assignment not found" });
+
+    if (req.user?.role === "teacher" && assignment.department && assignment.department !== req.user.department) {
+      return res.status(403).json({ message: "You are not authorized to access assignments from another department." });
+    }
+
     res.json(assignment);
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch assignment" });
@@ -589,6 +672,13 @@ export const getAssignmentById = async (req, res) => {
 
 export const deleteAssignment = async (req, res) => {
   try {
+    const assignment = await TestAssignment.findById(req.params.id);
+    if (!assignment) return res.status(404).json({ message: "Assignment not found" });
+
+    if (req.user?.role === "teacher" && assignment.department && assignment.department !== req.user.department) {
+      return res.status(403).json({ message: "You are not authorized to delete assignments from another department." });
+    }
+
     await TestAssignment.findByIdAndDelete(req.params.id);
     res.json({ message: "Assignment removed" });
   } catch (error) {
@@ -598,12 +688,15 @@ export const deleteAssignment = async (req, res) => {
 
 export const closeAssignment = async (req, res) => {
   try {
-    const assignment = await TestAssignment.findByIdAndUpdate(
-      req.params.id,
-      { status: "completed" },
-      { new: true }
-    );
+    const assignment = await TestAssignment.findById(req.params.id);
     if (!assignment) return res.status(404).json({ message: "Assignment not found" });
+
+    if (req.user?.role === "teacher" && assignment.department && assignment.department !== req.user.department) {
+      return res.status(403).json({ message: "You are not authorized to close assignments from another department." });
+    }
+
+    assignment.status = "completed";
+    await assignment.save();
     res.json({ message: "Assignment closed", assignment });
   } catch (error) {
     console.error("Close Assignment Error:", error.message);
@@ -673,6 +766,10 @@ export const getAssignmentStudents = async (req, res) => {
 
     if (!assignment) return res.status(404).json({ message: "Assignment not found" });
 
+    if (req.user?.role === "teacher" && assignment.department && assignment.department !== req.user.department) {
+      return res.status(403).json({ message: "You are not authorized to view students for assignments from another department." });
+    }
+
     const studentDetails = await buildAssignmentStudentRows(assignment);
 
     const stats = {
@@ -700,6 +797,10 @@ export const exportAssignmentStudents = async (req, res) => {
       .lean();
 
     if (!assignment) return res.status(404).json({ message: "Assignment not found" });
+
+    if (req.user?.role === "teacher" && assignment.department && assignment.department !== req.user.department) {
+      return res.status(403).json({ message: "You are not authorized to export results for assignments from another department." });
+    }
 
     const test = assignment.testId || {};
     const students = await buildAssignmentStudentRows(assignment);
@@ -905,13 +1006,21 @@ export const uploadMiddleware = upload.single("file");
 
 export const updateAssignmentStatus = async (req, res) => {
   try {
+    const existing = await TestAssignment.findById(req.params.id);
+    if (!existing) return res.status(404).json({ message: "Assignment not found" });
+
+    if (req.user?.role === "teacher" && existing.department && req.user.department) {
+      if (existing.department !== req.user.department) {
+        return res.status(403).json({ message: "Forbidden: You cannot modify assignments belonging to another department" });
+      }
+    }
+
     const { status, startedCount, completedCount, notAttemptedCount, autoSubmittedCount, averageScore } = req.body;
     const assignment = await TestAssignment.findByIdAndUpdate(
       req.params.id,
       { status, startedCount, completedCount, notAttemptedCount, autoSubmittedCount, averageScore },
       { new: true }
     );
-    if (!assignment) return res.status(404).json({ message: "Assignment not found" });
     res.json({ message: "Assignment updated", assignment });
   } catch (error) {
     res.status(500).json({ message: "Failed to update assignment" });

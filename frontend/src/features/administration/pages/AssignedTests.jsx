@@ -6,9 +6,10 @@ import {
   Users, FileText, Download, ChevronDown, ChevronUp, Calendar,
   AlertCircle, Edit, Send, Plus, RefreshCw, X, Ban,
   GraduationCap, BookOpen, Code, BarChart, Mail, Shield,
+  MoreHorizontal, MoreVertical,
 } from "lucide-react";
 import api from "../../../core/api/api.js";
-import { getAuthToken } from "../../student/hooks/useStudentProfile.js";
+import { getAuthToken, getAuthUser } from "../../student/hooks/useStudentProfile.js";
 import toast from "react-hot-toast";
 import * as XLSX from "xlsx";
 import { DEPARTMENT_VALUES as DEPARTMENTS, YEAR_VALUES as YEARS } from "../../../core/utils/constants.js";
@@ -124,7 +125,7 @@ function ErrorState({ onRetry }) {
   );
 }
 
-function FilterBar({ filters, onFilterChange, companies }) {
+function FilterBar({ filters, onFilterChange, companies, isTeacher, teacherDept }) {
   const activeCount = Object.values(filters).filter(v => v && v !== "all" && v !== "").length;
 
   return (
@@ -135,7 +136,7 @@ function FilterBar({ filters, onFilterChange, companies }) {
         </div>
         {activeCount > 0 && (
           <button onClick={() => onFilterChange({
-            search: "", company: "all", department: "all", year: "all",
+            search: "", company: "all", department: isTeacher ? (teacherDept || "all") : "all", year: "all",
             section: "all", testType: "all", status: "all", dateFrom: "", dateTo: "",
           })}
             className="text-xs px-2 py-1 rounded admin-hover cursor-pointer"
@@ -157,12 +158,20 @@ function FilterBar({ filters, onFilterChange, companies }) {
           <option value="all">All Companies</option>
           {companies.map(c => <option key={c._id || c.name} value={c.name}>{c.name}</option>)}
         </select>
-        <select value={filters.department} onChange={e => onFilterChange({ ...filters, department: e.target.value })}
-          className="text-xs px-2 py-1.5 border admin-border rounded-lg bg-transparent focus:outline-none focus:ring-2 focus:ring-[var(--primary)] admin-select"
-          style={{ color: "var(--text-primary)" }}>
-          <option value="all">All Departments</option>
-          {DEPARTMENTS.map(d => <option key={d}>{d}</option>)}
-        </select>
+        {isTeacher ? (
+          <select value={teacherDept || ""} disabled
+            className="text-xs px-2 py-1.5 border admin-border rounded-lg bg-gray-50 dark:bg-gray-800/50 cursor-not-allowed opacity-80"
+            style={{ color: "var(--text-primary)" }}>
+            <option value={teacherDept}>{teacherDept} (Locked)</option>
+          </select>
+        ) : (
+          <select value={filters.department} onChange={e => onFilterChange({ ...filters, department: e.target.value })}
+            className="text-xs px-2 py-1.5 border admin-border rounded-lg bg-transparent focus:outline-none focus:ring-2 focus:ring-[var(--primary)] admin-select"
+            style={{ color: "var(--text-primary)" }}>
+            <option value="all">All Departments</option>
+            {DEPARTMENTS.map(d => <option key={d}>{d}</option>)}
+          </select>
+        )}
         <select value={filters.year} onChange={e => onFilterChange({ ...filters, year: e.target.value })}
           className="text-xs px-2 py-1.5 border admin-border rounded-lg bg-transparent focus:outline-none focus:ring-2 focus:ring-[var(--primary)] admin-select"
           style={{ color: "var(--text-primary)" }}>
@@ -780,13 +789,16 @@ function ViewTestModal({ assignment, onClose, onEdit, onDelete, onReschedule, on
 function AssignedTests() {
   const navigate = useNavigate();
   const token = getAuthToken();
+  const user = getAuthUser();
+  const isTeacher = user?.role === "teacher";
+  const teacherDept = user?.department || "";
 
   const [assignments, setAssignments] = useState([]);
   const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filters, setFilters] = useState({
-    search: "", company: "all", department: "all", year: "all",
+    search: "", company: "all", department: isTeacher ? (teacherDept || "all") : "all", year: "all",
     section: "all", testType: "all", status: "all", dateFrom: "", dateTo: "",
   });
   const [sortField, setSortField] = useState("createdAt");
@@ -802,6 +814,15 @@ function AssignedTests() {
   const [monitoringLoading, setMonitoringLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [lifecycleFilter, setLifecycleFilter] = useState("all");
+  const [openActionId, setOpenActionId] = useState(null);
+
+  useEffect(() => {
+    const handleDocClick = () => setOpenActionId(null);
+    if (openActionId) {
+      document.addEventListener("click", handleDocClick);
+      return () => document.removeEventListener("click", handleDocClick);
+    }
+  }, [openActionId]);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -1088,7 +1109,7 @@ function AssignedTests() {
           ))}
         </div>
       </div>
-      <FilterBar filters={filters} onFilterChange={(f) => { setFilters(f); setPage(1); }} companies={companies} />
+      <FilterBar filters={filters} onFilterChange={(f) => { setFilters(f); setPage(1); }} companies={companies} isTeacher={isTeacher} teacherDept={teacherDept} />
 
       {/* Stats */}
       <StatsCards data={stats} />
@@ -1118,25 +1139,19 @@ function AssignedTests() {
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
-                <tr className="border-b admin-table-divider" style={{ color: "var(--text-muted)" }}>
+                <tr className="border-b admin-table-divider bg-gray-50/50 dark:bg-zinc-900/50" style={{ color: "var(--text-muted)" }}>
                   {[
-                    { key: "title", label: "Test Name", align: "text-left", minW: "170px" },
-                    { key: null, label: "Company", align: "text-left", minW: "120px" },
-                    { key: "testType", label: "Type", align: "text-left", minW: "90px" },
-                    { key: null, label: "Department", align: "text-left", minW: "130px" },
-                    { key: null, label: "Year", align: "text-center", minW: "80px" },
-                    { key: null, label: "Section", align: "text-center", minW: "70px" },
-                    { key: "totalStudents", label: "Students", align: "text-center", minW: "80px" },
-                    { key: null, label: "Started", align: "text-center", minW: "70px" },
-                    { key: "completedCount", label: "Completed", align: "text-center", minW: "90px" },
-                    { key: null, label: "Not Attempted", align: "text-center", minW: "100px" },
-                    { key: null, label: "Auto Submitted", align: "text-center", minW: "100px" },
-                    { key: "averageScore", label: "Avg Score", align: "text-center", minW: "90px" },
+                    { key: "title", label: "Test", align: "text-left", minW: "190px" },
+                    { key: "testType", label: "Type", align: "text-center", minW: "90px" },
+                    { key: null, label: "Target", align: "text-left", minW: "150px" },
+                    { key: "totalStudents", label: "Students", align: "text-center", minW: "75px" },
+                    { key: "completedCount", label: "Progress", align: "text-left", minW: "135px" },
+                    { key: "averageScore", label: "Avg Score", align: "text-center", minW: "85px" },
                     { key: null, label: "Schedule", align: "text-left", minW: "140px" },
-                    { key: "status", label: "Status", align: "text-center", minW: "90px" },
-                    { key: null, label: "Actions", align: "text-center", minW: "160px" },
+                    { key: "status", label: "Status", align: "text-center", minW: "95px" },
+                    { key: null, label: "Actions", align: "text-right", minW: "160px" },
                   ].map(col => (
-                    <th key={col.label} className={`pb-2.5 pr-2 font-semibold whitespace-nowrap ${col.align} ${col.key ? "cursor-pointer select-none" : ""}`}
+                    <th key={col.label} className={`py-3 px-3 font-semibold whitespace-nowrap ${col.align} ${col.key ? "cursor-pointer select-none" : ""}`}
                       onClick={() => col.key && handleSort(col.key)}
                       style={{ color: sortField === col.key ? "var(--primary)" : "var(--text-muted)", minWidth: col.minW }}>
                       {col.label}{col.key && toggleSort(col.key)}
@@ -1148,87 +1163,158 @@ function AssignedTests() {
                 {paginated.map((a) => {
                   const test = a.testId || {};
                   return (
-                    <tr key={a._id} className="border-b admin-table-divider admin-hover">
-                      <td className="py-2.5 pr-2">
+                    <tr key={a._id} className="border-b admin-table-divider admin-hover transition-colors">
+                      {/* 1. Test */}
+                      <td className="py-3 px-3">
                         <button onClick={() => setViewModal(a)} title={test.title || "Untitled"}
-                          className="font-medium text-left hover:underline cursor-pointer truncate max-w-[160px] block"
+                          className="font-semibold text-left hover:underline cursor-pointer truncate max-w-[180px] block"
                           style={{ color: "var(--text-primary)" }}>
                           {test.title || "Untitled"}
                         </button>
+                        <div className="text-[11px] mt-0.5 flex items-center gap-1.5" style={{ color: "var(--text-muted)" }}>
+                          <span>{test.duration ? `${test.duration} mins` : "—"}</span>
+                          {test.companyId && <span>• {test.companyId}</span>}
+                        </div>
                       </td>
-                      <td className="py-2.5 pr-2" style={{ color: "var(--text-secondary)" }}>{test.companyId || "-"}</td>
-                      <td className="py-2.5 pr-2">
-                        <span className="capitalize text-[10px] font-medium px-1.5 py-0.5 rounded"
-                          style={{ background: "color-mix(in srgb, var(--primary) 10%, transparent)", color: "var(--primary)" }}>
+
+                      {/* 2. Type */}
+                      <td className="py-3 px-3 text-center">
+                        <span className="capitalize text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                          style={{ background: "color-mix(in srgb, var(--primary) 12%, transparent)", color: "var(--primary)" }}>
                           {test.testType || "N/A"}
                         </span>
                       </td>
-                      <td className="py-2.5 pr-2" style={{ color: "var(--text-secondary)" }}>
-                        {a.department || "All"}
-                      </td>
-                      <td className="py-2.5 pr-2 text-center" style={{ color: "var(--text-secondary)" }}>
-                        {a.year || "All"}
-                      </td>
-                      <td className="py-2.5 pr-2 text-center" style={{ color: "var(--text-secondary)" }}>
-                        {a.section || "All"}
-                      </td>
-                      <td className="py-2.5 pr-2 text-center font-medium" style={{ color: "var(--text-primary)" }}>{a.totalStudents || 0}</td>
-                      <td className="py-2.5 pr-2 text-center" style={{ color: "var(--badge-warning-text)" }}>{a.startedCount || 0}</td>
-                      <td className="py-2.5 pr-2 text-center" style={{ color: "var(--badge-success-text)" }}>{a.completedCount || 0}</td>
-                      <td className="py-2.5 pr-2 text-center" style={{ color: "var(--badge-error-text)" }}>{a.notAttemptedCount || 0}</td>
-                      <td className="py-2.5 pr-2 text-center" style={{ color: "var(--badge-warning-text)" }}>{a.autoSubmittedCount || 0}</td>
-                      <td className="py-2.5 pr-2 text-center font-medium" style={{ color: (a.averageScore || 0) >= 40 ? "var(--badge-success-text)" : "var(--badge-error-text)" }}>
-                        {a.averageScore ? `${a.averageScore}%` : "0%"}
-                      </td>
-                      <td className="py-2.5 pr-2" style={{ color: "var(--text-secondary)" }}>
-                        <div className="whitespace-nowrap text-[11px] leading-tight">
-                          <div style={{ color: "var(--text-primary)" }}>{fmtDateOnly(test.startAt)}</div>
-                          <div>{fmtTimeOnly(test.startAt)}</div>
-                          <div style={{ color: "var(--text-muted)" }}>&#8595;</div>
-                          <div style={{ color: "var(--text-primary)" }}>{fmtDateOnly(test.endAt || test.scheduledAt)}</div>
-                          <div style={{ color: "var(--text-muted)" }}>{fmtTimeOnly(test.endAt || test.scheduledAt)}</div>
+
+                      {/* 3. Target */}
+                      <td className="py-3 px-3">
+                        <div className="font-medium truncate max-w-[140px]" style={{ color: "var(--text-primary)" }}>
+                          {a.department || "All Departments"}
+                        </div>
+                        <div className="text-[10px] mt-0.5" style={{ color: "var(--text-muted)" }}>
+                          {a.year ? `Year ${a.year}` : "All Years"}{a.section ? ` • Sec ${a.section}` : ""}
                         </div>
                       </td>
-                      <td className="py-2.5 pr-2 text-center">
-                        <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded border ${statusBadge(getEffectiveTestStatus(test, a))}`}>
+
+                      {/* 4. Students */}
+                      <td className="py-3 px-3 text-center">
+                        <span className="font-bold text-xs" style={{ color: "var(--text-primary)" }}>
+                          {a.totalStudents || 0}
+                        </span>
+                      </td>
+
+                      {/* 5. Progress */}
+                      <td className="py-3 px-3">
+                        <div className="text-[11px] space-y-0.5 leading-tight">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-[10px]" style={{ color: "var(--badge-warning-text)" }}>Started:</span>
+                            <span className="font-semibold" style={{ color: "var(--text-primary)" }}>{a.startedCount || 0}</span>
+                          </div>
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-[10px]" style={{ color: "var(--badge-success-text)" }}>Completed:</span>
+                            <span className="font-semibold" style={{ color: "var(--text-primary)" }}>{a.completedCount || 0}</span>
+                          </div>
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>Remaining:</span>
+                            <span className="font-semibold" style={{ color: "var(--text-muted)" }}>
+                              {Math.max(0, (a.totalStudents || 0) - (a.completedCount || 0))}
+                            </span>
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* 6. Avg Score */}
+                      <td className="py-3 px-3 text-center font-bold text-xs"
+                        style={{ color: (a.averageScore || 0) >= 40 ? "var(--badge-success-text)" : "var(--badge-error-text)" }}>
+                        {a.averageScore ? `${a.averageScore}%` : "0%"}
+                      </td>
+
+                      {/* 7. Schedule */}
+                      <td className="py-3 px-3" style={{ color: "var(--text-secondary)" }}>
+                        <div className="whitespace-nowrap text-[11px] leading-snug">
+                          <div className="font-medium" style={{ color: "var(--text-primary)" }}>
+                            {fmtDateOnly(test.startAt)}{" "}
+                            <span className="text-[10px] font-normal" style={{ color: "var(--text-muted)" }}>
+                              {fmtTimeOnly(test.startAt)}
+                            </span>
+                          </div>
+                          <div className="text-[9px] text-center my-0.5" style={{ color: "var(--text-muted)" }}>&#8595;</div>
+                          <div className="font-medium" style={{ color: "var(--text-primary)" }}>
+                            {fmtDateOnly(test.endAt || test.scheduledAt)}{" "}
+                            <span className="text-[10px] font-normal" style={{ color: "var(--text-muted)" }}>
+                              {fmtTimeOnly(test.endAt || test.scheduledAt)}
+                            </span>
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* 8. Status */}
+                      <td className="py-3 px-3 text-center">
+                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border capitalize ${statusBadge(getEffectiveTestStatus(test, a))}`}>
                           {getEffectiveTestStatus(test, a)}
                         </span>
                       </td>
-                      <td className="py-2.5 pr-2">
-                        <div className="flex items-center justify-center gap-1">
+
+                      {/* 9. Actions */}
+                      <td className="py-3 px-3 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
                           <button onClick={() => setViewModal(a)}
-                            className="p-1 rounded admin-hover cursor-pointer" title="View Details">
-                            <Eye className="w-3.5 h-3.5" style={{ color: "var(--text-secondary)" }} />
+                            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-white rounded-lg cursor-pointer transition-opacity hover:opacity-90 shadow-sm shrink-0"
+                            style={{ background: "var(--primary)" }}
+                            title="View Details & Monitoring">
+                            <Eye className="w-3.5 h-3.5" /> View / Monitor
                           </button>
-                          <button onClick={() => navigate(`/admin/tests/create?edit=${test._id}`)}
-                            className="p-1 rounded admin-hover cursor-pointer" title="Edit Test">
-                            <Edit className="w-3.5 h-3.5" style={{ color: "var(--text-secondary)" }} />
-                          </button>
-                          <button onClick={() => setDeleteConfirm(a)}
-                            className="p-1 rounded admin-hover cursor-pointer" title="Delete Test">
-                            <Trash2 className="w-3.5 h-3.5" style={{ color: "var(--badge-error-text)" }} />
-                          </button>
-                          <button onClick={() => setRescheduleModal(a)}
-                            className="p-1 rounded admin-hover cursor-pointer" title="View Schedule">
-                            <Calendar className="w-3.5 h-3.5" style={{ color: "var(--text-secondary)" }} />
-                          </button>
-                          <button onClick={() => handleOpenMonitoring(a)}
-                            className="p-1 rounded admin-hover cursor-pointer" title="Monitor Performance">
-                            <BarChart className="w-3.5 h-3.5" style={{ color: "var(--badge-info-text)" }} />
-                          </button>
-                          <button
-                            onClick={() => handleExportStudents(a)}
-                            disabled={!(a.effectiveStatus === "completed" || a.effectiveStatus === "expired")}
-                            className="p-1 rounded admin-hover cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
-                            title={(a.effectiveStatus === "completed" || a.effectiveStatus === "expired") ? "Export Student Excel" : "Results available after the test is completed"}>
-                            <Download className="w-3.5 h-3.5" style={{ color: "var(--success)" }} />
-                          </button>
-                          {a.status !== "completed" && (
-                            <button onClick={() => handleCloseAssignment(a._id)}
-                              className="p-1 rounded admin-hover cursor-pointer" title="Close">
-                              <Ban className="w-3.5 h-3.5" style={{ color: "var(--badge-warning-text)" }} />
+
+                          <div className="relative inline-block text-left" onClick={e => e.stopPropagation()}>
+                            <button onClick={() => setOpenActionId(openActionId === a._id ? null : a._id)}
+                              className="p-1 rounded-lg border admin-border admin-hover cursor-pointer"
+                              title="More Options"
+                              style={{ color: "var(--text-secondary)" }}>
+                              <MoreVertical className="w-4 h-4" />
                             </button>
-                          )}
+
+                            {openActionId === a._id && (
+                              <div className="absolute right-0 mt-1 w-44 rounded-xl shadow-xl border admin-border bg-white dark:bg-[#18181b] py-1 z-30 text-left">
+                                <button
+                                  onClick={() => { setOpenActionId(null); navigate(`/admin/tests/create?edit=${test._id}`); }}
+                                  className="w-full text-left px-3 py-1.5 text-xs flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-zinc-800 cursor-pointer"
+                                  style={{ color: "var(--text-primary)" }}>
+                                  <Edit className="w-3.5 h-3.5" style={{ color: "var(--text-secondary)" }} />
+                                  Edit Test
+                                </button>
+                                <button
+                                  onClick={() => { setOpenActionId(null); setRescheduleModal(a); }}
+                                  className="w-full text-left px-3 py-1.5 text-xs flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-zinc-800 cursor-pointer"
+                                  style={{ color: "var(--text-primary)" }}>
+                                  <Calendar className="w-3.5 h-3.5" style={{ color: "var(--text-secondary)" }} />
+                                  Reschedule
+                                </button>
+                                <button
+                                  onClick={() => { setOpenActionId(null); handleExportStudents(a); }}
+                                  disabled={!(a.effectiveStatus === "completed" || a.effectiveStatus === "expired")}
+                                  className="w-full text-left px-3 py-1.5 text-xs flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-zinc-800 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                                  style={{ color: "var(--text-primary)" }}>
+                                  <Download className="w-3.5 h-3.5" style={{ color: "var(--success)" }} />
+                                  Export Excel
+                                </button>
+                                {a.status !== "completed" && (
+                                  <button
+                                    onClick={() => { setOpenActionId(null); handleCloseAssignment(a._id); }}
+                                    className="w-full text-left px-3 py-1.5 text-xs flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-zinc-800 cursor-pointer"
+                                    style={{ color: "var(--badge-warning-text)" }}>
+                                    <Ban className="w-3.5 h-3.5" />
+                                    Close Assignment
+                                  </button>
+                                )}
+                                <div className="my-1 border-t admin-table-divider" />
+                                <button
+                                  onClick={() => { setOpenActionId(null); setDeleteConfirm(a); }}
+                                  className="w-full text-left px-3 py-1.5 text-xs flex items-center gap-2 hover:bg-red-50 dark:hover:bg-red-950/30 text-red-600 cursor-pointer">
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                  Delete Assignment
+                                </button>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </td>
                     </tr>

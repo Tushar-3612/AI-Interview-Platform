@@ -10,12 +10,10 @@ import {
 } from "../utils/scoringEngine.js";
 import { computeRankings } from "../utils/rankingEngine.js";
 import {
-  executeBatch,
-  normalizeLanguage,
-  isStdinLanguage,
-  compareOutputs,
-  COMPARISON_MODES,
-} from "../../codingAssessment/services/codeExecutionService.js";
+  executeJudge0TestSuite,
+  prepareExecutionInput,
+  getTestCaseExpectedOutput,
+} from "../../codingAssessment/services/judge0Service.js";
 
 function findFunctionName(code) {
   const match = String(code).match(/(?:function\s+|const\s+|let\s+|var\s+)([A-Za-z_$][\w$]*)/);
@@ -130,7 +128,7 @@ function parseCaseMarker(raw) {
 }
 
 /**
- * Execute a coding question's code against its test cases.
+ * Execute a coding question's code against its test cases via Judge0.
  * Returns { passedCount, totalCount, results, status, executionTime }
  */
 export async function evaluateCodingQuestion(code, language, testCases, timeLimit = 2000) {
@@ -138,72 +136,37 @@ export async function evaluateCodingQuestion(code, language, testCases, timeLimi
     return { passedCount: 0, totalCount: testCases?.length || 0, results: [], status: "skipped", executionTime: 0 };
   }
 
-  const langId = normalizeLanguage(language);
-  if (!langId) {
-    return {
-      passedCount: 0,
-      totalCount: testCases.length,
-      results: testCases.map((tc, i) => ({
-        index: i + 1,
-        passed: false,
-        isHidden: Boolean(tc.isHidden),
-        error: `Unsupported language: ${language}`,
-      })),
-      status: "failed",
-      executionTime: 0,
-    };
-  }
-
-  const startTime = Date.now();
-
-  const casePayloads = isStdinLanguage(langId)
-    ? testCases.map((tc) => String(tc.input ?? ""))
-    : testCases.map((tc) => parseTestArgs(tc.input, code));
-
   try {
-    const batch = await executeBatch(langId, code, casePayloads, { timeLimitMs: timeLimit });
+    const formattedTestCases = testCases.map((tc) => ({
+      input: prepareExecutionInput(tc.input ?? tc.stdin ?? ""),
+      expected: getTestCaseExpectedOutput(tc),
+      isHidden: Boolean(tc.isHidden),
+    }));
 
-    if (batch.type !== "success" || !batch.outputs || batch.outputs.length !== testCases.length) {
-      const errorMsg = batch.type === "time_limit"
-        ? "Time limit exceeded"
-        : String(batch.output || batch.type || "Execution failed").trim();
-      return {
-        passedCount: 0,
-        totalCount: testCases.length,
-        results: testCases.map((tc, i) => ({
-          index: i + 1,
-          passed: false,
-          isHidden: Boolean(tc.isHidden),
-          error: errorMsg,
-        })),
-        status: batch.type === "compile_error" ? "compile_error" : "failed",
-        executionTime: Date.now() - startTime,
-      };
-    }
-
-    let passedCount = 0;
-    let overallError = null;
-    const results = testCases.map((tc, index) => {
-      const raw = String(batch.outputs[index] ?? "");
-      const { errorType, message, actual } = parseCaseMarker(raw);
-      const expected = String(tc.expected ?? tc.output ?? tc.expectedOutput ?? "");
-      const passed = !errorType && compareOutputs(actual, expected, COMPARISON_MODES.TOKEN);
-      if (errorType === "compile_error" || errorType === "execution_error") {
-        if (!overallError) overallError = { type: errorType, message };
-      }
-      if (passed) passedCount++;
-      let displayError = "";
-      if (errorType === "time_limit") displayError = "Time limit exceeded";
-      else if (errorType) displayError = message;
-      return { index: index + 1, passed, isHidden: Boolean(tc.isHidden), error: displayError };
+    const suiteResult = await executeJudge0TestSuite({
+      sourceCode: code,
+      language,
+      testCases: formattedTestCases,
+      cpuTimeLimit: Math.max(1.0, (Number(timeLimit) || 2000) / 1000),
+      memoryLimit: 128000,
     });
-    const status = overallError
-      ? (overallError.type === "compile_error" ? "compile_error" : "failed")
-      : passedCount === testCases.length
-        ? "accepted"
-        : "failed";
-    return { passedCount, totalCount: testCases.length, results, status, executionTime: Date.now() - startTime };
+
+    const isAllPassed = suiteResult.passed === suiteResult.total && suiteResult.total > 0;
+    return {
+      passedCount: suiteResult.passed,
+      totalCount: suiteResult.total,
+      results: (suiteResult.testResults || []).map((r) => ({
+        index: r.index,
+        passed: r.passed,
+        isHidden: r.isHidden,
+        error: r.error || "",
+      })),
+      status: suiteResult.status === "compile_error" ? "compile_error" : (isAllPassed ? "accepted" : "failed"),
+      executionTime: Math.round(Number(suiteResult.executionTime || 0) * 1000),
+      compileOutput: suiteResult.compileOutput || "",
+    };
   } catch (err) {
+    console.error("evaluateCodingQuestion Judge0 error:", err.message);
     return {
       passedCount: 0,
       totalCount: testCases.length,
@@ -214,7 +177,7 @@ export async function evaluateCodingQuestion(code, language, testCases, timeLimi
         error: String(err.message),
       })),
       status: "failed",
-      executionTime: Date.now() - startTime,
+      executionTime: 0,
     };
   }
 }
@@ -241,10 +204,7 @@ export async function processResult(attemptId) {
     throw new Error("Test not found");
   }
 
-  const user = await User.findById(attempt.userId).lean();
-  if (!user) {
-    throw new Error("User not found");
-  }
+  const user = (await User.findById(attempt.userId).lean()) || {};
 
   const questionResults = [];
   const sectionMap = {};
@@ -256,63 +216,96 @@ export async function processResult(attemptId) {
     const qr = buildQuestionResult(question, answerEntry, attempt.startTime, attempt.endTime);
 
     // Execute coding questions against test cases
-    if (question.type === "Coding" && answerEntry.code && answerEntry.language) {
-      try {
-        const testCases = question.testCases || [];
-        if (testCases.length > 0) {
+    if (question.type === "Coding" || question.problemTitle) {
+      const codeText = (answerEntry.code || answerEntry.answer || "").trim();
+      const lang = answerEntry.language || "python";
+      const testCases = (question.testCases && question.testCases.length > 0)
+        ? question.testCases
+        : (question.sampleInput || question.sampleOutput)
+        ? [{ input: question.sampleInput, expected: question.sampleOutput, isHidden: false }]
+        : [];
+      const qMarks = question.marks || 10;
+
+      if (codeText && testCases.length > 0) {
+        try {
           const evalResult = await evaluateCodingQuestion(
-            answerEntry.code,
-            answerEntry.language,
+            codeText,
+            lang,
             testCases,
             question.timeLimit || 2000
           );
 
-          qr.codingResult = {
-            language: answerEntry.language || "",
-            code: answerEntry.code || "",
-            compilationStatus: evalResult.status === "compile_error" ? "error" : "success",
-            executionStatus: evalResult.status === "accepted" ? "passed" : evalResult.status === "skipped" ? "pending" : "failed",
-            visibleTestCasesPassed: evalResult.results.filter((r) => !r.isHidden && r.passed).length,
-            visibleTestCasesTotal: testCases.filter((tc) => !tc.isHidden).length,
-            hiddenTestCasesPassed: evalResult.results.filter((r) => r.isHidden && r.passed).length,
-            hiddenTestCasesTotal: testCases.filter((tc) => tc.isHidden).length,
-            executionTime: evalResult.executionTime,
-            memoryUsage: 0,
-            marksObtained: 0,
-          };
-
-          // Calculate marks based on test case results
-          const totalCases = evalResult.totalCount;
-          const passedCases = evalResult.passedCount;
+          const totalCases = evalResult.totalCount || testCases.length;
+          const passedCases = evalResult.passedCount || 0;
+          let earnedMarks = 0;
           if (totalCases > 0) {
-            const marksRatio = passedCases / totalCases;
-            const earnedMarks = Math.round((question.marks || 10) * marksRatio);
-            qr.obtainedMarks = earnedMarks;
-            qr.codingResult.marksObtained = earnedMarks;
-            qr.status = passedCases === totalCases ? "correct" : passedCases > 0 ? "partial" : "wrong";
+            earnedMarks = Math.round((passedCases / totalCases) * qMarks);
           }
+
+          // Fallback if live evaluation failed (e.g. timeout/offline) but candidate had scored marks from previous IDE submission
+          if (earnedMarks === 0 && (answerEntry.scoredMarks > 0 || answerEntry.codingScore > 0)) {
+            earnedMarks = answerEntry.scoredMarks || Math.round(((answerEntry.codingScore || 0) / 100) * qMarks);
+          }
+
+          qr.obtainedMarks = earnedMarks;
+          qr.status = (passedCases === totalCases && totalCases > 0) || (earnedMarks === qMarks) ? "correct" : (earnedMarks > 0 ? "wrong" : "wrong");
+
+          qr.codingResult = {
+            language: lang,
+            code: codeText,
+            compilationStatus: evalResult.status === "compile_error" ? "error" : "success",
+            executionStatus: (passedCases === totalCases && totalCases > 0) || (earnedMarks === qMarks) ? "passed" : (evalResult.status === "compile_error" ? "error" : "failed"),
+            visibleTestCasesPassed: evalResult.results?.filter((r) => !r.isHidden && r.passed).length ?? passedCases,
+            visibleTestCasesTotal: testCases.filter((tc) => !tc.isHidden).length,
+            hiddenTestCasesPassed: evalResult.results?.filter((r) => r.isHidden && r.passed).length ?? 0,
+            hiddenTestCasesTotal: testCases.filter((tc) => tc.isHidden).length,
+            executionTime: evalResult.executionTime || 0,
+            memoryUsage: 0,
+            marksObtained: earnedMarks,
+          };
+        } catch (err) {
+          console.error(`Coding evaluation error for question ${answerEntry.questionIndex}:`, err.message);
+          const earnedMarks = answerEntry.scoredMarks || 0;
+          qr.obtainedMarks = earnedMarks;
+          qr.status = earnedMarks > 0 ? (earnedMarks === qMarks ? "correct" : "wrong") : "wrong";
+          qr.codingResult = {
+            language: lang,
+            code: codeText,
+            compilationStatus: "error",
+            executionStatus: "error",
+            visibleTestCasesPassed: answerEntry.passedCount || 0,
+            visibleTestCasesTotal: testCases.filter((tc) => !tc.isHidden).length,
+            hiddenTestCasesPassed: 0,
+            hiddenTestCasesTotal: testCases.filter((tc) => tc.isHidden).length,
+            executionTime: 0,
+            memoryUsage: 0,
+            marksObtained: earnedMarks,
+          };
         }
-      } catch (err) {
-        console.error(`Coding evaluation error for question ${answerEntry.questionIndex}:`, err.message);
+      } else if (codeText) {
+        // No test cases configured on question, but code was submitted
+        const earnedMarks = answerEntry.scoredMarks || 0;
+        qr.obtainedMarks = earnedMarks;
+        qr.status = earnedMarks > 0 ? "correct" : "wrong";
         qr.codingResult = {
-          language: answerEntry.language || "",
-          code: answerEntry.code || "",
-          compilationStatus: "error",
-          executionStatus: "error",
+          language: lang,
+          code: codeText,
+          compilationStatus: "success",
+          executionStatus: "passed",
           visibleTestCasesPassed: 0,
-          visibleTestCasesTotal: (question.testCases || []).filter((tc) => !tc.isHidden).length,
+          visibleTestCasesTotal: 0,
           hiddenTestCasesPassed: 0,
-          hiddenTestCasesTotal: (question.testCases || []).filter((tc) => tc.isHidden).length,
+          hiddenTestCasesTotal: 0,
           executionTime: 0,
           memoryUsage: 0,
-          marksObtained: 0,
+          marksObtained: earnedMarks,
         };
       }
     }
 
     questionResults.push(qr);
 
-    const subject = question.subject || "general";
+    const subject = question.subject || (question.type === "Coding" || question.problemTitle ? "Coding" : "General");
     if (!sectionMap[subject]) sectionMap[subject] = [];
     sectionMap[subject].push(qr);
   }
@@ -390,19 +383,29 @@ export async function processResult(attemptId) {
 
   await testResult.save();
 
-  await TestAssignment.findByIdAndUpdate(attempt.assignmentId, {
-    $inc: { completedCount: 0 },
-    averageScore: overall.obtainedMarks,
-  });
+  if (attempt.assignmentId) {
+    try {
+      await TestAssignment.findByIdAndUpdate(attempt.assignmentId, {
+        $inc: { completedCount: 0 },
+        averageScore: overall.obtainedMarks,
+      });
+    } catch (assignErr) {
+      console.warn("Assignment update warning in resultProcessor:", assignErr.message);
+    }
+  }
 
-  const ranking = await computeRankings(
-    test._id,
-    attempt.userId,
-    user.department || "",
-    TestResult
-  );
-  testResult.ranking = ranking;
-  await testResult.save();
+  try {
+    const ranking = await computeRankings(
+      test._id,
+      attempt.userId,
+      user.department || "",
+      TestResult
+    );
+    testResult.ranking = ranking;
+    await testResult.save();
+  } catch (rankErr) {
+    console.warn("Ranking compute warning in resultProcessor:", rankErr.message);
+  }
 
   return { result: testResult, isNew: true };
 }

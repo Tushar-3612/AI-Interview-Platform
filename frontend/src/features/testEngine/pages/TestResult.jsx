@@ -16,22 +16,29 @@ function TestResult() {
 
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [retaking, setRetaking] = useState(false);
 
+  const fetchResult = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data } = await api.get(`/api/student/tests/attempt/${attemptId}/result`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setResult(data);
+    } catch (err) {
+      console.error("Fetch result error:", err);
+      setError(err?.response?.data?.message || err?.message || "Failed to load test result");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetch = async () => {
-      try {
-        const { data } = await api.get(`/api/student/tests/attempt/${attemptId}/result`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setResult(data);
-      } catch {
-        // silent
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetch();
+    if (attemptId) {
+      fetchResult();
+    }
   }, [attemptId, token]);
 
   const handleRetake = async () => {
@@ -64,23 +71,45 @@ function TestResult() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="w-8 h-8 border-2 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
+      <div className="flex items-center justify-center min-h-screen" style={{ background: "var(--bg-primary)" }}>
+        <div className="text-center space-y-3">
+          <div className="w-10 h-10 border-3 border-[var(--primary)] border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>Calculating & Loading Assessment Results...</p>
+        </div>
       </div>
     );
   }
 
-  if (!result) {
+  if (error || !result) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center p-8">
-          <XCircle className="w-12 h-12 mx-auto mb-3" style={{ color: "var(--badge-error-text)" }} />
-          <h2 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>Result Not Found</h2>
-          <button onClick={() => navigate("/dashboard")}
-            className="mt-4 px-4 py-2 text-xs font-medium text-white rounded-xl"
-            style={{ background: "var(--primary)" }}>
-            Go Home
-          </button>
+      <div className="flex items-center justify-center min-h-screen p-4" style={{ background: "var(--bg-primary)" }}>
+        <div className="text-center p-8 max-w-md w-full border admin-border admin-card rounded-2xl shadow-xl space-y-4">
+          <div className="w-14 h-14 rounded-full mx-auto flex items-center justify-center" style={{ background: "var(--badge-error-bg)" }}>
+            <AlertCircle className="w-8 h-8" style={{ color: "var(--badge-error-text)" }} />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>
+              {error ? "Unable to Load Result" : "Result Not Found"}
+            </h2>
+            <p className="text-xs mt-1.5 leading-relaxed" style={{ color: "var(--text-muted)" }}>
+              {error || "The requested assessment attempt could not be found or has not been completed yet."}
+            </p>
+          </div>
+          <div className="flex items-center justify-center gap-2.5 pt-2">
+            <button
+              onClick={fetchResult}
+              className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold border admin-border rounded-xl admin-hover cursor-pointer"
+            >
+              <RefreshCw className="w-3.5 h-3.5" /> Try Again
+            </button>
+            <button
+              onClick={() => navigate("/dashboard")}
+              className="px-4 py-2 text-xs font-semibold text-white rounded-xl cursor-pointer shadow-md hover:opacity-90"
+              style={{ background: "var(--primary)" }}
+            >
+              Go to Dashboard
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -118,8 +147,7 @@ function TestResult() {
             {[
               ["Your Score", `${attempt.totalScore} / ${attempt.totalMarks}`],
               ["Percentage", `${percentage}%`],
-              ["Required to Pass", `${attempt.passingMarks ?? 0} / ${attempt.totalMarks}`],
-              ["Status", passed ? "Passed" : "Failed"],
+              ["Status", passed ? "Passed" : "Completed"],
               ["Answered", attempt.answered],
               ["Skipped", attempt.skipped],
               ["Marked for Review", attempt.marked],
@@ -132,10 +160,41 @@ function TestResult() {
             ))}
           </div>
 
+          {/* Section Scores Breakdown if multiple sections exist */}
+          {Array.isArray(result.sections) && result.sections.length > 0 && (
+            <div className="space-y-2 pt-2 border-t admin-table-divider">
+              <span className="text-[11px] uppercase tracking-wider font-semibold" style={{ color: "var(--text-muted)" }}>
+                Section Performance
+              </span>
+              <div className="grid gap-2">
+                {result.sections.map((sec, idx) => (
+                  <div key={idx} className="p-2.5 rounded-xl admin-bg-surface flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium capitalize" style={{ color: "var(--text-primary)" }}>
+                        {sec.section || `Section ${idx + 1}`}
+                      </span>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: "color-mix(in srgb, var(--primary) 10%, transparent)", color: "var(--primary)" }}>
+                        {sec.totalQuestions} Questions
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="font-semibold" style={{ color: "var(--text-primary)" }}>
+                        {sec.obtainedMarks} / {sec.totalMarks} marks
+                      </span>
+                      <span className="text-[11px] font-bold" style={{ color: sec.percentage >= 50 ? "var(--badge-success-text)" : "var(--text-muted)" }}>
+                        ({sec.percentage}%)
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {attempt.status === "auto_submitted" && (
             <div className="p-3 rounded-xl text-xs flex items-center gap-2" style={{ background: "var(--badge-warning-bg)", color: "var(--badge-warning-text)" }}>
               <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-              Auto-submitted: {attempt.autoSubmitReason || "Unknown reason"}
+              Auto-submitted: {attempt.autoSubmitReason || "Security or timer limit reached"}
             </div>
           )}
 

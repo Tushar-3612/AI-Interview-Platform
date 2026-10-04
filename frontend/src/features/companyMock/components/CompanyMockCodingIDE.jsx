@@ -63,6 +63,9 @@ function CompanyMockCodingIDE({
 
   const [code, setCode] = useState(() => initialCode || getStarterCode(question, initialLanguage || "python"));
   const [language, setLanguage] = useState(initialLanguage || "python");
+  const [selectedTestCaseIndex, setSelectedTestCaseIndex] = useState(0);
+  const [customInput, setCustomInput] = useState("");
+  const [isCustomInput, setIsCustomInput] = useState(false);
   const [output, setOutput] = useState(null);
   const [bottomTab, setBottomTab] = useState("Testcase");
   const [splitView, setSplitView] = useState(false);
@@ -83,6 +86,7 @@ function CompanyMockCodingIDE({
       const starter = getStarterCode(question, language);
       setCode(initialCode || starter);
       codeByLanguageRef.current[language] = initialCode || starter;
+      setSelectedTestCaseIndex(0);
     }
   }, [question, initialCode]);
 
@@ -143,13 +147,25 @@ function CompanyMockCodingIDE({
   }, [editorInstance.editor, layoutEditor]);
 
   // Visible test cases (non-hidden) for the Testcase tab.
-  const visibleTestCases = (question?.testCases || []).filter((tc) => !tc.isHidden);
+  const rawTestCases = question?.testCases || question?.publicTestCases || question?.sampleTestCases || [];
+  const visibleTestCases = rawTestCases.filter((tc) => !tc.isHidden).map((tc) => ({
+    input: tc.input ?? tc.stdin ?? "",
+    expected: tc.output ?? tc.expected ?? tc.expectedOutput ?? "",
+    isHidden: false,
+  }));
+
   const sampleCases =
     visibleTestCases.length > 0
       ? visibleTestCases
+      : Array.isArray(question?.examples) && question.examples.length > 0
+      ? question.examples.map((ex) => ({
+          input: typeof ex.input === "object" ? JSON.stringify(ex.input) : String(ex.input ?? ""),
+          expected: typeof ex.output === "object" ? JSON.stringify(ex.output) : String(ex.output ?? ""),
+          isHidden: false,
+        }))
       : question?.sampleInput || question?.sampleOutput
-        ? [{ input: question.sampleInput, expected: question.sampleOutput }]
-        : [];
+      ? [{ input: String(question.sampleInput || ""), expected: String(question.sampleOutput || ""), isHidden: false }]
+      : [];
 
   // Map test/question fields to ProblemDescription format.
   const mappedQuestion = question
@@ -225,9 +241,33 @@ function CompanyMockCodingIDE({
       await new Promise((r) => setTimeout(r, 150));
       setRunStage("Fetching output...");
 
+      // Determine active stdin input and expected output
+      let activeInput = "";
+      let activeExpected = "";
+      let activeCaseObj = null;
+
+      if (isCustomInput && customInput.trim() !== "") {
+        activeInput = customInput;
+      } else if (sampleCases.length > 0) {
+        activeCaseObj = sampleCases[selectedTestCaseIndex] || sampleCases[0];
+        activeInput = activeCaseObj.input ?? activeCaseObj.stdin ?? "";
+        activeExpected = activeCaseObj.expected ?? activeCaseObj.expectedOutput ?? activeCaseObj.output ?? "";
+      } else {
+        activeInput = customInput || "";
+      }
+
       const res = await api.post(
         "/api/code/run",
-        { language, code, input: "" },
+        {
+          language,
+          code,
+          input: activeInput,
+          expectedOutput: activeExpected,
+          testCase: activeCaseObj,
+          directTestCases: sampleCases.length > 0 ? sampleCases : undefined,
+          selectedTestCaseIndex,
+          questionId: question._id,
+        },
         { headers, signal: abortControllerRef.current.signal }
       );
       setRunStage(null);
@@ -277,6 +317,7 @@ function CompanyMockCodingIDE({
           timeTakenMs: 0,
           questionSource: "codingQuestion",
           questionId: question._id,
+          directTestCases: sampleCases.length > 0 ? sampleCases : undefined,
         },
         { headers, signal: abortControllerRef.current.signal }
       );
@@ -508,6 +549,12 @@ function CompanyMockCodingIDE({
           running={running}
           submitting={submitting}
           testCases={sampleCases}
+          selectedCaseIndex={selectedTestCaseIndex}
+          onSelectCase={setSelectedTestCaseIndex}
+          customInput={customInput}
+          onCustomInputChange={setCustomInput}
+          isCustomInput={isCustomInput}
+          onToggleCustomInput={setIsCustomInput}
           submissions={[]}
           runStage={runStage}
           onResize={layoutEditor}

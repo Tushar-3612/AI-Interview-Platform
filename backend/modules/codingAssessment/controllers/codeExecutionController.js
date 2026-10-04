@@ -1,145 +1,38 @@
 import mongoose from "mongoose";
 import Test from "../../testEngine/models/Test.js";
 import CodingQuestion from "../models/CodingQuestion.js";
+import CodingTestCase from "../models/CodingTestCase.js";
 import CodingSubmission from "../models/CodingSubmission.js";
 import {
   executeJudge0,
   executeJudge0TestSuite,
   getSupportedJudge0Languages,
   getJudge0Language,
+  prepareExecutionInput,
+  getTestCaseExpectedOutput,
+  compareOutputs,
 } from "../services/judge0Service.js";
 
 /**
- * Run Code Endpoint: POST /api/code/run
- * Runs candidate code against custom stdin input via Judge0.
- * Does NOT calculate final interview score.
- */
-
-
-function findFunctionName(code) {
-  const match = String(code).match(/(?:function\s+|const\s+|let\s+|var\s+)([A-Za-z_$][\w$]*)/);
-  return match ? match[1] : "solution";
-}
-
-function countFunctionParams(code) {
-  const fnName = findFunctionName(code);
-  if (!fnName) return -1;
-  const name = fnName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const patterns = [
-    new RegExp("function\\s+" + name + "\\s*\\(([^)]*)\\)"),
-    new RegExp("(?:const|let|var)\\s+" + name + "\\s*=\\s*(?:async\\s*)?\\(([^)]*)\\)\\s*=>"),
-    new RegExp("(?:const|let|var)\\s+" + name + "\\s*=\\s*(?:async\\s*)?([A-Za-z_$][\\w$]*)\\s*=>"),
-    new RegExp("\\b" + name + "\\s*\\(([^)]*)\\)\\s*\\{"),
-  ];
-  for (const pattern of patterns) {
-    const match = String(code).match(pattern);
-    if (match) {
-      const params = match[1].split(",").map((p) => p.trim()).filter((p) => p && !p.startsWith("..."));
-      return params.length;
-    }
-  }
-  return -1;
-}
-
-function splitTopLevelArgs(input) {
-  const groups = [];
-  let depth = 0;
-  let current = "";
-  let inString = false;
-  let escape = false;
-  for (const ch of String(input)) {
-    if (inString) {
-      current += ch;
-      if (escape) escape = false;
-      else if (ch === "\\") escape = true;
-      else if (ch === '"') inString = false;
-      continue;
-    }
-    if (ch === '"') {
-      inString = true;
-      current += ch;
-      continue;
-    }
-    if (ch === "[" || ch === "(" || ch === "{") depth++;
-    if (ch === "]" || ch === ")" || ch === "}") depth--;
-    if (ch === "," && depth === 0) {
-      groups.push(current);
-      current = "";
-      continue;
-    }
-    current += ch;
-  }
-  if (current.trim()) groups.push(current);
-  return groups;
-}
-
-function isScalar(value) {
-  return value === null || ["number", "string", "boolean"].includes(typeof value);
-}
-
-function parseTestArgs(input, code) {
-  const cleaned = String(input || "").trim();
-  if (!cleaned) return [];
-  try {
-    const parsed = JSON.parse(cleaned);
-    if (Array.isArray(parsed)) {
-      const paramCount = code ? countFunctionParams(code) : -1;
-      if (parsed.length === 1 && isScalar(parsed[0])) return parsed;
-      if (paramCount === 1) return [parsed];
-      return parsed;
-    }
-    return [parsed];
-  } catch {
-    const groups = splitTopLevelArgs(cleaned);
-    if (groups.length === 0) return [];
-    return groups.map((group) => {
-      try {
-        return JSON.parse(group);
-      } catch {
-        return group.replace(/^["']|["']$/g, "");
-      }
-    });
-  }
-}
-
-function normalizeOutput(value) {
-  if (value == null) return "";
-  try {
-    return JSON.stringify(JSON.parse(value));
-  } catch {
-    return String(value).trim();
-  }
-}
-
-/**
- * Parse a single per-case output produced by executeBatch.
- * Returns the error type (or null when the case succeeded) and the message.
- */
-function parseCaseMarker(raw) {
-  const markers = [
-    ["__compile_error__:", "compile_error"],
-    ["__execution_error__:", "execution_error"],
-    ["__memory_limit__:", "memory_limit"],
-    ["__time_limit__:", "time_limit"],
-    ["__runtime_error__:", "runtime_error"],
-    ["__error__:skipped:", "skipped"],
-  ];
-  for (const [prefix, type] of markers) {
-    if (raw.startsWith(prefix)) {
-      return { errorType: type, message: raw.slice(prefix.length), actual: "" };
-    }
-  }
-  return { errorType: null, message: "", actual: raw };
-}
-
-/**
  * Shared code execution endpoint: POST /api/code/run
- * Runs student code against custom input (visible test cases only).
- * Used by both Coding Practice and Test Coding Round.
+ * Runs student code against testcase input or custom stdin input via Judge0.
+ * Used by Coding Assessment, Assigned Test Engine, and Practice IDE.
  */
 export const runCode = async (req, res) => {
   try {
-    const { language = "cpp", code = "", input = "" } = req.body;
+    const {
+      language = "cpp",
+      code = "",
+      input = null,
+      expectedOutput = null,
+      testCase = null,
+      directTestCases = null,
+      questionId = null,
+      testId = null,
+      questionIndex = null,
+      selectedTestCaseIndex = 0,
+      questionSource = "testQuestion",
+    } = req.body;
 
     if (!code || !code.trim()) {
       return res.status(400).json({
@@ -152,29 +45,79 @@ export const runCode = async (req, res) => {
     if (!langConfig) {
       return res.status(400).json({
         status: "error",
-        message: `Language "${language}" is not supported. Supported languages: ${getSupportedJudge0Languages().map(l => l.name).join(", ")}.`,
+        message: `Language "${language}" is not supported. Supported languages: ${getSupportedJudge0Languages().map((l) => l.name).join(", ")}.`,
       });
     }
+
+    // Resolve stdin and expected output from payload or DB
+    let resolvedInput = input;
+    let resolvedExpected = expectedOutput;
+
+    if (resolvedInput === null || resolvedInput === undefined) {
+      if (testCase && (testCase.input !== undefined || testCase.stdin !== undefined)) {
+        resolvedInput = testCase.input ?? testCase.stdin ?? "";
+        resolvedExpected = resolvedExpected ?? getTestCaseExpectedOutput(testCase);
+      } else if (directTestCases && Array.isArray(directTestCases) && directTestCases.length > 0) {
+        const tc = directTestCases[Number(selectedTestCaseIndex) || 0] || directTestCases[0];
+        resolvedInput = tc?.input ?? tc?.stdin ?? "";
+        resolvedExpected = resolvedExpected ?? getTestCaseExpectedOutput(tc);
+      } else if (testId && questionIndex !== undefined) {
+        const test = await Test.findById(testId).lean();
+        const q = test?.questions?.[Number(questionIndex)];
+        if (q) {
+          const tc = (q.testCases || [])[Number(selectedTestCaseIndex) || 0] || (q.testCases || [])[0];
+          resolvedInput = tc?.input ?? q.sampleInput ?? "";
+          resolvedExpected = resolvedExpected ?? getTestCaseExpectedOutput(tc) ?? q.sampleOutput ?? "";
+        }
+      } else if (questionId) {
+        if (mongoose.Types.ObjectId.isValid(String(questionId))) {
+          const [question, dbTestCases] = await Promise.all([
+            CodingQuestion.findOne({ _id: questionId, isDeleted: { $ne: true } }).lean(),
+            CodingTestCase.find({ questionId }).lean(),
+          ]);
+          if (dbTestCases && dbTestCases.length > 0) {
+            const tc = dbTestCases[Number(selectedTestCaseIndex) || 0] || dbTestCases[0];
+            resolvedInput = tc?.input ?? "";
+            resolvedExpected = resolvedExpected ?? getTestCaseExpectedOutput(tc);
+          } else if (question) {
+            const tc = (question.testCases || [])[Number(selectedTestCaseIndex) || 0] || (question.testCases || [])[0];
+            resolvedInput = tc?.input ?? question.sampleInput ?? question.examples?.[0]?.input ?? "";
+            resolvedExpected = resolvedExpected ?? getTestCaseExpectedOutput(tc) ?? question.sampleOutput ?? question.examples?.[0]?.output ?? "";
+          }
+        }
+      }
+    }
+
+    const preparedStdin = prepareExecutionInput(resolvedInput ?? "");
 
     const result = await executeJudge0({
       sourceCode: code,
       language,
-      stdin: input,
+      stdin: preparedStdin,
       cpuTimeLimit: 3.0,
       memoryLimit: 128000,
     });
 
-    console.log(`[Judge0 Run] lang=${langConfig.slug} status=${result.status} time=${result.timeSeconds}s mem=${result.memoryKB}KB`);
+    const isMatch = resolvedExpected ? compareOutputs(result.stdout, resolvedExpected) : null;
+    let runStatus = result.status;
+    if (result.status === "success" && resolvedExpected && isMatch === false) {
+      runStatus = "wrong_answer";
+    }
+
+    console.log(`[Judge0 Run] lang=${langConfig.slug} status=${runStatus} time=${result.timeSeconds}s mem=${result.memoryKB}KB stdinLen=${preparedStdin.length}`);
 
     res.json({
-      status: result.status,
-      type: result.status === "success" ? "success" : "error",
+      status: runStatus,
+      type: result.status === "success" ? (isMatch === false ? "wrong_answer" : "success") : "error",
       errorType: result.status,
       statusDescription: result.statusDescription,
       stdout: result.stdout,
       stderr: result.stderr,
       compileOutput: result.compileOutput,
       output: result.output,
+      input: preparedStdin,
+      expectedOutput: resolvedExpected || "",
+      passed: isMatch,
       timeMs: result.timeMs,
       timeSeconds: result.timeSeconds,
       memoryKB: result.memoryKB,
@@ -226,24 +169,61 @@ export const submitCode = async (req, res) => {
     let cpuTimeLimit = 2.0;
     let memoryLimit = 128000;
 
-    // 1. Resolve test cases from Test, CodingQuestion, or direct payload
+    // 1. Resolve test cases from Test, CodingQuestion, CodingTestCase, or direct payload
     if (directTestCases && Array.isArray(directTestCases) && directTestCases.length > 0) {
-      testCases = directTestCases;
-    } else if (questionSource === "testQuestion" && testId && questionIndex !== undefined) {
+      testCases = directTestCases.map((tc) => ({
+        input: prepareExecutionInput(tc.input ?? tc.stdin),
+        expected: getTestCaseExpectedOutput(tc),
+        isHidden: Boolean(tc.isHidden),
+      }));
+    } else if ((questionSource === "testQuestion" || testId) && testId && questionIndex !== undefined) {
       const test = await Test.findById(testId).lean();
       if (!test) return res.status(404).json({ message: "Test not found" });
       const question = test.questions[Number(questionIndex)];
       if (!question) return res.status(404).json({ message: "Question not found" });
-      testCases = question.testCases || [];
-      questionTitle = question.problemTitle || questionTitle;
+      questionTitle = question.problemTitle || question.question || questionTitle;
+      testCases = (question.testCases || []).map((tc) => ({
+        input: prepareExecutionInput(tc.input),
+        expected: getTestCaseExpectedOutput(tc),
+        isHidden: Boolean(tc.isHidden),
+      }));
+      if (testCases.length === 0 && (question.sampleInput || question.sampleOutput)) {
+        testCases = [
+          {
+            input: prepareExecutionInput(question.sampleInput),
+            expected: String(question.sampleOutput || ""),
+            isHidden: false,
+          },
+        ];
+      }
     } else if (questionId) {
       if (mongoose.Types.ObjectId.isValid(String(questionId))) {
-        const question = await CodingQuestion.findOne({ _id: questionId, isDeleted: { $ne: true } }).lean();
-        if (question) {
-          testCases = question.testCases || [];
+        const [question, dbTestCases] = await Promise.all([
+          CodingQuestion.findOne({ _id: questionId, isDeleted: { $ne: true } }).lean(),
+          CodingTestCase.find({ questionId }).lean(),
+        ]);
+        if (dbTestCases && dbTestCases.length > 0) {
+          testCases = dbTestCases.map((tc) => ({
+            input: prepareExecutionInput(tc.input),
+            expected: getTestCaseExpectedOutput(tc),
+            isHidden: !tc.isSample,
+          }));
+        } else if (question) {
           questionTitle = question.title || questionTitle;
-          cpuTimeLimit = (question.timeLimit || 1000) / 1000;
+          cpuTimeLimit = (question.timeLimit || 2000) / 1000;
           memoryLimit = (question.memoryLimit || 256) * 1024;
+          testCases = (question.testCases || []).map((tc) => ({
+            input: prepareExecutionInput(tc.input),
+            expected: getTestCaseExpectedOutput(tc),
+            isHidden: Boolean(tc.isHidden),
+          }));
+          if (testCases.length === 0 && question.examples?.length > 0) {
+            testCases = question.examples.map((ex) => ({
+              input: prepareExecutionInput(ex.input),
+              expected: String(ex.output || ""),
+              isHidden: false,
+            }));
+          }
         }
       }
     }
@@ -251,9 +231,9 @@ export const submitCode = async (req, res) => {
     // Default sample test cases if question had no DB testcases configured
     if (!testCases || testCases.length === 0) {
       testCases = [
-        { input: "3 5", expected: "8", isHidden: false },
-        { input: "10 20", expected: "30", isHidden: false },
-        { input: "100 200", expected: "300", isHidden: true },
+        { input: "3 5\n", expected: "8", isHidden: false },
+        { input: "10 20\n", expected: "30", isHidden: false },
+        { input: "100 200\n", expected: "300", isHidden: true },
       ];
     }
 
@@ -271,6 +251,13 @@ export const submitCode = async (req, res) => {
       Math.round(Number(suiteResult.executionTime || 0) * 1000) ||
       0;
 
+    const isAllPassed = suiteResult.passed === suiteResult.total && suiteResult.total > 0;
+    const resolvedStatus = suiteResult.status === "compile_error"
+      ? "compile_error"
+      : isAllPassed
+      ? "accepted"
+      : (suiteResult.passed > 0 ? "wrong" : "failed");
+
     // 3. Persist submission record in database
     let savedSubmission = null;
     try {
@@ -284,7 +271,7 @@ export const submitCode = async (req, res) => {
         language,
         code,
         approach: String(approach || ""),
-        status: suiteResult.status === "completed" ? "accepted" : suiteResult.status === "compile_error" ? "compile_error" : "failed",
+        status: resolvedStatus,
         passedCount: suiteResult.passed,
         totalCount: suiteResult.total,
         score: suiteResult.score,
@@ -300,7 +287,7 @@ export const submitCode = async (req, res) => {
 
     res.status(201).json({
       submissionId: savedSubmission?._id || null,
-      status: suiteResult.status,
+      status: resolvedStatus,
       passed: suiteResult.passed,
       total: suiteResult.total,
       score: suiteResult.score,

@@ -41,6 +41,11 @@ export const createQuestion = async (req, res) => {
       });
     }
 
+    const isTeacher = req.user?.role === "teacher";
+    const teacherDept = req.user?.department;
+    const departmentScope = isTeacher ? teacherDept : (req.body.departmentScope || "global");
+    const creatorRole = isTeacher ? "teacher" : "system_admin";
+
     const question = await CodingQuestion.create({
       title: title.trim(),
       description: description || problemStatement || "",
@@ -62,6 +67,8 @@ export const createQuestion = async (req, res) => {
       isPublished: Boolean(isPublished),
       isActive: true,
       createdBy: req.user?._id || req.user?.id || null,
+      departmentScope,
+      creatorRole,
     });
 
     // If initial test cases were passed, create in CodingTestCase as well
@@ -102,7 +109,22 @@ export const getQuestions = async (req, res) => {
       limit = 50,
     } = req.query;
 
+    const isTeacher = req.user?.role === "teacher";
+    const teacherDept = req.user?.department;
+
     const filter = { isDeleted: { $ne: true } };
+
+    if (isTeacher && teacherDept) {
+      filter.$and = filter.$and || [];
+      filter.$and.push({
+        $or: [
+          { departmentScope: "global" },
+          { departmentScope: teacherDept },
+          { departmentScope: null },
+          { departmentScope: { $exists: false } },
+        ],
+      });
+    }
 
     if (difficulty && difficulty !== "all") {
       filter.difficulty = new RegExp(`^${difficulty}$`, "i");
@@ -117,12 +139,19 @@ export const getQuestions = async (req, res) => {
     }
 
     if (search.trim()) {
-      filter.$or = [
-        { title: { $regex: search.trim(), $options: "i" } },
-        { problemStatement: { $regex: search.trim(), $options: "i" } },
-        { description: { $regex: search.trim(), $options: "i" } },
-        { tags: { $regex: search.trim(), $options: "i" } },
-      ];
+      const searchCondition = {
+        $or: [
+          { title: { $regex: search.trim(), $options: "i" } },
+          { problemStatement: { $regex: search.trim(), $options: "i" } },
+          { description: { $regex: search.trim(), $options: "i" } },
+          { tags: { $regex: search.trim(), $options: "i" } },
+        ],
+      };
+      if (filter.$and) {
+        filter.$and.push(searchCondition);
+      } else {
+        Object.assign(filter, searchCondition);
+      }
     }
 
     const skip = (Math.max(1, parseInt(page)) - 1) * parseInt(limit);
@@ -190,6 +219,10 @@ export const getQuestionById = async (req, res) => {
       return res.status(404).json({ success: false, message: "Question not found." });
     }
 
+    if (req.user?.role === "teacher" && question.departmentScope && question.departmentScope !== "global" && question.departmentScope !== req.user.department) {
+      return res.status(403).json({ success: false, message: "You are not authorized to view questions from another department." });
+    }
+
     // Load separate test cases
     const testCases = await CodingTestCase.find({ questionId: question._id }).sort({ isSample: -1, createdAt: 1 }).lean();
 
@@ -207,19 +240,33 @@ export const getQuestionById = async (req, res) => {
 
 export const updateQuestion = async (req, res) => {
   try {
+    const existing = await CodingQuestion.findById(req.params.id);
+    if (!existing) {
+      return res.status(404).json({ success: false, message: "Question not found." });
+    }
+
+    if (req.user?.role === "teacher") {
+      if (existing.departmentScope && existing.departmentScope !== "global" && existing.departmentScope !== req.user.department) {
+        return res.status(403).json({ success: false, message: "You are not authorized to modify questions outside your department." });
+      }
+    }
+
+    const updates = { ...req.body };
+    if (req.user?.role === "teacher") {
+      delete updates.departmentScope;
+      delete updates.creatorRole;
+      delete updates.createdBy;
+    }
+
     const question = await CodingQuestion.findByIdAndUpdate(
       req.params.id,
       {
-        ...req.body,
+        ...updates,
         lastEditedBy: req.user?._id || req.user?.id || null,
         lastEditedAt: new Date(),
       },
       { new: true, runValidators: true }
     );
-
-    if (!question) {
-      return res.status(404).json({ success: false, message: "Question not found." });
-    }
 
     res.json({
       success: true,
@@ -233,14 +280,22 @@ export const updateQuestion = async (req, res) => {
 
 export const deleteQuestion = async (req, res) => {
   try {
+    const existing = await CodingQuestion.findById(req.params.id);
+    if (!existing) {
+      return res.status(404).json({ success: false, message: "Question not found." });
+    }
+
+    if (req.user?.role === "teacher") {
+      if (existing.departmentScope && existing.departmentScope !== "global" && existing.departmentScope !== req.user.department) {
+        return res.status(403).json({ success: false, message: "You are not authorized to delete questions outside your department." });
+      }
+    }
+
     const question = await CodingQuestion.findByIdAndUpdate(
       req.params.id,
       { isDeleted: true, deletedAt: new Date(), isActive: false },
       { new: true }
     );
-    if (!question) {
-      return res.status(404).json({ success: false, message: "Question not found." });
-    }
     res.json({ success: true, message: "Question deleted successfully." });
   } catch (error) {
     res.status(500).json({ success: false, message: "Failed to delete question." });
@@ -253,6 +308,13 @@ export const togglePublishQuestion = async (req, res) => {
     if (!question) {
       return res.status(404).json({ success: false, message: "Question not found." });
     }
+
+    if (req.user?.role === "teacher") {
+      if (question.departmentScope && question.departmentScope !== "global" && question.departmentScope !== req.user.department) {
+        return res.status(403).json({ success: false, message: "You are not authorized to modify questions outside your department." });
+      }
+    }
+
     question.isPublished = !question.isPublished;
     await question.save();
     res.json({
@@ -272,11 +334,20 @@ export const duplicateQuestion = async (req, res) => {
       return res.status(404).json({ success: false, message: "Question not found." });
     }
 
+    if (req.user?.role === "teacher") {
+      if (original.departmentScope && original.departmentScope !== "global" && original.departmentScope !== req.user.department) {
+        return res.status(403).json({ success: false, message: "You are not authorized to duplicate questions outside your department." });
+      }
+    }
+
     const { _id, createdAt, updatedAt, ...rest } = original;
+    const isTeacher = req.user?.role === "teacher";
     const duplicated = await CodingQuestion.create({
       ...rest,
       title: `${original.title} (Copy)`,
       questionId: `CQ${Date.now().toString().slice(-4)}`,
+      departmentScope: isTeacher ? req.user.department : (original.departmentScope || "global"),
+      creatorRole: isTeacher ? "teacher" : "system_admin",
       createdBy: req.user?._id || req.user?.id || null,
     });
 
@@ -311,6 +382,17 @@ export const duplicateQuestion = async (req, res) => {
 export const addTestCase = async (req, res) => {
   try {
     const { id: questionId } = req.params;
+    const question = await CodingQuestion.findById(questionId);
+    if (!question) {
+      return res.status(404).json({ success: false, message: "Question not found." });
+    }
+
+    if (req.user?.role === "teacher") {
+      if (question.departmentScope && question.departmentScope !== "global" && question.departmentScope !== req.user.department) {
+        return res.status(403).json({ success: false, message: "You are not authorized to add test cases to questions outside your department." });
+      }
+    }
+
     const { input, expectedOutput, expected, isSample = false, isHidden, weight = 1 } = req.body;
 
     if (input === undefined || (expectedOutput === undefined && expected === undefined)) {
@@ -354,6 +436,17 @@ export const addTestCase = async (req, res) => {
 export const getQuestionTestCases = async (req, res) => {
   try {
     const { id: questionId } = req.params;
+    const question = await CodingQuestion.findById(questionId).lean();
+    if (!question) {
+      return res.status(404).json({ success: false, message: "Question not found." });
+    }
+
+    if (req.user?.role === "teacher") {
+      if (question.departmentScope && question.departmentScope !== "global" && question.departmentScope !== req.user.department) {
+        return res.status(403).json({ success: false, message: "You are not authorized to view test cases for questions outside your department." });
+      }
+    }
+
     const testCases = await CodingTestCase.find({ questionId }).sort({ isSample: -1, createdAt: 1 });
     res.json({ success: true, data: testCases });
   } catch (error) {
@@ -364,6 +457,18 @@ export const getQuestionTestCases = async (req, res) => {
 export const updateTestCase = async (req, res) => {
   try {
     const { id: testCaseId } = req.params;
+    const testCase = await CodingTestCase.findById(testCaseId);
+    if (!testCase) {
+      return res.status(404).json({ success: false, message: "Test case not found." });
+    }
+
+    if (req.user?.role === "teacher" && testCase.questionId) {
+      const parentQ = await CodingQuestion.findById(testCase.questionId).lean();
+      if (parentQ && parentQ.departmentScope && parentQ.departmentScope !== "global" && parentQ.departmentScope !== req.user.department) {
+        return res.status(403).json({ success: false, message: "You are not authorized to modify test cases for questions outside your department." });
+      }
+    }
+
     const { input, expectedOutput, expected, isSample, isHidden, weight } = req.body;
 
     const updateFields = {};
@@ -375,26 +480,23 @@ export const updateTestCase = async (req, res) => {
     if (isHidden !== undefined) updateFields.isHidden = Boolean(isHidden);
     if (weight !== undefined) updateFields.weight = Number(weight) || 1;
 
-    const testCase = await CodingTestCase.findByIdAndUpdate(testCaseId, updateFields, { new: true });
-    if (!testCase) {
-      return res.status(404).json({ success: false, message: "Test case not found." });
-    }
+    const updatedTestCase = await CodingTestCase.findByIdAndUpdate(testCaseId, updateFields, { new: true });
 
     // Sync embedded question testCase
-    if (testCase.questionId) {
+    if (updatedTestCase.questionId) {
       await CodingQuestion.updateOne(
-        { _id: testCase.questionId, "testCases._id": testCase._id },
+        { _id: updatedTestCase.questionId, "testCases._id": updatedTestCase._id },
         {
           $set: {
-            "testCases.$.input": testCase.input,
-            "testCases.$.expected": testCase.expectedOutput,
-            "testCases.$.isHidden": testCase.isHidden,
+            "testCases.$.input": updatedTestCase.input,
+            "testCases.$.expected": updatedTestCase.expectedOutput,
+            "testCases.$.isHidden": updatedTestCase.isHidden,
           },
         }
       );
     }
 
-    res.json({ success: true, data: testCase, message: "Test case updated successfully." });
+    res.json({ success: true, data: updatedTestCase, message: "Test case updated successfully." });
   } catch (error) {
     res.status(500).json({ success: false, message: "Failed to update test case." });
   }
@@ -403,10 +505,19 @@ export const updateTestCase = async (req, res) => {
 export const deleteTestCase = async (req, res) => {
   try {
     const { id: testCaseId } = req.params;
-    const testCase = await CodingTestCase.findByIdAndDelete(testCaseId);
+    const testCase = await CodingTestCase.findById(testCaseId);
     if (!testCase) {
       return res.status(404).json({ success: false, message: "Test case not found." });
     }
+
+    if (req.user?.role === "teacher" && testCase.questionId) {
+      const parentQ = await CodingQuestion.findById(testCase.questionId).lean();
+      if (parentQ && parentQ.departmentScope && parentQ.departmentScope !== "global" && parentQ.departmentScope !== req.user.department) {
+        return res.status(403).json({ success: false, message: "You are not authorized to delete test cases for questions outside your department." });
+      }
+    }
+
+    await CodingTestCase.findByIdAndDelete(testCaseId);
 
     // Remove from embedded question testCases
     if (testCase.questionId) {
@@ -427,12 +538,16 @@ export const deleteTestCase = async (req, res) => {
 
 export const createAssessment = async (req, res) => {
   try {
+    const isTeacher = req.user?.role === "teacher";
+    const teacherDept = req.user?.department;
+
     const {
       title,
       description = "",
       durationMinutes = 60,
       questions = [],
       isActive = false,
+      departmentScope,
     } = req.body;
 
     if (!title || !title.trim()) {
@@ -473,6 +588,9 @@ export const createAssessment = async (req, res) => {
       };
     });
 
+    const resolvedDeptScope = isTeacher ? teacherDept : (departmentScope || "global");
+    const resolvedCreatorRole = isTeacher ? "teacher" : "system_admin";
+
     const assessment = await CodingAssessment.create({
       title: title.trim(),
       description,
@@ -480,6 +598,8 @@ export const createAssessment = async (req, res) => {
       questions: formattedQuestions,
       totalMarks: calculatedTotalMarks,
       isActive: Boolean(isActive),
+      departmentScope: resolvedDeptScope,
+      creatorRole: resolvedCreatorRole,
       createdBy: req.user?._id || req.user?.id || null,
     });
 
@@ -496,7 +616,14 @@ export const createAssessment = async (req, res) => {
 
 export const getAssessments = async (req, res) => {
   try {
-    const assessments = await CodingAssessment.find()
+    const isTeacher = req.user?.role === "teacher";
+    const teacherDept = req.user?.department;
+
+    const filter = isTeacher
+      ? { $or: [{ departmentScope: "global" }, { departmentScope: teacherDept }, { departmentScope: null }, { departmentScope: { $exists: false } }] }
+      : {};
+
+    const assessments = await CodingAssessment.find(filter)
       .populate("questions.questionId", "title difficulty category marks")
       .sort({ createdAt: -1 })
       .lean();
@@ -543,6 +670,10 @@ export const getAssessmentById = async (req, res) => {
       return res.status(404).json({ success: false, message: "Assessment not found." });
     }
 
+    if (req.user?.role === "teacher" && assessment.departmentScope && assessment.departmentScope !== "global" && assessment.departmentScope !== req.user.department) {
+      return res.status(403).json({ success: false, message: "You are not authorized to view assessments from another department." });
+    }
+
     res.json({ success: true, data: assessment });
   } catch (error) {
     res.status(500).json({ success: false, message: "Failed to fetch assessment." });
@@ -551,12 +682,21 @@ export const getAssessmentById = async (req, res) => {
 
 export const updateAssessment = async (req, res) => {
   try {
-    const { title, description, durationMinutes, questions, isActive } = req.body;
-
     const assessment = await CodingAssessment.findById(req.params.id);
     if (!assessment) {
       return res.status(404).json({ success: false, message: "Assessment not found." });
     }
+
+    if (req.user?.role === "teacher") {
+      if (assessment.departmentScope && assessment.departmentScope !== "global" && assessment.departmentScope !== req.user.department) {
+        return res.status(403).json({ success: false, message: "You are not authorized to modify assessments from another department." });
+      }
+      if (assessment.creatorRole === "system_admin" && assessment.departmentScope === "global") {
+        return res.status(403).json({ success: false, message: "Teachers cannot modify global platform assessments." });
+      }
+    }
+
+    const { title, description, durationMinutes, questions, isActive } = req.body;
 
     if (title) assessment.title = title.trim();
     if (description !== undefined) assessment.description = description;
@@ -587,10 +727,21 @@ export const updateAssessment = async (req, res) => {
 
 export const deleteAssessment = async (req, res) => {
   try {
-    const assessment = await CodingAssessment.findByIdAndDelete(req.params.id);
+    const assessment = await CodingAssessment.findById(req.params.id);
     if (!assessment) {
       return res.status(404).json({ success: false, message: "Assessment not found." });
     }
+
+    if (req.user?.role === "teacher") {
+      if (assessment.departmentScope && assessment.departmentScope !== "global" && assessment.departmentScope !== req.user.department) {
+        return res.status(403).json({ success: false, message: "You are not authorized to delete assessments from another department." });
+      }
+      if (assessment.creatorRole === "system_admin" && assessment.departmentScope === "global") {
+        return res.status(403).json({ success: false, message: "Teachers cannot delete global platform assessments." });
+      }
+    }
+
+    await CodingAssessment.findByIdAndDelete(req.params.id);
     res.json({ success: true, message: "Assessment deleted successfully." });
   } catch (error) {
     res.status(500).json({ success: false, message: "Failed to delete assessment." });
@@ -603,6 +754,13 @@ export const toggleActivateAssessment = async (req, res) => {
     if (!assessment) {
       return res.status(404).json({ success: false, message: "Assessment not found." });
     }
+
+    if (req.user?.role === "teacher") {
+      if (assessment.departmentScope && assessment.departmentScope !== "global" && assessment.departmentScope !== req.user.department) {
+        return res.status(403).json({ success: false, message: "You are not authorized to activate/deactivate assessments from another department." });
+      }
+    }
+
     assessment.isActive = !assessment.isActive;
     await assessment.save();
 
@@ -627,7 +785,21 @@ export const getAssessmentResults = async (req, res) => {
       return res.status(404).json({ success: false, message: "Assessment not found." });
     }
 
-    const attempts = await CodingAttempt.find({ assessmentId })
+    const isTeacher = req.user?.role === "teacher";
+    const teacherDept = req.user?.department;
+
+    if (isTeacher && assessment.departmentScope && assessment.departmentScope !== "global" && assessment.departmentScope !== teacherDept) {
+      return res.status(403).json({ success: false, message: "You are not authorized to view results for an assessment from another department." });
+    }
+
+    let attemptMatch = { assessmentId };
+    if (isTeacher && teacherDept) {
+      const deptStudents = await User.find({ department: teacherDept }).select("_id").lean();
+      const deptStudentIds = deptStudents.map((s) => s._id);
+      attemptMatch.candidateId = { $in: deptStudentIds };
+    }
+
+    const attempts = await CodingAttempt.find(attemptMatch)
       .populate("candidateId", "name email rollNumber department")
       .sort({ createdAt: -1 })
       .lean();
@@ -685,12 +857,19 @@ export const getCandidateAttemptDetail = async (req, res) => {
   try {
     const attempt = await CodingAttempt.findById(req.params.id)
       .populate("candidateId", "name email department rollNumber")
-      .populate("assessmentId", "title durationMinutes totalMarks")
+      .populate("assessmentId", "title durationMinutes totalMarks departmentScope")
       .populate("questionProgress.questionId", "title difficulty category marks")
       .lean();
 
     if (!attempt) {
       return res.status(404).json({ success: false, message: "Attempt not found." });
+    }
+
+    if (req.user?.role === "teacher") {
+      const candidateDept = attempt.candidateId?.department;
+      if (candidateDept && candidateDept !== req.user.department) {
+        return res.status(403).json({ success: false, message: "You are not authorized to view attempt details of students outside your department." });
+      }
     }
 
     // Retrieve all submissions by this candidate for this attempt

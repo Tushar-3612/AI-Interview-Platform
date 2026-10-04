@@ -448,9 +448,10 @@ export const runSampleTests = async (req, res) => {
       });
 
       const stdStatus = mapJudge0Status(execResult.statusId, execResult.statusDescription);
+      const expectedOut = tc.expectedOutput ?? tc.expected ?? tc.output ?? "";
       const isPassed =
         execResult.status === "success" &&
-        compareOutput(execResult.stdout, tc.expectedOutput || tc.expected, comparisonMode);
+        compareOutput(execResult.stdout, expectedOut, comparisonMode);
 
       if (isPassed) passedCount++;
 
@@ -458,7 +459,7 @@ export const runSampleTests = async (req, res) => {
         index: i + 1,
         isSample: true,
         input: String(tc.input || ""),
-        expected: String(tc.expectedOutput || tc.expected || ""),
+        expected: String(expectedOut),
         actual: String(execResult.stdout || ""),
         error: isPassed ? "" : execResult.compileOutput || execResult.stderr || execResult.output || "",
         status: isPassed ? STATUS_CODES.ACCEPTED : stdStatus,
@@ -641,9 +642,10 @@ export const submitSolution = async (req, res) => {
         break;
       }
 
+      const expectedOut = tc.expectedOutput ?? tc.expected ?? tc.output ?? "";
       const passed =
         execResult.status === "success" &&
-        compareOutput(execResult.stdout, tc.expectedOutput || tc.expected, comparisonMode);
+        compareOutput(execResult.stdout, expectedOut, comparisonMode);
 
       if (passed) {
         passedCount++;

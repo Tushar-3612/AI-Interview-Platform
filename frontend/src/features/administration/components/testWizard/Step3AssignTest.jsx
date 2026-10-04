@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { Users } from "lucide-react";
+import { Users, Lock } from "lucide-react";
 import api from "../../../../core/api/api.js";
-import { getAuthToken } from "../../../student/hooks/useStudentProfile.js";
+import { getAuthToken, getAuthUser } from "../../../student/hooks/useStudentProfile.js";
 import { DEPARTMENT_VALUES as DEPARTMENTS, YEAR_VALUES as YEARS } from "../../../../core/utils/constants.js";
 
 const SECTIONS = ["A", "B", "C"];
@@ -9,6 +9,9 @@ const SECTIONS = ["A", "B", "C"];
 export default function Step3AssignTest({ assignTargets, onAssignChange, testId }) {
   const [students, setStudents] = useState([]);
   const token = getAuthToken();
+  const user = getAuthUser();
+  const isTeacher = user?.role === "teacher";
+  const teacherDept = user?.department || "";
   const selCls = "w-full px-3 py-2 text-sm border admin-border rounded-lg bg-transparent focus:outline-none focus:ring-2 focus:ring-[var(--primary)] appearance-none cursor-pointer admin-select";
 
   useEffect(() => {
@@ -17,10 +20,27 @@ export default function Step3AssignTest({ assignTargets, onAssignChange, testId 
       .catch(() => {});
   }, [token]);
 
+  useEffect(() => {
+    if (isTeacher && teacherDept) {
+      if (assignTargets.assignType === "department_year" && assignTargets.department !== teacherDept) {
+        onAssignChange({ ...assignTargets, department: teacherDept });
+      } else if (assignTargets.assignType === "department" && assignTargets.assignValue !== teacherDept) {
+        onAssignChange({ ...assignTargets, assignValue: teacherDept });
+      }
+    }
+  }, [isTeacher, teacherDept, assignTargets.assignType]);
+
   const needsSave = !testId;
 
   const handleAssignTypeChange = (val) => {
-    onAssignChange({ assignType: val, assignValue: "", studentIds: [], department: "", year: "", section: "" });
+    onAssignChange({
+      assignType: val,
+      assignValue: isTeacher && (val === "department" || val === "all") ? teacherDept : "",
+      studentIds: [],
+      department: isTeacher ? teacherDept : "",
+      year: "",
+      section: ""
+    });
   };
 
   return (
@@ -40,7 +60,9 @@ export default function Step3AssignTest({ assignTargets, onAssignChange, testId 
           <div>
             <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>Assign By</label>
             <select className={selCls} value={assignTargets.assignType} onChange={e => handleAssignTypeChange(e.target.value)} style={{ color: "var(--text-primary)" }}>
-              <option value="all">All Students</option>
+              <option value="all">
+                {isTeacher ? `All Students — ${teacherDept || "Your Department"}` : "All Students"}
+              </option>
               <option value="department_year">Department + Year</option>
               <option value="department">Department Only</option>
               <option value="year">Academic Year Only</option>
@@ -54,13 +76,24 @@ export default function Step3AssignTest({ assignTargets, onAssignChange, testId 
         {assignTargets.assignType === "department_year" && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
             <div>
-              <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>Select Department *</label>
-              <select className={selCls} value={assignTargets.department || ""}
-                onChange={e => onAssignChange({ ...assignTargets, department: e.target.value })}
-                style={{ color: "var(--text-primary)" }}>
-                <option value="">-- Choose Department --</option>
-                {DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
-              </select>
+              <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>
+                {isTeacher ? "Department (Your Department - Locked)" : "Select Department *"}
+              </label>
+              {isTeacher ? (
+                <div className="w-full px-3 py-2 text-sm border admin-border rounded-lg bg-gray-50 dark:bg-gray-800/50 flex items-center justify-between" style={{ color: "var(--text-primary)" }}>
+                  <span className="font-medium">{teacherDept}</span>
+                  <span className="text-[11px] px-2 py-0.5 rounded-full font-medium flex items-center gap-1" style={{ background: "var(--badge-info-bg)", color: "var(--badge-info-text)" }}>
+                    <Lock className="w-3 h-3" /> Your Department
+                  </span>
+                </div>
+              ) : (
+                <select className={selCls} value={assignTargets.department || ""}
+                  onChange={e => onAssignChange({ ...assignTargets, department: e.target.value })}
+                  style={{ color: "var(--text-primary)" }}>
+                  <option value="">-- Choose Department --</option>
+                  {DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
+                </select>
+              )}
             </div>
             <div>
               <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>Select Year *</label>
@@ -76,13 +109,24 @@ export default function Step3AssignTest({ assignTargets, onAssignChange, testId 
 
         {assignTargets.assignType === "department" && (
           <div className="mt-4">
-            <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>Select Department</label>
-            <select className={selCls} value={assignTargets.assignValue}
-              onChange={e => onAssignChange({ ...assignTargets, assignValue: e.target.value })}
-              style={{ color: "var(--text-primary)" }}>
-              <option value="">-- Choose Department --</option>
-              {DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
-            </select>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>
+              {isTeacher ? "Department (Your Department - Locked)" : "Select Department"}
+            </label>
+            {isTeacher ? (
+              <div className="w-full px-3 py-2 text-sm border admin-border rounded-lg bg-gray-50 dark:bg-gray-800/50 flex items-center justify-between" style={{ color: "var(--text-primary)" }}>
+                <span className="font-medium">{teacherDept}</span>
+                <span className="text-[11px] px-2 py-0.5 rounded-full font-medium flex items-center gap-1" style={{ background: "var(--badge-info-bg)", color: "var(--badge-info-text)" }}>
+                  <Lock className="w-3 h-3" /> Your Department
+                </span>
+              </div>
+            ) : (
+              <select className={selCls} value={assignTargets.assignValue}
+                onChange={e => onAssignChange({ ...assignTargets, assignValue: e.target.value })}
+                style={{ color: "var(--text-primary)" }}>
+                <option value="">-- Choose Department --</option>
+                {DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
+              </select>
+            )}
           </div>
         )}
 

@@ -54,53 +54,104 @@ function Timer({ endTime, durationMinutes = 30, serverOffset = 0, onTimeUp }) {
   );
 }
 
-function MCQRenderer({ question, answer, onAnswer }) {
+function MCQRenderer({ question, questionIndex = 0, totalQuestions = 1, answer, onAnswer }) {
   const letters = ["A", "B", "C", "D"];
   if (!question) return <p className="text-sm py-8 text-center" style={{ color: "var(--text-muted)" }}>Question unavailable</p>;
 
+  const difficulty = (question.difficulty || "medium").toLowerCase();
+  const diffBadgeColor = difficulty === "easy"
+    ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+    : difficulty === "hard"
+    ? "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20"
+    : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20";
+
   return (
-    <div className="space-y-4">
-      <p className="text-sm font-medium leading-relaxed" style={{ color: "var(--text-primary)" }}>
-        {question.question}
-      </p>
-      <div className="grid gap-2">
-        {question.options?.map((opt, idx) => opt ? (
-          <button key={idx} onClick={() => onAnswer(letters[idx])}
-            className={`flex items-center gap-3 p-3 rounded-xl border text-xs text-left cursor-pointer transition-all ${
-              answer === letters[idx]
-                ? "border-[var(--primary)]"
-                : "admin-border admin-hover"
-            }`}
-            style={{
-              background: answer === letters[idx]
-                ? "color-mix(in srgb, var(--primary) 8%, transparent)"
-                : "transparent",
-            }}>
-            <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0 ${
-              answer === letters[idx]
-                ? "text-white"
-                : "border admin-border"
-            }`}
-              style={{ background: answer === letters[idx] ? "var(--primary)" : "transparent" }}>
-              {letters[idx]}
-            </span>
-            <span style={{ color: "var(--text-primary)" }}>{opt}</span>
-          </button>
-        ) : null)}
+    <div className="space-y-5">
+      {/* Question Card Header */}
+      <div className="flex items-center justify-between flex-wrap gap-2 pb-3 border-b admin-table-divider">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="px-2.5 py-1 rounded-lg text-xs font-bold text-white shadow-sm" style={{ background: "var(--primary)" }}>
+            Q{questionIndex + 1}
+          </span>
+          <span className="px-2.5 py-0.5 rounded-md text-[11px] font-semibold border capitalize admin-bg-surface" style={{ color: "var(--text-secondary)" }}>
+            {question.type || (question.subject ? question.subject : "MCQ")}
+          </span>
+          <span className={`px-2 py-0.5 rounded-md text-[11px] font-semibold border capitalize ${diffBadgeColor}`}>
+            {difficulty}
+          </span>
+        </div>
+        <div className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg admin-bg-surface" style={{ color: "var(--text-primary)" }}>
+          <span>+{question.marks || 1} mark{question.marks !== 1 ? "s" : ""}</span>
+          {question.negativeMarks > 0 && (
+            <span className="text-red-500 text-[10px]">(-{question.negativeMarks})</span>
+          )}
+        </div>
+      </div>
+
+      {/* Question Text */}
+      <div className="text-sm sm:text-base font-semibold leading-relaxed tracking-normal py-1" style={{ color: "var(--text-primary)" }}>
+        {question.question || question.title || question.description}
+      </div>
+
+      {/* Options List */}
+      <div className="grid grid-cols-1 gap-2.5 pt-1">
+        {question.options?.map((opt, idx) => {
+          if (!opt) return null;
+          const letter = letters[idx] || String.fromCharCode(65 + idx);
+          const isSelected = answer === letter;
+
+          return (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => onAnswer(letter)}
+              className={`flex items-center gap-3.5 p-3.5 sm:p-4 rounded-xl border text-xs sm:text-sm text-left cursor-pointer transition-all duration-150 active:scale-[0.99] ${
+                isSelected
+                  ? "border-[var(--primary)] ring-1 ring-[var(--primary)] shadow-sm"
+                  : "admin-border admin-hover hover:border-gray-400 dark:hover:border-zinc-600"
+              }`}
+              style={{
+                background: isSelected
+                  ? "color-mix(in srgb, var(--primary) 10%, transparent)"
+                  : "var(--card-bg, transparent)",
+              }}
+            >
+              <span
+                className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center text-xs font-black shrink-0 transition-all ${
+                  isSelected
+                    ? "text-white shadow-sm"
+                    : "border admin-border"
+                }`}
+                style={{
+                  background: isSelected ? "var(--primary)" : "var(--admin-bg-surface)",
+                  color: isSelected ? "#fff" : "var(--text-secondary)",
+                }}
+              >
+                {letter}
+              </span>
+              <span
+                className={`flex-1 leading-snug ${isSelected ? "font-semibold" : "font-normal"}`}
+                style={{ color: isSelected ? "var(--text-primary)" : "var(--text-primary)" }}
+              >
+                {opt}
+              </span>
+            </button>
+          );
+        })}
       </div>
     </div>
   );
 }
 
-function SubmitConfirm({ stats, onConfirm, onClose }) {
+function SubmitConfirm({ stats, onConfirm, onClose, submitting }) {
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50" onClick={onClose}>
-      <div className="bg-white dark:bg-[#111] rounded-2xl border border-gray-200 dark:border-zinc-800 w-full max-w-sm mx-4 p-6 space-y-4"
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={submitting ? undefined : onClose}>
+      <div className="bg-white dark:bg-[#18181b] rounded-2xl border border-gray-200 dark:border-zinc-800 w-full max-w-sm mx-4 p-6 space-y-4 shadow-2xl"
         onClick={e => e.stopPropagation()}>
         <div className="text-center">
-          <Send className="w-10 h-10 mx-auto mb-2" style={{ color: "var(--primary)" }} />
+          <Send className="w-10 h-10 mx-auto mb-2 text-orange-500" style={{ color: "var(--primary)" }} />
           <h3 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>Submit Test?</h3>
-          <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>Review your progress before submitting.</p>
+          <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>Review your progress before final submission.</p>
         </div>
         <div className="grid grid-cols-2 gap-3 text-xs">
           {[
@@ -116,19 +167,57 @@ function SubmitConfirm({ stats, onConfirm, onClose }) {
           ))}
         </div>
         <div className="flex gap-3 pt-2">
-          <button onClick={onClose}
-            className="flex-1 py-2.5 text-xs font-medium border admin-border rounded-xl admin-hover cursor-pointer">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={submitting}
+            className="flex-1 py-2.5 text-xs font-medium border admin-border rounded-xl admin-hover cursor-pointer disabled:opacity-50"
+          >
             Cancel
           </button>
-          <button onClick={onConfirm}
-            className="flex-1 py-2.5 text-xs font-medium text-white rounded-xl cursor-pointer flex items-center justify-center gap-1.5"
-            style={{ background: "var(--primary)" }}>
-            <Send className="w-3.5 h-3.5" /> Submit
+          <button
+            type="button"
+            onClick={onConfirm}
+            disabled={submitting}
+            className="flex-1 py-2.5 text-xs font-medium text-white rounded-xl cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-75"
+            style={{ background: "var(--primary)" }}
+          >
+            {submitting ? (
+              <>
+                <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Submitting...
+              </>
+            ) : (
+              <>
+                <Send className="w-3.5 h-3.5" /> Submit Now
+              </>
+            )}
           </button>
         </div>
       </div>
     </div>
   );
+}
+
+function getIsFullscreen() {
+  return Boolean(
+    document.fullscreenElement ||
+    document.webkitFullscreenElement ||
+    document.mozFullScreenElement ||
+    document.msFullscreenElement
+  );
+}
+
+function requestFullscreenSafe(element = document.documentElement) {
+  const rfs =
+    element.requestFullscreen ||
+    element.webkitRequestFullscreen ||
+    element.mozRequestFullScreen ||
+    element.msRequestFullscreen;
+  if (typeof rfs === "function") {
+    return rfs.call(element);
+  }
+  return Promise.reject(new Error("Fullscreen API not supported in this browser environment"));
 }
 
 function TestEngine() {
@@ -143,7 +232,7 @@ function TestEngine() {
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState([]);
   const [currentIdx, setCurrentIdx] = useState(0);
-  const [isFullscreen, setIsFullscreen] = useState(Boolean(document.fullscreenElement));
+  const [isFullscreen, setIsFullscreen] = useState(getIsFullscreen());
   const [proctoringError, setProctoringError] = useState(false);
   const [serverOffset, setServerOffset] = useState(0);
   const [submitConfirm, setSubmitConfirm] = useState(false);
@@ -159,14 +248,13 @@ function TestEngine() {
   const blurStartRef = useRef(null);
   const heartbeatFailCountRef = useRef(0);
 
-  const enterFullscreen = useCallback(() => {
-    const el = document.documentElement;
-    if (el.requestFullscreen) {
-      el.requestFullscreen().then(() => {
-        setIsFullscreen(true);
-      }).catch(err => {
-        console.warn("Fullscreen request error:", err);
-      });
+  const enterFullscreen = useCallback(async () => {
+    try {
+      await requestFullscreenSafe(document.documentElement);
+      setIsFullscreen(true);
+    } catch (err) {
+      console.warn("Fullscreen request error:", err);
+      toast.error("Please allow fullscreen mode to continue your assessment.", { id: "fullscreen-denied" });
     }
   }, []);
 
@@ -209,27 +297,30 @@ function TestEngine() {
     }
   }, [attempt, test]);
 
-  // Fullscreen requirement listener
+  // Fullscreen requirement listener across all browser engines
   useEffect(() => {
     const onFullscreenChange = () => {
-      const inFull = Boolean(document.fullscreenElement);
+      const inFull = getIsFullscreen();
       setIsFullscreen(inFull);
       if (!inFull && !submitted) {
-        recordIntegrity("fullscreen_exit");
+        reportViolation("fullscreen_exit");
       }
     };
+
     document.addEventListener("fullscreenchange", onFullscreenChange);
-    return () => document.removeEventListener("fullscreenchange", onFullscreenChange);
+    document.addEventListener("webkitfullscreenchange", onFullscreenChange);
+    document.addEventListener("mozfullscreenchange", onFullscreenChange);
+    document.addEventListener("MSFullscreenChange", onFullscreenChange);
+
+    return () => {
+      document.removeEventListener("fullscreenchange", onFullscreenChange);
+      document.removeEventListener("webkitfullscreenchange", onFullscreenChange);
+      document.removeEventListener("mozfullscreenchange", onFullscreenChange);
+      document.removeEventListener("MSFullscreenChange", onFullscreenChange);
+    };
   }, [submitted]);
 
-  // Prompt fullscreen upon initial load
-  useEffect(() => {
-    if (!isFullscreen && !submitted && !loading) {
-      enterFullscreen();
-    }
-  }, [isFullscreen, submitted, loading, enterFullscreen]);
-
-  // Integrity event logging
+  // Integrity event logging for non-strike events
   const recordIntegrity = useCallback(async (eventType, durationSeconds = 0, details = {}) => {
     if (submitted || !attemptId) return;
     try {
@@ -259,7 +350,7 @@ function TestEngine() {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.data?.serverTime) {
-        setServerOffset(res.data.serverTime - Date.now());
+        setServerOffset(new Date(res.data.serverTime).getTime() - Date.now());
       }
       if (res.data?.autoSubmitted) {
         toast.error("Test auto-submitted by server");
@@ -286,12 +377,12 @@ function TestEngine() {
 
   const lastViolationRef = useRef(0);
 
-  // 3-strike violation handler (switches, minimizations, Alt+Tab)
+  // 3-strike violation handler (switches, minimizations, Alt+Tab, fullscreen exit)
   const reportViolation = useCallback(async (eventType = "tab_switch") => {
     if (submitted || !attemptId) return;
     const now = Date.now();
-    // Debounce rapid dual events (e.g. blur + visibilitychange firing simultaneously during Alt+Tab)
-    if (now - lastViolationRef.current < 1200) return;
+    // Coalesce rapid duplicate events (e.g. blur + visibilitychange + fullscreen_exit firing simultaneously on window switch)
+    if (now - lastViolationRef.current < 2500) return;
     lastViolationRef.current = now;
 
     try {
@@ -312,12 +403,12 @@ function TestEngine() {
         setSubmitted(true);
         navigate(`/tests/result/${attemptId}`, { replace: true });
       } else if (newCount === 1) {
-        toast.error("⚠️ Warning 1 of 3", {
+        toast.error("⚠️ Warning 1 of 3: Do not leave or minimize the test window", {
           id: "violation-warning",
           duration: 4000,
         });
       } else if (newCount === 2) {
-        toast.error("🚨 Warning 2 of 3 (Final Warning)", {
+        toast.error("🚨 Warning 2 of 3 (Final Warning): One more violation will auto-submit", {
           id: "violation-warning",
           duration: 5000,
         });
@@ -472,7 +563,17 @@ function TestEngine() {
     if (!attemptId || submitted) return;
     const currentAnswer = answers[currentIdx];
     if (!currentAnswer) return;
-    const serialized = JSON.stringify({ answer: currentAnswer.answer, code: currentAnswer.code, language: currentAnswer.language, status: currentAnswer.status });
+    const serialized = JSON.stringify({
+      answer: currentAnswer.answer,
+      code: currentAnswer.code,
+      language: currentAnswer.language,
+      status: currentAnswer.status,
+      codingScore: currentAnswer.codingScore,
+      scoredMarks: currentAnswer.scoredMarks,
+      passedCount: currentAnswer.passedCount,
+      totalCount: currentAnswer.totalCount,
+      executionStatus: currentAnswer.executionStatus,
+    });
     if (serialized === lastSaveRef.current) return;
     lastSaveRef.current = serialized;
     setSaving(true);
@@ -483,6 +584,11 @@ function TestEngine() {
         code: currentAnswer.code,
         language: currentAnswer.language,
         status: currentAnswer.status,
+        codingScore: currentAnswer.codingScore,
+        passedCount: currentAnswer.passedCount,
+        totalCount: currentAnswer.totalCount,
+        executionStatus: currentAnswer.executionStatus,
+        scoredMarks: currentAnswer.scoredMarks,
       }, { headers: { Authorization: `Bearer ${token}` } });
     } catch (err) {
       if (err.response?.status === 403 && err.response?.data?.error?.includes("Deadline")) {
@@ -507,11 +613,58 @@ function TestEngine() {
     setAnswers(prev => prev.map((a, i) => i === currentIdx ? { ...a, [field]: value, status: field === "status" ? value : "answered" } : a));
   };
 
+  const handleCodingSubmissionResult = useCallback((qIdx, res) => {
+    const qMarks = questions[qIdx]?.marks || 10;
+    const passedCount = res.passedCount || 0;
+    const totalCount = res.totalCount || 0;
+    const scoredMarks = totalCount > 0
+      ? Math.round((passedCount / totalCount) * qMarks)
+      : (res.status === "accepted" ? qMarks : 0);
+    const codingScore = res.score !== undefined
+      ? res.score
+      : (totalCount > 0 ? Math.round((passedCount / totalCount) * 100) : (res.status === "accepted" ? 100 : 0));
+    const executionStatus = res.status || (passedCount === totalCount && totalCount > 0 ? "accepted" : "failed");
+
+    setAnswers(prev => prev.map((a, i) => {
+      if (i === qIdx) {
+        return {
+          ...a,
+          status: "answered",
+          codingScore,
+          passedCount,
+          totalCount,
+          executionStatus,
+          scoredMarks,
+        };
+      }
+      return a;
+    }));
+
+    if (attemptId && !submitted) {
+      const currentAnswer = answers[qIdx] || {};
+      api.post(`/api/student/tests/attempt/${attemptId}/answer`, {
+        questionIndex: qIdx,
+        answer: currentAnswer.answer || "",
+        code: currentAnswer.code || "",
+        language: currentAnswer.language || "python",
+        status: "answered",
+        codingScore,
+        passedCount,
+        totalCount,
+        executionStatus,
+        scoredMarks,
+      }, { headers: { Authorization: `Bearer ${token}` } }).catch(err => {
+        console.warn("Failed to persist coding submission answer:", err.message);
+      });
+    }
+  }, [attemptId, answers, questions, submitted, token]);
+
   const handleTimeUp = useCallback(async () => {
     if (submitted) return;
     toast("Time is up! Auto-submitting...", { icon: "⏰" });
     setSubmitted(true);
     try {
+      await saveCurrent();
       await api.post(`/api/student/tests/attempt/${attemptId}/submit`, { forceSubmit: "auto" }, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -519,9 +672,10 @@ function TestEngine() {
       // silent
     }
     navigate(`/tests/result/${attemptId}`, { replace: true });
-  }, [attemptId, token, submitted, navigate]);
+  }, [attemptId, token, submitted, saveCurrent, navigate]);
 
   const handleSubmit = async () => {
+    if (submitting || submitted) return;
     setSubmitting(true);
     try {
       await saveCurrent();
@@ -532,8 +686,7 @@ function TestEngine() {
       setSubmitConfirm(false);
       navigate(`/tests/result/${attemptId}`, { replace: true });
     } catch (err) {
-      toast.error(err.response?.data?.error || "Failed to submit");
-    } finally {
+      toast.error(err.response?.data?.message || err.response?.data?.error || "Failed to submit test");
       setSubmitting(false);
     }
   };
@@ -612,84 +765,163 @@ function TestEngine() {
       </header>
 
       <div className="flex flex-1 overflow-hidden">
-        {/* Main Content */}
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6">
-          <div className="max-w-3xl mx-auto space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
-                Question {currentIdx + 1} of {questions.length}
-              </span>
-              <span className="text-xs" style={{ color: "var(--text-muted)" }}>
-                Marks: {question?.marks || 0}
-                {isCoding && " | Coding Problem"}
-              </span>
+        {/* Main Workspace */}
+        {isCoding ? (
+          <main className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-[#111]">
+            {/* Coding Problem Header */}
+            <div className="flex items-center justify-between px-4 py-2 border-b admin-table-divider bg-white/70 dark:bg-[#111]/70 text-xs shrink-0">
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-sm" style={{ color: "var(--text-primary)" }}>
+                  Question {currentIdx + 1} of {questions.length}
+                </span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wide uppercase" style={{ background: "color-mix(in srgb, var(--primary) 12%, transparent)", color: "var(--primary)" }}>
+                  Coding Assessment
+                </span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-xs font-semibold px-2 py-0.5 rounded border admin-border" style={{ color: "var(--text-secondary)" }}>
+                  Marks: {question?.marks || 0}
+                </span>
+              </div>
             </div>
 
-            <div className="border admin-border admin-card rounded-2xl p-5">
+            {/* Split IDE Canvas */}
+            <div className="flex-1 overflow-hidden" style={{ minHeight: 0 }}>
               {question ? (
-                isCoding ? (
-                  <div style={{ height: "70vh", minHeight: "500px" }}>
-                    <CodingQuestionRenderer
-                      question={question}
-                      questionSource="testQuestion"
-                      questionIndex={currentIdx}
-                      testId={test?._id}
-                      initialCode={q.code}
-                      initialLanguage={q.language || "python"}
-                      onCodeChange={(v) => updateAnswer("code", v)}
-                      onLanguageChange={(v) => updateAnswer("language", v)}
-                    />
-                  </div>
-                ) : (
-                  <MCQRenderer
-                    question={question}
-                    answer={q.answer}
-                    onAnswer={(v) => updateAnswer("answer", v)}
-                  />
-                )
+                <CodingQuestionRenderer
+                  question={question}
+                  questionSource="testQuestion"
+                  questionIndex={currentIdx}
+                  testId={test?._id}
+                  initialCode={q.code}
+                  initialLanguage={q.language || "python"}
+                  onCodeChange={(v) => updateAnswer("code", v)}
+                  onLanguageChange={(v) => updateAnswer("language", v)}
+                  onSubmissionResult={(res) => handleCodingSubmissionResult(currentIdx, res)}
+                />
               ) : (
                 <p className="text-sm py-8 text-center" style={{ color: "var(--text-muted)" }}>Question unavailable</p>
               )}
             </div>
 
-            {/* Navigation Buttons */}
-            <div className="flex items-center justify-between gap-3">
+            {/* Docked Action Bar */}
+            <div className="flex items-center justify-between px-4 py-2 border-t admin-table-divider bg-white dark:bg-[#111] shrink-0 z-10">
               <div className="flex items-center gap-2">
                 <button onClick={() => navigateTo(Math.max(0, currentIdx - 1))} disabled={currentIdx === 0}
-                  className="flex items-center gap-1 px-4 py-2 text-xs font-medium border admin-border rounded-xl admin-hover cursor-pointer disabled:opacity-40">
+                  className="flex items-center gap-1 px-3.5 py-1.5 text-xs font-semibold border admin-border rounded-lg admin-hover cursor-pointer disabled:opacity-40">
                   <ChevronLeft className="w-3.5 h-3.5" /> Previous
                 </button>
                 <button onClick={() => { updateAnswer("status", "skipped"); navigateTo(Math.min(questions.length - 1, currentIdx + 1)); }}
                   disabled={currentIdx === questions.length - 1}
-                  className="flex items-center gap-1 px-4 py-2 text-xs font-medium border admin-border rounded-xl admin-hover cursor-pointer disabled:opacity-40">
+                  className="flex items-center gap-1 px-3.5 py-1.5 text-xs font-semibold border admin-border rounded-lg admin-hover cursor-pointer disabled:opacity-40">
                   Skip <ChevronRight className="w-3.5 h-3.5" />
                 </button>
               </div>
               <div className="flex items-center gap-2">
                 <button onClick={() => updateAnswer("status", q.status === "marked" ? "answered" : "marked")}
-                  className={`flex items-center gap-1 px-4 py-2 text-xs font-medium border rounded-xl cursor-pointer ${
-                    q.status === "marked" ? "border-[var(--primary)]" : "admin-border admin-hover"
-                  }`}
-                  style={{ color: q.status === "marked" ? "var(--primary)" : "var(--text-secondary)" }}>
+                  className={`flex items-center gap-1 px-3.5 py-1.5 text-xs font-semibold border rounded-lg cursor-pointer transition ${
+                    q.status === "marked" ? "border-[var(--primary)] text-[var(--primary)] bg-[var(--primary)]/10" : "admin-border admin-hover text-[var(--text-secondary)]"
+                  }`}>
                   <Flag className="w-3.5 h-3.5" /> {q.status === "marked" ? "Unmark" : "Mark for Review"}
                 </button>
                 {currentIdx < questions.length - 1 ? (
                   <button onClick={() => { if (q.status === "not_visited") updateAnswer("status", "answered"); navigateTo(currentIdx + 1); }}
-                    className="flex items-center gap-1 px-4 py-2 text-xs font-medium text-white rounded-xl cursor-pointer"
+                    className="flex items-center gap-1 px-4 py-1.5 text-xs font-bold text-white rounded-lg cursor-pointer shadow-sm"
                     style={{ background: "var(--primary)" }}>
                     Next <ChevronRight className="w-3.5 h-3.5" />
                   </button>
                 ) : (
                   <button onClick={() => setSubmitConfirm(true)}
-                    className="flex items-center gap-1 px-4 py-2 text-xs font-medium text-white rounded-xl cursor-pointer"
+                    className="flex items-center gap-1 px-4 py-1.5 text-xs font-bold text-white rounded-lg cursor-pointer shadow-sm"
                     style={{ background: "var(--primary)" }}>
-                    <Send className="w-3.5 h-3.5" /> Submit
+                    <Send className="w-3.5 h-3.5" /> Submit Test
                   </button>
                 )}
               </div>
             </div>
-          </div>
-        </main>
+          </main>
+        ) : (
+          <main className="flex-1 flex flex-col h-full overflow-hidden bg-gray-50/30 dark:bg-zinc-950/30">
+            {/* Scrollable Question Content */}
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 flex justify-center items-start">
+              <div className="w-full max-w-3xl space-y-4">
+                <div className="border admin-border admin-card rounded-2xl p-5 sm:p-7 shadow-sm">
+                  {question ? (
+                    <MCQRenderer
+                      question={question}
+                      questionIndex={currentIdx}
+                      totalQuestions={questions.length}
+                      answer={q.answer}
+                      onAnswer={(v) => updateAnswer("answer", v)}
+                    />
+                  ) : (
+                    <p className="text-sm py-8 text-center" style={{ color: "var(--text-muted)" }}>Question unavailable</p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Pinned Bottom Action Bar */}
+            <div className="flex items-center justify-between px-4 sm:px-6 py-2.5 border-t admin-table-divider bg-white dark:bg-[#111] shrink-0 z-10">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => navigateTo(Math.max(0, currentIdx - 1))}
+                  disabled={currentIdx === 0}
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold border admin-border rounded-lg admin-hover cursor-pointer disabled:opacity-40 transition"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5" /> Previous
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    updateAnswer("status", "skipped");
+                    navigateTo(Math.min(questions.length - 1, currentIdx + 1));
+                  }}
+                  disabled={currentIdx === questions.length - 1}
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold border admin-border rounded-lg admin-hover cursor-pointer disabled:opacity-40 transition"
+                >
+                  Skip <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => updateAnswer("status", q.status === "marked" ? "answered" : "marked")}
+                  className={`flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold border rounded-lg cursor-pointer transition ${
+                    q.status === "marked"
+                      ? "border-[var(--primary)] text-[var(--primary)] bg-[var(--primary)]/10"
+                      : "admin-border admin-hover text-[var(--text-secondary)]"
+                  }`}
+                >
+                  <Flag className="w-3.5 h-3.5" /> {q.status === "marked" ? "Unmark" : "Mark for Review"}
+                </button>
+                {currentIdx < questions.length - 1 ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (q.status === "not_visited") updateAnswer("status", "answered");
+                      navigateTo(currentIdx + 1);
+                    }}
+                    className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold text-white rounded-lg cursor-pointer shadow-sm hover:opacity-95 transition"
+                    style={{ background: "var(--primary)" }}
+                  >
+                    Next <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setSubmitConfirm(true)}
+                    className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold text-white rounded-lg cursor-pointer shadow-sm hover:opacity-95 transition"
+                    style={{ background: "var(--primary)" }}
+                  >
+                    <Send className="w-3.5 h-3.5" /> Submit Test
+                  </button>
+                )}
+              </div>
+            </div>
+          </main>
+        )}
 
         {/* Sidebar */}
         <aside className="w-64 shrink-0 border-l admin-table-divider overflow-y-auto bg-white dark:bg-[#111] hidden lg:block">
@@ -842,6 +1074,7 @@ function TestEngine() {
           stats={stats}
           onConfirm={handleSubmit}
           onClose={() => setSubmitConfirm(false)}
+          submitting={submitting}
         />
       )}
     </div>

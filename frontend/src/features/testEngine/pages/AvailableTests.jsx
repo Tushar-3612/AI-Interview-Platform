@@ -360,7 +360,13 @@ export default function AvailableTests() {
           <div className={`flex items-center gap-2 ${isFullWidth ? "w-full" : "w-full sm:w-auto"}`}>
             <button
               type="button"
-              onClick={() => navigate(`/tests/result/${test.attemptId || test._id}`)}
+              onClick={() => {
+                if (test.attemptId) {
+                  navigate(`/tests/result/${test.attemptId}`);
+                } else {
+                  toast.error("Assessment attempt result not found");
+                }
+              }}
               className={`${isFullWidth ? "flex-1" : "px-3.5"} py-2 sm:py-2.5 rounded-xl text-xs font-bold border cursor-pointer transition-all active:scale-95 flex items-center justify-center gap-1.5 hover:bg-emerald-500/20`}
               style={{
                 background: "rgba(16, 185, 129, 0.12)",
@@ -396,7 +402,13 @@ export default function AvailableTests() {
       return (
         <button
           type="button"
-          onClick={() => navigate(`/tests/result/${test.attemptId || test._id}`)}
+          onClick={() => {
+            if (test.attemptId) {
+              navigate(`/tests/result/${test.attemptId}`);
+            } else {
+              toast.error("Assessment attempt result not found");
+            }
+          }}
           className={`${widthClass} px-4 py-2 sm:py-2.5 rounded-xl text-xs font-bold border cursor-pointer transition-all active:scale-95 flex items-center justify-center gap-1.5 hover:bg-emerald-500/20`}
           style={{
             background: "rgba(16, 185, 129, 0.12)",

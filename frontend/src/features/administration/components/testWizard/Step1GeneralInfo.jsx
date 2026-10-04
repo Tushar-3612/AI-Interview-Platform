@@ -56,23 +56,29 @@ export default function Step1GeneralInfo({ form, onChange }) {
       </div>
 
       <div className="border admin-border admin-card rounded-xl p-5">
-        <h3 className="text-sm font-semibold mb-4" style={{ color: "var(--text-primary)" }}>Configuration</h3>
+        <h3 className="text-sm font-semibold mb-4" style={{ color: "var(--text-primary)" }}>Evaluation & Passing</h3>
         <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>Duration (min) *</label>
-              <input type="number" min="1" className={inputCls} value={form.duration} onChange={e => update("duration", parseInt(e.target.value) || 30)} style={{ color: "var(--text-primary)" }} />
-            </div>
-            <div>
-              <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>Attempt Limit</label>
-              <input type="number" min="1" className={inputCls} value={form.attemptLimit} onChange={e => update("attemptLimit", parseInt(e.target.value) || 1)} style={{ color: "var(--text-primary)" }} />
-            </div>
-          </div>
           <div>
             <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>Passing Criteria (%) *</label>
-            <input type="number" min="0" max="100" className={inputCls} value={form.passingMarks} onChange={e => update("passingMarks", parseInt(e.target.value) || 0)} style={{ color: "var(--text-primary)" }} />
-            <p className="text-[10px] mt-1" style={{ color: "var(--text-muted)" }}>
+            <input
+              type="number"
+              min="1"
+              max="100"
+              className={inputCls}
+              value={form.passingMarks ?? 40}
+              onChange={e => update("passingMarks", e.target.value === "" ? "" : Math.max(0, Math.min(100, parseInt(e.target.value) || 0)))}
+              style={{ color: "var(--text-primary)" }}
+            />
+            <p className="text-[10px] mt-1.5 leading-relaxed" style={{ color: "var(--text-muted)" }}>
               Passing marks are calculated automatically from total marks (Passing % × Total Marks, rounded up).
+            </p>
+          </div>
+          <div className="p-3 rounded-lg border admin-border bg-gray-50/50 dark:bg-zinc-900/50">
+            <p className="text-xs font-medium" style={{ color: "var(--text-secondary)" }}>
+              Scheduling & Timing:
+            </p>
+            <p className="text-[11px] mt-1" style={{ color: "var(--text-muted)" }}>
+              Duration, attempt limits, and test availability window will be configured in the final step before publishing.
             </p>
           </div>
         </div>
