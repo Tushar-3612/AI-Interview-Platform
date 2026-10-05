@@ -4,6 +4,11 @@ import fsp from "fs/promises";
 import os from "os";
 import path from "path";
 import crypto from "crypto";
+import {
+  isWorkerConfigured,
+  executeViaWorker,
+  executeSuiteViaWorker,
+} from "./dockerExecutionWorkerClient.js";
 
 /* ============================================================================
  * Docker-based multi-language code execution service
@@ -1933,6 +1938,26 @@ export async function executeDocker({
   testCaseId,
 }) {
   const rawCode = sourceCode !== undefined ? sourceCode : (code || "");
+
+  if (isWorkerConfigured() && process.env.IS_DOCKER_WORKER !== "true") {
+    return executeViaWorker({
+      sourceCode: rawCode,
+      code: rawCode,
+      language,
+      stdin: stdin || input || "",
+      args: Array.isArray(args) ? args : [],
+      cpuTimeLimit,
+      timeLimitMs,
+      memoryLimit,
+      memoryLimitMb,
+      functionName,
+      methodName,
+      className,
+      executionId,
+      testCaseId,
+    });
+  }
+
   const langId = normalizeLanguage(language);
   if (!langId) {
     return {
@@ -2032,11 +2057,29 @@ export async function executeDockerTestSuite({
   cpuTimeLimit = 2.0,
   timeLimitMs = null,
   memoryLimit = 128000,
+  memoryLimitMb = 256,
   functionName,
   methodName,
   className,
 }) {
   const rawCode = sourceCode !== undefined ? sourceCode : (code || "");
+
+  if (isWorkerConfigured() && process.env.IS_DOCKER_WORKER !== "true") {
+    return executeSuiteViaWorker({
+      sourceCode: rawCode,
+      code: rawCode,
+      language,
+      testCases,
+      cpuTimeLimit,
+      timeLimitMs,
+      memoryLimit,
+      memoryLimitMb,
+      functionName,
+      methodName,
+      className,
+    });
+  }
+
   const langId = normalizeLanguage(language);
   if (!langId) {
     return {
@@ -2198,6 +2241,26 @@ export {
 };
 
 export function getExecutionProviderInfo() {
+  if (isWorkerConfigured() && process.env.IS_DOCKER_WORKER !== "true") {
+    return {
+      provider: "docker-worker",
+      docker: true,
+      workerConfigured: true,
+      images: {
+        python: true,
+        java: true,
+        c: true,
+        cpp: true,
+        javascript: true,
+      },
+      concurrency: {
+        running: 0,
+        queued: 0,
+        maxConcurrency: parseInt(process.env.CODE_EXECUTION_MAX_CONCURRENCY, 10) || 8,
+        maxQueue: parseInt(process.env.CODE_EXECUTION_MAX_QUEUE, 10) || 32,
+      },
+    };
+  }
   ensureDockerChecked();
   return {
     provider: "docker",

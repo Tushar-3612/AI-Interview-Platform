@@ -1,0 +1,17 @@
+{
+  "name": "docker-execution-worker",
+  "version": "1.0.0",
+  "description": "Isolated Docker Execution Worker for AI Interview Platform",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.3",
+    "express": "^4.22.3",
+    "helmet": "^8.3.0",
+    "cors": "^2.8.5"
+  }
+}
