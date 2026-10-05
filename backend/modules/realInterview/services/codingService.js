@@ -5,7 +5,7 @@ import mongoose from "mongoose";
 import RealInterviewCodingQuestion from "../models/RealInterviewCodingQuestion.js";
 import RealInterviewCodingSession from "../models/RealInterviewCodingSession.js";
 import RealInterviewCodingSubmission from "../models/RealInterviewCodingSubmission.js";
-import { executeJudge0TestSuite } from "../../codingAssessment/services/judge0Service.js";
+import { executeDockerTestSuite as executeJudge0TestSuite } from "../../codingAssessment/services/codeExecutionService.js";
 import { withInFlightLock } from "./inFlightLock.js";
 import {
   getUserQuestionHistorySet,

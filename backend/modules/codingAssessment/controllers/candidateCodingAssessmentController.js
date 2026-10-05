@@ -5,7 +5,7 @@ import CodingQuestion from "../models/CodingQuestion.js";
 import CodingTestCase from "../models/CodingTestCase.js";
 import CodingSubmission from "../models/CodingSubmission.js";
 import CodingAutosave from "../models/CodingAutosave.js";
-import { executeJudge0 } from "../services/judge0Service.js";
+import { executeDocker as executeJudge0 } from "../services/codeExecutionService.js";
 import { compareOutput } from "../utils/outputComparator.js";
 import { mapJudge0Status, STATUS_CODES } from "../utils/judge0StatusMapper.js";
 

@@ -10,10 +10,10 @@ import {
 } from "../utils/scoringEngine.js";
 import { computeRankings } from "../utils/rankingEngine.js";
 import {
-  executeJudge0TestSuite,
+  executeDockerTestSuite as executeJudge0TestSuite,
   prepareExecutionInput,
   getTestCaseExpectedOutput,
-} from "../../codingAssessment/services/judge0Service.js";
+} from "../../codingAssessment/services/codeExecutionService.js";
 
 function findFunctionName(code) {
   const match = String(code).match(/(?:function\s+|const\s+|let\s+|var\s+)([A-Za-z_$][\w$]*)/);

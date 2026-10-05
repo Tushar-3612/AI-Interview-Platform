@@ -4,14 +4,15 @@ import CodingQuestion from "../models/CodingQuestion.js";
 import CodingTestCase from "../models/CodingTestCase.js";
 import CodingSubmission from "../models/CodingSubmission.js";
 import {
-  executeJudge0,
-  executeJudge0TestSuite,
+  executeDocker as executeJudge0,
+  executeDockerTestSuite as executeJudge0TestSuite,
   getSupportedJudge0Languages,
   getJudge0Language,
   prepareExecutionInput,
   getTestCaseExpectedOutput,
   compareOutputs,
-} from "../services/judge0Service.js";
+  getExecutionProviderInfo,
+} from "../services/codeExecutionService.js";
 
 /**
  * Shared code execution endpoint: POST /api/code/run
@@ -104,7 +105,7 @@ export const runCode = async (req, res) => {
       runStatus = "wrong_answer";
     }
 
-    console.log(`[Judge0 Run] lang=${langConfig.slug} status=${runStatus} time=${result.timeSeconds}s mem=${result.memoryKB}KB stdinLen=${preparedStdin.length}`);
+    console.log(`[Docker Run] lang=${langConfig.slug} status=${runStatus} time=${result.timeSeconds}s mem=${result.memoryKB}KB stdinLen=${preparedStdin.length}`);
 
     res.json({
       status: runStatus,
@@ -344,10 +345,13 @@ export const getLanguages = (req, res) => {
  * Health Check Endpoint: GET /api/code/health
  */
 export const getHealth = (req, res) => {
+  const provider = getExecutionProviderInfo();
   res.json({
-    status: "ok",
-    provider: "judge0",
-    engine: "Judge0 Hosted Online Sandbox",
+    status: provider.docker ? "ok" : "degraded",
+    provider: "docker",
+    engine: "Docker Sandboxed Container Runner",
+    dockerAvailable: provider.docker,
+    images: provider.images,
     languages: getSupportedJudge0Languages().map((l) => l.name),
   });
 };

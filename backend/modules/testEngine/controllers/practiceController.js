@@ -380,7 +380,7 @@ export const runCodingCode = async (req, res) => {
     const { language = "cpp", code = "", input = "" } = req.body;
     if (!code) return res.status(400).json({ message: "Code is required" });
 
-    const { executeJudge0 } = await import("../../codingAssessment/services/judge0Service.js");
+    const { executeDocker: executeJudge0 } = await import("../../codingAssessment/services/codeExecutionService.js");
     const result = await executeJudge0({
       sourceCode: code,
       language,
@@ -428,7 +428,7 @@ export const submitCoding = async (req, res) => {
     const testCases = question.testCases || [];
     const timeLimit = (question.timeLimit || 1000) / 1000;
 
-    const { executeJudge0TestSuite } = await import("../../codingAssessment/services/judge0Service.js");
+    const { executeDockerTestSuite: executeJudge0TestSuite } = await import("../../codingAssessment/services/codeExecutionService.js");
     const suiteResult = await executeJudge0TestSuite({
       sourceCode: code,
       language,

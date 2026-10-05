@@ -38,9 +38,10 @@ const normalizeIp = (ip) => {
    Admin is NOT stored in MongoDB.
    ================================ */
 const ADMIN_CREDENTIALS = {
-  email: "sanjivani@admin.org.in",
-  password: "Admin@123",
+  email: "admin@prephire.com",
+  password: "Prephire@2027",
   id: "admin",
+
 };
 
 /* ================================

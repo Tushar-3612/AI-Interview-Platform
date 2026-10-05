@@ -28,3 +28,10 @@ services:
       context: ./docker/python
       dockerfile: Dockerfile
     image: code-runner-python:latest
+
+  code-runner-javascript:
+    build:
+      context: ./docker/javascript
+      dockerfile: Dockerfile
+    image: code-runner-javascript:latest
+

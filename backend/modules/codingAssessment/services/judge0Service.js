@@ -1,8 +1,9 @@
 /**
- * Judge0 Remote Code Execution Service
+ * [ARCHIVED / LEGACY] Judge0 Remote Code Execution Service
  * ---------------------------------------------------------------------------
- * Provides sandboxed, remote compilation and execution via Judge0 API.
- * Eliminates Docker and local arbitrary code execution from the backend server.
+ * Replaced by unified Docker Execution Engine (codeExecutionService.js).
+ * Kept for historical reference / documentation only.
+ * No user-facing execution routes use this service.
  */
 
 const JUDGE0_LANGUAGES = {

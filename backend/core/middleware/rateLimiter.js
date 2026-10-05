@@ -117,10 +117,14 @@ export const exportLimiter = rateLimit({
  */
 export const executionLimiter = rateLimit({
   windowMs: 60 * 1000,
-  max: 40,
+  max: 60,
   standardHeaders: true,
   legacyHeaders: false,
+  validate: false,
   store: getStore("exec"),
+  keyGenerator: (req) => (req.user && (req.user.id || req.user._id) ? `exec_user_${req.user.id || req.user._id}` : (req.ip || "unknown_ip")),
+  skip: shouldSkipLimiter,
   handler: standardErrorHandler("Too many code execution requests. Please wait a few seconds before executing again."),
 });
+
 
