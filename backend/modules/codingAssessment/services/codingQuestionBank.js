@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import CodingQuestion from "../models/CodingQuestion.js";
+import CodingTestCase from "../models/CodingTestCase.js";
 import Company from "../../companyMock/models/Company.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -167,7 +168,16 @@ export async function syncCodingQuestionsFromJson() {
       if (!existing) {
         const timestamps = {};
         if (raw.createdAt) timestamps.createdAt = new Date(raw.createdAt);
-        await CodingQuestion.create({ ...doc, isDeleted: false, deletedAt: null, ...timestamps });
+        const createdDoc = await CodingQuestion.create({ ...doc, isDeleted: false, deletedAt: null, ...timestamps });
+        if (doc.testCases && doc.testCases.length > 0) {
+          await CodingTestCase.insertMany(doc.testCases.map((tc) => ({
+            questionId: createdDoc._id,
+            input: tc.input,
+            expectedOutput: tc.expected,
+            isHidden: tc.isHidden,
+            isSample: !tc.isHidden,
+          })));
+        }
         inserted++;
         fileInserted++;
         continue;
@@ -185,6 +195,16 @@ export async function syncCodingQuestionsFromJson() {
           { _id: existing._id },
           { ...doc, isDeleted: existing.isDeleted, deletedAt: existing.deletedAt, lastEditedAt: new Date() }
         );
+        await CodingTestCase.deleteMany({ questionId: existing._id });
+        if (doc.testCases && doc.testCases.length > 0) {
+          await CodingTestCase.insertMany(doc.testCases.map((tc) => ({
+            questionId: existing._id,
+            input: tc.input,
+            expectedOutput: tc.expected,
+            isHidden: tc.isHidden,
+            isSample: !tc.isHidden,
+          })));
+        }
         updated++;
         fileUpdated++;
       } else {

@@ -1,4 +1,5 @@
 import CodingQuestion from "../models/CodingQuestion.js";
+import CodingTestCase from "../models/CodingTestCase.js";
 import Company from "../../companyMock/models/Company.js";
 import {
   syncCodingQuestionsFromJson,
@@ -259,11 +260,30 @@ export const bulkImportCodingQuestions = async (req, res) => {
           { _id: existing._id },
           { ...doc, isDeleted: existing.isDeleted, deletedAt: existing.deletedAt, lastEditedAt: new Date() }
         );
+        await CodingTestCase.deleteMany({ questionId: existing._id });
+        if (doc.testCases && doc.testCases.length > 0) {
+          await CodingTestCase.insertMany(doc.testCases.map((tc) => ({
+            questionId: existing._id,
+            input: tc.input,
+            expectedOutput: tc.expected,
+            isHidden: tc.isHidden,
+            isSample: !tc.isHidden,
+          })));
+        }
         const updatedDoc = await CodingQuestion.findById(existing._id).lean();
         if (updatedDoc) importedDocs.push(updatedDoc);
         updated++;
       } else {
         const createdDoc = await CodingQuestion.create({ ...doc, isDeleted: false, createdBy: req.user?._id || null });
+        if (doc.testCases && doc.testCases.length > 0) {
+          await CodingTestCase.insertMany(doc.testCases.map((tc) => ({
+            questionId: createdDoc._id,
+            input: tc.input,
+            expectedOutput: tc.expected,
+            isHidden: tc.isHidden,
+            isSample: !tc.isHidden,
+          })));
+        }
         importedDocs.push(createdDoc.toObject ? createdDoc.toObject() : createdDoc);
         created++;
       }
