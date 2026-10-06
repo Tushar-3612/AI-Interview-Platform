@@ -3,11 +3,12 @@ import { useEffect, useRef, useState, useCallback } from "react";
 /**
  * SecureCanvasQuestionRenderer
  * 
- * Renders Question Statement, Badges, and MCQ Options onto an HTML5 Canvas.
- * - Zero selectable DOM text nodes.
- * - High-DPI (devicePixelRatio) crisp rendering.
- * - Responsive auto-wrapping and hit-testing for option clicks/taps.
- * - Diagonal subtle security watermark (Candidate / Session / Timestamp).
+ * PrepHire High-DPI Canvas Assessment Renderer
+ * - Zero selectable DOM text nodes for questions and options.
+ * - Crisp Retina/4K rendering via devicePixelRatio.
+ * - PrepHire brand styling: Obsidian black surface, Brand Orange accents (#FF6B35), clear option radio pills.
+ * - Responsive line-wrapping and hit-testing for option selection.
+ * - Diagonal subtle security watermark.
  */
 export default function SecureCanvasQuestionRenderer({
   question,
@@ -15,13 +16,13 @@ export default function SecureCanvasQuestionRenderer({
   totalQuestions = 1,
   answer,
   onAnswer,
-  candidateWatermark = "CANDIDATE SECURE SESSION",
+  candidateWatermark = "PREPHIRE SECURE ASSESSMENT",
 }) {
   const containerRef = useRef(null);
   const canvasRef = useRef(null);
   const optionsHitBoxesRef = useRef([]);
   const [hoveredLetter, setHoveredLetter] = useState(null);
-  const [canvasHeight, setCanvasHeight] = useState(400);
+  const [canvasHeight, setCanvasHeight] = useState(420);
 
   const letters = ["A", "B", "C", "D", "E", "F"];
 
@@ -33,27 +34,33 @@ export default function SecureCanvasQuestionRenderer({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const isDark = document.documentElement.classList.contains("dark") ||
-      window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const isDark = true; // PrepHire Assessment is locked to high-contrast dark theme
 
-    const width = container.clientWidth || 680;
+    const width = container.clientWidth || 720;
     const dpr = Math.max(1, window.devicePixelRatio || 1);
 
-    // Theme palette
+    // PrepHire Design Palette
     const colors = {
-      cardBg: isDark ? "#141721" : "#ffffff",
-      textPrimary: isDark ? "#f3f4f6" : "#111827",
-      textSecondary: isDark ? "#9ca3af" : "#4b5563",
-      textMuted: isDark ? "#6b7280" : "#9ca3af",
-      primary: isDark ? "#3b82f6" : "#2563eb",
-      primaryLight: isDark ? "rgba(59, 130, 246, 0.15)" : "rgba(37, 99, 235, 0.08)",
-      border: isDark ? "#272e3f" : "#e5e7eb",
-      borderHover: isDark ? "#4b5563" : "#cbd5e1",
-      badgeBg: isDark ? "#1e2433" : "#f3f4f6",
-      watermark: isDark ? "rgba(255, 255, 255, 0.04)" : "rgba(0, 0, 0, 0.04)",
-      diffEasy: isDark ? "#34d399" : "#059669",
-      diffMed: isDark ? "#fbbf24" : "#d97706",
-      diffHard: isDark ? "#f87171" : "#dc2626",
+      cardBg: "#0e131f",
+      cardBorder: "rgba(255, 255, 255, 0.08)",
+      textPrimary: "#f8fafc",
+      textSecondary: "#94a3b8",
+      textMuted: "#64748b",
+      primaryOrange: "#FF6B35",
+      primaryOrangeHover: "#FF5514",
+      primaryOrangeTint: "rgba(255, 107, 53, 0.12)",
+      primaryOrangeBorder: "rgba(255, 107, 53, 0.6)",
+      optionBg: "#131826",
+      optionBgHover: "#181f30",
+      optionBorder: "rgba(255, 255, 255, 0.07)",
+      optionBorderHover: "rgba(255, 255, 255, 0.18)",
+      badgeBg: "#181e2e",
+      badgeBorder: "rgba(255, 255, 255, 0.08)",
+      watermark: "rgba(255, 255, 255, 0.028)",
+      diffEasy: "#10b981",
+      diffMed: "#f59e0b",
+      diffHard: "#ef4444",
+      divider: "rgba(255, 255, 255, 0.06)",
     };
 
     // Helper: Wrap text
@@ -85,7 +92,6 @@ export default function SecureCanvasQuestionRenderer({
       return lines;
     };
 
-    // Helper: Rounded rectangle
     const roundRect = (x, y, w, h, radius, fill, stroke) => {
       ctx.beginPath();
       ctx.moveTo(x + radius, y);
@@ -99,18 +105,18 @@ export default function SecureCanvasQuestionRenderer({
     };
 
     // Calculate dynamic layout & total height
-    const padding = 24;
+    const padding = 28;
     const contentWidth = width - padding * 2;
     let currentY = padding;
 
-    // Header space: Q index, difficulty, marks
-    currentY += 40;
+    // Header space: Q index, badges, marks
+    currentY += 44;
 
     // Question Text lines
     const questionText = question.question || question.title || question.description || "Question text unavailable";
-    const qLines = wrapText(questionText, contentWidth, "600 15px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif");
-    const qLineHeight = 24;
-    currentY += qLines.length * qLineHeight + 20;
+    const qLines = wrapText(questionText, contentWidth, "600 16px 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif");
+    const qLineHeight = 26;
+    currentY += qLines.length * qLineHeight + 24;
 
     // Options layout computation
     const optionBoxes = [];
@@ -118,8 +124,9 @@ export default function SecureCanvasQuestionRenderer({
 
     options.forEach((optText, idx) => {
       const letter = letters[idx] || String.fromCharCode(65 + idx);
-      const optLines = wrapText(optText, contentWidth - 60, "400 14px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif");
-      const boxHeight = Math.max(54, optLines.length * 20 + 24);
+      // Option text available width (accounting for letter badge and radio indicator)
+      const optLines = wrapText(optText, contentWidth - 96, "500 14px 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif");
+      const boxHeight = Math.max(56, optLines.length * 22 + 24);
       optionBoxes.push({
         letter,
         textLines: optLines,
@@ -128,10 +135,10 @@ export default function SecureCanvasQuestionRenderer({
         width: contentWidth,
         height: boxHeight,
       });
-      currentY += boxHeight + 12;
+      currentY += boxHeight + 14;
     });
 
-    const totalHeight = Math.max(300, currentY + padding);
+    const totalHeight = Math.max(340, currentY + padding);
     setCanvasHeight(totalHeight);
 
     // Resize canvas for sharp high-DPI
@@ -143,23 +150,23 @@ export default function SecureCanvasQuestionRenderer({
     ctx.scale(dpr, dpr);
 
     // 1. Draw Card Background
-    roundRect(0, 0, width, totalHeight, 16, true, true);
+    roundRect(0, 0, width, totalHeight, 20, true, true);
     ctx.fillStyle = colors.cardBg;
     ctx.fill();
-    ctx.strokeStyle = colors.border;
+    ctx.strokeStyle = colors.cardBorder;
     ctx.lineWidth = 1;
     ctx.stroke();
 
-    // 2. Draw Subtle Background Security Watermark
+    // 2. Draw Subtle Security Watermark Across Canvas
     ctx.save();
     ctx.font = "600 11px sans-serif";
     ctx.fillStyle = colors.watermark;
     ctx.textAlign = "center";
-    for (let x = -width; x < width * 2; x += 220) {
-      for (let y = -totalHeight; y < totalHeight * 2; y += 120) {
+    for (let x = -width; x < width * 2; x += 260) {
+      for (let y = -totalHeight; y < totalHeight * 2; y += 140) {
         ctx.save();
         ctx.translate(x, y);
-        ctx.rotate(-0.35);
+        ctx.rotate(-0.32);
         ctx.fillText(candidateWatermark, 0, 0);
         ctx.restore();
       }
@@ -168,125 +175,144 @@ export default function SecureCanvasQuestionRenderer({
 
     // 3. Draw Header Meta (Q Number, Type, Difficulty, Marks)
     let metaX = padding;
-    const metaY = padding + 12;
+    const metaY = padding + 14;
 
-    // Q Number Badge
-    ctx.fillStyle = colors.primary;
-    roundRect(metaX, metaY - 14, 38, 22, 6, true, false);
-    ctx.font = "bold 11px sans-serif";
+    // Q Number Badge (PrepHire Orange)
+    ctx.fillStyle = colors.primaryOrange;
+    roundRect(metaX, metaY - 14, 42, 24, 8, true, false);
+    ctx.font = "bold 12px 'Plus Jakarta Sans', sans-serif";
     ctx.fillStyle = "#ffffff";
     ctx.textAlign = "center";
-    ctx.fillText(`Q${questionIndex + 1}`, metaX + 19, metaY + 1);
-    metaX += 46;
+    ctx.fillText(`Q${questionIndex + 1}`, metaX + 21, metaY + 2);
+    metaX += 50;
 
     // Type Badge
     const typeLabel = question.type || (question.subject ? question.subject : "MCQ");
-    ctx.font = "600 11px sans-serif";
-    const typeWidth = ctx.measureText(typeLabel).width + 14;
+    ctx.font = "600 11px 'Plus Jakarta Sans', sans-serif";
+    const typeWidth = ctx.measureText(typeLabel.toUpperCase()).width + 16;
     ctx.fillStyle = colors.badgeBg;
-    roundRect(metaX, metaY - 14, typeWidth, 22, 6, true, true);
-    ctx.strokeStyle = colors.border;
+    roundRect(metaX, metaY - 14, typeWidth, 24, 8, true, true);
+    ctx.strokeStyle = colors.badgeBorder;
     ctx.stroke();
     ctx.fillStyle = colors.textSecondary;
     ctx.textAlign = "center";
-    ctx.fillText(typeLabel, metaX + typeWidth / 2, metaY + 1);
+    ctx.fillText(typeLabel.toUpperCase(), metaX + typeWidth / 2, metaY + 2);
     metaX += typeWidth + 8;
 
     // Difficulty Badge
     const diff = (question.difficulty || "medium").toLowerCase();
     const diffColor = diff === "easy" ? colors.diffEasy : diff === "hard" ? colors.diffHard : colors.diffMed;
-    ctx.font = "600 11px sans-serif";
-    const diffWidth = ctx.measureText(diff).width + 14;
-    ctx.fillStyle = colors.badgeBg;
-    roundRect(metaX, metaY - 14, diffWidth, 22, 6, true, true);
-    ctx.strokeStyle = `${diffColor}40`;
+    ctx.font = "bold 11px 'Plus Jakarta Sans', sans-serif";
+    const diffWidth = ctx.measureText(diff.toUpperCase()).width + 16;
+    ctx.fillStyle = `${diffColor}14`;
+    roundRect(metaX, metaY - 14, diffWidth, 24, 8, true, true);
+    ctx.strokeStyle = `${diffColor}35`;
     ctx.stroke();
     ctx.fillStyle = diffColor;
     ctx.textAlign = "center";
-    ctx.fillText(diff.toUpperCase(), metaX + diffWidth / 2, metaY + 1);
+    ctx.fillText(diff.toUpperCase(), metaX + diffWidth / 2, metaY + 2);
 
     // Marks Badge (Right-aligned)
     const marksText = `+${question.marks || 1} mark${question.marks !== 1 ? "s" : ""}`;
-    ctx.font = "600 11px sans-serif";
+    ctx.font = "600 12px 'Plus Jakarta Sans', sans-serif";
     ctx.fillStyle = colors.textSecondary;
     ctx.textAlign = "right";
-    ctx.fillText(marksText, width - padding, metaY + 1);
+    ctx.fillText(marksText, width - padding, metaY + 2);
 
     // Divider Line
     ctx.beginPath();
-    ctx.moveTo(padding, padding + 30);
-    ctx.lineTo(width - padding, padding + 30);
-    ctx.strokeStyle = colors.border;
+    ctx.moveTo(padding, padding + 34);
+    ctx.lineTo(width - padding, padding + 34);
+    ctx.strokeStyle = colors.divider;
     ctx.lineWidth = 1;
     ctx.stroke();
 
     // 4. Draw Question Text
     ctx.fillStyle = colors.textPrimary;
-    ctx.font = "600 15px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+    ctx.font = "600 16px 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif";
     ctx.textAlign = "left";
-    let textY = padding + 54;
+    let textY = padding + 62;
     qLines.forEach((line) => {
       ctx.fillText(line, padding, textY);
       textY += qLineHeight;
     });
 
-    // 5. Draw Options with Hit Testing
+    // 5. Draw Options with PrepHire Radio Cards
     optionsHitBoxesRef.current = optionBoxes;
 
     optionBoxes.forEach((box) => {
       const isSelected = answer === box.letter;
       const isHovered = hoveredLetter === box.letter;
 
-      // Box Background
+      // Option Card Box
       ctx.fillStyle = isSelected
-        ? colors.primaryLight
+        ? colors.primaryOrangeTint
         : isHovered
-        ? colors.badgeBg
-        : colors.cardBg;
-      roundRect(box.x, box.y, box.width, box.height, 12, true, true);
+        ? colors.optionBgHover
+        : colors.optionBg;
+      roundRect(box.x, box.y, box.width, box.height, 14, true, true);
 
-      // Box Border
       ctx.strokeStyle = isSelected
-        ? colors.primary
+        ? colors.primaryOrangeBorder
         : isHovered
-        ? colors.borderHover
-        : colors.border;
+        ? colors.optionBorderHover
+        : colors.optionBorder;
       ctx.lineWidth = isSelected ? 2 : 1;
       ctx.stroke();
 
       // Letter Badge (A, B, C, D)
-      const badgeX = box.x + 12;
-      const badgeY = box.y + 12;
-      const badgeSize = 28;
+      const badgeX = box.x + 14;
+      const badgeY = box.y + 13;
+      const badgeSize = 30;
 
-      ctx.fillStyle = isSelected ? colors.primary : colors.badgeBg;
-      roundRect(badgeX, badgeY, badgeSize, badgeSize, 7, true, true);
-      ctx.strokeStyle = isSelected ? colors.primary : colors.border;
+      ctx.fillStyle = isSelected ? colors.primaryOrange : colors.badgeBg;
+      roundRect(badgeX, badgeY, badgeSize, badgeSize, 8, true, true);
+      ctx.strokeStyle = isSelected ? colors.primaryOrange : colors.badgeBorder;
       ctx.lineWidth = 1;
       ctx.stroke();
 
-      ctx.font = "bold 12px sans-serif";
+      ctx.font = "bold 13px 'Plus Jakarta Sans', sans-serif";
       ctx.fillStyle = isSelected ? "#ffffff" : colors.textSecondary;
       ctx.textAlign = "center";
-      ctx.fillText(box.letter, badgeX + badgeSize / 2, badgeY + 18);
+      ctx.fillText(box.letter, badgeX + badgeSize / 2, badgeY + 20);
+
+      // Option Radio Circle (Right before text or on left)
+      const radioCenterX = box.x + 58;
+      const radioCenterY = box.y + box.height / 2;
+      const radioRadius = 8;
+
+      ctx.beginPath();
+      ctx.arc(radioCenterX, radioCenterY, radioRadius, 0, Math.PI * 2);
+      ctx.fillStyle = isSelected ? colors.primaryOrangeTint : "transparent";
+      ctx.fill();
+      ctx.strokeStyle = isSelected ? colors.primaryOrange : colors.textMuted;
+      ctx.lineWidth = isSelected ? 2 : 1.5;
+      ctx.stroke();
+
+      if (isSelected) {
+        ctx.beginPath();
+        ctx.arc(radioCenterX, radioCenterY, 4.5, 0, Math.PI * 2);
+        ctx.fillStyle = colors.primaryOrange;
+        ctx.fill();
+      }
 
       // Option Text
       ctx.font = isSelected
-        ? "600 14px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
-        : "400 14px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-      ctx.fillStyle = colors.textPrimary;
+        ? "600 14px 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif"
+        : "400 14px 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif";
+      ctx.fillStyle = isSelected ? "#ffffff" : colors.textPrimary;
       ctx.textAlign = "left";
 
-      const optTextX = box.x + 50;
-      let optTextY = box.y + 22;
+      const optTextX = box.x + 76;
+      let optTextY = box.y + (box.height - (box.textLines.length - 1) * 22) / 2 + 5;
       box.textLines.forEach((line) => {
         ctx.fillText(line, optTextX, optTextY);
-        optTextY += 20;
+        optTextY += 22;
       });
     });
   }, [question, questionIndex, answer, hoveredLetter, candidateWatermark, letters]);
 
-  // Redraw on resize, theme changes, or prop updates
+  // Redraw on resize or prop changes
   useEffect(() => {
     renderCanvas();
     const handleResize = () => renderCanvas();
@@ -362,7 +388,7 @@ export default function SecureCanvasQuestionRenderer({
         onMouseLeave={handleMouseLeave}
         onContextMenu={(e) => e.preventDefault()}
         draggable={false}
-        className="w-full rounded-2xl shadow-sm block transition-all"
+        className="w-full rounded-2xl shadow-lg block transition-all"
         style={{
           touchAction: "manipulation",
           userSelect: "none",

@@ -3,17 +3,26 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import {
   ChevronLeft, ChevronRight, Flag, Send, AlertTriangle, Clock,
   CheckCircle, XCircle, Circle, BookOpen, Code, Maximize2,
-  ShieldAlert, WifiOff, RefreshCw, EyeOff, Lock,
+  ShieldCheck, ShieldAlert, WifiOff, RefreshCw, EyeOff, Lock,
+  Check, RotateCcw,
 } from "lucide-react";
 import api from "../../../core/api/api.js";
 import { getAuthToken } from "../../student/hooks/useStudentProfile.js";
 import toast from "react-hot-toast";
 import CodingQuestionRenderer from "../../codingAssessment/components/CodingQuestionRenderer.jsx";
-import SecureCanvasQuestionRenderer from "../components/SecureCanvasQuestionRenderer.jsx";
+import MCQQuestionView from "../components/MCQQuestionView.jsx";
 import { useExamLockdown } from "../hooks/useExamLockdown.js";
 
+/**
+ * PrepHire Assessment Timer
+ * Supports hours, minutes, seconds with dynamic states:
+ * - Normal (> 5m): Sleek dark slate pill with orange clock icon
+ * - Warning (<= 5m): Amber warning state
+ * - Critical (<= 1m): Red pulse state
+ */
 function Timer({ endTime, durationMinutes = 30, serverOffset = 0, onTimeUp }) {
   const [display, setDisplay] = useState("00:00:00");
+  const [remainingMs, setRemainingMs] = useState(30 * 60 * 1000);
 
   useEffect(() => {
     let targetEnd = NaN;
@@ -30,6 +39,8 @@ function Timer({ endTime, durationMinutes = 30, serverOffset = 0, onTimeUp }) {
     const tick = () => {
       const now = Date.now() + serverOffset;
       const diff = Math.max(0, targetEnd - now);
+      setRemainingMs(diff);
+
       const h = Math.floor(diff / 3600000);
       const m = Math.floor((diff % 3600000) / 60000);
       const s = Math.floor((diff % 60000) / 1000);
@@ -41,157 +52,105 @@ function Timer({ endTime, durationMinutes = 30, serverOffset = 0, onTimeUp }) {
       setDisplay(`${safeH}:${safeM}:${safeS}`);
       if (diff <= 0 && onTimeUp) onTimeUp();
     };
+
     tick();
     const interval = setInterval(tick, 1000);
     return () => clearInterval(interval);
   }, [endTime, durationMinutes, serverOffset, onTimeUp]);
 
-  const isLow = display.startsWith("00:0") || display.startsWith("00:00:");
+  const isCritical = remainingMs <= 60000;
+  const isWarning = remainingMs <= 300000 && !isCritical;
+
+  let timerClasses = "bg-[#131826] border-white/10 text-zinc-200";
+  let iconColor = "text-[#FF6B35]";
+
+  if (isCritical) {
+    timerClasses = "bg-red-500/15 border-red-500/40 text-red-400 animate-pulse";
+    iconColor = "text-red-400";
+  } else if (isWarning) {
+    timerClasses = "bg-amber-500/15 border-amber-500/40 text-amber-400";
+    iconColor = "text-amber-400";
+  }
+
   return (
-    <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-mono font-bold ${
-      isLow ? "bg-red-50 dark:bg-red-950/20 text-red-600" : "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600"
-    }`}>
-      <Clock className="w-4 h-4" /> {display}
+    <div
+      className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold border transition-colors duration-200 select-none shadow-sm ${timerClasses}`}
+      title="Remaining Exam Duration"
+    >
+      <Clock className={`w-3.5 h-3.5 shrink-0 ${iconColor}`} />
+      <span className="tracking-wider">{display}</span>
     </div>
   );
 }
 
-function MCQRenderer({ question, questionIndex = 0, totalQuestions = 1, answer, onAnswer }) {
-  const letters = ["A", "B", "C", "D"];
-  if (!question) return <p className="text-sm py-8 text-center" style={{ color: "var(--text-muted)" }}>Question unavailable</p>;
-
-  const difficulty = (question.difficulty || "medium").toLowerCase();
-  const diffBadgeColor = difficulty === "easy"
-    ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
-    : difficulty === "hard"
-    ? "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20"
-    : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20";
-
-  return (
-    <div className="space-y-5">
-      {/* Question Card Header */}
-      <div className="flex items-center justify-between flex-wrap gap-2 pb-3 border-b admin-table-divider">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="px-2.5 py-1 rounded-lg text-xs font-bold text-white shadow-sm" style={{ background: "var(--primary)" }}>
-            Q{questionIndex + 1}
-          </span>
-          <span className="px-2.5 py-0.5 rounded-md text-[11px] font-semibold border capitalize admin-bg-surface" style={{ color: "var(--text-secondary)" }}>
-            {question.type || (question.subject ? question.subject : "MCQ")}
-          </span>
-          <span className={`px-2 py-0.5 rounded-md text-[11px] font-semibold border capitalize ${diffBadgeColor}`}>
-            {difficulty}
-          </span>
-        </div>
-        <div className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg admin-bg-surface" style={{ color: "var(--text-primary)" }}>
-          <span>+{question.marks || 1} mark{question.marks !== 1 ? "s" : ""}</span>
-          {question.negativeMarks > 0 && (
-            <span className="text-red-500 text-[10px]">(-{question.negativeMarks})</span>
-          )}
-        </div>
-      </div>
-
-      {/* Question Text */}
-      <div className="text-sm sm:text-base font-semibold leading-relaxed tracking-normal py-1" style={{ color: "var(--text-primary)" }}>
-        {question.question || question.title || question.description}
-      </div>
-
-      {/* Options List */}
-      <div className="grid grid-cols-1 gap-2.5 pt-1">
-        {question.options?.map((opt, idx) => {
-          if (!opt) return null;
-          const letter = letters[idx] || String.fromCharCode(65 + idx);
-          const isSelected = answer === letter;
-
-          return (
-            <button
-              key={idx}
-              type="button"
-              onClick={() => onAnswer(letter)}
-              className={`flex items-center gap-3.5 p-3.5 sm:p-4 rounded-xl border text-xs sm:text-sm text-left cursor-pointer transition-all duration-150 active:scale-[0.99] ${
-                isSelected
-                  ? "border-[var(--primary)] ring-1 ring-[var(--primary)] shadow-sm"
-                  : "admin-border admin-hover hover:border-gray-400 dark:hover:border-zinc-600"
-              }`}
-              style={{
-                background: isSelected
-                  ? "color-mix(in srgb, var(--primary) 10%, transparent)"
-                  : "var(--card-bg, transparent)",
-              }}
-            >
-              <span
-                className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center text-xs font-black shrink-0 transition-all ${
-                  isSelected
-                    ? "text-white shadow-sm"
-                    : "border admin-border"
-                }`}
-                style={{
-                  background: isSelected ? "var(--primary)" : "var(--admin-bg-surface)",
-                  color: isSelected ? "#fff" : "var(--text-secondary)",
-                }}
-              >
-                {letter}
-              </span>
-              <span
-                className={`flex-1 leading-snug ${isSelected ? "font-semibold" : "font-normal"}`}
-                style={{ color: isSelected ? "var(--text-primary)" : "var(--text-primary)" }}
-              >
-                {opt}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
+/**
+ * PrepHire Final Submission Confirmation Dialog
+ */
 function SubmitConfirm({ stats, onConfirm, onClose, submitting }) {
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={submitting ? undefined : onClose}>
-      <div className="bg-white dark:bg-[#18181b] rounded-2xl border border-gray-200 dark:border-zinc-800 w-full max-w-sm mx-4 p-6 space-y-4 shadow-2xl"
-        onClick={e => e.stopPropagation()}>
-        <div className="text-center">
-          <Send className="w-10 h-10 mx-auto mb-2 text-orange-500" style={{ color: "var(--primary)" }} />
-          <h3 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>Submit Test?</h3>
-          <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>Review your progress before final submission.</p>
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 select-none"
+      onClick={submitting ? undefined : onClose}
+    >
+      <div
+        className="bg-[#0e131f] border border-white/10 rounded-2xl w-full max-w-md p-6 sm:p-7 space-y-5 shadow-2xl text-white"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="text-center space-y-2">
+          <div className="w-12 h-12 rounded-2xl bg-[#FF6B35]/10 border border-[#FF6B35]/30 flex items-center justify-center mx-auto text-[#FF6B35]">
+            <Send className="w-6 h-6" />
+          </div>
+          <h3 className="text-lg font-bold text-white tracking-tight">Submit Assessment?</h3>
+          <p className="text-xs text-zinc-400 max-w-xs mx-auto leading-relaxed">
+            Please review your question summary before final submission. Once submitted, your answers cannot be modified.
+          </p>
         </div>
-        <div className="grid grid-cols-2 gap-3 text-xs">
-          {[
-            ["Answered", stats.answered, "var(--badge-success-text)"],
-            ["Skipped", stats.skipped, "var(--badge-warning-text)"],
-            ["Marked", stats.marked, "var(--badge-info-text)"],
-            ["Not Visited", stats.notVisited, "var(--badge-error-text)"],
-          ].map(([l, v, c]) => (
-            <div key={l} className="p-3 rounded-xl admin-bg-surface text-center">
-              <p className="text-lg font-bold" style={{ color: c }}>{v}</p>
-              <p style={{ color: "var(--text-muted)" }}>{l}</p>
-            </div>
-          ))}
+
+        {/* Breakdown Grid */}
+        <div className="grid grid-cols-2 gap-2.5 text-xs">
+          <div className="p-3.5 rounded-xl bg-[#131826] border border-emerald-500/20 text-center">
+            <p className="text-xl font-bold text-emerald-400">{stats.answered}</p>
+            <p className="text-[11px] font-medium text-zinc-400 mt-0.5">Answered</p>
+          </div>
+          <div className="p-3.5 rounded-xl bg-[#131826] border border-purple-500/20 text-center">
+            <p className="text-xl font-bold text-purple-400">{stats.marked}</p>
+            <p className="text-[11px] font-medium text-zinc-400 mt-0.5">Marked for Review</p>
+          </div>
+          <div className="p-3.5 rounded-xl bg-[#131826] border border-amber-500/20 text-center">
+            <p className="text-xl font-bold text-amber-400">{stats.skipped}</p>
+            <p className="text-[11px] font-medium text-zinc-400 mt-0.5">Skipped</p>
+          </div>
+          <div className="p-3.5 rounded-xl bg-[#131826] border border-white/5 text-center">
+            <p className="text-xl font-bold text-zinc-400">{stats.notVisited}</p>
+            <p className="text-[11px] font-medium text-zinc-400 mt-0.5">Unanswered</p>
+          </div>
         </div>
+
+        {/* Action CTAs */}
         <div className="flex gap-3 pt-2">
           <button
             type="button"
             onClick={onClose}
             disabled={submitting}
-            className="flex-1 py-2.5 text-xs font-medium border admin-border rounded-xl admin-hover cursor-pointer disabled:opacity-50"
+            className="flex-1 py-2.5 px-4 text-xs font-semibold border border-white/10 hover:border-white/20 bg-[#131826] hover:bg-[#181f30] text-zinc-300 rounded-xl transition cursor-pointer disabled:opacity-50"
           >
-            Cancel
+            Review Questions
           </button>
           <button
             type="button"
             onClick={onConfirm}
             disabled={submitting}
-            className="flex-1 py-2.5 text-xs font-medium text-white rounded-xl cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-75"
-            style={{ background: "var(--primary)" }}
+            className="flex-1 py-2.5 px-4 text-xs font-bold text-white rounded-xl bg-[#FF6B35] hover:bg-[#FF5514] active:scale-[0.99] transition cursor-pointer flex items-center justify-center gap-2 shadow-lg shadow-[#FF6B35]/20 disabled:opacity-75"
           >
             {submitting ? (
               <>
                 <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                Submitting...
+                <span>Submitting...</span>
               </>
             ) : (
               <>
-                <Send className="w-3.5 h-3.5" /> Submit Now
+                <Send className="w-3.5 h-3.5" />
+                <span>Submit Final</span>
               </>
             )}
           </button>
@@ -201,6 +160,9 @@ function SubmitConfirm({ stats, onConfirm, onClose, submitting }) {
   );
 }
 
+/**
+ * PrepHire Main Assessment Engine
+ */
 function TestEngine() {
   const { attemptId } = useParams();
   const navigate = useNavigate();
@@ -393,16 +355,57 @@ function TestEngine() {
     return () => clearInterval(interval);
   }, [sendHeartbeat, submitted, attemptId]);
 
+  // Helper: check if a question is genuinely answered
+  const isQuestionAnswered = useCallback((a, q) => {
+    if (!a) return false;
+    const isCodingQ = Boolean(
+      q?.type === "Coding" ||
+      q?.problemTitle ||
+      (q?.testCases && q.testCases.length > 0) ||
+      a.type === "Coding"
+    );
+    if (isCodingQ) {
+      return Boolean(
+        a.executionStatus === "accepted" ||
+        (typeof a.passedCount === "number" && a.passedCount > 0) ||
+        (typeof a.codingScore === "number" && a.codingScore > 0) ||
+        (typeof a.scoredMarks === "number" && a.scoredMarks > 0) ||
+        (a.status === "answered" && ((a.code && a.code.trim() !== "") || (a.answer && a.answer.trim() !== ""))) ||
+        (a.code && typeof a.code === "string" && a.code.trim() !== "")
+      );
+    }
+    return Boolean(a.answer && typeof a.answer === "string" && a.answer.trim() !== "");
+  }, []);
+
+  // Helper: check if a question is explicitly skipped
+  const isQuestionSkipped = useCallback((a, q) => {
+    if (!a) return false;
+    if (isQuestionAnswered(a, q)) return false;
+    return Boolean(a.isSkipped || a.status === "skipped");
+  }, [isQuestionAnswered]);
+
   // Answer saving
   const saveCurrent = useCallback(async () => {
     if (!attemptId || submitted) return;
     const currentAnswer = answers[currentIdx];
     if (!currentAnswer) return;
+
+    const answered = isQuestionAnswered(currentAnswer, activeQuestion);
+    const skipped = !answered && isQuestionSkipped(currentAnswer, activeQuestion);
+    let backendStatus = "not_visited";
+    if (currentAnswer.isMarked || currentAnswer.status === "marked") {
+      backendStatus = "marked";
+    } else if (answered) {
+      backendStatus = "answered";
+    } else if (skipped) {
+      backendStatus = "skipped";
+    }
+
     const serialized = JSON.stringify({
       answer: currentAnswer.answer,
       code: currentAnswer.code,
       language: currentAnswer.language,
-      status: currentAnswer.status,
+      status: backendStatus,
       codingScore: currentAnswer.codingScore,
       scoredMarks: currentAnswer.scoredMarks,
       passedCount: currentAnswer.passedCount,
@@ -418,7 +421,7 @@ function TestEngine() {
         answer: currentAnswer.answer,
         code: currentAnswer.code,
         language: currentAnswer.language,
-        status: currentAnswer.status,
+        status: backendStatus,
         codingScore: currentAnswer.codingScore,
         passedCount: currentAnswer.passedCount,
         totalCount: currentAnswer.totalCount,
@@ -433,7 +436,7 @@ function TestEngine() {
     } finally {
       setSaving(false);
     }
-  }, [attemptId, answers, currentIdx, token, submitted]);
+  }, [attemptId, answers, currentIdx, token, submitted, isQuestionAnswered, isQuestionSkipped, activeQuestion]);
 
   useEffect(() => {
     saveTimerRef.current = setInterval(saveCurrent, 30000);
@@ -444,10 +447,125 @@ function TestEngine() {
     lastSaveRef.current = "";
   }, [currentIdx]);
 
-  const updateAnswer = (field, value) => {
-    setAnswers(prev => prev.map((a, i) => i === currentIdx ? { ...a, [field]: value, status: field === "status" ? value : "answered" } : a));
+  // Set option answer (MCQ)
+  const handleSelectAnswer = (val) => {
+    setAnswers(prev => prev.map((a, i) => {
+      if (i === currentIdx) {
+        return {
+          ...a,
+          answer: val,
+          isSkipped: false,
+          status: a.isMarked ? "marked" : "answered",
+          visited: true,
+        };
+      }
+      return a;
+    }));
   };
 
+  // Set code (Coding)
+  const handleCodeChange = (val) => {
+    setAnswers(prev => prev.map((a, i) => {
+      if (i === currentIdx) {
+        return {
+          ...a,
+          code: val,
+          visited: true,
+        };
+      }
+      return a;
+    }));
+  };
+
+  // Set language (Coding)
+  const handleLanguageChange = (val) => {
+    setAnswers(prev => prev.map((a, i) => {
+      if (i === currentIdx) {
+        return {
+          ...a,
+          language: val,
+          visited: true,
+        };
+      }
+      return a;
+    }));
+  };
+
+  // Explicit Skip action
+  const handleSkip = () => {
+    setAnswers(prev => prev.map((a, i) => {
+      if (i === currentIdx) {
+        const answered = isQuestionAnswered(a, questions[i]);
+        if (answered) return a;
+        return {
+          ...a,
+          isSkipped: true,
+          status: a.isMarked ? "marked" : "skipped",
+          visited: true,
+        };
+      }
+      return a;
+    }));
+    navigateTo(Math.min(questions.length - 1, currentIdx + 1));
+  };
+
+  // Clear choice action
+  const handleClearChoice = () => {
+    setAnswers(prev => prev.map((a, i) => {
+      if (i === currentIdx) {
+        return {
+          ...a,
+          answer: "",
+          isSkipped: false,
+          status: a.isMarked ? "marked" : "not_visited",
+          visited: true,
+        };
+      }
+      return a;
+    }));
+  };
+
+  // Toggle Mark for Review action
+  const handleToggleMark = () => {
+    setAnswers(prev => prev.map((a, i) => {
+      if (i === currentIdx) {
+        const nextMarked = !(a.isMarked || a.status === "marked");
+        const answered = isQuestionAnswered(a, questions[i]);
+        const skipped = !answered && (a.isSkipped || a.status === "skipped");
+        let newStatus = "not_visited";
+        if (nextMarked) {
+          newStatus = "marked";
+        } else if (answered) {
+          newStatus = "answered";
+        } else if (skipped) {
+          newStatus = "skipped";
+        }
+        return {
+          ...a,
+          isMarked: nextMarked,
+          status: newStatus,
+          visited: true,
+        };
+      }
+      return a;
+    }));
+  };
+
+  // Next question action
+  const handleNext = () => {
+    setAnswers(prev => prev.map((a, i) => {
+      if (i === currentIdx) {
+        return {
+          ...a,
+          visited: true,
+        };
+      }
+      return a;
+    }));
+    navigateTo(currentIdx + 1);
+  };
+
+  // Coding submission result handler
   const handleCodingSubmissionResult = useCallback((qIdx, res) => {
     const qMarks = questions[qIdx]?.marks || 10;
     const passedCount = res.passedCount || 0;
@@ -464,12 +582,14 @@ function TestEngine() {
       if (i === qIdx) {
         return {
           ...a,
-          status: "answered",
+          isSkipped: false,
+          status: a.isMarked ? "marked" : "answered",
           codingScore,
           passedCount,
           totalCount,
           executionStatus,
           scoredMarks,
+          visited: true,
         };
       }
       return a;
@@ -482,7 +602,7 @@ function TestEngine() {
         answer: currentAnswer.answer || "",
         code: currentAnswer.code || "",
         language: currentAnswer.language || "python",
-        status: "answered",
+        status: currentAnswer.isMarked ? "marked" : "answered",
         codingScore,
         passedCount,
         totalCount,
@@ -528,31 +648,58 @@ function TestEngine() {
 
   const navigateTo = (idx) => {
     saveCurrent();
+    setAnswers(prev => prev.map((a, i) => i === idx ? { ...a, visited: true } : a));
     setCurrentIdx(idx);
   };
 
-  const stats = {
-    answered: answers.filter(a => a.status === "answered").length,
-    skipped: answers.filter(a => a.status === "skipped").length,
-    marked: answers.filter(a => a.status === "marked").length,
-    notVisited: answers.filter(a => a.status === "not_visited").length,
-  };
+  // Precise, mutually consistent summary stats derived from actual answer states
+  const stats = useMemo(() => {
+    const total = questions.length;
+    let answered = 0;
+    let skipped = 0;
+    let marked = 0;
+
+    answers.forEach((a, i) => {
+      const q = questions[i];
+      const isAns = isQuestionAnswered(a, q);
+      const isSkp = !isAns && isQuestionSkipped(a, q);
+      const isMrk = Boolean(a?.isMarked || a?.status === "marked");
+
+      if (isAns) answered++;
+      else if (isSkp) skipped++;
+      if (isMrk) marked++;
+    });
+
+    const remaining = Math.max(0, total - answered - skipped);
+
+    return {
+      answered,
+      skipped,
+      marked,
+      remaining,
+      notVisited: remaining,
+    };
+  }, [answers, questions, isQuestionAnswered, isQuestionSkipped]);
+
+  const totalQuestions = Math.max(questions.length, 1);
+  const progressPercent = Math.round(((currentIdx + 1) / totalQuestions) * 100);
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="w-8 h-8 border-2 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
+      <div className="flex flex-col items-center justify-center min-h-screen bg-[#080b11] text-white space-y-4">
+        <div className="w-10 h-10 border-3 border-[#FF6B35] border-t-transparent rounded-full animate-spin" />
+        <p className="text-xs font-semibold tracking-wider text-zinc-400 uppercase">Loading Assessment...</p>
       </div>
     );
   }
 
   if (submitted) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center p-8">
-          <CheckCircle className="w-12 h-12 mx-auto mb-3" style={{ color: "var(--success)" }} />
-          <h2 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>Test Submitted</h2>
-          <p className="text-sm mt-1" style={{ color: "var(--text-muted)" }}>Redirecting to results...</p>
+      <div className="flex items-center justify-center min-h-screen bg-[#080b11] text-white">
+        <div className="text-center p-8 max-w-sm bg-[#0e131f] border border-white/10 rounded-2xl shadow-2xl space-y-3">
+          <CheckCircle className="w-12 h-12 mx-auto text-emerald-400" />
+          <h2 className="text-lg font-bold text-white">Assessment Submitted</h2>
+          <p className="text-xs text-zinc-400">Processing results and generating report...</p>
         </div>
       </div>
     );
@@ -564,61 +711,99 @@ function TestEngine() {
   return (
     <div
       ref={containerRef}
-      className="min-h-screen flex flex-col select-none"
+      className="min-h-screen flex flex-col select-none bg-[#080b11] text-zinc-100 antialiased"
       style={{
-        background: "var(--bg-primary)",
         userSelect: "none",
         WebkitUserSelect: "none",
         MozUserSelect: "none",
         msUserSelect: "none",
       }}
     >
-      {/* Top Bar */}
-      <header className="sticky top-0 z-50 border-b admin-table-divider bg-white dark:bg-[#111]">
-        <div className="flex items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-3 min-w-0">
-            <h2 className="text-sm font-bold truncate" style={{ color: "var(--text-primary)" }}>
-              {test?.title || "Test"}
-            </h2>
-            <span className="text-[10px] px-2 py-0.5 rounded-full capitalize" style={{ background: "var(--admin-bg-surface)", color: "var(--text-muted)" }}>
-              {test?.testType}
-            </span>
-          </div>
-          <div className="flex items-center gap-3">
-            {saving && <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>Saving...</span>}
-            <Timer endTime={endTime} durationMinutes={test?.duration || 30} serverOffset={serverOffset} onTimeUp={handleTimeUp} />
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40">
-              <ShieldAlert className="w-3.5 h-3.5" /> Proctoring Active
+      {/* ══════════════════════════════════════════════════════════════════════════
+          PREPHIRE PREMIUM ASSESSMENT HEADER
+      ══════════════════════════════════════════════════════════════════════════ */}
+      <header className="sticky top-0 z-50 border-b border-white/10 bg-[#0c101a]/95 backdrop-blur-md shrink-0">
+        <div className="max-w-[1600px] mx-auto flex items-center justify-between px-4 sm:px-6 py-2.5 gap-4">
+          
+          {/* LEFT: PrepHire Logo & Test Meta */}
+          <div className="flex items-center gap-3.5 min-w-0">
+            <div className="flex items-center gap-2 shrink-0">
+              <img
+                src="/images/metadata.png"
+                alt="PrepHire"
+                className="h-7 w-7 object-contain"
+                draggable="false"
+              />
+              <span className="text-base font-black tracking-tight text-white hidden sm:inline">
+                Prep<span className="text-[#FF6B35]">Hire</span>
+              </span>
+            </div>
+
+            <div className="h-4 w-px bg-white/10 hidden sm:block" />
+
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <h1 className="text-xs sm:text-sm font-bold text-white truncate max-w-[180px] sm:max-w-[280px]">
+                  {test?.title || "Technical Assessment"}
+                </h1>
+                {test?.testType && (
+                  <span className="px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider bg-[#131826] border border-white/5 text-zinc-400 hidden md:inline">
+                    {test.testType}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-        {/* Progress bar */}
-        <div className="h-1" style={{ background: "var(--admin-bg-surface)" }}>
-          <div className="h-full transition-all duration-500" style={{ width: `${(stats.answered / Math.max(questions.length, 1)) * 100}%`, background: "var(--primary)" }} />
+
+          {/* CENTER: Progress Info & Bar */}
+          <div className="hidden md:flex flex-col items-center justify-center flex-1 max-w-xs px-2">
+            <div className="flex items-center justify-between w-full text-[11px] font-semibold text-zinc-400 mb-1">
+              <span>Question {String(currentIdx + 1).padStart(2, "0")} of {String(totalQuestions).padStart(2, "0")}</span>
+              <span className="text-zinc-500 font-mono">{progressPercent}%</span>
+            </div>
+            <div className="w-full h-1.5 rounded-full bg-[#131826] overflow-hidden border border-white/5">
+              <div
+                className="h-full bg-[#FF6B35] transition-all duration-300 rounded-full"
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
+          </div>
+
+          {/* RIGHT: Status & Timer */}
+          <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
+            {saving && (
+              <span className="text-[10px] font-medium text-zinc-500 hidden sm:inline animate-pulse">
+                Saving...
+              </span>
+            )}
+
+            {/* Proctoring Active Pill */}
+            <div
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[11px] font-semibold bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 select-none"
+              title="Active Proctoring & Integrity Lockdown"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+              <span className="hidden sm:inline">SECURE EXAM</span>
+            </div>
+
+            {/* Timer */}
+            <Timer
+              endTime={endTime}
+              durationMinutes={test?.duration || 30}
+              serverOffset={serverOffset}
+              onTimeUp={handleTimeUp}
+            />
+          </div>
         </div>
       </header>
 
-      <div className="flex flex-1 overflow-hidden">
-        {/* Main Workspace */}
+      {/* ══════════════════════════════════════════════════════════════════════════
+          ASSESSMENT WORKSPACE
+      ══════════════════════════════════════════════════════════════════════════ */}
+      <div className="flex flex-1 overflow-hidden" style={{ minHeight: "calc(100vh - 58px)" }}>
         {isCoding ? (
-          <main className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-[#111]">
-            {/* Coding Problem Header */}
-            <div className="flex items-center justify-between px-4 py-2 border-b admin-table-divider bg-white/70 dark:bg-[#111]/70 text-xs shrink-0">
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-sm" style={{ color: "var(--text-primary)" }}>
-                  Question {currentIdx + 1} of {questions.length}
-                </span>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wide uppercase" style={{ background: "color-mix(in srgb, var(--primary) 12%, transparent)", color: "var(--primary)" }}>
-                  Coding Assessment
-                </span>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="text-xs font-semibold px-2 py-0.5 rounded border admin-border" style={{ color: "var(--text-secondary)" }}>
-                  Marks: {question?.marks || 0}
-                </span>
-              </div>
-            </div>
-
+          /* ════════════════ CODING WORKSPACE ════════════════ */
+          <main className="flex-1 flex flex-col overflow-hidden bg-[#080b11]">
             {/* Split IDE Canvas */}
             <div className="flex-1 overflow-hidden" style={{ minHeight: 0 }}>
               {question ? (
@@ -629,128 +814,161 @@ function TestEngine() {
                   testId={test?._id}
                   initialCode={q.code}
                   initialLanguage={q.language || "python"}
-                  onCodeChange={(v) => updateAnswer("code", v)}
-                  onLanguageChange={(v) => updateAnswer("language", v)}
+                  onCodeChange={handleCodeChange}
+                  onLanguageChange={handleLanguageChange}
                   onSubmissionResult={(res) => handleCodingSubmissionResult(currentIdx, res)}
                 />
               ) : (
-                <p className="text-sm py-8 text-center" style={{ color: "var(--text-muted)" }}>Question unavailable</p>
+                <div className="flex items-center justify-center h-full text-zinc-500 text-xs">
+                  Coding problem unavailable
+                </div>
               )}
             </div>
 
-            {/* Docked Action Bar */}
-            <div className="flex items-center justify-between px-4 py-2 border-t admin-table-divider bg-white dark:bg-[#111] shrink-0 z-10">
+            {/* Docked Action Bar for Coding */}
+            <div className="flex items-center justify-between px-4 sm:px-6 py-2.5 border-t border-white/10 bg-[#0c101a] shrink-0 z-10">
               <div className="flex items-center gap-2">
-                <button onClick={() => navigateTo(Math.max(0, currentIdx - 1))} disabled={currentIdx === 0}
-                  className="flex items-center gap-1 px-3.5 py-1.5 text-xs font-semibold border admin-border rounded-lg admin-hover cursor-pointer disabled:opacity-40">
+                <button
+                  type="button"
+                  onClick={() => navigateTo(Math.max(0, currentIdx - 1))}
+                  disabled={currentIdx === 0}
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold border border-white/10 hover:border-white/20 bg-[#131826] hover:bg-[#181f30] text-zinc-300 rounded-xl transition cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+                >
                   <ChevronLeft className="w-3.5 h-3.5" /> Previous
                 </button>
-                <button onClick={() => { updateAnswer("status", "skipped"); navigateTo(Math.min(questions.length - 1, currentIdx + 1)); }}
+                <button
+                  type="button"
+                  onClick={handleSkip}
                   disabled={currentIdx === questions.length - 1}
-                  className="flex items-center gap-1 px-3.5 py-1.5 text-xs font-semibold border admin-border rounded-lg admin-hover cursor-pointer disabled:opacity-40">
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold border border-white/10 hover:border-white/20 bg-[#131826] hover:bg-[#181f30] text-zinc-300 rounded-xl transition cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+                >
                   Skip <ChevronRight className="w-3.5 h-3.5" />
                 </button>
               </div>
-              <div className="flex items-center gap-2">
-                <button onClick={() => updateAnswer("status", q.status === "marked" ? "answered" : "marked")}
-                  className={`flex items-center gap-1 px-3.5 py-1.5 text-xs font-semibold border rounded-lg cursor-pointer transition ${
-                    q.status === "marked" ? "border-[var(--primary)] text-[var(--primary)] bg-[var(--primary)]/10" : "admin-border admin-hover text-[var(--text-secondary)]"
-                  }`}>
-                  <Flag className="w-3.5 h-3.5" /> {q.status === "marked" ? "Unmark" : "Mark for Review"}
+
+              <div className="flex items-center gap-2.5">
+                <button
+                  type="button"
+                  onClick={handleToggleMark}
+                  className={`flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-xl border transition cursor-pointer ${
+                    (q.isMarked || q.status === "marked")
+                      ? "border-purple-500/50 text-purple-300 bg-purple-500/15"
+                      : "border-white/10 hover:border-white/20 bg-[#131826] hover:bg-[#181f30] text-zinc-300"
+                  }`}
+                >
+                  <Flag className="w-3.5 h-3.5" />
+                  <span>{(q.isMarked || q.status === "marked") ? "Unmark" : "Mark for Review"}</span>
                 </button>
+
                 {currentIdx < questions.length - 1 ? (
-                  <button onClick={() => { if (q.status === "not_visited") updateAnswer("status", "answered"); navigateTo(currentIdx + 1); }}
-                    className="flex items-center gap-1 px-4 py-1.5 text-xs font-bold text-white rounded-lg cursor-pointer shadow-sm"
-                    style={{ background: "var(--primary)" }}>
-                    Next <ChevronRight className="w-3.5 h-3.5" />
+                  <button
+                    type="button"
+                    onClick={handleNext}
+                    className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold text-white rounded-xl bg-[#FF6B35] hover:bg-[#FF5514] active:scale-[0.99] transition cursor-pointer shadow-sm shadow-[#FF6B35]/20"
+                  >
+                    <span>Next</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
                   </button>
                 ) : (
-                  <button onClick={() => setSubmitConfirm(true)}
-                    className="flex items-center gap-1 px-4 py-1.5 text-xs font-bold text-white rounded-lg cursor-pointer shadow-sm"
-                    style={{ background: "var(--primary)" }}>
-                    <Send className="w-3.5 h-3.5" /> Submit Test
+                  <button
+                    type="button"
+                    onClick={() => setSubmitConfirm(true)}
+                    className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold text-white rounded-xl bg-[#FF6B35] hover:bg-[#FF5514] active:scale-[0.99] transition cursor-pointer shadow-sm shadow-[#FF6B35]/20"
+                  >
+                    <Send className="w-3.5 h-3.5" />
+                    <span>Submit Assessment</span>
                   </button>
                 )}
               </div>
             </div>
           </main>
         ) : (
-          <main className="flex-1 flex flex-col h-full overflow-hidden bg-gray-50/30 dark:bg-zinc-950/30">
-            {/* Scrollable Question Content */}
-            <div className="flex-1 overflow-y-auto p-4 sm:p-6 flex justify-center items-start">
-              <div className="w-full max-w-3xl space-y-4">
+          /* ════════════════ MCQ WORKSPACE ════════════════ */
+          <main className="flex-1 flex flex-col h-full overflow-hidden bg-[#080b11]">
+            {/* Scrollable Question Content (Centered with comfortable width) */}
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 flex justify-center items-start">
+              <div className="w-full max-w-4xl space-y-4">
                 <div className="w-full">
                   {question ? (
-                    <SecureCanvasQuestionRenderer
+                    <MCQQuestionView
                       question={question}
                       questionIndex={currentIdx}
                       totalQuestions={questions.length}
                       answer={q.answer}
-                      onAnswer={(v) => updateAnswer("answer", v)}
+                      onAnswer={handleSelectAnswer}
                       candidateWatermark={candidateWatermark}
                     />
                   ) : (
-                    <p className="text-sm py-8 text-center" style={{ color: "var(--text-muted)" }}>Question unavailable</p>
+                    <div className="p-8 text-center bg-[#0e131f] border border-white/10 rounded-2xl text-zinc-500 text-xs">
+                      Question unavailable
+                    </div>
                   )}
                 </div>
               </div>
             </div>
 
-            {/* Pinned Bottom Action Bar */}
-            <div className="flex items-center justify-between px-4 sm:px-6 py-2.5 border-t admin-table-divider bg-white dark:bg-[#111] shrink-0 z-10">
+            {/* Sticky Bottom Action Bar */}
+            <div className="flex items-center justify-between px-4 sm:px-6 py-2.5 border-t border-white/10 bg-[#0c101a] shrink-0 z-10">
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => navigateTo(Math.max(0, currentIdx - 1))}
                   disabled={currentIdx === 0}
-                  className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold border admin-border rounded-lg admin-hover cursor-pointer disabled:opacity-40 transition"
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold border border-white/10 hover:border-white/20 bg-[#131826] hover:bg-[#181f30] text-zinc-300 rounded-xl transition cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
                 >
                   <ChevronLeft className="w-3.5 h-3.5" /> Previous
                 </button>
                 <button
                   type="button"
-                  onClick={() => {
-                    updateAnswer("status", "skipped");
-                    navigateTo(Math.min(questions.length - 1, currentIdx + 1));
-                  }}
+                  onClick={handleSkip}
                   disabled={currentIdx === questions.length - 1}
-                  className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold border admin-border rounded-lg admin-hover cursor-pointer disabled:opacity-40 transition"
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold border border-white/10 hover:border-white/20 bg-[#131826] hover:bg-[#181f30] text-zinc-300 rounded-xl transition cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
                 >
                   Skip <ChevronRight className="w-3.5 h-3.5" />
                 </button>
               </div>
-              <div className="flex items-center gap-2">
+
+              <div className="flex items-center gap-2.5">
+                {Boolean(q.answer) && (
+                  <button
+                    type="button"
+                    onClick={handleClearChoice}
+                    className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-white/5 rounded-xl transition cursor-pointer"
+                  >
+                    <RotateCcw className="w-3 h-3" /> Clear
+                  </button>
+                )}
+
                 <button
                   type="button"
-                  onClick={() => updateAnswer("status", q.status === "marked" ? "answered" : "marked")}
-                  className={`flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold border rounded-lg cursor-pointer transition ${
-                    q.status === "marked"
-                      ? "border-[var(--primary)] text-[var(--primary)] bg-[var(--primary)]/10"
-                      : "admin-border admin-hover text-[var(--text-secondary)]"
+                  onClick={handleToggleMark}
+                  className={`flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-xl border transition cursor-pointer ${
+                    (q.isMarked || q.status === "marked")
+                      ? "border-purple-500/50 text-purple-300 bg-purple-500/15"
+                      : "border-white/10 hover:border-white/20 bg-[#131826] hover:bg-[#181f30] text-zinc-300"
                   }`}
                 >
-                  <Flag className="w-3.5 h-3.5" /> {q.status === "marked" ? "Unmark" : "Mark for Review"}
+                  <Flag className="w-3.5 h-3.5" />
+                  <span>{(q.isMarked || q.status === "marked") ? "Unmark" : "Mark for Review"}</span>
                 </button>
+
                 {currentIdx < questions.length - 1 ? (
                   <button
                     type="button"
-                    onClick={() => {
-                      if (q.status === "not_visited") updateAnswer("status", "answered");
-                      navigateTo(currentIdx + 1);
-                    }}
-                    className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold text-white rounded-lg cursor-pointer shadow-sm hover:opacity-95 transition"
-                    style={{ background: "var(--primary)" }}
+                    onClick={handleNext}
+                    className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold text-white rounded-xl bg-[#FF6B35] hover:bg-[#FF5514] active:scale-[0.99] transition cursor-pointer shadow-sm shadow-[#FF6B35]/20"
                   >
-                    Next <ChevronRight className="w-3.5 h-3.5" />
+                    <span>Next</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
                   </button>
                 ) : (
                   <button
                     type="button"
                     onClick={() => setSubmitConfirm(true)}
-                    className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold text-white rounded-lg cursor-pointer shadow-sm hover:opacity-95 transition"
-                    style={{ background: "var(--primary)" }}
+                    className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold text-white rounded-xl bg-[#FF6B35] hover:bg-[#FF5514] active:scale-[0.99] transition cursor-pointer shadow-sm shadow-[#FF6B35]/20"
                   >
-                    <Send className="w-3.5 h-3.5" /> Submit Test
+                    <Send className="w-3.5 h-3.5" />
+                    <span>Submit Assessment</span>
                   </button>
                 )}
               </div>
@@ -758,74 +976,95 @@ function TestEngine() {
           </main>
         )}
 
-        {/* Sidebar */}
-        <aside className="w-64 shrink-0 border-l admin-table-divider overflow-y-auto bg-white dark:bg-[#111] hidden lg:block">
+        {/* ════════════════ RIGHT QUESTION NAVIGATOR ════════════════ */}
+        <aside className="w-72 shrink-0 border-l border-white/10 bg-[#0c101a] overflow-y-auto hidden lg:flex flex-col justify-between">
           <div className="p-4 space-y-4">
-            <h4 className="text-xs font-semibold" style={{ color: "var(--text-secondary)" }}>Question Navigator</h4>
-
-            {/* Legend */}
-            <div className="grid grid-cols-2 gap-1.5 text-[10px]">
-              {[
-                { color: "var(--badge-success-text)", bg: "var(--badge-success-bg)", label: "Answered" },
-                { color: "var(--badge-warning-text)", bg: "var(--badge-warning-bg)", label: "Skipped" },
-                { color: "var(--badge-info-text)", bg: "var(--badge-info-bg)", label: "Marked" },
-                { color: "var(--text-muted)", bg: "var(--admin-bg-surface)", label: "Not Visited" },
-              ].map(l => (
-                <div key={l.label} className="flex items-center gap-1.5">
-                  <div className="w-2.5 h-2.5 rounded" style={{ background: l.bg }} />
-                  <span style={{ color: "var(--text-muted)" }}>{l.label}</span>
-                </div>
-              ))}
+            <div className="flex items-center justify-between">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-400">Questions</h2>
+              <span className="text-[11px] font-mono text-zinc-500">{answers.length} Total</span>
             </div>
 
-            {/* Question Grid */}
-            <div className="grid grid-cols-5 gap-1.5">
-              {answers.map((a, idx) => {
-                let bg = "var(--admin-bg-surface)";
-                let color = "var(--text-muted)";
-                if (idx === currentIdx) { bg = "var(--primary)"; color = "#fff"; }
-                else if (a.status === "answered") { bg = "var(--badge-success-bg)"; color = "var(--badge-success-text)"; }
-                else if (a.status === "marked") { bg = "var(--badge-info-bg)"; color = "var(--badge-info-text)"; }
-                else if (a.status === "skipped") { bg = "var(--badge-warning-bg)"; color = "var(--badge-warning-text)"; }
-                return (
-                  <button key={idx} onClick={() => navigateTo(idx)}
-                    className="w-8 h-8 rounded-lg text-[11px] font-semibold cursor-pointer transition-all hover:opacity-80"
-                    style={{ background: bg, color }}>
-                    {idx + 1}
-                  </button>
-                );
-              })}
+            {/* Status Breakdown Legend */}
+            <div className="grid grid-cols-2 gap-2 text-[11px]">
+              <div className="flex items-center gap-2 p-2 rounded-lg bg-[#131826] border border-white/5">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 shrink-0" />
+                <span className="text-zinc-300 font-medium">✓ {stats.answered} Answered</span>
+              </div>
+              <div className="flex items-center gap-2 p-2 rounded-lg bg-[#131826] border border-white/5">
+                <span className="w-2.5 h-2.5 rounded-full bg-purple-400 shrink-0" />
+                <span className="text-zinc-300 font-medium">⚑ {stats.marked} Marked</span>
+              </div>
+              <div className="flex items-center gap-2 p-2 rounded-lg bg-[#131826] border border-white/5">
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-400 shrink-0" />
+                <span className="text-zinc-300 font-medium">— {stats.skipped} Skipped</span>
+              </div>
+              <div className="flex items-center gap-2 p-2 rounded-lg bg-[#131826] border border-white/5">
+                <span className="w-2.5 h-2.5 rounded-full bg-zinc-600 shrink-0" />
+                <span className="text-zinc-300 font-medium">○ {stats.remaining} Remaining</span>
+              </div>
             </div>
 
-            {/* Summary */}
-            <div className="pt-3 border-t admin-table-divider space-y-2 text-xs">
-              <div className="flex justify-between">
-                <span style={{ color: "var(--text-muted)" }}>Answered</span>
-                <span className="font-semibold" style={{ color: "var(--badge-success-text)" }}>{stats.answered}</span>
-              </div>
-              <div className="flex justify-between">
-                <span style={{ color: "var(--text-muted)" }}>Skipped</span>
-                <span className="font-semibold" style={{ color: "var(--badge-warning-text)" }}>{stats.skipped}</span>
-              </div>
-              <div className="flex justify-between">
-                <span style={{ color: "var(--text-muted)" }}>Marked</span>
-                <span className="font-semibold" style={{ color: "var(--badge-info-text)" }}>{stats.marked}</span>
-              </div>
-              <div className="flex justify-between">
-                <span style={{ color: "var(--text-muted)" }}>Not Visited</span>
-                <span className="font-semibold" style={{ color: "var(--text-muted)" }}>{stats.notVisited}</span>
-              </div>
-              <div className="pt-2">
-                <button onClick={() => setSubmitConfirm(true)}
-                  className="w-full py-2 text-xs font-medium text-white rounded-xl cursor-pointer flex items-center justify-center gap-1.5"
-                  style={{ background: "var(--primary)" }}>
-                  <Send className="w-3.5 h-3.5" /> Submit Test
-                </button>
+            {/* 5-Column Question Grid */}
+            <div className="pt-2">
+              <div className="grid grid-cols-5 gap-2">
+                {answers.map((a, idx) => {
+                  const qItem = questions[idx];
+                  const isCurrent = idx === currentIdx;
+                  const isAns = isQuestionAnswered(a, qItem);
+                  const isSkp = !isAns && isQuestionSkipped(a, qItem);
+                  const isMrk = Boolean(a?.isMarked || a?.status === "marked");
+
+                  let itemClasses = "bg-[#131826] border-white/5 text-zinc-400 hover:border-white/20";
+
+                  if (isCurrent) {
+                    itemClasses = "border-[#FF6B35] ring-2 ring-[#FF6B35]/40 text-white bg-[#FF6B35]/20 font-bold scale-[1.04]";
+                  } else if (isAns) {
+                    itemClasses = "bg-emerald-500/15 border-emerald-500/35 text-emerald-300 font-bold hover:bg-emerald-500/25";
+                  } else if (isSkp) {
+                    itemClasses = "bg-amber-500/15 border-amber-500/35 text-amber-300 hover:bg-amber-500/25";
+                  } else if (isMrk) {
+                    itemClasses = "bg-purple-500/15 border-purple-500/35 text-purple-300 font-bold hover:bg-purple-500/25";
+                  }
+
+                  return (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => navigateTo(idx)}
+                      className={`relative h-9 rounded-xl text-xs font-mono font-medium border transition-all duration-150 flex items-center justify-center cursor-pointer ${itemClasses}`}
+                      title={`Go to Question ${idx + 1}`}
+                    >
+                      <span>{String(idx + 1).padStart(2, "0")}</span>
+                      {isMrk && (
+                        <span
+                          className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-purple-400 border border-[#0c101a] shadow-sm"
+                          title="Marked for Review"
+                        />
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
+
+          {/* Bottom Submit Action */}
+          <div className="p-4 border-t border-white/10 bg-[#0c101a] space-y-2">
+            <button
+              type="button"
+              onClick={() => setSubmitConfirm(true)}
+              className="w-full py-2.5 px-4 text-xs font-bold text-white rounded-xl bg-[#FF6B35] hover:bg-[#FF5514] active:scale-[0.99] transition cursor-pointer flex items-center justify-center gap-2 shadow-md shadow-[#FF6B35]/20"
+            >
+              <Send className="w-3.5 h-3.5" />
+              <span>Submit Assessment</span>
+            </button>
+          </div>
         </aside>
       </div>
+
+      {/* ══════════════════════════════════════════════════════════════════════════
+          SECURITY & INTEGRITY OVERLAYS (Preserved Lockdown Architecture)
+      ══════════════════════════════════════════════════════════════════════════ */}
 
       {/* Tab & Window Switch Warning Banner */}
       {tabWarnings > 0 && !submitted && (
@@ -834,28 +1073,28 @@ function TestEngine() {
         }`}>
           <AlertTriangle className="w-4 h-4 shrink-0" />
           {tabWarnings >= 2
-            ? "🚨 Warning 2 of 3 (Final Warning)"
-            : `⚠️ Warning ${tabWarnings} of 3`}
+            ? "🚨 Warning 2 of 3 (Final Warning): Next window switch will automatically submit your exam"
+            : `⚠️ Warning ${tabWarnings} of 3: Window departure detected`}
         </div>
       )}
 
       {/* Fullscreen Required Blocking Overlay */}
       {!isFullscreen && !submitted && !loading && (
-        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#090d16] p-6 text-center select-none">
-          <div className="max-w-md w-full bg-[#141721] border border-red-500/40 rounded-2xl p-7 shadow-2xl space-y-5">
-            <div className="w-16 h-16 mx-auto rounded-2xl bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-500">
-              <Maximize2 className="w-8 h-8" />
+        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#080b11] p-6 text-center select-none">
+          <div className="max-w-md w-full bg-[#0e131f] border border-red-500/40 rounded-2xl p-7 sm:p-8 shadow-2xl space-y-5">
+            <div className="w-14 h-14 mx-auto rounded-2xl bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-400">
+              <Maximize2 className="w-7 h-7" />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-white tracking-tight">Fullscreen Required</h3>
+              <h3 className="text-lg font-bold text-white tracking-tight">Fullscreen Mode Required</h3>
               <p className="text-xs text-zinc-400 mt-2 leading-relaxed">
-                Assessment security requires full screen mode at all times. All fullscreen departures are logged to your proctoring audit log.
+                Assessment integrity requires full screen mode. Window exits and resizing are recorded in your proctoring audit log.
               </p>
             </div>
             <button
               type="button"
               onClick={enterFullscreen}
-              className="w-full py-3.5 px-4 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 transition cursor-pointer flex items-center justify-center gap-2 shadow-lg hover:shadow-blue-500/25"
+              className="w-full py-3 px-4 rounded-xl text-xs font-bold text-white bg-[#FF6B35] hover:bg-[#FF5514] transition cursor-pointer flex items-center justify-center gap-2 shadow-lg shadow-[#FF6B35]/25"
             >
               <Maximize2 className="w-4 h-4" /> Enter Fullscreen to Continue
             </button>
@@ -865,24 +1104,24 @@ function TestEngine() {
 
       {/* Window Focus Lost / Away Obscuring Shield */}
       {isAway && isFullscreen && !submitted && !loading && (
-        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#090d16] p-6 text-center select-none">
-          <div className="max-w-md w-full bg-[#141721] border border-amber-500/40 rounded-2xl p-7 shadow-2xl space-y-5">
-            <div className="w-16 h-16 mx-auto rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
-              <EyeOff className="w-8 h-8" />
+        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#080b11] p-6 text-center select-none">
+          <div className="max-w-md w-full bg-[#0e131f] border border-amber-500/40 rounded-2xl p-7 sm:p-8 shadow-2xl space-y-5">
+            <div className="w-14 h-14 mx-auto rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+              <EyeOff className="w-7 h-7" />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-white tracking-tight">Assessment Paused — Focus Lost</h3>
+              <h3 className="text-lg font-bold text-white tracking-tight">Assessment Concealed — Focus Lost</h3>
               <p className="text-xs text-zinc-400 mt-2 leading-relaxed">
-                You have shifted focus away to another window or application. Question content and choices are concealed while the assessment window is unfocused.
+                You switched focus to another application or window. Question content is hidden while the assessment window is unfocused.
               </p>
             </div>
-            <div className="py-2 px-3 rounded-lg bg-[#0d1017] border border-zinc-800 text-[11px] font-mono text-zinc-400">
+            <div className="py-2 px-3 rounded-lg bg-[#131826] border border-white/5 text-[11px] font-mono text-zinc-400">
               {candidateWatermark}
             </div>
             <button
               type="button"
               onClick={resumeAssessment}
-              className="w-full py-3.5 px-4 rounded-xl text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 transition cursor-pointer flex items-center justify-center gap-2 shadow-lg hover:shadow-amber-500/25"
+              className="w-full py-3 px-4 rounded-xl text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 transition cursor-pointer flex items-center justify-center gap-2 shadow-lg shadow-amber-600/25"
             >
               <ShieldAlert className="w-4 h-4" /> Return to Assessment
             </button>
@@ -892,15 +1131,15 @@ function TestEngine() {
 
       {/* Duplicate Assessment Session Detected Blocking Overlay */}
       {isDuplicateSession && !submitted && !loading && (
-        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#090d16] p-6 text-center select-none">
-          <div className="max-w-md w-full bg-[#141721] border border-red-500/40 rounded-2xl p-7 shadow-2xl space-y-5">
-            <div className="w-16 h-16 mx-auto rounded-2xl bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-500">
-              <Lock className="w-8 h-8" />
+        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#080b11] p-6 text-center select-none">
+          <div className="max-w-md w-full bg-[#0e131f] border border-red-500/40 rounded-2xl p-7 sm:p-8 shadow-2xl space-y-5">
+            <div className="w-14 h-14 mx-auto rounded-2xl bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-400">
+              <Lock className="w-7 h-7" />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-white tracking-tight">Duplicate Session Detected</h3>
+              <h3 className="text-lg font-bold text-white tracking-tight">Duplicate Session Detected</h3>
               <p className="text-xs text-zinc-400 mt-2 leading-relaxed">
-                This assessment attempt is active in another browser tab or window. Multiple simultaneous sessions are not permitted. Please close this duplicate tab.
+                This assessment is active in another browser tab or window. Multiple simultaneous sessions are not permitted. Please close this duplicate tab.
               </p>
             </div>
           </div>
@@ -909,13 +1148,13 @@ function TestEngine() {
 
       {/* Proctoring Lost Blocking Overlay */}
       {proctoringError && !submitted && (
-        <div className="fixed inset-0 z-[9998] flex flex-col items-center justify-center bg-[#090d16] p-6 text-center select-none">
-          <div className="max-w-md w-full bg-[#141721] border border-amber-500/40 rounded-2xl p-7 shadow-2xl space-y-5">
-            <div className="w-16 h-16 mx-auto rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
-              <WifiOff className="w-8 h-8" />
+        <div className="fixed inset-0 z-[9998] flex flex-col items-center justify-center bg-[#080b11] p-6 text-center select-none">
+          <div className="max-w-md w-full bg-[#0e131f] border border-amber-500/40 rounded-2xl p-7 sm:p-8 shadow-2xl space-y-5">
+            <div className="w-14 h-14 mx-auto rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+              <WifiOff className="w-7 h-7" />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-white tracking-tight">Proctoring Telemetry Paused</h3>
+              <h3 className="text-lg font-bold text-white tracking-tight">Proctoring Telemetry Interrupted</h3>
               <p className="text-xs text-zinc-400 mt-2 leading-relaxed">
                 Secure connection to the proctoring server was interrupted. If you have an ad-blocker or privacy extension active, please disable it for this site and click Retry.
               </p>
@@ -923,7 +1162,7 @@ function TestEngine() {
             <button
               type="button"
               onClick={() => sendHeartbeat()}
-              className="w-full py-3.5 px-4 rounded-xl text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 transition cursor-pointer flex items-center justify-center gap-2 shadow-lg"
+              className="w-full py-3 px-4 rounded-xl text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 transition cursor-pointer flex items-center justify-center gap-2 shadow-lg"
             >
               <RefreshCw className="w-4 h-4" /> Retry Connection
             </button>
@@ -931,25 +1170,34 @@ function TestEngine() {
         </div>
       )}
 
-      {/* Mobile bottom nav */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 border-t admin-table-divider bg-white dark:bg-[#111] px-3 py-2">
+      {/* Mobile Bottom Navigation Bar */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-white/10 bg-[#0c101a] px-4 py-2.5">
         <div className="flex items-center justify-between">
-          <button onClick={() => navigateTo(Math.max(0, currentIdx - 1))} disabled={currentIdx === 0}
-            className="p-2 rounded-lg admin-hover cursor-pointer disabled:opacity-40">
-            <ChevronLeft className="w-5 h-5" style={{ color: "var(--text-secondary)" }} />
+          <button
+            type="button"
+            onClick={() => navigateTo(Math.max(0, currentIdx - 1))}
+            disabled={currentIdx === 0}
+            className="p-2 rounded-xl bg-[#131826] border border-white/10 text-zinc-300 disabled:opacity-30 cursor-pointer"
+          >
+            <ChevronLeft className="w-4 h-4" />
           </button>
-          <span className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
+          <span className="text-xs font-mono font-bold text-zinc-300">
             {currentIdx + 1} / {questions.length}
           </span>
-          <button onClick={() => setSubmitConfirm(true)}
-            className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white rounded-xl cursor-pointer"
-            style={{ background: "var(--primary)" }}>
-            <Send className="w-3.5 h-3.5" /> Submit
+          <button
+            type="button"
+            onClick={() => setSubmitConfirm(true)}
+            className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-white rounded-xl bg-[#FF6B35] cursor-pointer"
+          >
+            <Send className="w-3 h-3" /> Submit
           </button>
-          <button onClick={() => navigateTo(Math.min(questions.length - 1, currentIdx + 1))}
+          <button
+            type="button"
+            onClick={() => navigateTo(Math.min(questions.length - 1, currentIdx + 1))}
             disabled={currentIdx === questions.length - 1}
-            className="p-2 rounded-lg admin-hover cursor-pointer disabled:opacity-40">
-            <ChevronRight className="w-5 h-5" style={{ color: "var(--text-secondary)" }} />
+            className="p-2 rounded-xl bg-[#131826] border border-white/10 text-zinc-300 disabled:opacity-30 cursor-pointer"
+          >
+            <ChevronRight className="w-4 h-4" />
           </button>
         </div>
       </div>
