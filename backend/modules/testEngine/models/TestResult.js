@@ -50,6 +50,8 @@ const questionResultSchema = new mongoose.Schema({
   },
   studentAnswer: { type: String, default: "" },
   correctAnswer: { type: String, default: "" },
+  options: [{ type: String }],
+  explanation: { type: String, default: "" },
   marks: { type: Number, default: 0 },
   negativeMarks: { type: Number, default: 0 },
   obtainedMarks: { type: Number, default: 0 },

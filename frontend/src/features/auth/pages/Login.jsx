@@ -115,14 +115,14 @@ function Login() {
           />
 
           {/* Remember Me & Forgot Password */}
-          <div className="flex items-center justify-between gap-4 mb-4">
+          <div className="flex items-center justify-between gap-2 sm:gap-4 mb-3 sm:mb-4">
             <label className="flex items-center gap-2 cursor-pointer group select-none">
               <input
                 type="checkbox"
                 name="rememberMe"
                 checked={formData.rememberMe}
                 onChange={handleChange}
-                className="w-4 h-4 rounded cursor-pointer accent-[var(--primary)] border-[var(--border)] bg-[var(--input-bg)]"
+                className="w-4 h-4 shrink-0 rounded cursor-pointer accent-[var(--primary)] border-[var(--border)] bg-[var(--input-bg)]"
               />
               <span className="text-xs font-medium text-[var(--text-secondary)]">
                 Remember Me
@@ -147,7 +147,7 @@ function Login() {
         </form>
       ) : (
         <div className="flex flex-col">
-          <div className="p-4 mb-6 rounded-xl border border-amber-500/20 bg-amber-500/10 flex items-start gap-3">
+          <div className="p-3.5 sm:p-4 mb-4 sm:mb-6 rounded-xl border border-amber-500/20 bg-amber-500/10 flex items-start gap-3">
             <Info className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
             <div className="text-xs text-[var(--text-secondary)] leading-relaxed">
               <p className="font-semibold text-[var(--text-primary)] mb-1">
@@ -169,7 +169,7 @@ function Login() {
       )}
 
       {/* OR Divider */}
-      <div className="relative my-4">
+      <div className="relative my-3 sm:my-4">
         <div className="absolute inset-0 flex items-center">
           <div className="w-full border-t border-[var(--border)]" />
         </div>
