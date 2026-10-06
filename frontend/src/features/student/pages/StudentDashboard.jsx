@@ -344,8 +344,7 @@ function StudentDashboard() {
   );
 
   return (
-    <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] transition-colors duration-300">
-      <div className="p-4 sm:p-6 lg:p-8 max-w-[1440px] mx-auto w-full space-y-6">
+    <div className="page-container space-y-6">
 
         {/* ── HERO SECTION ── */}
         <section className="relative bg-[var(--card-bg)] border border-[var(--border)] rounded-[24px] sm:rounded-[28px] p-5 sm:p-8 lg:px-10 lg:py-12 shadow-[var(--shadow-card)] overflow-hidden">
@@ -1083,7 +1082,6 @@ function StudentDashboard() {
             </section>
           </>
         )}
-      </div>
 
       {/* Footer */}
       <footer className="py-6 border-t border-[var(--border)] bg-[var(--card-bg)] text-center text-xs text-[var(--text-secondary)] mt-12">

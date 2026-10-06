@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import {
   FileText,
@@ -25,6 +26,23 @@ function AuthLayout({
   cardClassName = "",
   showFooterBadge = true,
 }) {
+  const [pointerPos, setPointerPos] = useState({ x: 0, y: 0 });
+
+  const handlePointerMove = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    if (e.touches && e.touches.length > 0) {
+      setPointerPos({
+        x: e.touches[0].clientX - rect.left,
+        y: e.touches[0].clientY - rect.top,
+      });
+    } else {
+      setPointerPos({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      });
+    }
+  };
+
   return (
     <div
       className="min-h-screen lg:h-screen lg:max-h-screen w-full max-w-full overflow-x-hidden overflow-y-auto lg:overflow-hidden relative select-none bg-[var(--bg-primary)] text-[var(--text-primary)] transition-colors duration-300"
@@ -213,20 +231,20 @@ function AuthLayout({
             <div className="col-span-6 xl:col-span-7 relative flex items-end justify-center lg:justify-end">
               <div className="absolute -inset-3 rounded-full bg-gradient-to-tr from-orange-500/20 via-orange-400/10 to-transparent blur-xl pointer-events-none select-none opacity-70" />
 
-              <div className="animate-natural-idle relative z-10 w-full max-w-[170px] sm:max-w-[200px] lg:max-w-[220px] xl:max-w-[260px] 2xl:max-w-[380px] flex justify-end items-end">
+              <div className="relative z-10 w-full max-w-[260px] sm:max-w-[340px] lg:max-w-[420px] xl:max-w-[500px] 2xl:max-w-[650px] flex justify-end items-end -mr-4 sm:-mr-6 lg:-mr-6 xl:-mr-8 2xl:-mr-10 -mb-2 sm:-mb-3 lg:-mb-2.5 xl:-mb-3 2xl:-mb-6">
                 <div
                   className="relative w-full aspect-[3/2] overflow-hidden select-none"
                   style={{
                     maskImage:
-                      "radial-gradient(ellipse 90% 86% at 50% 48%, black 45%, rgba(0, 0, 0, 0.85) 68%, rgba(0, 0, 0, 0.35) 86%, transparent 100%)",
+                      "radial-gradient(ellipse 85% 90% at 50% 50%, black 40%, rgba(0,0,0,0.5) 70%, transparent 95%)",
                     WebkitMaskImage:
-                      "radial-gradient(ellipse 90% 86% at 50% 48%, black 45%, rgba(0, 0, 0, 0.85) 68%, rgba(0, 0, 0, 0.35) 86%, transparent 100%)",
+                      "radial-gradient(ellipse 85% 90% at 50% 50%, black 40%, rgba(0,0,0,0.5) 70%, transparent 95%)",
                   }}
                 >
                   <img
                     src="/images/student1.png"
                     alt="PrepHire Student preparing for placement interview"
-                    className="w-full h-full object-cover select-none pointer-events-none transition-transform duration-500 hover:scale-[1.02]"
+                    className="w-full h-full object-cover select-none pointer-events-none"
                     style={{ objectPosition: "46% 36%" }}
                     draggable="false"
                   />
@@ -237,9 +255,25 @@ function AuthLayout({
         </div>
 
         {/* ================= RIGHT PANEL — 40% Clean Auth Card (LOCKED) ================= */}
-        <div className="w-full lg:w-[42%] xl:w-[40%] min-h-screen lg:h-full lg:max-h-screen min-h-0 min-w-0 flex flex-col justify-start lg:justify-between items-center px-4 py-4 sm:px-6 sm:py-6 lg:px-5 lg:py-1.5 xl:px-8 xl:py-2 relative bg-[var(--bg-primary)] transition-colors duration-300 overflow-x-hidden overflow-y-auto lg:overflow-hidden">
+        <div 
+          className="w-full lg:w-[42%] xl:w-[40%] min-h-screen lg:h-full lg:max-h-screen min-h-0 min-w-0 flex flex-col justify-start lg:justify-between items-center px-4 py-4 sm:px-6 sm:py-6 lg:px-5 lg:py-1.5 xl:px-8 xl:py-2 relative bg-[var(--bg-primary)] transition-colors duration-300 overflow-x-hidden overflow-y-auto lg:overflow-hidden"
+          onMouseMove={handlePointerMove}
+          onTouchMove={handlePointerMove}
+        >
+          {/* Reactive Glowing Background Orb */}
+          <div
+            className="absolute pointer-events-none transition-transform duration-75 ease-out opacity-100 dark:opacity-40 z-0 bg-[radial-gradient(circle,rgba(59,130,246,0.25)_0%,transparent_65%)] dark:bg-[radial-gradient(circle,rgba(255,107,53,0.25)_0%,transparent_65%)]"
+            style={{
+              width: 500,
+              height: 500,
+              transform: `translate(${pointerPos.x - 250}px, ${pointerPos.y - 250}px)`,
+              left: 0,
+              top: 0,
+            }}
+          />
+
           {/* Mobile Branding (only visible on mobile/tablet) */}
-          <div className="flex lg:hidden flex-col items-center text-center mb-2.5 sm:mb-3 pt-1 shrink-0">
+          <div className="flex lg:hidden flex-col items-center text-center mb-2.5 sm:mb-3 pt-1 shrink-0 z-10 relative">
             <Link to="/" aria-label="PrepHire" className="inline-flex items-center justify-center focus:outline-none">
               <img
                 src="/images/metadata.png"

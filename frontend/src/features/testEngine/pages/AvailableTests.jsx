@@ -653,274 +653,241 @@ export default function AvailableTests() {
   }, [tests]);
 
   return (
-    <div className="w-full max-w-[1400px] mx-auto px-3.5 sm:px-6 lg:px-8 py-3.5 sm:py-6 space-y-3.5 sm:space-y-6 select-none">
+    <div className="page-container space-y-6 sm:space-y-8 select-none">
       {/* ═══════════════════════════════════════════════
-          DESKTOP HEADER: Title + Subtitle + Invite Code
+          PAGE HERO HEADER CONTAINER
       ═══════════════════════════════════════════════ */}
-      <div className="hidden lg:flex items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-black tracking-tight" style={{ color: "var(--text-primary)" }}>
-              My Tests
-            </h1>
-            <span
-              className="text-xs font-bold px-3 py-1 rounded-full border"
+      <section className="page-hero">
+        {/* Subtle Ambient Glow matching PrepHire palette */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-1/3 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+          <div className="page-hero-content space-y-3 max-w-2xl">
+            <div className="page-title-row">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight" style={{ color: "var(--text-primary)" }}>
+                My Tests
+              </h1>
+              <span className="program-badge">
+                {cohortLabel}
+              </span>
+            </div>
+
+            <p className="page-description text-xs sm:text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+              Tests and real-time assessments assigned to you by your instructors and hiring partners.
+            </p>
+          </div>
+
+          {/* Invite Code Input */}
+          <form onSubmit={handleJoinInviteCode} className="flex items-center gap-2 w-full sm:w-auto shrink-0">
+            <div
+              className="flex-1 sm:flex-initial flex items-center gap-2 px-3.5 py-2.5 rounded-xl border text-xs"
               style={{
-                background: "rgba(255, 107, 53, 0.10)",
-                borderColor: "rgba(255, 107, 53, 0.35)",
-                color: "#FF6B35",
+                background: "var(--bg-secondary)",
+                borderColor: "var(--border)",
+                color: "var(--text-primary)",
               }}
             >
-              {cohortLabel}
-            </span>
-          </div>
-          <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>
-            Tests and real-time assessments assigned to you by your instructors and hiring partners.
-          </p>
-        </div>
-
-        {/* Invite Code Input */}
-        <form onSubmit={handleJoinInviteCode} className="flex items-center gap-2">
-          <div
-            className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl border text-xs"
-            style={{
-              background: "var(--card-bg)",
-              borderColor: "var(--border)",
-              color: "var(--text-primary)",
-            }}
-          >
-            <KeyRound className="w-4 h-4 text-gray-400 shrink-0" />
-            <input
-              type="text"
-              placeholder="Enter invite code or test ID..."
-              value={inviteCode}
-              onChange={(e) => setInviteCode(e.target.value)}
-              className="bg-transparent border-none outline-none text-xs w-56 placeholder:text-gray-500"
-            />
-          </div>
-          <button
-            type="submit"
-            className="px-5 py-2.5 rounded-xl text-xs font-bold text-white cursor-pointer transition-transform active:scale-95 shadow-sm"
-            style={{
-              background: "linear-gradient(135deg, #FF6B35 0%, #FF8A3D 100%)",
-            }}
-          >
-            Join
-          </button>
-        </form>
-      </div>
-
-      {/* ═══════════════════════════════════════════════
-          MOBILE TOP INVITE BAR
-      ═══════════════════════════════════════════════ */}
-      <div className="lg:hidden">
-        <form onSubmit={handleJoinInviteCode} className="flex items-center gap-2 w-full">
-          <div
-            className="flex-1 flex items-center gap-2 px-3 py-2 rounded-xl border text-xs min-w-0"
-            style={{
-              background: "var(--card-bg)",
-              borderColor: "var(--border)",
-              color: "var(--text-primary)",
-            }}
-          >
-            <KeyRound className="w-4 h-4 text-gray-400 shrink-0" />
-            <input
-              type="text"
-              placeholder="Enter invite code or test ID..."
-              value={inviteCode}
-              onChange={(e) => setInviteCode(e.target.value)}
-              className="bg-transparent border-none outline-none text-xs w-full placeholder:text-gray-500 min-w-0"
-            />
-          </div>
-          <button
-            type="submit"
-            className="px-4 py-2 rounded-xl text-xs font-bold text-white cursor-pointer active:scale-95 shadow-sm shrink-0"
-            style={{
-              background: "linear-gradient(135deg, #FF6B35 0%, #FF8A3D 100%)",
-            }}
-          >
-            Join
-          </button>
-        </form>
-      </div>
-
-      {/* ═══════════════════════════════════════════════
-          MOBILE COMPACT STAT ROW (100% Screen-Fitted, No Scroll)
-      ═══════════════════════════════════════════════ */}
-      <div
-        className="lg:hidden p-2 rounded-2xl border grid grid-cols-4 items-center gap-1 w-full"
-        style={{
-          background: "var(--card-bg)",
-          borderColor: "var(--border)",
-          boxShadow: "var(--shadow-sm)",
-        }}
-      >
-        {/* Chip 1: Readiness */}
-        <div className="flex items-center justify-center gap-1.5 py-0.5 border-r border-white/10 min-w-0 pr-1">
-          <MiniCircularRing value={readinessScore} size={34} stroke={3.5} color="#FF6B35" />
-          <div className="min-w-0 text-left">
-            <p className="text-[8.5px] font-bold uppercase tracking-tight text-gray-400 truncate">
-              READINESS
-            </p>
-            <p className="text-[10px] font-extrabold text-[#FF6B35] flex items-center gap-0.5 truncate">
-              <span className="w-1 h-1 rounded-full bg-[#FF6B35] shrink-0" />
-              <span className="truncate">{tierLabel}</span>
-            </p>
-          </div>
-        </div>
-
-        {/* Chip 2: Active */}
-        <div className="flex flex-col items-center justify-center py-0.5 border-r border-white/10 min-w-0 px-0.5">
-          <div className="flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#FF6B35]" />
-            <span className="text-xs font-black" style={{ color: "var(--text-primary)" }}>
-              {tabCounts.active}
-            </span>
-          </div>
-          <span className="text-[8.5px] font-bold text-gray-400 mt-0.5">Active</span>
-        </div>
-
-        {/* Chip 3: Upcoming */}
-        <div className="flex flex-col items-center justify-center py-0.5 border-r border-white/10 min-w-0 px-0.5">
-          <div className="flex items-center gap-1">
-            <Calendar className="w-3 h-3 text-cyan-400" />
-            <span className="text-xs font-black" style={{ color: "var(--text-primary)" }}>
-              {tabCounts.upcoming}
-            </span>
-          </div>
-          <span className="text-[8.5px] font-bold text-gray-400 mt-0.5">Upcoming</span>
-        </div>
-
-        {/* Chip 4: Completed / Score */}
-        <div className="flex flex-col items-center justify-center py-0.5 min-w-0 pl-0.5">
-          <div className="flex items-center gap-1">
-            <CheckCircle className="w-3 h-3 text-emerald-400" />
-            <span className="text-xs font-black text-emerald-400">
-              {tabCounts.completed}
-            </span>
-          </div>
-          <span className="text-[8.5px] font-bold text-emerald-400/90 mt-0.5 truncate">
-            {avgScore != null ? `${avgScore}% avg` : `${tabCounts.completed} Done`}
-          </span>
-        </div>
-      </div>
-
-      {/* ═══════════════════════════════════════════════
-          DESKTOP 4 STAT CARDS ROW
-      ═══════════════════════════════════════════════ */}
-      <div className="hidden lg:grid grid-cols-4 gap-4">
-        {/* Card 1: Active Assessments */}
-        <div
-          className="p-5 rounded-2xl border flex flex-col justify-between transition-all hover:-translate-y-0.5"
-          style={{
-            background: "var(--card-bg)",
-            borderColor: "var(--border)",
-            boxShadow: "var(--shadow-sm)",
-          }}
-        >
-          <div className="flex items-center justify-between text-[11px] font-bold tracking-wider uppercase text-gray-400">
-            <span>ACTIVE ASSESSMENTS</span>
-            {tabCounts.active > 0 && (
-              <span className="w-2.5 h-2.5 rounded-full bg-[#FF6B35] animate-pulse" />
-            )}
-          </div>
-          <div className="my-3 flex items-baseline gap-2">
-            <span className="text-3xl font-black" style={{ color: "var(--text-primary)" }}>
-              {tabCounts.active}
-            </span>
-            <span className="text-xs font-bold text-[#FF6B35]">
-              {tabCounts.active > 0 ? "Require Attention" : "All Caught Up"}
-            </span>
-          </div>
-          <div className="flex items-center gap-1.5 text-xs text-gray-400 truncate">
-            <Clock className="w-3.5 h-3.5 text-[#FF6B35] shrink-0" />
-            <span className="truncate">
-              {earliestActiveDeadline || (tabCounts.active > 0 ? "Ready to begin assessment" : "No active pending tests")}
-            </span>
-          </div>
-        </div>
-
-        {/* Card 2: Upcoming Scheduled */}
-        <div
-          className="p-5 rounded-2xl border flex flex-col justify-between transition-all hover:-translate-y-0.5"
-          style={{
-            background: "var(--card-bg)",
-            borderColor: "var(--border)",
-            boxShadow: "var(--shadow-sm)",
-          }}
-        >
-          <div className="flex items-center justify-between text-[11px] font-bold tracking-wider uppercase text-gray-400">
-            <span>UPCOMING SCHEDULED</span>
-            <Calendar className="w-4 h-4 text-cyan-400" />
-          </div>
-          <div className="my-3 flex items-baseline gap-2">
-            <span className="text-3xl font-black" style={{ color: "var(--text-primary)" }}>
-              {tabCounts.upcoming}
-            </span>
-            <span className="text-xs font-bold text-cyan-400">
-              {tabCounts.upcoming > 0 ? "Scheduled Ahead" : "None Scheduled"}
-            </span>
-          </div>
-          <div className="flex items-center gap-1.5 text-xs text-gray-400 truncate">
-            <Lock className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-            <span className="truncate">
-              {nextUpcomingTest
-                ? `${nextUpcomingTest.title} (${formatDeadline(nextUpcomingTest) || "Scheduled"})`
-                : "No tests currently scheduled"}
-            </span>
-          </div>
-        </div>
-
-        {/* Card 3: Completed / Expired */}
-        <div
-          className="p-5 rounded-2xl border flex flex-col justify-between transition-all hover:-translate-y-0.5"
-          style={{
-            background: "var(--card-bg)",
-            borderColor: "var(--border)",
-            boxShadow: "var(--shadow-sm)",
-          }}
-        >
-          <div className="flex items-center justify-between text-[11px] font-bold tracking-wider uppercase text-gray-400">
-            <span>COMPLETED / EXPIRED</span>
-            <History className="w-4 h-4 text-gray-400" />
-          </div>
-          <div className="my-3 flex items-baseline gap-2">
-            <span className="text-3xl font-black" style={{ color: "var(--text-primary)" }}>
-              {tabCounts.completed + tabCounts.expired}
-            </span>
-            <span className="text-xs font-bold text-gray-400">
-              {tabCounts.completed} Completed • {tabCounts.expired} Closed
-            </span>
-          </div>
-          <div className="flex items-center gap-1.5 text-xs text-emerald-400 font-medium">
-            <CheckCircle className="w-3.5 h-3.5" />
-            <span>
-              {avgScore != null ? `Average test score: ${avgScore}%` : `${passedCount} tests passed`}
-            </span>
-          </div>
-        </div>
-
-        {/* Card 4: Placement Readiness */}
-        <div
-          className="p-5 rounded-2xl border flex items-center gap-4 transition-all hover:-translate-y-0.5"
-          style={{
-            background: "var(--card-bg)",
-            borderColor: "var(--border)",
-            boxShadow: "var(--shadow-sm)",
-          }}
-        >
-          <MiniCircularRing value={readinessScore} size={54} stroke={6} color="#FF6B35" />
-          <div className="min-w-0">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
-              PLACEMENT READINESS
-            </p>
-            <div className="flex items-center gap-1.5 mt-0.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#FF6B35]" />
-              <span className="text-xs font-bold text-[#FF6B35]">{tierLabel}</span>
+              <KeyRound className="w-4 h-4 text-gray-400 shrink-0" />
+              <input
+                type="text"
+                placeholder="Enter invite code or test ID..."
+                value={inviteCode}
+                onChange={(e) => setInviteCode(e.target.value)}
+                className="bg-transparent border-none outline-none text-xs w-full sm:w-56 placeholder:text-gray-500"
+              />
             </div>
-            <p className="text-[11px] text-gray-400 mt-1 leading-snug">
-              Tests elevate your readiness score
-            </p>
+            <button
+              type="submit"
+              className="px-5 py-2.5 rounded-xl text-xs font-bold text-white cursor-pointer transition-transform active:scale-95 shadow-sm shrink-0"
+              style={{
+                background: "linear-gradient(135deg, #FF6B35 0%, #FF8A3D 100%)",
+              }}
+            >
+              Join
+            </button>
+          </form>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════
+          STATISTICS
+      ═══════════════════════════════════════════════ */}
+      <div>
+        {/* MOBILE COMPACT STAT ROW (100% Screen-Fitted, No Scroll) */}
+        <div
+          className="lg:hidden p-2 rounded-2xl border grid grid-cols-4 items-center gap-1 w-full"
+          style={{
+            background: "var(--card-bg)",
+            borderColor: "var(--border)",
+            boxShadow: "var(--shadow-sm)",
+          }}
+        >
+          {/* Chip 1: Readiness */}
+          <div className="flex items-center justify-center gap-1.5 py-0.5 border-r border-white/10 min-w-0 pr-1">
+            <MiniCircularRing value={readinessScore} size={34} stroke={3.5} color="#FF6B35" />
+            <div className="min-w-0 text-left">
+              <p className="text-[8.5px] font-bold uppercase tracking-tight text-gray-400 truncate">
+                READINESS
+              </p>
+              <p className="text-[10px] font-extrabold text-[#FF6B35] flex items-center gap-0.5 truncate">
+                <span className="w-1 h-1 rounded-full bg-[#FF6B35] shrink-0" />
+                <span className="truncate">{tierLabel}</span>
+              </p>
+            </div>
+          </div>
+
+          {/* Chip 2: Active */}
+          <div className="flex flex-col items-center justify-center py-0.5 border-r border-white/10 min-w-0 px-0.5">
+            <div className="flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#FF6B35]" />
+              <span className="text-xs font-black" style={{ color: "var(--text-primary)" }}>
+                {tabCounts.active}
+              </span>
+            </div>
+            <span className="text-[8.5px] font-bold text-gray-400 mt-0.5">Active</span>
+          </div>
+
+          {/* Chip 3: Upcoming */}
+          <div className="flex flex-col items-center justify-center py-0.5 border-r border-white/10 min-w-0 px-0.5">
+            <div className="flex items-center gap-1">
+              <Calendar className="w-3 h-3 text-cyan-400" />
+              <span className="text-xs font-black" style={{ color: "var(--text-primary)" }}>
+                {tabCounts.upcoming}
+              </span>
+            </div>
+            <span className="text-[8.5px] font-bold text-gray-400 mt-0.5">Upcoming</span>
+          </div>
+
+          {/* Chip 4: Completed / Score */}
+          <div className="flex flex-col items-center justify-center py-0.5 min-w-0 pl-0.5">
+            <div className="flex items-center gap-1">
+              <CheckCircle className="w-3 h-3 text-emerald-400" />
+              <span className="text-xs font-black text-emerald-400">
+                {tabCounts.completed}
+              </span>
+            </div>
+            <span className="text-[8.5px] font-bold text-emerald-400/90 mt-0.5 truncate">
+              {avgScore != null ? `${avgScore}% avg` : `${tabCounts.completed} Done`}
+            </span>
+          </div>
+        </div>
+
+        {/* DESKTOP 4 STAT CARDS ROW */}
+        <div className="hidden lg:grid grid-cols-4 gap-4">
+          {/* Card 1: Active Assessments */}
+          <div
+            className="p-5 rounded-2xl border flex flex-col justify-between transition-all hover:-translate-y-0.5"
+            style={{
+              background: "var(--card-bg)",
+              borderColor: "var(--border)",
+              boxShadow: "var(--shadow-sm)",
+            }}
+          >
+            <div className="flex items-center justify-between text-[11px] font-bold tracking-wider uppercase text-gray-400">
+              <span>ACTIVE ASSESSMENTS</span>
+              {tabCounts.active > 0 && (
+                <span className="w-2.5 h-2.5 rounded-full bg-[#FF6B35] animate-pulse" />
+              )}
+            </div>
+            <div className="my-3 flex items-baseline gap-2">
+              <span className="text-3xl font-black" style={{ color: "var(--text-primary)" }}>
+                {tabCounts.active}
+              </span>
+              <span className="text-xs font-bold text-[#FF6B35]">
+                {tabCounts.active > 0 ? "Require Attention" : "All Caught Up"}
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5 text-xs text-gray-400 truncate">
+              <Clock className="w-3.5 h-3.5 text-[#FF6B35] shrink-0" />
+              <span className="truncate">
+                {earliestActiveDeadline || (tabCounts.active > 0 ? "Ready to begin assessment" : "No active pending tests")}
+              </span>
+            </div>
+          </div>
+
+          {/* Card 2: Upcoming Scheduled */}
+          <div
+            className="p-5 rounded-2xl border flex flex-col justify-between transition-all hover:-translate-y-0.5"
+            style={{
+              background: "var(--card-bg)",
+              borderColor: "var(--border)",
+              boxShadow: "var(--shadow-sm)",
+            }}
+          >
+            <div className="flex items-center justify-between text-[11px] font-bold tracking-wider uppercase text-gray-400">
+              <span>UPCOMING SCHEDULED</span>
+              <Calendar className="w-4 h-4 text-cyan-400" />
+            </div>
+            <div className="my-3 flex items-baseline gap-2">
+              <span className="text-3xl font-black" style={{ color: "var(--text-primary)" }}>
+                {tabCounts.upcoming}
+              </span>
+              <span className="text-xs font-bold text-cyan-400">
+                {tabCounts.upcoming > 0 ? "Scheduled Ahead" : "None Scheduled"}
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5 text-xs text-gray-400 truncate">
+              <Lock className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+              <span className="truncate">
+                {nextUpcomingTest
+                  ? `${nextUpcomingTest.title} (${formatDeadline(nextUpcomingTest) || "Scheduled"})`
+                  : "No tests currently scheduled"}
+              </span>
+            </div>
+          </div>
+
+          {/* Card 3: Completed / Expired */}
+          <div
+            className="p-5 rounded-2xl border flex flex-col justify-between transition-all hover:-translate-y-0.5"
+            style={{
+              background: "var(--card-bg)",
+              borderColor: "var(--border)",
+              boxShadow: "var(--shadow-sm)",
+            }}
+          >
+            <div className="flex items-center justify-between text-[11px] font-bold tracking-wider uppercase text-gray-400">
+              <span>COMPLETED / EXPIRED</span>
+              <History className="w-4 h-4 text-gray-400" />
+            </div>
+            <div className="my-3 flex items-baseline gap-2">
+              <span className="text-3xl font-black" style={{ color: "var(--text-primary)" }}>
+                {tabCounts.completed + tabCounts.expired}
+              </span>
+              <span className="text-xs font-bold text-gray-400">
+                {tabCounts.completed} Completed • {tabCounts.expired} Closed
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5 text-xs text-emerald-400 font-medium">
+              <CheckCircle className="w-3.5 h-3.5" />
+              <span>
+                {avgScore != null ? `Average test score: ${avgScore}%` : `${passedCount} tests passed`}
+              </span>
+            </div>
+          </div>
+
+          {/* Card 4: Placement Readiness */}
+          <div
+            className="p-5 rounded-2xl border flex items-center gap-4 transition-all hover:-translate-y-0.5"
+            style={{
+              background: "var(--card-bg)",
+              borderColor: "var(--border)",
+              boxShadow: "var(--shadow-sm)",
+            }}
+          >
+            <MiniCircularRing value={readinessScore} size={54} stroke={6} color="#FF6B35" />
+            <div className="min-w-0">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                PLACEMENT READINESS
+              </p>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#FF6B35]" />
+                <span className="text-xs font-bold text-[#FF6B35]">{tierLabel}</span>
+              </div>
+              <p className="text-[11px] text-gray-400 mt-1 leading-snug">
+                Tests elevate your readiness score
+              </p>
+            </div>
           </div>
         </div>
       </div>

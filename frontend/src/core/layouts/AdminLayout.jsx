@@ -178,7 +178,7 @@ function AdminLayout() {
         </div>
       </aside>
 
-      <div className="flex-1 flex flex-col lg:pl-64 min-w-0">
+      <div className="main-content flex flex-col lg:pl-64">
         <header className="h-16 sticky top-0 z-30 flex items-center justify-between px-6 border-b" style={{ borderColor: "var(--border)" }}>
           <div className="flex items-center gap-4">
             <button type="button" onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 rounded-xl border lg:hidden cursor-pointer"
@@ -198,8 +198,10 @@ function AdminLayout() {
           </div>
         </header>
 
-        <main className="flex-1 p-6 sm:p-8 overflow-y-auto">
-          <Outlet />
+        <main className="flex-1 overflow-y-auto">
+          <div className="page-container">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

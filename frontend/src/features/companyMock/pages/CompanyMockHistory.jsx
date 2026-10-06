@@ -189,7 +189,7 @@ export default function CompanyMockHistory() {
   const hasAny = !loading && !error && (companies?.length || 0) > 0;
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10" style={{ background: "var(--bg-primary)", color: "var(--text-primary)" }}>
+    <div className="page-container" style={{ background: "var(--bg-primary)", color: "var(--text-primary)" }}>
       {/* Header */}
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div className="flex items-center gap-3">

@@ -18,11 +18,132 @@ html {
 body {
   margin: 0;
   font-family: "Plus Jakarta Sans", "Poppins", system-ui, -apple-system, sans-serif;
+  letter-spacing: 0.015em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background: var(--bg-primary);
   color: var(--text-primary);
   transition: background-color 0.4s ease, color 0.4s ease;
+  width: 100%;
+  min-height: 100%;
+}
+
+html, #root {
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+}
+
+/* ================================
+   SHARED LAYOUT SYSTEM
+   ================================ */
+
+.app-layout {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+}
+
+.main-content {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+.page-container {
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 32px 40px;
+  box-sizing: border-box;
+}
+
+@media (max-width: 1200px) {
+  .page-container {
+    padding: 28px 32px;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-container {
+    padding: 24px 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-container {
+    padding: 20px 16px;
+  }
+}
+
+/* ================================
+   PAGE HEADERS & HERO
+   ================================ */
+.page-hero {
+  position: relative;
+  width: 100%;
+  border: 1px solid var(--border-color, var(--border));
+  border-radius: 28px;
+  padding: 48px;
+  margin-bottom: 32px;
+  background: var(--card-background, var(--card-bg));
+  box-shadow: var(--shadow-card);
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+@media (max-width: 1024px) {
+  .page-hero {
+    padding: 36px 32px;
+    margin-bottom: 24px;
+    border-radius: 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-hero {
+    padding: 24px 20px;
+    margin-bottom: 20px;
+    border-radius: 20px;
+  }
+}
+
+.page-hero-content {
+  position: relative;
+  z-index: 10;
+}
+
+.page-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.program-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 107, 53, 0.35);
+  background: rgba(255, 107, 53, 0.10);
+  color: #FF6B35;
+  white-space: nowrap;
+}
+
+.page-header {
+  margin-bottom: 28px;
+}
+
+.page-title {
+  margin: 0 0 8px;
+}
+
+.page-description {
+  margin: 0;
 }
 
 #root {

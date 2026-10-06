@@ -82,7 +82,7 @@ function StudentLayout() {
   }
 
   return (
-    <div className="min-h-screen flex" style={{ background: "var(--bg-primary)" }}>
+    <div className="app-layout" style={{ background: "var(--bg-primary)" }}>
       {/* Desktop & Mobile Sidebar */}
       <StudentSidebar
         profile={profile}
@@ -93,7 +93,7 @@ function StudentLayout() {
 
       {/* Main Content Area — Resizes smoothly alongside sidebar */}
       <div
-        className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out ${
+        className={`main-content flex flex-col transition-all duration-300 ease-in-out ${
           sidebarCollapsed ? "lg:pl-[72px]" : "lg:pl-64"
         }`}
       >

@@ -372,7 +372,7 @@ export default function MockInterview() {
   };
 
   return (
-    <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-8 space-y-6 pb-24 lg:pb-8">
+    <div className="page-container space-y-6 pb-24 lg:pb-8">
       
       {/* ── MAIN CARD CONTAINER ── */}
       <section 

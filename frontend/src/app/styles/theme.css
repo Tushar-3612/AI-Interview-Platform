@@ -10,11 +10,13 @@
   --bg-gradient-start: #FAF8F5;
   --bg-gradient-end: #F7F3EC;
   --card-bg: #FFFFFF;
+  --card-background: #FFFFFF;
   --card-border: #EFE9DF;
   --text-primary: #111827;
   --text-secondary: #6B7280;
   --text-muted: #9CA3AF;
   --border: #EFE9DF;
+  --border-color: #EFE9DF;
   --primary: #FF6B35;
   --primary-hover: #E85A24;
   --accent: #FF8A3D;
@@ -68,12 +70,14 @@
   --bg-gradient-start: #0F1117;
   --bg-gradient-end: #0F1117;
   --card-bg: #171A21;
+  --card-background: #171A21;
   --card-border: #262B36;
   --text-primary: #F8F9FB;
   --text-secondary: #A3A3A3;
   --text-muted: #6B7280;
   --navbar-bg: #12151D;
   --border: #262B36;
+  --border-color: #262B36;
   --primary: #FF6B35;
   --primary-hover: #FF8A3D;
   --accent: #FF8A3D;
