@@ -164,51 +164,44 @@ function InterviewPractice() {
     <div className="page-container">
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
         
-        {/* Header */}
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight" style={{ color: "#FF9800" }}>
-            Placement Preparation
-          </h1>
-          <button
-            type="button"
-            onClick={() => navigate("/practice/aptitude/history")}
-            className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-[10px] border cursor-pointer transition"
-            style={{ borderColor: "var(--border)", color: "var(--text-secondary)", background: "var(--card-bg)" }}
-          >
-            <History className="w-3.5 h-3.5" /> My Practice History
-          </button>
-        </div>
-        <p className="text-sm mb-6" style={{ color: "var(--text-secondary)" }}>
-          Select a company to begin your placement preparation assessments
-        </p>
+        {/* ── PAGE HERO CONTAINER ── */}
+        <section className="page-hero space-y-4 mb-6">
+          {/* Subtle Ambient Glow */}
+          <div className="absolute top-0 right-0 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 left-1/3 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
-        {/* Company Mock Interview CTA */}
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="p-5 mb-8 rounded-[14px] border flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-          style={{ background: "var(--card-bg)", borderColor: "rgba(139, 92, 246, 0.35)", boxShadow: "var(--shadow-card)" }}
-        >
-          <div className="flex items-start gap-4">
-            <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{ background: "rgba(139, 92, 246, 0.12)" }}>
-              <BrainCircuit className="w-5 h-5" style={{ color: "#8B5CF6" }} />
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border bg-[#FF6B35]/10 border-[#FF6B35]/30 text-[#FF6B35]">
+                <Building2 className="w-6 h-6" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h1 className="text-xl sm:text-2xl font-black tracking-tight text-[var(--text-primary)]">
+                    Placement Preparation
+                  </h1>
+                  <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-[#FF6B35]/15 text-[#FF6B35] border border-[#FF6B35]/30">
+                    Company Drills
+                  </span>
+                </div>
+                <p className="text-xs sm:text-sm text-[var(--text-secondary)] mt-1 max-w-2xl leading-relaxed">
+                  Select a company to begin your placement preparation assessments. Practice company-specific aptitude, technical, and coding rounds curated for recruitment drives.
+                </p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>Company Mock Interview</h2>
-              <p className="text-xs mt-1 max-w-xl" style={{ color: "var(--text-secondary)" }}>
-                Full company-style mock: Aptitude, Technical, and Coding sections with curated questions, security monitoring, and scored results.
-              </p>
+
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => navigate("/practice/aptitude/history")}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl border text-xs font-bold text-[var(--text-primary)] border-[#FF6B35]/35 bg-[#FF6B35]/10 hover:bg-[#FF6B35]/20 transition cursor-pointer"
+              >
+                <History className="w-3.5 h-3.5 text-[#FF6B35]" />
+                <span>My Practice History</span>
+              </button>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => navigate("/mock-interview")}
-            className="shrink-0 flex items-center gap-1.5 text-xs font-bold px-4 py-2.5 rounded-[10px] text-white cursor-pointer transition hover:opacity-90"
-            style={{ background: "#8B5CF6", boxShadow: "0 4px 14px rgba(139, 92, 246, 0.3)" }}
-          >
-            Start Mock Interview <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-        </motion.div>
+        </section>
 
         {/* Recent Activity bar */}
         {hasActivity && !loading && (

@@ -33,18 +33,39 @@ function Contact() {
     <div className="page-container">
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
 
-        {/* ── Header ── */}
-        <div>
-          <h1
-            className="text-2xl sm:text-3xl font-bold mb-1"
-            style={{ color: "var(--text-primary)" }}
-          >
-            Help & <span style={{ color: "#EF6905" }}>Support</span>
-          </h1>
-          <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-            Only for Sanjivani College Students
-          </p>
-        </div>
+        {/* ── PAGE HERO CONTAINER ── */}
+        <section className="page-hero space-y-4">
+          {/* Subtle Ambient Glow */}
+          <div className="absolute top-0 right-0 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 left-1/3 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border bg-[#FF6B35]/10 border-[#FF6B35]/30 text-[#FF6B35]">
+                <HelpCircle className="w-6 h-6" />
+              </div>
+              <div>
+                <div className="page-title-row flex items-center gap-2 flex-wrap">
+                  <h1 className="text-xl sm:text-2xl font-black tracking-tight text-[var(--text-primary)]">
+                    Help & Support
+                  </h1>
+                  <span className="program-badge">
+                    Student Help Desk
+                  </span>
+                </div>
+                <p className="page-description text-xs sm:text-sm text-[var(--text-secondary)] mt-1 max-w-2xl leading-relaxed">
+                  Only for Sanjivani College Students. Have questions about test rounds, interview attempts, or technical issues? Reach out to our placement support team.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2.5 shrink-0">
+              <span className="text-xs font-bold px-3.5 py-1.5 rounded-xl border border-[#FF6B35]/35 bg-[#FF6B35]/10 text-[#FF6B35]">
+                Sanjivani College of Engineering
+              </span>
+            </div>
+          </div>
+        </section>
 
         {/* ── Support Cards ── */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -52,7 +73,7 @@ function Contact() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.05 }}
-            className="p-5 rounded-2xl border transition-all duration-300 hover:border-[#EF6905]/25"
+            className="p-5 rounded-2xl border transition-all duration-300 hover:border-[#FF6B35]/30"
             style={{
               background: "var(--card-bg)",
               borderColor: "var(--border)",
@@ -60,10 +81,10 @@ function Contact() {
             }}
           >
             <div
-              className="w-9 h-9 rounded-xl flex items-center justify-center mb-3"
-              style={{ background: "rgba(239, 105, 5, 0.08)" }}
+              className="w-9 h-9 rounded-xl flex items-center justify-center mb-3 border border-[#FF6B35]/25"
+              style={{ background: "rgba(255, 107, 53, 0.10)" }}
             >
-              <Mail className="w-4.5 h-4.5" style={{ color: "#EF6905" }} />
+              <Mail className="w-4.5 h-4.5" style={{ color: "#FF6B35" }} />
             </div>
             <h3
               className="font-semibold text-sm mb-1"
@@ -73,8 +94,8 @@ function Contact() {
             </h3>
             <a
               href={`mailto:${SUPPORT_EMAIL}`}
-              className="text-sm hover:underline"
-              style={{ color: "#EF6905" }}
+              className="text-sm hover:underline font-semibold"
+              style={{ color: "#FF6B35" }}
             >
               {SUPPORT_EMAIL}
             </a>
@@ -84,7 +105,7 @@ function Contact() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="p-5 rounded-2xl border transition-all duration-300 hover:border-[#EF6905]/25"
+            className="p-5 rounded-2xl border transition-all duration-300 hover:border-[#FF6B35]/30"
             style={{
               background: "var(--card-bg)",
               borderColor: "var(--border)",
@@ -92,10 +113,10 @@ function Contact() {
             }}
           >
             <div
-              className="w-9 h-9 rounded-xl flex items-center justify-center mb-3"
-              style={{ background: "rgba(255, 152, 0, 0.08)" }}
+              className="w-9 h-9 rounded-xl flex items-center justify-center mb-3 border border-[#FF6B35]/25"
+              style={{ background: "rgba(255, 107, 53, 0.10)" }}
             >
-              <AlertCircle className="w-4.5 h-4.5" style={{ color: "#FF9800" }} />
+              <AlertCircle className="w-4.5 h-4.5" style={{ color: "#FF6B35" }} />
             </div>
             <h3
               className="font-semibold text-sm mb-1"
@@ -119,7 +140,7 @@ function Contact() {
             transition={{ delay: 0.15 }}
           >
             <div className="flex items-center gap-2 mb-4">
-              <HelpCircle className="w-5 h-5" style={{ color: "#EF6905" }} />
+              <HelpCircle className="w-5 h-5" style={{ color: "#FF6B35" }} />
               <h2
                 className="text-lg font-semibold"
                 style={{ color: "var(--text-primary)" }}
@@ -136,7 +157,7 @@ function Contact() {
                     className="rounded-xl border overflow-hidden transition-all duration-300"
                     style={{
                       background: "var(--card-bg)",
-                      borderColor: isOpen ? "#EF6905" : "var(--border)",
+                      borderColor: isOpen ? "#FF6B35" : "var(--border)",
                     }}
                   >
                     <button
@@ -153,7 +174,7 @@ function Contact() {
                       <ChevronDown
                         className="w-4 h-4 shrink-0 transition-transform duration-300"
                         style={{
-                          color: isOpen ? "#EF6905" : "var(--text-muted)",
+                          color: isOpen ? "#FF6B35" : "var(--text-muted)",
                           transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
                         }}
                       />
@@ -242,8 +263,8 @@ function Contact() {
                     color: "var(--text-primary)",
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = "#EF6905";
-                    e.target.style.boxShadow = "0 0 0 3px rgba(239, 105, 5, 0.15)";
+                    e.target.style.borderColor = "#FF6B35";
+                    e.target.style.boxShadow = "0 0 0 3px rgba(255, 107, 53, 0.15)";
                   }}
                   onBlur={(e) => {
                     e.target.style.borderColor = "var(--border)";

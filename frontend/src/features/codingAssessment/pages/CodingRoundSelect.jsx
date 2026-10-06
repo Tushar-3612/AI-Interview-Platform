@@ -26,9 +26,9 @@ const DIFFICULTY_CONFIG = [
     id: "Easy",
     name: "Easy Track",
     color: "#FF6B35",
-    glow: "rgba(255, 107, 53, 0.35)",
-    bg: "rgba(255, 107, 53, 0.12)",
-    border: "rgba(255, 107, 53, 0.28)",
+    glow: "rgba(255, 107, 53, 0.20)",
+    bg: "rgba(255, 107, 53, 0.08)",
+    border: "transparent",
     icon: Zap,
     duration: "30-45 mins",
     target: "Beginner & Freshers",
@@ -38,9 +38,9 @@ const DIFFICULTY_CONFIG = [
     id: "Medium",
     name: "Medium Track",
     color: "#FF6B35",
-    glow: "rgba(255, 107, 53, 0.35)",
-    bg: "rgba(255, 107, 53, 0.12)",
-    border: "rgba(255, 107, 53, 0.28)",
+    glow: "rgba(255, 107, 53, 0.20)",
+    bg: "rgba(255, 107, 53, 0.08)",
+    border: "transparent",
     icon: Flame,
     duration: "45-60 mins",
     target: "Standard OAs",
@@ -50,9 +50,9 @@ const DIFFICULTY_CONFIG = [
     id: "Hard",
     name: "Hard Track",
     color: "#FF6B35",
-    glow: "rgba(255, 107, 53, 0.35)",
-    bg: "rgba(255, 107, 53, 0.12)",
-    border: "rgba(255, 107, 53, 0.28)",
+    glow: "rgba(255, 107, 53, 0.20)",
+    bg: "rgba(255, 107, 53, 0.08)",
+    border: "transparent",
     icon: Cpu,
     duration: "60-90 mins",
     target: "Tier-1 & High CTC",
@@ -62,15 +62,16 @@ const DIFFICULTY_CONFIG = [
     id: "All",
     name: "Mixed Track",
     color: "#FF6B35",
-    glow: "rgba(255, 107, 53, 0.35)",
-    bg: "rgba(255, 107, 53, 0.12)",
-    border: "rgba(255, 107, 53, 0.28)",
+    glow: "rgba(255, 107, 53, 0.20)",
+    bg: "rgba(255, 107, 53, 0.08)",
+    border: "transparent",
     icon: Layers,
     duration: "60 mins",
     target: "Full OA Simulation",
     description: "Balanced multi-tier test replicating full screening rounds.",
   },
 ];
+
 
 const LANGUAGES = [
   { id: "python", label: "Python", ext: "py" },
@@ -224,35 +225,34 @@ export default function CodingRoundSelect() {
                   whileHover={{ y: -2 }}
                   whileTap={{ scale: 0.99 }}
                   onClick={() => setSelectedDifficulty(diff.id)}
-                  className={`relative h-full p-5 rounded-2xl transition-all cursor-pointer flex flex-col justify-between overflow-hidden border ${
+                  className={`relative h-full p-5 rounded-2xl transition-all cursor-pointer flex flex-col justify-between overflow-hidden ${
                     isSelected
-                      ? "border-[#FF6B35] ring-2 ring-[#FF6B35]/30 shadow-lg shadow-[#FF6B35]/15"
-                      : "border-[var(--border)] hover:border-[#FF6B35]/40"
+                      ? "shadow-lg shadow-black/25"
+                      : "hover:opacity-90 shadow-sm"
                   }`}
                   style={{
                     background: isSelected
-                      ? `color-mix(in srgb, ${diff.color} 16%, var(--card-bg))`
+                      ? `color-mix(in srgb, ${diff.color} 5%, var(--card-bg))`
                       : "var(--card-bg)",
                   }}
                 >
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <div
-                        className="w-10 h-10 rounded-xl flex items-center justify-center border"
+                        className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors"
                         style={{
-                          background: diff.bg,
-                          borderColor: diff.border,
-                          color: diff.color,
+                          background: isSelected ? "rgba(255, 107, 53, 0.12)" : "rgba(255, 255, 255, 0.04)",
+                          color: isSelected ? diff.color : "var(--text-secondary)",
                         }}
                       >
                         <Icon className="w-5 h-5" />
                       </div>
                       <div className="text-right">
-                        <span className="text-xs font-bold font-mono px-2 py-0.5 rounded-md border"
+                        <span
+                          className="text-xs font-bold font-mono px-2.5 py-1 rounded-lg transition-colors"
                           style={{
-                            color: diff.color,
-                            borderColor: diff.border,
-                            background: diff.bg,
+                            color: isSelected ? diff.color : "var(--text-secondary)",
+                            background: isSelected ? "rgba(255, 107, 53, 0.09)" : "rgba(255, 255, 255, 0.04)",
                           }}
                         >
                           {loadingStats ? "..." : `${questionCount} Questions`}
@@ -261,9 +261,14 @@ export default function CodingRoundSelect() {
                     </div>
 
                     <div>
-                      <h3 className="text-base font-extrabold text-[var(--text-primary)]">
-                        {diff.name}
-                      </h3>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-base font-extrabold text-[var(--text-primary)]">
+                          {diff.name}
+                        </h3>
+                        {isSelected && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#FF6B35] animate-pulse" />
+                        )}
+                      </div>
                       <p className="text-xs text-[var(--text-secondary)] mt-1 leading-relaxed">
                         {diff.description}
                       </p>
@@ -272,18 +277,17 @@ export default function CodingRoundSelect() {
 
                   <div
                     className="pt-3 border-t mt-3 flex items-center justify-between text-[11px]"
-                    style={{ borderColor: "var(--border)" }}
+                    style={{ borderColor: "rgba(255, 255, 255, 0.05)" }}
                   >
                     <span className="flex items-center gap-1 text-[var(--text-muted)] font-medium">
                       <Timer className="w-3.5 h-3.5" />
                       {diff.duration}
                     </span>
                     <span
-                      className="font-semibold px-2 py-0.5 rounded-md text-[10px]"
+                      className="font-semibold px-2 py-0.5 rounded-md text-[10px] transition-colors"
                       style={{
-                        background: diff.bg,
-                        color: diff.color,
-                        border: `1px solid ${diff.border}`,
+                        background: isSelected ? "rgba(255, 107, 53, 0.08)" : "rgba(255, 255, 255, 0.04)",
+                        color: isSelected ? diff.color : "var(--text-secondary)",
                       }}
                     >
                       {diff.target}

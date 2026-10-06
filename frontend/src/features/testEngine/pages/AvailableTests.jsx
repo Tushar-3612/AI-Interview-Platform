@@ -27,49 +27,6 @@ import api from "../../../core/api/api.js";
 import { getAuthToken, useStudentProfile } from "../../student/hooks/useStudentProfile.js";
 import toast from "react-hot-toast";
 
-// Mini circular ring for the Placement Readiness card
-function MiniCircularRing({ value = 0, size = 36, stroke = 4, color = "#FF6B35" }) {
-  const numericVal = Math.min(100, Math.max(0, Number(value) || 0));
-  const radius = (size - stroke) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (numericVal / 100) * circumference;
-
-  return (
-    <div className="relative flex items-center justify-center select-none shrink-0" style={{ width: size, height: size }}>
-      <svg width={size} height={size} className="transform -rotate-90">
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          stroke="rgba(255, 255, 255, 0.08)"
-          strokeWidth={stroke}
-          fill="none"
-        />
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          stroke={color}
-          strokeWidth={stroke}
-          strokeDasharray={circumference}
-          strokeDashoffset={offset}
-          strokeLinecap="round"
-          fill="none"
-          style={{
-            transition: "stroke 300ms ease, stroke-dashoffset 300ms ease",
-            filter: `drop-shadow(0 0 5px ${color}66)`,
-          }}
-        />
-      </svg>
-      <div className="absolute flex flex-col items-center justify-center text-center">
-        <span className="text-[9.5px] font-black tracking-tight" style={{ color: "var(--text-primary)" }}>
-          {numericVal}%
-        </span>
-      </div>
-    </div>
-  );
-}
-
 function formatDeadline(test) {
   if (test.endAt) {
     const end = new Date(test.endAt);
@@ -90,12 +47,6 @@ function formatDeadline(test) {
   return null;
 }
 
-function getTierLabel(score) {
-  if (score >= 75) return "Tier 1";
-  if (score >= 50) return "Tier 2";
-  if (score >= 25) return "Tier 3";
-  return "Tier 3";
-}
 
 function getStatusBadge(test) {
   const isLive = test.testStatus === "available";
@@ -622,8 +573,6 @@ export default function AvailableTests() {
     return results.filter((r) => r.isPassed).length;
   }, [results]);
 
-  const readinessScore = profile?.placementReadiness ?? profile?.atsScore ?? 0;
-  const tierLabel = getTierLabel(readinessScore);
   const cohortLabel = profile?.batch || profile?.department || profile?.targetRole || "Active Student";
 
   // Earliest Active Deadline
@@ -716,28 +665,14 @@ export default function AvailableTests() {
       <div>
         {/* MOBILE COMPACT STAT ROW (100% Screen-Fitted, No Scroll) */}
         <div
-          className="lg:hidden p-2 rounded-2xl border grid grid-cols-4 items-center gap-1 w-full"
+          className="lg:hidden p-2 rounded-2xl border grid grid-cols-3 items-center gap-1 w-full"
           style={{
             background: "var(--card-bg)",
             borderColor: "var(--border)",
             boxShadow: "var(--shadow-sm)",
           }}
         >
-          {/* Chip 1: Readiness */}
-          <div className="flex items-center justify-center gap-1.5 py-0.5 border-r border-white/10 min-w-0 pr-1">
-            <MiniCircularRing value={readinessScore} size={34} stroke={3.5} color="#FF6B35" />
-            <div className="min-w-0 text-left">
-              <p className="text-[8.5px] font-bold uppercase tracking-tight text-gray-400 truncate">
-                READINESS
-              </p>
-              <p className="text-[10px] font-extrabold text-[#FF6B35] flex items-center gap-0.5 truncate">
-                <span className="w-1 h-1 rounded-full bg-[#FF6B35] shrink-0" />
-                <span className="truncate">{tierLabel}</span>
-              </p>
-            </div>
-          </div>
-
-          {/* Chip 2: Active */}
+          {/* Chip 1: Active */}
           <div className="flex flex-col items-center justify-center py-0.5 border-r border-white/10 min-w-0 px-0.5">
             <div className="flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-[#FF6B35]" />
@@ -748,7 +683,7 @@ export default function AvailableTests() {
             <span className="text-[8.5px] font-bold text-gray-400 mt-0.5">Active</span>
           </div>
 
-          {/* Chip 3: Upcoming */}
+          {/* Chip 2: Upcoming */}
           <div className="flex flex-col items-center justify-center py-0.5 border-r border-white/10 min-w-0 px-0.5">
             <div className="flex items-center gap-1">
               <Calendar className="w-3 h-3 text-cyan-400" />
@@ -759,7 +694,7 @@ export default function AvailableTests() {
             <span className="text-[8.5px] font-bold text-gray-400 mt-0.5">Upcoming</span>
           </div>
 
-          {/* Chip 4: Completed / Score */}
+          {/* Chip 3: Completed / Score */}
           <div className="flex flex-col items-center justify-center py-0.5 min-w-0 pl-0.5">
             <div className="flex items-center gap-1">
               <CheckCircle className="w-3 h-3 text-emerald-400" />
@@ -773,8 +708,8 @@ export default function AvailableTests() {
           </div>
         </div>
 
-        {/* DESKTOP 4 STAT CARDS ROW */}
-        <div className="hidden lg:grid grid-cols-4 gap-4">
+        {/* DESKTOP 3 STAT CARDS ROW */}
+        <div className="hidden lg:grid grid-cols-3 gap-4">
           {/* Card 1: Active Assessments */}
           <div
             className="p-5 rounded-2xl border flex flex-col justify-between transition-all hover:-translate-y-0.5"
@@ -863,30 +798,6 @@ export default function AvailableTests() {
               <span>
                 {avgScore != null ? `Average test score: ${avgScore}%` : `${passedCount} tests passed`}
               </span>
-            </div>
-          </div>
-
-          {/* Card 4: Placement Readiness */}
-          <div
-            className="p-5 rounded-2xl border flex items-center gap-4 transition-all hover:-translate-y-0.5"
-            style={{
-              background: "var(--card-bg)",
-              borderColor: "var(--border)",
-              boxShadow: "var(--shadow-sm)",
-            }}
-          >
-            <MiniCircularRing value={readinessScore} size={54} stroke={6} color="#FF6B35" />
-            <div className="min-w-0">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
-                PLACEMENT READINESS
-              </p>
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#FF6B35]" />
-                <span className="text-xs font-bold text-[#FF6B35]">{tierLabel}</span>
-              </div>
-              <p className="text-[11px] text-gray-400 mt-1 leading-snug">
-                Tests elevate your readiness score
-              </p>
             </div>
           </div>
         </div>

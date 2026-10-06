@@ -3,7 +3,6 @@ import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { toast } from "react-hot-toast";
 import {
-  BrainCircuit,
   Calculator,
   Compass,
   CheckCircle2,
@@ -152,10 +151,6 @@ export default function AptitudeHub() {
 
           <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
             <div className="space-y-3 max-w-2xl">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 border border-amber-500/30 text-amber-400">
-                <BrainCircuit className="w-3.5 h-3.5" />
-                <span>PrepHire Cognitive & Aptitude Module</span>
-              </div>
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-[var(--text-primary)]">
                 Aptitude & Reasoning Suite
               </h1>
