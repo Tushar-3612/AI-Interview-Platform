@@ -369,7 +369,7 @@ function CodingQuestionRenderer({
     <div className="flex flex-col lg:flex-row w-full h-full overflow-hidden" style={{ minHeight: 0 }}>
       {/* ── LEFT PANE: Problem Description ── */}
       <div
-        className="lg:w-[42%] flex flex-col overflow-y-auto border-b lg:border-b-0 lg:border-r border-[var(--border)] shrink-0 custom-scrollbar"
+        className="w-full lg:w-[42%] max-h-[240px] lg:max-h-none flex flex-col overflow-y-auto border-b lg:border-b-0 lg:border-r border-[var(--border)] shrink-0 custom-scrollbar"
         style={{ background: "var(--card-bg)" }}
       >
         <ProblemDescription
@@ -383,7 +383,7 @@ function CodingQuestionRenderer({
       <div className="flex-1 flex flex-col overflow-hidden h-full" style={{ minHeight: 0, background: "var(--card-bg)" }}>
         {/* Editor Toolbar */}
         <div
-          className="flex items-center justify-between px-3 py-2 border-b shrink-0"
+          className="flex flex-wrap items-center justify-between gap-1.5 px-3 py-2 border-b shrink-0"
           style={{ borderColor: "var(--border)", background: "var(--bg-secondary, var(--card-bg))" }}
         >
           {/* Language selector */}
@@ -392,7 +392,7 @@ function CodingQuestionRenderer({
               type="button"
               onClick={() => setLangDropOpen((o) => !o)}
               disabled={readOnly}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer hover:opacity-80 transition border disabled:opacity-50"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold cursor-pointer hover:opacity-80 transition border disabled:opacity-50"
               style={{
                 borderColor: "var(--border)",
                 background: "var(--input-bg)",
@@ -400,7 +400,7 @@ function CodingQuestionRenderer({
               }}
             >
               <Code2 className="w-3.5 h-3.5" style={{ color: "var(--primary)" }} />
-              <span>{activeLang.label}</span>
+              <span className="truncate max-w-[100px] sm:max-w-none">{activeLang.label}</span>
               <ChevronDown className="w-3.5 h-3.5 opacity-60" />
             </button>
 
@@ -438,7 +438,7 @@ function CodingQuestionRenderer({
           </div>
 
           {/* Action buttons */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 flex-wrap">
             <button
               type="button"
               onClick={handleResetCode}
@@ -475,7 +475,7 @@ function CodingQuestionRenderer({
             <button
               type="button"
               onClick={() => setSplitView((s) => !s)}
-              className="p-1.5 rounded-lg cursor-pointer hover:opacity-80 transition border"
+              className="hidden sm:inline-flex p-1.5 rounded-lg cursor-pointer hover:opacity-80 transition border"
               title={splitView ? "Single Editor View" : "Split Editor View"}
               style={{
                 borderColor: "var(--border)",
@@ -490,7 +490,7 @@ function CodingQuestionRenderer({
               type="button"
               onClick={handleRun}
               disabled={running || submitting || !question}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold cursor-pointer hover:opacity-90 transition disabled:opacity-50"
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer hover:opacity-90 transition disabled:opacity-50"
               style={{ background: "rgba(99,102,241,0.15)", color: "#6366f1", border: "1px solid rgba(99,102,241,0.3)" }}
             >
               {running ? (
@@ -510,7 +510,7 @@ function CodingQuestionRenderer({
               type="button"
               onClick={handleSubmit}
               disabled={submitting || running || !question}
-              className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-semibold text-white cursor-pointer hover:opacity-90 transition disabled:opacity-50 shadow-sm"
+              className="flex items-center gap-1 px-3.5 py-1.5 rounded-lg text-xs font-semibold text-white cursor-pointer hover:opacity-90 transition disabled:opacity-50 shadow-sm"
               style={{ background: "var(--primary)" }}
             >
               {submitting ? (
@@ -521,7 +521,7 @@ function CodingQuestionRenderer({
               ) : (
                 <>
                   <Send className="w-3.5 h-3.5" />
-                  <span>Submit Code</span>
+                  <span>Submit</span>
                 </>
               )}
             </button>

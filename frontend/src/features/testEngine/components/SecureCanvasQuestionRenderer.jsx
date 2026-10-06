@@ -87,6 +87,8 @@ export default function SecureCanvasQuestionRenderer({
     }
   }, []);
 
+  const touchStartPosRef = useRef(null);
+
   const renderCanvas = useCallback(() => {
     const canvas = canvasRef.current;
     const container = containerRef.current;
@@ -96,23 +98,28 @@ export default function SecureCanvasQuestionRenderer({
     if (!ctx) return;
 
     const colors = getThemePalette();
-    const width = container.clientWidth || 720;
+    const width = Math.max(280, container.clientWidth || 720);
     const dpr = Math.max(1, window.devicePixelRatio || 1);
 
-    // Dynamic scale font sizes for smaller screens
+    // Dynamic scale font sizes and paddings for small mobile screens (320px - 430px)
+    const isTinyMobile = width < 380;
     const isMobile = width < 540;
-    const padding = isMobile ? 18 : 28;
-    const contentWidth = Math.max(200, width - padding * 2);
+    const padding = isTinyMobile ? 12 : isMobile ? 16 : 28;
+    const contentWidth = Math.max(240, width - padding * 2);
 
-    const fontQuestion = isMobile
+    const fontQuestion = isTinyMobile
+      ? "600 13px 'Plus Jakarta Sans', system-ui, sans-serif"
+      : isMobile
       ? "600 14px 'Plus Jakarta Sans', system-ui, sans-serif"
       : "600 16px 'Plus Jakarta Sans', system-ui, sans-serif";
-    const fontOption = isMobile
+    const fontOption = isTinyMobile
+      ? "500 12.5px 'Plus Jakarta Sans', system-ui, sans-serif"
+      : isMobile
       ? "500 13px 'Plus Jakarta Sans', system-ui, sans-serif"
       : "500 14px 'Plus Jakarta Sans', system-ui, sans-serif";
-    const fontCode = "12.5px 'Fira Code', 'Consolas', 'Courier New', monospace";
+    const fontCode = "12px 'Fira Code', 'Consolas', 'Courier New', monospace";
 
-    // Text wrapping helper
+    // Text wrapping helper with word-break fallback for long tokens
     const wrapText = (text, maxWidth, font) => {
       ctx.font = font;
       const paragraphs = String(text || "").split("\n");
@@ -126,19 +133,39 @@ export default function SecureCanvasQuestionRenderer({
 
         const isCodeBlock = p.startsWith("    ") || p.startsWith("\t");
         const words = p.split(" ");
-        let currentLine = words[0] || "";
+        let currentLine = "";
 
-        for (let i = 1; i < words.length; i++) {
-          const testLine = currentLine + " " + words[i];
+        for (let i = 0; i < words.length; i++) {
+          const word = words[i];
+          const testLine = currentLine ? `${currentLine} ${word}` : word;
           const metrics = ctx.measureText(testLine);
+
           if (metrics.width > maxWidth) {
-            lines.push({ text: currentLine, isCode: isCodeBlock });
-            currentLine = words[i];
+            if (currentLine) {
+              lines.push({ text: currentLine, isCode: isCodeBlock });
+            }
+            // If single word itself exceeds maxWidth, split characters
+            if (ctx.measureText(word).width > maxWidth) {
+              let chunk = "";
+              for (const ch of word) {
+                if (ctx.measureText(chunk + ch).width > maxWidth) {
+                  lines.push({ text: chunk, isCode: isCodeBlock });
+                  chunk = ch;
+                } else {
+                  chunk += ch;
+                }
+              }
+              currentLine = chunk;
+            } else {
+              currentLine = word;
+            }
           } else {
             currentLine = testLine;
           }
         }
-        lines.push({ text: currentLine, isCode: isCodeBlock });
+        if (currentLine) {
+          lines.push({ text: currentLine, isCode: isCodeBlock });
+        }
       });
       return lines;
     };
@@ -159,13 +186,14 @@ export default function SecureCanvasQuestionRenderer({
     let currentY = padding;
 
     // Header space
-    currentY += 44;
+    const headerHeight = isTinyMobile ? 36 : 42;
+    currentY += headerHeight;
 
     // Question content lines
     const rawQuestionText = question.question || question.title || question.description || "Question text unavailable";
     const qLines = wrapText(rawQuestionText, contentWidth, fontQuestion);
-    const qLineHeight = isMobile ? 22 : 26;
-    currentY += qLines.length * qLineHeight + 20;
+    const qLineHeight = isTinyMobile ? 20 : isMobile ? 22 : 26;
+    currentY += qLines.length * qLineHeight + (isTinyMobile ? 14 : 20);
 
     // Options layout computation
     const rawOptions = question.options || [];
@@ -176,15 +204,16 @@ export default function SecureCanvasQuestionRenderer({
       : [];
 
     const optionBoxes = [];
-    const optionTextOffset = isMobile ? 64 : 76;
-    const optionTextWidth = contentWidth - optionTextOffset - 16;
+    const optionTextOffset = isTinyMobile ? 48 : isMobile ? 56 : 72;
+    const optionTextWidth = Math.max(120, contentWidth - optionTextOffset - (isTinyMobile ? 10 : 16));
 
     options.forEach((opt, idx) => {
       const optText = typeof opt === "string" ? opt : String(opt?.text || opt?.value || opt);
       const letter = letters[idx] || String.fromCharCode(65 + idx);
       const optLines = wrapText(optText, optionTextWidth, fontOption);
-      const lineH = isMobile ? 20 : 22;
-      const boxHeight = Math.max(isMobile ? 50 : 56, optLines.length * lineH + (isMobile ? 20 : 24));
+      const lineH = isTinyMobile ? 18 : isMobile ? 20 : 22;
+      const minBoxH = isTinyMobile ? 46 : isMobile ? 50 : 56;
+      const boxHeight = Math.max(minBoxH, optLines.length * lineH + (isTinyMobile ? 16 : isMobile ? 20 : 24));
 
       optionBoxes.push({
         letter,
@@ -195,25 +224,26 @@ export default function SecureCanvasQuestionRenderer({
         height: boxHeight,
       });
 
-      currentY += boxHeight + 12;
+      currentY += boxHeight + (isTinyMobile ? 10 : 12);
     });
 
-    const totalHeight = Math.max(320, currentY + padding);
+    const totalHeight = Math.max(280, currentY + padding);
     setCanvasHeight(totalHeight);
 
-    // Set dimensions with Retina scaling
+    // Set dimensions with separate CSS layout width and internal retina buffer width
     canvas.width = Math.floor(width * dpr);
     canvas.height = Math.floor(totalHeight * dpr);
     canvas.style.width = `${width}px`;
     canvas.style.height = `${totalHeight}px`;
 
-    ctx.scale(dpr, dpr);
+    // Clear and set coordinate matrix cleanly
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     // 1. Draw Card Surface
     ctx.fillStyle = colors.cardBg;
     ctx.strokeStyle = colors.cardBorder;
     ctx.lineWidth = 1;
-    roundRect(0, 0, width, totalHeight, 20, true, true);
+    roundRect(0, 0, width, totalHeight, isMobile ? 16 : 20, true, true);
 
     // 2. Draw Diagonal Candidate Security Watermark
     ctx.save();
@@ -233,61 +263,65 @@ export default function SecureCanvasQuestionRenderer({
 
     // 3. Draw Header Badges & Meta
     let metaX = padding;
-    const metaY = padding + 14;
+    const metaY = padding + (isTinyMobile ? 11 : 14);
 
     // Q Number Badge
+    const qBadgeW = isTinyMobile ? 32 : isMobile ? 38 : 44;
     ctx.fillStyle = colors.primaryOrange;
-    roundRect(metaX, metaY - 14, isMobile ? 38 : 44, 24, 8, true, false);
-    ctx.font = "bold 12px 'Plus Jakarta Sans', sans-serif";
+    roundRect(metaX, metaY - 12, qBadgeW, 22, 6, true, false);
+    ctx.font = "bold 11px 'Plus Jakarta Sans', sans-serif";
     ctx.fillStyle = "#ffffff";
     ctx.textAlign = "center";
-    ctx.fillText(`Q${questionIndex + 1}`, metaX + (isMobile ? 19 : 22), metaY + 2);
-    metaX += (isMobile ? 44 : 52);
+    ctx.fillText(`Q${questionIndex + 1}`, metaX + qBadgeW / 2, metaY + 3);
+    metaX += qBadgeW + 6;
 
-    // Type Badge
-    const typeLabel = question.type || (question.subject ? question.subject : "MCQ");
-    ctx.font = "600 11px 'Plus Jakarta Sans', sans-serif";
-    const typeWidth = ctx.measureText(typeLabel.toUpperCase()).width + 16;
+    // Type Badge (Truncate if needed on small screens)
+    const rawType = question.type || (question.subject ? question.subject : "MCQ");
+    const typeLabel = isTinyMobile && rawType.length > 6 ? `${rawType.slice(0, 5)}.` : rawType;
+    ctx.font = "600 10px 'Plus Jakarta Sans', sans-serif";
+    const typeWidth = ctx.measureText(typeLabel.toUpperCase()).width + 12;
     ctx.fillStyle = colors.badgeBg;
     ctx.strokeStyle = colors.badgeBorder;
     ctx.lineWidth = 1;
-    roundRect(metaX, metaY - 14, typeWidth, 24, 8, true, true);
+    roundRect(metaX, metaY - 12, typeWidth, 22, 6, true, true);
     ctx.fillStyle = colors.textSecondary;
     ctx.textAlign = "center";
-    ctx.fillText(typeLabel.toUpperCase(), metaX + typeWidth / 2, metaY + 2);
-    metaX += typeWidth + 8;
+    ctx.fillText(typeLabel.toUpperCase(), metaX + typeWidth / 2, metaY + 2.5);
+    metaX += typeWidth + 6;
 
-    // Difficulty Badge
+    // Difficulty Badge (Hide on super tight mobile if overlapping marks)
     const diff = (question.difficulty || "medium").toLowerCase();
     const diffColor = diff === "easy" ? colors.diffEasy : diff === "hard" ? colors.diffHard : colors.diffMed;
-    ctx.font = "bold 11px 'Plus Jakarta Sans', sans-serif";
-    const diffWidth = ctx.measureText(diff.toUpperCase()).width + 16;
-    ctx.fillStyle = `${diffColor}14`;
-    ctx.strokeStyle = `${diffColor}40`;
-    ctx.lineWidth = 1;
-    roundRect(metaX, metaY - 14, diffWidth, 24, 8, true, true);
-    ctx.fillStyle = diffColor;
-    ctx.textAlign = "center";
-    ctx.fillText(diff.toUpperCase(), metaX + diffWidth / 2, metaY + 2);
+    ctx.font = "bold 10px 'Plus Jakarta Sans', sans-serif";
+    const diffWidth = ctx.measureText(diff.toUpperCase()).width + 12;
+    if (metaX + diffWidth < width - padding - 60) {
+      ctx.fillStyle = `${diffColor}14`;
+      ctx.strokeStyle = `${diffColor}40`;
+      ctx.lineWidth = 1;
+      roundRect(metaX, metaY - 12, diffWidth, 22, 6, true, true);
+      ctx.fillStyle = diffColor;
+      ctx.textAlign = "center";
+      ctx.fillText(diff.toUpperCase(), metaX + diffWidth / 2, metaY + 2.5);
+    }
 
     // Marks Badge (Right-aligned)
     const marksText = `+${question.marks || 1} mark${question.marks !== 1 ? "s" : ""}`;
-    ctx.font = "600 12px 'Plus Jakarta Sans', sans-serif";
+    ctx.font = "600 11px 'Plus Jakarta Sans', sans-serif";
     ctx.fillStyle = colors.textSecondary;
     ctx.textAlign = "right";
-    ctx.fillText(marksText, width - padding, metaY + 2);
+    ctx.fillText(marksText, width - padding, metaY + 3);
 
     // Header Divider Line
     ctx.beginPath();
-    ctx.moveTo(padding, padding + 34);
-    ctx.lineTo(width - padding, padding + 34);
+    ctx.moveTo(padding, padding + (isTinyMobile ? 26 : 32));
+    ctx.lineTo(width - padding, padding + (isTinyMobile ? 26 : 32));
     ctx.strokeStyle = colors.divider;
     ctx.lineWidth = 1;
     ctx.stroke();
 
     // 4. Draw Question Text Lines
     ctx.textAlign = "left";
-    let textY = padding + 60;
+    let textY = padding + (isTinyMobile ? 48 : 58);
 
     qLines.forEach((lineObj) => {
       if (lineObj.isCode) {
@@ -320,26 +354,26 @@ export default function SecureCanvasQuestionRenderer({
         ? colors.optionBorderHover
         : colors.optionBorder;
       ctx.lineWidth = isSelected ? 2 : 1;
-      roundRect(box.x, box.y, box.width, box.height, 14, true, true);
+      roundRect(box.x, box.y, box.width, box.height, isMobile ? 12 : 14, true, true);
 
       // Letter Badge
-      const badgeSize = isMobile ? 26 : 30;
-      const badgeX = box.x + (isMobile ? 10 : 14);
+      const badgeSize = isTinyMobile ? 22 : isMobile ? 26 : 30;
+      const badgeX = box.x + (isTinyMobile ? 8 : isMobile ? 10 : 14);
       const badgeY = box.y + (box.height - badgeSize) / 2;
 
       ctx.fillStyle = isSelected ? colors.primaryOrange : colors.badgeBg;
       ctx.strokeStyle = isSelected ? colors.primaryOrange : colors.badgeBorder;
       ctx.lineWidth = 1;
-      roundRect(badgeX, badgeY, badgeSize, badgeSize, 8, true, true);
+      roundRect(badgeX, badgeY, badgeSize, badgeSize, 6, true, true);
 
-      ctx.font = "bold 13px 'Plus Jakarta Sans', sans-serif";
+      ctx.font = `bold ${isTinyMobile ? "11px" : "12.5px"} 'Plus Jakarta Sans', sans-serif`;
       ctx.fillStyle = isSelected ? "#ffffff" : colors.textSecondary;
       ctx.textAlign = "center";
-      ctx.fillText(box.letter, badgeX + badgeSize / 2, badgeY + badgeSize / 2 + 4.5);
+      ctx.fillText(box.letter, badgeX + badgeSize / 2, badgeY + badgeSize / 2 + (isTinyMobile ? 4 : 4.5));
 
       // Radio Circle
-      const radioRadius = 7.5;
-      const radioCenterX = box.x + (isMobile ? 48 : 56);
+      const radioRadius = isTinyMobile ? 6.5 : 7.5;
+      const radioCenterX = box.x + (isTinyMobile ? 36 : isMobile ? 44 : 54);
       const radioCenterY = box.y + box.height / 2;
 
       ctx.beginPath();
@@ -352,19 +386,19 @@ export default function SecureCanvasQuestionRenderer({
 
       if (isSelected) {
         ctx.beginPath();
-        ctx.arc(radioCenterX, radioCenterY, 4, 0, Math.PI * 2);
+        ctx.arc(radioCenterX, radioCenterY, isTinyMobile ? 3 : 4, 0, Math.PI * 2);
         ctx.fillStyle = colors.primaryOrange;
         ctx.fill();
       }
 
       // Option Text Lines
-      ctx.font = isSelected ? `600 ${isMobile ? "13px" : "14px"} 'Plus Jakarta Sans', sans-serif` : fontOption;
-      ctx.fillStyle = isSelected ? colors.textPrimary : colors.textPrimary;
+      ctx.font = isSelected ? `600 ${isTinyMobile ? "12.5px" : isMobile ? "13px" : "14px"} 'Plus Jakarta Sans', sans-serif` : fontOption;
+      ctx.fillStyle = colors.textPrimary;
       ctx.textAlign = "left";
 
       const optTextX = box.x + optionTextOffset;
-      const lineH = isMobile ? 20 : 22;
-      let optTextY = box.y + (box.height - (box.textLines.length - 1) * lineH) / 2 + 4.5;
+      const lineH = isTinyMobile ? 18 : isMobile ? 20 : 22;
+      let optTextY = box.y + (box.height - (box.textLines.length - 1) * lineH) / 2 + 4;
 
       box.textLines.forEach((l) => {
         ctx.fillText(l.text, optTextX, optTextY);
@@ -414,11 +448,31 @@ export default function SecureCanvasQuestionRenderer({
     handlePointerAction(e.clientX, e.clientY);
   };
 
+  const handleTouchStart = (e) => {
+    if (e.touches && e.touches.length > 0) {
+      touchStartPosRef.current = {
+        x: e.touches[0].clientX,
+        y: e.touches[0].clientY,
+      };
+    }
+  };
+
   const handleTouchEnd = (e) => {
     if (e.changedTouches && e.changedTouches.length > 0) {
       const touch = e.changedTouches[0];
-      handlePointerAction(touch.clientX, touch.clientY);
+      const start = touchStartPosRef.current;
+      if (start) {
+        const dx = Math.abs(touch.clientX - start.x);
+        const dy = Math.abs(touch.clientY - start.y);
+        // Only register if tap was stationary (not a scroll gesture)
+        if (dx < 14 && dy < 14) {
+          handlePointerAction(touch.clientX, touch.clientY);
+        }
+      } else {
+        handlePointerAction(touch.clientX, touch.clientY);
+      }
     }
+    touchStartPosRef.current = null;
   };
 
   const handleMouseMove = (e) => {
@@ -477,7 +531,7 @@ export default function SecureCanvasQuestionRenderer({
   return (
     <div
       ref={containerRef}
-      className="w-full select-none"
+      className="w-full max-w-full select-none overflow-hidden"
       style={{
         userSelect: "none",
         WebkitUserSelect: "none",
@@ -492,14 +546,15 @@ export default function SecureCanvasQuestionRenderer({
       <canvas
         ref={canvasRef}
         onClick={handleClick}
+        onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         onContextMenu={(e) => e.preventDefault()}
         draggable={false}
-        className="w-full rounded-2xl shadow-lg block transition-all"
+        className="w-full max-w-full rounded-2xl shadow-lg block transition-all"
         style={{
-          touchAction: "manipulation",
+          touchAction: "pan-y",
           userSelect: "none",
           WebkitUserSelect: "none",
           MozUserSelect: "none",
