@@ -5,7 +5,7 @@ import {
   Code2, BrainCircuit, AlertTriangle, CheckCircle2, Copy, Eye, X, ChevronLeft, ChevronRight
 } from "lucide-react";
 import api from "../../../core/api/api.js";
-import { getAuthToken } from "../../student/hooks/useStudentProfile.js";
+import { getAuthToken, getAuthUser } from "../../student/hooks/useStudentProfile.js";
 import toast from "react-hot-toast";
 
 import MockQuestionFormModal from "../components/MockQuestionFormModal.jsx";
@@ -60,7 +60,10 @@ export default function MockQuestionManagement() {
   const [dupSearchResult, setDupSearchResult] = useState(null);
 
   const token = getAuthToken();
+  const authUser = getAuthUser();
   const headers = { Authorization: `Bearer ${token}` };
+  // Teachers have read-only access — only system_admin can add/edit/delete questions
+  const isReadOnly = authUser?.role === "teacher";
 
   const fetchQuestions = useCallback(async () => {
     setLoading(true);
@@ -166,23 +169,27 @@ export default function MockQuestionManagement() {
             <span>Duplicate Search</span>
           </button>
 
-          <button
-            onClick={() => setIsImportOpen(true)}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer shadow-sm hover:opacity-90"
-            style={{ background: "var(--card-bg)", borderColor: "var(--border)", color: "var(--text-primary)" }}
-          >
-            <Upload className="w-3.5 h-3.5" style={{ color: "var(--primary)" }} />
-            <span>Import Questions</span>
-          </button>
+          {!isReadOnly && (
+            <button
+              onClick={() => setIsImportOpen(true)}
+              className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer shadow-sm hover:opacity-90"
+              style={{ background: "var(--card-bg)", borderColor: "var(--border)", color: "var(--text-primary)" }}
+            >
+              <Upload className="w-3.5 h-3.5" style={{ color: "var(--primary)" }} />
+              <span>Import Questions</span>
+            </button>
+          )}
 
-          <button
-            onClick={handleOpenAdd}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white transition-all shadow-sm cursor-pointer hover:opacity-90"
-            style={{ background: "var(--primary)" }}
-          >
-            <Plus className="w-4 h-4" />
-            <span>Add Question</span>
-          </button>
+          {!isReadOnly && (
+            <button
+              onClick={handleOpenAdd}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white transition-all shadow-sm cursor-pointer hover:opacity-90"
+              style={{ background: "var(--primary)" }}
+            >
+              <Plus className="w-4 h-4" />
+              <span>Add Question</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -413,21 +420,25 @@ export default function MockQuestionManagement() {
                     <span>View</span>
                   </button>
 
-                  <button
-                    onClick={() => handleOpenEdit(q)}
-                    className="p-1.5 rounded-lg transition-colors text-slate-400 hover:text-[var(--primary)] hover:bg-slate-500/10 cursor-pointer"
-                    title="Edit Question"
-                  >
-                    <Edit2 className="w-4 h-4" />
-                  </button>
+                  {!isReadOnly && (
+                    <button
+                      onClick={() => handleOpenEdit(q)}
+                      className="p-1.5 rounded-lg transition-colors text-slate-400 hover:text-[var(--primary)] hover:bg-slate-500/10 cursor-pointer"
+                      title="Edit Question"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                  )}
 
-                  <button
-                    onClick={() => setDeleteTarget(q)}
-                    className="p-1.5 rounded-lg transition-colors text-slate-400 hover:text-rose-500 hover:bg-slate-500/10 cursor-pointer"
-                    title="Delete Question"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  {!isReadOnly && (
+                    <button
+                      onClick={() => setDeleteTarget(q)}
+                      className="p-1.5 rounded-lg transition-colors text-slate-400 hover:text-rose-500 hover:bg-slate-500/10 cursor-pointer"
+                      title="Delete Question"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
