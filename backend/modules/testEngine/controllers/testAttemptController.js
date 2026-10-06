@@ -49,7 +49,8 @@ export const getAssignedTests = async (req, res) => {
       studentIds: userId,
       status: { $nin: ["archived"] },
     })
-      .populate("testId", "title description companyId testType difficulty duration passingMarks attemptLimit subjects status scheduledAt startAt endAt closedAt questions.marks")
+      .populate("testId", "title description companyId testType difficulty duration passingMarks attemptLimit subjects status scheduledAt startAt endAt closedAt questions.marks createdAt")
+      .sort({ createdAt: -1 })
       .lean();
 
     const attempts = await TestAttempt.find({ userId }).select("testId status attemptCount").lean();
@@ -113,6 +114,7 @@ export const getAssignedTests = async (req, res) => {
           startAt: test.startAt,
           endAt: test.endAt,
           assignedAt: a.createdAt,
+          createdAt: test.createdAt,
           assignType: a.assignType,
           assignValue: a.assignValue,
         };

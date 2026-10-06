@@ -267,7 +267,7 @@ export default function AvailableTests() {
   const [inviteCode, setInviteCode] = useState("");
   const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState("due_date");
+  const [sortBy, setSortBy] = useState("newest");
   const [viewMode, setViewMode] = useState(() => {
     return localStorage.getItem("tests_view_mode") || "list";
   });
@@ -573,7 +573,13 @@ export default function AvailableTests() {
       );
     }
 
-    if (sortBy === "marks") {
+    if (sortBy === "newest") {
+      result.sort((a, b) => {
+        const timeA = a.assignedAt ? new Date(a.assignedAt).getTime() : (a.createdAt ? new Date(a.createdAt).getTime() : 0);
+        const timeB = b.assignedAt ? new Date(b.assignedAt).getTime() : (b.createdAt ? new Date(b.createdAt).getTime() : 0);
+        return timeB - timeA;
+      });
+    } else if (sortBy === "marks") {
       result.sort((a, b) => (b.totalMarks || 0) - (a.totalMarks || 0));
     } else if (sortBy === "duration") {
       result.sort((a, b) => (b.duration || 0) - (a.duration || 0));
@@ -992,6 +998,7 @@ export default function AvailableTests() {
               className="bg-transparent border-none outline-none text-xs font-bold cursor-pointer pr-1"
               style={{ color: "var(--text-primary)" }}
             >
+              <option value="newest" className="bg-[#101420]">Recently Assigned</option>
               <option value="due_date" className="bg-[#101420]">Due Date</option>
               <option value="marks" className="bg-[#101420]">Marks</option>
               <option value="duration" className="bg-[#101420]">Duration</option>
