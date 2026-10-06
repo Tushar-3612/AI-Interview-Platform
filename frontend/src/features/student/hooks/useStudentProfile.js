@@ -241,7 +241,11 @@ export function syncAuthUser(profileData) {
     if (sessionStorage.getItem("user")) {
       sessionStorage.setItem("user", JSON.stringify(updated));
     }
-    window.dispatchEvent(new CustomEvent("profile-updated", { detail: updated }));
+    // Defer to after the current React render cycle to avoid
+    // "Cannot update a component while rendering a different component" warnings.
+    setTimeout(() => {
+      window.dispatchEvent(new CustomEvent("profile-updated", { detail: updated }));
+    }, 0);
   } catch (err) {
     console.warn("Failed to sync auth user:", err);
   }
