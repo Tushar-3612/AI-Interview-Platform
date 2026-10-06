@@ -374,13 +374,8 @@ export default function Profile() {
     // Fast path: use in-memory base64 if present
     if (profile.resumeBase64) {
       try {
-        const byteCharacters = atob(profile.resumeBase64);
-        const byteNumbers = new Uint8Array(byteCharacters.length);
-        for (let i = 0; i < byteCharacters.length; i++) {
-          byteNumbers[i] = byteCharacters.charCodeAt(i);
-        }
-        const blob = new Blob([byteNumbers], { type: "application/pdf" });
-        const url = window.URL.createObjectURL(blob);
+        const contentType = fileName.toLowerCase().endsWith(".pdf") ? "application/pdf" : "application/octet-stream";
+        const url = `data:${contentType};base64,${profile.resumeBase64}`;
         setResumeBlobUrl(url);
         setResumeModalOpen(true);
         return;

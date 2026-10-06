@@ -95,10 +95,10 @@ export function normalizeCodingQuestion(raw, { companyMap = {}, fallbackCompanyI
   const testCases =
     publicTestCases.length > 0 || hiddenTestCases.length > 0
       ? [
-          ...publicTestCases.map((tc) => ({ input: String(tc.input ?? ""), expected: String(tc.expected ?? ""), isHidden: false })),
-          ...hiddenTestCases.map((tc) => ({ input: String(tc.input ?? ""), expected: String(tc.expected ?? ""), isHidden: true })),
+          ...publicTestCases.map((tc) => ({ input: String(tc.input ?? tc.stdin ?? ""), expected: String(tc.expected ?? tc.expectedOutput ?? tc.output ?? ""), isHidden: false })),
+          ...hiddenTestCases.map((tc) => ({ input: String(tc.input ?? tc.stdin ?? ""), expected: String(tc.expected ?? tc.expectedOutput ?? tc.output ?? ""), isHidden: true })),
         ]
-      : legacyTestCases.map((tc) => ({ input: String(tc.input ?? ""), expected: String(tc.expected ?? ""), isHidden: Boolean(tc.isHidden) }));
+      : legacyTestCases.map((tc) => ({ input: String(tc.input ?? tc.stdin ?? ""), expected: String(tc.expected ?? tc.expectedOutput ?? tc.output ?? ""), isHidden: Boolean(tc.isHidden) }));
 
   return {
     questionId: String(raw.id ?? raw.questionId ?? ""),
