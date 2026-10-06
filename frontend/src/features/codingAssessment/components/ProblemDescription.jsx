@@ -22,7 +22,15 @@ function ProblemDescription({ question, difficulty, acceptance, tags }) {
   const questionTags = tags && tags.length ? tags : (question?.tags || []);
 
   return (
-    <div className="px-4 py-3 flex-1 overflow-y-auto">
+    <div
+      className="px-4 py-3 flex-1 overflow-y-auto select-none"
+      style={{
+        userSelect: "none",
+        WebkitUserSelect: "none",
+        MozUserSelect: "none",
+        msUserSelect: "none",
+      }}
+    >
       {/* Title */}
       <div className="flex items-start justify-between gap-2 mb-4">
         <h1

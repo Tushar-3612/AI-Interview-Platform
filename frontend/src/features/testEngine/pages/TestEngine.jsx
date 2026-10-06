@@ -1,14 +1,16 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import {
   ChevronLeft, ChevronRight, Flag, Send, AlertTriangle, Clock,
   CheckCircle, XCircle, Circle, BookOpen, Code, Maximize2,
-  ShieldAlert, WifiOff, RefreshCw,
+  ShieldAlert, WifiOff, RefreshCw, EyeOff, Lock,
 } from "lucide-react";
 import api from "../../../core/api/api.js";
 import { getAuthToken } from "../../student/hooks/useStudentProfile.js";
 import toast from "react-hot-toast";
 import CodingQuestionRenderer from "../../codingAssessment/components/CodingQuestionRenderer.jsx";
+import SecureCanvasQuestionRenderer from "../components/SecureCanvasQuestionRenderer.jsx";
+import { useExamLockdown } from "../hooks/useExamLockdown.js";
 
 function Timer({ endTime, durationMinutes = 30, serverOffset = 0, onTimeUp }) {
   const [display, setDisplay] = useState("00:00:00");
@@ -199,27 +201,6 @@ function SubmitConfirm({ stats, onConfirm, onClose, submitting }) {
   );
 }
 
-function getIsFullscreen() {
-  return Boolean(
-    document.fullscreenElement ||
-    document.webkitFullscreenElement ||
-    document.mozFullScreenElement ||
-    document.msFullscreenElement
-  );
-}
-
-function requestFullscreenSafe(element = document.documentElement) {
-  const rfs =
-    element.requestFullscreen ||
-    element.webkitRequestFullscreen ||
-    element.mozRequestFullScreen ||
-    element.msRequestFullscreen;
-  if (typeof rfs === "function") {
-    return rfs.call(element);
-  }
-  return Promise.reject(new Error("Fullscreen API not supported in this browser environment"));
-}
-
 function TestEngine() {
   const { attemptId } = useParams();
   const navigate = useNavigate();
@@ -232,7 +213,6 @@ function TestEngine() {
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState([]);
   const [currentIdx, setCurrentIdx] = useState(0);
-  const [isFullscreen, setIsFullscreen] = useState(getIsFullscreen());
   const [proctoringError, setProctoringError] = useState(false);
   const [serverOffset, setServerOffset] = useState(0);
   const [submitConfirm, setSubmitConfirm] = useState(false);
@@ -245,18 +225,7 @@ function TestEngine() {
   const containerRef = useRef(null);
   const saveTimerRef = useRef(null);
   const lastSaveRef = useRef("");
-  const blurStartRef = useRef(null);
   const heartbeatFailCountRef = useRef(0);
-
-  const enterFullscreen = useCallback(async () => {
-    try {
-      await requestFullscreenSafe(document.documentElement);
-      setIsFullscreen(true);
-    } catch (err) {
-      console.warn("Fullscreen request error:", err);
-      toast.error("Please allow fullscreen mode to continue your assessment.", { id: "fullscreen-denied" });
-    }
-  }, []);
 
   // Sync test and attempt data
   useEffect(() => {
@@ -297,28 +266,46 @@ function TestEngine() {
     }
   }, [attempt, test]);
 
-  // Fullscreen requirement listener across all browser engines
-  useEffect(() => {
-    const onFullscreenChange = () => {
-      const inFull = getIsFullscreen();
-      setIsFullscreen(inFull);
-      if (!inFull && !submitted) {
-        reportViolation("fullscreen_exit");
+  // 3-strike violation handler (switches, minimizations, Alt+Tab, fullscreen exit)
+  const reportViolation = useCallback(async (eventType = "tab_switch") => {
+    if (submitted || !attemptId) return;
+    try {
+      const { data } = await api.post(`/api/student/tests/attempt/${attemptId}/tab-switch`, {
+        eventType,
+      }, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const newCount = typeof data.tabSwitchCount === "number" ? data.tabSwitchCount : null;
+      if (newCount !== null) {
+        setTabWarnings(newCount);
+      } else {
+        setTabWarnings(prev => prev + 1);
       }
-    };
 
-    document.addEventListener("fullscreenchange", onFullscreenChange);
-    document.addEventListener("webkitfullscreenchange", onFullscreenChange);
-    document.addEventListener("mozfullscreenchange", onFullscreenChange);
-    document.addEventListener("MSFullscreenChange", onFullscreenChange);
-
-    return () => {
-      document.removeEventListener("fullscreenchange", onFullscreenChange);
-      document.removeEventListener("webkitfullscreenchange", onFullscreenChange);
-      document.removeEventListener("mozfullscreenchange", onFullscreenChange);
-      document.removeEventListener("MSFullscreenChange", onFullscreenChange);
-    };
-  }, [submitted]);
+      if (data.autoSubmitted || (newCount !== null ? newCount >= 3 : false)) {
+        toast.error("🚨 3 of 3: Test auto-submitted", {
+          id: "violation-auto-submit",
+          duration: 5000,
+        });
+        setSubmitted(true);
+        navigate(`/tests/result/${attemptId}`, { replace: true });
+      } else if (newCount === 1) {
+        toast.error("⚠️ Warning 1 of 3: Do not leave, switch, or minimize the test window", {
+          id: "violation-warning",
+          duration: 4000,
+        });
+      } else if (newCount === 2) {
+        toast.error("🚨 Warning 2 of 3 (Final Warning): One more violation will auto-submit", {
+          id: "violation-warning",
+          duration: 5000,
+        });
+      }
+    } catch (err) {
+      console.warn("Violation reporting failed:", err);
+      setProctoringError(true);
+    }
+  }, [attemptId, token, submitted, navigate]);
 
   // Integrity event logging for non-strike events
   const recordIntegrity = useCallback(async (eventType, durationSeconds = 0, details = {}) => {
@@ -341,6 +328,37 @@ function TestEngine() {
       setProctoringError(true);
     }
   }, [attemptId, token, submitted, navigate]);
+
+  // Determine if active question is coding
+  const activeQuestion = questions[currentIdx];
+  const isCoding = Boolean(
+    activeQuestion?.type === "Coding" ||
+    activeQuestion?.problemTitle ||
+    (activeQuestion?.testCases && activeQuestion.testCases.length > 0)
+  );
+
+  // Candidate Watermark String
+  const candidateWatermark = useMemo(() => {
+    const candId = attempt?.userId?._id || attempt?.userId || "STUDENT_SESSION";
+    const attShort = attemptId ? String(attemptId).slice(-6) : "SECURE";
+    return `ID: ${candId} • ATT: ${attShort} • ${new Date().toLocaleDateString()}`;
+  }, [attempt, attemptId]);
+
+  // Hook into exam lockdown suite
+  const {
+    examState,
+    isFullscreen,
+    isAway,
+    isDuplicateSession,
+    enterFullscreen,
+    resumeAssessment,
+  } = useExamLockdown({
+    attemptId,
+    isCodingQuestion: isCoding,
+    submitted,
+    reportViolation,
+    recordIntegrity,
+  });
 
   // Heartbeat loop for telemetry & server clock synchronization
   const sendHeartbeat = useCallback(async () => {
@@ -374,189 +392,6 @@ function TestEngine() {
     const interval = setInterval(sendHeartbeat, 15000);
     return () => clearInterval(interval);
   }, [sendHeartbeat, submitted, attemptId]);
-
-  const lastViolationRef = useRef(0);
-
-  // 3-strike violation handler (switches, minimizations, Alt+Tab, fullscreen exit)
-  const reportViolation = useCallback(async (eventType = "tab_switch") => {
-    if (submitted || !attemptId) return;
-    const now = Date.now();
-    // Coalesce rapid duplicate events (e.g. blur + visibilitychange + fullscreen_exit firing simultaneously on window switch)
-    if (now - lastViolationRef.current < 2500) return;
-    lastViolationRef.current = now;
-
-    try {
-      const { data } = await api.post(`/api/student/tests/attempt/${attemptId}/tab-switch`, {
-        eventType,
-      }, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      const newCount = data.tabSwitchCount ?? (tabWarnings + 1);
-      setTabWarnings(newCount);
-
-      if (data.autoSubmitted || newCount >= 3) {
-        toast.error("🚨 3 of 3: Test auto-submitted", {
-          id: "violation-auto-submit",
-          duration: 5000,
-        });
-        setSubmitted(true);
-        navigate(`/tests/result/${attemptId}`, { replace: true });
-      } else if (newCount === 1) {
-        toast.error("⚠️ Warning 1 of 3: Do not leave or minimize the test window", {
-          id: "violation-warning",
-          duration: 4000,
-        });
-      } else if (newCount === 2) {
-        toast.error("🚨 Warning 2 of 3 (Final Warning): One more violation will auto-submit", {
-          id: "violation-warning",
-          duration: 5000,
-        });
-      }
-    } catch (err) {
-      console.warn("Violation reporting failed:", err);
-      setProctoringError(true);
-    }
-  }, [attemptId, token, submitted, tabWarnings, navigate]);
-
-  // Window blur & focus duration tracking + 3-finger swipe & screen minimization detection
-  useEffect(() => {
-    const handleBlur = () => {
-      if (submitted) return;
-      blurStartRef.current = Date.now();
-      reportViolation("window_blur");
-    };
-
-    const handleFocus = () => {
-      if (submitted || !blurStartRef.current) return;
-      const durationSeconds = Math.round((Date.now() - blurStartRef.current) / 1000);
-      blurStartRef.current = null;
-      if (durationSeconds >= 1) {
-        recordIntegrity("window_blur", durationSeconds);
-      }
-    };
-
-    const handleVisibility = () => {
-      if (document.hidden && !submitted) {
-        reportViolation("tab_switch");
-      }
-    };
-
-    // Touchscreen 3-finger gesture detection
-    const handleTouchStart = (e) => {
-      if (e.touches && e.touches.length >= 3 && !submitted) {
-        reportViolation("window_blur");
-      }
-    };
-
-    // Screen minimization detection
-    const handleResize = () => {
-      if ((document.hidden || window.outerWidth === 0 || window.outerHeight === 0) && !submitted) {
-        reportViolation("window_blur");
-      }
-    };
-
-    window.addEventListener("blur", handleBlur);
-    window.addEventListener("focus", handleFocus);
-    document.addEventListener("visibilitychange", handleVisibility);
-    window.addEventListener("touchstart", handleTouchStart, { passive: true });
-    window.addEventListener("resize", handleResize);
-
-    return () => {
-      window.removeEventListener("blur", handleBlur);
-      window.removeEventListener("focus", handleFocus);
-      document.removeEventListener("visibilitychange", handleVisibility);
-      window.removeEventListener("touchstart", handleTouchStart);
-      window.removeEventListener("resize", handleResize);
-    };
-  }, [submitted, reportViolation, recordIntegrity]);
-
-  // Clipboard, context menu & text selection protection
-  useEffect(() => {
-    const handleContext = (e) => e.preventDefault();
-    const handleSelectStart = (e) => {
-      const target = e.target;
-      if (!target) return;
-      if (
-        target.tagName === "INPUT" ||
-        target.tagName === "TEXTAREA" ||
-        target.isContentEditable ||
-        target.closest?.(".monaco-editor") ||
-        target.closest?.(".monaco-aria-container")
-      ) {
-        return; // Allow selecting inside coding editor/inputs
-      }
-      e.preventDefault();
-    };
-
-    document.addEventListener("contextmenu", handleContext);
-    document.addEventListener("selectstart", handleSelectStart);
-    return () => {
-      document.removeEventListener("contextmenu", handleContext);
-      document.removeEventListener("selectstart", handleSelectStart);
-    };
-  }, []);
-
-  useEffect(() => {
-    const handleCopyCut = (e) => {
-      const q = questions[currentIdx];
-      const isCoding = q?.type === "Coding" || q?.problemTitle || (q?.testCases && q.testCases.length > 0);
-      if (!isCoding) {
-        e.preventDefault();
-        toast.error("Copying is disabled during the assessment", { id: "clipboard-lock" });
-      }
-    };
-
-    const handlePasteCapture = (e) => {
-      const text = e.clipboardData?.getData("text") || "";
-      const q = questions[currentIdx];
-      const isCoding = q?.type === "Coding" || q?.problemTitle || (q?.testCases && q.testCases.length > 0);
-      if (!isCoding) {
-        e.preventDefault();
-        toast.error("Pasting is disabled for this question", { id: "clipboard-lock" });
-      } else {
-        // Coding question paste: log if burst > 50 chars
-        if (text.length > 50) {
-          recordIntegrity("paste_burst", 0, {
-            length: text.length,
-            snippet: text.slice(0, 100),
-          });
-        }
-      }
-    };
-
-    window.addEventListener("copy", handleCopyCut, true);
-    window.addEventListener("cut", handleCopyCut, true);
-    window.addEventListener("paste", handlePasteCapture, true);
-    return () => {
-      window.removeEventListener("copy", handleCopyCut, true);
-      window.removeEventListener("cut", handleCopyCut, true);
-      window.removeEventListener("paste", handlePasteCapture, true);
-    };
-  }, [currentIdx, questions, recordIntegrity]);
-
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if ((e.ctrlKey || e.metaKey) && ["c", "v", "x", "a", "u"].includes(e.key.toLowerCase())) {
-        const q = questions[currentIdx];
-        const isCoding = q?.type === "Coding" || q?.problemTitle || (q?.testCases && q.testCases.length > 0);
-        if (!isCoding) e.preventDefault();
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [currentIdx, questions]);
-
-  useEffect(() => {
-    const handleBeforeUnload = (e) => {
-      if (!submitted) {
-        e.preventDefault();
-        e.returnValue = "";
-      }
-    };
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [submitted]);
 
   // Answer saving
   const saveCurrent = useCallback(async () => {
@@ -724,7 +559,6 @@ function TestEngine() {
   }
 
   const question = questions[currentIdx];
-  const isCoding = question?.type === "Coding" || question?.problemTitle || (question?.testCases && question.testCases.length > 0);
   const q = answers[currentIdx] || {};
 
   return (
@@ -845,14 +679,15 @@ function TestEngine() {
             {/* Scrollable Question Content */}
             <div className="flex-1 overflow-y-auto p-4 sm:p-6 flex justify-center items-start">
               <div className="w-full max-w-3xl space-y-4">
-                <div className="border admin-border admin-card rounded-2xl p-5 sm:p-7 shadow-sm">
+                <div className="w-full">
                   {question ? (
-                    <MCQRenderer
+                    <SecureCanvasQuestionRenderer
                       question={question}
                       questionIndex={currentIdx}
                       totalQuestions={questions.length}
                       answer={q.answer}
                       onAnswer={(v) => updateAnswer("answer", v)}
+                      candidateWatermark={candidateWatermark}
                     />
                   ) : (
                     <p className="text-sm py-8 text-center" style={{ color: "var(--text-muted)" }}>Question unavailable</p>
@@ -1006,39 +841,89 @@ function TestEngine() {
 
       {/* Fullscreen Required Blocking Overlay */}
       {!isFullscreen && !submitted && !loading && (
-        <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-black/90 backdrop-blur-md p-6 text-center select-none">
-          <div className="max-w-md w-full bg-white dark:bg-[#18181b] border border-red-500/30 rounded-2xl p-6 shadow-2xl space-y-4">
-            <div className="w-14 h-14 mx-auto rounded-full bg-red-100 dark:bg-red-950/40 flex items-center justify-center text-red-600">
-              <Maximize2 className="w-7 h-7" />
+        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#090d16] p-6 text-center select-none">
+          <div className="max-w-md w-full bg-[#141721] border border-red-500/40 rounded-2xl p-7 shadow-2xl space-y-5">
+            <div className="w-16 h-16 mx-auto rounded-2xl bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-500">
+              <Maximize2 className="w-8 h-8" />
             </div>
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white">Fullscreen Required</h3>
-            <p className="text-xs text-gray-600 dark:text-zinc-400 leading-relaxed">
-              Assessment security requires full screen mode at all times. All fullscreen departures are logged to your proctoring audit log.
-            </p>
+            <div>
+              <h3 className="text-xl font-bold text-white tracking-tight">Fullscreen Required</h3>
+              <p className="text-xs text-zinc-400 mt-2 leading-relaxed">
+                Assessment security requires full screen mode at all times. All fullscreen departures are logged to your proctoring audit log.
+              </p>
+            </div>
             <button
+              type="button"
               onClick={enterFullscreen}
-              className="w-full py-3 px-4 rounded-xl text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 transition cursor-pointer flex items-center justify-center gap-2"
+              className="w-full py-3.5 px-4 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 transition cursor-pointer flex items-center justify-center gap-2 shadow-lg hover:shadow-blue-500/25"
             >
-              <Maximize2 className="w-4 h-4" /> Return to Fullscreen
+              <Maximize2 className="w-4 h-4" /> Enter Fullscreen to Continue
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Window Focus Lost / Away Obscuring Shield */}
+      {isAway && isFullscreen && !submitted && !loading && (
+        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#090d16] p-6 text-center select-none">
+          <div className="max-w-md w-full bg-[#141721] border border-amber-500/40 rounded-2xl p-7 shadow-2xl space-y-5">
+            <div className="w-16 h-16 mx-auto rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+              <EyeOff className="w-8 h-8" />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-white tracking-tight">Assessment Paused — Focus Lost</h3>
+              <p className="text-xs text-zinc-400 mt-2 leading-relaxed">
+                You have shifted focus away to another window or application. Question content and choices are concealed while the assessment window is unfocused.
+              </p>
+            </div>
+            <div className="py-2 px-3 rounded-lg bg-[#0d1017] border border-zinc-800 text-[11px] font-mono text-zinc-400">
+              {candidateWatermark}
+            </div>
+            <button
+              type="button"
+              onClick={resumeAssessment}
+              className="w-full py-3.5 px-4 rounded-xl text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 transition cursor-pointer flex items-center justify-center gap-2 shadow-lg hover:shadow-amber-500/25"
+            >
+              <ShieldAlert className="w-4 h-4" /> Return to Assessment
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Duplicate Assessment Session Detected Blocking Overlay */}
+      {isDuplicateSession && !submitted && !loading && (
+        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#090d16] p-6 text-center select-none">
+          <div className="max-w-md w-full bg-[#141721] border border-red-500/40 rounded-2xl p-7 shadow-2xl space-y-5">
+            <div className="w-16 h-16 mx-auto rounded-2xl bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-500">
+              <Lock className="w-8 h-8" />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-white tracking-tight">Duplicate Session Detected</h3>
+              <p className="text-xs text-zinc-400 mt-2 leading-relaxed">
+                This assessment attempt is active in another browser tab or window. Multiple simultaneous sessions are not permitted. Please close this duplicate tab.
+              </p>
+            </div>
           </div>
         </div>
       )}
 
       {/* Proctoring Lost Blocking Overlay */}
       {proctoringError && !submitted && (
-        <div className="fixed inset-0 z-[210] flex flex-col items-center justify-center bg-black/90 backdrop-blur-md p-6 text-center select-none">
-          <div className="max-w-md w-full bg-white dark:bg-[#18181b] border border-amber-500/40 rounded-2xl p-6 shadow-2xl space-y-4">
-            <div className="w-14 h-14 mx-auto rounded-full bg-amber-100 dark:bg-amber-950/40 flex items-center justify-center text-amber-600">
-              <WifiOff className="w-7 h-7" />
+        <div className="fixed inset-0 z-[9998] flex flex-col items-center justify-center bg-[#090d16] p-6 text-center select-none">
+          <div className="max-w-md w-full bg-[#141721] border border-amber-500/40 rounded-2xl p-7 shadow-2xl space-y-5">
+            <div className="w-16 h-16 mx-auto rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+              <WifiOff className="w-8 h-8" />
             </div>
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white">Proctoring Telemetry Paused</h3>
-            <p className="text-xs text-gray-600 dark:text-zinc-400 leading-relaxed">
-              Secure connection to the proctoring server was interrupted. If you have an ad-blocker or privacy extension active (e.g. uBlock Origin), please disable it for this site and click Retry.
-            </p>
+            <div>
+              <h3 className="text-xl font-bold text-white tracking-tight">Proctoring Telemetry Paused</h3>
+              <p className="text-xs text-zinc-400 mt-2 leading-relaxed">
+                Secure connection to the proctoring server was interrupted. If you have an ad-blocker or privacy extension active, please disable it for this site and click Retry.
+              </p>
+            </div>
             <button
+              type="button"
               onClick={() => sendHeartbeat()}
-              className="w-full py-3 px-4 rounded-xl text-xs font-semibold text-white bg-amber-600 hover:bg-amber-700 transition cursor-pointer flex items-center justify-center gap-2"
+              className="w-full py-3.5 px-4 rounded-xl text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 transition cursor-pointer flex items-center justify-center gap-2 shadow-lg"
             >
               <RefreshCw className="w-4 h-4" /> Retry Connection
             </button>

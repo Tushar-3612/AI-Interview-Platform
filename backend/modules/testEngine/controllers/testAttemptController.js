@@ -398,9 +398,21 @@ export const recordIntegrityEvent = async (req, res) => {
     }
 
     const duration = Math.max(0, Number(durationSeconds) || 0);
-    const validEvent = ["tab_switch", "window_blur", "fullscreen_exit", "paste_burst", "heartbeat_gap"].includes(eventType)
-      ? eventType
-      : "tab_switch";
+    const validEvents = [
+      "tab_switch",
+      "window_blur",
+      "fullscreen_exit",
+      "paste_burst",
+      "heartbeat_gap",
+      "context_menu_attempt",
+      "drag_drop_attempt",
+      "duplicate_session",
+      "devtools_attempt",
+      "copy_attempt",
+      "paste_attempt",
+      "cut_attempt",
+    ];
+    const validEvent = validEvents.includes(eventType) ? eventType : "tab_switch";
 
     attempt.integrityEvents = attempt.integrityEvents || [];
     attempt.integrityEvents.push({
