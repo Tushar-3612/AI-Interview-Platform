@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import api from "../../../core/api/api.js";
 import { getAuthToken, getAuthUser } from "../../student/hooks/useStudentProfile.js";
+import { localToUtcIso } from "../../../core/utils/dateUtils.js";
 import toast from "react-hot-toast";
 import * as XLSX from "xlsx";
 import { DEPARTMENT_VALUES as DEPARTMENTS, YEAR_VALUES as YEARS } from "../../../core/utils/constants.js";
@@ -931,10 +932,11 @@ function AssignedTests() {
     try {
       const assignment = assignments.find(a => a._id === id);
       if (!assignment?.testId?._id) { toast.error("Test not found"); setSaving(false); return; }
-      await api.put(`/api/tests/${assignment.testId._id}`, { scheduledAt: newDate, status: "scheduled" }, {
+      const utcScheduledAt = localToUtcIso(newDate);
+      await api.put(`/api/tests/${assignment.testId._id}`, { scheduledAt: utcScheduledAt, startAt: utcScheduledAt, status: "scheduled" }, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      toast.success(`Test rescheduled to ${new Date(newDate).toLocaleString()}`);
+      toast.success(`Test rescheduled to ${fmtDateTime(utcScheduledAt)}`);
       setRescheduleModal(null);
       fetchData();
     } catch {

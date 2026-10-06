@@ -49,7 +49,8 @@ export const getAssignedTests = async (req, res) => {
       studentIds: userId,
       status: { $nin: ["archived"] },
     })
-      .populate("testId", "title description companyId testType difficulty duration passingMarks attemptLimit subjects status scheduledAt startAt endAt closedAt questions.marks")
+      .populate("testId", "title description companyId testType difficulty duration passingMarks attemptLimit subjects status scheduledAt startAt endAt closedAt questions.marks createdAt")
+      .sort({ createdAt: -1 })
       .lean();
 
     const attempts = await TestAttempt.find({ userId }).select("testId status attemptCount").lean();
@@ -113,6 +114,7 @@ export const getAssignedTests = async (req, res) => {
           startAt: test.startAt,
           endAt: test.endAt,
           assignedAt: a.createdAt,
+          createdAt: test.createdAt,
           assignType: a.assignType,
           assignValue: a.assignValue,
         };
@@ -396,9 +398,21 @@ export const recordIntegrityEvent = async (req, res) => {
     }
 
     const duration = Math.max(0, Number(durationSeconds) || 0);
-    const validEvent = ["tab_switch", "window_blur", "fullscreen_exit", "paste_burst", "heartbeat_gap"].includes(eventType)
-      ? eventType
-      : "tab_switch";
+    const validEvents = [
+      "tab_switch",
+      "window_blur",
+      "fullscreen_exit",
+      "paste_burst",
+      "heartbeat_gap",
+      "context_menu_attempt",
+      "drag_drop_attempt",
+      "duplicate_session",
+      "devtools_attempt",
+      "copy_attempt",
+      "paste_attempt",
+      "cut_attempt",
+    ];
+    const validEvent = validEvents.includes(eventType) ? eventType : "tab_switch";
 
     attempt.integrityEvents = attempt.integrityEvents || [];
     attempt.integrityEvents.push({

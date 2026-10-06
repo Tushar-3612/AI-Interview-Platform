@@ -28,7 +28,20 @@ const tabSwitchSchema = new mongoose.Schema({
 const integrityEventSchema = new mongoose.Schema({
   eventType: {
     type: String,
-    enum: ["tab_switch", "window_blur", "fullscreen_exit", "paste_burst", "heartbeat_gap"],
+    enum: [
+      "tab_switch",
+      "window_blur",
+      "fullscreen_exit",
+      "paste_burst",
+      "heartbeat_gap",
+      "context_menu_attempt",
+      "drag_drop_attempt",
+      "duplicate_session",
+      "devtools_attempt",
+      "copy_attempt",
+      "paste_attempt",
+      "cut_attempt",
+    ],
     required: true,
   },
   timestamp: { type: Date, default: Date.now },

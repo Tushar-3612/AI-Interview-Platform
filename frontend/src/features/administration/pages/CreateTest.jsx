@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight, ChevronLeft, Check, ClipboardList, Save } from "lucide-react";
 import api from "../../../core/api/api.js";
 import { getAuthToken } from "../../student/hooks/useStudentProfile.js";
+import { localToUtcIso, utcToLocalDatetimeString } from "../../../core/utils/dateUtils.js";
 import toast from "react-hot-toast";
 
 import Step1GeneralInfo from "../components/testWizard/Step1GeneralInfo.jsx";
@@ -77,9 +78,9 @@ function CreateTest() {
         attemptLimit: data.attemptLimit || 1,
         questionSource: data.questionSource || "manual",
         status: data.status || "draft",
-        scheduledAt: data.scheduledAt ? new Date(data.scheduledAt).toISOString().slice(0, 16) : "",
-        startAt: data.startAt ? new Date(data.startAt).toISOString().slice(0, 16) : "",
-        endAt: data.endAt ? new Date(data.endAt).toISOString().slice(0, 16) : "",
+        scheduledAt: utcToLocalDatetimeString(data.scheduledAt),
+        startAt: utcToLocalDatetimeString(data.startAt),
+        endAt: utcToLocalDatetimeString(data.endAt),
         subjects: data.subjects || [],
         codingLanguages: data.codingLanguages || [],
         questions: (data.questions || []).map(q => ({
@@ -121,6 +122,9 @@ function CreateTest() {
     try {
       const payload = {
         ...form,
+        startAt: localToUtcIso(form.startAt) || undefined,
+        endAt: localToUtcIso(form.endAt) || undefined,
+        scheduledAt: localToUtcIso(form.scheduledAt || form.startAt) || undefined,
         status: status || form.status,
         questions,
       };
@@ -164,8 +168,8 @@ function CreateTest() {
       const publishPayload = {
         duration: Number(form.duration),
         attemptLimit: Number(form.attemptLimit),
-        startAt: form.startAt,
-        endAt: form.endAt,
+        startAt: localToUtcIso(form.startAt),
+        endAt: localToUtcIso(form.endAt),
       };
       const res = await api.put(`/api/tests/${currentTestId}/publish`, publishPayload, {
         headers: { Authorization: `Bearer ${token}` },
