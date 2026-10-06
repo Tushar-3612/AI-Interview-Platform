@@ -50,6 +50,35 @@ export async function requestFullscreenSafe(element = document.documentElement) 
 }
 
 /**
+ * Vendor-agnostic fullscreen exit
+ */
+export async function exitFullscreenSafe() {
+  if (typeof document === "undefined") return Promise.resolve();
+  const inFull = Boolean(
+    document.fullscreenElement ||
+    document.webkitFullscreenElement ||
+    document.mozFullScreenElement ||
+    document.msFullscreenElement
+  );
+  if (!inFull) return Promise.resolve();
+
+  const efs =
+    document.exitFullscreen ||
+    document.webkitExitFullscreen ||
+    document.mozCancelFullScreen ||
+    document.msExitFullscreen;
+
+  if (typeof efs === "function") {
+    try {
+      return await efs.call(document);
+    } catch (err) {
+      console.warn("exitFullscreenSafe error:", err);
+    }
+  }
+  return Promise.resolve();
+}
+
+/**
  * Core Exam Lockdown Hook (HackerRank / Unstop Grade Security)
  * Manages Fullscreen, Focus/Visibility state machine, Opaque Focus-loss Shield,
  * Tab session locks, and Capture-phase Clipboard/Keyboard/Navigation barriers.
@@ -189,6 +218,7 @@ export function useExamLockdown({
     if (submitted) {
       setExamState("SUBMITTED");
       setIsAway(false);
+      exitFullscreenSafe();
       return;
     }
 
@@ -591,6 +621,7 @@ export function useExamLockdown({
     isAway,
     isDuplicateSession,
     enterFullscreen,
+    exitFullscreen: exitFullscreenSafe,
     resumeAssessment,
   };
 }

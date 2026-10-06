@@ -116,12 +116,12 @@ function TestInstructionsModal({ test, onAgree, onClose, starting }) {
   const [agreed, setAgreed] = useState(false);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 select-none" onClick={onClose}>
       <motion.div
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
-        className="bg-[#101420] text-white rounded-3xl border border-white/10 w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl p-6 space-y-5"
+        className="bg-[var(--card-bg)] text-[var(--text-primary)] rounded-3xl border border-[var(--border)] w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl p-6 space-y-5"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="text-center">
@@ -131,46 +131,46 @@ function TestInstructionsModal({ test, onAgree, onClose, starting }) {
           >
             <FileText className="w-7 h-7" />
           </div>
-          <h2 className="text-xl font-bold tracking-tight">{test.title}</h2>
-          <p className="text-xs text-gray-400 mt-1">
+          <h2 className="text-xl font-bold tracking-tight text-[var(--text-primary)]">{test.title}</h2>
+          <p className="text-xs text-[var(--text-secondary)] mt-1">
             {test.companyId ? `Partner: ${test.companyId}` : "PrepHire Assessment Suite"}
           </p>
         </div>
 
         <div className="grid grid-cols-3 gap-2.5 text-xs text-center">
-          <div className="p-3 rounded-2xl bg-white/5 border border-white/5">
-            <p className="text-gray-400 text-[11px]">Duration</p>
-            <p className="font-bold text-sm mt-0.5 text-white">{test.duration || 30} min</p>
+          <div className="p-3 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border)]">
+            <p className="text-[var(--text-secondary)] text-[11px]">Duration</p>
+            <p className="font-bold text-sm mt-0.5 text-[var(--text-primary)]">{test.duration || 30} min</p>
           </div>
-          <div className="p-3 rounded-2xl bg-white/5 border border-white/5">
-            <p className="text-gray-400 text-[11px]">Questions</p>
-            <p className="font-bold text-sm mt-0.5 text-white">{test.totalQuestions || 0}</p>
+          <div className="p-3 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border)]">
+            <p className="text-[var(--text-secondary)] text-[11px]">Questions</p>
+            <p className="font-bold text-sm mt-0.5 text-[var(--text-primary)]">{test.totalQuestions || 0}</p>
           </div>
-          <div className="p-3 rounded-2xl bg-white/5 border border-white/5">
-            <p className="text-gray-400 text-[11px]">Total Marks</p>
-            <p className="font-bold text-sm mt-0.5 text-white">{test.totalMarks || 0}</p>
+          <div className="p-3 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border)]">
+            <p className="text-[var(--text-secondary)] text-[11px]">Total Marks</p>
+            <p className="font-bold text-sm mt-0.5 text-[var(--text-primary)]">{test.totalMarks || 0}</p>
           </div>
         </div>
 
-        <div className="text-xs space-y-2 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-200">
-          <h4 className="font-bold flex items-center gap-1.5 text-amber-400">
+        <div className="text-xs space-y-2 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-200">
+          <h4 className="font-bold flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
             <AlertCircle className="w-4 h-4" /> Proctored Test Rules
           </h4>
-          <ul className="space-y-1 text-[11.5px] leading-relaxed text-amber-200/90">
+          <ul className="space-y-1 text-[11.5px] leading-relaxed text-amber-700 dark:text-amber-200/90">
             <li>• Fullscreen mode is strictly enforced throughout the assessment.</li>
             <li>• Tab switches will trigger automatic warnings and eventual auto-submission.</li>
             <li>• Answers are saved in real-time. Timer cannot be paused once started.</li>
           </ul>
         </div>
 
-        <label className="flex items-start gap-3 p-3.5 rounded-2xl bg-white/5 border border-white/10 cursor-pointer select-none">
+        <label className="flex items-start gap-3 p-3.5 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border)] cursor-pointer select-none">
           <input
             type="checkbox"
             checked={agreed}
             onChange={(e) => setAgreed(e.target.checked)}
             className="w-4 h-4 rounded mt-0.5 accent-[#FF6B35]"
           />
-          <span className="text-xs text-gray-300 leading-snug">
+          <span className="text-xs text-[var(--text-secondary)] leading-snug">
             I understand and agree to the proctoring guidelines and promise to maintain academic integrity.
           </span>
         </label>
@@ -179,7 +179,7 @@ function TestInstructionsModal({ test, onAgree, onClose, starting }) {
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 py-3 text-xs font-bold rounded-xl border border-white/10 hover:bg-white/5 cursor-pointer transition-colors"
+            className="flex-1 py-3 text-xs font-bold rounded-xl border border-[var(--border)] hover:bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer transition-colors"
           >
             Cancel
           </button>
@@ -876,11 +876,11 @@ export default function AvailableTests() {
               className="bg-transparent border-none outline-none text-xs font-bold cursor-pointer pr-1"
               style={{ color: "var(--text-primary)" }}
             >
-              <option value="newest" className="bg-[#101420]">Recently Assigned</option>
-              <option value="due_date" className="bg-[#101420]">Due Date</option>
-              <option value="marks" className="bg-[#101420]">Marks</option>
-              <option value="duration" className="bg-[#101420]">Duration</option>
-              <option value="title" className="bg-[#101420]">Title</option>
+              <option value="newest" style={{ background: "var(--card-bg)", color: "var(--text-primary)" }}>Recently Assigned</option>
+              <option value="due_date" style={{ background: "var(--card-bg)", color: "var(--text-primary)" }}>Due Date</option>
+              <option value="marks" style={{ background: "var(--card-bg)", color: "var(--text-primary)" }}>Marks</option>
+              <option value="duration" style={{ background: "var(--card-bg)", color: "var(--text-primary)" }}>Duration</option>
+              <option value="title" style={{ background: "var(--card-bg)", color: "var(--text-primary)" }}>Title</option>
             </select>
           </div>
 

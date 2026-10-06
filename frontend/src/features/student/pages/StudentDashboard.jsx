@@ -1226,13 +1226,13 @@ function StudentDashboard() {
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 12 }}
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-lg bg-[#0C101A] border border-white/10 rounded-[28px] shadow-2xl overflow-hidden text-white"
+              className="w-full max-w-lg bg-[var(--card-bg)] border border-[var(--border)] rounded-[28px] shadow-2xl overflow-hidden text-[var(--text-primary)]"
               style={{
-                boxShadow: "0 20px 60px rgba(0,0,0,0.8), 0 0 30px rgba(255,107,53,0.15)",
+                boxShadow: "0 20px 60px rgba(0,0,0,0.4), 0 0 30px rgba(255,107,53,0.12)",
               }}
             >
               {/* Modal Header */}
-              <div className="p-5 sm:p-6 border-b border-white/10 flex items-start justify-between gap-3">
+              <div className="p-5 sm:p-6 border-b border-[var(--border)] flex items-start justify-between gap-3">
                 <div className="flex items-start gap-3.5">
                   <div
                     className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 mt-0.5"
@@ -1245,10 +1245,10 @@ function StudentDashboard() {
                     <BrainCircuit className="w-5 h-5 text-[#FF6B35]" />
                   </div>
                   <div>
-                    <h2 className="text-lg sm:text-xl font-black tracking-tight text-white leading-tight">
+                    <h2 className="text-lg sm:text-xl font-black tracking-tight text-[var(--text-primary)] leading-tight">
                       AI Real Interview
                     </h2>
-                    <p className="text-[11.5px] sm:text-xs text-gray-400 mt-1 leading-relaxed">
+                    <p className="text-[11.5px] sm:text-xs text-[var(--text-secondary)] mt-1 leading-relaxed">
                       Complete AI-powered placement interview based on your resume, technical skills, projects, behavioral responses and coding ability.
                     </p>
                   </div>
@@ -1256,7 +1256,7 @@ function StudentDashboard() {
                 <button
                   onClick={() => !isStartingInterview && setShowInterviewModeModal(false)}
                   disabled={isStartingInterview}
-                  className="w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-gray-400 hover:text-white flex items-center justify-center transition-colors disabled:opacity-40 cursor-pointer shrink-0"
+                  className="w-9 h-9 rounded-full bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] flex items-center justify-center transition-colors disabled:opacity-40 cursor-pointer shrink-0"
                   aria-label="Close modal"
                 >
                   <X className="w-4.5 h-4.5" />
@@ -1266,24 +1266,24 @@ function StudentDashboard() {
               {/* Modal Content */}
               <div className="p-5 sm:p-6 space-y-5 max-h-[78vh] overflow-y-auto custom-scrollbar">
                 {/* Stats Summary Bar */}
-                <div className="grid grid-cols-3 gap-2.5 p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 text-center">
+                <div className="grid grid-cols-3 gap-2.5 p-3.5 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border)] text-center">
                   <div className="space-y-0.5">
-                    <span className="text-lg font-black text-white block">41</span>
-                    <span className="text-[10.5px] font-bold text-gray-400 uppercase tracking-wider block">Questions</span>
+                    <span className="text-lg font-black text-[var(--text-primary)] block">41</span>
+                    <span className="text-[10.5px] font-bold text-[var(--text-secondary)] uppercase tracking-wider block">Questions</span>
                   </div>
-                  <div className="space-y-0.5 border-x border-white/10">
+                  <div className="space-y-0.5 border-x border-[var(--border)]">
                     <span className="text-lg font-black text-[#FF6B35] block">5</span>
-                    <span className="text-[10.5px] font-bold text-gray-400 uppercase tracking-wider block">Rounds</span>
+                    <span className="text-[10.5px] font-bold text-[var(--text-secondary)] uppercase tracking-wider block">Rounds</span>
                   </div>
                   <div className="space-y-0.5">
-                    <span className="text-lg font-black text-amber-400 block">100</span>
-                    <span className="text-[10.5px] font-bold text-gray-400 uppercase tracking-wider block">Total Marks</span>
+                    <span className="text-lg font-black text-amber-500 dark:text-amber-400 block">100</span>
+                    <span className="text-[10.5px] font-bold text-[var(--text-secondary)] uppercase tracking-wider block">Total Marks</span>
                   </div>
                 </div>
 
                 {/* Round Breakdown */}
                 <div className="space-y-2">
-                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-gray-400 block px-1">
+                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)] block px-1">
                     Interview Structure & Marks
                   </span>
 
@@ -1299,7 +1299,7 @@ function StudentDashboard() {
                       return (
                         <div
                           key={round.name}
-                          className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:border-white/15 transition-colors"
+                          className="flex items-center justify-between p-3 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border)] hover:border-[#FF6B35]/40 transition-colors"
                         >
                           <div className="flex items-center gap-2.5">
                             <div
@@ -1313,11 +1313,11 @@ function StudentDashboard() {
                               <Icon className="w-4 h-4" />
                             </div>
                             <div>
-                              <span className="text-xs font-bold text-white block">{round.name}</span>
-                              <span className="text-[11px] text-gray-400 block">{round.count}</span>
+                              <span className="text-xs font-bold text-[var(--text-primary)] block">{round.name}</span>
+                              <span className="text-[11px] text-[var(--text-secondary)] block">{round.count}</span>
                             </div>
                           </div>
-                          <span className="text-xs font-black text-gray-300 px-2 py-1 rounded-md bg-white/5 border border-white/10">
+                          <span className="text-xs font-black text-[var(--text-primary)] px-2 py-1 rounded-md bg-[var(--bg-primary)] border border-[var(--border)]">
                             {round.marks}
                           </span>
                         </div>
@@ -1329,12 +1329,12 @@ function StudentDashboard() {
                 {/* Resume Required Banner or Normal Primary Launch Action */}
                 {!profile?.resumeFileName || !profile.resumeFileName.trim() ? (
                   <div className="space-y-3">
-                    <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-200/90 space-y-1">
-                      <div className="flex items-center gap-1.5 text-amber-400 font-extrabold text-[11px] uppercase tracking-wider">
+                    <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-200/90 space-y-1">
+                      <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-extrabold text-[11px] uppercase tracking-wider">
                         <FileText className="w-3.5 h-3.5 shrink-0" />
                         <span>Resume Required</span>
                       </div>
-                      <p className="text-[11.5px] leading-relaxed text-amber-100/80">
+                      <p className="text-[11.5px] leading-relaxed text-amber-700 dark:text-amber-100/80">
                         Please upload your resume before starting the Real Interview. Questions in the Technical and Project rounds are tailored directly to your resume.
                       </p>
                     </div>
