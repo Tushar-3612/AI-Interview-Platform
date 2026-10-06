@@ -12,7 +12,11 @@ const FAQ = [
   { q: "How do I update my resume?", a: "Go to Profile → Resume section and upload or replace your PDF resume." },
 ];
 
-const SUPPORT_EMAIL = "tusharnagare2006@gmail.com";
+const SUPPORT_EMAILS = [
+  "tusharnagare2006@gmail.com",
+  "roshanlanghi28@gmail.com",
+  "amollende02@gmail.com",
+];
 
 function Contact() {
   const [openFaq, setOpenFaq] = useState(null);
@@ -66,18 +70,23 @@ function Contact() {
               <Mail className="w-4.5 h-4.5" style={{ color: "#EF6905" }} />
             </div>
             <h3
-              className="font-semibold text-sm mb-1"
+              className="font-semibold text-sm mb-2"
               style={{ color: "var(--text-primary)" }}
             >
               Email Support
             </h3>
-            <a
-              href={`mailto:${SUPPORT_EMAIL}`}
-              className="text-sm hover:underline"
-              style={{ color: "#EF6905" }}
-            >
-              {SUPPORT_EMAIL}
-            </a>
+            <div className="flex flex-col gap-1.5">
+              {SUPPORT_EMAILS.map((email) => (
+                <a
+                  key={email}
+                  href={`mailto:${email}`}
+                  className="text-sm hover:underline break-all"
+                  style={{ color: "#EF6905" }}
+                >
+                  {email}
+                </a>
+              ))}
+            </div>
           </motion.div>
 
           <motion.div
