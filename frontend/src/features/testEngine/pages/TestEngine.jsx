@@ -6,7 +6,7 @@ import {
   ShieldCheck, ShieldAlert, WifiOff, RefreshCw, EyeOff, Lock,
   Check, RotateCcw, LayoutGrid, X,
 } from "lucide-react";
-import { isFullscreenSupported } from "../hooks/useExamLockdown.js";
+import { isFullscreenSupported, exitFullscreenSafe } from "../hooks/useExamLockdown.js";
 import api from "../../../core/api/api.js";
 import { getAuthToken } from "../../student/hooks/useStudentProfile.js";
 import toast from "react-hot-toast";
@@ -253,6 +253,7 @@ function TestEngine() {
           duration: 5000,
         });
         setSubmitted(true);
+        exitFullscreenSafe();
         navigate(`/tests/result/${attemptId}`, { replace: true });
       } else if (newCount === 1) {
         toast.error("⚠️ Warning 1 of 3: Do not leave, switch, or minimize the test window", {
@@ -285,6 +286,7 @@ function TestEngine() {
       if (data.autoSubmitted) {
         toast.error("Test auto-submitted due to security violation");
         setSubmitted(true);
+        exitFullscreenSafe();
         navigate(`/tests/result/${attemptId}`, { replace: true });
       }
     } catch (err) {
@@ -315,6 +317,7 @@ function TestEngine() {
     isAway,
     isDuplicateSession,
     enterFullscreen,
+    exitFullscreen,
     resumeAssessment,
   } = useExamLockdown({
     attemptId,
@@ -323,6 +326,13 @@ function TestEngine() {
     reportViolation,
     recordIntegrity,
   });
+
+  // Automatically exit fullscreen when test is submitted or completed
+  useEffect(() => {
+    if (submitted) {
+      exitFullscreenSafe();
+    }
+  }, [submitted]);
 
   // Heartbeat loop for telemetry & server clock synchronization
   const sendHeartbeat = useCallback(async () => {
@@ -337,6 +347,7 @@ function TestEngine() {
       if (res.data?.autoSubmitted) {
         toast.error("Test auto-submitted by server");
         setSubmitted(true);
+        exitFullscreenSafe();
         navigate(`/tests/result/${attemptId}`, { replace: true });
       }
       setProctoringError(false);
@@ -620,6 +631,7 @@ function TestEngine() {
     if (submitted) return;
     toast("Time is up! Auto-submitting...", { icon: "⏰" });
     setSubmitted(true);
+    exitFullscreenSafe();
     try {
       await saveCurrent();
       await api.post(`/api/student/tests/attempt/${attemptId}/submit`, { forceSubmit: "auto" }, {
@@ -641,6 +653,7 @@ function TestEngine() {
       });
       setSubmitted(true);
       setSubmitConfirm(false);
+      exitFullscreenSafe();
       navigate(`/tests/result/${attemptId}`, { replace: true });
     } catch (err) {
       toast.error(err.response?.data?.message || err.response?.data?.error || "Failed to submit test");
