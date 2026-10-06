@@ -23,7 +23,7 @@ function InputField({
   const inputType = isPassword && showPassword ? "text" : type;
 
   const baseClasses =
-    "w-full py-2.5 px-3.5 rounded-xl border text-sm outline-none transition-all duration-200 focus:ring-2";
+    "w-full py-1.5 xl:py-1.5 2xl:py-2 px-3 xl:px-3.5 rounded-xl border text-xs sm:text-sm outline-none transition-all duration-200 focus:ring-2";
 
   const inputStyle = {
     background: "var(--input-bg)",
@@ -38,11 +38,11 @@ function InputField({
     : "focus:border-[var(--primary)] focus:ring-[var(--primary)]/20";
 
   return (
-    <div className="mb-2.5">
+    <div className="mb-1 xl:mb-1.5 2xl:mb-2">
       {label && (
         <label
           htmlFor={name}
-          className="block text-xs font-semibold mb-1 tracking-wide text-[var(--text-primary)]"
+          className="block text-[11px] sm:text-xs font-semibold mb-0.5 tracking-wide text-[var(--text-primary)]"
         >
           {label}
           {required && <span className="ml-1 text-[var(--primary)]">*</span>}

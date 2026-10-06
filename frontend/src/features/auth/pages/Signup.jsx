@@ -215,14 +215,14 @@ function Signup() {
         />
 
         {/* Terms & Conditions */}
-        <div className="mb-4">
-          <label className="flex items-center gap-2.5 cursor-pointer select-none">
+        <div className="mb-3 sm:mb-4">
+          <label className="flex items-start sm:items-center gap-2.5 cursor-pointer select-none">
             <input
               type="checkbox"
               name="termsAccepted"
               checked={formData.termsAccepted}
               onChange={handleChange}
-              className="w-4 h-4 rounded cursor-pointer accent-[var(--primary)] border-[var(--border)] bg-[var(--input-bg)]"
+              className="w-4 h-4 shrink-0 mt-0.5 sm:mt-0 rounded cursor-pointer accent-[var(--primary)] border-[var(--border)] bg-[var(--input-bg)]"
             />
             <span className="text-xs leading-snug text-[var(--text-secondary)]">
               I agree to the{" "}
@@ -244,7 +244,7 @@ function Signup() {
       </form>
 
       {/* OR Divider */}
-      <div className="relative my-4">
+      <div className="relative my-3 sm:my-4">
         <div className="absolute inset-0 flex items-center">
           <div className="w-full border-t border-[var(--border)]" />
         </div>
