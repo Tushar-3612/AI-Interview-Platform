@@ -4,8 +4,9 @@ import {
   ChevronLeft, ChevronRight, Flag, Send, AlertTriangle, Clock,
   CheckCircle, XCircle, Circle, BookOpen, Code, Maximize2,
   ShieldCheck, ShieldAlert, WifiOff, RefreshCw, EyeOff, Lock,
-  Check, RotateCcw,
+  Check, RotateCcw, LayoutGrid, X,
 } from "lucide-react";
+import { isFullscreenSupported } from "../hooks/useExamLockdown.js";
 import api from "../../../core/api/api.js";
 import { getAuthToken } from "../../student/hooks/useStudentProfile.js";
 import toast from "react-hot-toast";
@@ -183,6 +184,7 @@ function TestEngine() {
   const [tabWarnings, setTabWarnings] = useState(0);
   const [endTime, setEndTime] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [mobilePaletteOpen, setMobilePaletteOpen] = useState(false);
 
   const containerRef = useRef(null);
   const saveTimerRef = useRef(null);
@@ -722,19 +724,22 @@ function TestEngine() {
       {/* ══════════════════════════════════════════════════════════════════════════
           PREPHIRE PREMIUM ASSESSMENT HEADER
       ══════════════════════════════════════════════════════════════════════════ */}
-      <header className="sticky top-0 z-50 border-b border-white/10 bg-[#0c101a]/95 backdrop-blur-md shrink-0">
-        <div className="max-w-[1600px] mx-auto flex items-center justify-between px-4 sm:px-6 py-2.5 gap-4">
+      <header
+        className="sticky top-0 z-50 border-b border-white/10 bg-[#0c101a]/95 backdrop-blur-md shrink-0"
+        style={{ paddingTop: "max(0.4rem, env(safe-area-inset-top))" }}
+      >
+        <div className="max-w-[1600px] mx-auto flex items-center justify-between px-3 sm:px-6 py-2 gap-2 sm:gap-4">
           
           {/* LEFT: PrepHire Logo & Test Meta */}
-          <div className="flex items-center gap-3.5 min-w-0">
-            <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2 sm:gap-3.5 min-w-0">
+            <div className="flex items-center gap-1.5 shrink-0">
               <img
                 src="/images/metadata.png"
                 alt="PrepHire"
-                className="h-7 w-7 object-contain"
+                className="h-6 w-6 sm:h-7 sm:w-7 object-contain"
                 draggable="false"
               />
-              <span className="text-base font-black tracking-tight text-white hidden sm:inline">
+              <span className="text-sm sm:text-base font-black tracking-tight text-white hidden sm:inline">
                 Prep<span className="text-[#FF6B35]">Hire</span>
               </span>
             </div>
@@ -742,12 +747,12 @@ function TestEngine() {
             <div className="h-4 w-px bg-white/10 hidden sm:block" />
 
             <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <h1 className="text-xs sm:text-sm font-bold text-white truncate max-w-[180px] sm:max-w-[280px]">
-                  {test?.title || "Technical Assessment"}
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <h1 className="text-xs sm:text-sm font-bold text-white truncate max-w-[130px] xs:max-w-[170px] sm:max-w-[280px]">
+                  {test?.title || "Assessment"}
                 </h1>
                 {test?.testType && (
-                  <span className="px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider bg-[#131826] border border-white/5 text-zinc-400 hidden md:inline">
+                  <span className="px-1.5 py-0.5 rounded text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider bg-[#131826] border border-white/5 text-zinc-400 hidden md:inline">
                     {test.testType}
                   </span>
                 )}
@@ -755,7 +760,7 @@ function TestEngine() {
             </div>
           </div>
 
-          {/* CENTER: Progress Info & Bar */}
+          {/* CENTER: Progress Info & Bar (Desktop only) */}
           <div className="hidden md:flex flex-col items-center justify-center flex-1 max-w-xs px-2">
             <div className="flex items-center justify-between w-full text-[11px] font-semibold text-zinc-400 mb-1">
               <span>Question {String(currentIdx + 1).padStart(2, "0")} of {String(totalQuestions).padStart(2, "0")}</span>
@@ -769,8 +774,19 @@ function TestEngine() {
             </div>
           </div>
 
-          {/* RIGHT: Status & Timer */}
-          <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
+          {/* RIGHT: Mobile Questions Button, Status & Timer */}
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            {/* Mobile Question Palette Trigger */}
+            <button
+              type="button"
+              onClick={() => setMobilePaletteOpen(true)}
+              className="lg:hidden flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[11px] font-mono font-bold bg-[#131826] border border-white/10 text-zinc-200 active:scale-95 transition cursor-pointer"
+              title="Open Question Palette"
+            >
+              <LayoutGrid className="w-3.5 h-3.5 text-[#FF6B35]" />
+              <span>{currentIdx + 1}/{totalQuestions}</span>
+            </button>
+
             {saving && (
               <span className="text-[10px] font-medium text-zinc-500 hidden sm:inline animate-pulse">
                 Saving...
@@ -779,7 +795,7 @@ function TestEngine() {
 
             {/* Proctoring Active Pill */}
             <div
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[11px] font-semibold bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 select-none"
+              className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-xl text-[10px] sm:text-[11px] font-semibold bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 select-none shrink-0"
               title="Active Proctoring & Integrity Lockdown"
             >
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
@@ -804,8 +820,20 @@ function TestEngine() {
         {isCoding ? (
           /* ════════════════ CODING WORKSPACE ════════════════ */
           <main className="flex-1 flex flex-col overflow-hidden bg-[#080b11]">
-            {/* Split IDE Canvas */}
-            <div className="flex-1 overflow-hidden" style={{ minHeight: 0 }}>
+            {/* Mobile Coding Advisory Banner */}
+            <div className="lg:hidden px-3 py-1.5 bg-[#131826] border-b border-white/10 text-[11px] text-zinc-400 flex items-center justify-between">
+              <span>💡 Laptop/Desktop recommended for coding IDE</span>
+              <button
+                type="button"
+                onClick={() => setMobilePaletteOpen(true)}
+                className="text-[#FF6B35] font-bold underline text-[11px]"
+              >
+                Questions ({stats.answered}/{totalQuestions})
+              </button>
+            </div>
+
+            {/* Split / Stacked IDE Canvas */}
+            <div className="flex-1 overflow-y-auto lg:overflow-hidden pb-24 lg:pb-0" style={{ minHeight: 0 }}>
               {question ? (
                 <CodingQuestionRenderer
                   question={question}
@@ -825,8 +853,8 @@ function TestEngine() {
               )}
             </div>
 
-            {/* Docked Action Bar for Coding */}
-            <div className="flex items-center justify-between px-4 sm:px-6 py-2.5 border-t border-white/10 bg-[#0c101a] shrink-0 z-10">
+            {/* Desktop Docked Action Bar for Coding */}
+            <div className="hidden lg:flex items-center justify-between px-6 py-2.5 border-t border-white/10 bg-[#0c101a] shrink-0 z-10">
               <div className="flex items-center gap-2">
                 <button
                   type="button"
@@ -885,8 +913,8 @@ function TestEngine() {
         ) : (
           /* ════════════════ MCQ WORKSPACE ════════════════ */
           <main className="flex-1 flex flex-col h-full overflow-hidden bg-[#080b11]">
-            {/* Scrollable Question Content (Centered with comfortable width) */}
-            <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 flex justify-center items-start">
+            {/* Scrollable Question Content */}
+            <div className="flex-1 overflow-y-auto p-3 sm:p-6 lg:p-8 pb-28 lg:pb-8 flex justify-center items-start">
               <div className="w-full max-w-4xl space-y-4">
                 <div className="w-full">
                   {question ? (
@@ -907,8 +935,8 @@ function TestEngine() {
               </div>
             </div>
 
-            {/* Sticky Bottom Action Bar */}
-            <div className="flex items-center justify-between px-4 sm:px-6 py-2.5 border-t border-white/10 bg-[#0c101a] shrink-0 z-10">
+            {/* Desktop Sticky Bottom Action Bar */}
+            <div className="hidden lg:flex items-center justify-between px-6 py-2.5 border-t border-white/10 bg-[#0c101a] shrink-0 z-10">
               <div className="flex items-center gap-2">
                 <button
                   type="button"
@@ -976,7 +1004,7 @@ function TestEngine() {
           </main>
         )}
 
-        {/* ════════════════ RIGHT QUESTION NAVIGATOR ════════════════ */}
+        {/* ════════════════ DESKTOP RIGHT QUESTION NAVIGATOR ════════════════ */}
         <aside className="w-72 shrink-0 border-l border-white/10 bg-[#0c101a] overflow-y-auto hidden lg:flex flex-col justify-between">
           <div className="p-4 space-y-4">
             <div className="flex items-center justify-between">
@@ -1063,6 +1091,192 @@ function TestEngine() {
       </div>
 
       {/* ══════════════════════════════════════════════════════════════════════════
+          UNIFIED MOBILE BOTTOM ACTION BAR (< 1024px)
+      ══════════════════════════════════════════════════════════════════════════ */}
+      <div
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-white/10 bg-[#0c101a]/98 backdrop-blur-md px-2.5 py-2 shadow-2xl"
+        style={{ paddingBottom: "max(0.6rem, env(safe-area-inset-bottom))" }}
+      >
+        <div className="flex items-center justify-between gap-1.5">
+          {/* Previous Button */}
+          <button
+            type="button"
+            onClick={() => navigateTo(Math.max(0, currentIdx - 1))}
+            disabled={currentIdx === 0}
+            className="flex items-center justify-center min-h-[44px] px-3 rounded-xl bg-[#131826] border border-white/10 text-zinc-300 text-xs font-semibold disabled:opacity-25 active:scale-95 transition cursor-pointer"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+
+          {/* Question Palette Trigger */}
+          <button
+            type="button"
+            onClick={() => setMobilePaletteOpen(true)}
+            className="flex-1 flex items-center justify-center gap-1.5 min-h-[44px] px-2 rounded-xl bg-[#131826] border border-white/10 text-xs font-semibold text-zinc-200 active:scale-95 transition cursor-pointer"
+          >
+            <LayoutGrid className="w-4 h-4 text-[#FF6B35]" />
+            <span>Questions ({stats.answered}/{totalQuestions})</span>
+          </button>
+
+          {/* Mark for Review Button */}
+          <button
+            type="button"
+            onClick={handleToggleMark}
+            className={`flex items-center justify-center min-h-[44px] px-3 rounded-xl text-xs font-semibold border transition cursor-pointer active:scale-95 ${
+              (q.isMarked || q.status === "marked")
+                ? "border-purple-500/50 text-purple-300 bg-purple-500/20"
+                : "border-white/10 bg-[#131826] text-zinc-300"
+            }`}
+            title="Mark for Review"
+          >
+            <Flag className="w-4 h-4" />
+          </button>
+
+          {/* Clear Answer Button (if answered) */}
+          {Boolean(q.answer) && (
+            <button
+              type="button"
+              onClick={handleClearChoice}
+              className="flex items-center justify-center min-h-[44px] px-2.5 rounded-xl border border-white/10 bg-[#131826] text-zinc-400 active:scale-95 transition cursor-pointer"
+              title="Clear Selection"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+            </button>
+          )}
+
+          {/* Next / Submit Button */}
+          {currentIdx < questions.length - 1 ? (
+            <button
+              type="button"
+              onClick={handleNext}
+              className="flex items-center justify-center min-h-[44px] px-4 rounded-xl text-xs font-bold text-white bg-[#FF6B35] hover:bg-[#FF5514] active:scale-95 transition cursor-pointer shadow-md shadow-[#FF6B35]/20 gap-1"
+            >
+              <span>Next</span>
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setSubmitConfirm(true)}
+              className="flex items-center justify-center min-h-[44px] px-4 rounded-xl text-xs font-bold text-white bg-[#FF6B35] hover:bg-[#FF5514] active:scale-95 transition cursor-pointer shadow-md shadow-[#FF6B35]/20 gap-1"
+            >
+              <Send className="w-3.5 h-3.5" />
+              <span>Submit</span>
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* ══════════════════════════════════════════════════════════════════════════
+          MOBILE QUESTION PALETTE DRAWER / MODAL SHEET
+      ══════════════════════════════════════════════════════════════════════════ */}
+      {mobilePaletteOpen && (
+        <div
+          className="fixed inset-0 z-[100] flex flex-col justify-end sm:justify-center items-center bg-black/80 backdrop-blur-sm select-none"
+          onClick={() => setMobilePaletteOpen(false)}
+        >
+          <div
+            className="w-full max-w-lg bg-[#0e131f] border border-white/10 rounded-t-3xl sm:rounded-2xl p-5 space-y-4 max-h-[85vh] flex flex-col shadow-2xl animate-in slide-in-from-bottom-4 duration-200"
+            onClick={(e) => e.stopPropagation()}
+            style={{ paddingBottom: "max(1.2rem, env(safe-area-inset-bottom))" }}
+          >
+            {/* Drawer Header */}
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <div className="flex items-center gap-2">
+                <LayoutGrid className="w-4 h-4 text-[#FF6B35]" />
+                <h3 className="text-sm font-bold text-white">Question Navigator</h3>
+                <span className="text-xs font-mono text-zinc-400">({answers.length} Total)</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setMobilePaletteOpen(false)}
+                className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Status Legend */}
+            <div className="grid grid-cols-2 gap-2 text-[11px]">
+              <div className="flex items-center gap-1.5 p-2 rounded-lg bg-[#131826] border border-white/5">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 shrink-0" />
+                <span className="text-zinc-300 font-medium">✓ {stats.answered} Answered</span>
+              </div>
+              <div className="flex items-center gap-1.5 p-2 rounded-lg bg-[#131826] border border-white/5">
+                <span className="w-2.5 h-2.5 rounded-full bg-purple-400 shrink-0" />
+                <span className="text-zinc-300 font-medium">⚑ {stats.marked} Marked</span>
+              </div>
+              <div className="flex items-center gap-1.5 p-2 rounded-lg bg-[#131826] border border-white/5">
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-400 shrink-0" />
+                <span className="text-zinc-300 font-medium">— {stats.skipped} Skipped</span>
+              </div>
+              <div className="flex items-center gap-1.5 p-2 rounded-lg bg-[#131826] border border-white/5">
+                <span className="w-2.5 h-2.5 rounded-full bg-zinc-600 shrink-0" />
+                <span className="text-zinc-300 font-medium">○ {stats.remaining} Remaining</span>
+              </div>
+            </div>
+
+            {/* Question Grid */}
+            <div className="flex-1 overflow-y-auto py-2">
+              <div className="grid grid-cols-5 gap-2.5">
+                {answers.map((a, idx) => {
+                  const qItem = questions[idx];
+                  const isCurrent = idx === currentIdx;
+                  const isAns = isQuestionAnswered(a, qItem);
+                  const isSkp = !isAns && isQuestionSkipped(a, qItem);
+                  const isMrk = Boolean(a?.isMarked || a?.status === "marked");
+
+                  let itemClasses = "bg-[#131826] border-white/5 text-zinc-400";
+
+                  if (isCurrent) {
+                    itemClasses = "border-[#FF6B35] ring-2 ring-[#FF6B35]/40 text-white bg-[#FF6B35]/25 font-bold";
+                  } else if (isAns) {
+                    itemClasses = "bg-emerald-500/15 border-emerald-500/35 text-emerald-300 font-bold";
+                  } else if (isSkp) {
+                    itemClasses = "bg-amber-500/15 border-amber-500/35 text-amber-300";
+                  } else if (isMrk) {
+                    itemClasses = "bg-purple-500/15 border-purple-500/35 text-purple-300 font-bold";
+                  }
+
+                  return (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => {
+                        navigateTo(idx);
+                        setMobilePaletteOpen(false);
+                      }}
+                      className={`relative min-h-[44px] rounded-xl text-xs font-mono font-medium border flex items-center justify-center active:scale-95 transition cursor-pointer ${itemClasses}`}
+                    >
+                      <span>{String(idx + 1).padStart(2, "0")}</span>
+                      {isMrk && (
+                        <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-purple-400 border border-[#0c101a]" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Modal Bottom CTA */}
+            <div className="pt-2 border-t border-white/10">
+              <button
+                type="button"
+                onClick={() => {
+                  setMobilePaletteOpen(false);
+                  setSubmitConfirm(true);
+                }}
+                className="w-full min-h-[44px] py-2.5 px-4 text-xs font-bold text-white rounded-xl bg-[#FF6B35] hover:bg-[#FF5514] active:scale-98 transition cursor-pointer flex items-center justify-center gap-2 shadow-lg shadow-[#FF6B35]/20"
+              >
+                <Send className="w-3.5 h-3.5" />
+                <span>Submit Assessment</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════════════════
           SECURITY & INTEGRITY OVERLAYS (Preserved Lockdown Architecture)
       ══════════════════════════════════════════════════════════════════════════ */}
 
@@ -1078,8 +1292,8 @@ function TestEngine() {
         </div>
       )}
 
-      {/* Fullscreen Required Blocking Overlay */}
-      {!isFullscreen && !submitted && !loading && (
+      {/* Fullscreen Required Blocking Overlay (Only displayed if browser supports DOM Fullscreen) */}
+      {!isFullscreen && !submitted && !loading && isFullscreenSupported() && (
         <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#080b11] p-6 text-center select-none">
           <div className="max-w-md w-full bg-[#0e131f] border border-red-500/40 rounded-2xl p-7 sm:p-8 shadow-2xl space-y-5">
             <div className="w-14 h-14 mx-auto rounded-2xl bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-400">
@@ -1094,7 +1308,7 @@ function TestEngine() {
             <button
               type="button"
               onClick={enterFullscreen}
-              className="w-full py-3 px-4 rounded-xl text-xs font-bold text-white bg-[#FF6B35] hover:bg-[#FF5514] transition cursor-pointer flex items-center justify-center gap-2 shadow-lg shadow-[#FF6B35]/25"
+              className="w-full min-h-[44px] py-3 px-4 rounded-xl text-xs font-bold text-white bg-[#FF6B35] hover:bg-[#FF5514] transition cursor-pointer flex items-center justify-center gap-2 shadow-lg shadow-[#FF6B35]/25"
             >
               <Maximize2 className="w-4 h-4" /> Enter Fullscreen to Continue
             </button>
@@ -1103,7 +1317,7 @@ function TestEngine() {
       )}
 
       {/* Window Focus Lost / Away Obscuring Shield */}
-      {isAway && isFullscreen && !submitted && !loading && (
+      {isAway && !submitted && !loading && (
         <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#080b11] p-6 text-center select-none">
           <div className="max-w-md w-full bg-[#0e131f] border border-amber-500/40 rounded-2xl p-7 sm:p-8 shadow-2xl space-y-5">
             <div className="w-14 h-14 mx-auto rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
@@ -1121,7 +1335,7 @@ function TestEngine() {
             <button
               type="button"
               onClick={resumeAssessment}
-              className="w-full py-3 px-4 rounded-xl text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 transition cursor-pointer flex items-center justify-center gap-2 shadow-lg shadow-amber-600/25"
+              className="w-full min-h-[44px] py-3 px-4 rounded-xl text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 transition cursor-pointer flex items-center justify-center gap-2 shadow-lg shadow-amber-600/25"
             >
               <ShieldAlert className="w-4 h-4" /> Return to Assessment
             </button>
@@ -1162,45 +1376,13 @@ function TestEngine() {
             <button
               type="button"
               onClick={() => sendHeartbeat()}
-              className="w-full py-3 px-4 rounded-xl text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 transition cursor-pointer flex items-center justify-center gap-2 shadow-lg"
+              className="w-full min-h-[44px] py-3 px-4 rounded-xl text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 transition cursor-pointer flex items-center justify-center gap-2 shadow-lg"
             >
               <RefreshCw className="w-4 h-4" /> Retry Connection
             </button>
           </div>
         </div>
       )}
-
-      {/* Mobile Bottom Navigation Bar */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-white/10 bg-[#0c101a] px-4 py-2.5">
-        <div className="flex items-center justify-between">
-          <button
-            type="button"
-            onClick={() => navigateTo(Math.max(0, currentIdx - 1))}
-            disabled={currentIdx === 0}
-            className="p-2 rounded-xl bg-[#131826] border border-white/10 text-zinc-300 disabled:opacity-30 cursor-pointer"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          <span className="text-xs font-mono font-bold text-zinc-300">
-            {currentIdx + 1} / {questions.length}
-          </span>
-          <button
-            type="button"
-            onClick={() => setSubmitConfirm(true)}
-            className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-white rounded-xl bg-[#FF6B35] cursor-pointer"
-          >
-            <Send className="w-3 h-3" /> Submit
-          </button>
-          <button
-            type="button"
-            onClick={() => navigateTo(Math.min(questions.length - 1, currentIdx + 1))}
-            disabled={currentIdx === questions.length - 1}
-            className="p-2 rounded-xl bg-[#131826] border border-white/10 text-zinc-300 disabled:opacity-30 cursor-pointer"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
 
       {submitConfirm && (
         <SubmitConfirm

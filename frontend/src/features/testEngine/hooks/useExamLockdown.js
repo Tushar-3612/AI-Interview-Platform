@@ -15,6 +15,24 @@ export function getIsFullscreen() {
 }
 
 /**
+ * Check if the browser actually supports HTML5 Fullscreen on DOM elements
+ */
+export function isFullscreenSupported() {
+  if (typeof document === "undefined") return false;
+  const docEl = document.documentElement || {};
+  return Boolean(
+    document.fullscreenEnabled ||
+    document.webkitFullscreenEnabled ||
+    document.mozFullScreenEnabled ||
+    document.msFullscreenEnabled ||
+    docEl.requestFullscreen ||
+    docEl.webkitRequestFullscreen ||
+    docEl.mozRequestFullScreen ||
+    docEl.msRequestFullscreen
+  );
+}
+
+/**
  * Vendor-agnostic fullscreen request
  */
 export async function requestFullscreenSafe(element = document.documentElement) {
@@ -43,9 +61,10 @@ export function useExamLockdown({
   reportViolation,
   recordIntegrity,
 }) {
+  const supported = isFullscreenSupported();
   // State machine: "ACTIVE" | "AWAY" | "RETURNING" | "SUBMITTED"
   const [examState, setExamState] = useState("ACTIVE");
-  const [isFullscreen, setIsFullscreen] = useState(getIsFullscreen());
+  const [isFullscreen, setIsFullscreen] = useState(supported ? getIsFullscreen() : true);
   const [isAway, setIsAway] = useState(false);
   const [isDuplicateSession, setIsDuplicateSession] = useState(false);
 
@@ -53,6 +72,7 @@ export function useExamLockdown({
   const awayStartRef = useRef(null);
   const blurTimeoutRef = useRef(null);
   const lastCoalesceRef = useRef(0);
+  const isTransientChangeRef = useRef(false);
   const sessionIdRef = useRef(
     `sess_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
   );
@@ -75,6 +95,10 @@ export function useExamLockdown({
 
   // Fullscreen Entry
   const enterFullscreen = useCallback(async () => {
+    if (!isFullscreenSupported()) {
+      setIsFullscreen(true);
+      return;
+    }
     try {
       await requestFullscreenSafe(document.documentElement);
       setIsFullscreen(true);
@@ -89,7 +113,7 @@ export function useExamLockdown({
   // Explicit Resume Assessment Handler
   const resumeAssessment = useCallback(async () => {
     try {
-      if (!getIsFullscreen()) {
+      if (isFullscreenSupported() && !getIsFullscreen()) {
         await enterFullscreen();
       }
       window.focus();
@@ -115,9 +139,27 @@ export function useExamLockdown({
     }
   }, [enterFullscreen, recordIntegrity]);
 
+  // 0. MOBILE TRANSIENT ORIENTATION / RESIZE OBSERVER
+  useEffect(() => {
+    const handleTransient = () => {
+      isTransientChangeRef.current = true;
+      setTimeout(() => {
+        isTransientChangeRef.current = false;
+      }, 1200);
+    };
+
+    window.addEventListener("orientationchange", handleTransient);
+    window.addEventListener("resize", handleTransient);
+
+    return () => {
+      window.removeEventListener("orientationchange", handleTransient);
+      window.removeEventListener("resize", handleTransient);
+    };
+  }, []);
+
   // 1. FULLSCREEN EVENT LISTENERS
   useEffect(() => {
-    if (submitted) return;
+    if (submitted || !isFullscreenSupported()) return;
 
     const onFullscreenChange = () => {
       const inFull = getIsFullscreen();
@@ -152,6 +194,10 @@ export function useExamLockdown({
 
     const handleFocusLost = (eventType = "window_blur") => {
       if (submitted) return;
+      // Do not generate false positive strike for momentary mobile orientation or resize if document is still visible
+      if (isTransientChangeRef.current && eventType === "window_blur" && !document.hidden) {
+        return;
+      }
       if (blurTimeoutRef.current) clearTimeout(blurTimeoutRef.current);
 
       blurTimeoutRef.current = setTimeout(() => {
@@ -163,7 +209,7 @@ export function useExamLockdown({
           }
           triggerCoalescedStrike(eventType);
         }
-      }, 50);
+      }, 100);
     };
 
     const handleFocusGained = () => {
@@ -173,8 +219,9 @@ export function useExamLockdown({
       }
       if (submitted) return;
 
-      // Only auto-dismiss if in full screen and focus is truly restored
-      if (document.hasFocus() && getIsFullscreen()) {
+      const fullscreenOk = !isFullscreenSupported() || getIsFullscreen();
+      // Only auto-dismiss if focus is restored and fullscreen requirement is met
+      if (document.hasFocus() && fullscreenOk) {
         if (awayStartRef.current) {
           const durationSec = Math.max(
             1,
@@ -196,7 +243,8 @@ export function useExamLockdown({
       if (document.hidden) {
         handleFocusLost("tab_switch");
       } else {
-        if (document.hasFocus() && getIsFullscreen()) {
+        const fullscreenOk = !isFullscreenSupported() || getIsFullscreen();
+        if (document.hasFocus() && fullscreenOk) {
           handleFocusGained();
         }
       }
