@@ -195,11 +195,34 @@ export const createInterviewSession = async (req, res) => {
     }
 
     const result = await withInFlightLock(`session_create:${userId}`, async () => {
-      const user = await User.findById(userId).select("email isPremium").lean();
+      const user = await User.findById(userId)
+        .select("email isPremium resumeFileName resumeBase64 resumeAnalysis")
+        .lean();
       const isPremium = Boolean(user?.isPremium === true);
       const hasUnlimitedRealInterviewAccess = isPremium;
 
       const { interviewType = "actual", targetRound = "all", durationMinutes = 120 } = req.body || {};
+
+      // ── MANDATORY RESUME GUARD FOR REAL INTERVIEWS ──
+      // Real Interviews require an uploaded resume to ground technical and project questions.
+      if (interviewType === "actual" || interviewType === "real") {
+        const hasResume = Boolean(
+          user?.resumeFileName &&
+          (user?.resumeBase64 || user?.resumeAnalysis)
+        );
+
+        if (!hasResume) {
+          console.warn(`[StudentInterviewController] Blocked Real Interview creation: User ${userId} has not uploaded a resume.`);
+          return {
+            statusCode: 400,
+            data: {
+              success: false,
+              code: "RESUME_REQUIRED",
+              message: "Please upload your resume before starting the Real Interview.",
+            },
+          };
+        }
+      }
 
       const now = new Date();
       const startOfToday = new Date(now);

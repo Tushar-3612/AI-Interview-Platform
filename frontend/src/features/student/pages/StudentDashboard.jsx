@@ -22,6 +22,7 @@ import {
   Layers,
   Zap,
   Mic,
+  FileText,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import api from "../../../core/api/api.js";
@@ -299,6 +300,15 @@ function StudentDashboard() {
   };
 
   const handleStartRealInterview = async () => {
+    const hasResume = Boolean(profile?.resumeFileName && profile.resumeFileName.trim().length > 0);
+    if (!hasResume) {
+      toast.error("Please upload your resume before starting the Real Interview.");
+      setShowConsentModal(false);
+      setShowInterviewModeModal(false);
+      navigate("/profile");
+      return;
+    }
+
     setIsStartingInterview(true);
     const toastId = toast.loading("Initializing Real Interview Session...");
     try {
@@ -321,10 +331,22 @@ function StudentDashboard() {
       }
     } catch (err) {
       console.error("Start Real Interview error:", err);
+      const isResumeRequired =
+        err.response?.data?.code === "RESUME_REQUIRED";
       const isDailyLimit =
         err.response?.data?.code === "DAILY_INTERVIEW_LIMIT_REACHED" ||
         err.response?.status === 403;
-      if (isDailyLimit) {
+
+      if (isResumeRequired) {
+        toast.error(
+          err.response?.data?.message ||
+            "Please upload your resume before starting the Real Interview.",
+          { id: toastId, duration: 6000 }
+        );
+        setShowConsentModal(false);
+        setShowInterviewModeModal(false);
+        navigate("/profile");
+      } else if (isDailyLimit) {
         setDailyLimitReached(true);
         toast.error(
           err.response?.data?.message ||
@@ -1306,31 +1328,66 @@ function StudentDashboard() {
                   </div>
                 </div>
 
-                {/* Primary Launch Action Button */}
-                <motion.button
-                  onClick={() => setShowConsentModal(true)}
-                  disabled={isStartingInterview}
-                  className="w-full py-3.5 px-6 rounded-2xl text-sm font-bold text-white cursor-pointer shadow-lg flex items-center justify-center gap-2 transition-all disabled:opacity-50"
-                  style={{
-                    background: "linear-gradient(135deg, #FF6B35 0%, #FF8A3D 100%)",
-                    boxShadow: "0 6px 20px rgba(255, 107, 53, 0.4)",
-                  }}
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.99 }}
-                >
-                  {isStartingInterview ? (
-                    <>
-                      <Sparkles className="w-4.5 h-4.5 animate-spin" />
-                      <span>Launching Session...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Play className="w-4.5 h-4.5 fill-current" />
-                      <span>Start Real Interview</span>
+                {/* Resume Required Banner or Normal Primary Launch Action */}
+                {!profile?.resumeFileName || !profile.resumeFileName.trim() ? (
+                  <div className="space-y-3">
+                    <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-200/90 space-y-1">
+                      <div className="flex items-center gap-1.5 text-amber-400 font-extrabold text-[11px] uppercase tracking-wider">
+                        <FileText className="w-3.5 h-3.5 shrink-0" />
+                        <span>Resume Required</span>
+                      </div>
+                      <p className="text-[11.5px] leading-relaxed text-amber-100/80">
+                        Please upload your resume before starting the Real Interview. Questions in the Technical and Project rounds are tailored directly to your resume.
+                      </p>
+                    </div>
+
+                    <motion.button
+                      type="button"
+                      onClick={() => {
+                        setShowInterviewModeModal(false);
+                        navigate("/profile");
+                      }}
+                      disabled={isStartingInterview}
+                      className="w-full py-3.5 px-6 rounded-2xl text-sm font-bold text-white cursor-pointer shadow-lg flex items-center justify-center gap-2 transition-all"
+                      style={{
+                        background: "linear-gradient(135deg, #FF6B35 0%, #FF8A3D 100%)",
+                        boxShadow: "0 6px 20px rgba(255, 107, 53, 0.4)",
+                      }}
+                      whileHover={{ scale: 1.01 }}
+                      whileTap={{ scale: 0.99 }}
+                    >
+                      <FileText className="w-4.5 h-4.5" />
+                      <span>Upload Resume in Profile</span>
                       <ArrowRight className="w-4 h-4" />
-                    </>
-                  )}
-                </motion.button>
+                    </motion.button>
+                  </div>
+                ) : (
+                  <motion.button
+                    type="button"
+                    onClick={() => setShowConsentModal(true)}
+                    disabled={isStartingInterview}
+                    className="w-full py-3.5 px-6 rounded-2xl text-sm font-bold text-white cursor-pointer shadow-lg flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+                    style={{
+                      background: "linear-gradient(135deg, #FF6B35 0%, #FF8A3D 100%)",
+                      boxShadow: "0 6px 20px rgba(255, 107, 53, 0.4)",
+                    }}
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.99 }}
+                  >
+                    {isStartingInterview ? (
+                      <>
+                        <Sparkles className="w-4.5 h-4.5 animate-spin" />
+                        <span>Launching Session...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Play className="w-4.5 h-4.5 fill-current" />
+                        <span>Start Real Interview</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </>
+                    )}
+                  </motion.button>
+                )}
               </div>
             </motion.div>
           </motion.div>

@@ -187,8 +187,8 @@ function StartInterview({
 
   // Candidate Info State
   const [candidateInfo, setCandidateInfo] = useState({
-    name: routerState.candidateName || profile.name || MOCK_CANDIDATE.name,
-    resumeName: routerState.resumeFileName || profile.resumeFileName || MOCK_CANDIDATE.resumeName,
+    name: routerState.candidateName || profile?.name || "Candidate",
+    resumeName: routerState.resumeFileName || profile?.resumeFileName || "",
     interviewType: "Real AI Interview Room",
     difficulty: "Adaptive",
     totalTimeMinutes: 120,
@@ -759,8 +759,8 @@ function StartInterview({
         }
 
         setCandidateInfo({
-          name: profile?.name || MOCK_CANDIDATE.name,
-          resumeName: profile?.resumeFileName || "Uploaded_Resume.pdf",
+          name: profile?.name || "Candidate",
+          resumeName: profile?.resumeFileName || "",
           interviewType: "Project / Resume Practice",
           difficulty: sess.difficulty || "Medium",
           totalTimeMinutes: 30,
@@ -847,8 +847,8 @@ function StartInterview({
         }
 
         setCandidateInfo({
-          name: profile?.name || MOCK_CANDIDATE.name,
-          resumeName: profile?.resumeFileName || "Uploaded_Resume.pdf",
+          name: profile?.name || "Candidate",
+          resumeName: profile?.resumeFileName || "",
           interviewType: "Technical Practice",
           difficulty: sess.difficulty || "Medium",
           totalTimeMinutes: 45,
@@ -949,8 +949,8 @@ function StartInterview({
 
       if (data.candidateProfile) {
         setCandidateInfo({
-          name: data.candidateProfile.candidateName || profile.name || MOCK_CANDIDATE.name,
-          resumeName: data.resumeFileName || profile.resumeFileName || "Uploaded_Resume.pdf",
+          name: data.candidateProfile.candidateName || profile?.name || "Candidate",
+          resumeName: data.resumeFileName || profile?.resumeFileName || "",
           interviewType: roundTitles[activeTarget] || "Real AI Interview Room",
           difficulty: "Adaptive",
           totalTimeMinutes: durMin,
