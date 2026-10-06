@@ -24,6 +24,7 @@ const getBreadcrumbTitle = (pathname) => {
   if (pathname.startsWith("/coding-round")) return "Coding Round";
   if (pathname.startsWith("/coding-assessments")) return "Coding Assessment";
   if (pathname.startsWith("/mock-interview")) return "Mock Interview";
+  if (pathname.startsWith("/tests/result")) return "Test Result";
   if (pathname.startsWith("/tests")) return "My Tests";
   if (pathname.startsWith("/placement-dashboard")) return "Placement";
   if (pathname.startsWith("/profile")) return "Profile";

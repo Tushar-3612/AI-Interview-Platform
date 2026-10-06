@@ -82,6 +82,8 @@ export function buildQuestionResult(question, answerEntry, attemptStart, attempt
     questionIndex,
     questionId: question._id ? question._id.toString() : "",
     question: question.problemTitle || question.title || question.question || question.description || "",
+    options: Array.isArray(question.options) ? question.options : [],
+    explanation: question.explanation || "",
     type: normalizeQuestionType(question.type, isCoding),
     subject: question.subject || (isCoding ? "Coding" : "General"),
     difficulty: normalizeDifficulty(question.difficulty),

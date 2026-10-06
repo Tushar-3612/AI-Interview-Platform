@@ -674,6 +674,24 @@ export const getTestResult = async (req, res) => {
     const passingMarks = computePassingMarks(totalMarks, passingPercentage);
     const passed = testResult ? testResult.passed : calculatePassFail(obtainedScore, passingMarks);
 
+    const rawQuestions = testResult?.questions || [];
+    const enrichedQuestions = rawQuestions.map((q, idx) => {
+      const qIdx = q.questionIndex !== undefined ? q.questionIndex : idx;
+      const originalQ = test?.questions?.[qIdx] || {};
+      const options = (Array.isArray(q.options) && q.options.length > 0)
+        ? q.options
+        : (Array.isArray(originalQ.options) ? originalQ.options : []);
+      const explanation = q.explanation || originalQ.explanation || "";
+      const questionText = q.question || originalQ.question || originalQ.problemTitle || "";
+
+      return {
+        ...q,
+        options,
+        explanation,
+        question: questionText,
+      };
+    });
+
     res.json({
       attempt: {
         _id: attempt._id,
@@ -706,7 +724,7 @@ export const getTestResult = async (req, res) => {
         attemptLimit: test.attemptLimit || 1,
       },
       sections: testResult?.sections || [],
-      questions: testResult?.questions || [],
+      questions: enrichedQuestions,
       ranking: testResult?.ranking || null,
       canRetake: (attempt.attemptCount || 1) < (test.attemptLimit || 1),
       attemptsRemaining: Math.max(0, (test.attemptLimit || 1) - (attempt.attemptCount || 1)),
