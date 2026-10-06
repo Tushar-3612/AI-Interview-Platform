@@ -111,10 +111,18 @@ function StudentDetails() {
       {/* ── Profile Card ── */}
       <div className={cardBg}>
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5">
-          <div className="w-16 h-16 rounded-xl flex items-center justify-center text-2xl font-bold shrink-0"
-            style={{ background: "var(--primary)", color: "#fff" }}>
-            {student.name?.[0]?.toUpperCase()}
-          </div>
+          {student.profilePicture ? (
+            <img
+              src={student.profilePicture}
+              alt={student.name || "Student"}
+              className="w-16 h-16 rounded-xl object-cover shrink-0 border border-black/10 shadow-sm"
+            />
+          ) : (
+            <div className="w-16 h-16 rounded-xl flex items-center justify-center text-2xl font-bold shrink-0"
+              style={{ background: "var(--primary)", color: "#fff" }}>
+              {student.name?.[0]?.toUpperCase()}
+            </div>
+          )}
           <div className="min-w-0 flex-1">
             <h2 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>{student.name}</h2>
             <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1.5 text-xs" style={{ color: "var(--text-secondary)" }}>

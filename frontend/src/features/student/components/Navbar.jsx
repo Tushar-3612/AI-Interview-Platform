@@ -38,6 +38,7 @@ const getBreadcrumbTitle = (pathname) => {
  * Integrates sidebar toggle, breadcrumb, quick CTA pill, streak, notifications, theme toggle, and profile.
  */
 function Navbar({
+  profile,
   onToggleSidebar = () => { },
   sidebarCollapsed = false,
   onOpenMobileDrawer = () => { },
@@ -46,12 +47,43 @@ function Navbar({
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
-  const user = getAuthUser();
+  const [authUser, setAuthUser] = useState(() => getAuthUser());
   const [profileOpen, setProfileOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  const initials = user?.name
-    ? user.name
+  useEffect(() => {
+    const handleProfileUpdate = (e) => {
+      if (e?.detail) {
+        setAuthUser(e.detail);
+      } else {
+        setAuthUser(getAuthUser());
+      }
+    };
+    window.addEventListener("profile-updated", handleProfileUpdate);
+    window.addEventListener("storage", handleProfileUpdate);
+    return () => {
+      window.removeEventListener("profile-updated", handleProfileUpdate);
+      window.removeEventListener("storage", handleProfileUpdate);
+    };
+  }, []);
+
+  const effectiveUser = {
+    ...authUser,
+    ...profile,
+  };
+
+  const avatarUrl =
+    profile?.profilePicture ||
+    profile?.avatar ||
+    authUser?.profilePicture ||
+    authUser?.avatar ||
+    null;
+
+  const displayName = effectiveUser?.name || "User";
+  const displayEmail = effectiveUser?.email || "user@example.com";
+
+  const initials = displayName
+    ? displayName
       .split(" ")
       .map((n) => n[0])
       .join("")
@@ -234,15 +266,17 @@ function Navbar({
               }}
             >
               <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white shrink-0 shadow-sm"
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white shrink-0 shadow-sm overflow-hidden"
                 style={{
-                  background: "linear-gradient(135deg, #FF6B35 0%, #FF8A3D 100%)",
+                  background: avatarUrl
+                    ? "transparent"
+                    : "linear-gradient(135deg, #FF6B35 0%, #FF8A3D 100%)",
                 }}
               >
-                {user?.avatar ? (
+                {avatarUrl ? (
                   <img
-                    src={user.avatar}
-                    alt="Profile"
+                    src={avatarUrl}
+                    alt={displayName}
                     className="w-full h-full rounded-lg object-cover"
                   />
                 ) : (
@@ -283,26 +317,35 @@ function Navbar({
                     }}
                   >
                     <div
-                      className="w-9 h-9 rounded-lg flex items-center justify-center text-[11px] font-bold text-white shrink-0"
+                      className="w-9 h-9 rounded-lg flex items-center justify-center text-[11px] font-bold text-white shrink-0 overflow-hidden"
                       style={{
-                        background:
-                          "linear-gradient(135deg, #FF6B35 0%, #FF8A3D 100%)",
+                        background: avatarUrl
+                          ? "transparent"
+                          : "linear-gradient(135deg, #FF6B35 0%, #FF8A3D 100%)",
                       }}
                     >
-                      {initials}
+                      {avatarUrl ? (
+                        <img
+                          src={avatarUrl}
+                          alt={displayName}
+                          className="w-full h-full rounded-lg object-cover"
+                        />
+                      ) : (
+                        initials
+                      )}
                     </div>
                     <div className="min-w-0">
                       <p
                         className="text-xs font-bold truncate"
                         style={{ color: "var(--text-primary)" }}
                       >
-                        {user?.name || "User"}
+                        {displayName}
                       </p>
                       <p
                         className="text-[11px] truncate"
                         style={{ color: "var(--text-muted)" }}
                       >
-                        {user?.email || "user@example.com"}
+                        {displayEmail}
                       </p>
                     </div>
                   </div>

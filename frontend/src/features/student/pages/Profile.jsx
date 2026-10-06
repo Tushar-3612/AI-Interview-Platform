@@ -53,6 +53,55 @@ import useCachedApi, { clearApiCache } from "../../../core/hooks/useCachedApi.js
 import { normalizeProfileData } from "../../../core/utils/profileNormalizer.js";
 import EditProfileModal from "../components/EditProfileModal.jsx";
 
+const compressImage = (file, maxWidth = 400, maxHeight = 400, quality = 0.88) => {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+        if (width > height) {
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        const isPng = file.type === "image/png";
+        if (isPng) {
+          ctx.drawImage(img, 0, 0, width, height);
+          try {
+            resolve(canvas.toDataURL("image/webp", quality));
+            return;
+          } catch (_) {}
+        } else {
+          ctx.fillStyle = "#FFFFFF";
+          ctx.fillRect(0, 0, width, height);
+          ctx.drawImage(img, 0, 0, width, height);
+        }
+        try {
+          resolve(canvas.toDataURL("image/jpeg", quality));
+        } catch (_) {
+          resolve(event.target.result);
+        }
+      };
+      img.onerror = () => resolve(event.target.result);
+      img.src = event.target.result;
+    };
+    reader.onerror = () => resolve(null);
+    reader.readAsDataURL(file);
+  });
+};
+
 export default function Profile() {
   const context = useOutletContext() || {};
   const {
@@ -75,6 +124,9 @@ export default function Profile() {
   const [uploadStage, setUploadStage] = useState(1);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editModalTab, setEditModalTab] = useState("personal");
+  const [resumeModalOpen, setResumeModalOpen] = useState(false);
+  const [resumeBlobUrl, setResumeBlobUrl] = useState(null);
+  const [isLoadingResume, setIsLoadingResume] = useState(false);
 
   // Placement overview data for achievements & interview activity
   const { data: placementData } = useCachedApi({
@@ -124,21 +176,43 @@ export default function Profile() {
     }
   };
 
-  const handleAvatarUpload = (e) => {
+  const handleAvatarUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error("Avatar image must be under 2MB");
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Avatar image must be under 5MB");
+      e.target.value = "";
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => {
-      updateProfile({ profilePicture: reader.result });
-      saveProfile({ profilePicture: reader.result })
-        .then(() => toast.success("Profile picture updated!"))
-        .catch(() => toast.error("Failed to save avatar image"));
-    };
-    reader.readAsDataURL(file);
+    const toastId = toast.loading("Updating profile picture...");
+    try {
+      const dataUrl = await compressImage(file);
+      if (!dataUrl) {
+        toast.error("Could not process image file", { id: toastId });
+        return;
+      }
+      updateProfile({ profilePicture: dataUrl, avatar: dataUrl });
+      await saveProfile({ profilePicture: dataUrl, avatar: dataUrl });
+      toast.success("Profile picture updated!", { id: toastId });
+    } catch (err) {
+      console.error("Avatar upload failed:", err);
+      toast.error("Failed to save avatar image", { id: toastId });
+    } finally {
+      e.target.value = "";
+    }
+  };
+
+  const handleRemoveAvatar = async (e) => {
+    e.stopPropagation();
+    const toastId = toast.loading("Removing profile picture...");
+    try {
+      updateProfile({ profilePicture: "", avatar: "" });
+      await saveProfile({ profilePicture: "", avatar: "" });
+      toast.success("Profile picture removed", { id: toastId });
+    } catch (err) {
+      console.error("Avatar remove failed:", err);
+      toast.error("Failed to remove profile picture", { id: toastId });
+    }
   };
 
   const handleResumeUpload = async (e) => {
@@ -232,23 +306,54 @@ export default function Profile() {
       toast.error("No resume uploaded yet");
       return;
     }
+    const fileName = profile.resumeFileName || "Resume.pdf";
+    const isDocx = fileName.toLowerCase().endsWith(".docx");
+    const mimeType = isDocx
+      ? "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      : "application/pdf";
+
+    // Fast path: use in-memory base64 if present
+    if (profile.resumeBase64) {
+      try {
+        const byteCharacters = atob(profile.resumeBase64);
+        const byteNumbers = new Uint8Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const blob = new Blob([byteNumbers], { type: mimeType });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        toast.success("Resume downloaded");
+        return;
+      } catch (e) {
+        console.warn("Base64 download fallback to API:", e);
+      }
+    }
+
+    const toastId = toast.loading("Downloading resume...");
     try {
-      const token = getAuthToken();
-      const response = await fetch("/api/student/resume/download", {
-        headers: { Authorization: `Bearer ${token}` },
+      const response = await api.get("/api/student/resume/download", {
+        responseType: "blob",
       });
-      if (!response.ok) throw new Error("Resume download failed");
-      const blob = await response.blob();
+      const blob = new Blob([response.data], { type: mimeType });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = profile.resumeFileName || "Resume.pdf";
+      a.download = fileName;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-    } catch {
-      toast.error("Could not download resume file");
+      toast.success("Resume downloaded", { id: toastId });
+    } catch (err) {
+      console.error("Resume download error:", err);
+      toast.error("Could not download resume file", { id: toastId });
     }
   };
 
@@ -257,17 +362,50 @@ export default function Profile() {
       toast.error("No resume uploaded yet");
       return;
     }
+    const fileName = profile.resumeFileName || "Resume.pdf";
+    const isDocx = fileName.toLowerCase().endsWith(".docx") || fileName.toLowerCase().endsWith(".doc");
+
+    if (isDocx) {
+      toast("DOCX resumes download directly to open.", { icon: "ℹ️" });
+      handleDownloadResume();
+      return;
+    }
+
+    // Fast path: use in-memory base64 if present
+    if (profile.resumeBase64) {
+      try {
+        const byteCharacters = atob(profile.resumeBase64);
+        const byteNumbers = new Uint8Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const blob = new Blob([byteNumbers], { type: "application/pdf" });
+        const url = window.URL.createObjectURL(blob);
+        setResumeBlobUrl(url);
+        setResumeModalOpen(true);
+        return;
+      } catch (e) {
+        console.warn("Base64 preview fallback to API:", e);
+      }
+    }
+
+    setIsLoadingResume(true);
+    const toastId = toast.loading("Loading resume preview...");
     try {
-      const token = getAuthToken();
-      const response = await fetch("/api/student/resume/view", {
-        headers: { Authorization: `Bearer ${token}` },
+      const response = await api.get("/api/student/resume/view", {
+        responseType: "blob",
       });
-      if (!response.ok) throw new Error("Resume view failed");
-      const blob = await response.blob();
+      const blob = new Blob([response.data], { type: "application/pdf" });
       const url = window.URL.createObjectURL(blob);
-      window.open(url, "_blank");
-    } catch {
-      toast.error("Could not open resume preview");
+      setResumeBlobUrl(url);
+      setResumeModalOpen(true);
+      toast.dismiss(toastId);
+    } catch (err) {
+      console.error("Resume view error:", err);
+      toast.error("Could not open resume preview. Trying download...", { id: toastId });
+      handleDownloadResume();
+    } finally {
+      setIsLoadingResume(false);
     }
   };
 
@@ -367,6 +505,16 @@ export default function Profile() {
                   <Camera className="w-4 h-4" />
                   <span>Change</span>
                 </button>
+                {profile.profilePicture && (
+                  <button
+                    type="button"
+                    onClick={handleRemoveAvatar}
+                    title="Remove avatar image"
+                    className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center shadow-md transition-colors z-20 cursor-pointer"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
                 <input
                   ref={avatarInputRef}
                   type="file"
@@ -2280,6 +2428,104 @@ export default function Profile() {
         onSave={handleSaveModal}
         initialTab={editModalTab}
       />
+
+      {/* Resume Preview Modal */}
+      <AnimatePresence>
+        {resumeModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-hidden">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => {
+                setResumeModalOpen(false);
+                if (resumeBlobUrl) window.URL.revokeObjectURL(resumeBlobUrl);
+                setResumeBlobUrl(null);
+              }}
+              className="fixed inset-0 bg-black/75 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              className="relative w-full max-w-4xl h-[88vh] rounded-2xl flex flex-col z-10 overflow-hidden shadow-2xl border"
+              style={{
+                background: "var(--card-bg)",
+                borderColor: "var(--border)",
+              }}
+            >
+              <div
+                className="px-5 py-3.5 border-b flex items-center justify-between shrink-0"
+                style={{ borderColor: "var(--border)" }}
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="p-2 rounded-lg bg-blue-500/10 text-blue-500 shrink-0">
+                    <FileText className="w-4 h-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="text-sm font-bold truncate" style={{ color: "var(--text-primary)" }}>
+                      {profile.resumeFileName || "Candidate Resume"}
+                    </h3>
+                    <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
+                      Previewing uploaded document
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  {resumeBlobUrl && (
+                    <button
+                      type="button"
+                      onClick={() => window.open(resumeBlobUrl, "_blank")}
+                      title="Open in new tab"
+                      className="px-3 py-1.5 rounded-lg border text-xs font-semibold hover:opacity-80 transition flex items-center gap-1.5 cursor-pointer"
+                      style={{ borderColor: "var(--border)", color: "var(--text-primary)" }}
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline">New Tab</span>
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={handleDownloadResume}
+                    title="Download resume"
+                    className="px-3 py-1.5 rounded-lg border text-xs font-semibold hover:opacity-80 transition flex items-center gap-1.5 cursor-pointer"
+                    style={{ borderColor: "var(--border)", color: "var(--text-primary)" }}
+                  >
+                    <Download className="w-3.5 h-3.5 text-emerald-500" />
+                    <span className="hidden sm:inline">Download</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setResumeModalOpen(false);
+                      if (resumeBlobUrl) window.URL.revokeObjectURL(resumeBlobUrl);
+                      setResumeBlobUrl(null);
+                    }}
+                    className="p-1.5 rounded-lg border hover:opacity-80 transition cursor-pointer"
+                    style={{ borderColor: "var(--border)", color: "var(--text-muted)" }}
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+              <div className="flex-1 w-full bg-slate-900/5 dark:bg-black/20 overflow-hidden relative">
+                {resumeBlobUrl ? (
+                  <iframe
+                    src={`${resumeBlobUrl}#toolbar=1&navpanes=0`}
+                    title="Resume Preview"
+                    className="w-full h-full border-0"
+                  />
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-full gap-2 text-xs" style={{ color: "var(--text-muted)" }}>
+                    <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
+                    <span>Loading resume content...</span>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

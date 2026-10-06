@@ -116,8 +116,10 @@ export function normalizeProfileResponse(student) {
     resumeFileName: safeStringOrNull(userObj.resumeFileName),
     resumeUploadedAt: userObj.resumeUploadedAt || null,
     resumeAnalysis: userObj.resumeAnalysis || null,
+    resumeBase64: safeStringOrNull(userObj.resumeBase64),
     targetCompany: safeStringOrNull(userObj.targetCompany),
     profilePicture: safeStringOrNull(userObj.profilePicture),
+    avatar: safeStringOrNull(userObj.profilePicture),
     attemptUsed: safeNumberOrNull(userObj.attemptUsed) || 0,
     isPremium: Boolean(userObj.isPremium),
   };

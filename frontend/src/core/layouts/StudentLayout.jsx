@@ -85,6 +85,7 @@ function StudentLayout() {
     <div className="min-h-screen flex" style={{ background: "var(--bg-primary)" }}>
       {/* Desktop & Mobile Sidebar */}
       <StudentSidebar
+        profile={profile}
         collapsed={sidebarCollapsed}
         mobileOpen={mobileDrawerOpen}
         onCloseMobile={() => setMobileDrawerOpen(false)}
@@ -97,6 +98,7 @@ function StudentLayout() {
         }`}
       >
         <Navbar
+          profile={profile}
           onToggleSidebar={handleToggleSidebar}
           sidebarCollapsed={sidebarCollapsed}
           onOpenMobileDrawer={() => setMobileDrawerOpen(true)}

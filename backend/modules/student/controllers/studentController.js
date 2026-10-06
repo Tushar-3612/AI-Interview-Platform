@@ -28,7 +28,20 @@ export const getProfile = async (req, res) => {
  */
 export const updateProfile = async (req, res) => {
   try {
-    const { phone, portfolio, github, linkedin, skills, categorizedSkills, department, year, name, targetCompany } = req.body;
+    const {
+      phone,
+      portfolio,
+      github,
+      linkedin,
+      skills,
+      categorizedSkills,
+      department,
+      year,
+      name,
+      targetCompany,
+      profilePicture,
+      avatar,
+    } = req.body;
 
     const student = await User.findById(req.user.id);
     if (!student) {
@@ -45,6 +58,11 @@ export const updateProfile = async (req, res) => {
     if (skills !== undefined) student.skills = skills;
     if (categorizedSkills !== undefined) student.categorizedSkills = categorizedSkills;
     if (targetCompany !== undefined) student.targetCompany = targetCompany;
+    if (profilePicture !== undefined) {
+      student.profilePicture = profilePicture || "";
+    } else if (avatar !== undefined) {
+      student.profilePicture = avatar || "";
+    }
 
     await student.save();
 
@@ -183,8 +201,16 @@ export const downloadResume = async (req, res) => {
       return res.status(404).json({ message: "No resume found. Please upload your resume first." });
     }
     const pdfBuffer = Buffer.from(student.resumeBase64, "base64");
-    res.setHeader("Content-Type", "application/pdf");
-    res.setHeader("Content-Disposition", `attachment; filename="${student.resumeFileName || "Candidate_Resume.pdf"}"`);
+    const fileName = student.resumeFileName || "Candidate_Resume.pdf";
+    const lowerName = fileName.toLowerCase();
+    const contentType = lowerName.endsWith(".docx")
+      ? "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      : lowerName.endsWith(".doc")
+      ? "application/msword"
+      : "application/pdf";
+
+    res.setHeader("Content-Type", contentType);
+    res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
     res.send(pdfBuffer);
   } catch (error) {
     console.error("Download Resume Error:", error.message);
@@ -202,8 +228,16 @@ export const viewResume = async (req, res) => {
       return res.status(404).json({ message: "No resume found. Please upload your resume first." });
     }
     const pdfBuffer = Buffer.from(student.resumeBase64, "base64");
-    res.setHeader("Content-Type", "application/pdf");
-    res.setHeader("Content-Disposition", `inline; filename="${student.resumeFileName || "Candidate_Resume.pdf"}"`);
+    const fileName = student.resumeFileName || "Candidate_Resume.pdf";
+    const lowerName = fileName.toLowerCase();
+    const contentType = lowerName.endsWith(".docx")
+      ? "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      : lowerName.endsWith(".doc")
+      ? "application/msword"
+      : "application/pdf";
+
+    res.setHeader("Content-Type", contentType);
+    res.setHeader("Content-Disposition", `inline; filename="${fileName}"`);
     res.send(pdfBuffer);
   } catch (error) {
     console.error("View Resume Error:", error.message);

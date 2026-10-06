@@ -254,10 +254,18 @@ function StudentsList() {
                       onClick={() => navigate(`/admin/students/${s._id}`)}>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3 min-w-0 max-w-[200px]">
-                          <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
-                            style={{ background: "var(--primary)", color: "#fff" }}>
-                            {s.name?.[0]?.toUpperCase()}
-                          </div>
+                          {s.profilePicture ? (
+                            <img
+                              src={s.profilePicture}
+                              alt={s.name || "Student"}
+                              className="w-8 h-8 rounded-full object-cover shrink-0 border border-black/10 shadow-xs"
+                            />
+                          ) : (
+                            <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
+                              style={{ background: "var(--primary)", color: "#fff" }}>
+                              {s.name?.[0]?.toUpperCase()}
+                            </div>
+                          )}
                           <div className="min-w-0">
                             <p className="text-sm font-medium truncate" style={{ color: "var(--text-primary)" }}>{s.name}</p>
                             <p className="text-[11px] truncate" style={{ color: "var(--text-muted)" }}>{s.email}</p>

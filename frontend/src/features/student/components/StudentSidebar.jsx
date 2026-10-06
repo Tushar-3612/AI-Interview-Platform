@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -35,6 +36,7 @@ const NAV_ITEMS = [
 ];
 
 export default function StudentSidebar({
+  profile,
   collapsed = false,
   mobileOpen = false,
   onCloseMobile = () => {},
@@ -42,7 +44,30 @@ export default function StudentSidebar({
   const { theme } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
-  const user = getAuthUser();
+  const [authUser, setAuthUser] = useState(() => getAuthUser());
+
+  useEffect(() => {
+    const handleProfileUpdate = (e) => {
+      if (e?.detail) {
+        setAuthUser(e.detail);
+      } else {
+        setAuthUser(getAuthUser());
+      }
+    };
+    window.addEventListener("profile-updated", handleProfileUpdate);
+    window.addEventListener("storage", handleProfileUpdate);
+    return () => {
+      window.removeEventListener("profile-updated", handleProfileUpdate);
+      window.removeEventListener("storage", handleProfileUpdate);
+    };
+  }, []);
+
+  const avatarUrl =
+    profile?.profilePicture ||
+    profile?.avatar ||
+    authUser?.profilePicture ||
+    authUser?.avatar ||
+    null;
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -232,7 +257,15 @@ export default function StudentSidebar({
                 theme === "dark" ? "#AEB4C0" : "#4B5563";
             }}
           >
-            <User className="w-4.5 h-4.5 shrink-0 transition-transform duration-200 group-hover:scale-110 text-gray-400" />
+            {avatarUrl ? (
+              <img
+                src={avatarUrl}
+                alt="Profile"
+                className="w-5 h-5 rounded-md object-cover shrink-0 border border-black/10"
+              />
+            ) : (
+              <User className="w-4.5 h-4.5 shrink-0 transition-transform duration-200 group-hover:scale-110 text-gray-400" />
+            )}
             {!collapsed && <span className="whitespace-nowrap truncate">Edit Profile</span>}
           </Link>
 
@@ -386,7 +419,15 @@ export default function StudentSidebar({
                     color: theme === "dark" ? "#AEB4C0" : "#4B5563",
                   }}
                 >
-                  <User className="w-4.5 h-4.5 shrink-0 text-gray-400" />
+                  {avatarUrl ? (
+                    <img
+                      src={avatarUrl}
+                      alt="Profile"
+                      className="w-5 h-5 rounded-md object-cover shrink-0 border border-black/10"
+                    />
+                  ) : (
+                    <User className="w-4.5 h-4.5 shrink-0 text-gray-400" />
+                  )}
                   <span>Edit Profile</span>
                 </Link>
 

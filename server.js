@@ -100,6 +100,7 @@ const allowedOrigins = [
   process.env.FRONTEND_URL,
   process.env.CLIENT_URL,
   process.env.CORS_ORIGIN,
+  "https://ai-interview-platform-pearl-five.vercel.app",
   "http://localhost:5173",
   "http://localhost:5174",
   "http://localhost:3000"
@@ -109,15 +110,20 @@ app.use(cors({
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
     const normalized = origin.replace(/\/$/, "");
-    const isAllowed = allowedOrigins.some((o) => o.replace(/\/$/, "") === normalized);
-    if (isAllowed || process.env.NODE_ENV !== "production") {
+    const isAllowed = allowedOrigins.some((o) => o && o.replace(/\/$/, "") === normalized);
+    if (
+      isAllowed ||
+      normalized.endsWith(".vercel.app") ||
+      process.env.NODE_ENV !== "production"
+    ) {
       return callback(null, true);
     }
     return callback(new Error(`CORS policy does not allow access from origin: ${origin}`), false);
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
+  allowedHeaders: ["Content-Type", "Authorization", "Accept"],
+  exposedHeaders: ["Content-Disposition", "Content-Type"]
 }));
 
 app.use(express.json({ limit: "10mb" }));

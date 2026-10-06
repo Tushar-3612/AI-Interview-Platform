@@ -67,10 +67,11 @@ export function useStudentProfile() {
         });
         if (data && isMounted && currentRequestId === latestRequestIdRef.current) {
           const normalized = normalizeProfileData(data);
-          setProfile((prev) => ({
-            ...prev,
-            ...normalized,
-          }));
+          setProfile((prev) => {
+            const next = { ...prev, ...normalized };
+            syncAuthUser(next);
+            return next;
+          });
         }
       } catch (err) {
         console.warn("MongoDB profile sync failed, preserving local state.", err.message);
@@ -94,10 +95,11 @@ export function useStudentProfile() {
       });
       if (data && currentRequestId === latestRequestIdRef.current) {
         const normalized = normalizeProfileData(data);
-        setProfile((prev) => ({
-          ...prev,
-          ...normalized,
-        }));
+        setProfile((prev) => {
+          const next = { ...prev, ...normalized };
+          syncAuthUser(next);
+          return next;
+        });
         return normalized;
       }
     } catch (err) {
@@ -109,14 +111,21 @@ export function useStudentProfile() {
 
   useEffect(() => {
     if (profile) {
-      localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+      try {
+        localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+      } catch (e) {
+        console.warn("Failed to save profile to localStorage:", e);
+      }
+      syncAuthUser(profile);
     }
   }, [profile]);
 
   const updateProfile = useCallback((updates) => {
     setProfile((prev) => {
       const merged = { ...prev, ...updates };
-      return normalizeProfileData(merged);
+      const normalized = normalizeProfileData(merged);
+      syncAuthUser(normalized);
+      return normalized;
     });
   }, []);
 
@@ -130,7 +139,11 @@ export function useStudentProfile() {
       });
       if (data && (data.user || data.data)) {
         const normalized = normalizeProfileData(data.user || data.data);
-        setProfile((prev) => ({ ...prev, ...normalized }));
+        setProfile((prev) => {
+          const next = { ...prev, ...normalized };
+          syncAuthUser(next);
+          return next;
+        });
       }
       return true;
     } catch (err) {
@@ -207,18 +220,63 @@ export function clearAuthData() {
   }
 }
 
+export function syncAuthUser(profileData) {
+  if (!profileData) return;
+  try {
+    const raw = localStorage.getItem("user") || sessionStorage.getItem("user");
+    const parsed = raw ? JSON.parse(raw) : {};
+    const avatar = profileData.profilePicture || profileData.avatar || parsed.profilePicture || parsed.avatar || "";
+    const updated = {
+      ...parsed,
+      name: profileData.name || parsed.name || "",
+      email: profileData.email || parsed.email || "",
+      department: profileData.department || parsed.department || "",
+      year: profileData.year || parsed.year || "",
+      profilePicture: avatar,
+      avatar: avatar,
+    };
+    if (localStorage.getItem("user") || !sessionStorage.getItem("user")) {
+      localStorage.setItem("user", JSON.stringify(updated));
+    }
+    if (sessionStorage.getItem("user")) {
+      sessionStorage.setItem("user", JSON.stringify(updated));
+    }
+    window.dispatchEvent(new CustomEvent("profile-updated", { detail: updated }));
+  } catch (err) {
+    console.warn("Failed to sync auth user:", err);
+  }
+}
+
 export function getAuthUser() {
   const token = getAuthToken();
   if (!token) return {};
 
   const raw =
     localStorage.getItem("user") || sessionStorage.getItem("user");
-  if (!raw) return {};
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return {};
+  let user = {};
+  if (raw) {
+    try {
+      user = JSON.parse(raw);
+    } catch {
+      user = {};
+    }
   }
+
+  try {
+    const stored = localStorage.getItem(PROFILE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (parsed.profilePicture || parsed.avatar) {
+        user.profilePicture = user.profilePicture || parsed.profilePicture || parsed.avatar;
+        user.avatar = user.avatar || parsed.avatar || parsed.profilePicture;
+      }
+      if (!user.name && parsed.name) user.name = parsed.name;
+    }
+  } catch {
+    // ignore
+  }
+
+  return user;
 }
 
 export function getAuthToken() {

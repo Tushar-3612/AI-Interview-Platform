@@ -274,6 +274,8 @@ export const login = async (req, res) => {
         year: user.year,
         role: "student",
         isPremium: Boolean(user.isPremium),
+        profilePicture: user.profilePicture || "",
+        avatar: user.profilePicture || "",
       },
     });
   } catch (error) {

@@ -117,8 +117,10 @@ export function normalizeProfileData(data) {
     resumeFileName: safeStringOrNull(root.resumeFileName),
     resumeUploadedAt: root.resumeUploadedAt || null,
     resumeAnalysis: root.resumeAnalysis || ra || null,
+    resumeBase64: safeStringOrNull(root.resumeBase64),
     targetCompany: safeStringOrNull(root.targetCompany),
-    profilePicture: safeStringOrNull(root.profilePicture),
+    profilePicture: safeStringOrNull(root.profilePicture || root.avatar),
+    avatar: safeStringOrNull(root.avatar || root.profilePicture),
     attemptUsed: safeNumberOrNull(root.attemptUsed) || 0,
     isPremium: Boolean(root.isPremium),
   };
