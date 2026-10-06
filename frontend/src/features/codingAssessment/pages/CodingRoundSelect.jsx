@@ -172,7 +172,7 @@ export default function CodingRoundSelect() {
   };
 
   return (
-    <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-8 space-y-7 pb-24 lg:pb-8">
+    <div className="page-container space-y-7 pb-24 lg:pb-8">
       {/* ── TOP HERO HEADER ── */}
       <section className="bg-[var(--card-bg)] border border-[var(--border)] rounded-[24px] sm:rounded-[28px] p-5 sm:p-7 shadow-[var(--shadow-card)] relative overflow-hidden space-y-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
@@ -224,7 +224,7 @@ export default function CodingRoundSelect() {
                   whileHover={{ y: -2 }}
                   whileTap={{ scale: 0.99 }}
                   onClick={() => setSelectedDifficulty(diff.id)}
-                  className={`relative p-5 rounded-2xl transition-all cursor-pointer flex flex-col justify-between overflow-hidden border ${
+                  className={`relative h-full p-5 rounded-2xl transition-all cursor-pointer flex flex-col justify-between overflow-hidden border ${
                     isSelected
                       ? "border-[#FF6B35] ring-2 ring-[#FF6B35]/30 shadow-lg shadow-[#FF6B35]/15"
                       : "border-[var(--border)] hover:border-[#FF6B35]/40"

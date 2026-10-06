@@ -46,6 +46,13 @@ export const createQuestion = async (req, res) => {
     const departmentScope = isTeacher ? teacherDept : (req.body.departmentScope || "global");
     const creatorRole = isTeacher ? "teacher" : "system_admin";
 
+    // Map test cases to the embedded format
+    const embeddedTestCases = Array.isArray(testCases) ? testCases.map(tc => ({
+      input: tc.input || "",
+      expected: tc.expectedOutput || tc.expected || tc.output || "",
+      isHidden: tc.isHidden !== undefined ? Boolean(tc.isHidden) : !tc.isSample,
+    })) : [];
+
     const question = await CodingQuestion.create({
       title: title.trim(),
       description: description || problemStatement || "",
@@ -69,17 +76,18 @@ export const createQuestion = async (req, res) => {
       createdBy: req.user?._id || req.user?.id || null,
       departmentScope,
       creatorRole,
+      testCases: embeddedTestCases,
     });
 
     // If initial test cases were passed, create in CodingTestCase as well
-    if (Array.isArray(testCases) && testCases.length > 0) {
-      const tcDocs = testCases.map((tc) => ({
+    if (embeddedTestCases.length > 0) {
+      const tcDocs = embeddedTestCases.map((tc) => ({
         questionId: question._id,
-        input: tc.input || "",
-        expectedOutput: tc.expectedOutput || tc.expected || "",
-        isSample: Boolean(tc.isSample),
-        isHidden: tc.isHidden !== undefined ? Boolean(tc.isHidden) : !tc.isSample,
-        weight: Number(tc.weight) || 1,
+        input: tc.input,
+        expectedOutput: tc.expected,
+        isSample: !tc.isHidden,
+        isHidden: tc.isHidden,
+        weight: 1,
       }));
       await CodingTestCase.insertMany(tcDocs);
     }

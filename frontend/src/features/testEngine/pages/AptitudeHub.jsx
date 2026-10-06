@@ -142,8 +142,7 @@ export default function AptitudeHub() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] transition-colors duration-300">
-      <div className="p-4 sm:p-6 lg:p-8 max-w-[1440px] mx-auto w-full space-y-8">
+    <div className="page-container space-y-8">
         
         {/* ── TOP HERO HEADER ── */}
         <section className="relative bg-[var(--card-bg)] border border-[var(--border)] rounded-[24px] sm:rounded-[28px] p-6 sm:p-8 lg:p-10 shadow-[var(--shadow-card)] overflow-hidden">
@@ -192,7 +191,7 @@ export default function AptitudeHub() {
           {/* Card 1: Aptitude Round (Practice Mode) */}
           <motion.div
             whileHover={{ y: -3 }}
-            className="p-6 sm:p-8 rounded-[24px] border bg-[var(--card-bg)] shadow-[var(--shadow-card)] flex flex-col justify-between relative overflow-hidden group"
+            className="h-full p-6 sm:p-8 rounded-[24px] border bg-[var(--card-bg)] shadow-[var(--shadow-card)] flex flex-col justify-between relative overflow-hidden group"
             style={{ borderColor: "var(--border)" }}
           >
             <div className="space-y-4">
@@ -253,7 +252,7 @@ export default function AptitudeHub() {
           {/* Card 2: Aptitude Assessment (Exam Mode) */}
           <motion.div
             whileHover={{ y: -3 }}
-            className="p-6 sm:p-8 rounded-[24px] border bg-[var(--card-bg)] shadow-[var(--shadow-card)] flex flex-col justify-between relative overflow-hidden group"
+            className="h-full p-6 sm:p-8 rounded-[24px] border bg-[var(--card-bg)] shadow-[var(--shadow-card)] flex flex-col justify-between relative overflow-hidden group"
             style={{ borderColor: "var(--border)" }}
           >
             <div className="space-y-4">
@@ -484,7 +483,6 @@ export default function AptitudeHub() {
           </div>
         )}
 
-      </div>
     </div>
   );
 }

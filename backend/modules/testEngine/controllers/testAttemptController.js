@@ -43,7 +43,7 @@ export const getAssignedTests = async (req, res) => {
   try {
     const userId = req.user.id;
     const user = await User.findById(userId).select("_id").lean();
-    if (!user) return res.status(404).json({ message: "User not found" });
+    if (!user) return res.status(401).json({ message: "User account no longer exists" });
 
     const assignments = await TestAssignment.find({
       studentIds: userId,
@@ -650,6 +650,11 @@ export const getTestResult = async (req, res) => {
   try {
     const { attemptId } = req.params;
     const userId = (req.user._id || req.user.id)?.toString();
+    const user = await User.findById(userId).select("_id").lean();
+    if (!user) {
+      return res.status(401).json({ message: "User account no longer exists" });
+    }
+
     const attempt = await TestAttempt.findOne({ _id: attemptId, userId })
       .populate("testId")
       .lean();

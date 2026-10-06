@@ -231,10 +231,10 @@ export default function CodingProblemEditor({ questions, onChange, onImport }) {
                     {(q.testCases || []).map((tc, tci) => (
                       <div key={tci} className="flex items-start gap-2 p-2 rounded-lg admin-bg-surface">
                         <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                          <input value={tc.input} onChange={e => updateTestCase(idx, tci, "input", e.target.value)}
+                          <input value={tc.input || ""} onChange={e => updateTestCase(idx, tci, "input", e.target.value)}
                             className="w-full px-2 py-1.5 text-xs font-mono border admin-border rounded bg-transparent focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                             style={{ color: "var(--text-primary)" }} placeholder="Input" />
-                          <input value={tc.output} onChange={e => updateTestCase(idx, tci, "output", e.target.value)}
+                          <input value={tc.expected ?? tc.expectedOutput ?? tc.output ?? ""} onChange={e => updateTestCase(idx, tci, "expected", e.target.value)}
                             className="w-full px-2 py-1.5 text-xs font-mono border admin-border rounded bg-transparent focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                             style={{ color: "var(--text-primary)" }} placeholder="Expected output" />
                         </div>

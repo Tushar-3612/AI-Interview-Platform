@@ -73,12 +73,16 @@ export default function CodingAssessmentList() {
   };
 
   return (
-    <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 pb-24 lg:pb-8">
+    <div className="page-container space-y-6 pb-24 lg:pb-8">
       {/* Hero Header */}
-      <section className="bg-[var(--card-bg)] border border-[var(--border)] rounded-[24px] p-6 sm:p-8 shadow-[var(--shadow-card)] relative overflow-hidden space-y-4">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <section className="page-hero space-y-4">
+        {/* Subtle Ambient Glow */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-1/3 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border bg-cyan-500/10 border-cyan-500/30 text-cyan-400">
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border bg-[#FF6B35]/10 border-[#FF6B35]/30 text-[#FF6B35]">
               <Code2 className="w-6 h-6" />
             </div>
             <div>
@@ -86,7 +90,7 @@ export default function CodingAssessmentList() {
                 <h1 className="text-xl sm:text-2xl font-black tracking-tight text-[var(--text-primary)]">
                   Coding Round Assessments
                 </h1>
-                <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-400 border border-cyan-500/30">
+                <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-[#FF6B35]/15 text-[#FF6B35] border border-[#FF6B35]/30">
                   Admin Managed
                 </span>
               </div>
@@ -100,9 +104,9 @@ export default function CodingAssessmentList() {
             <button
               type="button"
               onClick={() => navigate("/coding-assessment/history")}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl border text-xs font-bold text-[var(--text-primary)] border-cyan-500/40 bg-cyan-500/10 hover:bg-cyan-500/20 transition cursor-pointer"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl border text-xs font-bold text-[var(--text-primary)] border-[#FF6B35]/35 bg-[#FF6B35]/10 hover:bg-[#FF6B35]/20 transition cursor-pointer"
             >
-              <History className="w-3.5 h-3.5 text-cyan-400" />
+              <History className="w-3.5 h-3.5 text-[#FF6B35]" />
               <span>Assessment History</span>
             </button>
           </div>
@@ -113,7 +117,7 @@ export default function CodingAssessmentList() {
       <section className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="text-sm sm:text-base font-bold text-[var(--text-primary)] flex items-center gap-2">
-            <FileCode className="w-4 h-4 text-cyan-400" />
+            <FileCode className="w-4 h-4 text-[#FF6B35]" />
             Active Assessments ({assessments.length})
           </h2>
           <span className="text-xs text-[var(--text-muted)]">
@@ -151,7 +155,7 @@ export default function CodingAssessmentList() {
                 >
                   <div className="space-y-3">
                     <div className="flex items-start justify-between gap-2">
-                      <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/25 flex items-center justify-center text-cyan-400">
+                      <div className="w-10 h-10 rounded-xl bg-[#FF6B35]/10 border border-[#FF6B35]/25 flex items-center justify-center text-[#FF6B35]">
                         <Code2 className="w-5 h-5" />
                       </div>
 
@@ -166,7 +170,7 @@ export default function CodingAssessmentList() {
                           In Progress
                         </span>
                       ) : (
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-400 border border-cyan-500/30">
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#FF6B35]/15 text-[#FF6B35] border border-[#FF6B35]/30">
                           Active
                         </span>
                       )}
@@ -192,7 +196,7 @@ export default function CodingAssessmentList() {
                       </div>
                       <div className="p-2 rounded-xl bg-[var(--bg-secondary)]">
                         <span className="text-[10px] text-[var(--text-muted)] block">Total</span>
-                        <span className="font-bold text-cyan-400">{ass.totalMarks} pts</span>
+                        <span className="font-bold text-[#FF6B35]">{ass.totalMarks} pts</span>
                       </div>
                     </div>
                   </div>
@@ -202,7 +206,7 @@ export default function CodingAssessmentList() {
                       <button
                         type="button"
                         onClick={() => navigate(`/coding-assessment/result/${attempt._id}`)}
-                        className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold border border-cyan-500/40 text-cyan-400 hover:bg-cyan-500/10 transition cursor-pointer"
+                        className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold border border-[#FF6B35]/40 text-[#FF6B35] hover:bg-[#FF6B35]/10 transition cursor-pointer"
                       >
                         <span>View Results</span>
                         <ArrowRight className="w-3.5 h-3.5" />
@@ -221,7 +225,7 @@ export default function CodingAssessmentList() {
                       <button
                         type="button"
                         onClick={() => handleOpenInstructions(ass)}
-                        className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-black text-white bg-gradient-to-r from-cyan-500 to-blue-600 hover:opacity-90 transition cursor-pointer shadow-md shadow-cyan-500/20"
+                        className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-black text-white bg-gradient-to-r from-[#FF6B35] to-[#FF8A3D] hover:opacity-95 transition cursor-pointer shadow-md shadow-[#FF6B35]/25"
                       >
                         <span>Instructions & Start</span>
                         <ArrowRight className="w-3.5 h-3.5" />
@@ -248,7 +252,7 @@ export default function CodingAssessmentList() {
             >
               <div className="flex items-center justify-between border-b pb-3" style={{ borderColor: "var(--border)" }}>
                 <div className="flex items-center gap-2">
-                  <Info className="w-5 h-5 text-cyan-400" />
+                  <Info className="w-5 h-5 text-[#FF6B35]" />
                   <h3 className="text-base font-extrabold">{selectedAssessment.title}</h3>
                 </div>
                 <button
@@ -265,7 +269,7 @@ export default function CodingAssessmentList() {
                 <div className="p-3.5 rounded-xl border bg-[var(--bg-secondary)] space-y-2" style={{ borderColor: "var(--border)" }}>
                   <div className="flex items-center justify-between font-bold text-[var(--text-primary)]">
                     <span>Duration:</span>
-                    <span className="font-mono text-cyan-400">{selectedAssessment.durationMinutes} Minutes</span>
+                    <span className="font-mono text-[#FF6B35]">{selectedAssessment.durationMinutes} Minutes</span>
                   </div>
                   <div className="flex items-center justify-between font-bold text-[var(--text-primary)]">
                     <span>Total Questions:</span>
@@ -301,7 +305,7 @@ export default function CodingAssessmentList() {
                     handleStart(selectedAssessment._id);
                   }}
                   disabled={startingId === selectedAssessment._id}
-                  className="flex items-center gap-1.5 px-5 py-2 rounded-xl text-xs font-black text-white bg-gradient-to-r from-cyan-500 to-blue-600 hover:opacity-90 shadow-md shadow-cyan-500/25 transition cursor-pointer"
+                  className="flex items-center gap-1.5 px-5 py-2 rounded-xl text-xs font-black text-white bg-gradient-to-r from-[#FF6B35] to-[#FF8A3D] hover:opacity-95 shadow-md shadow-[#FF6B35]/25 transition cursor-pointer"
                 >
                   <Play className="w-3.5 h-3.5 fill-white" />
                   <span>Begin Assessment</span>

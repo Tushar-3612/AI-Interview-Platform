@@ -9,6 +9,12 @@ import {
   executeViaWorker,
   executeSuiteViaWorker,
 } from "./dockerExecutionWorkerClient.js";
+import {
+  executeJDoodleSingle,
+  executeJDoodleTestSuite,
+  isJDoodleConfigured,
+  getJDoodleConfig,
+} from "./jdoodleExecutionService.js";
 
 /* ============================================================================
  * Docker-based multi-language code execution service
@@ -1476,7 +1482,23 @@ export async function executeBatchStdin(langId, code, cases, timeLimitMs) {
  * ==========================================================================*/
 
 /**
- * Execute the student's code against a SINGLE set of arguments in an isolated Docker container.
+ * Determine active execution provider.
+ * Default is JDoodle for production/demo deployment without permanent Docker hosts.
+ * Can be switched to "docker" or "docker-worker" via CODE_EXECUTION_PROVIDER env var.
+ */
+export function getActiveProvider() {
+  const forced = (process.env.CODE_EXECUTION_PROVIDER || "").trim().toLowerCase();
+  if (forced === "docker" || forced === "docker-worker") {
+    return forced;
+  }
+  if (forced === "jdoodle") {
+    return "jdoodle";
+  }
+  return "jdoodle";
+}
+
+/**
+ * Execute the student's code against a SINGLE set of arguments.
  * Returns { type, output, timeMs, memoryKB } where type is one of:
  * "success" | "compile_error" | "runtime_error" | "time_limit" | "memory_limit" | "execution_error"
  */
@@ -1496,6 +1518,26 @@ export async function executeSingle(
     testCaseId,
   } = {}
 ) {
+  if (getActiveProvider() === "jdoodle") {
+    const res = await executeJDoodleSingle({
+      code,
+      language: languageId,
+      args,
+      timeLimitMs,
+      stdin,
+      className,
+      methodName,
+      functionName,
+    });
+    return {
+      type: res.type || res.status,
+      output: res.output || res.stdout || res.stderr || "",
+      timeMs: res.timeMs || 0,
+      memoryKB: res.memoryKB || 0,
+      status: res.status,
+    };
+  }
+
   const langId = normalizeLanguage(languageId);
   if (!langId) {
     return {
@@ -1596,6 +1638,21 @@ export async function executeBatch(
     executionConfig = {},
   } = {}
 ) {
+  if (getActiveProvider() === "jdoodle") {
+    const res = await executeJDoodleTestSuite({
+      code,
+      language: languageId,
+      testCases: cases,
+      timeLimitMs,
+    });
+    return {
+      type: res.status,
+      outputs: res.testResults?.map(r => r.actual) || [],
+      output: res.testResults?.map(r => r.actual).join("\n") || "",
+      timeMs: Number(res.executionTime) * 1000 || 0,
+      memoryKB: res.memory || 0,
+    };
+  }
   const langId = normalizeLanguage(languageId);
   if (!langId) {
     return {
@@ -1939,6 +1996,21 @@ export async function executeDocker({
 }) {
   const rawCode = sourceCode !== undefined ? sourceCode : (code || "");
 
+  if (getActiveProvider() === "jdoodle") {
+    return executeJDoodleSingle({
+      sourceCode: rawCode,
+      code: rawCode,
+      language,
+      stdin: stdin || input || "",
+      cpuTimeLimit,
+      timeLimitMs,
+      args,
+      functionName,
+      methodName,
+      className,
+    });
+  }
+
   if (isWorkerConfigured() && process.env.IS_DOCKER_WORKER !== "true") {
     return executeViaWorker({
       sourceCode: rawCode,
@@ -2063,6 +2135,20 @@ export async function executeDockerTestSuite({
   className,
 }) {
   const rawCode = sourceCode !== undefined ? sourceCode : (code || "");
+
+  if (getActiveProvider() === "jdoodle") {
+    return executeJDoodleTestSuite({
+      sourceCode: rawCode,
+      code: rawCode,
+      language,
+      testCases,
+      cpuTimeLimit,
+      timeLimitMs,
+      functionName,
+      methodName,
+      className,
+    });
+  }
 
   if (isWorkerConfigured() && process.env.IS_DOCKER_WORKER !== "true") {
     return executeSuiteViaWorker({
@@ -2223,6 +2309,8 @@ export async function executeDockerTestSuite({
 // Backward compatible aliases
 export const executeJudge0 = executeDocker;
 export const executeJudge0TestSuite = executeDockerTestSuite;
+export const executeCode = executeDocker;
+export const executeTestSuite = executeDockerTestSuite;
 export const getJudge0Language = (lang) => {
   const norm = normalizeLanguage(lang);
   return norm && LANGUAGE_CONFIG[norm] ? { id: norm, name: LANGUAGE_CONFIG[norm].label, slug: norm, ext: norm } : null;
@@ -2237,10 +2325,24 @@ export {
   makeWorkspace,
   runPool,
   detectJavaClassName,
+  detectJavaMethodName,
   detectPythonFunction,
+  parseJavaParamTypes,
+  harnessForRun,
 };
 
 export function getExecutionProviderInfo() {
+  const provider = getActiveProvider();
+  if (provider === "jdoodle") {
+    const { isConfigured } = getJDoodleConfig();
+    return {
+      provider: "jdoodle",
+      active: true,
+      configured: isConfigured,
+      languages: Object.keys(LANGUAGE_CONFIG),
+    };
+  }
+
   if (isWorkerConfigured() && process.env.IS_DOCKER_WORKER !== "true") {
     return {
       provider: "docker-worker",

@@ -75,8 +75,8 @@ router.get("/premium/search", authorizeRoles("system_admin"), searchStudentsForP
 router.get("/premium/search-students", authorizeRoles("system_admin"), searchStudentsForPremium);
 router.get("/premium/stats", authorizeRoles("system_admin"), getPremiumStats);
 
-// ─── System Admin ONLY: Central Company Mock Questions Management Endpoints ───
-router.get("/mock-questions", authorizeRoles("system_admin"), getMockQuestions);
+// ─── Mock Questions: teachers can read, only system_admin can write ───
+router.get("/mock-questions", authorizeRoles("system_admin", "teacher"), getMockQuestions);
 router.post("/mock-questions/check-duplicate", authorizeRoles("system_admin"), checkMockQuestionDuplicate);
 router.post("/mock-questions", authorizeRoles("system_admin"), addMockQuestion);
 router.put("/mock-questions/:id", authorizeRoles("system_admin"), editMockQuestion);
