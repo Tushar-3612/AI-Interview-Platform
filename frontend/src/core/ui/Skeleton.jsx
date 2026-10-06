@@ -149,12 +149,12 @@ export function SkeletonCodingRound() {
         </div>
 
         <div className="lg:col-span-7 space-y-4">
-          <div className="student-card p-4 space-y-4" style={{ background: "#0d0d0d", borderColor: "#222" }}>
-            <div className="flex items-center justify-between border-b pb-3" style={{ borderColor: "#222" }}>
-              <Skeleton className="h-8 w-32 rounded-lg" style={{ background: "#1f2937" }} />
+          <div className="student-card p-4 space-y-4">
+            <div className="flex items-center justify-between border-b pb-3" style={{ borderColor: "var(--border)" }}>
+              <Skeleton className="h-8 w-32 rounded-lg" />
               <div className="flex gap-2">
-                <Skeleton className="h-8 w-16 rounded-lg" style={{ background: "#1f2937" }} />
-                <Skeleton className="h-8 w-8 rounded-lg" style={{ background: "#1f2937" }} />
+                <Skeleton className="h-8 w-16 rounded-lg" />
+                <Skeleton className="h-8 w-8 rounded-lg" />
               </div>
             </div>
             
@@ -165,18 +165,17 @@ export function SkeletonCodingRound() {
                   className="h-3.5 rounded"
                   style={{
                     width: `${30 + ((i * 47) % 60)}%`,
-                    background: "#1f2937",
                     marginLeft: `${(i % 3 === 1) ? 20 : (i % 3 === 2) ? 40 : 0}px`
                   }}
                 />
               ))}
             </div>
 
-            <div className="flex items-center justify-between pt-3 border-t" style={{ borderColor: "#222" }}>
-              <Skeleton className="h-8 w-20 rounded-lg" style={{ background: "#1f2937" }} />
+            <div className="flex items-center justify-between pt-3 border-t" style={{ borderColor: "var(--border)" }}>
+              <Skeleton className="h-8 w-20 rounded-lg" />
               <div className="flex gap-2">
-                <Skeleton className="h-9 w-20 rounded-xl" style={{ background: "#1f2937" }} />
-                <Skeleton className="h-9 w-24 rounded-xl" style={{ background: "#1f2937" }} />
+                <Skeleton className="h-9 w-20 rounded-xl" />
+                <Skeleton className="h-9 w-24 rounded-xl" />
               </div>
             </div>
           </div>

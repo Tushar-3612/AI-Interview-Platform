@@ -106,19 +106,19 @@ export default function IndividualTechnicalResult() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-950 text-white flex flex-col items-center justify-center space-y-4">
+      <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] flex flex-col items-center justify-center space-y-4">
         <Zap className="w-10 h-10 text-orange-500 animate-bounce" />
-        <p className="text-sm font-bold text-gray-400">Loading Technical Practice Report...</p>
+        <p className="text-sm font-bold text-[var(--text-muted)]">Loading Technical Practice Report...</p>
       </div>
     );
   }
 
   if (error || !result) {
     return (
-      <div className="min-h-screen bg-gray-950 text-white flex flex-col items-center justify-center p-6 text-center space-y-4">
+      <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] flex flex-col items-center justify-center p-6 text-center space-y-4">
         <AlertCircle className="w-12 h-12 text-red-500" />
         <h2 className="text-xl font-bold">Result Unavailable</h2>
-        <p className="text-sm text-gray-400 max-w-md">{error || "Could not retrieve technical practice result."}</p>
+        <p className="text-sm text-[var(--text-muted)] max-w-md">{error || "Could not retrieve technical practice result."}</p>
         
         <div className="flex gap-3">
           <button
@@ -130,7 +130,7 @@ export default function IndividualTechnicalResult() {
           </button>
           <button
             onClick={() => navigate("/interview-practice")}
-            className="px-5 py-2.5 rounded-xl bg-gray-800 text-gray-300 font-bold text-xs uppercase cursor-pointer hover:bg-gray-700"
+            className="px-5 py-2.5 rounded-xl bg-[var(--card-bg)] text-[var(--text-secondary)] border border-[var(--border)] font-bold text-xs uppercase cursor-pointer hover:bg-[var(--bg-secondary)]"
           >
             Back to Dashboard
           </button>
@@ -142,13 +142,13 @@ export default function IndividualTechnicalResult() {
   // Performance Status Badge Config
   const statusLabel = result.performanceStatus || "NOT ASSESSED";
 
-  let statusBg = "bg-gray-800 text-gray-400 border-gray-700";
+  let statusBg = "bg-[var(--bg-secondary)] text-[var(--text-muted)] border-[var(--border)]";
   if (statusLabel === "Strong Performance") {
-    statusBg = "bg-emerald-500/15 text-emerald-400 border-emerald-500/30";
+    statusBg = "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30";
   } else if (statusLabel === "Developing") {
-    statusBg = "bg-amber-500/15 text-amber-400 border-amber-500/30";
+    statusBg = "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30";
   } else if (statusLabel === "Needs Significant Improvement") {
-    statusBg = "bg-red-500/15 text-red-400 border-red-500/30";
+    statusBg = "bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30";
   }
 
   const questionResults = Array.isArray(result.questionResults) ? result.questionResults : [];
@@ -159,23 +159,23 @@ export default function IndividualTechnicalResult() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100 font-sans select-none pb-20">
+    <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] font-sans select-none pb-20">
       
       {/* ── HEADER ── */}
-      <header className="sticky top-0 z-30 bg-gray-900/90 backdrop-blur-md border-b border-gray-800 px-6 sm:px-12 py-4 flex items-center justify-between">
+      <header className="sticky top-0 z-30 bg-[var(--card-bg)]/90 backdrop-blur-md border-b border-[var(--border)] px-6 sm:px-12 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate("/interview-practice")}
-            className="p-2 rounded-xl bg-gray-800 text-gray-300 hover:text-white transition cursor-pointer"
+            className="p-2 rounded-xl bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border)] transition cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4" />
           </button>
           <div>
-            <h1 className="text-base sm:text-lg font-black text-white tracking-tight">
+            <h1 className="text-base sm:text-lg font-black text-[var(--text-primary)] tracking-tight">
               TECHNICAL PRACTICE RESULT REPORT
             </h1>
-            <p className="text-[11px] text-gray-400">
-              Session ID: <span className="font-mono text-orange-400">{sessionId}</span>
+            <p className="text-[11px] text-[var(--text-muted)]">
+              Session ID: <span className="font-mono text-orange-500 font-bold">{sessionId}</span>
             </p>
           </div>
         </div>
@@ -184,9 +184,9 @@ export default function IndividualTechnicalResult() {
           <button
             onClick={handleDownloadPDF}
             disabled={downloadingPdf}
-            className="px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-white font-bold text-xs uppercase cursor-pointer flex items-center gap-2 border border-gray-700 disabled:opacity-50 transition"
+            className="px-4 py-2 rounded-xl bg-[var(--bg-secondary)] hover:bg-[var(--card-bg)] text-[var(--text-primary)] font-bold text-xs uppercase cursor-pointer flex items-center gap-2 border border-[var(--border)] disabled:opacity-50 transition"
           >
-            <Download className="w-4 h-4 text-orange-400" />
+            <Download className="w-4 h-4 text-orange-500" />
             <span>{downloadingPdf ? "Generating PDF..." : "Download PDF"}</span>
           </button>
 
@@ -203,14 +203,14 @@ export default function IndividualTechnicalResult() {
       <main className="w-[94%] max-w-[1600px] mx-auto pt-8 space-y-8">
         
         {/* ── METRICS SCORE HERO ── */}
-        <section className="p-6 sm:p-8 rounded-3xl bg-gray-900 border border-gray-800 space-y-6 shadow-2xl">
+        <section className="p-6 sm:p-8 rounded-3xl bg-[var(--card-bg)] border border-[var(--border)] space-y-6 shadow-xl">
           
-          <div className="flex items-center justify-between flex-wrap gap-4 border-b border-gray-800 pb-6">
+          <div className="flex items-center justify-between flex-wrap gap-4 border-b border-[var(--border)] pb-6">
             <div className="space-y-1">
-              <span className="text-xs font-black uppercase tracking-wider text-orange-400">
+              <span className="text-xs font-black uppercase tracking-wider text-orange-500">
                 OVERALL TECHNICAL PERFORMANCE
               </span>
-              <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+              <h2 className="text-2xl sm:text-3xl font-black text-[var(--text-primary)] tracking-tight">
                 Score Summary
               </h2>
             </div>
@@ -222,31 +222,31 @@ export default function IndividualTechnicalResult() {
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             
-            <div className="p-5 rounded-2xl bg-gray-950 border border-gray-800 space-y-1">
-              <div className="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Score</div>
-              <div className="text-3xl font-black text-white">
-                {result.obtainedScore} <span className="text-sm font-bold text-gray-500">/ 100</span>
+            <div className="p-5 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border)] space-y-1">
+              <div className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">Total Score</div>
+              <div className="text-3xl font-black text-[var(--text-primary)]">
+                {result.obtainedScore} <span className="text-sm font-bold text-[var(--text-muted)]">/ 100</span>
               </div>
             </div>
 
-            <div className="p-5 rounded-2xl bg-gray-950 border border-gray-800 space-y-1">
-              <div className="text-xs font-bold text-gray-400 uppercase tracking-wider">Percentage</div>
-              <div className="text-3xl font-black text-orange-400">
+            <div className="p-5 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border)] space-y-1">
+              <div className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">Percentage</div>
+              <div className="text-3xl font-black text-orange-500">
                 {result.percentage}%
               </div>
             </div>
 
-            <div className="p-5 rounded-2xl bg-gray-950 border border-gray-800 space-y-1">
-              <div className="text-xs font-bold text-gray-400 uppercase tracking-wider">Attempted</div>
-              <div className="text-3xl font-black text-emerald-400">
-                {result.attemptedCount} <span className="text-sm font-bold text-gray-500">/ 20</span>
+            <div className="p-5 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border)] space-y-1">
+              <div className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">Attempted</div>
+              <div className="text-3xl font-black text-emerald-600 dark:text-emerald-400">
+                {result.attemptedCount} <span className="text-sm font-bold text-[var(--text-muted)]">/ 20</span>
               </div>
             </div>
 
-            <div className="p-5 rounded-2xl bg-gray-950 border border-gray-800 space-y-1">
-              <div className="text-xs font-bold text-gray-400 uppercase tracking-wider">Unattempted</div>
-              <div className="text-3xl font-black text-gray-400">
-                {result.unattemptedCount} <span className="text-sm font-bold text-gray-500">/ 20</span>
+            <div className="p-5 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border)] space-y-1">
+              <div className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">Unattempted</div>
+              <div className="text-3xl font-black text-[var(--text-muted)]">
+                {result.unattemptedCount} <span className="text-sm font-bold text-[var(--text-muted)]">/ 20</span>
               </div>
             </div>
 
@@ -254,8 +254,8 @@ export default function IndividualTechnicalResult() {
         </section>
 
         {/* ── EVIDENCE-BASED FEEDBACK SECTION ── */}
-        <section className="p-6 sm:p-8 rounded-3xl bg-gray-900 border border-gray-800 space-y-6 shadow-2xl">
-          <h3 className="text-lg font-black text-white tracking-tight flex items-center gap-2">
+        <section className="p-6 sm:p-8 rounded-3xl bg-[var(--card-bg)] border border-[var(--border)] space-y-6 shadow-xl">
+          <h3 className="text-lg font-black text-[var(--text-primary)] tracking-tight flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-orange-500" />
             <span>EVIDENCE-BASED EVALUATION FEEDBACK</span>
           </h3>
@@ -263,59 +263,59 @@ export default function IndividualTechnicalResult() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             
             {/* Performance Insight */}
-            <div className="p-5 rounded-2xl bg-gray-950 border border-gray-800 space-y-2 md:col-span-2">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-orange-400">
+            <div className="p-5 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border)] space-y-2 md:col-span-2">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-orange-500">
                 Performance Insight
               </h4>
-              <p className="text-sm text-gray-300 leading-relaxed">
+              <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
                 {result.feedback?.performanceInsight || "Evaluation analysis based on submitted responses."}
               </p>
             </div>
 
             {/* What Went Well */}
-            <div className="p-5 rounded-2xl bg-gray-950 border border-gray-800 space-y-3">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+            <div className="p-5 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border)] space-y-3">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
                 <CheckCircle2 className="w-4 h-4" /> What Went Well
               </h4>
               {result.feedback?.whatWentWell?.length > 0 ? (
-                <ul className="space-y-2 text-xs text-gray-300">
+                <ul className="space-y-2 text-xs text-[var(--text-secondary)]">
                   {result.feedback.whatWentWell.map((item, idx) => (
                     <li key={idx} className="flex items-start gap-2">
-                      <span className="text-emerald-400 font-bold">•</span>
+                      <span className="text-emerald-500 font-bold">•</span>
                       <span>{item}</span>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className="text-xs text-gray-500 italic">No specific strengths recorded.</p>
+                <p className="text-xs text-[var(--text-muted)] italic">No specific strengths recorded.</p>
               )}
             </div>
 
             {/* Focus Areas / Weak Areas */}
-            <div className="p-5 rounded-2xl bg-gray-950 border border-gray-800 space-y-3">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+            <div className="p-5 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border)] space-y-3">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
                 <AlertCircle className="w-4 h-4" /> Focus Areas
               </h4>
               {result.feedback?.weakAreas?.length > 0 ? (
-                <ul className="space-y-2 text-xs text-gray-300">
+                <ul className="space-y-2 text-xs text-[var(--text-secondary)]">
                   {result.feedback.weakAreas.map((item, idx) => (
                     <li key={idx} className="flex items-start gap-2">
-                      <span className="text-amber-400 font-bold">•</span>
+                      <span className="text-amber-500 font-bold">•</span>
                       <span>{item}</span>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className="text-xs text-gray-500 italic">No major weak areas identified.</p>
+                <p className="text-xs text-[var(--text-muted)] italic">No major weak areas identified.</p>
               )}
             </div>
 
             {/* Recommended Next Step */}
-            <div className="p-5 rounded-2xl bg-gray-950 border border-gray-800 space-y-2 md:col-span-2">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-sky-400">
+            <div className="p-5 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border)] space-y-2 md:col-span-2">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400">
                 Recommended Next Step
               </h4>
-              <p className="text-sm text-gray-300 leading-relaxed">
+              <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
                 {result.feedback?.recommendedNextStep || "Review incorrect questions and attempt another technical practice set."}
               </p>
             </div>
@@ -324,9 +324,9 @@ export default function IndividualTechnicalResult() {
         </section>
 
         {/* ── QUESTION-WISE DETAILED REVIEW (ALL 20 QUESTIONS) ── */}
-        <section className="p-6 sm:p-8 rounded-3xl bg-gray-900 border border-gray-800 space-y-6 shadow-2xl">
-          <div className="flex items-center justify-between flex-wrap gap-4 border-b border-gray-800 pb-4">
-            <h3 className="text-lg font-black text-white tracking-tight flex items-center gap-2">
+        <section className="p-6 sm:p-8 rounded-3xl bg-[var(--card-bg)] border border-[var(--border)] space-y-6 shadow-xl">
+          <div className="flex items-center justify-between flex-wrap gap-4 border-b border-[var(--border)] pb-4">
+            <h3 className="text-lg font-black text-[var(--text-primary)] tracking-tight flex items-center gap-2">
               <BookOpen className="w-5 h-5 text-orange-500" />
               <span>QUESTION-WISE DETAILED REVIEW ({questionResults.length} QUESTIONS)</span>
             </h3>
@@ -337,17 +337,17 @@ export default function IndividualTechnicalResult() {
                 <button
                   disabled={currentPage === 1}
                   onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  className="p-2 rounded-lg bg-gray-800 border border-gray-700 disabled:opacity-40"
+                  className="p-2 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border)] text-[var(--text-primary)] disabled:opacity-40 cursor-pointer"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
-                <span className="text-gray-400">
+                <span className="text-[var(--text-muted)]">
                   Page {currentPage} of {totalPages}
                 </span>
                 <button
                   disabled={currentPage === totalPages}
                   onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                  className="p-2 rounded-lg bg-gray-800 border border-gray-700 disabled:opacity-40"
+                  className="p-2 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border)] text-[var(--text-primary)] disabled:opacity-40 cursor-pointer"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>
@@ -363,49 +363,49 @@ export default function IndividualTechnicalResult() {
               return (
                 <div
                   key={q.questionId || idx}
-                  className="p-5 rounded-2xl bg-gray-950 border border-gray-800 space-y-4"
+                  className="p-5 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border)] space-y-4"
                 >
                   {/* Top Bar */}
-                  <div className="flex items-center justify-between flex-wrap gap-2 border-b border-gray-800/80 pb-3">
+                  <div className="flex items-center justify-between flex-wrap gap-2 border-b border-[var(--border)] pb-3">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-black text-orange-400">
+                      <span className="text-xs font-black text-orange-500">
                         QUESTION {String(globalIdx).padStart(2, "0")}
                       </span>
-                      <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-gray-800 text-gray-300">
+                      <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-[var(--card-bg)] text-[var(--text-secondary)] border border-[var(--border)]">
                         {q.difficulty}
                       </span>
-                      <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-gray-800 text-gray-400">
+                      <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-[var(--card-bg)] text-[var(--text-muted)] border border-[var(--border)]">
                         Topic: {q.topic || "Technical"}
                       </span>
                     </div>
 
                     <div className="flex items-center gap-3">
                       {isAttempted ? (
-                        <span className="text-xs font-bold text-emerald-400 px-2.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/30">
+                        <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 px-2.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/30">
                           ATTEMPTED
                         </span>
                       ) : (
-                        <span className="text-xs font-bold text-gray-400 px-2.5 py-0.5 rounded bg-gray-800 border border-gray-700">
+                        <span className="text-xs font-bold text-[var(--text-muted)] px-2.5 py-0.5 rounded bg-[var(--card-bg)] border border-[var(--border)]">
                           NOT ATTEMPTED
                         </span>
                       )}
-                      <span className="text-xs font-extrabold text-white">
+                      <span className="text-xs font-extrabold text-[var(--text-primary)]">
                         Raw Score: {q.rawScore || 0} / {q.rawMaxScore || 5}
                       </span>
                     </div>
                   </div>
 
                   {/* Question Text */}
-                  <div className="text-sm font-bold text-white">
+                  <div className="text-sm font-bold text-[var(--text-primary)]">
                     Question: {q.question}
                   </div>
 
                   {/* Candidate Answer */}
                   <div className="space-y-1">
-                    <div className="text-xs font-bold uppercase tracking-wider text-gray-400">
+                    <div className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">
                       Candidate Original Answer:
                     </div>
-                    <div className={`p-3.5 rounded-xl border text-xs leading-relaxed font-mono ${isAttempted ? "bg-gray-900 border-gray-800 text-gray-200" : "bg-gray-900/50 border-gray-800 text-gray-500 italic"}`}>
+                    <div className={`p-3.5 rounded-xl border text-xs leading-relaxed font-mono ${isAttempted ? "bg-[var(--card-bg)] border-[var(--border)] text-[var(--text-primary)]" : "bg-[var(--card-bg)]/50 border-[var(--border)] text-[var(--text-muted)] italic"}`}>
                       {q.candidateAnswer || "Not Attempted"}
                     </div>
                   </div>
@@ -413,10 +413,10 @@ export default function IndividualTechnicalResult() {
                   {/* AI Evaluation / Feedback */}
                   {isAttempted && q.feedback && (
                     <div className="space-y-1 pt-1">
-                      <div className="text-xs font-bold uppercase tracking-wider text-orange-400">
+                      <div className="text-xs font-bold uppercase tracking-wider text-orange-500">
                         Evaluation Feedback:
                       </div>
-                      <p className="text-xs text-gray-300 leading-relaxed">
+                      <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
                         {q.feedback}
                       </p>
                     </div>
@@ -425,10 +425,10 @@ export default function IndividualTechnicalResult() {
                   {/* Improved Answer */}
                   {q.improvedAnswer && (
                     <div className="space-y-1 pt-1">
-                      <div className="text-xs font-bold uppercase tracking-wider text-emerald-400">
+                      <div className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
                         Improved / Key Concepts Answer:
                       </div>
-                      <div className="p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/20 text-xs text-emerald-300 leading-relaxed">
+                      <div className="p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/20 text-xs text-emerald-700 dark:text-emerald-300 leading-relaxed">
                         {q.improvedAnswer}
                       </div>
                     </div>

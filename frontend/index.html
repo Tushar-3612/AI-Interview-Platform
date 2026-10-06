@@ -18,6 +18,14 @@
   />
 
   <title>AI Placement Platform</title>
+  <script>
+    (function() {
+      try {
+        var theme = localStorage.getItem("prephire_theme") || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+        document.documentElement.setAttribute("data-theme", theme);
+      } catch (e) {}
+    })();
+  </script>
 </head>
   <body>
     <div id="root"></div>

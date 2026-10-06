@@ -60,29 +60,29 @@ export default function IndividualTechnicalStartModal({ isOpen, onClose, onStart
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm select-none">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
-          className="relative w-full max-w-xl bg-gray-900 border border-gray-800 rounded-3xl p-6 sm:p-8 text-white shadow-2xl space-y-6"
+          className="relative w-full max-w-xl bg-[var(--card-bg)] border border-[var(--border)] rounded-3xl p-6 sm:p-8 text-[var(--text-primary)] shadow-2xl space-y-6"
         >
           {/* Header */}
-          <div className="flex items-start justify-between border-b border-gray-800 pb-4">
+          <div className="flex items-start justify-between border-b border-[var(--border)] pb-4">
             <div>
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-xl bg-orange-500/20 border border-orange-500/40 flex items-center justify-center text-orange-500">
                   <Zap className="w-4 h-4" />
                 </div>
-                <h2 className="text-xl font-extrabold tracking-tight">Technical Practice</h2>
+                <h2 className="text-xl font-extrabold tracking-tight text-[var(--text-primary)]">Technical Practice</h2>
               </div>
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="text-xs text-[var(--text-secondary)] mt-1">
                 20-Question Targeted Technical Practice (Max Score = 100)
               </p>
             </div>
             <button
               onClick={onClose}
-              className="p-1 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition cursor-pointer"
+              className="p-1 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -90,7 +90,7 @@ export default function IndividualTechnicalStartModal({ isOpen, onClose, onStart
 
           {/* Error Message Alert */}
           {errorMsg && (
-            <div className="flex items-center gap-3 p-3.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-semibold">
+            <div className="flex items-center gap-3 p-3.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 dark:text-red-400 text-xs font-semibold">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{errorMsg}</span>
             </div>
@@ -98,7 +98,7 @@ export default function IndividualTechnicalStartModal({ isOpen, onClose, onStart
 
           {/* Section 1: Source Selection */}
           <div className="space-y-3">
-            <label className="text-xs font-bold uppercase tracking-wider text-gray-400">
+            <label className="text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)]">
               1. Choose Question Source
             </label>
             <div className="grid grid-cols-2 gap-3">
@@ -110,17 +110,17 @@ export default function IndividualTechnicalStartModal({ isOpen, onClose, onStart
                 }}
                 className={`p-4 rounded-2xl border text-left cursor-pointer transition-all flex flex-col justify-between space-y-2 ${
                   sourceMode === "RESUME"
-                    ? "bg-orange-500/10 border-orange-500 text-white shadow-lg shadow-orange-500/10"
-                    : "bg-gray-800/50 border-gray-700/60 text-gray-300 hover:border-gray-600"
+                    ? "bg-orange-500/10 border-orange-500 text-[var(--text-primary)] shadow-lg shadow-orange-500/10"
+                    : "bg-[var(--bg-secondary)] border-[var(--border)] text-[var(--text-secondary)] hover:border-[#FF6B35]/40"
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <Sparkles className={`w-5 h-5 ${sourceMode === "RESUME" ? "text-orange-500" : "text-gray-400"}`} />
+                  <Sparkles className={`w-5 h-5 ${sourceMode === "RESUME" ? "text-orange-500" : "text-[var(--text-muted)]"}`} />
                   {sourceMode === "RESUME" && <CheckCircle2 className="w-4 h-4 text-orange-500" />}
                 </div>
                 <div>
-                  <h4 className="text-sm font-bold">Start from Your Resume</h4>
-                  <p className="text-[11px] text-gray-400 mt-0.5 leading-tight">
+                  <h4 className="text-sm font-bold text-[var(--text-primary)]">Start from Your Resume</h4>
+                  <p className="text-[11px] text-[var(--text-secondary)] mt-0.5 leading-tight">
                     Questions generated strictly from your technical skills context.
                   </p>
                 </div>
@@ -134,17 +134,17 @@ export default function IndividualTechnicalStartModal({ isOpen, onClose, onStart
                 }}
                 className={`p-4 rounded-2xl border text-left cursor-pointer transition-all flex flex-col justify-between space-y-2 ${
                   sourceMode === "INTERVIEW_KEY"
-                    ? "bg-orange-500/10 border-orange-500 text-white shadow-lg shadow-orange-500/10"
-                    : "bg-gray-800/50 border-gray-700/60 text-gray-300 hover:border-gray-600"
+                    ? "bg-orange-500/10 border-orange-500 text-[var(--text-primary)] shadow-lg shadow-orange-500/10"
+                    : "bg-[var(--bg-secondary)] border-[var(--border)] text-[var(--text-secondary)] hover:border-[#FF6B35]/40"
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <Key className={`w-5 h-5 ${sourceMode === "INTERVIEW_KEY" ? "text-orange-500" : "text-gray-400"}`} />
+                  <Key className={`w-5 h-5 ${sourceMode === "INTERVIEW_KEY" ? "text-orange-500" : "text-[var(--text-muted)]"}`} />
                   {sourceMode === "INTERVIEW_KEY" && <CheckCircle2 className="w-4 h-4 text-orange-500" />}
                 </div>
                 <div>
-                  <h4 className="text-sm font-bold">Start from Interview Key</h4>
-                  <p className="text-[11px] text-gray-400 mt-0.5 leading-tight">
+                  <h4 className="text-sm font-bold text-[var(--text-primary)]">Start from Interview Key</h4>
+                  <p className="text-[11px] text-[var(--text-secondary)] mt-0.5 leading-tight">
                     Load questions from an assigned test code or company bank.
                   </p>
                 </div>
@@ -159,7 +159,7 @@ export default function IndividualTechnicalStartModal({ isOpen, onClose, onStart
                   value={interviewKeyId}
                   onChange={(e) => setInterviewKeyId(e.target.value)}
                   placeholder="Enter Interview Key ID or Test Code (e.g. cognizant, tcs)..."
-                  className="w-full px-4 py-3 rounded-xl bg-gray-800 border border-gray-700 text-xs sm:text-sm text-white placeholder-gray-500 outline-none focus:border-orange-500"
+                  className="w-full px-4 py-3 rounded-xl bg-[var(--input-bg)] border border-[var(--border)] text-xs sm:text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] outline-none focus:border-orange-500"
                 />
               </motion.div>
             )}
@@ -167,7 +167,7 @@ export default function IndividualTechnicalStartModal({ isOpen, onClose, onStart
 
           {/* Section 2: Difficulty Selection */}
           <div className="space-y-3">
-            <label className="text-xs font-bold uppercase tracking-wider text-gray-400">
+            <label className="text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)]">
               2. Choose Difficulty
             </label>
             <div className="grid grid-cols-4 gap-2">
@@ -183,8 +183,8 @@ export default function IndividualTechnicalStartModal({ isOpen, onClose, onStart
                   onClick={() => setDifficulty(item.id)}
                   className={`py-3 px-2 rounded-xl border text-center cursor-pointer transition-all ${
                     difficulty === item.id
-                      ? "bg-orange-500 text-white border-orange-500 shadow-md shadow-orange-500/20"
-                      : "bg-gray-800/60 border-gray-700 text-gray-300 hover:border-gray-600"
+                      ? "bg-orange-500 text-white border-orange-500 shadow-md shadow-orange-500/20 font-bold"
+                      : "bg-[var(--bg-secondary)] border-[var(--border)] text-[var(--text-secondary)] hover:border-[#FF6B35]/40"
                   }`}
                 >
                   <div className="text-xs font-black">{item.label}</div>
@@ -195,8 +195,8 @@ export default function IndividualTechnicalStartModal({ isOpen, onClose, onStart
           </div>
 
           {/* Info Banner */}
-          <div className="p-3.5 rounded-2xl bg-gray-800/40 border border-gray-800 text-xs text-gray-400 leading-relaxed">
-            <span className="font-bold text-gray-200">Note:</span> Individual Technical Practice contains 20 questions evaluated exclusively out of 100 marks. No Aptitude, HR, or Coding questions will be included.
+          <div className="p-3.5 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border)] text-xs text-[var(--text-secondary)] leading-relaxed">
+            <span className="font-bold text-[var(--text-primary)]">Note:</span> Individual Technical Practice contains 20 questions evaluated exclusively out of 100 marks. No Aptitude, HR, or Coding questions will be included.
           </div>
 
           {/* Submit Action */}

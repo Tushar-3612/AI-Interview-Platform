@@ -63,29 +63,29 @@ export default function IndividualProjectStartModal({ isOpen, onClose, onStartSu
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm select-none">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
-          className="relative w-full max-w-xl bg-gray-900 border border-gray-800 rounded-3xl p-6 sm:p-8 text-white shadow-2xl space-y-6"
+          className="relative w-full max-w-xl bg-[var(--card-bg)] border border-[var(--border)] rounded-3xl p-6 sm:p-8 text-[var(--text-primary)] shadow-2xl space-y-6"
         >
           {/* Header */}
-          <div className="flex items-start justify-between border-b border-gray-800 pb-4">
+          <div className="flex items-start justify-between border-b border-[var(--border)] pb-4">
             <div>
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
+                <div className="w-8 h-8 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-500 dark:text-emerald-400">
                   <FolderGit2 className="w-4 h-4" />
                 </div>
-                <h2 className="text-xl font-extrabold tracking-tight">Project / Resume Practice</h2>
+                <h2 className="text-xl font-extrabold tracking-tight text-[var(--text-primary)]">Project / Resume Practice</h2>
               </div>
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="text-xs text-[var(--text-secondary)] mt-1">
                 10-Question Targeted Project & Resume Practice (Max Score = 100)
               </p>
             </div>
             <button
               onClick={onClose}
-              className="p-1 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition cursor-pointer"
+              className="p-1 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -93,7 +93,7 @@ export default function IndividualProjectStartModal({ isOpen, onClose, onStartSu
 
           {/* Error Message Alert */}
           {errorMsg && (
-            <div className="flex items-center gap-3 p-3.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-semibold">
+            <div className="flex items-center gap-3 p-3.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 dark:text-red-400 text-xs font-semibold">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{errorMsg}</span>
             </div>
@@ -101,7 +101,7 @@ export default function IndividualProjectStartModal({ isOpen, onClose, onStartSu
 
           {/* Section 1: Source Selection */}
           <div className="space-y-3">
-            <label className="text-xs font-semibold text-gray-300 uppercase tracking-wider">
+            <label className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider">
               1. Question Source
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -111,18 +111,18 @@ export default function IndividualProjectStartModal({ isOpen, onClose, onStartSu
                   setSourceMode("RESUME");
                   setErrorMsg("");
                 }}
-                className={`flex items-center gap-3 p-3.5 rounded-2xl border text-left transition ${
+                className={`flex items-center gap-3 p-3.5 rounded-2xl border text-left transition cursor-pointer ${
                   sourceMode === "RESUME"
-                    ? "bg-emerald-500/10 border-emerald-500/50 text-white"
-                    : "bg-gray-800/50 border-gray-800 text-gray-400 hover:bg-gray-800 hover:text-gray-200"
+                    ? "bg-emerald-500/10 border-emerald-500/50 text-[var(--text-primary)]"
+                    : "bg-[var(--bg-secondary)] border-[var(--border)] text-[var(--text-secondary)] hover:border-emerald-500/40"
                 }`}
               >
                 <Sparkles
-                  className={`w-5 h-5 ${sourceMode === "RESUME" ? "text-emerald-400" : "text-gray-500"}`}
+                  className={`w-5 h-5 ${sourceMode === "RESUME" ? "text-emerald-500 dark:text-emerald-400" : "text-[var(--text-muted)]"}`}
                 />
                 <div>
-                  <div className="text-sm font-bold">Your Resume / Profile</div>
-                  <div className="text-[11px] text-gray-400">Extracts projects & skills from profile</div>
+                  <div className="text-sm font-bold text-[var(--text-primary)]">Your Resume / Profile</div>
+                  <div className="text-[11px] text-[var(--text-secondary)]">Extracts projects & skills from profile</div>
                 </div>
               </button>
 
@@ -132,20 +132,20 @@ export default function IndividualProjectStartModal({ isOpen, onClose, onStartSu
                   setSourceMode("INTERVIEW_KEY");
                   setErrorMsg("");
                 }}
-                className={`flex items-center gap-3 p-3.5 rounded-2xl border text-left transition ${
+                className={`flex items-center gap-3 p-3.5 rounded-2xl border text-left transition cursor-pointer ${
                   sourceMode === "INTERVIEW_KEY"
-                    ? "bg-emerald-500/10 border-emerald-500/50 text-white"
-                    : "bg-gray-800/50 border-gray-800 text-gray-400 hover:bg-gray-800 hover:text-gray-200"
+                    ? "bg-emerald-500/10 border-emerald-500/50 text-[var(--text-primary)]"
+                    : "bg-[var(--bg-secondary)] border-[var(--border)] text-[var(--text-secondary)] hover:border-emerald-500/40"
                 }`}
               >
                 <Key
                   className={`w-5 h-5 ${
-                    sourceMode === "INTERVIEW_KEY" ? "text-emerald-400" : "text-gray-500"
+                    sourceMode === "INTERVIEW_KEY" ? "text-emerald-500 dark:text-emerald-400" : "text-[var(--text-muted)]"
                   }`}
                 />
                 <div>
-                  <div className="text-sm font-bold">Interview Key / Code</div>
-                  <div className="text-[11px] text-gray-400">Load company/key specific project scope</div>
+                  <div className="text-sm font-bold text-[var(--text-primary)]">Interview Key / Code</div>
+                  <div className="text-[11px] text-[var(--text-secondary)]">Load company/key specific project scope</div>
                 </div>
               </button>
             </div>
@@ -157,7 +157,7 @@ export default function IndividualProjectStartModal({ isOpen, onClose, onStartSu
                   placeholder="Enter Interview Key ID (e.g. tcs-nqt, capgemini-sec)"
                   value={interviewKeyId}
                   onChange={(e) => setInterviewKeyId(e.target.value)}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-[var(--input-bg)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-emerald-500"
                 />
               </div>
             )}
@@ -165,7 +165,7 @@ export default function IndividualProjectStartModal({ isOpen, onClose, onStartSu
 
           {/* Section 2: Difficulty Selection */}
           <div className="space-y-3">
-            <label className="text-xs font-semibold text-gray-300 uppercase tracking-wider">
+            <label className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider">
               2. Select Difficulty
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -179,26 +179,26 @@ export default function IndividualProjectStartModal({ isOpen, onClose, onStartSu
                   key={item.id}
                   type="button"
                   onClick={() => setDifficulty(item.id)}
-                  className={`p-3 rounded-2xl border text-center transition ${
+                  className={`p-3 rounded-2xl border text-center transition cursor-pointer ${
                     difficulty === item.id
-                      ? "bg-emerald-500/10 border-emerald-500/60 text-white font-bold"
-                      : "bg-gray-800/40 border-gray-800 text-gray-400 hover:bg-gray-800 hover:text-gray-200"
+                      ? "bg-emerald-500/10 border-emerald-500/60 text-[var(--text-primary)] font-bold"
+                      : "bg-[var(--bg-secondary)] border-[var(--border)] text-[var(--text-secondary)] hover:border-emerald-500/40"
                   }`}
                 >
                   <div className="text-xs font-bold">{item.label}</div>
-                  <div className="text-[10px] text-gray-400 mt-0.5">{item.desc}</div>
+                  <div className="text-[10px] text-[var(--text-muted)] mt-0.5">{item.desc}</div>
                 </button>
               ))}
             </div>
           </div>
 
           {/* Practice Feature Highlights */}
-          <div className="bg-gray-800/40 rounded-2xl p-4 border border-gray-800 text-xs text-gray-400 space-y-2">
-            <div className="flex items-center gap-2 text-gray-300 font-semibold">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+          <div className="bg-[var(--bg-secondary)] rounded-2xl p-4 border border-[var(--border)] text-xs text-[var(--text-secondary)] space-y-2">
+            <div className="flex items-center gap-2 text-[var(--text-primary)] font-semibold">
+              <CheckCircle2 className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
               <span>Project Practice Round Information:</span>
             </div>
-            <ul className="list-disc list-inside space-y-1 text-gray-400 pl-1">
+            <ul className="list-disc list-inside space-y-1 text-[var(--text-secondary)] pl-1">
               <li>10 Deep Project Questions total (Max Score = 100 Marks).</li>
               <li>Questions test architecture, DB schema, API design, trade-offs, and failure recovery.</li>
               <li>Voice-to-text recording supported with automatic answer persistence.</li>
@@ -211,7 +211,7 @@ export default function IndividualProjectStartModal({ isOpen, onClose, onStartSu
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2.5 rounded-xl text-sm font-semibold text-gray-400 hover:text-white hover:bg-gray-800 transition cursor-pointer"
+              className="px-5 py-2.5 rounded-xl text-sm font-semibold border border-[var(--border)] hover:bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition cursor-pointer"
             >
               Cancel
             </button>

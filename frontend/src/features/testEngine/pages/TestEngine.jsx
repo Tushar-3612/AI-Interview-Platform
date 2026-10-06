@@ -62,15 +62,15 @@ function Timer({ endTime, durationMinutes = 30, serverOffset = 0, onTimeUp }) {
   const isCritical = remainingMs <= 60000;
   const isWarning = remainingMs <= 300000 && !isCritical;
 
-  let timerClasses = "bg-[#131826] border-white/10 text-zinc-200";
+  let timerClasses = "bg-[var(--bg-secondary)] border-[var(--border)] text-[var(--text-primary)]";
   let iconColor = "text-[#FF6B35]";
 
   if (isCritical) {
-    timerClasses = "bg-red-500/15 border-red-500/40 text-red-400 animate-pulse";
-    iconColor = "text-red-400";
+    timerClasses = "bg-red-500/15 border-red-500/40 text-red-500 dark:text-red-400 animate-pulse";
+    iconColor = "text-red-500 dark:text-red-400";
   } else if (isWarning) {
-    timerClasses = "bg-amber-500/15 border-amber-500/40 text-amber-400";
-    iconColor = "text-amber-400";
+    timerClasses = "bg-amber-500/15 border-amber-500/40 text-amber-600 dark:text-amber-400";
+    iconColor = "text-amber-600 dark:text-amber-400";
   }
 
   return (
@@ -94,36 +94,36 @@ function SubmitConfirm({ stats, onConfirm, onClose, submitting }) {
       onClick={submitting ? undefined : onClose}
     >
       <div
-        className="bg-[#0e131f] border border-white/10 rounded-2xl w-full max-w-md p-6 sm:p-7 space-y-5 shadow-2xl text-white"
+        className="bg-[var(--card-bg)] border border-[var(--border)] rounded-2xl w-full max-w-md p-6 sm:p-7 space-y-5 shadow-2xl text-[var(--text-primary)]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="text-center space-y-2">
           <div className="w-12 h-12 rounded-2xl bg-[#FF6B35]/10 border border-[#FF6B35]/30 flex items-center justify-center mx-auto text-[#FF6B35]">
             <Send className="w-6 h-6" />
           </div>
-          <h3 className="text-lg font-bold text-white tracking-tight">Submit Assessment?</h3>
-          <p className="text-xs text-zinc-400 max-w-xs mx-auto leading-relaxed">
+          <h3 className="text-lg font-bold text-[var(--text-primary)] tracking-tight">Submit Assessment?</h3>
+          <p className="text-xs text-[var(--text-secondary)] max-w-xs mx-auto leading-relaxed">
             Please review your question summary before final submission. Once submitted, your answers cannot be modified.
           </p>
         </div>
 
         {/* Breakdown Grid */}
         <div className="grid grid-cols-2 gap-2.5 text-xs">
-          <div className="p-3.5 rounded-xl bg-[#131826] border border-emerald-500/20 text-center">
-            <p className="text-xl font-bold text-emerald-400">{stats.answered}</p>
-            <p className="text-[11px] font-medium text-zinc-400 mt-0.5">Answered</p>
+          <div className="p-3.5 rounded-xl bg-[var(--bg-secondary)] border border-emerald-500/20 text-center">
+            <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400">{stats.answered}</p>
+            <p className="text-[11px] font-medium text-[var(--text-secondary)] mt-0.5">Answered</p>
           </div>
-          <div className="p-3.5 rounded-xl bg-[#131826] border border-purple-500/20 text-center">
-            <p className="text-xl font-bold text-purple-400">{stats.marked}</p>
-            <p className="text-[11px] font-medium text-zinc-400 mt-0.5">Marked for Review</p>
+          <div className="p-3.5 rounded-xl bg-[var(--bg-secondary)] border border-purple-500/20 text-center">
+            <p className="text-xl font-bold text-purple-600 dark:text-purple-400">{stats.marked}</p>
+            <p className="text-[11px] font-medium text-[var(--text-secondary)] mt-0.5">Marked for Review</p>
           </div>
-          <div className="p-3.5 rounded-xl bg-[#131826] border border-amber-500/20 text-center">
-            <p className="text-xl font-bold text-amber-400">{stats.skipped}</p>
-            <p className="text-[11px] font-medium text-zinc-400 mt-0.5">Skipped</p>
+          <div className="p-3.5 rounded-xl bg-[var(--bg-secondary)] border border-amber-500/20 text-center">
+            <p className="text-xl font-bold text-amber-600 dark:text-amber-400">{stats.skipped}</p>
+            <p className="text-[11px] font-medium text-[var(--text-secondary)] mt-0.5">Skipped</p>
           </div>
-          <div className="p-3.5 rounded-xl bg-[#131826] border border-white/5 text-center">
-            <p className="text-xl font-bold text-zinc-400">{stats.notVisited}</p>
-            <p className="text-[11px] font-medium text-zinc-400 mt-0.5">Unanswered</p>
+          <div className="p-3.5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border)] text-center">
+            <p className="text-xl font-bold text-[var(--text-secondary)]">{stats.notVisited}</p>
+            <p className="text-[11px] font-medium text-[var(--text-secondary)] mt-0.5">Unanswered</p>
           </div>
         </div>
 
@@ -133,7 +133,7 @@ function SubmitConfirm({ stats, onConfirm, onClose, submitting }) {
             type="button"
             onClick={onClose}
             disabled={submitting}
-            className="flex-1 py-2.5 px-4 text-xs font-semibold border border-white/10 hover:border-white/20 bg-[#131826] hover:bg-[#181f30] text-zinc-300 rounded-xl transition cursor-pointer disabled:opacity-50"
+            className="flex-1 py-2.5 px-4 text-xs font-semibold border border-[var(--border)] hover:bg-[var(--bg-secondary)] text-[var(--text-secondary)] rounded-xl transition cursor-pointer disabled:opacity-50"
           >
             Review Questions
           </button>
@@ -688,20 +688,20 @@ function TestEngine() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-[#080b11] text-white space-y-4">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] space-y-4">
         <div className="w-10 h-10 border-3 border-[#FF6B35] border-t-transparent rounded-full animate-spin" />
-        <p className="text-xs font-semibold tracking-wider text-zinc-400 uppercase">Loading Assessment...</p>
+        <p className="text-xs font-semibold tracking-wider text-[var(--text-secondary)] uppercase">Loading Assessment...</p>
       </div>
     );
   }
 
   if (submitted) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#080b11] text-white">
-        <div className="text-center p-8 max-w-sm bg-[#0e131f] border border-white/10 rounded-2xl shadow-2xl space-y-3">
-          <CheckCircle className="w-12 h-12 mx-auto text-emerald-400" />
-          <h2 className="text-lg font-bold text-white">Assessment Submitted</h2>
-          <p className="text-xs text-zinc-400">Processing results and generating report...</p>
+      <div className="flex items-center justify-center min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]">
+        <div className="text-center p-8 max-w-sm bg-[var(--card-bg)] border border-[var(--border)] rounded-2xl shadow-2xl space-y-3">
+          <CheckCircle className="w-12 h-12 mx-auto text-emerald-500 dark:text-emerald-400" />
+          <h2 className="text-lg font-bold text-[var(--text-primary)]">Assessment Submitted</h2>
+          <p className="text-xs text-[var(--text-secondary)]">Processing results and generating report...</p>
         </div>
       </div>
     );
@@ -713,7 +713,7 @@ function TestEngine() {
   return (
     <div
       ref={containerRef}
-      className="min-h-screen flex flex-col select-none bg-[#080b11] text-zinc-100 antialiased"
+      className="min-h-screen flex flex-col select-none bg-[var(--bg-primary)] text-[var(--text-primary)] antialiased"
       style={{
         userSelect: "none",
         WebkitUserSelect: "none",
@@ -725,7 +725,7 @@ function TestEngine() {
           PREPHIRE PREMIUM ASSESSMENT HEADER
       ══════════════════════════════════════════════════════════════════════════ */}
       <header
-        className="sticky top-0 z-50 border-b border-white/10 bg-[#0c101a]/95 backdrop-blur-md shrink-0"
+        className="sticky top-0 z-50 border-b border-[var(--border)] bg-[var(--card-bg)]/95 backdrop-blur-md shrink-0"
         style={{ paddingTop: "max(0.4rem, env(safe-area-inset-top))" }}
       >
         <div className="max-w-[1600px] mx-auto flex items-center justify-between px-3 sm:px-6 py-2 gap-2 sm:gap-4">
@@ -739,20 +739,20 @@ function TestEngine() {
                 className="h-6 w-6 sm:h-7 sm:w-7 object-contain"
                 draggable="false"
               />
-              <span className="text-sm sm:text-base font-black tracking-tight text-white hidden sm:inline">
+              <span className="text-sm sm:text-base font-black tracking-tight text-[var(--text-primary)] hidden sm:inline">
                 Prep<span className="text-[#FF6B35]">Hire</span>
               </span>
             </div>
 
-            <div className="h-4 w-px bg-white/10 hidden sm:block" />
+            <div className="h-4 w-px bg-[var(--border)] hidden sm:block" />
 
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 sm:gap-2">
-                <h1 className="text-xs sm:text-sm font-bold text-white truncate max-w-[130px] xs:max-w-[170px] sm:max-w-[280px]">
+                <h1 className="text-xs sm:text-sm font-bold text-[var(--text-primary)] truncate max-w-[130px] xs:max-w-[170px] sm:max-w-[280px]">
                   {test?.title || "Assessment"}
                 </h1>
                 {test?.testType && (
-                  <span className="px-1.5 py-0.5 rounded text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider bg-[#131826] border border-white/5 text-zinc-400 hidden md:inline">
+                  <span className="px-1.5 py-0.5 rounded text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider bg-[var(--bg-secondary)] border border-[var(--border)] text-[var(--text-secondary)] hidden md:inline">
                     {test.testType}
                   </span>
                 )}
@@ -762,11 +762,11 @@ function TestEngine() {
 
           {/* CENTER: Progress Info & Bar (Desktop only) */}
           <div className="hidden md:flex flex-col items-center justify-center flex-1 max-w-xs px-2">
-            <div className="flex items-center justify-between w-full text-[11px] font-semibold text-zinc-400 mb-1">
+            <div className="flex items-center justify-between w-full text-[11px] font-semibold text-[var(--text-secondary)] mb-1">
               <span>Question {String(currentIdx + 1).padStart(2, "0")} of {String(totalQuestions).padStart(2, "0")}</span>
-              <span className="text-zinc-500 font-mono">{progressPercent}%</span>
+              <span className="text-[var(--text-muted)] font-mono">{progressPercent}%</span>
             </div>
-            <div className="w-full h-1.5 rounded-full bg-[#131826] overflow-hidden border border-white/5">
+            <div className="w-full h-1.5 rounded-full bg-[var(--bg-secondary)] overflow-hidden border border-[var(--border)]">
               <div
                 className="h-full bg-[#FF6B35] transition-all duration-300 rounded-full"
                 style={{ width: `${progressPercent}%` }}
@@ -780,7 +780,7 @@ function TestEngine() {
             <button
               type="button"
               onClick={() => setMobilePaletteOpen(true)}
-              className="lg:hidden flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[11px] font-mono font-bold bg-[#131826] border border-white/10 text-zinc-200 active:scale-95 transition cursor-pointer"
+              className="lg:hidden flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[11px] font-mono font-bold bg-[var(--card-bg)] border border-[var(--border)] text-[var(--text-primary)] active:scale-95 transition cursor-pointer"
               title="Open Question Palette"
             >
               <LayoutGrid className="w-3.5 h-3.5 text-[#FF6B35]" />
@@ -788,17 +788,17 @@ function TestEngine() {
             </button>
 
             {saving && (
-              <span className="text-[10px] font-medium text-zinc-500 hidden sm:inline animate-pulse">
+              <span className="text-[10px] font-medium text-[var(--text-muted)] hidden sm:inline animate-pulse">
                 Saving...
               </span>
             )}
 
             {/* Proctoring Active Pill */}
             <div
-              className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-xl text-[10px] sm:text-[11px] font-semibold bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 select-none shrink-0"
+              className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-xl text-[10px] sm:text-[11px] font-semibold bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 select-none shrink-0"
               title="Active Proctoring & Integrity Lockdown"
             >
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
               <span className="hidden sm:inline">SECURE EXAM</span>
             </div>
 
@@ -813,15 +813,31 @@ function TestEngine() {
         </div>
       </header>
 
+      {/* Desktop Warning Alert (Pinned at top of workspace when active on desktop) */}
+      {tabWarnings > 0 && !submitted && (
+        <div
+          className={`hidden lg:flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold w-full shrink-0 z-30 transition-all ${
+            tabWarnings >= 2 ? "bg-red-600 text-white animate-pulse" : "bg-amber-500 text-black"
+          }`}
+        >
+          <AlertTriangle className="w-4 h-4 shrink-0" />
+          <span>
+            {tabWarnings >= 2
+              ? "🚨 Warning 2 of 3 (Final Warning): Next window switch will automatically submit your exam"
+              : `⚠️ Warning ${tabWarnings} of 3: Window departure detected`}
+          </span>
+        </div>
+      )}
+
       {/* ══════════════════════════════════════════════════════════════════════════
           ASSESSMENT WORKSPACE
       ══════════════════════════════════════════════════════════════════════════ */}
       <div className="flex flex-1 overflow-hidden" style={{ minHeight: "calc(100vh - 58px)" }}>
         {isCoding ? (
           /* ════════════════ CODING WORKSPACE ════════════════ */
-          <main className="flex-1 flex flex-col overflow-hidden bg-[#080b11]">
+          <main className="flex-1 flex flex-col overflow-hidden bg-[var(--bg-primary)]">
             {/* Mobile Coding Advisory Banner */}
-            <div className="lg:hidden px-3 py-1.5 bg-[#131826] border-b border-white/10 text-[11px] text-zinc-400 flex items-center justify-between">
+            <div className="lg:hidden px-3 py-1.5 bg-[var(--card-bg)] border-b border-[var(--border)] text-[11px] text-[var(--text-secondary)] flex items-center justify-between">
               <span>💡 Laptop/Desktop recommended for coding IDE</span>
               <button
                 type="button"
@@ -833,7 +849,7 @@ function TestEngine() {
             </div>
 
             {/* Split / Stacked IDE Canvas */}
-            <div className="flex-1 overflow-y-auto lg:overflow-hidden pb-24 lg:pb-0" style={{ minHeight: 0 }}>
+            <div className="flex-1 overflow-y-auto lg:overflow-hidden pb-36 lg:pb-0" style={{ minHeight: 0 }}>
               {question ? (
                 <CodingQuestionRenderer
                   question={question}
@@ -847,20 +863,20 @@ function TestEngine() {
                   onSubmissionResult={(res) => handleCodingSubmissionResult(currentIdx, res)}
                 />
               ) : (
-                <div className="flex items-center justify-center h-full text-zinc-500 text-xs">
+                <div className="flex items-center justify-center h-full text-[var(--text-muted)] text-xs">
                   Coding problem unavailable
                 </div>
               )}
             </div>
 
             {/* Desktop Docked Action Bar for Coding */}
-            <div className="hidden lg:flex items-center justify-between px-6 py-2.5 border-t border-white/10 bg-[#0c101a] shrink-0 z-10">
+            <div className="hidden lg:flex items-center justify-between px-6 py-2.5 border-t border-[var(--border)] bg-[var(--card-bg)] shrink-0 z-10">
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => navigateTo(Math.max(0, currentIdx - 1))}
                   disabled={currentIdx === 0}
-                  className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold border border-white/10 hover:border-white/20 bg-[#131826] hover:bg-[#181f30] text-zinc-300 rounded-xl transition cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold border border-[var(--border)] hover:bg-[var(--bg-secondary)] text-[var(--text-primary)] rounded-xl transition cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
                 >
                   <ChevronLeft className="w-3.5 h-3.5" /> Previous
                 </button>
@@ -868,7 +884,7 @@ function TestEngine() {
                   type="button"
                   onClick={handleSkip}
                   disabled={currentIdx === questions.length - 1}
-                  className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold border border-white/10 hover:border-white/20 bg-[#131826] hover:bg-[#181f30] text-zinc-300 rounded-xl transition cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold border border-[var(--border)] hover:bg-[var(--bg-secondary)] text-[var(--text-primary)] rounded-xl transition cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
                 >
                   Skip <ChevronRight className="w-3.5 h-3.5" />
                 </button>
@@ -880,8 +896,8 @@ function TestEngine() {
                   onClick={handleToggleMark}
                   className={`flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-xl border transition cursor-pointer ${
                     (q.isMarked || q.status === "marked")
-                      ? "border-purple-500/50 text-purple-300 bg-purple-500/15"
-                      : "border-white/10 hover:border-white/20 bg-[#131826] hover:bg-[#181f30] text-zinc-300"
+                      ? "border-purple-500/50 text-purple-600 dark:text-purple-300 bg-purple-500/15"
+                      : "border-[var(--border)] hover:bg-[var(--bg-secondary)] text-[var(--text-primary)]"
                   }`}
                 >
                   <Flag className="w-3.5 h-3.5" />
@@ -912,9 +928,9 @@ function TestEngine() {
           </main>
         ) : (
           /* ════════════════ MCQ WORKSPACE ════════════════ */
-          <main className="flex-1 flex flex-col h-full overflow-hidden bg-[#080b11]">
+          <main className="flex-1 flex flex-col h-full overflow-hidden bg-[var(--bg-primary)]">
             {/* Scrollable Question Content */}
-            <div className="flex-1 overflow-y-auto p-3 sm:p-6 lg:p-8 pb-28 lg:pb-8 flex justify-center items-start">
+            <div className="flex-1 overflow-y-auto p-3 sm:p-6 lg:p-8 pb-36 lg:pb-8 flex justify-center items-start">
               <div className="w-full max-w-4xl space-y-4">
                 <div className="w-full">
                   {question ? (
@@ -927,7 +943,7 @@ function TestEngine() {
                       candidateWatermark={candidateWatermark}
                     />
                   ) : (
-                    <div className="p-8 text-center bg-[#0e131f] border border-white/10 rounded-2xl text-zinc-500 text-xs">
+                    <div className="p-8 text-center bg-[var(--card-bg)] border border-[var(--border)] rounded-2xl text-[var(--text-muted)] text-xs">
                       Question unavailable
                     </div>
                   )}
@@ -936,13 +952,13 @@ function TestEngine() {
             </div>
 
             {/* Desktop Sticky Bottom Action Bar */}
-            <div className="hidden lg:flex items-center justify-between px-6 py-2.5 border-t border-white/10 bg-[#0c101a] shrink-0 z-10">
+            <div className="hidden lg:flex items-center justify-between px-6 py-2.5 border-t border-[var(--border)] bg-[var(--card-bg)] shrink-0 z-10">
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => navigateTo(Math.max(0, currentIdx - 1))}
                   disabled={currentIdx === 0}
-                  className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold border border-white/10 hover:border-white/20 bg-[#131826] hover:bg-[#181f30] text-zinc-300 rounded-xl transition cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold border border-[var(--border)] hover:bg-[var(--bg-secondary)] text-[var(--text-primary)] rounded-xl transition cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
                 >
                   <ChevronLeft className="w-3.5 h-3.5" /> Previous
                 </button>
@@ -950,7 +966,7 @@ function TestEngine() {
                   type="button"
                   onClick={handleSkip}
                   disabled={currentIdx === questions.length - 1}
-                  className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold border border-white/10 hover:border-white/20 bg-[#131826] hover:bg-[#181f30] text-zinc-300 rounded-xl transition cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold border border-[var(--border)] hover:bg-[var(--bg-secondary)] text-[var(--text-primary)] rounded-xl transition cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
                 >
                   Skip <ChevronRight className="w-3.5 h-3.5" />
                 </button>
@@ -961,7 +977,7 @@ function TestEngine() {
                   <button
                     type="button"
                     onClick={handleClearChoice}
-                    className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-white/5 rounded-xl transition cursor-pointer"
+                    className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] rounded-xl transition cursor-pointer"
                   >
                     <RotateCcw className="w-3 h-3" /> Clear
                   </button>
@@ -972,8 +988,8 @@ function TestEngine() {
                   onClick={handleToggleMark}
                   className={`flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-xl border transition cursor-pointer ${
                     (q.isMarked || q.status === "marked")
-                      ? "border-purple-500/50 text-purple-300 bg-purple-500/15"
-                      : "border-white/10 hover:border-white/20 bg-[#131826] hover:bg-[#181f30] text-zinc-300"
+                      ? "border-purple-500/50 text-purple-600 dark:text-purple-300 bg-purple-500/15"
+                      : "border-[var(--border)] hover:bg-[var(--bg-secondary)] text-[var(--text-primary)]"
                   }`}
                 >
                   <Flag className="w-3.5 h-3.5" />
@@ -1005,30 +1021,30 @@ function TestEngine() {
         )}
 
         {/* ════════════════ DESKTOP RIGHT QUESTION NAVIGATOR ════════════════ */}
-        <aside className="w-72 shrink-0 border-l border-white/10 bg-[#0c101a] overflow-y-auto hidden lg:flex flex-col justify-between">
+        <aside className="w-72 shrink-0 border-l border-[var(--border)] bg-[var(--card-bg)] overflow-y-auto hidden lg:flex flex-col justify-between">
           <div className="p-4 space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-400">Questions</h2>
-              <span className="text-[11px] font-mono text-zinc-500">{answers.length} Total</span>
+              <h2 className="text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)]">Questions</h2>
+              <span className="text-[11px] font-mono text-[var(--text-muted)]">{answers.length} Total</span>
             </div>
 
             {/* Status Breakdown Legend */}
             <div className="grid grid-cols-2 gap-2 text-[11px]">
-              <div className="flex items-center gap-2 p-2 rounded-lg bg-[#131826] border border-white/5">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 shrink-0" />
-                <span className="text-zinc-300 font-medium">✓ {stats.answered} Answered</span>
+              <div className="flex items-center gap-2 p-2 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border)]">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 dark:bg-emerald-400 shrink-0" />
+                <span className="text-[var(--text-primary)] font-medium">✓ {stats.answered} Answered</span>
               </div>
-              <div className="flex items-center gap-2 p-2 rounded-lg bg-[#131826] border border-white/5">
-                <span className="w-2.5 h-2.5 rounded-full bg-purple-400 shrink-0" />
-                <span className="text-zinc-300 font-medium">⚑ {stats.marked} Marked</span>
+              <div className="flex items-center gap-2 p-2 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border)]">
+                <span className="w-2.5 h-2.5 rounded-full bg-purple-500 dark:bg-purple-400 shrink-0" />
+                <span className="text-[var(--text-primary)] font-medium">⚑ {stats.marked} Marked</span>
               </div>
-              <div className="flex items-center gap-2 p-2 rounded-lg bg-[#131826] border border-white/5">
-                <span className="w-2.5 h-2.5 rounded-full bg-amber-400 shrink-0" />
-                <span className="text-zinc-300 font-medium">— {stats.skipped} Skipped</span>
+              <div className="flex items-center gap-2 p-2 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border)]">
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-500 dark:bg-amber-400 shrink-0" />
+                <span className="text-[var(--text-primary)] font-medium">— {stats.skipped} Skipped</span>
               </div>
-              <div className="flex items-center gap-2 p-2 rounded-lg bg-[#131826] border border-white/5">
-                <span className="w-2.5 h-2.5 rounded-full bg-zinc-600 shrink-0" />
-                <span className="text-zinc-300 font-medium">○ {stats.remaining} Remaining</span>
+              <div className="flex items-center gap-2 p-2 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border)]">
+                <span className="w-2.5 h-2.5 rounded-full bg-zinc-400 dark:bg-zinc-600 shrink-0" />
+                <span className="text-[var(--text-primary)] font-medium">○ {stats.remaining} Remaining</span>
               </div>
             </div>
 
@@ -1042,16 +1058,16 @@ function TestEngine() {
                   const isSkp = !isAns && isQuestionSkipped(a, qItem);
                   const isMrk = Boolean(a?.isMarked || a?.status === "marked");
 
-                  let itemClasses = "bg-[#131826] border-white/5 text-zinc-400 hover:border-white/20";
+                  let itemClasses = "bg-[var(--bg-secondary)] border-[var(--border)] text-[var(--text-secondary)] hover:border-[#FF6B35]";
 
                   if (isCurrent) {
-                    itemClasses = "border-[#FF6B35] ring-2 ring-[#FF6B35]/40 text-white bg-[#FF6B35]/20 font-bold scale-[1.04]";
+                    itemClasses = "border-[#FF6B35] ring-2 ring-[#FF6B35]/40 text-[#FF6B35] dark:text-white bg-[#FF6B35]/15 font-bold scale-[1.04]";
                   } else if (isAns) {
-                    itemClasses = "bg-emerald-500/15 border-emerald-500/35 text-emerald-300 font-bold hover:bg-emerald-500/25";
+                    itemClasses = "bg-emerald-500/15 border-emerald-500/35 text-emerald-600 dark:text-emerald-300 font-bold hover:bg-emerald-500/25";
                   } else if (isSkp) {
-                    itemClasses = "bg-amber-500/15 border-amber-500/35 text-amber-300 hover:bg-amber-500/25";
+                    itemClasses = "bg-amber-500/15 border-amber-500/35 text-amber-600 dark:text-amber-300 hover:bg-amber-500/25";
                   } else if (isMrk) {
-                    itemClasses = "bg-purple-500/15 border-purple-500/35 text-purple-300 font-bold hover:bg-purple-500/25";
+                    itemClasses = "bg-purple-500/15 border-purple-500/35 text-purple-600 dark:text-purple-300 font-bold hover:bg-purple-500/25";
                   }
 
                   return (
@@ -1065,7 +1081,7 @@ function TestEngine() {
                       <span>{String(idx + 1).padStart(2, "0")}</span>
                       {isMrk && (
                         <span
-                          className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-purple-400 border border-[#0c101a] shadow-sm"
+                          className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-purple-500 dark:bg-purple-400 border border-[var(--card-bg)] shadow-sm"
                           title="Marked for Review"
                         />
                       )}
@@ -1077,7 +1093,7 @@ function TestEngine() {
           </div>
 
           {/* Bottom Submit Action */}
-          <div className="p-4 border-t border-white/10 bg-[#0c101a] space-y-2">
+          <div className="p-4 border-t border-[var(--border)] bg-[var(--card-bg)] space-y-2">
             <button
               type="button"
               onClick={() => setSubmitConfirm(true)}
@@ -1091,10 +1107,36 @@ function TestEngine() {
       </div>
 
       {/* ══════════════════════════════════════════════════════════════════════════
+          MOBILE WARNING ALERT — STACKED ABOVE BOTTOM ACTION BAR (< 1024px)
+          NEVER overlaps or obscures the bottom action buttons.
+      ══════════════════════════════════════════════════════════════════════════ */}
+      {tabWarnings > 0 && !submitted && (
+        <div
+          className={`lg:hidden fixed left-2.5 right-2.5 z-40 rounded-xl px-3 py-2 text-xs font-bold flex items-center justify-between gap-2 shadow-xl border transition-all duration-200 ${
+            tabWarnings >= 2
+              ? "bg-red-600 text-white border-red-700 animate-pulse"
+              : "bg-amber-500 text-black border-amber-600"
+          }`}
+          style={{
+            bottom: "calc(58px + max(0.6rem, env(safe-area-inset-bottom)))",
+          }}
+        >
+          <div className="flex items-center gap-1.5 min-w-0">
+            <AlertTriangle className="w-4 h-4 shrink-0" />
+            <span className="truncate text-[11px] font-bold">
+              {tabWarnings >= 2
+                ? "🚨 Final Warning: Next window exit auto-submits exam"
+                : `⚠️ Warning ${tabWarnings} of 3: Window departure detected`}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════════════════
           UNIFIED MOBILE BOTTOM ACTION BAR (< 1024px)
       ══════════════════════════════════════════════════════════════════════════ */}
       <div
-        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-white/10 bg-[#0c101a]/98 backdrop-blur-md px-2.5 py-2 shadow-2xl"
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-[var(--border)] bg-[var(--card-bg)]/98 backdrop-blur-md px-2.5 py-2 shadow-2xl"
         style={{ paddingBottom: "max(0.6rem, env(safe-area-inset-bottom))" }}
       >
         <div className="flex items-center justify-between gap-1.5">
@@ -1103,7 +1145,7 @@ function TestEngine() {
             type="button"
             onClick={() => navigateTo(Math.max(0, currentIdx - 1))}
             disabled={currentIdx === 0}
-            className="flex items-center justify-center min-h-[44px] px-3 rounded-xl bg-[#131826] border border-white/10 text-zinc-300 text-xs font-semibold disabled:opacity-25 active:scale-95 transition cursor-pointer"
+            className="flex items-center justify-center min-h-[44px] px-3 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border)] text-[var(--text-primary)] text-xs font-semibold disabled:opacity-25 active:scale-95 transition cursor-pointer"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
@@ -1112,7 +1154,7 @@ function TestEngine() {
           <button
             type="button"
             onClick={() => setMobilePaletteOpen(true)}
-            className="flex-1 flex items-center justify-center gap-1.5 min-h-[44px] px-2 rounded-xl bg-[#131826] border border-white/10 text-xs font-semibold text-zinc-200 active:scale-95 transition cursor-pointer"
+            className="flex-1 flex items-center justify-center gap-1.5 min-h-[44px] px-2 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border)] text-xs font-semibold text-[var(--text-primary)] active:scale-95 transition cursor-pointer"
           >
             <LayoutGrid className="w-4 h-4 text-[#FF6B35]" />
             <span>Questions ({stats.answered}/{totalQuestions})</span>
@@ -1124,8 +1166,8 @@ function TestEngine() {
             onClick={handleToggleMark}
             className={`flex items-center justify-center min-h-[44px] px-3 rounded-xl text-xs font-semibold border transition cursor-pointer active:scale-95 ${
               (q.isMarked || q.status === "marked")
-                ? "border-purple-500/50 text-purple-300 bg-purple-500/20"
-                : "border-white/10 bg-[#131826] text-zinc-300"
+                ? "border-purple-500/50 text-purple-600 dark:text-purple-300 bg-purple-500/20"
+                : "border-[var(--border)] bg-[var(--bg-secondary)] text-[var(--text-primary)]"
             }`}
             title="Mark for Review"
           >
@@ -1137,7 +1179,7 @@ function TestEngine() {
             <button
               type="button"
               onClick={handleClearChoice}
-              className="flex items-center justify-center min-h-[44px] px-2.5 rounded-xl border border-white/10 bg-[#131826] text-zinc-400 active:scale-95 transition cursor-pointer"
+              className="flex items-center justify-center min-h-[44px] px-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] active:scale-95 transition cursor-pointer"
               title="Clear Selection"
             >
               <RotateCcw className="w-3.5 h-3.5" />
@@ -1176,21 +1218,21 @@ function TestEngine() {
           onClick={() => setMobilePaletteOpen(false)}
         >
           <div
-            className="w-full max-w-lg bg-[#0e131f] border border-white/10 rounded-t-3xl sm:rounded-2xl p-5 space-y-4 max-h-[85vh] flex flex-col shadow-2xl animate-in slide-in-from-bottom-4 duration-200"
+            className="w-full max-w-lg bg-[var(--card-bg)] border border-[var(--border)] rounded-t-3xl sm:rounded-2xl p-5 space-y-4 max-h-[85vh] flex flex-col shadow-2xl animate-in slide-in-from-bottom-4 duration-200 text-[var(--text-primary)]"
             onClick={(e) => e.stopPropagation()}
             style={{ paddingBottom: "max(1.2rem, env(safe-area-inset-bottom))" }}
           >
             {/* Drawer Header */}
-            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+            <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
               <div className="flex items-center gap-2">
                 <LayoutGrid className="w-4 h-4 text-[#FF6B35]" />
-                <h3 className="text-sm font-bold text-white">Question Navigator</h3>
-                <span className="text-xs font-mono text-zinc-400">({answers.length} Total)</span>
+                <h3 className="text-sm font-bold text-[var(--text-primary)]">Question Navigator</h3>
+                <span className="text-xs font-mono text-[var(--text-secondary)]">({answers.length} Total)</span>
               </div>
               <button
                 type="button"
                 onClick={() => setMobilePaletteOpen(false)}
-                className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition cursor-pointer"
+                className="p-1.5 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1198,21 +1240,21 @@ function TestEngine() {
 
             {/* Status Legend */}
             <div className="grid grid-cols-2 gap-2 text-[11px]">
-              <div className="flex items-center gap-1.5 p-2 rounded-lg bg-[#131826] border border-white/5">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 shrink-0" />
-                <span className="text-zinc-300 font-medium">✓ {stats.answered} Answered</span>
+              <div className="flex items-center gap-1.5 p-2 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border)]">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 dark:bg-emerald-400 shrink-0" />
+                <span className="text-[var(--text-primary)] font-medium">✓ {stats.answered} Answered</span>
               </div>
-              <div className="flex items-center gap-1.5 p-2 rounded-lg bg-[#131826] border border-white/5">
-                <span className="w-2.5 h-2.5 rounded-full bg-purple-400 shrink-0" />
-                <span className="text-zinc-300 font-medium">⚑ {stats.marked} Marked</span>
+              <div className="flex items-center gap-1.5 p-2 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border)]">
+                <span className="w-2.5 h-2.5 rounded-full bg-purple-500 dark:bg-purple-400 shrink-0" />
+                <span className="text-[var(--text-primary)] font-medium">⚑ {stats.marked} Marked</span>
               </div>
-              <div className="flex items-center gap-1.5 p-2 rounded-lg bg-[#131826] border border-white/5">
-                <span className="w-2.5 h-2.5 rounded-full bg-amber-400 shrink-0" />
-                <span className="text-zinc-300 font-medium">— {stats.skipped} Skipped</span>
+              <div className="flex items-center gap-1.5 p-2 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border)]">
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-500 dark:bg-amber-400 shrink-0" />
+                <span className="text-[var(--text-primary)] font-medium">— {stats.skipped} Skipped</span>
               </div>
-              <div className="flex items-center gap-1.5 p-2 rounded-lg bg-[#131826] border border-white/5">
-                <span className="w-2.5 h-2.5 rounded-full bg-zinc-600 shrink-0" />
-                <span className="text-zinc-300 font-medium">○ {stats.remaining} Remaining</span>
+              <div className="flex items-center gap-1.5 p-2 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border)]">
+                <span className="w-2.5 h-2.5 rounded-full bg-zinc-400 dark:bg-zinc-600 shrink-0" />
+                <span className="text-[var(--text-primary)] font-medium">○ {stats.remaining} Remaining</span>
               </div>
             </div>
 
@@ -1226,16 +1268,16 @@ function TestEngine() {
                   const isSkp = !isAns && isQuestionSkipped(a, qItem);
                   const isMrk = Boolean(a?.isMarked || a?.status === "marked");
 
-                  let itemClasses = "bg-[#131826] border-white/5 text-zinc-400";
+                  let itemClasses = "bg-[var(--bg-secondary)] border-[var(--border)] text-[var(--text-secondary)]";
 
                   if (isCurrent) {
-                    itemClasses = "border-[#FF6B35] ring-2 ring-[#FF6B35]/40 text-white bg-[#FF6B35]/25 font-bold";
+                    itemClasses = "border-[#FF6B35] ring-2 ring-[#FF6B35]/40 text-[#FF6B35] dark:text-white bg-[#FF6B35]/25 font-bold";
                   } else if (isAns) {
-                    itemClasses = "bg-emerald-500/15 border-emerald-500/35 text-emerald-300 font-bold";
+                    itemClasses = "bg-emerald-500/15 border-emerald-500/35 text-emerald-600 dark:text-emerald-300 font-bold";
                   } else if (isSkp) {
-                    itemClasses = "bg-amber-500/15 border-amber-500/35 text-amber-300";
+                    itemClasses = "bg-amber-500/15 border-amber-500/35 text-amber-600 dark:text-amber-300";
                   } else if (isMrk) {
-                    itemClasses = "bg-purple-500/15 border-purple-500/35 text-purple-300 font-bold";
+                    itemClasses = "bg-purple-500/15 border-purple-500/35 text-purple-600 dark:text-purple-300 font-bold";
                   }
 
                   return (
@@ -1250,7 +1292,7 @@ function TestEngine() {
                     >
                       <span>{String(idx + 1).padStart(2, "0")}</span>
                       {isMrk && (
-                        <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-purple-400 border border-[#0c101a]" />
+                        <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-purple-500 dark:bg-purple-400 border border-[var(--card-bg)]" />
                       )}
                     </button>
                   );
@@ -1259,7 +1301,7 @@ function TestEngine() {
             </div>
 
             {/* Modal Bottom CTA */}
-            <div className="pt-2 border-t border-white/10">
+            <div className="pt-2 border-t border-[var(--border)]">
               <button
                 type="button"
                 onClick={() => {
@@ -1280,28 +1322,16 @@ function TestEngine() {
           SECURITY & INTEGRITY OVERLAYS (Preserved Lockdown Architecture)
       ══════════════════════════════════════════════════════════════════════════ */}
 
-      {/* Tab & Window Switch Warning Banner */}
-      {tabWarnings > 0 && !submitted && (
-        <div className={`sticky bottom-0 z-40 px-4 py-2 text-xs text-center font-bold flex items-center justify-center gap-2 ${
-          tabWarnings >= 2 ? "bg-red-600 text-white animate-pulse" : "bg-amber-500 text-black"
-        }`}>
-          <AlertTriangle className="w-4 h-4 shrink-0" />
-          {tabWarnings >= 2
-            ? "🚨 Warning 2 of 3 (Final Warning): Next window switch will automatically submit your exam"
-            : `⚠️ Warning ${tabWarnings} of 3: Window departure detected`}
-        </div>
-      )}
-
       {/* Fullscreen Required Blocking Overlay (Only displayed if browser supports DOM Fullscreen) */}
       {!isFullscreen && !submitted && !loading && isFullscreenSupported() && (
-        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#080b11] p-6 text-center select-none">
-          <div className="max-w-md w-full bg-[#0e131f] border border-red-500/40 rounded-2xl p-7 sm:p-8 shadow-2xl space-y-5">
-            <div className="w-14 h-14 mx-auto rounded-2xl bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-400">
+        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/85 backdrop-blur-md p-6 text-center select-none">
+          <div className="max-w-md w-full bg-[var(--card-bg)] border border-red-500/40 rounded-2xl p-7 sm:p-8 shadow-2xl space-y-5 text-[var(--text-primary)]">
+            <div className="w-14 h-14 mx-auto rounded-2xl bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-500 dark:text-red-400">
               <Maximize2 className="w-7 h-7" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white tracking-tight">Fullscreen Mode Required</h3>
-              <p className="text-xs text-zinc-400 mt-2 leading-relaxed">
+              <h3 className="text-lg font-bold text-[var(--text-primary)] tracking-tight">Fullscreen Mode Required</h3>
+              <p className="text-xs text-[var(--text-secondary)] mt-2 leading-relaxed">
                 Assessment integrity requires full screen mode. Window exits and resizing are recorded in your proctoring audit log.
               </p>
             </div>
@@ -1318,18 +1348,18 @@ function TestEngine() {
 
       {/* Window Focus Lost / Away Obscuring Shield */}
       {isAway && !submitted && !loading && (
-        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#080b11] p-6 text-center select-none">
-          <div className="max-w-md w-full bg-[#0e131f] border border-amber-500/40 rounded-2xl p-7 sm:p-8 shadow-2xl space-y-5">
-            <div className="w-14 h-14 mx-auto rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/85 backdrop-blur-md p-6 text-center select-none">
+          <div className="max-w-md w-full bg-[var(--card-bg)] border border-amber-500/40 rounded-2xl p-7 sm:p-8 shadow-2xl space-y-5 text-[var(--text-primary)]">
+            <div className="w-14 h-14 mx-auto rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-500 dark:text-amber-400">
               <EyeOff className="w-7 h-7" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white tracking-tight">Assessment Concealed — Focus Lost</h3>
-              <p className="text-xs text-zinc-400 mt-2 leading-relaxed">
+              <h3 className="text-lg font-bold text-[var(--text-primary)] tracking-tight">Assessment Concealed — Focus Lost</h3>
+              <p className="text-xs text-[var(--text-secondary)] mt-2 leading-relaxed">
                 You switched focus to another application or window. Question content is hidden while the assessment window is unfocused.
               </p>
             </div>
-            <div className="py-2 px-3 rounded-lg bg-[#131826] border border-white/5 text-[11px] font-mono text-zinc-400">
+            <div className="py-2 px-3 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border)] text-[11px] font-mono text-[var(--text-secondary)]">
               {candidateWatermark}
             </div>
             <button
@@ -1345,14 +1375,14 @@ function TestEngine() {
 
       {/* Duplicate Assessment Session Detected Blocking Overlay */}
       {isDuplicateSession && !submitted && !loading && (
-        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#080b11] p-6 text-center select-none">
-          <div className="max-w-md w-full bg-[#0e131f] border border-red-500/40 rounded-2xl p-7 sm:p-8 shadow-2xl space-y-5">
-            <div className="w-14 h-14 mx-auto rounded-2xl bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-400">
+        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/85 backdrop-blur-md p-6 text-center select-none">
+          <div className="max-w-md w-full bg-[var(--card-bg)] border border-red-500/40 rounded-2xl p-7 sm:p-8 shadow-2xl space-y-5 text-[var(--text-primary)]">
+            <div className="w-14 h-14 mx-auto rounded-2xl bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-500 dark:text-red-400">
               <Lock className="w-7 h-7" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white tracking-tight">Duplicate Session Detected</h3>
-              <p className="text-xs text-zinc-400 mt-2 leading-relaxed">
+              <h3 className="text-lg font-bold text-[var(--text-primary)] tracking-tight">Duplicate Session Detected</h3>
+              <p className="text-xs text-[var(--text-secondary)] mt-2 leading-relaxed">
                 This assessment is active in another browser tab or window. Multiple simultaneous sessions are not permitted. Please close this duplicate tab.
               </p>
             </div>
@@ -1362,14 +1392,14 @@ function TestEngine() {
 
       {/* Proctoring Lost Blocking Overlay */}
       {proctoringError && !submitted && (
-        <div className="fixed inset-0 z-[9998] flex flex-col items-center justify-center bg-[#080b11] p-6 text-center select-none">
-          <div className="max-w-md w-full bg-[#0e131f] border border-amber-500/40 rounded-2xl p-7 sm:p-8 shadow-2xl space-y-5">
-            <div className="w-14 h-14 mx-auto rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+        <div className="fixed inset-0 z-[9998] flex flex-col items-center justify-center bg-black/85 backdrop-blur-md p-6 text-center select-none">
+          <div className="max-w-md w-full bg-[var(--card-bg)] border border-amber-500/40 rounded-2xl p-7 sm:p-8 shadow-2xl space-y-5 text-[var(--text-primary)]">
+            <div className="w-14 h-14 mx-auto rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-500 dark:text-amber-400">
               <WifiOff className="w-7 h-7" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white tracking-tight">Proctoring Telemetry Interrupted</h3>
-              <p className="text-xs text-zinc-400 mt-2 leading-relaxed">
+              <h3 className="text-lg font-bold text-[var(--text-primary)] tracking-tight">Proctoring Telemetry Interrupted</h3>
+              <p className="text-xs text-[var(--text-secondary)] mt-2 leading-relaxed">
                 Secure connection to the proctoring server was interrupted. If you have an ad-blocker or privacy extension active, please disable it for this site and click Retry.
               </p>
             </div>
