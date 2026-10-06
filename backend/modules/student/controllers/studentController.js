@@ -13,7 +13,7 @@ export const getProfile = async (req, res) => {
   try {
     const student = await User.findById(req.user.id).select("-password");
     if (!student) {
-      return res.status(404).json({ message: "Student profile not found" });
+      return res.status(401).json({ message: "User account no longer exists" });
     }
     const normalized = normalizeProfileResponse(student);
     res.json(normalized);

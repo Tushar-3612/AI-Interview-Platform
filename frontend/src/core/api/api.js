@@ -32,24 +32,18 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response Interceptor: Handle 401 Unauthorized safely without false redirects for logged in users
+// Response Interceptor: Handle 401 Unauthorized
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      const activeToken = getAuthToken();
-      // Only redirect and purge storage if the token is genuinely missing or expired
-      if (!activeToken) {
-        clearAuthData();
-        if (
-          typeof window !== "undefined" &&
-          window.location.pathname !== "/" &&
-          window.location.pathname !== "/signup"
-        ) {
-          window.location.href = "/";
-        }
-      } else {
-        console.warn("[API] Suppressed false 401 redirect because valid auth token is active.", error.config?.url);
+      clearAuthData();
+      if (
+        typeof window !== "undefined" &&
+        window.location.pathname !== "/" &&
+        window.location.pathname !== "/signup"
+      ) {
+        window.location.href = "/";
       }
     }
     return Promise.reject(error);
