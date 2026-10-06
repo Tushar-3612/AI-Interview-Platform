@@ -58,7 +58,7 @@ function Contact() {
                   </span>
                 </div>
                 <p className="page-description text-xs sm:text-sm text-[var(--text-secondary)] mt-1 max-w-2xl leading-relaxed">
-                  Only for Sanjivani College Students. Have questions about test rounds, interview attempts, or technical issues? Reach out to our placement support team.
+                  Have questions about test rounds, interview attempts, or technical issues? Reach out to our placement support team.
                 </p>
               </div>
             </div>
