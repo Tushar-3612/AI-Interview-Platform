@@ -36,6 +36,7 @@ export const updateProfile = async (req, res) => {
       skills,
       categorizedSkills,
       department,
+      section,
       year,
       name,
       targetCompany,
@@ -51,6 +52,17 @@ export const updateProfile = async (req, res) => {
     if (name) student.name = name;
     if (department) student.department = normalizeDepartment(department);
     if (year) student.year = normalizeYear(year);
+    if (section !== undefined) {
+      if (section) {
+        const normSec = String(section).trim().toUpperCase();
+        if (!["A", "B"].includes(normSec)) {
+          return res.status(400).json({ message: "Invalid section. Must be A or B." });
+        }
+        student.section = normSec;
+      } else {
+        student.section = "";
+      }
+    }
     if (phone !== undefined) student.phone = phone;
     if (portfolio !== undefined) student.portfolio = portfolio;
     if (github !== undefined) student.github = github;

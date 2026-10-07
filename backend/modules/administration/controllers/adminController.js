@@ -400,7 +400,7 @@ export const getStudentDetails = async (req, res) => {
 export const updateStudent = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, department, year, phone, portfolio, github, linkedin, skills, atsScore } = req.body;
+    const { name, department, section, year, phone, portfolio, github, linkedin, skills, atsScore } = req.body;
 
     const student = await User.findById(id);
     if (!student) {
@@ -420,6 +420,9 @@ export const updateStudent = async (req, res) => {
     if (name) student.name = name;
     if (department) student.department = normalizeDepartment(department);
     if (year) student.year = normalizeYear(year);
+    if (section !== undefined) {
+      student.section = section ? String(section).trim().toUpperCase() : "";
+    }
     if (phone !== undefined) student.phone = phone;
     if (portfolio !== undefined) student.portfolio = portfolio;
     if (github !== undefined) student.github = github;

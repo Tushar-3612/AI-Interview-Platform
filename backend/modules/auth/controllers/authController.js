@@ -55,6 +55,7 @@ export const signup = async (req, res) => {
       password,
       confirmPassword,
       department,
+      section,
       year,
       portfolio,
       github,
@@ -64,6 +65,16 @@ export const signup = async (req, res) => {
     // Required field validation
     if (!name || !email || !password || !confirmPassword || !department || !year) {
       return res.status(400).json({ message: "All fields are required" });
+    }
+
+    // Section validation: required and must be A or B
+    const normalizedSection =
+      typeof section === "string" ? section.trim().toUpperCase() : "";
+
+    if (!normalizedSection || !["A", "B"].includes(normalizedSection)) {
+      return res.status(400).json({
+        message: "Section is required and must be A or B",
+      });
     }
 
     const cleanEmail = normalizeEmail(email);
@@ -120,6 +131,7 @@ export const signup = async (req, res) => {
       password,
       department: normalizeDepartment(department),
       year: normalizeYear(year),
+      section: normalizedSection,
       portfolio: portfolio || "",
       github: github || "",
       linkedin: linkedin || "",
@@ -137,6 +149,7 @@ export const signup = async (req, res) => {
         name: user.name,
         email: user.email,
         department: user.department,
+        section: user.section,
         year: user.year,
         portfolio: user.portfolio,
         github: user.github,
@@ -271,6 +284,7 @@ export const login = async (req, res) => {
         name: user.name,
         email: user.email,
         department: user.department,
+        section: user.section || "",
         year: user.year,
         role: "student",
         isPremium: Boolean(user.isPremium),

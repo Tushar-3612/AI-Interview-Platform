@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { User, Mail, Lock, GraduationCap, Link2, Calendar, ArrowRight } from "lucide-react";
+import { User, Mail, Lock, GraduationCap, Link2, Calendar, ArrowRight, Layers } from "lucide-react";
 import toast from "react-hot-toast";
 import AuthLayout from "../../../core/layouts/AuthLayout.jsx";
 import InputField from "../../../core/ui/InputField.jsx";
 import Button from "../../../core/ui/Button.jsx";
 import api from "../../../core/api/api.js";
-import { DEPARTMENTS, YEARS } from "../../../core/utils/constants.js";
+import { STUDENT_SIGNUP_DEPARTMENTS, ACADEMIC_SECTIONS, YEARS } from "../../../core/utils/constants.js";
 import {
   validateEmail,
   validatePassword,
@@ -23,6 +23,7 @@ function Signup() {
     name: "",
     email: "",
     department: "",
+    section: "",
     year: "",
     password: "",
     confirmPassword: "",
@@ -34,11 +35,21 @@ function Signup() {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
+    setFormData((prev) => {
+      const updated = {
+        ...prev,
+        [name]: type === "checkbox" ? checked : value,
+      };
+      // Reset section when department is deselected
+      if (name === "department" && !value) {
+        updated.section = "";
+      }
+      return updated;
+    });
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
+    if (name === "department" && !value && errors.section) {
+      setErrors((prev) => ({ ...prev, section: "" }));
+    }
   };
 
   const validate = () => {
@@ -51,6 +62,7 @@ function Signup() {
     if (emailErr) newErrors.email = emailErr;
 
     if (!formData.department) newErrors.department = "Required";
+    if (formData.department && !formData.section) newErrors.section = "Required";
     if (!formData.year) newErrors.year = "Required";
 
     const passErr = validatePassword(formData.password);
@@ -96,6 +108,7 @@ function Signup() {
         password: formData.password,
         confirmPassword: formData.confirmPassword,
         department: formData.department,
+        section: formData.section,
         year: formData.year,
         portfolio: formData.portfolio || null,
       });
@@ -168,9 +181,25 @@ function Signup() {
           error={errors.department}
           required
           as="select"
-          options={DEPARTMENTS}
+          options={STUDENT_SIGNUP_DEPARTMENTS}
           icon={GraduationCap}
         />
+
+        {/* Section (Appears only when CS or IT is selected) */}
+        {formData.department && (
+          <InputField
+            label="Section"
+            name="section"
+            value={formData.section}
+            onChange={handleChange}
+            placeholder="Select Section"
+            error={errors.section}
+            required
+            as="select"
+            options={ACADEMIC_SECTIONS}
+            icon={Layers}
+          />
+        )}
 
         {/* Year */}
         <InputField

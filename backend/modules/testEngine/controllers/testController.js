@@ -403,18 +403,27 @@ export const assignTest = async (req, res) => {
     const normalizedDepartment = isTeacher ? teacherDept : (department ? normalizeDepartment(department) : "");
     const normalizedYear = year ? normalizeYear(year) : "";
 
+    let resolvedSection = "";
+    if (section) {
+      const cleanSec = String(section).trim().toUpperCase();
+      if (!["A", "B"].includes(cleanSec)) {
+        return res.status(400).json({ message: "Invalid section. Must be A or B." });
+      }
+      resolvedSection = cleanSec;
+    }
+
     let targetStudents = [];
     let resolvedAssignType = assignType;
     let resolvedAssignValue = isTeacher ? teacherDept : (assignValue || "");
     let resolvedDepartment = normalizedDepartment;
     let resolvedYear = normalizedYear;
-    let resolvedSection = section || "";
 
     if (assignType === "department_year") {
       resolvedAssignType = "department";
       resolvedAssignValue = normalizedDepartment;
       const query = { department: normalizedDepartment };
       if (year) query.year = yearQuery(year);
+      if (resolvedSection) query.section = resolvedSection;
       targetStudents = await User.find(query).select("_id department");
     } else if (assignType === "all") {
       if (isTeacher) {
@@ -497,6 +506,7 @@ export const assignTest = async (req, res) => {
     if (resolvedAssignType === "department" && resolvedDepartment) {
       existingQuery.department = resolvedDepartment;
       if (resolvedYear) existingQuery.year = resolvedYear;
+      if (resolvedSection) existingQuery.section = resolvedSection;
     } else if (resolvedAssignType === "year" && resolvedYear) {
       existingQuery.year = resolvedYear;
     } else if (resolvedAssignType === "section" && resolvedSection) {

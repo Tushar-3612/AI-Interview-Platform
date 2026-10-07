@@ -129,22 +129,28 @@ function CreateTest() {
         questions,
       };
       let data;
-      if (testId) {
-        const res = await api.put(`/api/tests/${testId}`, payload, {
+      const effectiveId = testId || searchParams.get("edit");
+      if (effectiveId) {
+        const res = await api.put(`/api/tests/${effectiveId}`, payload, {
           headers: { Authorization: `Bearer ${token}` },
         });
         data = res.data;
+        const savedId = data?.test?._id || data?._id || effectiveId;
+        setTestId(savedId);
+        setTestCreated(true);
         toast.success(status === "draft" ? "Draft saved" : "Test updated");
+        return { ...data, savedTestId: savedId };
       } else {
         const res = await api.post("/api/tests", payload, {
           headers: { Authorization: `Bearer ${token}` },
         });
         data = res.data;
-        setTestId(data.test._id);
+        const savedId = data?.test?._id || data?._id;
+        setTestId(savedId);
         setTestCreated(true);
         toast.success(status === "draft" ? "Draft saved" : "Test created");
+        return { ...data, savedTestId: savedId };
       }
-      return data;
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to save test");
       return null;
@@ -154,10 +160,11 @@ function CreateTest() {
   };
 
   const handlePublish = async () => {
-    // Always save the latest test configuration first
+    let currentTestId = testId || searchParams.get("edit");
     const saved = await saveTest("draft");
-    if (!saved) return;
-    const currentTestId = testId || saved?.test?._id;
+    if (saved?.savedTestId) {
+      currentTestId = saved.savedTestId;
+    }
     if (!currentTestId) {
       toast.error("Test must be saved before publishing");
       return;
@@ -185,19 +192,24 @@ function CreateTest() {
   };
 
   const handleSaveDraft = async () => {
-    const data = await saveTest("draft");
-    if (data) toast.success("Draft saved successfully");
+    await saveTest("draft");
   };
 
   const handleAssign = async () => {
-    if (!testId) {
-      const data = await saveTest("draft");
-      if (!data) return;
+    let currentTestId = testId || searchParams.get("edit");
+    if (!currentTestId) {
+      const saved = await saveTest("draft");
+      if (!saved?.savedTestId) return false;
+      currentTestId = saved.savedTestId;
+    }
+    if (!currentTestId) {
+      toast.error("Please save the test before assigning it.");
+      return false;
     }
     setSaving(true);
     try {
       await api.post("/api/tests/assign", {
-        testId,
+        testId: currentTestId,
         assignType: assignTargets.assignType,
         assignValue: assignTargets.assignValue,
         studentIds: assignTargets.studentIds,
@@ -208,8 +220,10 @@ function CreateTest() {
         headers: { Authorization: `Bearer ${token}` },
       });
       toast.success("Test assigned successfully");
+      return true;
     } catch (err) {
       toast.error(err.response?.data?.message || "Assignment failed");
+      return false;
     } finally {
       setSaving(false);
     }
@@ -230,8 +244,13 @@ function CreateTest() {
 
   const handleNext = async () => {
     if (!validateStep()) return;
+    if (steps[currentStep]?.id === "questions") {
+      const saved = await saveTest("draft");
+      if (!saved?.savedTestId) return;
+    }
     if (steps[currentStep]?.id === "assign") {
-      await handleAssign();
+      const ok = await handleAssign();
+      if (!ok) return;
     }
     setCurrentStep(prev => Math.min(prev + 1, steps.length - 1));
   };
@@ -239,6 +258,7 @@ function CreateTest() {
   const handlePrev = () => setCurrentStep(prev => Math.max(prev - 1, 0));
 
   const renderStep = () => {
+    const effectiveTestId = testId || searchParams.get("edit");
     switch (steps[currentStep]?.id) {
       case "general":
         return <Step1GeneralInfo form={form} onChange={setForm} />;
@@ -249,7 +269,7 @@ function CreateTest() {
           <Step3AssignTest
             assignTargets={assignTargets}
             onAssignChange={setAssignTargets}
-            testId={testId}
+            testId={effectiveTestId}
           />
         );
       case "preview":
@@ -261,7 +281,7 @@ function CreateTest() {
             questions={questions}
             saving={saving}
             testCreated={testCreated}
-            testId={testId}
+            testId={effectiveTestId}
             onSaveDraft={handleSaveDraft}
             onPublish={handlePublish}
             onChange={setForm}

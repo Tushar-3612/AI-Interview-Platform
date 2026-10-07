@@ -73,6 +73,7 @@ export function normalizeProfileResponse(student) {
     email,
     department: safeStringOrNull(userObj.department),
     year: safeStringOrNull(userObj.year),
+    section: safeStringOrNull(userObj.section),
     phone,
     portfolio,
     github,

@@ -20,6 +20,22 @@ export const YEARS = [
 ];
 
 /**
+ * Student signup department options with canonical backend values and clean UI labels.
+ */
+export const STUDENT_SIGNUP_DEPARTMENTS = [
+  { value: "Computer Engineering", label: "Computer Science (CS)" },
+  { value: "IT Engineering", label: "Information Technology (IT)" },
+];
+
+/**
+ * Student signup sections for CS and IT.
+ */
+export const ACADEMIC_SECTIONS = [
+  { value: "A", label: "A" },
+  { value: "B", label: "B" },
+];
+
+/**
  * Canonical string values for academic year / department.
  * Use these (not local hardcoded arrays) wherever a raw string list is required
  * so the UI and backend stay in sync. "Last Year" / "Final Year" / "4th Year"
