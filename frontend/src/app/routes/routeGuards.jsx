@@ -15,8 +15,6 @@ export function isAuthenticated() {
   return Boolean(localStorage.getItem("token"));
 }
 
-
-
 export function hasRole(requiredRoles) {
   const user = getStoredUser();
   if (!user || !user.role) return false;
