@@ -1,6 +1,8 @@
 import { Routes, Route } from "react-router-dom";
 import Login from "../../features/auth/pages/Login.jsx";
 import Signup from "../../features/auth/pages/Signup.jsx";
+
+
 import RegistrationSuccess from "../../features/auth/pages/RegistrationSuccess.jsx";
 import TermsAndConditions from "../../features/legal/pages/TermsAndConditions.jsx";
 import PrivacyPolicy from "../../features/legal/pages/PrivacyPolicy.jsx";
