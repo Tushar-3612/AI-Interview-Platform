@@ -11,6 +11,7 @@ import {
   HelpCircle,
   MessageSquare,
   User,
+  Settings,
   LogOut,
   X,
   Terminal,
@@ -269,6 +270,48 @@ export default function StudentSidebar({
             {!collapsed && <span className="whitespace-nowrap truncate">Edit Profile</span>}
           </Link>
 
+          <Link
+            to="/settings"
+            title={collapsed ? "Settings" : undefined}
+            className={`flex items-center rounded-xl transition-all duration-200 group ${
+              collapsed
+                ? "justify-center w-11 h-11 mx-auto"
+                : "gap-3 px-3 py-2.5 text-xs font-semibold"
+            }`}
+            style={{
+              color: location.pathname === "/settings"
+                ? "#FF6B35"
+                : theme === "dark"
+                ? "#AEB4C0"
+                : "#4B5563",
+              background: location.pathname === "/settings"
+                ? theme === "dark"
+                  ? "rgba(255, 107, 53, 0.12)"
+                  : "rgba(255, 107, 53, 0.08)"
+                : "transparent",
+            }}
+            onMouseEnter={(e) => {
+              if (location.pathname !== "/settings") {
+                e.currentTarget.style.background =
+                  theme === "dark"
+                    ? "rgba(255, 255, 255, 0.05)"
+                    : "rgba(0, 0, 0, 0.04)";
+                e.currentTarget.style.color =
+                  theme === "dark" ? "#FFFFFF" : "#111827";
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (location.pathname !== "/settings") {
+                e.currentTarget.style.background = "transparent";
+                e.currentTarget.style.color =
+                  theme === "dark" ? "#AEB4C0" : "#4B5563";
+              }
+            }}
+          >
+            <Settings className="w-4.5 h-4.5 shrink-0 transition-transform duration-200 group-hover:scale-110 text-gray-400" />
+            {!collapsed && <span className="whitespace-nowrap truncate">Settings</span>}
+          </Link>
+
           <button
             type="button"
             onClick={handleLogout}
@@ -429,6 +472,27 @@ export default function StudentSidebar({
                     <User className="w-4.5 h-4.5 shrink-0 text-gray-400" />
                   )}
                   <span>Edit Profile</span>
+                </Link>
+
+                <Link
+                  to="/settings"
+                  onClick={onCloseMobile}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-colors"
+                  style={{
+                    color: location.pathname === "/settings"
+                      ? "#FF6B35"
+                      : theme === "dark"
+                      ? "#AEB4C0"
+                      : "#4B5563",
+                    background: location.pathname === "/settings"
+                      ? theme === "dark"
+                        ? "rgba(255, 107, 53, 0.12)"
+                        : "rgba(255, 107, 53, 0.08)"
+                      : "transparent",
+                  }}
+                >
+                  <Settings className="w-4.5 h-4.5 shrink-0 text-gray-400" />
+                  <span>Settings</span>
                 </Link>
 
                 <button

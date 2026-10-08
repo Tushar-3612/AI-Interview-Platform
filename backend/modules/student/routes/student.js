@@ -10,6 +10,13 @@ import {
   updateTargetCompany,
 } from "../controllers/studentController.js";
 import {
+  getStudentApiKeys,
+  saveStudentApiKey,
+  deleteStudentApiKey,
+  updateStudentApiKeyPreference,
+  testStudentApiKey,
+} from "../controllers/apiKeysController.js";
+import {
   getAssignedTests,
   startTest,
   saveAnswer,
@@ -70,6 +77,13 @@ router.use(authMiddleware);
 // Profile
 router.get("/profile", getProfile);
 router.put("/profile", updateProfile);
+
+// Manage Student AI API Keys (BYOK)
+router.get("/api-keys", getStudentApiKeys);
+router.post("/api-keys", saveStudentApiKey);
+router.delete("/api-keys/:provider", deleteStudentApiKey);
+router.put("/api-keys/preference", updateStudentApiKeyPreference);
+router.post("/api-keys/test", testStudentApiKey);
 
 // Target Company
 router.put("/target-company", updateTargetCompany);

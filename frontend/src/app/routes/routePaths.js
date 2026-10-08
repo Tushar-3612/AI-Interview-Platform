@@ -12,6 +12,7 @@ export const ROUTES = {
   PRIVACY: "/privacy-policy",
   DASHBOARD: "/dashboard",
   PROFILE: "/profile",
+  SETTINGS: "/settings",
   ABOUT: "/about",
   CONTACT: "/contact",
   ACHIEVEMENTS: "/achievements",

@@ -21,6 +21,7 @@ import {
   Building,
   MapPin,
   Sparkles,
+  Key,
   ExternalLink,
   Edit3,
   Share2,
@@ -662,6 +663,20 @@ export default function Profile() {
               >
                 <Upload className="w-3.5 h-3.5 mr-1.5 inline" />
                 {profile.resumeFileName ? "Replace Resume" : "Upload Resume"}
+              </Button>
+
+              <Button
+                variant="outline"
+                onClick={() => navigate("/settings")}
+                className="px-3.5 py-2 text-xs font-bold"
+                style={{
+                  borderColor: "rgba(255, 107, 53, 0.3)",
+                  color: "#FF6B35",
+                  background: "rgba(255, 107, 53, 0.05)",
+                }}
+              >
+                <Key className="w-3.5 h-3.5 mr-1.5 inline text-[#FF6B35]" />
+                Manage API Keys
               </Button>
 
               <button

@@ -28,6 +28,7 @@ const getBreadcrumbTitle = (pathname) => {
   if (pathname.startsWith("/tests")) return "My Tests";
   if (pathname.startsWith("/placement-dashboard")) return "Placement";
   if (pathname.startsWith("/profile")) return "Profile";
+  if (pathname.startsWith("/settings")) return "Settings";
   if (pathname.startsWith("/about")) return "Help Center";
   if (pathname.startsWith("/contact")) return "Feedback";
   if (pathname.startsWith("/placement/leaderboard")) return "Leaderboard";
@@ -376,7 +377,7 @@ function Navbar({
                       type="button"
                       onClick={() => {
                         setProfileOpen(false);
-                        navigate("/profile");
+                        navigate("/settings");
                       }}
                       className="w-full flex items-center gap-3 px-4 py-2 text-xs font-medium cursor-pointer transition-colors"
                       style={{ color: "var(--text-secondary)" }}

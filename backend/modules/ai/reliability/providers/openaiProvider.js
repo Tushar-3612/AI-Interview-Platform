@@ -8,7 +8,7 @@ const OPENAI_URL = "https://api.openai.com/v1/chat/completions";
  */
 export class OpenAIProvider extends BaseProvider {
   constructor() {
-    super("openai", "gpt-4o-mini");
+    super("openai", "gpt-6");
   }
 
   async executeChatCompletion({ apiKey, model, messages, temperature = 0.3, maxTokens = 4000, timeoutMs = 45000 }) {

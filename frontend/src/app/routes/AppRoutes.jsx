@@ -7,6 +7,7 @@ import PrivacyPolicy from "../../features/legal/pages/PrivacyPolicy.jsx";
 import StudentLayout from "../../core/layouts/StudentLayout.jsx";
 import StudentDashboard from "../../features/student/pages/StudentDashboard.jsx";
 import Profile from "../../features/student/pages/Profile.jsx";
+import Settings from "../../features/student/pages/Settings.jsx";
 import InterviewPractice from "../../features/testEngine/pages/InterviewPractice.jsx";
 import RoundSelection from "../../features/testEngine/pages/RoundSelection.jsx";
 import About from "../../features/student/pages/About.jsx";
@@ -116,6 +117,7 @@ function AppRoutes() {
       <Route element={<StudentLayout />}>
         <Route path="/dashboard" element={<StudentDashboard />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/settings" element={<Settings />} />
         <Route path="/interview-practice" element={<InterviewPractice />} />
         <Route path="/interview-practice/:companyId" element={<RoundSelection />} />
         <Route path="/interview-practice/:companyId/aptitude" element={<AptitudeRound />} />

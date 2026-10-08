@@ -1,7 +1,7 @@
 import crypto from "crypto";
 
-// Matches common AI provider API key patterns (Groq, OpenRouter, Gemini, DeepSeek, OpenAI)
-const SECRET_REGEX = /(gsk_[A-Za-z0-9_-]{20,}|sk-or-v1-[A-Za-z0-9_-]{20,}|AIzaSy[A-Za-z0-9_-]{30,}|sk-[A-Za-z0-9_-]{20,}|Bearer\s+[A-Za-z0-9._-]{20,})/gi;
+// Matches common AI provider API key patterns (Groq, OpenRouter, Gemini [AIzaSy or AQ.], DeepSeek, OpenAI)
+const SECRET_REGEX = /(gsk_[A-Za-z0-9_-]{20,}|sk-or-v1-[A-Za-z0-9_-]{20,}|(?:AIzaSy|AIza)[A-Za-z0-9_-]{30,}|AQ\.[A-Za-z0-9._-]{20,}|sk-[A-Za-z0-9_-]{20,}|Bearer\s+[A-Za-z0-9._-]{20,})/gi;
 
 /**
  * Redacts API keys and sensitive tokens from string inputs.

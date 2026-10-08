@@ -18,10 +18,10 @@ export function resolveProviderModel(providerName, requestedModel) {
   const groqDefault = (process.env.GROQ_MODEL || process.env.AI_MODEL || "openai/gpt-oss-120b").trim();
   const providerDefaultModels = {
     groq: groqDefault,
-    gemini: "gemini-2.0-flash",
-    openrouter: "meta-llama/llama-3.3-70b-instruct",
-    deepseek: "deepseek-chat",
-    openai: "gpt-4o-mini"
+    gemini: "gemini-3.8-flash",
+    openrouter: "openai/gpt-oss-120b",
+    deepseek: "deepseek-v4.1-flash",
+    openai: "gpt-6"
   };
 
   if (!requestedModel || typeof requestedModel !== "string") {
@@ -31,16 +31,16 @@ export function resolveProviderModel(providerName, requestedModel) {
   // Cross-provider model mismatch corrections
   const isGroqModel = requestedModel.includes("gpt-oss") || requestedModel.includes("llama") || requestedModel.includes("groq") || requestedModel.includes("qwen") || requestedModel.includes("allam");
   if (p === "gemini" && (isGroqModel || !requestedModel.includes("gemini"))) {
-    return "gemini-2.0-flash";
+    return "gemini-3.8-flash";
   }
   if (p === "deepseek" && (isGroqModel || !requestedModel.includes("deepseek"))) {
-    return "deepseek-chat";
+    return "deepseek-v4.1-flash";
   }
   if (p === "openai" && (isGroqModel || !requestedModel.includes("gpt"))) {
-    return "gpt-4o-mini";
+    return "gpt-6";
   }
   if (p === "openrouter" && isGroqModel && !requestedModel.includes("/")) {
-    return "meta-llama/llama-3.3-70b-instruct";
+    return "openai/gpt-oss-120b";
   }
   if (p === "groq" && (requestedModel.includes("gemini") || requestedModel.includes("claude"))) {
     return groqDefault;

@@ -8,6 +8,8 @@ import RealInterviewHRQuestion from "../models/RealInterviewHRQuestion.js";
 import RealInterviewCodingQuestion from "../models/RealInterviewCodingQuestion.js";
 import RealInterviewResult from "../models/RealInterviewResult.js";
 import { withInFlightLock } from "../services/inFlightLock.js";
+import { decryptSecret } from "../../ai/reliability/utils/redactSecrets.js";
+import { sessionManager } from "../../ai/reliability/aiSessionManager.js";
 
 /**
  * Aggregates questions from all 5 Real Interview round collections for a given session.
@@ -298,6 +300,24 @@ export const createInterviewSession = async (req, res) => {
       }
 
       const sessionId = interview._id.toString();
+
+      // Auto-bind student's saved BYOK API key if enabled in settings
+      try {
+        const fullUser = await User.findById(userId).select("apiKeys").lean();
+        if (fullUser?.apiKeys?.useCustomKey && fullUser.apiKeys.preferredProvider) {
+          const prov = fullUser.apiKeys.preferredProvider;
+          const keyEntry = fullUser.apiKeys.providers?.[prov];
+          if (keyEntry?.encryptedKey) {
+            const decryptedKey = decryptSecret(keyEntry.encryptedKey);
+            if (decryptedKey) {
+              sessionManager.setSessionBYOK(sessionId, prov, decryptedKey, userId);
+              console.log(`[StudentInterviewController] Auto-bound user's saved [${prov}] API key to session [${sessionId}]`);
+            }
+          }
+        }
+      } catch (byokErr) {
+        console.warn("[StudentInterviewController] Error auto-binding user BYOK key:", byokErr.message);
+      }
 
       return {
         statusCode: 201,

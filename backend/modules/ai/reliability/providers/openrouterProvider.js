@@ -5,7 +5,7 @@ const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 
 export class OpenRouterProvider extends BaseProvider {
   constructor() {
-    super("openrouter", "meta-llama/llama-3.3-70b-instruct");
+    super("openrouter", "openai/gpt-oss-120b");
   }
 
   async executeChatCompletion({ apiKey, model, messages, temperature = 0.2, maxTokens = 4000, timeoutMs = 60000 }) {

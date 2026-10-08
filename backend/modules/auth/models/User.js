@@ -123,6 +123,20 @@ const userSchema = new mongoose.Schema(
       ref: "Admin",
       default: null,
     },
+    apiKeys: {
+      preferredProvider: {
+        type: String,
+        default: "platform",
+      },
+      useCustomKey: {
+        type: Boolean,
+        default: false,
+      },
+      providers: {
+        type: mongoose.Schema.Types.Mixed,
+        default: {},
+      },
+    },
   },
   {
     timestamps: true,

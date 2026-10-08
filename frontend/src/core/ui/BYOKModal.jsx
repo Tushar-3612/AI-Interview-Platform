@@ -2,11 +2,11 @@ import React, { useState, useEffect } from "react";
 import { Key, Eye, EyeOff, ShieldCheck, Check, Sparkles, X } from "lucide-react";
 
 export const PROVIDER_OPTIONS = [
-  { id: "groq", name: "Groq (Fast Llama 3.3)", placeholder: "gsk_...", helpText: "Free fast inference" },
-  { id: "openrouter", name: "OpenRouter (Multi-Model)", placeholder: "sk-or-v1-...", helpText: "Unified AI gateway" },
-  { id: "gemini", name: "Google Gemini (Gemini 2.0 Flash)", placeholder: "AIzaSy...", helpText: "Google AI Studio Key" },
-  { id: "deepseek", name: "DeepSeek (DeepSeek V3/R1)", placeholder: "sk-...", helpText: "DeepSeek API Key" },
-  { id: "openai", name: "OpenAI (GPT-4o mini / GPT-4o)", placeholder: "sk-...", helpText: "Official OpenAI Key" }
+  { id: "groq", name: "Groq (openai/gpt-oss-120b)", placeholder: "gsk_...", helpText: "Free fast inference" },
+  { id: "openrouter", name: "OpenRouter (openai/gpt-oss-120b)", placeholder: "sk-or-v1-...", helpText: "Unified AI gateway" },
+  { id: "gemini", name: "Google Gemini (gemini-3.8-flash)", placeholder: "AIzaSy... or AQ...", helpText: "Google AI Studio Key" },
+  { id: "deepseek", name: "DeepSeek (deepseek-v4.1-flash)", placeholder: "sk-...", helpText: "DeepSeek API Key" },
+  { id: "openai", name: "OpenAI (gpt-6)", placeholder: "sk-...", helpText: "Official OpenAI Key" }
 ];
 
 export default function BYOKModal({ isOpen, onClose, onSave, initialProvider = "groq", initialKey = "" }) {
@@ -139,6 +139,17 @@ export default function BYOKModal({ isOpen, onClose, onSave, initialProvider = "
             <label htmlFor="rememberSession" className="text-xs text-white/70 cursor-pointer">
               Remember key for this browser session
             </label>
+          </div>
+
+          <div className="pt-2 border-t border-white/5 text-[11px] text-white/50 flex items-center justify-between">
+            <span>Permanently manage keys in your account:</span>
+            <a
+              href="/settings"
+              onClick={() => onClose()}
+              className="text-[#FF6B35] hover:underline font-semibold flex items-center gap-1"
+            >
+              <span>Manage in Settings &rarr;</span>
+            </a>
           </div>
         </div>
 

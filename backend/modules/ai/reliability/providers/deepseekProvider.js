@@ -8,7 +8,7 @@ const DEEPSEEK_URL = "https://api.deepseek.com/chat/completions";
  */
 export class DeepSeekProvider extends BaseProvider {
   constructor() {
-    super("deepseek", "deepseek-chat");
+    super("deepseek", "deepseek-v4.1-flash");
   }
 
   async executeChatCompletion({ apiKey, model, messages, temperature = 0.3, maxTokens = 4000, timeoutMs = 45000 }) {
