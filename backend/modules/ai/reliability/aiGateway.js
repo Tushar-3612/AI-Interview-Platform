@@ -18,10 +18,10 @@ export function resolveProviderModel(providerName, requestedModel) {
   const groqDefault = (process.env.GROQ_MODEL || process.env.AI_MODEL || "openai/gpt-oss-120b").trim();
   const providerDefaultModels = {
     groq: groqDefault,
-    gemini: "gemini-3.8-flash",
-    openrouter: "openai/gpt-oss-120b",
-    deepseek: "deepseek-v4.1-flash",
-    openai: "gpt-6"
+    gemini: "gemini-2.0-flash",
+    openrouter: "meta-llama/llama-3.3-70b-instruct",
+    deepseek: "deepseek-chat",
+    openai: "gpt-4o-mini"
   };
 
   if (!requestedModel || typeof requestedModel !== "string") {
@@ -29,18 +29,26 @@ export function resolveProviderModel(providerName, requestedModel) {
   }
 
   // Cross-provider model mismatch corrections
-  const isGroqModel = requestedModel.includes("gpt-oss") || requestedModel.includes("llama") || requestedModel.includes("groq") || requestedModel.includes("qwen") || requestedModel.includes("allam");
+  const isGroqModel = requestedModel.includes("gpt-oss") ||
+                      requestedModel.includes("groq") ||
+                      requestedModel.includes("allam") ||
+                      (requestedModel.includes("llama") && !requestedModel.startsWith("meta-llama/")) ||
+                      (requestedModel.includes("qwen") && !requestedModel.startsWith("qwen/"));
+
   if (p === "gemini" && (isGroqModel || !requestedModel.includes("gemini"))) {
-    return "gemini-3.8-flash";
+    return "gemini-2.0-flash";
   }
   if (p === "deepseek" && (isGroqModel || !requestedModel.includes("deepseek"))) {
-    return "deepseek-v4.1-flash";
+    return "deepseek-chat";
   }
-  if (p === "openai" && (isGroqModel || !requestedModel.includes("gpt"))) {
-    return "gpt-6";
+  if (p === "openai" && (isGroqModel || !requestedModel.includes("gpt") || requestedModel.includes("gpt-oss"))) {
+    return "gpt-4o-mini";
   }
-  if (p === "openrouter" && isGroqModel && !requestedModel.includes("/")) {
-    return "openai/gpt-oss-120b";
+  if (p === "openrouter") {
+    if (isGroqModel || !requestedModel.includes("/")) {
+      return "meta-llama/llama-3.3-70b-instruct";
+    }
+    return requestedModel;
   }
   if (p === "groq" && (requestedModel.includes("gemini") || requestedModel.includes("claude"))) {
     return groqDefault;
