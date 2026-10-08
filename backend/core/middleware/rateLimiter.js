@@ -2,8 +2,6 @@ import rateLimit from "express-rate-limit";
 import { RedisStore } from "rate-limit-redis";
 import { getRedisClient } from "../redis/redisService.js";
 
-
-
 const getStore = (prefix) => {
   const client = getRedisClient();
   if (client) {
