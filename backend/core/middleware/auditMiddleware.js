@@ -27,8 +27,6 @@ export function auditLog(action, resource = "") {
   };
 }
 
-
-
 export async function createAuditLog({ userId, role, action, resource, resourceId, details, ip, userAgent, status = "success" }) {
   try {
     await AuditLog.create({ userId, role, action, resource, resourceId, details, ip, userAgent, status });
