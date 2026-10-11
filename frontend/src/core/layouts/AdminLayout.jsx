@@ -23,6 +23,7 @@ import {
   UserCheck,
   Crown,
   ShieldAlert,
+  GraduationCap,
 } from "lucide-react";
 import { getAuthToken, getAuthUser } from "../../features/student/hooks/useStudentProfile.js";
 import { useTheme } from "../hooks/useTheme.jsx";
@@ -70,6 +71,7 @@ function AdminLayout() {
         { label: "Coding Questions", icon: Code2, path: "/admin/coding-questions" },
         { label: "Coding Assessments", icon: Terminal, path: "/admin/coding-assessments" },
         { label: "Technical Questions", icon: BrainCircuit, path: "/admin/technical-questions" },
+        { label: "NPTEL Questions", icon: GraduationCap, path: "/admin/nptel-questions" },
         { label: "Audit Logs", icon: Activity, path: "/admin/audit-logs" },
         { label: "System Config", icon: Settings, path: "/admin/config" },
       ]
@@ -86,6 +88,7 @@ function AdminLayout() {
         { label: "Coding Questions", icon: Code2, path: "/admin/coding-questions" },
         { label: "Coding Assessments", icon: Terminal, path: "/admin/coding-assessments" },
         { label: "Technical Questions", icon: BrainCircuit, path: "/admin/technical-questions" },
+        { label: "NPTEL Questions", icon: GraduationCap, path: "/admin/nptel-questions" },
       ];
 
   return (

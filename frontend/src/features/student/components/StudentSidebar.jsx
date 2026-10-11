@@ -17,6 +17,7 @@ import {
   Terminal,
   BrainCircuit,
   History,
+  GraduationCap,
 } from "lucide-react";
 import { useTheme } from "../../../core/hooks/useTheme.jsx";
 import { getAuthUser } from "../hooks/useStudentProfile.js";
@@ -24,6 +25,7 @@ import toast from "react-hot-toast";
 
 const NAV_ITEMS = [
   { label: "Home", path: "/dashboard", icon: Home },
+  { label: "NPTEL Assignment", path: "/nptel-assignment", icon: GraduationCap },
   { label: "My Tests", path: "/tests", icon: ClipboardList },
   { label: "Aptitude Round", path: "/aptitude", icon: BrainCircuit },
   { label: "Coding Round", path: "/coding-round", icon: Code2 },

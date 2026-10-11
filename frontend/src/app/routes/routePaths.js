@@ -39,6 +39,8 @@ export const ROUTES = {
   CODING_ASSESSMENT_HISTORY: "/coding-assessment/history",
   CODING_ROUND: "/coding-round/test",
   CODING_HISTORY: "/coding-history",
+  NPTEL_ASSIGNMENT: "/nptel-assignment",
+  NPTEL_PRACTICE: "/nptel-assignment/:weekId",
   PLACEMENT_DASHBOARD: "/placement-dashboard",
   LEADERBOARD: "/leaderboard",
   MOCK_OA: "/mock-oa",
@@ -67,4 +69,5 @@ export const ROUTES = {
   MOCK_QUESTION_MANAGEMENT: "/admin/mock-questions",
   ADMIN_CODING_ASSESSMENTS: "/admin/coding/assessments",
   ADMIN_CODING_RESULTS: "/admin/coding/results/:id",
+  ADMIN_NPTEL_QUESTIONS: "/admin/nptel-questions",
 };
