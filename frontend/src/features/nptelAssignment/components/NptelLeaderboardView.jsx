@@ -407,14 +407,14 @@ export default function NptelLeaderboardView({ onStartTest }) {
           <div className="overflow-x-auto flex-1">
             <table className="w-full text-left text-xs">
               <thead>
-                <tr className="border-b text-gray-400 text-[11px] font-bold uppercase tracking-wider" style={{ borderColor: "var(--border)" }}>
-                  <th className="py-2.5 px-3">Rank</th>
-                  <th className="py-2.5 px-3">Candidate</th>
-                  <th className="py-2.5 px-3 hidden md:table-cell">Department</th>
-                  <th className="py-2.5 px-3">Score</th>
-                  <th className="py-2.5 px-3 text-center">Attempts</th>
-                  <th className="py-2.5 px-3">Accuracy</th>
-                  <th className="py-2.5 px-3 hidden sm:table-cell">Time</th>
+                <tr className="border-b text-gray-400 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider" style={{ borderColor: "var(--border)" }}>
+                  <th className="py-2 px-2 sm:px-3">Rank</th>
+                  <th className="py-2 px-2 sm:px-3">Candidate</th>
+                  <th className="py-2 px-2 sm:px-3 hidden md:table-cell">Department</th>
+                  <th className="py-2 px-2 sm:px-3">Score</th>
+                  <th className="py-2 px-2 sm:px-3 text-center hidden sm:table-cell">Attempts</th>
+                  <th className="py-2 px-2 sm:px-3 hidden sm:table-cell">Accuracy</th>
+                  <th className="py-2 px-2 sm:px-3 hidden sm:table-cell">Time</th>
                 </tr>
               </thead>
               <tbody className="divide-y" style={{ borderColor: "var(--border)" }}>
@@ -427,24 +427,24 @@ export default function NptelLeaderboardView({ onStartTest }) {
                       key={cand.userId}
                       className={`transition ${isMe ? "bg-[#FF6B35]/10 font-bold" : "hover:bg-[var(--bg-secondary)]"}`}
                     >
-                      <td className="py-2.5 px-3">
+                      <td className="py-2 px-2 sm:px-3 whitespace-nowrap">
                         <div className="flex items-center gap-1.5">
                           {rankNum === 1 ? (
-                            <span className="w-6 h-6 rounded-md bg-amber-500/20 text-amber-500 font-black text-xs flex items-center justify-center">1</span>
+                            <span className="w-5 h-5 sm:w-6 sm:h-6 rounded-md bg-amber-500/20 text-amber-500 font-black text-[10px] sm:text-xs flex items-center justify-center">1</span>
                           ) : rankNum === 2 ? (
-                            <span className="w-6 h-6 rounded-md bg-slate-400/20 text-slate-300 font-black text-xs flex items-center justify-center">2</span>
+                            <span className="w-5 h-5 sm:w-6 sm:h-6 rounded-md bg-slate-400/20 text-slate-300 font-black text-[10px] sm:text-xs flex items-center justify-center">2</span>
                           ) : rankNum === 3 ? (
-                            <span className="w-6 h-6 rounded-md bg-amber-700/20 text-amber-600 font-black text-xs flex items-center justify-center">3</span>
+                            <span className="w-5 h-5 sm:w-6 sm:h-6 rounded-md bg-amber-700/20 text-amber-600 font-black text-[10px] sm:text-xs flex items-center justify-center">3</span>
                           ) : (
-                            <span className="w-6 h-6 rounded-md text-gray-400 font-bold text-xs flex items-center justify-center">#{rankNum}</span>
+                            <span className="w-5 h-5 sm:w-6 sm:h-6 rounded-md text-gray-400 font-bold text-[10px] sm:text-xs flex items-center justify-center">#{rankNum}</span>
                           )}
                         </div>
                       </td>
 
-                      <td className="py-2.5 px-3">
-                        <div className="flex items-center gap-2">
+                      <td className="py-2 px-2 sm:px-3 min-w-0">
+                        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
                           <div
-                            className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold text-white shrink-0"
+                            className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center text-[10px] sm:text-xs font-bold text-white shrink-0"
                             style={{
                               background: isMe
                                 ? "linear-gradient(135deg, #FF6B35 0%, #FF8A3D 100%)"
@@ -454,33 +454,40 @@ export default function NptelLeaderboardView({ onStartTest }) {
                           >
                             {cand.name.charAt(0).toUpperCase()}
                           </div>
-                          <div>
-                            <div className="font-semibold flex items-center gap-1.5" style={{ color: "var(--text-primary)" }}>
-                              <span>{cand.name}</span>
+                          <div className="min-w-0 flex-1">
+                            <div className="font-semibold flex items-center gap-1 min-w-0 whitespace-nowrap">
+                              <span
+                                className="text-[11px] sm:text-xs font-bold whitespace-nowrap truncate max-w-[140px] xs:max-w-[200px] sm:max-w-none"
+                                style={{ color: "var(--text-primary)" }}
+                              >
+                                {cand.name}
+                              </span>
                               {isMe && (
-                                <span className="text-[9px] font-black px-1.5 py-0.2 rounded bg-[#FF6B35] text-white">
+                                <span className="text-[8px] sm:text-[9px] font-black px-1 py-0.5 rounded bg-[#FF6B35] text-white shrink-0 leading-none">
                                   YOU
                                 </span>
                               )}
+                              <span className="text-[9px] text-gray-400 font-normal whitespace-nowrap truncate md:hidden">
+                                · {cand.department}
+                              </span>
                             </div>
-                            <div className="text-[10px] text-gray-400 md:hidden">{cand.department}</div>
                           </div>
                         </div>
                       </td>
 
-                      <td className="py-2.5 px-3 hidden md:table-cell text-gray-400">
+                      <td className="py-2 px-2 sm:px-3 hidden md:table-cell text-gray-400 text-xs">
                         {cand.department}
                       </td>
 
-                      <td className="py-2.5 px-3 font-bold">
-                        <span className="text-sm font-black" style={{ color: isMe ? "#FF6B35" : "var(--text-primary)" }}>
+                      <td className="py-2 px-2 sm:px-3 font-bold whitespace-nowrap">
+                        <span className="text-xs sm:text-sm font-black" style={{ color: isMe ? "#FF6B35" : "var(--text-primary)" }}>
                           {cand.score}
                         </span>
                         <span className="text-gray-400 text-[10px]"> / 120</span>
                       </td>
 
                       {/* Number of Attempts Badge */}
-                      <td className="py-2.5 px-3 text-center">
+                      <td className="py-2 px-2 sm:px-3 text-center hidden sm:table-cell">
                         <span
                           className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-black border"
                           style={{
@@ -493,7 +500,7 @@ export default function NptelLeaderboardView({ onStartTest }) {
                         </span>
                       </td>
 
-                      <td className="py-2.5 px-3">
+                      <td className="py-2 px-2 sm:px-3 hidden sm:table-cell">
                         <div className="flex items-center gap-2">
                           <div className="w-16 h-1.5 rounded-full bg-[var(--border)] overflow-hidden hidden sm:block">
                             <div
@@ -510,7 +517,7 @@ export default function NptelLeaderboardView({ onStartTest }) {
                         </div>
                       </td>
 
-                      <td className="py-2.5 px-3 hidden sm:table-cell text-gray-400">
+                      <td className="py-2 px-2 sm:px-3 hidden sm:table-cell text-gray-400">
                         <div className="flex items-center gap-1 text-[11px]">
                           <Clock className="w-3 h-3" />
                           <span>{formatTime(cand.timeSpentSeconds)}</span>
