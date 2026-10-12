@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import api from "../../../core/api/api.js";
 import { getAuthToken } from "../../student/hooks/useStudentProfile.js";
-import { NPTEL_THEME, getLocalTestProgress } from "../data/nptelData.js";
+import { NPTEL_THEME, getLocalTestProgress, clearLocalDraftAnswers } from "../data/nptelData.js";
 
 export default function NptelAssignmentHome() {
   const navigate = useNavigate();
@@ -48,6 +48,22 @@ export default function NptelAssignmentHome() {
     fetchPreview();
     return () => { isMounted = false; };
   }, [token]);
+
+  const handleStartTest = async () => {
+    clearLocalDraftAnswers();
+    try {
+      const el = document.documentElement;
+      const rfs =
+        el.requestFullscreen ||
+        el.webkitRequestFullscreen ||
+        el.mozRequestFullScreen ||
+        el.msRequestFullscreen;
+      if (rfs) await rfs.call(el);
+    } catch {
+      // ignore fullscreen block
+    }
+    navigate("/nptel-assignment/test");
+  };
 
   const cardVariants = {
     hidden: { opacity: 0, y: 24 },
@@ -184,7 +200,7 @@ export default function NptelAssignmentHome() {
             <button
               type="button"
               id="nptel-start-test-btn"
-              onClick={() => navigate("/nptel-assignment/test")}
+              onClick={handleStartTest}
               className="w-full py-2 sm:py-3 rounded-lg sm:rounded-2xl text-[11px] sm:text-sm font-black text-white flex items-center justify-center gap-1 sm:gap-2 cursor-pointer transition hover:opacity-95 active:scale-[0.98] mt-1"
               style={{ background: NPTEL_THEME.gradient, boxShadow: NPTEL_THEME.glow }}
             >

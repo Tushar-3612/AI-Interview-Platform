@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
@@ -39,12 +39,40 @@ import {
   evaluateAnswer,
   getLocalTestProgress,
   saveLocalTestAttempt,
-  getLocalDraftAnswers,
-  saveLocalDraftAnswers,
   clearLocalDraftAnswers,
   getLocalBookmarks,
   toggleLocalBookmark,
 } from "../data/nptelData.js";
+
+function getIsFullscreen() {
+  return Boolean(
+    document.fullscreenElement ||
+    document.webkitFullscreenElement ||
+    document.mozFullScreenElement ||
+    document.msFullscreenElement
+  );
+}
+
+function requestFullscreenSafe() {
+  const el = document.documentElement;
+  const rfs =
+    el.requestFullscreen ||
+    el.webkitRequestFullscreen ||
+    el.mozRequestFullScreen ||
+    el.msRequestFullscreen;
+  if (rfs) return rfs.call(el).catch(() => {});
+}
+
+function exitFullscreenSafe() {
+  if (getIsFullscreen()) {
+    const efs =
+      document.exitFullscreen ||
+      document.webkitExitFullscreen ||
+      document.mozCancelFullScreen ||
+      document.msExitFullscreen;
+    if (efs) return efs.call(document).catch(() => {});
+  }
+}
 
 export default function NptelAssignmentTest() {
   const navigate = useNavigate();
@@ -60,25 +88,24 @@ export default function NptelAssignmentTest() {
   const [questionsList, setQuestionsList] = useState(ALL_NPTEL_QUESTIONS);
   const [phase, setPhase] = useState("active"); // "active" | "result"
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [answers, setAnswers] = useState(() => getLocalDraftAnswers());
+  // Fresh session: do not load or save progress across sessions
+  const [answers, setAnswers] = useState({});
   const [flagged, setFlagged] = useState(new Set());
   const [bookmarks, setBookmarks] = useState(() => getLocalBookmarks());
-  const [checkedPractice, setCheckedPractice] = useState(() => {
-    const drafts = getLocalDraftAnswers();
-    const init = {};
-    if (drafts && typeof drafts === "object") {
-      Object.keys(drafts).forEach((k) => {
-        const val = drafts[k];
-        if (val !== null && val !== undefined && (!Array.isArray(val) || val.length > 0)) {
-          init[k] = true;
-        }
-      });
-    }
-    return init;
-  });
+  const [checkedPractice, setCheckedPractice] = useState({});
   const [paletteFilter, setPaletteFilter] = useState("all"); // "all" | "answered" | "unanswered" | "flagged"
   const [passageOpen, setPassageOpen] = useState(false);
   const [mobilePaletteOpen, setMobilePaletteOpen] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(() => getIsFullscreen());
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const isSubmittingRef = useRef(false);
+  const answersRef = useRef(answers);
+  answersRef.current = answers;
+
+  // Clear any residual drafts on mount to ensure fresh start
+  useEffect(() => {
+    clearLocalDraftAnswers();
+  }, []);
 
   // Load questions from DB if available (to sync with Admin uploads/edits)
   useEffect(() => {
@@ -152,10 +179,6 @@ export default function NptelAssignmentTest() {
     ? Boolean(isAnswered && checkedPractice[currentQuestion?.id])
     : Boolean(isAnswered);
 
-  // Autosave draft answers
-  useEffect(() => {
-    saveLocalDraftAnswers(answers);
-  }, [answers]);
 
   // Smooth scroll directly to the answer explanation when an option is selected / verified in practice mode
   useEffect(() => {
@@ -294,30 +317,18 @@ export default function NptelAssignmentTest() {
     setIsAutoAdvancing(false);
   };
 
-  // Exam mode timer
-  useEffect(() => {
-    if (mode !== "exam" || phase !== "active" || !timerRunning) return;
-
-    timerRef.current = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          clearInterval(timerRef.current);
-          toast.error("Time is up! Submitting your assignment test.");
-          handleSubmit();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(timerRef.current);
-  }, [mode, phase, timerRunning]);
-
-  // Submit test
-  const handleSubmit = async () => {
+  // Submit test and directly calculate results
+  const handleSubmit = useCallback(async () => {
+    if (isSubmittingRef.current && phase === "result") return;
+    isSubmittingRef.current = true;
     setSubmitting(true);
     setConfirmSubmitModal(false);
 
+    // Exit browser fullscreen safely if active
+    exitFullscreenSafe();
+    clearLocalDraftAnswers();
+
+    const currentAnswers = answersRef.current || {};
     const timeSpent = Math.max(1, Math.floor((Date.now() - startTimeRef.current) / 1000));
 
     // Try server evaluation first if logged in
@@ -326,7 +337,7 @@ export default function NptelAssignmentTest() {
         const res = await api.post(
           "/api/nptel/submit",
           {
-            answers,
+            answers: currentAnswers,
             mode,
             timeSpentSeconds: timeSpent,
           },
@@ -337,12 +348,13 @@ export default function NptelAssignmentTest() {
           saveLocalTestAttempt({
             score: res.data.score,
             maxScore: res.data.maxScore,
-            answers,
+            answers: currentAnswers,
           });
           clearLocalDraftAnswers();
           setPhase("result");
           window.scrollTo({ top: 0, behavior: "smooth" });
           setSubmitting(false);
+          isSubmittingRef.current = false;
           return;
         }
       }
@@ -357,7 +369,7 @@ export default function NptelAssignmentTest() {
     let incorrectCount = 0;
 
     const evaluated = questionsList.map((q) => {
-      const userSel = answers[q.id];
+      const userSel = currentAnswers[q.id];
       const evalRes = evaluateAnswer(q, userSel);
 
       totalScore += evalRes.pointsEarned;
@@ -403,7 +415,7 @@ export default function NptelAssignmentTest() {
     saveLocalTestAttempt({
       score: totalScore,
       maxScore: totalQuestions,
-      answers,
+      answers: currentAnswers,
     });
     clearLocalDraftAnswers();
 
@@ -411,7 +423,91 @@ export default function NptelAssignmentTest() {
     setPhase("result");
     window.scrollTo({ top: 0, behavior: "smooth" });
     setSubmitting(false);
-  };
+    isSubmittingRef.current = false;
+  }, [phase, token, mode, questionsList, totalQuestions]);
+
+  // Auto-enter fullscreen when starting test
+  useEffect(() => {
+    if (phase === "active") {
+      requestFullscreenSafe();
+      const handleFirstClick = () => {
+        if (!getIsFullscreen() && phase === "active") {
+          requestFullscreenSafe();
+        }
+      };
+      window.addEventListener("click", handleFirstClick, { once: true });
+      return () => window.removeEventListener("click", handleFirstClick);
+    }
+  }, [phase]);
+
+  // Listen for fullscreen change: if user exits fullscreen while test is active, submit and calculate result directly
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      const isFull = getIsFullscreen();
+      setIsFullscreen(isFull);
+      if (!isFull && phase === "active" && !isSubmittingRef.current) {
+        isSubmittingRef.current = true;
+        toast("Full screen exited: submitting assessment...", { icon: "📊" });
+        handleSubmit();
+      }
+    };
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+    document.addEventListener("mozfullscreenchange", handleFullscreenChange);
+    document.addEventListener("MSFullscreenChange", handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      document.removeEventListener("webkitfullscreenchange", handleFullscreenChange);
+      document.removeEventListener("mozfullscreenchange", handleFullscreenChange);
+      document.removeEventListener("MSFullscreenChange", handleFullscreenChange);
+    };
+  }, [phase, handleSubmit]);
+
+  // If user closes tab or browser, immediately submit/save calculated result (no draft saving)
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (phase === "active" && !isSubmittingRef.current) {
+        const currentAnswers = answersRef.current || {};
+        let totalScore = 0;
+        questionsList.forEach((q) => {
+          const userSel = currentAnswers[q.id];
+          const evalRes = evaluateAnswer(q, userSel);
+          totalScore += evalRes.pointsEarned;
+        });
+        totalScore = Number(totalScore.toFixed(2));
+        saveLocalTestAttempt({
+          score: totalScore,
+          maxScore: totalQuestions,
+          answers: currentAnswers,
+        });
+        clearLocalDraftAnswers();
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [phase, questionsList, totalQuestions]);
+
+  // Exam mode timer
+  useEffect(() => {
+    if (mode !== "exam" || phase !== "active" || !timerRunning) return;
+
+    timerRef.current = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timerRef.current);
+          toast.error("Time is up! Submitting your assignment test.");
+          handleSubmit();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timerRef.current);
+  }, [mode, phase, timerRunning, handleSubmit]);
 
   const answeredCount = Object.keys(answers).filter((k) => {
     const val = answers[k];
@@ -442,191 +538,294 @@ export default function NptelAssignmentTest() {
   // RESULT VIEW
   // ═══════════════════════════════════════════════
   if (phase === "result" && resultData) {
-    const isPassing = resultData.percentage >= 40;
-    const isMastery = resultData.percentage >= 75;
+    const isPassing = Number(resultData.percentage || 0) >= 40;
+    const totalQuestionsCount = Number(resultData.maxScore || totalQuestions || 120);
+    const answeredCount =
+      Number(resultData.correctCount || 0) +
+      Number(resultData.partiallyCorrectCount || 0) +
+      Number(resultData.incorrectCount || 0);
+    const unansweredCount = Math.max(0, totalQuestionsCount - answeredCount);
 
     return (
-      <div className="page-container py-8 max-w-5xl mx-auto">
+      <div className="w-full max-w-xl md:max-w-2xl mx-auto px-3 sm:px-4 py-2 sm:py-4 flex flex-col justify-start box-border">
         <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }}>
-          {/* Top Return & Leaderboard Buttons */}
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => {
-                  setPhase("active");
-                  setAnswers({});
-                  setCheckedPractice({});
-                  setTimeLeft(7200);
-                  setCurrentIndex(0);
-                }}
-                className="flex items-center gap-2 text-xs sm:text-sm font-bold cursor-pointer hover:opacity-85 transition px-3 py-1.5 rounded-xl border"
-                style={{
-                  borderColor: NPTEL_THEME.border,
-                  background: NPTEL_THEME.bgSubtle,
-                  color: NPTEL_THEME.primary,
-                }}
-              >
-                <RotateCcw className="w-4 h-4" />
-                <span>Retake NPTEL Test</span>
-              </button>
+          {/* Top Header Actions (Compact, single horizontal row) */}
+          <div className="flex items-center justify-between gap-1.5 sm:gap-3 mb-2 sm:mb-3 w-full">
+            {/* Back to Assignments */}
+            <button
+              type="button"
+              id="nptel-result-back-btn"
+              onClick={() => navigate("/nptel-assignment")}
+              className="flex items-center gap-1 px-2 py-1.5 sm:px-3 sm:py-1.5 rounded-xl border text-[11px] sm:text-xs font-semibold cursor-pointer transition hover:bg-[var(--bg-secondary)] shrink-0 active:scale-95"
+              style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
+              title="Back to Assignments"
+            >
+              <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+              <span className="hidden sm:inline">Back to Assignments</span>
+              <span className="sm:hidden">Back</span>
+            </button>
 
+            {/* Right Action Buttons: Leaderboard & Retake Test */}
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+              {/* Leaderboard Button */}
               <button
                 type="button"
+                id="nptel-result-leaderboard-btn"
                 onClick={() => navigate("/nptel-assignment/leaderboard")}
-                className="flex items-center gap-2 text-xs sm:text-sm font-bold cursor-pointer hover:opacity-85 transition px-3 py-1.5 rounded-xl border"
+                className="flex items-center gap-1 sm:gap-1.5 px-2 py-1.5 sm:px-3 sm:py-1.5 rounded-xl border text-[11px] sm:text-xs font-bold cursor-pointer hover:opacity-85 transition active:scale-95 shrink-0"
                 style={{
                   borderColor: "rgba(245, 158, 11, 0.35)",
                   background: "rgba(245, 158, 11, 0.08)",
                   color: "#F59E0B",
                 }}
+                title="View NPTEL Leaderboard"
               >
-                <Trophy className="w-4 h-4" />
-                <span>View NPTEL Leaderboard</span>
+                <Trophy className="w-3.5 h-3.5 shrink-0" />
+                <span className="hidden sm:inline">View Leaderboard</span>
+                <span className="sm:hidden">Leaderboard</span>
               </button>
-            </div>
 
-            <button
-              type="button"
-              onClick={() => navigate("/nptel-assignment")}
-              className="text-xs sm:text-sm font-bold cursor-pointer transition flex items-center gap-1.5 hover:opacity-85"
-              style={{ color: "var(--text-secondary)" }}
-            >
-              ← Back to Assignment
-            </button>
-          </div>
-
-          {/* Performance Hero Card with Adaptive Theme Colors (No Dark Black Fade) */}
-          <div
-            className="rounded-3xl p-6 sm:p-10 mb-8 border relative overflow-hidden"
-            style={{
-              background:
-                "linear-gradient(135deg, color-mix(in srgb, #FF6B35 12%, var(--card-bg)) 0%, var(--card-bg) 55%, color-mix(in srgb, #FF6B35 5%, var(--card-bg)) 100%)",
-              borderColor: "color-mix(in srgb, #FF6B35 30%, var(--border))",
-              boxShadow: "0 10px 30px -10px rgba(255, 107, 53, 0.15)",
-            }}
-          >
-            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-              <div className="max-w-xl">
-                <div
-                  className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider mb-3 border"
-                  style={{
-                    background: NPTEL_THEME.bgSubtle,
-                    borderColor: NPTEL_THEME.border,
-                    color: NPTEL_THEME.primary,
-                  }}
-                >
-                  <Trophy className="w-3.5 h-3.5" />
-                  <span>Comprehensive Assignment Result</span>
-                </div>
-
-                <h1 className="text-2xl sm:text-3xl font-black mb-2" style={{ color: "var(--text-primary)" }}>
-                  {NPTEL_TEST_META.title}
-                </h1>
-                <p className="text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-                  {isMastery
-                    ? "Outstanding performance! You have demonstrated exceptional mastery across all 120 research methodology concepts."
-                    : isPassing
-                    ? "Congratulations! You have passed the comprehensive assignment benchmark. Review missed questions below."
-                    : "Score below passing mark. Go through each question and solution below to reinforce your research concepts."}
-                </p>
-              </div>
-
-              {/* Circular Score Gauge */}
-              <div
-                className="flex flex-col items-center justify-center p-6 rounded-2xl border min-w-[190px]"
-                style={{
-                  background: "var(--bg-secondary)",
-                  borderColor: "color-mix(in srgb, #FF6B35 25%, var(--border))",
-                  boxShadow: "0 8px 24px -6px rgba(255, 107, 53, 0.12)",
-                }}
-              >
-                <span className="text-4xl font-black" style={{ color: NPTEL_THEME.primary }}>
-                  {resultData.score}
-                  <span className="text-lg font-bold" style={{ color: "var(--text-muted)" }}>
-                    /{resultData.maxScore}
-                  </span>
-                </span>
-                <span className="text-xs font-bold mt-1 uppercase tracking-wider" style={{ color: "var(--text-secondary)" }}>
-                  {resultData.percentage}% Overall
-                </span>
-                <span className="text-[11px] font-medium mt-1" style={{ color: "var(--text-muted)" }}>
-                  Time: {formatTime(resultData.timeSpentSeconds || 0)}
-                </span>
-              </div>
-            </div>
-
-            {/* Metric Strips */}
-            <div className="grid grid-cols-4 gap-3 mt-6 pt-6 border-t" style={{ borderColor: "var(--border)" }}>
-              <div className="text-center">
-                <div className="text-xl font-black text-emerald-400">{resultData.correctCount}</div>
-                <div className="text-xs font-semibold" style={{ color: "var(--text-secondary)" }}>Correct</div>
-              </div>
-              <div className="text-center">
-                <div className="text-xl font-black text-amber-400">{resultData.partiallyCorrectCount || 0}</div>
-                <div className="text-xs font-semibold" style={{ color: "var(--text-secondary)" }}>Partial</div>
-              </div>
-              <div className="text-center">
-                <div className="text-xl font-black text-red-400">{resultData.incorrectCount}</div>
-                <div className="text-xs font-semibold" style={{ color: "var(--text-secondary)" }}>Incorrect</div>
-              </div>
-              <div className="text-center">
-                <div className="text-xl font-black" style={{ color: NPTEL_THEME.primary }}>
-                  {totalQuestions - (resultData.correctCount + (resultData.partiallyCorrectCount || 0) + resultData.incorrectCount)}
-                </div>
-                <div className="text-xs font-semibold" style={{ color: "var(--text-secondary)" }}>Unanswered</div>
-              </div>
-            </div>
-
-            {/* Action CTAs in Result View */}
-            <div className="flex flex-wrap items-center justify-center gap-4 mt-8 pt-6 border-t" style={{ borderColor: "var(--border)" }}>
+              {/* Retake Test Button */}
               <button
                 type="button"
+                id="nptel-result-retake-btn"
                 onClick={() => {
                   setPhase("active");
                   setAnswers({});
                   setCheckedPractice({});
                   setTimeLeft(7200);
                   setCurrentIndex(0);
+                  setShowReviewModal(false);
                 }}
-                className="px-6 py-3 rounded-2xl text-sm font-black text-white cursor-pointer transition shadow-lg hover:opacity-95 active:scale-95 flex items-center gap-2"
+                className="flex items-center gap-1 sm:gap-1.5 px-2.5 py-1.5 sm:px-3.5 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-black cursor-pointer hover:opacity-90 transition active:scale-95 shrink-0 text-white shadow-sm"
                 style={{
                   background: NPTEL_THEME.gradient,
                   boxShadow: NPTEL_THEME.glow,
                 }}
+                title="Retake NPTEL Test"
               >
-                <RotateCcw className="w-4 h-4" />
-                <span>Retake Test</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => navigate("/nptel-assignment/leaderboard")}
-                className="px-6 py-3 rounded-2xl text-sm font-black cursor-pointer transition border hover:bg-[var(--bg-secondary)] flex items-center gap-2"
-                style={{
-                  borderColor: NPTEL_THEME.border,
-                  background: NPTEL_THEME.bgSubtle,
-                  color: NPTEL_THEME.primary,
-                }}
-              >
-                <Trophy className="w-4 h-4" />
-                <span>View Leaderboard</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => navigate("/nptel-assignment")}
-                className="px-5 py-3 rounded-2xl text-sm font-bold border transition cursor-pointer hover:bg-[var(--bg-secondary)]"
-                style={{
-                  borderColor: "var(--border)",
-                  background: "var(--bg-secondary)",
-                  color: "var(--text-primary)",
-                }}
-              >
-                ← Back to Assignment
+                <RotateCcw className="w-3.5 h-3.5 shrink-0" />
+                <span className="hidden sm:inline">Retake Test</span>
+                <span className="sm:hidden">Retake</span>
               </button>
             </div>
           </div>
+
+          {/* Redesigned Compact Result Card */}
+          <div
+            className="w-full rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 md:p-6 border relative overflow-hidden"
+            style={{
+              background:
+                "linear-gradient(135deg, color-mix(in srgb, #FF6B35 10%, var(--card-bg)) 0%, var(--card-bg) 60%, color-mix(in srgb, #FF6B35 4%, var(--card-bg)) 100%)",
+              borderColor: "color-mix(in srgb, #FF6B35 25%, var(--border))",
+              boxShadow: "0 8px 24px -8px rgba(255, 107, 53, 0.12)",
+            }}
+          >
+            {/* A. Header */}
+            <div className="flex flex-col items-center text-center mb-1.5 sm:mb-2">
+              <div
+                className="inline-flex items-center gap-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[10px] sm:text-[11px] font-black uppercase tracking-wider mb-1 sm:mb-1.5 border"
+                style={{
+                  background: NPTEL_THEME.bgSubtle,
+                  borderColor: NPTEL_THEME.border,
+                  color: NPTEL_THEME.primary,
+                }}
+              >
+                <Trophy className="w-3 h-3 shrink-0" />
+                <span>COMPREHENSIVE ASSIGNMENT RESULT</span>
+              </div>
+
+              <h1
+                className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight leading-tight mb-1"
+                style={{ color: "var(--text-primary)" }}
+              >
+                NPTEL Assignment
+              </h1>
+
+              <p
+                className="text-xs sm:text-sm leading-snug line-clamp-2 max-w-md mx-auto"
+                style={{ color: "var(--text-secondary)" }}
+              >
+                {isPassing
+                  ? "Congratulations! You passed."
+                  : "You didn't reach the passing score. Review your answers and solutions."}
+              </p>
+            </div>
+
+            {/* B. Score Summary */}
+            <div
+              className="w-full rounded-xl sm:rounded-2xl p-2.5 sm:p-4 my-2 sm:my-3 border text-center flex flex-col items-center justify-center relative overflow-hidden"
+              style={{
+                background: "var(--bg-secondary)",
+                borderColor: "color-mix(in srgb, #FF6B35 25%, var(--border))",
+                boxShadow: "0 4px 16px -4px rgba(255, 107, 53, 0.08)",
+              }}
+            >
+              <div className="flex items-baseline justify-center gap-1">
+                <span
+                  className="text-3xl sm:text-4xl md:text-5xl font-black leading-none tracking-tight"
+                  style={{ color: NPTEL_THEME.primary }}
+                >
+                  {resultData.score}
+                </span>
+                <span
+                  className="text-sm sm:text-base font-bold"
+                  style={{ color: "var(--text-muted)" }}
+                >
+                  / {resultData.maxScore}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-center gap-2 sm:gap-3 mt-1.5 flex-wrap">
+                <span
+                  className="text-[11px] sm:text-xs font-black uppercase tracking-wider px-2 py-0.5 rounded-full border"
+                  style={{
+                    background: isPassing ? "rgba(16, 185, 129, 0.12)" : "rgba(239, 68, 68, 0.12)",
+                    borderColor: isPassing ? "rgba(16, 185, 129, 0.35)" : "rgba(239, 68, 68, 0.35)",
+                    color: isPassing ? "#10B981" : "#EF4444",
+                  }}
+                >
+                  {resultData.percentage}% Overall
+                </span>
+                <span className="text-[11px] sm:text-xs font-medium" style={{ color: "var(--text-muted)" }}>
+                  Time: {formatTime(resultData.timeSpentSeconds || 0)}
+                </span>
+              </div>
+            </div>
+
+            {/* C. Answer Statistics (4 compact cards in single row) */}
+            <div className="grid grid-cols-4 gap-1.5 sm:gap-2.5 w-full mt-2 sm:mt-2.5">
+              {/* Correct */}
+              <div
+                className="flex flex-col items-center justify-center py-2 px-1 rounded-xl border text-center transition-transform hover:scale-[1.02]"
+                style={{
+                  background: "var(--bg-secondary)",
+                  borderColor: "rgba(16, 185, 129, 0.25)",
+                }}
+              >
+                <span className="text-base sm:text-xl font-black leading-tight text-emerald-400">
+                  {resultData.correctCount}
+                </span>
+                <span className="text-[10px] sm:text-xs font-semibold mt-0.5 truncate max-w-full px-0.5" style={{ color: "var(--text-secondary)" }}>
+                  Correct
+                </span>
+              </div>
+
+              {/* Partial */}
+              <div
+                className="flex flex-col items-center justify-center py-2 px-1 rounded-xl border text-center transition-transform hover:scale-[1.02]"
+                style={{
+                  background: "var(--bg-secondary)",
+                  borderColor: "rgba(245, 158, 11, 0.25)",
+                }}
+              >
+                <span className="text-base sm:text-xl font-black leading-tight text-amber-400">
+                  {resultData.partiallyCorrectCount || 0}
+                </span>
+                <span className="text-[10px] sm:text-xs font-semibold mt-0.5 truncate max-w-full px-0.5" style={{ color: "var(--text-secondary)" }}>
+                  Partial
+                </span>
+              </div>
+
+              {/* Incorrect */}
+              <div
+                className="flex flex-col items-center justify-center py-2 px-1 rounded-xl border text-center transition-transform hover:scale-[1.02]"
+                style={{
+                  background: "var(--bg-secondary)",
+                  borderColor: "rgba(239, 68, 68, 0.25)",
+                }}
+              >
+                <span className="text-base sm:text-xl font-black leading-tight text-rose-400">
+                  {resultData.incorrectCount}
+                </span>
+                <span className="text-[10px] sm:text-xs font-semibold mt-0.5 truncate max-w-full px-0.5" style={{ color: "var(--text-secondary)" }}>
+                  Incorrect
+                </span>
+              </div>
+
+              {/* Unanswered */}
+              <div
+                className="flex flex-col items-center justify-center py-2 px-1 rounded-xl border text-center transition-transform hover:scale-[1.02]"
+                style={{
+                  background: "var(--bg-secondary)",
+                  borderColor: "rgba(255, 107, 53, 0.25)",
+                }}
+              >
+                <span className="text-base sm:text-xl font-black leading-tight" style={{ color: NPTEL_THEME.primary }}>
+                  {unansweredCount}
+                </span>
+                <span className="text-[10px] sm:text-xs font-semibold mt-0.5 truncate max-w-full px-0.5" style={{ color: "var(--text-secondary)" }}>
+                  Unanswered
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Optional Toggle to Review Solutions (Collapsed by default so page remains single-screen) */}
+          {Array.isArray(resultData.results) && resultData.results.length > 0 && (
+            <div className="mt-2.5 sm:mt-3 text-center">
+              <button
+                type="button"
+                onClick={() => setShowReviewModal((prev) => !prev)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[11px] sm:text-xs font-bold cursor-pointer transition hover:bg-[var(--bg-secondary)] active:scale-95"
+                style={{
+                  borderColor: "var(--border)",
+                  background: "var(--bg-secondary)",
+                  color: "var(--text-secondary)",
+                }}
+              >
+                <FileText className="w-3.5 h-3.5" />
+                <span>{showReviewModal ? "Hide Question Solutions" : "Review Question Solutions"}</span>
+              </button>
+
+              {/* Collapsible Solution Review List */}
+              {showReviewModal && (
+                <div className="mt-3 text-left space-y-3">
+                  {resultData.results.map((q, idx) => (
+                    <div
+                      key={q.id || idx}
+                      className="p-3 sm:p-4 rounded-xl border"
+                      style={{
+                        background: "var(--bg-secondary)",
+                        borderColor:
+                          q.status === "correct"
+                            ? "rgba(16, 185, 129, 0.3)"
+                            : q.status === "partial"
+                            ? "rgba(245, 158, 11, 0.3)"
+                            : "rgba(239, 68, 68, 0.3)",
+                      }}
+                    >
+                      <div className="flex items-center justify-between mb-1.5 text-xs font-bold">
+                        <span style={{ color: "var(--text-muted)" }}>
+                          Question {q.questionNumber || idx + 1}
+                        </span>
+                        <span
+                          className={`font-black uppercase text-[10px] px-2 py-0.5 rounded-full ${
+                            q.status === "correct"
+                              ? "text-emerald-400 bg-emerald-500/10"
+                              : q.status === "partial"
+                              ? "text-amber-400 bg-amber-500/10"
+                              : "text-rose-400 bg-rose-500/10"
+                          }`}
+                        >
+                          {q.status} ({q.pointsEarned || 0}/{q.maxPoints || 1} pts)
+                        </span>
+                      </div>
+                      <p className="text-xs sm:text-sm font-semibold mb-2" style={{ color: "var(--text-primary)" }}>
+                        {q.questionText}
+                      </p>
+                      {q.explanation && (
+                        <p className="text-[11px] sm:text-xs leading-relaxed pt-2 border-t border-[var(--border)]" style={{ color: "var(--text-secondary)" }}>
+                          <span className="font-bold text-[var(--text-primary)]">Explanation: </span>
+                          {q.explanation}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </motion.div>
       </div>
     );
@@ -640,65 +839,150 @@ export default function NptelAssignmentTest() {
   const isFlagged = flagged.has(currentQuestion?.id);
 
   return (
-    <div className="h-[calc(100vh-4.25rem)] max-h-[calc(100vh-4.25rem)] overflow-hidden flex flex-col px-2 sm:px-4 py-2 select-none w-full max-w-[1600px] mx-auto">
+    <div className="flex flex-col w-full max-w-[1600px] mx-auto select-none px-2 sm:px-4 py-1.5 sm:py-2 min-h-0 min-w-0 box-border lg:h-[calc(100vh-4.25rem)] lg:max-h-[calc(100vh-4.25rem)] lg:overflow-hidden">
       {/* ═══════════════════════════════════════════════
-          TOP COMPACT HEADER BAR
+          TOP RESPONSIVE HEADER BAR
       ═══════════════════════════════════════════════ */}
-      <div className="shrink-0 flex items-center justify-between gap-2 mb-2 pb-2 border-b border-[var(--border)]">
-        {/* Left: Back Button + Branding */}
-        <div className="flex items-center gap-2 sm:gap-3">
-          <button
-            type="button"
-            id="nptel-test-back-btn"
-            onClick={() => {
-              if (answeredCount > 0) {
-                setConfirmSubmitModal(true);
-              } else {
-                navigate("/nptel-assignment");
-              }
-            }}
-            className="flex items-center gap-1.5 px-2 py-1.5 rounded-xl border text-xs font-bold cursor-pointer transition hover:bg-[var(--bg-secondary)] shrink-0"
-            style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
-            title="Exit / Submit NPTEL Assignment"
-          >
-            <ChevronLeft className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Exit</span>
-          </button>
-          <div
-            className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border"
-            style={{
-              background: NPTEL_THEME.bgSubtle,
-              borderColor: NPTEL_THEME.border,
-              color: NPTEL_THEME.primary,
-            }}
-          >
-            <GraduationCap className="w-4 h-4" />
+      <div className="shrink-0 mb-1.5 pb-1.5 sm:mb-2 sm:pb-2 border-b border-[var(--border)]">
+        {/* Row 1: Back/Exit + Title (Left) and Palette + Submit + Auto-Next (Right) */}
+        <div className="flex items-center justify-between gap-1.5 sm:gap-2 min-w-0">
+          {/* Left: Back Button + Branding */}
+          <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0 flex-1">
+            <button
+              type="button"
+              id="nptel-test-back-btn"
+              onClick={() => {
+                toast("Exiting test: submitting and calculating results...", { icon: "📊" });
+                handleSubmit();
+              }}
+              className="flex items-center gap-1 px-2 py-1.5 rounded-xl border text-xs font-bold cursor-pointer transition hover:bg-[var(--bg-secondary)] shrink-0 active:scale-95"
+              style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
+              title="Exit and Submit NPTEL Assignment"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              <span className="hidden sm:inline">Exit &amp; Submit</span>
+            </button>
+
+            <div
+              className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl flex items-center justify-center shrink-0 border"
+              style={{
+                background: NPTEL_THEME.bgSubtle,
+                borderColor: NPTEL_THEME.border,
+                color: NPTEL_THEME.primary,
+              }}
+            >
+              <GraduationCap className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            </div>
+
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <h1 className="text-xs sm:text-base font-black truncate leading-tight" style={{ color: "var(--text-primary)" }}>
+                  {NPTEL_TEST_META.title}
+                </h1>
+                <span
+                  className="hidden sm:inline-block text-[9px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider shrink-0"
+                  style={{
+                    background: NPTEL_THEME.bgSubtle,
+                    color: NPTEL_THEME.primary,
+                    border: `1px solid ${NPTEL_THEME.border}`,
+                  }}
+                >
+                  120 MCQs
+                </span>
+              </div>
+              <p className="hidden md:block text-[11px] truncate leading-tight mt-0.5" style={{ color: "var(--text-muted)" }}>
+                {`Question ${currentIndex + 1} of ${totalQuestions} · ${currentQuestion?.sectionTitle}`}
+              </p>
+            </div>
           </div>
-          <div>
-            <div className="flex items-center gap-1.5">
-              <h1 className="text-sm sm:text-base font-black truncate" style={{ color: "var(--text-primary)" }}>
-                {NPTEL_TEST_META.title}
-              </h1>
+
+          {/* Right Header Controls */}
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+            {/* Auto-Next on Correct Toggle (Desktop & Tablet) */}
+            <button
+              type="button"
+              onClick={() => {
+                const nextState = !autoAdvanceOnCorrect;
+                setAutoAdvanceOnCorrect(nextState);
+                toast.success(
+                  nextState
+                    ? "Auto-Next enabled: advances automatically on correct answer"
+                    : "Auto-Next disabled"
+                );
+              }}
+              className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-xl border text-[11px] font-bold transition cursor-pointer active:scale-95"
+              style={{
+                borderColor: autoAdvanceOnCorrect ? NPTEL_THEME.border : "var(--border)",
+                background: autoAdvanceOnCorrect ? NPTEL_THEME.bgSubtle : "var(--bg-secondary)",
+                color: autoAdvanceOnCorrect ? NPTEL_THEME.primary : "var(--text-muted)",
+              }}
+              title="Automatically advance to next question when answered correctly"
+            >
+              <Zap className={`w-3.5 h-3.5 ${autoAdvanceOnCorrect ? "fill-[#FF6B35]" : ""}`} />
+              <span>Auto-Next</span>
               <span
-                className="hidden sm:inline-block text-[9px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider"
+                className="text-[10px] px-1 py-0.2 rounded font-black uppercase"
                 style={{
-                  background: NPTEL_THEME.bgSubtle,
-                  color: NPTEL_THEME.primary,
-                  border: `1px solid ${NPTEL_THEME.border}`,
+                  background: autoAdvanceOnCorrect
+                    ? "rgba(255, 107, 53, 0.2)"
+                    : "rgba(156, 163, 175, 0.2)",
+                  color: autoAdvanceOnCorrect ? NPTEL_THEME.primary : "inherit",
                 }}
               >
-                120 MCQs
+                {autoAdvanceOnCorrect ? "ON" : "OFF"}
               </span>
+            </button>
+
+            {/* Mobile / Tablet Palette Drawer Toggle with answered counter */}
+            <button
+              type="button"
+              onClick={() => setMobilePaletteOpen((prev) => !prev)}
+              className="lg:hidden flex items-center gap-1 px-2 py-1 rounded-xl border text-xs font-bold cursor-pointer hover:bg-[var(--bg-secondary)] active:scale-95"
+              style={{ borderColor: "var(--border)", color: "var(--text-primary)" }}
+              title="Question Palette"
+            >
+              <Layers className="w-3.5 h-3.5" style={{ color: NPTEL_THEME.primary }} />
+              <span className="text-[11px] font-bold" style={{ color: NPTEL_THEME.primary }}>
+                {answeredCount}/{totalQuestions}
+              </span>
+            </button>
+
+            {/* Progress Count Badge on Desktop */}
+            <div
+              className="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-xl border text-xs font-bold"
+              style={{
+                borderColor: "var(--border)",
+                background: "var(--bg-secondary)",
+                color: "var(--text-secondary)",
+              }}
+            >
+              <span style={{ color: NPTEL_THEME.primary }}>{answeredCount}</span>
+              <span>/</span>
+              <span>{totalQuestions}</span>
             </div>
-            <p className="hidden md:block text-[11px] truncate" style={{ color: "var(--text-muted)" }}>
-              {`Question ${currentIndex + 1} of ${totalQuestions} · ${currentQuestion?.sectionTitle}`}
-            </p>
+
+            {/* Submit Button */}
+            <button
+              type="button"
+              onClick={() => setConfirmSubmitModal(true)}
+              className="px-2.5 sm:px-3.5 py-1 rounded-xl text-xs font-bold text-white cursor-pointer transition shadow-md hover:opacity-95 active:scale-95 flex items-center gap-1 sm:gap-1.5 shrink-0"
+              style={{
+                background: NPTEL_THEME.gradient,
+                boxShadow: NPTEL_THEME.glow,
+              }}
+              title="Submit Test"
+            >
+              <Send className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+              <span>Submit</span>
+            </button>
           </div>
         </div>
 
-        {/* Right: Auto-Next Toggle, Answered Count & Palette Drawer */}
-        <div className="flex items-center gap-2">
-          {/* Auto-Next on Correct Toggle */}
+        {/* Mobile secondary toolbar row (< sm): Question info + Auto-Next toggle */}
+        <div className="flex sm:hidden items-center justify-between gap-1.5 mt-1 pt-1 border-t border-[var(--border)]/40 text-[11px] min-w-0">
+          <span className="truncate text-gray-400 font-medium min-w-0 flex-1">
+            Q {currentIndex + 1}/{totalQuestions} · {currentQuestion?.sectionTitle}
+          </span>
           <button
             type="button"
             onClick={() => {
@@ -710,73 +994,21 @@ export default function NptelAssignmentTest() {
                   : "Auto-Next disabled"
               );
             }}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl border text-[11px] font-bold transition cursor-pointer"
+            className="flex items-center gap-1 px-2 py-0.5 rounded-lg border text-[10px] font-bold transition cursor-pointer shrink-0 active:scale-95"
             style={{
               borderColor: autoAdvanceOnCorrect ? NPTEL_THEME.border : "var(--border)",
               background: autoAdvanceOnCorrect ? NPTEL_THEME.bgSubtle : "var(--bg-secondary)",
               color: autoAdvanceOnCorrect ? NPTEL_THEME.primary : "var(--text-muted)",
             }}
-            title="Automatically advance to next question when answered correctly"
           >
-            <Zap className={`w-3.5 h-3.5 ${autoAdvanceOnCorrect ? "fill-[#FF6B35]" : ""}`} />
-            <span className="hidden sm:inline">Auto-Next</span>
-            <span
-              className="text-[10px] px-1 py-0.2 rounded font-black uppercase"
-              style={{
-                background: autoAdvanceOnCorrect
-                  ? "rgba(255, 107, 53, 0.2)"
-                  : "rgba(156, 163, 175, 0.2)",
-                color: autoAdvanceOnCorrect ? NPTEL_THEME.primary : "inherit",
-              }}
-            >
-              {autoAdvanceOnCorrect ? "ON" : "OFF"}
-            </span>
-          </button>
-
-          {/* Submit Button near Auto-Next */}
-          <button
-            type="button"
-            onClick={() => setConfirmSubmitModal(true)}
-            className="px-3 sm:px-3.5 py-1 rounded-xl text-xs font-bold text-white cursor-pointer transition shadow-md hover:opacity-95 active:scale-95 flex items-center gap-1.5 shrink-0"
-            style={{
-              background: NPTEL_THEME.gradient,
-              boxShadow: NPTEL_THEME.glow,
-            }}
-            title="Submit Test"
-          >
-            <Send className="w-3.5 h-3.5" />
-            <span>Submit</span>
-          </button>
-
-          {/* Progress Count Badge */}
-          <div
-            className="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-xl border text-xs font-bold"
-            style={{
-              borderColor: "var(--border)",
-              background: "var(--bg-secondary)",
-              color: "var(--text-secondary)",
-            }}
-          >
-            <span style={{ color: NPTEL_THEME.primary }}>{answeredCount}</span>
-            <span>/</span>
-            <span>{totalQuestions}</span>
-          </div>
-
-          {/* Mobile / Tablet Palette Drawer Toggle */}
-          <button
-            type="button"
-            onClick={() => setMobilePaletteOpen((prev) => !prev)}
-            className="lg:hidden p-1.5 rounded-xl border cursor-pointer hover:bg-[var(--bg-secondary)]"
-            style={{ borderColor: "var(--border)", color: "var(--text-primary)" }}
-            title="Question Palette"
-          >
-            <Layers className="w-4 h-4" />
+            <Zap className={`w-3 h-3 ${autoAdvanceOnCorrect ? "fill-[#FF6B35]" : ""}`} />
+            <span>Auto-Next: {autoAdvanceOnCorrect ? "ON" : "OFF"}</span>
           </button>
         </div>
       </div>
 
       {/* Progress Bar */}
-      <div className="shrink-0 w-full h-1 rounded-full overflow-hidden mb-2 bg-[var(--border)]">
+      <div className="shrink-0 w-full h-1 sm:h-1.5 rounded-full overflow-hidden mb-1.5 sm:mb-2 bg-[var(--border)]">
         <motion.div
           className="h-full rounded-full"
           style={{
@@ -790,17 +1022,17 @@ export default function NptelAssignmentTest() {
       </div>
 
       {/* ═══════════════════════════════════════════════
-          SINGLE-PAGE NO-SCROLL TEST WORKSPACE
+          TEST WORKSPACE GRID
       ═══════════════════════════════════════════════ */}
-      <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 gap-3 overflow-hidden">
+      <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 gap-2 sm:gap-3 lg:overflow-hidden">
           {/* Left Column: Active Question Workspace */}
-          <div className="lg:col-span-8 xl:col-span-9 flex flex-col h-full min-h-0 student-card rounded-2xl border p-3 sm:p-4 overflow-hidden relative" style={{ borderColor: "var(--border)" }}>
+          <div className="lg:col-span-8 xl:col-span-9 flex flex-col min-h-0 student-card rounded-xl sm:rounded-2xl border p-2.5 sm:p-4 relative box-border min-w-0 lg:h-full lg:overflow-hidden" style={{ borderColor: "var(--border)" }}>
             
             {/* Top Question Metadata Row (shrink-0) */}
-            <div className="shrink-0 flex items-center justify-between gap-2 pb-2 mb-2 border-b" style={{ borderColor: "var(--border)" }}>
-              <div className="flex items-center gap-1.5 sm:gap-2">
+            <div className="shrink-0 flex flex-wrap items-center justify-between gap-1.5 sm:gap-2 pb-1.5 sm:pb-2 mb-1.5 sm:mb-2 border-b min-w-0" style={{ borderColor: "var(--border)" }}>
+              <div className="flex flex-wrap items-center gap-1 sm:gap-1.5 min-w-0">
                 <span
-                  className="px-2.5 py-0.5 rounded-lg text-xs font-black tracking-wide border"
+                  className="px-2 py-0.5 rounded-lg text-[11px] sm:text-xs font-black tracking-wide border shrink-0"
                   style={{
                     background: NPTEL_THEME.bgSubtle,
                     borderColor: NPTEL_THEME.border,
@@ -810,27 +1042,25 @@ export default function NptelAssignmentTest() {
                   Question {currentQuestion.questionNumber} of {totalQuestions}
                 </span>
 
-                <span className="text-[11px] font-semibold px-2 py-0.5 rounded text-gray-400 border" style={{ borderColor: "var(--border)" }}>
+                <span className="text-[10px] sm:text-[11px] font-semibold px-1.5 sm:px-2 py-0.5 rounded text-gray-400 border shrink-0" style={{ borderColor: "var(--border)" }}>
                   {currentQuestion.points || 1} Pt
                 </span>
 
-                {isMulti && (
-                  <span
-                    className="text-[10px] font-bold px-2 py-0.5 rounded-md border flex items-center gap-1"
-                    style={{
-                      background: NPTEL_THEME.bgSubtle,
-                      borderColor: NPTEL_THEME.border,
-                      color: NPTEL_THEME.primary,
-                    }}
-                  >
-                    <span>MSQ</span>
-                    <span className="hidden sm:inline">(Multi-Select)</span>
-                  </span>
-                )}
+                <span
+                  className="text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded-md border flex items-center gap-1 shrink-0"
+                  style={{
+                    background: NPTEL_THEME.bgSubtle,
+                    borderColor: NPTEL_THEME.border,
+                    color: NPTEL_THEME.primary,
+                  }}
+                >
+                  <span>{isMulti ? "MSQ" : "MCQ"}</span>
+                  <span className="hidden sm:inline">{isMulti ? "(Multi-Select)" : "(Single Choice)"}</span>
+                </span>
 
                 {isLocked && (
                   <span
-                    className="text-[10px] font-bold px-2 py-0.5 rounded-md border flex items-center gap-1"
+                    className="text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded-md border flex items-center gap-1 shrink-0"
                     style={{
                       background: "rgba(245, 158, 11, 0.12)",
                       borderColor: "rgba(245, 158, 11, 0.35)",
@@ -838,7 +1068,7 @@ export default function NptelAssignmentTest() {
                     }}
                     title="Answer submitted and locked"
                   >
-                    <Lock className="w-3 h-3" />
+                    <Lock className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                     <span>Locked</span>
                   </span>
                 )}
@@ -847,7 +1077,7 @@ export default function NptelAssignmentTest() {
                   <button
                     type="button"
                     onClick={() => setPassageModalOpen(true)}
-                    className="text-[11px] font-bold px-2 py-0.5 rounded-md border flex items-center gap-1 cursor-pointer transition hover:opacity-90"
+                    className="text-[10px] sm:text-[11px] font-bold px-1.5 sm:px-2 py-0.5 rounded-md border flex items-center gap-1 cursor-pointer transition hover:opacity-90 shrink-0"
                     style={{
                       background: "rgba(255, 107, 53, 0.15)",
                       borderColor: NPTEL_THEME.border,
@@ -861,16 +1091,17 @@ export default function NptelAssignmentTest() {
               </div>
 
               {/* Bookmark & Flag */}
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1 sm:gap-1.5 shrink-0 ml-auto sm:ml-0">
                 <button
                   type="button"
                   onClick={() => handleToggleBookmark(currentQuestion.id)}
-                  className="p-1 rounded-lg border hover:bg-[var(--bg-secondary)] transition cursor-pointer"
+                  className="p-1 sm:p-1.5 rounded-lg border hover:bg-[var(--bg-secondary)] transition cursor-pointer active:scale-95"
                   style={{
                     borderColor: "var(--border)",
                     color: isBookmarked ? NPTEL_THEME.primary : "var(--text-muted)",
                   }}
                   title={isBookmarked ? "Remove Bookmark" : "Bookmark Question"}
+                  aria-label="Bookmark Question"
                 >
                   {isBookmarked ? (
                     <BookmarkCheck className="w-3.5 h-3.5 fill-[#FF6B35]" />
@@ -882,37 +1113,40 @@ export default function NptelAssignmentTest() {
                 <button
                   type="button"
                   onClick={() => handleToggleFlag(currentQuestion.id)}
-                  className="text-[11px] font-semibold flex items-center gap-1 cursor-pointer px-2 py-0.5 rounded-lg border transition"
+                  className="text-[10px] sm:text-[11px] font-semibold flex items-center gap-1 cursor-pointer px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-lg border transition active:scale-95"
                   style={{
                     borderColor: isFlagged ? "#F59E0B" : "var(--border)",
                     color: isFlagged ? "#F59E0B" : "var(--text-muted)",
                     background: isFlagged ? "rgba(245, 158, 11, 0.12)" : "transparent",
                   }}
                   title="Flag for Review"
+                  aria-label="Flag Question for Review"
                 >
                   <Flag className="w-3 h-3" />
-                  <span className="hidden sm:inline">{isFlagged ? "Flagged" : "Review"}</span>
+                  <span className="hidden xs:inline sm:inline">{isFlagged ? "Flagged" : "Review"}</span>
                 </button>
               </div>
             </div>
 
             {/* Question Text & Prompt (shrink-0) */}
-            <div className="shrink-0 mb-2">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">
+            <div className="shrink-0 mb-1.5 sm:mb-2 min-w-0">
+              <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-0.5 sm:mb-1 truncate">
                 Topic: {currentQuestion.sectionTitle}
               </div>
 
               <h2
-                className="text-xs sm:text-sm md:text-base font-bold leading-snug max-h-24 overflow-y-auto pr-1"
+                className="text-xs sm:text-sm md:text-base font-bold leading-snug max-h-28 overflow-y-auto pr-1"
                 style={{ color: "var(--text-primary)" }}
               >
                 {currentQuestion.questionText}
               </h2>
-
             </div>
 
-            {/* Options List (flex-1 min-h-0 overflow-y-auto) */}
-            <div className="flex-1 min-h-0 overflow-y-auto space-y-1.5 sm:space-y-2 py-1 pr-1">
+            {/* Options List */}
+            {/* Reserves bottom padding on mobile so last option is never overlapped by bottom panel */}
+            <div className={`space-y-1.5 sm:space-y-2 py-1 pr-0.5 sm:pr-1 min-w-0 lg:flex-1 lg:min-h-0 lg:overflow-y-auto ${
+              isCheckedInPractice ? "pb-32 lg:pb-1" : "pb-20 lg:pb-1"
+            }`}>
               {currentQuestion.options.map((opt, optIdx) => {
                 const isSelected = isMulti
                   ? Array.isArray(currentAnswer) && currentAnswer.includes(opt)
@@ -942,8 +1176,8 @@ export default function NptelAssignmentTest() {
                     type="button"
                     disabled={isLocked}
                     onClick={() => handleSelectOption(opt)}
-                    className={`w-full p-2.5 sm:p-3 rounded-xl border text-left text-xs sm:text-sm font-medium transition flex items-center justify-between gap-2.5 group min-h-[42px] ${
-                      isLocked ? "cursor-default" : "cursor-pointer hover:border-[#FF6B35]/50"
+                    className={`w-full p-2.5 sm:p-3 rounded-xl border text-left text-xs sm:text-sm font-medium transition flex items-start sm:items-center justify-between gap-2.5 group min-h-[44px] box-border min-w-0 ${
+                      isLocked ? "cursor-default" : "cursor-pointer hover:border-[#FF6B35]/50 active:scale-[0.99]"
                     }`}
                     style={{
                       borderColor: optionBorder,
@@ -953,11 +1187,11 @@ export default function NptelAssignmentTest() {
                       opacity: isLocked && !isSelected && !currentQuestion.correctAnswers.includes(opt) ? 0.65 : 1,
                     }}
                   >
-                    <div className="flex items-center gap-2.5">
+                    <div className="flex items-start sm:items-center gap-2 sm:gap-2.5 min-w-0 flex-1">
                       {isMulti ? (
                         /* Square Checkbox for MSQ */
                         <span
-                          className="w-5 h-5 rounded-[5px] flex items-center justify-center shrink-0 border-2 transition-all shadow-sm"
+                          className="w-5 h-5 rounded-[5px] flex items-center justify-center shrink-0 border-2 transition-all shadow-sm mt-0.5 sm:mt-0"
                           style={{
                             borderColor: isSelected
                               ? (isCheckedInPractice
@@ -982,7 +1216,7 @@ export default function NptelAssignmentTest() {
                       ) : (
                         /* Radio Circle for Single Choice */
                         <span
-                          className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 border-2 transition-all"
+                          className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 border-2 transition-all mt-0.5 sm:mt-0"
                           style={{
                             borderColor: isSelected ? NPTEL_THEME.primary : "rgba(156, 163, 175, 0.6)",
                             background: "transparent",
@@ -1003,7 +1237,7 @@ export default function NptelAssignmentTest() {
 
                       {/* Option Letter Badge (A, B, C, D) */}
                       <span
-                        className="w-5 h-5 rounded-md flex items-center justify-center shrink-0 border text-[11px] font-bold"
+                        className="w-5 h-5 rounded-md flex items-center justify-center shrink-0 border text-[11px] font-bold mt-0.5 sm:mt-0"
                         style={{
                           borderColor: "var(--border)",
                           background: "var(--bg-secondary)",
@@ -1013,18 +1247,18 @@ export default function NptelAssignmentTest() {
                         {letter}
                       </span>
 
-                      <span>{opt}</span>
+                      <span className="flex-1 min-w-0 break-words leading-relaxed">{opt}</span>
                     </div>
 
                     {isCheckedInPractice && (
-                      <span className="shrink-0 text-xs font-bold">
+                      <span className="shrink-0 text-xs font-bold self-start sm:self-center ml-1">
                         {currentQuestion.correctAnswers.includes(opt) ? (
-                          <span className="text-emerald-400 flex items-center gap-1">
-                            <Check className="w-3.5 h-3.5" /> Correct
+                          <span className="text-emerald-400 flex items-center gap-1 bg-emerald-500/10 px-1.5 py-0.5 rounded-md border border-emerald-500/30">
+                            <Check className="w-3.5 h-3.5 stroke-[2.5]" /> Correct
                           </span>
                         ) : isSelected ? (
-                          <span className="text-red-400 flex items-center gap-1">
-                            <X className="w-3.5 h-3.5" /> Incorrect
+                          <span className="text-red-400 flex items-center gap-1 bg-red-500/10 px-1.5 py-0.5 rounded-md border border-red-500/30">
+                            <X className="w-3.5 h-3.5 stroke-[2.5]" /> Incorrect
                           </span>
                         ) : null}
                       </span>
@@ -1034,149 +1268,170 @@ export default function NptelAssignmentTest() {
               })}
             </div>
 
-            {/* Inline Practice Feedback Strip & Auto-Advancing Notification (shrink-0) */}
-            <div className="shrink-0 pt-1.5">
-              {/* Auto-Advancing Banner */}
-              <AnimatePresence>
-                {isAutoAdvancing && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -4 }}
-                    className="p-2 mb-1.5 rounded-xl border flex items-center justify-between gap-2 text-xs font-bold"
+            {/* ═══════════════════════════════════════════════
+                DOCKED BOTTOM RESULT PANEL & NAVIGATION CONTROLS
+                On mobile: positioned above mobile bottom nav (bottom-16)
+                On desktop: docked at the bottom of student-card
+            ═══════════════════════════════════════════════ */}
+            <div
+              className="fixed lg:static bottom-16 lg:bottom-auto left-0 right-0 z-30 px-3 py-2 sm:px-4 sm:py-2.5 lg:p-0 lg:mt-auto border-t lg:border-t-0 shadow-lg lg:shadow-none shrink-0"
+              style={{
+                background: "var(--bg-primary)",
+                borderColor: "var(--border)",
+              }}
+            >
+              <div className="w-full max-w-[1600px] mx-auto space-y-1.5 sm:space-y-2">
+                {/* Auto-Advancing Notification */}
+                <AnimatePresence>
+                  {isAutoAdvancing && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -4 }}
+                      className="p-2 rounded-xl border flex items-center justify-between gap-2 text-xs font-bold"
+                      style={{
+                        background: "rgba(16, 185, 129, 0.12)",
+                        borderColor: "rgba(16, 185, 129, 0.4)",
+                        color: "#10B981",
+                      }}
+                    >
+                      <div className="flex items-center gap-2 truncate">
+                        <span className="w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                          <Check className="w-3 h-3 stroke-[3] text-emerald-400" />
+                        </span>
+                        <span className="truncate">Correct! Advancing to next question...</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (autoAdvanceTimerRef.current) clearTimeout(autoAdvanceTimerRef.current);
+                          setIsAutoAdvancing(false);
+                          toast("Auto-advance cancelled. Staying on this question.", { icon: "ℹ️" });
+                        }}
+                        className="px-2 py-0.5 rounded-lg border text-[10px] font-semibold hover:bg-emerald-500/20 cursor-pointer transition shrink-0"
+                        style={{ borderColor: "rgba(16, 185, 129, 0.4)", color: "#10B981" }}
+                      >
+                        Stay Here
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Compact Solution Feedback Strip */}
+                {isCheckedInPractice && currentPracticeEval && (
+                  <div
+                    ref={solutionRef}
+                    className="p-2 sm:p-2.5 rounded-xl border text-xs flex items-center justify-between gap-2 shadow-sm"
                     style={{
-                      background: "rgba(16, 185, 129, 0.12)",
-                      borderColor: "rgba(16, 185, 129, 0.4)",
-                      color: "#10B981",
+                      background: currentPracticeEval?.isCorrect
+                        ? "rgba(16, 185, 129, 0.08)"
+                        : currentPracticeEval?.isPartiallyCorrect
+                        ? "rgba(245, 158, 11, 0.08)"
+                        : "rgba(239, 68, 68, 0.08)",
+                      borderColor: currentPracticeEval?.isCorrect
+                        ? "rgba(16, 185, 129, 0.3)"
+                        : currentPracticeEval?.isPartiallyCorrect
+                        ? "rgba(245, 158, 11, 0.3)"
+                        : "rgba(239, 68, 68, 0.3)",
                     }}
                   >
-                    <div className="flex items-center gap-2">
-                      <span className="w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                        <Check className="w-3 h-3 stroke-[3] text-emerald-400" />
+                    <div className="flex items-center gap-1.5 sm:gap-2 truncate min-w-0 flex-1">
+                      {currentPracticeEval?.isCorrect ? (
+                        <span className="text-emerald-400 flex items-center gap-1 font-bold shrink-0">
+                          <CheckCircle2 className="w-3.5 h-3.5" /> Correct (+1 Pt)
+                        </span>
+                      ) : currentPracticeEval?.isPartiallyCorrect ? (
+                        <span className="text-amber-400 flex items-center gap-1 font-bold shrink-0">
+                          <AlertTriangle className="w-3.5 h-3.5" /> Partial (+{currentPracticeEval?.pointsEarned} Pt)
+                        </span>
+                      ) : (
+                        <span className="text-red-400 flex items-center gap-1 font-bold shrink-0">
+                          <XCircle className="w-3.5 h-3.5" /> Incorrect (0 Pt)
+                        </span>
+                      )}
+
+                      <span className="hidden sm:inline text-gray-400">·</span>
+                      <span className="text-[11px] text-gray-300 truncate min-w-0">
+                        Accepted: <strong className="text-emerald-400">{currentQuestion.correctAnswers.join(" | ")}</strong>
                       </span>
-                      <span>Correct! Advancing to next question...</span>
                     </div>
+
+                    {currentQuestion.explanation && (
+                      <button
+                        type="button"
+                        onClick={() => setExplanationModalOpen(true)}
+                        className="text-[11px] font-bold px-2 py-1 rounded-lg border cursor-pointer hover:underline shrink-0 flex items-center gap-1"
+                        style={{
+                          borderColor: NPTEL_THEME.border,
+                          color: NPTEL_THEME.primary,
+                          background: NPTEL_THEME.bgSubtle,
+                        }}
+                      >
+                        <span>💡</span>
+                        <span>View Explanation</span>
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {/* Card Docked Bottom Controls (Prev, Clear, Next) */}
+                <div
+                  className="flex items-center justify-between gap-2 pt-1 lg:pt-2.5 lg:border-t"
+                  style={{ borderColor: "var(--border)" }}
+                >
+                  {/* Previous & Clear */}
+                  <div className="flex items-center gap-2">
                     <button
                       type="button"
-                      onClick={() => {
-                        if (autoAdvanceTimerRef.current) clearTimeout(autoAdvanceTimerRef.current);
-                        setIsAutoAdvancing(false);
-                        toast("Auto-advance cancelled. Staying on this question.", { icon: "ℹ️" });
-                      }}
-                      className="px-2 py-0.5 rounded-lg border text-[10px] font-semibold hover:bg-emerald-500/20 cursor-pointer transition shrink-0"
-                      style={{ borderColor: "rgba(16, 185, 129, 0.4)", color: "#10B981" }}
+                      disabled={currentIndex === 0}
+                      onClick={() => setCurrentIndex((prev) => Math.max(0, prev - 1))}
+                      className="px-3.5 py-1.5 rounded-xl text-xs font-bold border transition flex items-center gap-1.5 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed bg-[var(--bg-secondary)] hover:bg-[var(--bg-secondary)]/80 active:scale-95"
+                      style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
                     >
-                      Stay Here
+                      <ChevronLeft className="w-4 h-4" />
+                      <span>Prev</span>
                     </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
 
-              {/* Compact Solution Feedback Strip */}
-              {isCheckedInPractice && currentPracticeEval && (
-                <div
-                  className="p-2 rounded-xl border text-xs flex items-center justify-between gap-2"
-                  style={{
-                    background: currentPracticeEval?.isCorrect
-                      ? "rgba(16, 185, 129, 0.08)"
-                      : currentPracticeEval?.isPartiallyCorrect
-                      ? "rgba(245, 158, 11, 0.08)"
-                      : "rgba(239, 68, 68, 0.08)",
-                    borderColor: currentPracticeEval?.isCorrect
-                      ? "rgba(16, 185, 129, 0.3)"
-                      : currentPracticeEval?.isPartiallyCorrect
-                      ? "rgba(245, 158, 11, 0.3)"
-                      : "rgba(239, 68, 68, 0.3)",
-                  }}
-                >
-                  <div className="flex items-center gap-2 truncate">
-                    {currentPracticeEval?.isCorrect ? (
-                      <span className="text-emerald-400 flex items-center gap-1 font-bold">
-                        <CheckCircle2 className="w-3.5 h-3.5" /> Correct (+1 Pt)
-                      </span>
-                    ) : currentPracticeEval?.isPartiallyCorrect ? (
-                      <span className="text-amber-400 flex items-center gap-1 font-bold">
-                        <AlertTriangle className="w-3.5 h-3.5" /> Partial (+{currentPracticeEval?.pointsEarned} Pt)
-                      </span>
-                    ) : (
-                      <span className="text-red-400 flex items-center gap-1 font-bold">
-                        <XCircle className="w-3.5 h-3.5" /> Incorrect (0 Pt)
-                      </span>
+                    {!isLocked && isAnswered && (
+                      <button
+                        type="button"
+                        onClick={handleClearAnswer}
+                        className="text-xs text-gray-400 hover:text-red-400 cursor-pointer px-2 py-1 transition"
+                      >
+                        Clear
+                      </button>
                     )}
-
-                    <span className="hidden sm:inline text-gray-400">·</span>
-                    <span className="text-[11px] text-gray-300 truncate">
-                      Accepted: <strong className="text-emerald-400">{currentQuestion.correctAnswers.join(" | ")}</strong>
-                    </span>
                   </div>
 
-                  {currentQuestion.explanation && (
+                  {/* Right: Next / Check */}
+                  <div className="flex items-center gap-2">
                     <button
                       type="button"
-                      onClick={() => setExplanationModalOpen(true)}
-                      className="text-[11px] font-bold px-2 py-0.5 rounded-lg border cursor-pointer hover:underline shrink-0"
+                      disabled={
+                        currentIndex === totalQuestions - 1 &&
+                        (!isMulti || checkedPractice[currentQuestion?.id] || !isAnswered)
+                      }
+                      onClick={handleNext}
+                      className="px-4 py-1.5 rounded-xl text-xs font-bold text-white cursor-pointer transition flex items-center gap-1.5 shadow-md hover:opacity-95 disabled:opacity-30 disabled:cursor-not-allowed active:scale-95"
                       style={{
-                        borderColor: NPTEL_THEME.border,
-                        color: NPTEL_THEME.primary,
-                        background: NPTEL_THEME.bgSubtle,
+                        background: NPTEL_THEME.gradient,
+                        boxShadow: NPTEL_THEME.glow,
                       }}
+                      title={
+                        isMulti && isAnswered && !checkedPractice[currentQuestion?.id]
+                          ? "Check answer"
+                          : "Next Question"
+                      }
                     >
-                      💡 View Explanation
+                      <span>
+                        {isMulti && isAnswered && !checkedPractice[currentQuestion?.id]
+                          ? "Check Answer"
+                          : "Next"}
+                      </span>
+                      <ChevronRight className="w-4 h-4" />
                     </button>
-                  )}
+                  </div>
                 </div>
-              )}
-            </div>
-
-            {/* Card Docked Bottom Controls (shrink-0) */}
-            <div className="shrink-0 pt-2.5 mt-auto border-t flex items-center justify-between gap-2" style={{ borderColor: "var(--border)" }}>
-              {/* Previous & Clear */}
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  disabled={currentIndex === 0}
-                  onClick={() => setCurrentIndex((prev) => Math.max(0, prev - 1))}
-                  className="px-3.5 py-1.5 rounded-xl text-xs font-bold border transition flex items-center gap-1.5 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed bg-[var(--bg-secondary)]"
-                  style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                  <span>Prev</span>
-                </button>
-
-                {!isLocked && isAnswered && (
-                  <button
-                    type="button"
-                    onClick={handleClearAnswer}
-                    className="text-xs text-gray-400 hover:text-red-400 cursor-pointer px-2 py-1"
-                  >
-                    Clear
-                  </button>
-                )}
-              </div>
-
-              {/* Right: Next */}
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  disabled={
-                    currentIndex === totalQuestions - 1 &&
-                    (!isMulti || checkedPractice[currentQuestion?.id] || !isAnswered)
-                  }
-                  onClick={handleNext}
-                  className="px-4 py-1.5 rounded-xl text-xs font-bold text-white cursor-pointer transition flex items-center gap-1.5 shadow-md hover:opacity-95 disabled:opacity-30 disabled:cursor-not-allowed"
-                  style={{
-                    background: NPTEL_THEME.gradient,
-                    boxShadow: NPTEL_THEME.glow,
-                  }}
-                  title={
-                    isMulti && isAnswered && !checkedPractice[currentQuestion?.id]
-                      ? "Check answer"
-                      : "Next Question"
-                  }
-                >
-                  <span>Next</span>
-                  <ChevronRight className="w-4 h-4" />
-                </button>
               </div>
             </div>
           </div>
