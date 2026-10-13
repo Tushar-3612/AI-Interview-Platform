@@ -232,24 +232,36 @@ export async function submitUnifiedTest(req, res) {
     let attemptId = null;
     if (userId) {
       try {
-        const attempt = await NptelAttempt.create({
+        // Idempotency guard: reuse attempt if submitted within the last 10 seconds with matching score
+        const existingRecent = await NptelAttempt.findOne({
           userId,
           weekId: "unified-test",
-          weekNumber: 0,
-          mode,
-          totalQuestions: maxScore,
-          correctCount,
-          partiallyCorrectCount,
-          incorrectCount,
-          unansweredCount,
-          answeredCount,
           score: totalScore,
-          maxScore,
-          percentage,
-          timeSpentSeconds,
-          userAnswers: answers,
-        });
-        attemptId = attempt._id;
+          createdAt: { $gte: new Date(Date.now() - 10000) },
+        }).sort({ createdAt: -1 });
+
+        if (existingRecent) {
+          attemptId = existingRecent._id;
+        } else {
+          const attempt = await NptelAttempt.create({
+            userId,
+            weekId: "unified-test",
+            weekNumber: 0,
+            mode,
+            totalQuestions,
+            correctCount,
+            partiallyCorrectCount,
+            incorrectCount,
+            unansweredCount,
+            answeredCount,
+            score: totalScore,
+            maxScore,
+            percentage,
+            timeSpentSeconds,
+            userAnswers: answers,
+          });
+          attemptId = attempt._id;
+        }
       } catch (err) {
         console.warn("Could not save attempt to DB:", err.message);
       }
@@ -652,12 +664,52 @@ export async function uploadAdminQuestions(req, res) {
       } else if (fileName.endsWith(".csv") || mime.includes("csv")) {
         try {
           const parsed = await parseQuestions(req.file.buffer, "csv");
-          rawQuestions = (parsed || []).map((p) => ({
-            questionText: p.question || p.questionText,
-            options: [p.option_a, p.option_b, p.option_c, p.option_d].filter(Boolean),
-            correctAnswers: [p.correctAnswer || p.correct_answer].filter(Boolean),
-            explanation: p.explanation || "",
-          }));
+          rawQuestions = (parsed || []).map((p) => {
+            const opts = [
+              p.option_a || p.options?.A,
+              p.option_b || p.options?.B,
+              p.option_c || p.options?.C,
+              p.option_d || p.options?.D,
+            ].filter(Boolean);
+
+            const rawAns = p.rawCorrectAnswer || p.correctAnswer || p.correct_answer || p.ans || "";
+            let correctAnswers = [];
+            if (typeof rawAns === "string" && (rawAns.includes(",") || rawAns.includes("|") || rawAns.includes(";"))) {
+              const delimiter = rawAns.includes("|") ? "|" : rawAns.includes(";") ? ";" : ",";
+              correctAnswers = rawAns
+                .split(delimiter)
+                .map((a) => {
+                  const cleaned = a.trim();
+                  const letterMatch = cleaned.match(/^[A-Da-d]$/);
+                  if (letterMatch) {
+                    const letter = letterMatch[0].toUpperCase();
+                    return p.options?.[letter] || letter;
+                  }
+                  return cleaned;
+                })
+                .filter(Boolean);
+            } else {
+              const singleAns = String(rawAns).trim();
+              const letterMatch = singleAns.match(/^[A-Da-d]$/);
+              if (letterMatch) {
+                const letter = letterMatch[0].toUpperCase();
+                correctAnswers = [p.options?.[letter] || letter];
+              } else if (singleAns) {
+                correctAnswers = [singleAns];
+              }
+            }
+
+            return {
+              questionText: p.question || p.questionText,
+              sectionTitle: p.sectionTitle || p.subject || "Introduction to Research",
+              options: opts,
+              correctAnswers,
+              explanation: p.explanation || "",
+              type: correctAnswers.length > 1 || (p.type && String(p.type).toLowerCase().includes("multi")) ? "multiple" : "single",
+              difficulty: p.difficulty || "medium",
+              points: Number(p.points || p.marks || 1),
+            };
+          });
         } catch (csvErr) {
           return res.status(400).json({ success: false, message: `CSV parsing error: ${csvErr.message}` });
         }
@@ -667,7 +719,7 @@ export async function uploadAdminQuestions(req, res) {
     if (!rawQuestions || rawQuestions.length === 0) {
       return res.status(400).json({
         success: false,
-        message: "No questions could be extracted. Please upload a valid JSON or PDF file.",
+        message: "No questions could be extracted. Please upload a valid JSON, CSV, or PDF file.",
       });
     }
 
@@ -791,8 +843,9 @@ export async function downloadAdminTemplate(req, res) {
 
     if (format === "csv") {
       const csvContent =
-        "questionText,type,option_a,option_b,option_c,option_d,correctAnswer,explanation,sectionTitle\n" +
-        '"What is research?","single","Systematic investigation","Random thoughts","Speculation","Unchecked claims","Systematic investigation","Research is a systematic study","Research Basics"';
+        "questionText,type,option_a,option_b,option_c,option_d,correctAnswer,explanation,sectionTitle,difficulty,marks\n" +
+        '"What is research?","single","Systematic investigation","Random thoughts","Speculation","Unchecked claims","Systematic investigation","Research is a systematic study","Research Basics","easy","1"\n' +
+        '"Which are characteristics of good scientific inquiry?","multiple","Empirical evidence","Prejudice","Reproducibility","Authority alone","Empirical evidence, Reproducibility","Good inquiry relies on empirical evidence and reproducibility","Scientific Inquiry","medium","1"';
 
       res.setHeader("Content-Type", "text/csv");
       res.setHeader("Content-Disposition", 'attachment; filename="nptel_questions_template.csv"');

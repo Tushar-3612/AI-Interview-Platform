@@ -96,7 +96,6 @@ export default function NptelAssignmentTest() {
   const [bookmarks, setBookmarks] = useState(() => getLocalBookmarks());
   const [checkedPractice, setCheckedPractice] = useState({});
   const [paletteFilter, setPaletteFilter] = useState("all"); // "all" | "answered" | "unanswered" | "flagged"
-  const [passageOpen, setPassageOpen] = useState(false);
   const [mobilePaletteOpen, setMobilePaletteOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(() => getIsFullscreen());
   const [showReviewModal, setShowReviewModal] = useState(false);
@@ -322,7 +321,7 @@ export default function NptelAssignmentTest() {
 
   // Submit test and directly calculate results
   const handleSubmit = useCallback(async () => {
-    if (isSubmittingRef.current && phase === "result") return;
+    if (isSubmittingRef.current || phase !== "active") return;
     isSubmittingRef.current = true;
     setSubmitting(true);
     setConfirmSubmitModal(false);
@@ -333,6 +332,13 @@ export default function NptelAssignmentTest() {
       timerRef.current = null;
     }
     setTimerRunning(false);
+
+    // Clean up auto-advance timer upon submission
+    if (autoAdvanceTimerRef.current) {
+      clearTimeout(autoAdvanceTimerRef.current);
+      autoAdvanceTimerRef.current = null;
+    }
+    setIsAutoAdvancing(false);
 
     // Exit browser fullscreen safely if active
     exitFullscreenSafe();
@@ -416,13 +422,14 @@ export default function NptelAssignmentTest() {
     totalScore = Number(totalScore.toFixed(2));
     const totalQuestionsCount = questionsList.length;
     const answeredCount = totalQuestionsCount - unansweredCount;
-    const percentage = totalQuestionsCount > 0 ? Number(((totalScore / totalQuestionsCount) * 100).toFixed(1)) : 0;
+    const maxScore = questionsList.reduce((sum, q) => sum + (q.points || 1), 0);
+    const percentage = maxScore > 0 ? Number(((totalScore / maxScore) * 100).toFixed(1)) : 0;
 
     const finalResult = {
       success: true,
       title: NPTEL_TEST_META.title,
       score: totalScore,
-      maxScore: totalQuestionsCount,
+      maxScore,
       totalQuestions: totalQuestionsCount,
       percentage,
       correctCount,
@@ -436,7 +443,7 @@ export default function NptelAssignmentTest() {
 
     saveLocalTestAttempt({
       score: totalScore,
-      maxScore: totalQuestions,
+      maxScore,
       answers: currentAnswers,
     });
     clearLocalDraftAnswers();
@@ -478,8 +485,8 @@ export default function NptelAssignmentTest() {
   // If user closes tab or browser, immediately submit/save calculated result (no draft saving)
   useEffect(() => {
     const handleBeforeUnload = () => {
-      if (phase === "active" && !isSubmittingRef.current) {
-        const currentAnswers = answersRef.current || {};
+      const currentAnswers = answersRef.current || {};
+      if (phase === "active" && !isSubmittingRef.current && Object.keys(currentAnswers).length > 0) {
         let totalScore = 0;
         questionsList.forEach((q) => {
           const userSel = currentAnswers[q.id];
@@ -487,9 +494,10 @@ export default function NptelAssignmentTest() {
           totalScore += evalRes.pointsEarned;
         });
         totalScore = Number(totalScore.toFixed(2));
+        const maxScore = questionsList.reduce((sum, q) => sum + (q.points || 1), 0);
         saveLocalTestAttempt({
           score: totalScore,
-          maxScore: totalQuestions,
+          maxScore,
           answers: currentAnswers,
         });
         clearLocalDraftAnswers();
@@ -983,7 +991,7 @@ export default function NptelAssignmentTest() {
                     border: `1px solid ${NPTEL_THEME.border}`,
                   }}
                 >
-                  120 MCQs
+                  {totalQuestions} Questions
                 </span>
               </div>
               <p className="hidden md:block text-[11px] truncate leading-tight mt-0.5" style={{ color: "var(--text-muted)" }}>
@@ -1558,7 +1566,7 @@ export default function NptelAssignmentTest() {
                 Question Palette
               </h3>
               <span className="text-xs font-bold" style={{ color: NPTEL_THEME.primary }}>
-                {answeredCount}/120
+                {answeredCount}/{totalQuestions}
               </span>
             </div>
 
@@ -1594,11 +1602,13 @@ export default function NptelAssignmentTest() {
               </button>
             </div>
 
-            {/* 120 Questions Number Grid */}
+            {/* Questions Number Grid */}
             <div className="flex-1 min-h-0 overflow-y-auto grid grid-cols-6 gap-1 pr-1">
               {filteredPaletteQuestions.map((q) => {
-                const idx = q.questionNumber - 1;
-                const isCur = idx === currentIndex;
+                const targetIndex = questionsList.findIndex(
+                  (item) => (item.id || item.questionId) === (q.id || q.questionId)
+                );
+                const isCur = targetIndex === currentIndex;
                 const isAns = answers[q.id] && (Array.isArray(answers[q.id]) ? answers[q.id].length > 0 : true);
                 const isFlg = flagged.has(q.id);
 
@@ -1625,7 +1635,9 @@ export default function NptelAssignmentTest() {
                     key={q.id}
                     type="button"
                     onClick={() => {
-                      setCurrentIndex(idx);
+                      if (targetIndex >= 0) {
+                        setCurrentIndex(targetIndex);
+                      }
                       setMobilePaletteOpen(false);
                     }}
                     className="h-7 rounded-lg text-xs font-bold border transition cursor-pointer flex items-center justify-center relative hover:scale-105"
@@ -1674,7 +1686,7 @@ export default function NptelAssignmentTest() {
               <div className="flex items-center justify-between mb-3 pb-2 border-b" style={{ borderColor: "var(--border)" }}>
                 <div>
                   <h3 className="text-sm font-black" style={{ color: "var(--text-primary)" }}>
-                    Question Palette (120)
+                    Question Palette ({totalQuestions})
                   </h3>
                   <p className="text-[11px] text-gray-400">Jump directly to any question</p>
                 </div>
@@ -1705,8 +1717,10 @@ export default function NptelAssignmentTest() {
               {/* Grid */}
               <div className="flex-1 min-h-0 overflow-y-auto grid grid-cols-6 sm:grid-cols-8 gap-1.5 p-1">
                 {filteredPaletteQuestions.map((q) => {
-                  const idx = q.questionNumber - 1;
-                  const isCur = idx === currentIndex;
+                  const targetIndex = questionsList.findIndex(
+                    (item) => (item.id || item.questionId) === (q.id || q.questionId)
+                  );
+                  const isCur = targetIndex === currentIndex;
                   const isAns = answers[q.id] && (Array.isArray(answers[q.id]) ? answers[q.id].length > 0 : true);
                   const isFlg = flagged.has(q.id);
 
@@ -1733,7 +1747,9 @@ export default function NptelAssignmentTest() {
                       key={q.id}
                       type="button"
                       onClick={() => {
-                        setCurrentIndex(idx);
+                        if (targetIndex >= 0) {
+                          setCurrentIndex(targetIndex);
+                        }
                         setMobilePaletteOpen(false);
                       }}
                       className="h-9 rounded-lg text-xs font-bold border transition cursor-pointer flex items-center justify-center relative"

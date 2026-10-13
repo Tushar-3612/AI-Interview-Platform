@@ -67,8 +67,10 @@ export default function NptelLeaderboardView({ onStartTest }) {
   });
 
   const topThree = leaderboardData.slice(0, 3);
-  const topScore = leaderboardData[0]?.score || 120;
-  const avgScore = leaderboardData.length > 0
+  const hasLeaderboardEntries = Array.isArray(leaderboardData) && leaderboardData.length > 0;
+  const topScore = hasLeaderboardEntries ? (leaderboardData[0]?.score ?? 0) : null;
+  const maxPossibleScore = leaderboardData[0]?.maxScore || 120;
+  const avgScore = hasLeaderboardEntries
     ? Math.round(leaderboardData.reduce((acc, c) => acc + (c.score || 0), 0) / leaderboardData.length)
     : 0;
 
@@ -99,7 +101,7 @@ export default function NptelLeaderboardView({ onStartTest }) {
                 NPTEL Candidates Leaderboard
               </h2>
               <span className="text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider bg-[#FF6B35]/20 text-[#FF6B35] border border-[#FF6B35]/30">
-                120 MCQs
+                {maxPossibleScore} Questions
               </span>
             </div>
             <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>
@@ -156,7 +158,7 @@ export default function NptelLeaderboardView({ onStartTest }) {
           </div>
           <div>
             <div className="text-[10px] uppercase font-bold text-gray-400">Top Score</div>
-            <div className="text-base font-black text-amber-500">{topScore} <span className="text-xs text-gray-400">/ 120</span></div>
+            <div className="text-base font-black text-amber-500">{hasLeaderboardEntries ? topScore : "—"} <span className="text-xs text-gray-400">/ {maxPossibleScore}</span></div>
           </div>
         </div>
 
@@ -166,7 +168,7 @@ export default function NptelLeaderboardView({ onStartTest }) {
           </div>
           <div>
             <div className="text-[10px] uppercase font-bold text-gray-400">Average Score</div>
-            <div className="text-base font-black text-blue-400">{avgScore} <span className="text-xs text-gray-400">/ 120</span></div>
+            <div className="text-base font-black text-blue-400">{hasLeaderboardEntries ? avgScore : "—"} <span className="text-xs text-gray-400">/ {maxPossibleScore}</span></div>
           </div>
         </div>
 
@@ -213,7 +215,7 @@ export default function NptelLeaderboardView({ onStartTest }) {
                   </span>
                 </div>
                 <div className="flex flex-wrap items-center gap-3 text-xs text-gray-400 mt-1">
-                  <span>Score: <b className="text-emerald-400">{currentUserRank.score} / 120</b></span>
+                  <span>Score: <b className="text-emerald-400">{currentUserRank.score} / {currentUserRank.maxScore || maxPossibleScore}</b></span>
                   <span>Accuracy: <b className="text-emerald-400">{currentUserRank.percentage}%</b></span>
                   <span>Time: <b>{formatTime(currentUserRank.timeSpentSeconds)}</b></span>
                   <span>Attempts: <b>{currentUserRank.attemptsCount || 1}</b></span>
@@ -337,7 +339,7 @@ export default function NptelLeaderboardView({ onStartTest }) {
                     <span className="text-base font-black" style={{ color: badge.color }}>
                       {candidate.score}
                     </span>
-                    <span className="text-gray-400 text-[11px]"> / 120</span>
+                    <span className="text-gray-400 text-[11px]"> / {candidate.maxScore || maxPossibleScore}</span>
                   </div>
                   <div className="text-right text-[11px] text-gray-400">
                     <div>{candidate.percentage}% accuracy</div>
@@ -483,7 +485,7 @@ export default function NptelLeaderboardView({ onStartTest }) {
                         <span className="text-xs sm:text-sm font-black" style={{ color: isMe ? "#FF6B35" : "var(--text-primary)" }}>
                           {cand.score}
                         </span>
-                        <span className="text-gray-400 text-[10px]"> / 120</span>
+                        <span className="text-gray-400 text-[10px]"> / {cand.maxScore || maxPossibleScore}</span>
                       </td>
 
                       {/* Number of Attempts Badge */}

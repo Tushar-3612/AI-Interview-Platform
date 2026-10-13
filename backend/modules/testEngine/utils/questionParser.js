@@ -190,29 +190,41 @@ function parseCsvRows(text) {
 function parseCSV(text) {
   const rows = parseCsvRows(text || "");
   if (rows.length < 2) return [];
-  const header = rows[0].map((h) => sanitizeText(h).toLowerCase());
-  const col = (name) => header.indexOf(name);
-
-  const map = {
-    question: col("question"),
-    type: col("type"),
-    subject: col("subject"),
-    marks: col("marks"),
-    neg: col("negative_marks"),
-    difficulty: col("difficulty"),
-    oa: col("option_a"),
-    ob: col("option_b"),
-    oc: col("option_c"),
-    od: col("option_d"),
-    ans: col("correct_answer"),
-    exp: col("explanation"),
+  const header = rows[0].map((h) => sanitizeText(h).toLowerCase().trim());
+  const findCol = (...names) => {
+    for (const n of names) {
+      const idx = header.indexOf(n.toLowerCase().trim());
+      if (idx >= 0) return idx;
+    }
+    return -1;
   };
 
-  const required = ["question", "type", "subject", "marks", "difficulty", "ans", "oa", "ob", "oc", "od"];
-  const missing = required.filter((k) => map[k] < 0);
+  const map = {
+    question: findCol("question", "questiontext", "question_text", "question text"),
+    type: findCol("type", "questiontype", "question_type"),
+    subject: findCol("subject", "sectiontitle", "section_title", "section", "topic"),
+    marks: findCol("marks", "points"),
+    neg: findCol("negative_marks", "negativemarks", "neg", "negative marks"),
+    difficulty: findCol("difficulty"),
+    oa: findCol("option_a", "optiona", "oa", "opt_a", "option a"),
+    ob: findCol("option_b", "optionb", "ob", "opt_b", "option b"),
+    oc: findCol("option_c", "optionc", "oc", "opt_c", "option c"),
+    od: findCol("option_d", "optiond", "od", "opt_d", "option d"),
+    ans: findCol("correct_answer", "correctanswer", "correct_answers", "correctanswers", "ans", "answer", "correct answer"),
+    exp: findCol("explanation", "exp"),
+  };
+
+  const essential = [
+    { key: "question", label: "question/questionText" },
+    { key: "type", label: "type" },
+    { key: "ans", label: "correctAnswer/correct_answer" },
+    { key: "oa", label: "option_a" },
+    { key: "ob", label: "option_b" },
+  ];
+  const missing = essential.filter((item) => map[item.key] < 0).map((item) => item.label);
   if (missing.length > 0) {
     throw new Error(
-      "CSV is missing required columns. Please download the official template and use the exact headers."
+      `CSV is missing required columns: ${missing.join(", ")}. Please download the official template and use the exact headers.`
     );
   }
 
@@ -222,20 +234,30 @@ function parseCSV(text) {
     if (r.length === 1 && !r[0].trim()) continue;
     const get = (idx) => (idx >= 0 && r[idx] !== undefined ? sanitizeText(r[idx]) : "");
     const type = normalizeType(cleanFieldBrackets(get(map.type)));
+    const optA = get(map.oa);
+    const optB = get(map.ob);
+    const optC = get(map.oc);
+    const optD = get(map.od);
+    const optionsObj = { A: optA, B: optB, C: optC, D: optD };
+    const rawAnswer = get(map.ans);
+
     out.push({
       question: get(map.question),
+      questionText: get(map.question),
       type,
-      subject: cleanFieldBrackets(get(map.subject)),
-      marks: cleanFieldBrackets(get(map.marks)) || "0",
+      subject: cleanFieldBrackets(get(map.subject)) || "General",
+      sectionTitle: cleanFieldBrackets(get(map.subject)) || "General",
+      marks: cleanFieldBrackets(get(map.marks)) || "1",
+      points: Number(cleanFieldBrackets(get(map.marks)) || 1),
       negativeMarks: map.neg >= 0 ? cleanFieldBrackets(get(map.neg)) || "0" : "0",
-      difficulty: cleanFieldBrackets(get(map.difficulty)),
-      options: {
-        A: get(map.oa),
-        B: get(map.ob),
-        C: get(map.oc),
-        D: get(map.od),
-      },
-      correctAnswer: normalizeAnswer(get(map.ans), type),
+      difficulty: cleanFieldBrackets(get(map.difficulty)) || "Medium",
+      option_a: optA,
+      option_b: optB,
+      option_c: optC,
+      option_d: optD,
+      options: optionsObj,
+      correctAnswer: normalizeAnswer(rawAnswer, type, optionsObj),
+      rawCorrectAnswer: rawAnswer,
       explanation: map.exp >= 0 ? get(map.exp) : "",
     });
   }
