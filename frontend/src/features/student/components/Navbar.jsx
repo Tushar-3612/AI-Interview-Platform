@@ -19,6 +19,7 @@ import toast from "react-hot-toast";
 // Helper to get breadcrumb subtitle based on pathname
 const getBreadcrumbTitle = (pathname) => {
   if (pathname === "/dashboard" || pathname === "/") return "Dashboard";
+  if (pathname.startsWith("/nptel-assignment")) return "NPTEL Assignment";
   if (pathname.startsWith("/aptitude")) return "Aptitude Round";
   if (pathname.startsWith("/interview-practice")) return "Question Tracker";
   if (pathname.startsWith("/coding-round")) return "Coding Round";

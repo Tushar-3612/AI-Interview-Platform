@@ -34,6 +34,7 @@ import technicalQuestionRoutes from "./backend/modules/testEngine/routes/technic
 import realInterviewRoutes from "./backend/modules/realInterview/routes/realInterviewRoutes.js";
 import individualTechnicalRoutes from "./backend/modules/individualPractice/technical/routes/individualTechnicalRoutes.js";
 import individualProjectRoutes from "./backend/modules/individualPractice/project/routes/individualProjectRoutes.js";
+import nptelRoutes from "./backend/modules/nptelAssignment/routes/nptelRoutes.js";
 
 import interviewSTTRoutes from "./backend/modules/realInterview/routes/interviewSTT.js";
 
@@ -154,6 +155,7 @@ app.use("/api/technical-questions", technicalQuestionRoutes);
 app.use("/api/real-interview", realInterviewRoutes);
 app.use("/api/individual/technical", individualTechnicalRoutes);
 app.use("/api/individual/project", individualProjectRoutes);
+app.use("/api/nptel", nptelRoutes);
 
 app.use("/api/interview", interviewSTTRoutes);
 

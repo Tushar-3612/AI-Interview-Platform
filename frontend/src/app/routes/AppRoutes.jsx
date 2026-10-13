@@ -72,6 +72,11 @@ import CodingAssessmentHistory from "../../features/codingAssessment/pages/Codin
 import AdminCodingAssessments from "../../features/administration/pages/AdminCodingAssessments.jsx";
 import AdminCodingResults from "../../features/administration/pages/AdminCodingResults.jsx";
 
+import NptelAssignmentTest from "../../features/nptelAssignment/pages/NptelAssignmentTest.jsx";
+import NptelAssignmentHome from "../../features/nptelAssignment/pages/NptelAssignmentHome.jsx";
+import NptelLeaderboardPage from "../../features/nptelAssignment/pages/NptelLeaderboardPage.jsx";
+import NptelQuestionManagement from "../../features/administration/pages/NptelQuestionManagement.jsx";
+
 function AppRoutes() {
   return (
     <Routes>
@@ -147,6 +152,10 @@ function AppRoutes() {
         <Route path="/placement/performance" element={<PerformanceGraphs />} />
         <Route path="/placement/question-analytics" element={<QuestionAnalytics />} />
         <Route path="/placement/achievements" element={<Achievements />} />
+        <Route path="/nptel-assignment" element={<NptelAssignmentHome />} />
+        <Route path="/nptel-assignment/test" element={<NptelAssignmentTest />} />
+        <Route path="/nptel-assignment/leaderboard" element={<NptelLeaderboardPage />} />
+        <Route path="/nptel-assignment/*" element={<NptelAssignmentHome />} />
       </Route>
 
       <Route element={<AdminLayout />}>
@@ -169,6 +178,7 @@ function AppRoutes() {
         <Route path="/admin/config" element={<SystemConfig />} />
         <Route path="/admin/placement-analytics" element={<AdminPlacementAnalytics />} />
         <Route path="/admin/technical-questions" element={<AdminTechnicalManagement />} />
+        <Route path="/admin/nptel-questions" element={<NptelQuestionManagement />} />
       </Route>
     </Routes>
   );

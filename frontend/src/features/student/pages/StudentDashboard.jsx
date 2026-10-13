@@ -23,6 +23,7 @@ import {
   Zap,
   Mic,
   FileText,
+  GraduationCap,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import api from "../../../core/api/api.js";
@@ -762,8 +763,6 @@ function StudentDashboard() {
             })}
           </div>
         </section>
-
-
 
         {/* ── COMPANY MOCK INTERVIEWS ── */}
         {/* Always rendered: shows real CompanyMockAttempt data, or 0 / — when
