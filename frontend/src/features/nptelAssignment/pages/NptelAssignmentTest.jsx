@@ -130,8 +130,9 @@ export default function NptelAssignmentTest() {
     };
   }, []);
 
-  // Timer: 120 minutes (7200 seconds) for 120 questions in exam mode
-  const [timeLeft, setTimeLeft] = useState(7200);
+  // Timer: 120 minutes (7200 seconds) for practice assessment
+  const initialDuration = (NPTEL_TEST_META.durationMinutes || 120) * 60;
+  const [timeLeft, setTimeLeft] = useState(initialDuration);
   const [timerRunning, setTimerRunning] = useState(true);
   const timerRef = useRef(null);
   const startTimeRef = useRef(Date.now());
@@ -326,6 +327,13 @@ export default function NptelAssignmentTest() {
     setSubmitting(true);
     setConfirmSubmitModal(false);
 
+    // Clean up active timer interval upon submission
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    setTimerRunning(false);
+
     // Exit browser fullscreen safely if active
     exitFullscreenSafe();
     clearLocalDraftAnswers();
@@ -440,30 +448,18 @@ export default function NptelAssignmentTest() {
     isSubmittingRef.current = false;
   }, [phase, token, mode, questionsList, totalQuestions]);
 
-  // Auto-enter fullscreen when starting test
+  // Auto-enter fullscreen optionally when starting test
   useEffect(() => {
     if (phase === "active") {
       requestFullscreenSafe();
-      const handleFirstClick = () => {
-        if (!getIsFullscreen() && phase === "active") {
-          requestFullscreenSafe();
-        }
-      };
-      window.addEventListener("click", handleFirstClick, { once: true });
-      return () => window.removeEventListener("click", handleFirstClick);
     }
   }, [phase]);
 
-  // Listen for fullscreen change: if user exits fullscreen while test is active, submit and calculate result directly
+  // Track fullscreen state changes without submitting the practice assessment on exit
   useEffect(() => {
     const handleFullscreenChange = () => {
       const isFull = getIsFullscreen();
       setIsFullscreen(isFull);
-      if (!isFull && phase === "active" && !isSubmittingRef.current) {
-        isSubmittingRef.current = true;
-        toast("Full screen exited: submitting assessment...", { icon: "📊" });
-        handleSubmit();
-      }
     };
 
     document.addEventListener("fullscreenchange", handleFullscreenChange);
@@ -477,7 +473,7 @@ export default function NptelAssignmentTest() {
       document.removeEventListener("mozfullscreenchange", handleFullscreenChange);
       document.removeEventListener("MSFullscreenChange", handleFullscreenChange);
     };
-  }, [phase, handleSubmit]);
+  }, []);
 
   // If user closes tab or browser, immediately submit/save calculated result (no draft saving)
   useEffect(() => {
@@ -504,24 +500,86 @@ export default function NptelAssignmentTest() {
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [phase, questionsList, totalQuestions]);
 
-  // Exam mode timer
+  // Active assessment countdown timer with ref-backed submit
+  const handleSubmitRef = useRef(handleSubmit);
   useEffect(() => {
-    if (mode !== "exam" || phase !== "active" || !timerRunning) return;
+    handleSubmitRef.current = handleSubmit;
+  }, [handleSubmit]);
+
+  useEffect(() => {
+    if (phase !== "active" || !timerRunning) return;
+
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
 
     timerRef.current = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
-          clearInterval(timerRef.current);
+          if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+          }
+          setTimerRunning(false);
           toast.error("Time is up! Submitting your assignment test.");
-          handleSubmit();
+          handleSubmitRef.current();
           return 0;
         }
         return prev - 1;
       });
     }, 1000);
 
-    return () => clearInterval(timerRef.current);
-  }, [mode, phase, timerRunning, handleSubmit]);
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [phase, timerRunning]);
+
+  // Retake test: cleans up previous attempt timers and resets only attempt-specific state
+  const handleRetakeTest = useCallback(() => {
+    // 1. Clean up active timer and auto-advance intervals
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    if (autoAdvanceTimerRef.current) {
+      clearTimeout(autoAdvanceTimerRef.current);
+      autoAdvanceTimerRef.current = null;
+    }
+    setIsAutoAdvancing(false);
+
+    // 2. Reset timer and fresh attempt timestamp
+    const initialDuration = (NPTEL_TEST_META.durationMinutes || 120) * 60;
+    setTimeLeft(initialDuration);
+    setTimerRunning(true);
+    startTimeRef.current = Date.now();
+
+    // 3. Reset submission and guard flags
+    isSubmittingRef.current = false;
+    setSubmitting(false);
+    setConfirmSubmitModal(false);
+
+    // 4. Clear answers, flags, and temporary practice states
+    setAnswers({});
+    answersRef.current = {};
+    setFlagged(new Set());
+    setCheckedPractice({});
+    clearLocalDraftAnswers();
+
+    // 5. Reset navigation, filters, and result modals
+    setCurrentIndex(0);
+    setPaletteFilter("all");
+    setMobilePaletteOpen(false);
+    setShowReviewModal(false);
+    setResultData(null);
+
+    // 6. Transition to active phase
+    setPhase("active");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
 
   const answeredCount = Object.keys(answers).filter((k) => {
     const val = answers[k];
@@ -618,14 +676,7 @@ export default function NptelAssignmentTest() {
               <button
                 type="button"
                 id="nptel-result-retake-btn"
-                onClick={() => {
-                  setPhase("active");
-                  setAnswers({});
-                  setCheckedPractice({});
-                  setTimeLeft(7200);
-                  setCurrentIndex(0);
-                  setShowReviewModal(false);
-                }}
+                onClick={handleRetakeTest}
                 className="flex items-center gap-1 sm:gap-1.5 px-2.5 py-1.5 sm:px-3.5 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-black cursor-pointer hover:opacity-90 transition active:scale-95 shrink-0 text-white shadow-sm"
                 style={{
                   background: NPTEL_THEME.gradient,
@@ -1004,6 +1055,24 @@ export default function NptelAssignmentTest() {
               <span style={{ color: NPTEL_THEME.primary }}>{answeredCount}</span>
               <span>/</span>
               <span>{totalQuestions}</span>
+            </div>
+
+            {/* Assessment Countdown Timer */}
+            <div
+              id="nptel-timer-display"
+              className={`flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-xl border text-xs font-bold shrink-0 transition-colors ${
+                timeLeft < 300
+                  ? "bg-rose-500/10 border-rose-500/30 text-rose-400"
+                  : timeLeft < 600
+                  ? "bg-amber-500/10 border-amber-500/30 text-amber-400"
+                  : "bg-[var(--bg-secondary)] border-[var(--border)] text-[var(--text-secondary)]"
+              }`}
+              title="Time Remaining"
+            >
+              <Clock className="w-3.5 h-3.5 text-[#FF6B35] shrink-0" />
+              <span className="tabular-nums font-mono text-[11px] sm:text-xs">
+                {formatTime(timeLeft)}
+              </span>
             </div>
 
             {/* Submit Button */}
