@@ -7,8 +7,6 @@ import {
   Clock,
   CheckCircle2,
   XCircle,
-  HelpCircle,
-  BarChart3,
   Bookmark,
   BookmarkCheck,
   ChevronLeft,
@@ -22,11 +20,8 @@ import {
   Trophy,
   Check,
   X,
-  Target,
   Zap,
   Layers,
-  Filter,
-  Search,
   Lock,
 } from "lucide-react";
 import api from "../../../core/api/api.js";
@@ -39,42 +34,13 @@ import {
   evaluateAnswer,
   isPartialStatus,
   getAnswerStatusLabel,
-  getLocalTestProgress,
   saveLocalTestAttempt,
+  getLocalDraftAnswers,
+  saveLocalDraftAnswers,
   clearLocalDraftAnswers,
   getLocalBookmarks,
   toggleLocalBookmark,
 } from "../data/nptelData.js";
-
-function getIsFullscreen() {
-  return Boolean(
-    document.fullscreenElement ||
-    document.webkitFullscreenElement ||
-    document.mozFullScreenElement ||
-    document.msFullscreenElement
-  );
-}
-
-function requestFullscreenSafe() {
-  const el = document.documentElement;
-  const rfs =
-    el.requestFullscreen ||
-    el.webkitRequestFullscreen ||
-    el.mozRequestFullScreen ||
-    el.msRequestFullscreen;
-  if (rfs) return rfs.call(el).catch(() => {});
-}
-
-function exitFullscreenSafe() {
-  if (getIsFullscreen()) {
-    const efs =
-      document.exitFullscreen ||
-      document.webkitExitFullscreen ||
-      document.mozCancelFullScreen ||
-      document.msExitFullscreen;
-    if (efs) return efs.call(document).catch(() => {});
-  }
-}
 
 export default function NptelAssignmentTest() {
   const navigate = useNavigate();
@@ -90,23 +56,24 @@ export default function NptelAssignmentTest() {
   const [questionsList, setQuestionsList] = useState(ALL_NPTEL_QUESTIONS);
   const [phase, setPhase] = useState("active"); // "active" | "result"
   const [currentIndex, setCurrentIndex] = useState(0);
-  // Fresh session: do not load or save progress across sessions
-  const [answers, setAnswers] = useState({});
+  // Restore draft answers if available (prevents accidental navigation / reload progress loss)
+  const [answers, setAnswers] = useState(() => getLocalDraftAnswers());
   const [flagged, setFlagged] = useState(new Set());
   const [bookmarks, setBookmarks] = useState(() => getLocalBookmarks());
   const [checkedPractice, setCheckedPractice] = useState({});
   const [paletteFilter, setPaletteFilter] = useState("all"); // "all" | "answered" | "unanswered" | "flagged"
   const [mobilePaletteOpen, setMobilePaletteOpen] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(() => getIsFullscreen());
   const [showReviewModal, setShowReviewModal] = useState(false);
   const isSubmittingRef = useRef(false);
   const answersRef = useRef(answers);
-  answersRef.current = answers;
 
-  // Clear any residual drafts on mount to ensure fresh start
+  // Synchronize ref and save drafts whenever answers change in active phase
   useEffect(() => {
-    clearLocalDraftAnswers();
-  }, []);
+    answersRef.current = answers;
+    if (phase === "active") {
+      saveLocalDraftAnswers(answers);
+    }
+  }, [answers, phase]);
 
   // Load questions from DB if available (to sync with Admin uploads/edits)
   useEffect(() => {
@@ -134,7 +101,7 @@ export default function NptelAssignmentTest() {
   const [timeLeft, setTimeLeft] = useState(initialDuration);
   const [timerRunning, setTimerRunning] = useState(true);
   const timerRef = useRef(null);
-  const startTimeRef = useRef(Date.now());
+  const startTimeRef = useRef(null);
   const solutionRef = useRef(null);
 
   // Auto-advance to next question if answer is correct
@@ -144,30 +111,25 @@ export default function NptelAssignmentTest() {
 
   // Clear timer when question changes or unmounts
   useEffect(() => {
-    if (autoAdvanceTimerRef.current) {
-      clearTimeout(autoAdvanceTimerRef.current);
-    }
-    setIsAutoAdvancing(false);
-  }, [currentIndex]);
-
-  useEffect(() => {
     return () => {
       if (autoAdvanceTimerRef.current) {
         clearTimeout(autoAdvanceTimerRef.current);
       }
     };
-  }, []);
+  }, [currentIndex]);
 
   // Result state
   const [resultData, setResultData] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [confirmSubmitModal, setConfirmSubmitModal] = useState(false);
-  const [reviewFilter, setReviewFilter] = useState("all"); // "all" | "correct" | "incorrect"
+  const [confirmExitModal, setConfirmExitModal] = useState(false);
 
   const totalQuestions = questionsList.length;
   const currentQuestion = questionsList[currentIndex] || questionsList[0] || ALL_NPTEL_QUESTIONS[0];
   const isMulti = currentQuestion?.type === "multiple";
-  const currentAnswer = answers[currentQuestion?.id] || (isMulti ? [] : null);
+  const currentAnswer = useMemo(() => {
+    return answers[currentQuestion?.id] || (isMulti ? [] : null);
+  }, [answers, currentQuestion?.id, isMulti]);
   const isAnswered = isMulti
     ? Array.isArray(currentAnswer) && currentAnswer.length > 0
     : currentAnswer !== null && currentAnswer !== undefined;
@@ -340,8 +302,6 @@ export default function NptelAssignmentTest() {
     }
     setIsAutoAdvancing(false);
 
-    // Exit browser fullscreen safely if active
-    exitFullscreenSafe();
     clearLocalDraftAnswers();
 
     const currentAnswers = answersRef.current || {};
@@ -453,60 +413,46 @@ export default function NptelAssignmentTest() {
     window.scrollTo({ top: 0, behavior: "smooth" });
     setSubmitting(false);
     isSubmittingRef.current = false;
-  }, [phase, token, mode, questionsList, totalQuestions]);
+  }, [phase, token, mode, questionsList]);
 
-  // Auto-enter fullscreen optionally when starting test
-  useEffect(() => {
-    if (phase === "active") {
-      requestFullscreenSafe();
-    }
-  }, [phase]);
-
-  // Track fullscreen state changes without submitting the practice assessment on exit
-  useEffect(() => {
-    const handleFullscreenChange = () => {
-      const isFull = getIsFullscreen();
-      setIsFullscreen(isFull);
-    };
-
-    document.addEventListener("fullscreenchange", handleFullscreenChange);
-    document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
-    document.addEventListener("mozfullscreenchange", handleFullscreenChange);
-    document.addEventListener("MSFullscreenChange", handleFullscreenChange);
-
-    return () => {
-      document.removeEventListener("fullscreenchange", handleFullscreenChange);
-      document.removeEventListener("webkitfullscreenchange", handleFullscreenChange);
-      document.removeEventListener("mozfullscreenchange", handleFullscreenChange);
-      document.removeEventListener("MSFullscreenChange", handleFullscreenChange);
-    };
-  }, []);
-
-  // If user closes tab or browser, immediately submit/save calculated result (no draft saving)
+  // If user closes tab or browser, save draft answers so progress is not lost
   useEffect(() => {
     const handleBeforeUnload = () => {
       const currentAnswers = answersRef.current || {};
-      if (phase === "active" && !isSubmittingRef.current && Object.keys(currentAnswers).length > 0) {
-        let totalScore = 0;
-        questionsList.forEach((q) => {
-          const userSel = currentAnswers[q.id];
-          const evalRes = evaluateAnswer(q, userSel);
-          totalScore += evalRes.pointsEarned;
-        });
-        totalScore = Number(totalScore.toFixed(2));
-        const maxScore = questionsList.reduce((sum, q) => sum + (q.points || 1), 0);
-        saveLocalTestAttempt({
-          score: totalScore,
-          maxScore,
-          answers: currentAnswers,
-        });
-        clearLocalDraftAnswers();
+      if (phase === "active" && Object.keys(currentAnswers).length > 0) {
+        saveLocalDraftAnswers(currentAnswers);
       }
     };
 
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [phase, questionsList, totalQuestions]);
+  }, [phase]);
+
+  // Leave practice assessment without submitting: saves draft and navigates back to NPTEL home
+  const handleConfirmExit = useCallback(() => {
+    // 1. Clean up active timer interval
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    setTimerRunning(false);
+
+    // 2. Clean up auto-advance interval
+    if (autoAdvanceTimerRef.current) {
+      clearTimeout(autoAdvanceTimerRef.current);
+      autoAdvanceTimerRef.current = null;
+    }
+    setIsAutoAdvancing(false);
+
+    // 3. Save drafts so answers are preserved for resuming
+    const currentAnswers = answersRef.current || answers;
+    saveLocalDraftAnswers(currentAnswers);
+
+    // 5. Dismiss modal and navigate away without submitting
+    setConfirmExitModal(false);
+    toast("Assessment paused. Your progress has been saved.", { icon: "💾" });
+    navigate("/nptel-assignment");
+  }, [answers, navigate]);
 
   // Active assessment countdown timer with ref-backed submit
   const handleSubmitRef = useRef(handleSubmit);
@@ -598,7 +544,7 @@ export default function NptelAssignmentTest() {
 
   // Palette filtered list
   const filteredPaletteQuestions = useMemo(() => {
-    return questionsList.filter((q, idx) => {
+    return questionsList.filter((q) => {
       const isAns = answers[q.id] && (Array.isArray(answers[q.id]) ? answers[q.id].length > 0 : true);
       const isFlg = flagged.has(q.id);
 
@@ -943,28 +889,25 @@ export default function NptelAssignmentTest() {
   const isFlagged = flagged.has(currentQuestion?.id);
 
   return (
-    <div className="flex flex-col w-full max-w-[1600px] mx-auto select-none px-2 sm:px-4 py-1.5 sm:py-2 min-h-0 min-w-0 box-border lg:h-[calc(100vh-4.25rem)] lg:max-h-[calc(100vh-4.25rem)] lg:overflow-hidden">
+    <div className="flex flex-col w-full max-w-[1600px] mx-auto px-2 sm:px-4 py-1.5 sm:py-2 min-h-[100dvh] box-border lg:h-screen lg:max-h-screen lg:overflow-hidden">
       {/* ═══════════════════════════════════════════════
           TOP RESPONSIVE HEADER BAR
       ═══════════════════════════════════════════════ */}
       <div className="shrink-0 mb-1.5 pb-1.5 sm:mb-2 sm:pb-2 border-b border-[var(--border)]">
         {/* Row 1: Back/Exit + Title (Left) and Palette + Submit + Auto-Next (Right) */}
         <div className="flex items-center justify-between gap-1.5 sm:gap-2 min-w-0">
-          {/* Left: Back Button + Branding */}
+          {/* Left: Exit Button + Branding */}
           <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0 flex-1">
             <button
               type="button"
-              id="nptel-test-back-btn"
-              onClick={() => {
-                toast("Exiting test: submitting and calculating results...", { icon: "📊" });
-                handleSubmit();
-              }}
-              className="flex items-center gap-1 px-2 py-1.5 rounded-xl border text-xs font-bold cursor-pointer transition hover:bg-[var(--bg-secondary)] shrink-0 active:scale-95"
+              id="nptel-test-exit-btn"
+              onClick={() => setConfirmExitModal(true)}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-bold cursor-pointer transition hover:bg-[var(--bg-secondary)] shrink-0 active:scale-95"
               style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
-              title="Exit and Submit NPTEL Assignment"
+              title="Exit Assessment"
             >
-              <ChevronLeft className="w-4 h-4" />
-              <span className="hidden sm:inline">Exit &amp; Submit</span>
+              <ChevronLeft className="w-4 h-4 shrink-0" />
+              <span>Exit</span>
             </button>
 
             <div
@@ -1002,9 +945,10 @@ export default function NptelAssignmentTest() {
 
           {/* Right Header Controls */}
           <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-            {/* Auto-Next on Correct Toggle (Desktop & Tablet) */}
+            {/* Auto-Next on Correct Toggle (Responsive) */}
             <button
               type="button"
+              id="nptel-autonext-header-btn"
               onClick={() => {
                 const nextState = !autoAdvanceOnCorrect;
                 setAutoAdvanceOnCorrect(nextState);
@@ -1014,18 +958,23 @@ export default function NptelAssignmentTest() {
                     : "Auto-Next disabled"
                 );
               }}
-              className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-xl border text-[11px] font-bold transition cursor-pointer active:scale-95"
+              className="hidden sm:flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-xl border text-[11px] font-bold transition cursor-pointer active:scale-95 shrink-0"
               style={{
                 borderColor: autoAdvanceOnCorrect ? NPTEL_THEME.border : "var(--border)",
                 background: autoAdvanceOnCorrect ? NPTEL_THEME.bgSubtle : "var(--bg-secondary)",
                 color: autoAdvanceOnCorrect ? NPTEL_THEME.primary : "var(--text-muted)",
               }}
-              title="Automatically advance to next question when answered correctly"
+              title={
+                autoAdvanceOnCorrect
+                  ? "Auto-Next is ON: Automatically advances to next question when answered correctly"
+                  : "Auto-Next is OFF: Advance manually"
+              }
             >
-              <Zap className={`w-3.5 h-3.5 ${autoAdvanceOnCorrect ? "fill-[#FF6B35]" : ""}`} />
-              <span>Auto-Next</span>
+              <Zap className={`w-3.5 h-3.5 shrink-0 ${autoAdvanceOnCorrect ? "fill-[#FF6B35]" : ""}`} />
+              <span className="hidden sm:inline">Auto-Next</span>
+              <span className="sm:hidden">Auto</span>
               <span
-                className="text-[10px] px-1 py-0.2 rounded font-black uppercase"
+                className="text-[10px] px-1 py-0.2 rounded font-black uppercase shrink-0"
                 style={{
                   background: autoAdvanceOnCorrect
                     ? "rgba(255, 107, 53, 0.2)"
@@ -1257,7 +1206,7 @@ export default function NptelAssignmentTest() {
               </div>
 
               <h2
-                className="text-xs sm:text-sm md:text-base font-bold leading-snug max-h-28 overflow-y-auto pr-1"
+                className="text-xs sm:text-sm md:text-base font-bold leading-snug break-words"
                 style={{ color: "var(--text-primary)" }}
               >
                 {currentQuestion.questionText}
@@ -1265,9 +1214,9 @@ export default function NptelAssignmentTest() {
             </div>
 
             {/* Options List */}
-            {/* Reserves bottom padding on mobile so last option is never overlapped by bottom panel */}
+            {/* Reserves ample bottom padding on mobile so last option and feedback are never overlapped by docked panel */}
             <div className={`space-y-1.5 sm:space-y-2 py-1 pr-0.5 sm:pr-1 min-w-0 lg:flex-1 lg:min-h-0 lg:overflow-y-auto ${
-              isCheckedInPractice ? "pb-32 lg:pb-1" : "pb-20 lg:pb-1"
+              isCheckedInPractice ? "pb-44 sm:pb-48 lg:pb-1" : "pb-32 sm:pb-36 lg:pb-1"
             }`}>
               {currentQuestion.options.map((opt, optIdx) => {
                 const isSelected = isMulti
@@ -1392,11 +1341,11 @@ export default function NptelAssignmentTest() {
 
             {/* ═══════════════════════════════════════════════
                 DOCKED BOTTOM RESULT PANEL & NAVIGATION CONTROLS
-                On mobile: positioned above mobile bottom nav (bottom-16)
+                On mobile: positioned cleanly at viewport bottom (bottom-0) with safe-area padding
                 On desktop: docked at the bottom of student-card
             ═══════════════════════════════════════════════ */}
             <div
-              className="fixed lg:static bottom-16 lg:bottom-auto left-0 right-0 z-30 px-3 py-2 sm:px-4 sm:py-2.5 lg:p-0 lg:mt-auto border-t lg:border-t-0 shadow-lg lg:shadow-none shrink-0"
+              className="fixed lg:static bottom-0 lg:bottom-auto left-0 right-0 z-30 px-3 py-2 sm:px-4 sm:py-2.5 lg:p-0 lg:mt-auto border-t lg:border-t-0 shadow-lg lg:shadow-none shrink-0 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]"
               style={{
                 background: "var(--bg-primary)",
                 borderColor: "var(--border)",
@@ -1690,14 +1639,39 @@ export default function NptelAssignmentTest() {
                   </h3>
                   <p className="text-[11px] text-gray-400">Jump directly to any question</p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setMobilePaletteOpen(false)}
-                  className="p-1.5 rounded-lg border cursor-pointer hover:bg-[var(--bg-secondary)]"
-                  style={{ borderColor: "var(--border)" }}
-                >
-                  <X className="w-4 h-4" />
-                </button>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const nextState = !autoAdvanceOnCorrect;
+                      setAutoAdvanceOnCorrect(nextState);
+                      toast.success(
+                        nextState
+                          ? "Auto-Next enabled: advances automatically on correct answer"
+                          : "Auto-Next disabled"
+                      );
+                    }}
+                    className="flex items-center gap-1 px-2 py-1 rounded-lg border text-[11px] font-bold cursor-pointer transition active:scale-95"
+                    style={{
+                      borderColor: autoAdvanceOnCorrect ? NPTEL_THEME.border : "var(--border)",
+                      background: autoAdvanceOnCorrect ? NPTEL_THEME.bgSubtle : "var(--bg-secondary)",
+                      color: autoAdvanceOnCorrect ? NPTEL_THEME.primary : "var(--text-muted)",
+                    }}
+                    title="Toggle Auto-Next"
+                  >
+                    <Zap className={`w-3 h-3 ${autoAdvanceOnCorrect ? "fill-[#FF6B35]" : ""}`} />
+                    <span>Auto: {autoAdvanceOnCorrect ? "ON" : "OFF"}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMobilePaletteOpen(false)}
+                    className="p-1.5 rounded-lg border cursor-pointer hover:bg-[var(--bg-secondary)]"
+                    style={{ borderColor: "var(--border)" }}
+                    aria-label="Close question palette"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
 
               {/* Filter */}
@@ -1914,19 +1888,23 @@ export default function NptelAssignmentTest() {
       ═══════════════════════════════════════════════ */}
       <AnimatePresence>
         {confirmSubmitModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm"
+            onClick={() => setConfirmSubmitModal(false)}
+          >
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="student-card rounded-3xl p-6 sm:p-8 max-w-md w-full border"
+              onClick={(e) => e.stopPropagation()}
+              className="student-card rounded-2xl sm:rounded-3xl p-5 sm:p-7 max-w-md w-full border shadow-2xl"
               style={{ background: "var(--bg-primary)", borderColor: NPTEL_THEME.border }}
             >
-              <h3 className="text-xl font-black mb-2" style={{ color: "var(--text-primary)" }}>
+              <h3 className="text-lg sm:text-xl font-black mb-2" style={{ color: "var(--text-primary)" }}>
                 Submit NPTEL Assessment?
               </h3>
-              <p className="text-xs leading-relaxed mb-6" style={{ color: "var(--text-secondary)" }}>
-                If you exit or submit now, your test will be evaluated and submitted for your NPTEL assessment. You have answered{" "}
+              <p className="text-xs leading-relaxed mb-5 sm:mb-6" style={{ color: "var(--text-secondary)" }}>
+                If you submit now, your test will be evaluated and submitted for your NPTEL assessment. You have answered{" "}
                 <span className="font-bold" style={{ color: NPTEL_THEME.primary }}>{answeredCount}</span> out of{" "}
                 <span className="font-bold">{totalQuestions}</span> questions.
                 {flagged.size > 0 && (
@@ -1936,23 +1914,93 @@ export default function NptelAssignmentTest() {
                 )}
               </p>
 
-              <div className="flex items-center justify-end gap-3">
+              <div className="flex items-center justify-end gap-2 sm:gap-3">
                 <button
                   type="button"
                   onClick={() => setConfirmSubmitModal(false)}
-                  className="px-4 py-2 rounded-xl text-xs font-bold border cursor-pointer hover:bg-[var(--bg-secondary)]"
+                  className="px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold border cursor-pointer hover:bg-[var(--bg-secondary)]"
                   style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
                 >
                   Keep Working
                 </button>
                 <button
                   type="button"
+                  id="nptel-confirm-submit-btn"
                   onClick={handleSubmit}
                   disabled={submitting}
-                  className="px-5 py-2 rounded-xl text-xs font-bold text-white cursor-pointer shadow-md hover:opacity-95"
+                  className="px-4 sm:px-5 py-2 rounded-xl text-xs font-bold text-white cursor-pointer shadow-md hover:opacity-95"
                   style={{ background: NPTEL_THEME.gradient }}
                 >
                   {submitting ? "Submitting..." : "Submit Assessment"}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ═══════════════════════════════════════════════
+          CONFIRM EXIT MODAL (Leave without submitting)
+      ═══════════════════════════════════════════════ */}
+      <AnimatePresence>
+        {confirmExitModal && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm"
+            onClick={() => setConfirmExitModal(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              onClick={(e) => e.stopPropagation()}
+              className="student-card rounded-2xl sm:rounded-3xl p-5 sm:p-7 max-w-md w-full border shadow-2xl"
+              style={{ background: "var(--bg-primary)", borderColor: "var(--border)" }}
+            >
+              <div className="flex items-center gap-2.5 sm:gap-3 mb-2.5 sm:mb-3">
+                <div
+                  className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 border"
+                  style={{
+                    background: "rgba(239, 68, 68, 0.1)",
+                    borderColor: "rgba(239, 68, 68, 0.3)",
+                    color: "#EF4444",
+                  }}
+                >
+                  <RotateCcw className="w-4 h-4 sm:w-5 sm:h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base sm:text-lg font-black" style={{ color: "var(--text-primary)" }}>
+                    Exit Assessment?
+                  </h3>
+                  <p className="text-[11px] sm:text-xs text-gray-400">
+                    Leave without submitting
+                  </p>
+                </div>
+              </div>
+
+              <p className="text-xs leading-relaxed mb-5 sm:mb-6" style={{ color: "var(--text-secondary)" }}>
+                You have answered{" "}
+                <span className="font-bold" style={{ color: NPTEL_THEME.primary }}>{answeredCount}</span> out of{" "}
+                <span className="font-bold">{totalQuestions}</span> questions.
+                {" "}Your current answers will be saved as drafts so you can resume practice later. The assessment will <strong>not</strong> be submitted.
+              </p>
+
+              <div className="flex items-center justify-end gap-2 sm:gap-3">
+                <button
+                  type="button"
+                  onClick={() => setConfirmExitModal(false)}
+                  className="px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold border cursor-pointer hover:bg-[var(--bg-secondary)]"
+                  style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
+                >
+                  Stay &amp; Continue
+                </button>
+                <button
+                  type="button"
+                  id="nptel-confirm-exit-btn"
+                  onClick={handleConfirmExit}
+                  className="px-4 sm:px-5 py-2 rounded-xl text-xs font-bold text-white cursor-pointer shadow-md hover:opacity-95"
+                  style={{ background: "#EF4444" }}
+                >
+                  Exit Assessment
                 </button>
               </div>
             </motion.div>

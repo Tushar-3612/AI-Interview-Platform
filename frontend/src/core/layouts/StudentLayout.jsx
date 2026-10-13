@@ -51,7 +51,8 @@ function StudentLayout() {
     location.pathname === "/interview" ||
     location.pathname.startsWith("/interview/") ||
     location.pathname.startsWith("/company-mock") ||
-    location.pathname.startsWith("/tests/attempt/");
+    location.pathname.startsWith("/tests/attempt/") ||
+    location.pathname.startsWith("/nptel-assignment/test");
 
   const handleStartInterview = (formData) => {
     updateProfile({

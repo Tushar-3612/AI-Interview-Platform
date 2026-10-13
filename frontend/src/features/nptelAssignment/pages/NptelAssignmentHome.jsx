@@ -8,9 +8,7 @@ import {
   CheckCircle2,
   FileText,
   ArrowRight,
-  BarChart3,
   Sparkles,
-  BookOpen,
   Target,
   Award,
   Zap,
@@ -49,19 +47,8 @@ export default function NptelAssignmentHome() {
     return () => { isMounted = false; };
   }, [token]);
 
-  const handleStartTest = async () => {
+  const handleStartTest = () => {
     clearLocalDraftAnswers();
-    try {
-      const el = document.documentElement;
-      const rfs =
-        el.requestFullscreen ||
-        el.webkitRequestFullscreen ||
-        el.mozRequestFullScreen ||
-        el.msRequestFullscreen;
-      if (rfs) await rfs.call(el);
-    } catch {
-      // ignore fullscreen block
-    }
     navigate("/nptel-assignment/test");
   };
 
