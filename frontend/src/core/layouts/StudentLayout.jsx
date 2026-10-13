@@ -42,17 +42,24 @@ function StudentLayout() {
     });
   };
 
-  if (!token) {
-    return <Navigate to="/" replace />;
-  }
-
-  // Standalone interview & test assessment room check
+  // Standalone interview & test assessment room check.
+  // These routes render without the sidebar/navbar shell.
   const isInterviewRoute =
     location.pathname === "/interview" ||
     location.pathname.startsWith("/interview/") ||
     location.pathname.startsWith("/company-mock") ||
     location.pathname.startsWith("/tests/attempt/") ||
     location.pathname.startsWith("/nptel-assignment/test");
+
+  // /nptel-assignment/test is the ONLY public (no-login) student route.
+  // All other paths — including /nptel-assignment and /nptel-assignment/leaderboard —
+  // still require a valid token.
+  const isPublicNptelTest = location.pathname.startsWith("/nptel-assignment/test");
+
+  // Protect every route that is NOT the public NPTEL test.
+  if (!token && !isPublicNptelTest) {
+    return <Navigate to="/" replace />;
+  }
 
   const handleStartInterview = (formData) => {
     updateProfile({

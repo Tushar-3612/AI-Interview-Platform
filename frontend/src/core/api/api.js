@@ -38,7 +38,16 @@ api.interceptors.response.use(
   (error) => {
     if (error.response && error.response.status === 401) {
       clearAuthData();
+
+      // Do not forcibly redirect anonymous users away from the public NPTEL
+      // test page. Auth data is still cleared and the error is still rejected
+      // so the caller's own try/catch (client-side fallback evaluation) fires.
+      const isPublicNptelTest =
+        typeof window !== "undefined" &&
+        window.location.pathname.startsWith("/nptel-assignment/test");
+
       if (
+        !isPublicNptelTest &&
         typeof window !== "undefined" &&
         window.location.pathname !== "/" &&
         window.location.pathname !== "/signup"
