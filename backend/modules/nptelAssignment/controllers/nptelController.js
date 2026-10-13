@@ -186,6 +186,7 @@ export async function submitUnifiedTest(req, res) {
     let correctCount = 0;
     let partiallyCorrectCount = 0;
     let incorrectCount = 0;
+    let unansweredCount = 0;
 
     const evaluatedQuestions = activeQuestions.map((q, idx) => {
       const qId = q.id || q.questionId || `q${idx + 1}`;
@@ -193,9 +194,15 @@ export async function submitUnifiedTest(req, res) {
       const evaluation = evaluateQuestion(q, userSelection);
 
       totalScore += evaluation.pointsEarned;
-      if (evaluation.isCorrect) correctCount++;
-      else if (evaluation.isPartiallyCorrect) partiallyCorrectCount++;
-      else incorrectCount++;
+      if (evaluation.isCorrect) {
+        correctCount++;
+      } else if (evaluation.isPartiallyCorrect) {
+        partiallyCorrectCount++;
+      } else if (evaluation.status === "unanswered") {
+        unansweredCount++;
+      } else {
+        incorrectCount++;
+      }
 
       return {
         id: qId,
@@ -217,8 +224,10 @@ export async function submitUnifiedTest(req, res) {
     });
 
     totalScore = Number(totalScore.toFixed(2));
+    const totalQuestions = activeQuestions.length;
+    const answeredCount = totalQuestions - unansweredCount;
     const maxScore = activeQuestions.reduce((sum, q) => sum + (q.points || 1), 0);
-    const percentage = Number(((totalScore / maxScore) * 100).toFixed(1));
+    const percentage = maxScore > 0 ? Number(((totalScore / maxScore) * 100).toFixed(1)) : 0;
 
     let attemptId = null;
     if (userId) {
@@ -232,6 +241,8 @@ export async function submitUnifiedTest(req, res) {
           correctCount,
           partiallyCorrectCount,
           incorrectCount,
+          unansweredCount,
+          answeredCount,
           score: totalScore,
           maxScore,
           percentage,
@@ -249,10 +260,13 @@ export async function submitUnifiedTest(req, res) {
       title: NPTEL_TEST_META.title,
       score: totalScore,
       maxScore,
+      totalQuestions,
       percentage,
       correctCount,
       partiallyCorrectCount,
       incorrectCount,
+      unansweredCount,
+      answeredCount,
       timeSpentSeconds,
       attemptId,
       results: evaluatedQuestions,

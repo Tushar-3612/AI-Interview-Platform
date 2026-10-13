@@ -94,6 +94,23 @@ export function evaluateAnswer(question, userSelection) {
   };
 }
 
+/**
+ * Normalizes question evaluation status to determine if it is partially correct
+ */
+export function isPartialStatus(status) {
+  return status === "partially_correct" || status === "partial";
+}
+
+/**
+ * Returns user-facing label for question evaluation status
+ */
+export function getAnswerStatusLabel(status) {
+  if (status === "correct") return "Correct";
+  if (isPartialStatus(status)) return "Partially Correct";
+  if (status === "unanswered") return "Unanswered";
+  return "Incorrect";
+}
+
 const STORAGE_KEY_UNIFIED_PROGRESS = "prephire_nptel_unified_test_progress";
 const STORAGE_KEY_UNIFIED_DRAFT = "prephire_nptel_unified_draft_answers";
 const STORAGE_KEY_BOOKMARKS = "prephire_nptel_bookmarks";

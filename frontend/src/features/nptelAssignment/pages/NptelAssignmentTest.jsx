@@ -37,6 +37,8 @@ import {
   NPTEL_TEST_META,
   NPTEL_THEME,
   evaluateAnswer,
+  isPartialStatus,
+  getAnswerStatusLabel,
   getLocalTestProgress,
   saveLocalTestAttempt,
   clearLocalDraftAnswers,
@@ -367,15 +369,22 @@ export default function NptelAssignmentTest() {
     let correctCount = 0;
     let partiallyCorrectCount = 0;
     let incorrectCount = 0;
+    let unansweredCount = 0;
 
     const evaluated = questionsList.map((q) => {
       const userSel = currentAnswers[q.id];
       const evalRes = evaluateAnswer(q, userSel);
 
       totalScore += evalRes.pointsEarned;
-      if (evalRes.isCorrect) correctCount++;
-      else if (evalRes.isPartiallyCorrect) partiallyCorrectCount++;
-      else incorrectCount++;
+      if (evalRes.isCorrect) {
+        correctCount++;
+      } else if (evalRes.isPartiallyCorrect) {
+        partiallyCorrectCount++;
+      } else if (evalRes.status === "unanswered") {
+        unansweredCount++;
+      } else {
+        incorrectCount++;
+      }
 
       return {
         id: q.id,
@@ -397,17 +406,22 @@ export default function NptelAssignmentTest() {
     });
 
     totalScore = Number(totalScore.toFixed(2));
-    const percentage = Number(((totalScore / totalQuestions) * 100).toFixed(1));
+    const totalQuestionsCount = questionsList.length;
+    const answeredCount = totalQuestionsCount - unansweredCount;
+    const percentage = totalQuestionsCount > 0 ? Number(((totalScore / totalQuestionsCount) * 100).toFixed(1)) : 0;
 
     const finalResult = {
       success: true,
       title: NPTEL_TEST_META.title,
       score: totalScore,
-      maxScore: totalQuestions,
+      maxScore: totalQuestionsCount,
+      totalQuestions: totalQuestionsCount,
       percentage,
       correctCount,
       partiallyCorrectCount,
       incorrectCount,
+      unansweredCount,
+      answeredCount,
       timeSpentSeconds: timeSpent,
       results: evaluated,
     };
@@ -539,12 +553,27 @@ export default function NptelAssignmentTest() {
   // ═══════════════════════════════════════════════
   if (phase === "result" && resultData) {
     const isPassing = Number(resultData.percentage || 0) >= 40;
-    const totalQuestionsCount = Number(resultData.maxScore || totalQuestions || 120);
+    const totalQuestionsCount = Number(
+      resultData.totalQuestions ||
+      (Array.isArray(resultData.results) ? resultData.results.length : null) ||
+      resultData.maxScore ||
+      totalQuestions ||
+      120
+    );
+    const unansweredCount =
+      resultData.unansweredCount !== undefined
+        ? Number(resultData.unansweredCount)
+        : Math.max(
+            0,
+            totalQuestionsCount -
+              (Number(resultData.correctCount || 0) +
+                Number(resultData.partiallyCorrectCount || 0) +
+                Number(resultData.incorrectCount || 0))
+          );
     const answeredCount =
-      Number(resultData.correctCount || 0) +
-      Number(resultData.partiallyCorrectCount || 0) +
-      Number(resultData.incorrectCount || 0);
-    const unansweredCount = Math.max(0, totalQuestionsCount - answeredCount);
+      resultData.answeredCount !== undefined
+        ? Number(resultData.answeredCount)
+        : Math.max(0, totalQuestionsCount - unansweredCount);
 
     return (
       <div className="w-full max-w-xl md:max-w-2xl mx-auto px-3 sm:px-4 py-2 sm:py-4 flex flex-col justify-start box-border">
@@ -688,6 +717,9 @@ export default function NptelAssignmentTest() {
                   {resultData.percentage}% Overall
                 </span>
                 <span className="text-[11px] sm:text-xs font-medium" style={{ color: "var(--text-muted)" }}>
+                  Answered: {answeredCount}/{totalQuestionsCount}
+                </span>
+                <span className="text-[11px] sm:text-xs font-medium" style={{ color: "var(--text-muted)" }}>
                   Time: {formatTime(resultData.timeSpentSeconds || 0)}
                 </span>
               </div>
@@ -722,8 +754,8 @@ export default function NptelAssignmentTest() {
                 <span className="text-base sm:text-xl font-black leading-tight text-amber-400">
                   {resultData.partiallyCorrectCount || 0}
                 </span>
-                <span className="text-[10px] sm:text-xs font-semibold mt-0.5 truncate max-w-full px-0.5" style={{ color: "var(--text-secondary)" }}>
-                  Partial
+                <span className="text-[10px] sm:text-xs font-semibold mt-0.5 truncate max-w-full px-0.5" style={{ color: "var(--text-secondary)" }} title="Partially Correct">
+                  Partially Correct
                 </span>
               </div>
 
@@ -781,47 +813,60 @@ export default function NptelAssignmentTest() {
               {/* Collapsible Solution Review List */}
               {showReviewModal && (
                 <div className="mt-3 text-left space-y-3">
-                  {resultData.results.map((q, idx) => (
-                    <div
-                      key={q.id || idx}
-                      className="p-3 sm:p-4 rounded-xl border"
-                      style={{
-                        background: "var(--bg-secondary)",
-                        borderColor:
-                          q.status === "correct"
-                            ? "rgba(16, 185, 129, 0.3)"
-                            : q.status === "partial"
-                            ? "rgba(245, 158, 11, 0.3)"
-                            : "rgba(239, 68, 68, 0.3)",
-                      }}
-                    >
-                      <div className="flex items-center justify-between mb-1.5 text-xs font-bold">
-                        <span style={{ color: "var(--text-muted)" }}>
-                          Question {q.questionNumber || idx + 1}
-                        </span>
-                        <span
-                          className={`font-black uppercase text-[10px] px-2 py-0.5 rounded-full ${
-                            q.status === "correct"
-                              ? "text-emerald-400 bg-emerald-500/10"
-                              : q.status === "partial"
-                              ? "text-amber-400 bg-amber-500/10"
-                              : "text-rose-400 bg-rose-500/10"
-                          }`}
-                        >
-                          {q.status} ({q.pointsEarned || 0}/{q.maxPoints || 1} pts)
-                        </span>
-                      </div>
-                      <p className="text-xs sm:text-sm font-semibold mb-2" style={{ color: "var(--text-primary)" }}>
-                        {q.questionText}
-                      </p>
-                      {q.explanation && (
-                        <p className="text-[11px] sm:text-xs leading-relaxed pt-2 border-t border-[var(--border)]" style={{ color: "var(--text-secondary)" }}>
-                          <span className="font-bold text-[var(--text-primary)]">Explanation: </span>
-                          {q.explanation}
+                  {resultData.results.map((q, idx) => {
+                    const isCorrect = q.status === "correct";
+                    const isPartial = isPartialStatus(q.status);
+                    const isUnanswered = q.status === "unanswered";
+
+                    const borderColor = isCorrect
+                      ? "rgba(16, 185, 129, 0.3)"
+                      : isPartial
+                      ? "rgba(245, 158, 11, 0.3)"
+                      : isUnanswered
+                      ? "rgba(156, 163, 175, 0.25)"
+                      : "rgba(239, 68, 68, 0.3)";
+
+                    const badgeClass = isCorrect
+                      ? "text-emerald-400 bg-emerald-500/10"
+                      : isPartial
+                      ? "text-amber-400 bg-amber-500/10"
+                      : isUnanswered
+                      ? "text-gray-400 bg-gray-500/10"
+                      : "text-rose-400 bg-rose-500/10";
+
+                    const badgeLabel = getAnswerStatusLabel(q.status);
+
+                    return (
+                      <div
+                        key={q.id || idx}
+                        className="p-3 sm:p-4 rounded-xl border"
+                        style={{
+                          background: "var(--bg-secondary)",
+                          borderColor,
+                        }}
+                      >
+                        <div className="flex items-center justify-between mb-1.5 text-xs font-bold">
+                          <span style={{ color: "var(--text-muted)" }}>
+                            Question {q.questionNumber || idx + 1}
+                          </span>
+                          <span
+                            className={`font-black text-[10px] px-2 py-0.5 rounded-full ${badgeClass}`}
+                          >
+                            {badgeLabel} ({q.pointsEarned || 0}/{q.maxPoints || 1} pts)
+                          </span>
+                        </div>
+                        <p className="text-xs sm:text-sm font-semibold mb-2" style={{ color: "var(--text-primary)" }}>
+                          {q.questionText}
                         </p>
-                      )}
-                    </div>
-                  ))}
+                        {q.explanation && (
+                          <p className="text-[11px] sm:text-xs leading-relaxed pt-2 border-t border-[var(--border)]" style={{ color: "var(--text-secondary)" }}>
+                            <span className="font-bold text-[var(--text-primary)]">Explanation: </span>
+                            {q.explanation}
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -1342,7 +1387,7 @@ export default function NptelAssignmentTest() {
                         </span>
                       ) : currentPracticeEval?.isPartiallyCorrect ? (
                         <span className="text-amber-400 flex items-center gap-1 font-bold shrink-0">
-                          <AlertTriangle className="w-3.5 h-3.5" /> Partial (+{currentPracticeEval?.pointsEarned} Pt)
+                          <AlertTriangle className="w-3.5 h-3.5" /> Partially Correct (+{currentPracticeEval?.pointsEarned} Pt)
                         </span>
                       ) : (
                         <span className="text-red-400 flex items-center gap-1 font-bold shrink-0">
