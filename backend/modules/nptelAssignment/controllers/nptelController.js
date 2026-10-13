@@ -332,58 +332,179 @@ export async function getNptelLeaderboard(req, res) {
       $or: [{ weekId: "unified-test" }, { weekId: { $exists: false } }, { weekId: null }],
     })
       .populate("userId", "name email department avatar")
-      .sort({ score: -1, timeSpentSeconds: 1, createdAt: -1 })
+      .sort({ createdAt: -1 })
       .lean();
 
-    // Group by user, keeping their best score and calculating total attempts
-    const userBestMap = new Map();
+    // Group eligible attempts by user
+    const userAttemptsMap = new Map();
+
     for (const att of realAttempts) {
       if (!att.userId) continue;
-      const uId = String(att.userId._id || att.userId);
-      const studentName = att.userId.name || att.userId.email?.split("@")[0] || "Student Candidate";
-      const studentDept = att.userId.department || "Engineering";
 
-      if (!userBestMap.has(uId)) {
-        userBestMap.set(uId, {
+      // 1 & 2. Validate numeric score: must be a non-null, finite, non-negative number
+      if (att.score === null || att.score === undefined || att.score === "") continue;
+      const score = typeof att.score === "number" ? att.score : Number(att.score);
+      if (!Number.isFinite(score) || score < 0) continue;
+
+      // 4. Resolve maxScore reliably:
+      // Require maxScore to be a finite, positive number.
+      // If missing from legacy records, fall back ONLY if verified by corroborating fields;
+      // otherwise exclude the ambiguous record to avoid distorted percentage rankings.
+      let maxScore = null;
+      if (att.maxScore !== undefined && att.maxScore !== null && att.maxScore !== "") {
+        const rawMax = typeof att.maxScore === "number" ? att.maxScore : Number(att.maxScore);
+        if (Number.isFinite(rawMax) && rawMax > 0) {
+          maxScore = rawMax;
+        }
+      }
+
+      // Legacy fallback: attempt to corroborate true maximum marks without blind 120/totalQuestions assumptions
+      if (maxScore === null) {
+        if (
+          typeof att.totalQuestions === "number" &&
+          Number.isFinite(att.totalQuestions) &&
+          att.totalQuestions > 0
+        ) {
+          // If pre-calculated percentage exists, verify totalQuestions matches 1-point-per-question convention
+          if (typeof att.percentage === "number" && Number.isFinite(att.percentage) && att.percentage >= 0) {
+            if (score > 0) {
+              const expectedPct = (score / att.totalQuestions) * 100;
+              if (Math.abs(expectedPct - att.percentage) <= 0.5) {
+                maxScore = att.totalQuestions;
+              }
+            } else if (score === 0 && att.percentage === 0) {
+              maxScore = att.totalQuestions;
+            }
+          } else if (att.weekId === "unified-test" && att.totalQuestions === 120) {
+            // Known fixed 120-question specification for unified test
+            maxScore = 120;
+          }
+        }
+      }
+
+      // Exclude records where maximum possible marks cannot be reliably verified
+      if (maxScore === null || !Number.isFinite(maxScore) || maxScore <= 0) continue;
+
+      // 3. Reject corrupt/anomalous records where score exceeds maximum possible marks
+      if (score > maxScore) continue;
+
+      // Check whether at least one question was answered (exclude blank attempts, preserve valid zero scores)
+      let answeredCount = 0;
+      if (typeof att.answeredCount === "number") {
+        answeredCount = att.answeredCount;
+      } else if (typeof att.unansweredCount === "number" && typeof att.totalQuestions === "number") {
+        answeredCount = Math.max(0, att.totalQuestions - att.unansweredCount);
+      } else if (
+        (att.correctCount || 0) > 0 ||
+        (att.partiallyCorrectCount || 0) > 0 ||
+        (att.incorrectCount || 0) > 0
+      ) {
+        answeredCount = (att.correctCount || 0) + (att.partiallyCorrectCount || 0) + (att.incorrectCount || 0);
+      } else if (att.userAnswers && typeof att.userAnswers === "object") {
+        answeredCount = Object.values(att.userAnswers).filter((ans) => {
+          if (ans === null || ans === undefined || ans === "") return false;
+          if (Array.isArray(ans) && ans.length === 0) return false;
+          return true;
+        }).length;
+      } else if (score > 0) {
+        answeredCount = 1;
+      }
+
+      // Blank attempt: no questions answered
+      if (answeredCount <= 0) continue;
+
+      // Calculate attempt percentage normalized against its own maximum marks
+      const attemptPercentage = Number(((score / maxScore) * 100).toFixed(2));
+
+      const uId = String(att.userId._id || att.userId);
+      if (!userAttemptsMap.has(uId)) {
+        const studentName = att.userId.name || att.userId.email?.split("@")[0] || "Student Candidate";
+        const studentDept = att.userId.department || "Engineering";
+        userAttemptsMap.set(uId, {
           userId: uId,
           name: studentName,
           email: att.userId.email || "",
           department: studentDept,
           avatar: att.userId.avatar || null,
-          score: att.score,
-          maxScore: att.maxScore || 120,
-          percentage: att.percentage,
-          correctCount: att.correctCount,
-          timeSpentSeconds: att.timeSpentSeconds || 0,
-          attemptsCount: 1,
-          createdAt: att.createdAt,
+          attempts: [],
         });
-      } else {
-        const existing = userBestMap.get(uId);
-        existing.attemptsCount += 1;
-        // Keep highest score as best score
-        if (
-          att.score > existing.score ||
-          (att.score === existing.score && (att.timeSpentSeconds || 0) < (existing.timeSpentSeconds || Infinity))
-        ) {
-          existing.score = att.score;
-          existing.percentage = att.percentage;
-          existing.correctCount = att.correctCount;
-          existing.timeSpentSeconds = att.timeSpentSeconds;
-          existing.createdAt = att.createdAt;
-        }
       }
+
+      userAttemptsMap.get(uId).attempts.push({
+        score,
+        maxScore,
+        percentage: attemptPercentage,
+        correctCount: att.correctCount || 0,
+        timeSpentSeconds: att.timeSpentSeconds || 0,
+        createdAt: att.createdAt,
+      });
     }
 
-    let leaderboard = Array.from(userBestMap.values());
+    // Build candidate standings based on average percentage
+    let leaderboard = [];
 
-    // Sort strictly by highest score descending, then by timeSpentSeconds ascending
+    for (const [uId, entry] of userAttemptsMap.entries()) {
+      const eligibleCount = entry.attempts.length;
+      if (eligibleCount === 0) continue;
+
+      // 1. Average percentage across all eligible completed attempts
+      const sumPercentage = entry.attempts.reduce((sum, a) => sum + a.percentage, 0);
+      const avgPercentage = Number((sumPercentage / eligibleCount).toFixed(2));
+
+      // 2. Highest individual attempt percentage for tie-breaking
+      const bestPercentage = Number(Math.max(...entry.attempts.map((a) => a.percentage)).toFixed(2));
+
+      // 3. Average score and representative maxScore
+      const sumScore = entry.attempts.reduce((sum, a) => sum + a.score, 0);
+      const avgScore = Number((sumScore / eligibleCount).toFixed(1));
+      const sumMaxScore = entry.attempts.reduce((sum, a) => sum + a.maxScore, 0);
+      const avgMaxScore = Math.round(sumMaxScore / eligibleCount);
+
+      // 4. Average correct count and average time spent
+      const sumCorrect = entry.attempts.reduce((sum, a) => sum + a.correctCount, 0);
+      const avgCorrect = Math.round(sumCorrect / eligibleCount);
+      const sumTime = entry.attempts.reduce((sum, a) => sum + a.timeSpentSeconds, 0);
+      const avgTime = Math.round(sumTime / eligibleCount);
+
+      // Latest attempt timestamp
+      const latestCreatedAt = entry.attempts[0]?.createdAt || new Date();
+
+      leaderboard.push({
+        userId: uId,
+        name: entry.name,
+        email: entry.email,
+        department: entry.department,
+        avatar: entry.avatar,
+        score: avgScore,
+        maxScore: avgMaxScore,
+        percentage: avgPercentage,
+        bestPercentage,
+        correctCount: avgCorrect,
+        timeSpentSeconds: avgTime,
+        attemptsCount: eligibleCount,
+        createdAt: latestCreatedAt,
+      });
+    }
+
+    // Sort by average percentage descending; tie-break by highest individual attempt percentage
     leaderboard.sort((a, b) => {
-      if (b.score !== a.score) return b.score - a.score;
-      return (a.timeSpentSeconds || 0) - (b.timeSpentSeconds || 0);
+      // Primary: Average percentage descending
+      if (b.percentage !== a.percentage) {
+        return b.percentage - a.percentage;
+      }
+      // Tie-breaker: Highest individual attempt percentage descending
+      if (b.bestPercentage !== a.bestPercentage) {
+        return b.bestPercentage - a.bestPercentage;
+      }
+      // Fallback: Lower average time spent ascending
+      if ((a.timeSpentSeconds || 0) !== (b.timeSpentSeconds || 0)) {
+        return (a.timeSpentSeconds || 0) - (b.timeSpentSeconds || 0);
+      }
+      // Stable sort: most recent submission
+      return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
     });
 
-    // Assign ranks
+    // Assign sequential ranks
     leaderboard = leaderboard.map((item, idx) => ({
       ...item,
       rank: idx + 1,

@@ -68,10 +68,10 @@ export default function NptelLeaderboardView({ onStartTest }) {
 
   const topThree = leaderboardData.slice(0, 3);
   const hasLeaderboardEntries = Array.isArray(leaderboardData) && leaderboardData.length > 0;
-  const topScore = hasLeaderboardEntries ? (leaderboardData[0]?.score ?? 0) : null;
+  const topPercentage = hasLeaderboardEntries ? (leaderboardData[0]?.percentage ?? 0) : null;
   const maxPossibleScore = leaderboardData[0]?.maxScore || 120;
-  const avgScore = hasLeaderboardEntries
-    ? Math.round(leaderboardData.reduce((acc, c) => acc + (c.score || 0), 0) / leaderboardData.length)
+  const avgPercentage = hasLeaderboardEntries
+    ? (leaderboardData.reduce((acc, c) => acc + (c.percentage || 0), 0) / leaderboardData.length).toFixed(1)
     : 0;
 
   return (
@@ -101,7 +101,7 @@ export default function NptelLeaderboardView({ onStartTest }) {
                 NPTEL Candidates Leaderboard
               </h2>
               <span className="text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider bg-[#FF6B35]/20 text-[#FF6B35] border border-[#FF6B35]/30">
-                {maxPossibleScore} Questions
+                Average % Ranking
               </span>
             </div>
             <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>
@@ -157,8 +157,8 @@ export default function NptelLeaderboardView({ onStartTest }) {
             <Trophy className="w-4 h-4" />
           </div>
           <div>
-            <div className="text-[10px] uppercase font-bold text-gray-400">Top Score</div>
-            <div className="text-base font-black text-amber-500">{hasLeaderboardEntries ? topScore : "—"} <span className="text-xs text-gray-400">/ {maxPossibleScore}</span></div>
+            <div className="text-[10px] uppercase font-bold text-gray-400">Top Average</div>
+            <div className="text-base font-black text-amber-500">{hasLeaderboardEntries ? `${topPercentage}%` : "—"}</div>
           </div>
         </div>
 
@@ -167,8 +167,8 @@ export default function NptelLeaderboardView({ onStartTest }) {
             <TrendingUp className="w-4 h-4" />
           </div>
           <div>
-            <div className="text-[10px] uppercase font-bold text-gray-400">Average Score</div>
-            <div className="text-base font-black text-blue-400">{hasLeaderboardEntries ? avgScore : "—"} <span className="text-xs text-gray-400">/ {maxPossibleScore}</span></div>
+            <div className="text-[10px] uppercase font-bold text-gray-400">Cohort Average</div>
+            <div className="text-base font-black text-blue-400">{hasLeaderboardEntries ? `${avgPercentage}%` : "—"}</div>
           </div>
         </div>
 
@@ -215,10 +215,10 @@ export default function NptelLeaderboardView({ onStartTest }) {
                   </span>
                 </div>
                 <div className="flex flex-wrap items-center gap-3 text-xs text-gray-400 mt-1">
-                  <span>Score: <b className="text-emerald-400">{currentUserRank.score} / {currentUserRank.maxScore || maxPossibleScore}</b></span>
-                  <span>Accuracy: <b className="text-emerald-400">{currentUserRank.percentage}%</b></span>
+                  <span>Average: <b className="text-emerald-400">{currentUserRank.percentage}%</b></span>
+                  <span>Avg Marks: <b>{currentUserRank.score} / {currentUserRank.maxScore || maxPossibleScore}</b></span>
                   <span>Time: <b>{formatTime(currentUserRank.timeSpentSeconds)}</b></span>
-                  <span>Attempts: <b>{currentUserRank.attemptsCount || 1}</b></span>
+                  <span>Eligible Attempts: <b>{currentUserRank.attemptsCount || 1}</b></span>
                 </div>
               </div>
             </div>
@@ -337,12 +337,12 @@ export default function NptelLeaderboardView({ onStartTest }) {
                 <div className="pt-2.5 border-t flex items-center justify-between text-xs font-bold" style={{ borderColor: "var(--border)" }}>
                   <div>
                     <span className="text-base font-black" style={{ color: badge.color }}>
-                      {candidate.score}
+                      {candidate.percentage}%
                     </span>
-                    <span className="text-gray-400 text-[11px]"> / {candidate.maxScore || maxPossibleScore}</span>
+                    <span className="text-gray-400 text-[11px]"> avg</span>
                   </div>
                   <div className="text-right text-[11px] text-gray-400">
-                    <div>{candidate.percentage}% accuracy</div>
+                    <div>Avg Marks: {candidate.score} / {candidate.maxScore || maxPossibleScore}</div>
                     <div className="text-[10px] flex items-center justify-end gap-1 text-gray-400 mt-0.5">
                       <Clock className="w-3 h-3" />
                       <span>{formatTime(candidate.timeSpentSeconds)}</span>
@@ -413,9 +413,9 @@ export default function NptelLeaderboardView({ onStartTest }) {
                   <th className="py-2 px-2 sm:px-3">Rank</th>
                   <th className="py-2 px-2 sm:px-3">Candidate</th>
                   <th className="py-2 px-2 sm:px-3 hidden md:table-cell">Department</th>
-                  <th className="py-2 px-2 sm:px-3">Score</th>
-                  <th className="py-2 px-2 sm:px-3 text-center hidden sm:table-cell">Attempts</th>
-                  <th className="py-2 px-2 sm:px-3 hidden sm:table-cell">Accuracy</th>
+                  <th className="py-2 px-2 sm:px-3">Average %</th>
+                  <th className="py-2 px-2 sm:px-3 hidden lg:table-cell">Avg Marks</th>
+                  <th className="py-2 px-2 sm:px-3 text-center hidden sm:table-cell">Eligible Attempts</th>
                   <th className="py-2 px-2 sm:px-3 hidden sm:table-cell">Time</th>
                 </tr>
               </thead>
@@ -450,7 +450,7 @@ export default function NptelLeaderboardView({ onStartTest }) {
                             style={{
                               background: isMe
                                 ? "linear-gradient(135deg, #FF6B35 0%, #FF8A3D 100%)"
-                                : "var(--border)",
+                               : "var(--border)",
                               color: isMe ? "#FFF" : "var(--text-secondary)",
                             }}
                           >
@@ -481,14 +481,31 @@ export default function NptelLeaderboardView({ onStartTest }) {
                         {cand.department}
                       </td>
 
+                      {/* Average % */}
                       <td className="py-2 px-2 sm:px-3 font-bold whitespace-nowrap">
-                        <span className="text-xs sm:text-sm font-black" style={{ color: isMe ? "#FF6B35" : "var(--text-primary)" }}>
-                          {cand.score}
-                        </span>
-                        <span className="text-gray-400 text-[10px]"> / {cand.maxScore || maxPossibleScore}</span>
+                        <div className="flex items-center gap-2">
+                          <div className="w-14 sm:w-16 h-1.5 rounded-full bg-[var(--border)] overflow-hidden hidden sm:block">
+                            <div
+                              className="h-full rounded-full"
+                              style={{
+                                width: `${Math.min(100, Math.max(0, cand.percentage))}%`,
+                                background: cand.percentage >= 75 ? "#10B981" : cand.percentage >= 50 ? "#FF6B35" : "#EF4444",
+                              }}
+                            />
+                          </div>
+                          <span className="text-xs sm:text-sm font-black" style={{ color: isMe ? "#FF6B35" : "var(--text-primary)" }}>
+                            {cand.percentage}%
+                          </span>
+                        </div>
                       </td>
 
-                      {/* Number of Attempts Badge */}
+                      {/* Avg Marks */}
+                      <td className="py-2 px-2 sm:px-3 text-gray-400 whitespace-nowrap hidden lg:table-cell">
+                        <span className="font-semibold text-xs" style={{ color: "var(--text-primary)" }}>{cand.score}</span>
+                        <span className="text-[10px]"> / {cand.maxScore || maxPossibleScore}</span>
+                      </td>
+
+                      {/* Number of Eligible Attempts Badge */}
                       <td className="py-2 px-2 sm:px-3 text-center hidden sm:table-cell">
                         <span
                           className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-black border"
@@ -497,28 +514,13 @@ export default function NptelLeaderboardView({ onStartTest }) {
                             borderColor: isMe ? "rgba(255, 107, 53, 0.4)" : "var(--border)",
                             color: isMe ? "#FF6B35" : "var(--text-primary)",
                           }}
+                          title={`${cand.attemptsCount || 1} eligible attempt(s)`}
                         >
                           {cand.attemptsCount || 1}
                         </span>
                       </td>
 
-                      <td className="py-2 px-2 sm:px-3 hidden sm:table-cell">
-                        <div className="flex items-center gap-2">
-                          <div className="w-16 h-1.5 rounded-full bg-[var(--border)] overflow-hidden hidden sm:block">
-                            <div
-                              className="h-full rounded-full"
-                              style={{
-                                width: `${Math.min(100, cand.percentage)}%`,
-                                background: cand.percentage >= 75 ? "#10B981" : cand.percentage >= 50 ? "#FF6B35" : "#EF4444",
-                              }}
-                            />
-                          </div>
-                          <span className="font-bold text-xs" style={{ color: "var(--text-primary)" }}>
-                            {cand.percentage}%
-                          </span>
-                        </div>
-                      </td>
-
+                      {/* Avg Time */}
                       <td className="py-2 px-2 sm:px-3 hidden sm:table-cell text-gray-400">
                         <div className="flex items-center gap-1 text-[11px]">
                           <Clock className="w-3 h-3" />

@@ -267,7 +267,7 @@ export default function NptelAssignmentHome() {
                 <div className="min-w-0 flex-1">
                   <div className="text-[9px] sm:text-xs font-bold truncate" style={{ color: "var(--text-primary)" }}>Your Rank</div>
                   <div className="text-[8px] sm:text-[11px] text-gray-400 truncate">
-                    Score: <b className="text-emerald-400">{currentUserRank.score}/120</b>
+                    Avg: <b className="text-emerald-400">{currentUserRank.percentage}%</b> ({currentUserRank.attemptsCount || 1} {currentUserRank.attemptsCount === 1 ? "attempt" : "attempts"})
                   </div>
                 </div>
               </div>
@@ -299,7 +299,7 @@ export default function NptelAssignmentHome() {
                         {idx + 1}
                       </span>
                       <span className="truncate flex-1 font-medium" style={{ color: "var(--text-primary)" }}>{cand.name}</span>
-                      <span className="font-black text-[#F59E0B] shrink-0">{cand.score}</span>
+                      <span className="font-black text-[#F59E0B] shrink-0">{cand.percentage}%</span>
                     </div>
                   ))}
                 </div>
