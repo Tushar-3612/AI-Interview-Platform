@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import {
   Trophy,
@@ -6,22 +6,17 @@ import {
   Crown,
   Search,
   RotateCcw,
-  User,
   Clock,
   Target,
   Users,
-  Sparkles,
   ArrowRight,
   TrendingUp,
-  CheckCircle2,
   Award,
 } from "lucide-react";
 import api from "../../../core/api/api.js";
 import { getAuthToken } from "../../student/hooks/useStudentProfile.js";
 import { formatTime } from "../../../core/utils/dateUtils.js";
 import toast from "react-hot-toast";
-
-const NPTEL_THEME_COLOR = "#FF6B35";
 
 const RANK_BADGES = [
   { rank: 1, icon: Crown, color: "#F59E0B", bg: "rgba(245, 158, 11, 0.15)", border: "rgba(245, 158, 11, 0.4)", label: "1st Place" },
@@ -36,7 +31,7 @@ export default function NptelLeaderboardView({ onStartTest }) {
   const [currentUserRank, setCurrentUserRank] = useState(null);
   const [search, setSearch] = useState("");
 
-  const fetchLeaderboard = async () => {
+  const fetchLeaderboard = useCallback(async () => {
     setLoading(true);
     try {
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
@@ -51,11 +46,30 @@ export default function NptelLeaderboardView({ onStartTest }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token]);
 
   useEffect(() => {
-    fetchLeaderboard();
-  }, []);
+    let ignore = false;
+    async function load() {
+      try {
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const res = await api.get("/api/nptel/leaderboard", { headers });
+        if (!ignore && res.data?.success) {
+          setLeaderboardData(res.data.leaderboard || []);
+          setCurrentUserRank(res.data.currentUserRank || null);
+        }
+      } catch (err) {
+        console.warn("Failed to load NPTEL leaderboard:", err.message);
+        if (!ignore) toast.error("Could not load real-time leaderboard.");
+      } finally {
+        if (!ignore) setLoading(false);
+      }
+    }
+    load();
+    return () => {
+      ignore = true;
+    };
+  }, [token]);
 
   const filteredList = leaderboardData.filter((item) => {
     if (!search) return true;

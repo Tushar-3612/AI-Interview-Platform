@@ -63,6 +63,10 @@ const nptelAttemptSchema = new mongoose.Schema(
       required: true,
       default: 0,
     },
+    /**
+     * Canonical unit: Elapsed seconds (integer >= 0 and <= 86400).
+     * Corrupted values (e.g. Unix timestamps > 86400) or missing durations are sanitized to null.
+     */
     timeSpentSeconds: {
       type: Number,
       default: 0,

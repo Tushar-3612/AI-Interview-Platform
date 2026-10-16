@@ -99,10 +99,21 @@ export default function NptelAssignmentTest() {
   // Timer: 120 minutes (7200 seconds) for practice assessment
   const initialDuration = (NPTEL_TEST_META.durationMinutes || 120) * 60;
   const [timeLeft, setTimeLeft] = useState(initialDuration);
+  const timeLeftRef = useRef(timeLeft);
   const [timerRunning, setTimerRunning] = useState(true);
   const timerRef = useRef(null);
   const startTimeRef = useRef(null);
   const solutionRef = useRef(null);
+
+  useEffect(() => {
+    timeLeftRef.current = timeLeft;
+  }, [timeLeft]);
+
+  useEffect(() => {
+    if (startTimeRef.current === null) {
+      startTimeRef.current = Date.now();
+    }
+  }, [phase]);
 
   // Auto-advance to next question if answer is correct
   const [autoAdvanceOnCorrect, setAutoAdvanceOnCorrect] = useState(true);
@@ -305,7 +316,17 @@ export default function NptelAssignmentTest() {
     clearLocalDraftAnswers();
 
     const currentAnswers = answersRef.current || {};
-    const timeSpent = Math.max(1, Math.floor((Date.now() - startTimeRef.current) / 1000));
+    const elapsedFromStart =
+      startTimeRef.current && Number.isFinite(startTimeRef.current)
+        ? Math.floor((Date.now() - startTimeRef.current) / 1000)
+        : null;
+    const currentRemainingTime = Number.isFinite(timeLeftRef.current) ? timeLeftRef.current : 0;
+    const elapsedFromTimer = Math.max(0, initialDuration - currentRemainingTime);
+    const rawTimeSpent =
+      elapsedFromStart !== null && elapsedFromStart >= 0 && elapsedFromStart <= initialDuration + 3600
+        ? elapsedFromStart
+        : elapsedFromTimer;
+    const timeSpent = Math.max(1, Math.min(initialDuration, Math.floor(rawTimeSpent)));
 
     // Try server evaluation first if logged in
     try {
@@ -413,7 +434,7 @@ export default function NptelAssignmentTest() {
     window.scrollTo({ top: 0, behavior: "smooth" });
     setSubmitting(false);
     isSubmittingRef.current = false;
-  }, [phase, token, mode, questionsList]);
+  }, [phase, token, mode, questionsList, initialDuration]);
 
   // If user closes tab or browser, save draft answers so progress is not lost
   useEffect(() => {
@@ -725,7 +746,7 @@ export default function NptelAssignmentTest() {
                   Answered: {answeredCount}/{totalQuestionsCount}
                 </span>
                 <span className="text-[11px] sm:text-xs font-medium" style={{ color: "var(--text-muted)" }}>
-                  Time: {formatTime(resultData.timeSpentSeconds || 0)}
+                  Time: {formatTime(resultData.timeSpentSeconds)}
                 </span>
               </div>
             </div>

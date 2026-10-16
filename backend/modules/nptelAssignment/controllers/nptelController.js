@@ -3,6 +3,7 @@ import NptelAttempt from "../models/NptelAttempt.js";
 import NptelQuestion from "../models/NptelQuestion.js";
 import User from "../../auth/models/User.js";
 import { parseQuestions } from "../../testEngine/utils/questionParser.js";
+import { sanitizeDurationSeconds } from "../utils/durationHelper.js";
 
 /**
  * Normalizes an answer string or array into a sorted array of trimmed strings
@@ -178,7 +179,8 @@ export async function getUnifiedTest(req, res) {
 export async function submitUnifiedTest(req, res) {
   try {
     const userId = req.user?._id || req.user?.id;
-    const { answers = {}, mode = "exam", timeSpentSeconds = 0 } = req.body;
+    const { answers = {}, mode = "exam", timeSpentSeconds } = req.body;
+    const sanitizedDuration = sanitizeDurationSeconds(timeSpentSeconds);
 
     const activeQuestions = await getOrSeedQuestions();
 
@@ -257,7 +259,7 @@ export async function submitUnifiedTest(req, res) {
             score: totalScore,
             maxScore,
             percentage,
-            timeSpentSeconds,
+            timeSpentSeconds: sanitizedDuration,
             userAnswers: answers,
           });
           attemptId = attempt._id;
@@ -279,7 +281,7 @@ export async function submitUnifiedTest(req, res) {
       incorrectCount,
       unansweredCount,
       answeredCount,
-      timeSpentSeconds,
+      timeSpentSeconds: sanitizedDuration,
       attemptId,
       results: evaluatedQuestions,
     });
@@ -311,7 +313,10 @@ export async function getUnifiedTestProgress(req, res) {
       totalAttempts: attempts.length,
       bestScore,
       maxScore: ALL_NPTEL_QUESTIONS.length,
-      recentAttempts: attempts.slice(0, 5),
+      recentAttempts: attempts.slice(0, 5).map((att) => ({
+        ...att,
+        timeSpentSeconds: sanitizeDurationSeconds(att.timeSpentSeconds),
+      })),
     });
   } catch (error) {
     console.error("Error in getUnifiedTestProgress:", error);
@@ -430,12 +435,14 @@ export async function getNptelLeaderboard(req, res) {
         });
       }
 
+      const validDuration = sanitizeDurationSeconds(att.timeSpentSeconds);
+
       userAttemptsMap.get(uId).attempts.push({
         score,
         maxScore,
         percentage: attemptPercentage,
         correctCount: att.correctCount || 0,
-        timeSpentSeconds: att.timeSpentSeconds || 0,
+        timeSpentSeconds: validDuration,
         createdAt: att.createdAt,
       });
     }
@@ -463,8 +470,15 @@ export async function getNptelLeaderboard(req, res) {
       // 4. Average correct count and average time spent
       const sumCorrect = entry.attempts.reduce((sum, a) => sum + a.correctCount, 0);
       const avgCorrect = Math.round(sumCorrect / eligibleCount);
-      const sumTime = entry.attempts.reduce((sum, a) => sum + a.timeSpentSeconds, 0);
-      const avgTime = Math.round(sumTime / eligibleCount);
+
+      // Only average valid durations (exclude corrupt historical epoch timestamps, negative, or missing values)
+      const validDurations = entry.attempts
+        .map((a) => a.timeSpentSeconds)
+        .filter((t) => t !== null && t !== undefined && Number.isFinite(t) && t >= 0);
+
+      const avgTime = validDurations.length > 0
+        ? Math.round(validDurations.reduce((sum, t) => sum + t, 0) / validDurations.length)
+        : null;
 
       // Latest attempt timestamp
       const latestCreatedAt = entry.attempts[0]?.createdAt || new Date();
@@ -497,8 +511,16 @@ export async function getNptelLeaderboard(req, res) {
         return b.bestPercentage - a.bestPercentage;
       }
       // Fallback: Lower average time spent ascending
-      if ((a.timeSpentSeconds || 0) !== (b.timeSpentSeconds || 0)) {
-        return (a.timeSpentSeconds || 0) - (b.timeSpentSeconds || 0);
+      const aTime =
+        a.timeSpentSeconds !== null && a.timeSpentSeconds !== undefined && Number.isFinite(a.timeSpentSeconds)
+          ? a.timeSpentSeconds
+          : Infinity;
+      const bTime =
+        b.timeSpentSeconds !== null && b.timeSpentSeconds !== undefined && Number.isFinite(b.timeSpentSeconds)
+          ? b.timeSpentSeconds
+          : Infinity;
+      if (aTime !== bTime) {
+        return aTime - bTime;
       }
       // Stable sort: most recent submission
       return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
