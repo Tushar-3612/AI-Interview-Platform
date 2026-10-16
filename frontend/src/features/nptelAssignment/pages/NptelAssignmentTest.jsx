@@ -910,12 +910,12 @@ export default function NptelAssignmentTest() {
   const isFlagged = flagged.has(currentQuestion?.id);
 
   return (
-    <div className="flex flex-col w-full max-w-[1600px] mx-auto px-2 sm:px-4 py-1.5 sm:py-2 min-h-[100dvh] box-border lg:h-screen lg:max-h-screen lg:overflow-hidden">
+    <div className="flex flex-col w-full max-w-[1600px] mx-auto px-2 sm:px-4 py-1.5 sm:py-2 min-h-[100dvh] box-border lg:h-screen lg:max-h-screen lg:overflow-hidden" style={{ WebkitOverflowScrolling: "touch" }}>
       {/* ═══════════════════════════════════════════════
           TOP RESPONSIVE HEADER BAR
       ═══════════════════════════════════════════════ */}
       <div className="shrink-0 mb-1.5 pb-1.5 sm:mb-2 sm:pb-2 border-b border-[var(--border)]">
-        {/* Row 1: Back/Exit + Title (Left) and Palette + Submit + Auto-Next (Right) */}
+        {/* Row 1: Back/Exit + Title (Left) and Palette + Submit (Right) */}
         <div className="flex items-center justify-between gap-1.5 sm:gap-2 min-w-0">
           {/* Left: Exit Button + Branding */}
           <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0 flex-1">
@@ -923,12 +923,13 @@ export default function NptelAssignmentTest() {
               type="button"
               id="nptel-test-exit-btn"
               onClick={() => setConfirmExitModal(true)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-bold cursor-pointer transition hover:bg-[var(--bg-secondary)] shrink-0 active:scale-95"
+              className="flex items-center gap-1 px-2.5 py-2 rounded-xl border text-xs font-bold cursor-pointer transition hover:bg-[var(--bg-secondary)] shrink-0 active:scale-95 min-h-[40px]"
               style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
               title="Exit Assessment"
+              aria-label="Exit assessment"
             >
               <ChevronLeft className="w-4 h-4 shrink-0" />
-              <span>Exit</span>
+              <span className="hidden xs:inline">Exit</span>
             </button>
 
             <div
@@ -966,7 +967,7 @@ export default function NptelAssignmentTest() {
 
           {/* Right Header Controls */}
           <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-            {/* Auto-Next on Correct Toggle (Responsive) */}
+            {/* Auto-Next on Correct Toggle (Desktop only — moved to mobile secondary bar) */}
             <button
               type="button"
               id="nptel-autonext-header-btn"
@@ -979,7 +980,7 @@ export default function NptelAssignmentTest() {
                     : "Auto-Next disabled"
                 );
               }}
-              className="hidden sm:flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-xl border text-[11px] font-bold transition cursor-pointer active:scale-95 shrink-0"
+              className="hidden sm:flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-xl border text-[11px] font-bold transition cursor-pointer active:scale-95 shrink-0"
               style={{
                 borderColor: autoAdvanceOnCorrect ? NPTEL_THEME.border : "var(--border)",
                 background: autoAdvanceOnCorrect ? NPTEL_THEME.bgSubtle : "var(--bg-secondary)",
@@ -992,10 +993,9 @@ export default function NptelAssignmentTest() {
               }
             >
               <Zap className={`w-3.5 h-3.5 shrink-0 ${autoAdvanceOnCorrect ? "fill-[#FF6B35]" : ""}`} />
-              <span className="hidden sm:inline">Auto-Next</span>
-              <span className="sm:hidden">Auto</span>
+              <span className="hidden lg:inline">Auto-Next</span>
               <span
-                className="text-[10px] px-1 py-0.2 rounded font-black uppercase shrink-0"
+                className="text-[10px] px-1 rounded font-black uppercase shrink-0"
                 style={{
                   background: autoAdvanceOnCorrect
                     ? "rgba(255, 107, 53, 0.2)"
@@ -1011,34 +1011,35 @@ export default function NptelAssignmentTest() {
             <button
               type="button"
               onClick={() => setMobilePaletteOpen((prev) => !prev)}
-              className="lg:hidden flex items-center gap-1 px-2 py-1 rounded-xl border text-xs font-bold cursor-pointer hover:bg-[var(--bg-secondary)] active:scale-95"
+              className="lg:hidden flex items-center gap-1.5 px-2.5 py-2 rounded-xl border text-xs font-bold cursor-pointer hover:bg-[var(--bg-secondary)] active:scale-95 min-h-[40px]"
               style={{ borderColor: "var(--border)", color: "var(--text-primary)" }}
               title="Question Palette"
+              aria-label="Open question palette"
             >
               <Layers className="w-3.5 h-3.5" style={{ color: NPTEL_THEME.primary }} />
-              <span className="text-[11px] font-bold" style={{ color: NPTEL_THEME.primary }}>
+              <span className="text-[11px] font-bold tabular-nums" style={{ color: NPTEL_THEME.primary }}>
                 {answeredCount}/{totalQuestions}
               </span>
             </button>
 
             {/* Progress Count Badge on Desktop */}
             <div
-              className="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-xl border text-xs font-bold"
+              className="hidden sm:flex items-center gap-1 px-2.5 py-1.5 rounded-xl border text-xs font-bold"
               style={{
                 borderColor: "var(--border)",
                 background: "var(--bg-secondary)",
                 color: "var(--text-secondary)",
               }}
             >
-              <span style={{ color: NPTEL_THEME.primary }}>{answeredCount}</span>
+              <span className="tabular-nums" style={{ color: NPTEL_THEME.primary }}>{answeredCount}</span>
               <span>/</span>
-              <span>{totalQuestions}</span>
+              <span className="tabular-nums">{totalQuestions}</span>
             </div>
 
             {/* Assessment Countdown Timer */}
             <div
               id="nptel-timer-display"
-              className={`flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-xl border text-xs font-bold shrink-0 transition-colors ${
+              className={`flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-xl border text-xs font-bold shrink-0 transition-colors ${
                 timeLeft < 300
                   ? "bg-rose-500/10 border-rose-500/30 text-rose-400"
                   : timeLeft < 600
@@ -1046,6 +1047,8 @@ export default function NptelAssignmentTest() {
                   : "bg-[var(--bg-secondary)] border-[var(--border)] text-[var(--text-secondary)]"
               }`}
               title="Time Remaining"
+              aria-label="Time remaining"
+              aria-live="polite"
             >
               <Clock className="w-3.5 h-3.5 text-[#FF6B35] shrink-0" />
               <span className="tabular-nums font-mono text-[11px] sm:text-xs">
@@ -1057,7 +1060,7 @@ export default function NptelAssignmentTest() {
             <button
               type="button"
               onClick={() => setConfirmSubmitModal(true)}
-              className="px-2.5 sm:px-3.5 py-1 rounded-xl text-xs font-bold text-white cursor-pointer transition shadow-md hover:opacity-95 active:scale-95 flex items-center gap-1 sm:gap-1.5 shrink-0"
+              className="px-2.5 sm:px-3.5 py-2 rounded-xl text-xs font-bold text-white cursor-pointer transition shadow-md hover:opacity-95 active:scale-95 flex items-center gap-1 sm:gap-1.5 shrink-0 min-h-[40px]"
               style={{
                 background: NPTEL_THEME.gradient,
                 boxShadow: NPTEL_THEME.glow,
@@ -1070,11 +1073,24 @@ export default function NptelAssignmentTest() {
           </div>
         </div>
 
-        {/* Mobile secondary toolbar row (< sm): Question info + Auto-Next toggle */}
-        <div className="flex sm:hidden items-center justify-between gap-1.5 mt-1 pt-1 border-t border-[var(--border)]/40 text-[11px] min-w-0">
-          <span className="truncate text-gray-400 font-medium min-w-0 flex-1">
-            Q {currentIndex + 1}/{totalQuestions} · {currentQuestion?.sectionTitle}
+        {/* Mobile secondary toolbar row (< sm): Q progress + topic + Auto-Next toggle */}
+        <div className="flex sm:hidden items-center justify-between gap-2 mt-1.5 pt-1.5 border-t border-[var(--border)]/40 min-w-0">
+          {/* Q progress badge */}
+          <span
+            className="shrink-0 tabular-nums font-bold text-[11px] px-2 py-0.5 rounded-lg border"
+            style={{
+              background: NPTEL_THEME.bgSubtle,
+              borderColor: NPTEL_THEME.border,
+              color: NPTEL_THEME.primary,
+            }}
+          >
+            Q {currentIndex + 1}/{totalQuestions}
           </span>
+          {/* Section title — truncated */}
+          <span className="text-[10px] text-gray-500 font-medium truncate min-w-0 flex-1 px-1">
+            {currentQuestion?.sectionTitle}
+          </span>
+          {/* Auto-Next toggle */}
           <button
             type="button"
             onClick={() => {
@@ -1082,7 +1098,7 @@ export default function NptelAssignmentTest() {
               setAutoAdvanceOnCorrect(nextState);
               toast.success(
                 nextState
-                  ? "Auto-Next enabled: advances automatically on correct answer"
+                  ? "Auto-Next enabled"
                   : "Auto-Next disabled"
               );
             }}
@@ -1092,15 +1108,16 @@ export default function NptelAssignmentTest() {
               background: autoAdvanceOnCorrect ? NPTEL_THEME.bgSubtle : "var(--bg-secondary)",
               color: autoAdvanceOnCorrect ? NPTEL_THEME.primary : "var(--text-muted)",
             }}
+            title="Toggle Auto-Next"
           >
             <Zap className={`w-3 h-3 ${autoAdvanceOnCorrect ? "fill-[#FF6B35]" : ""}`} />
-            <span>Auto-Next: {autoAdvanceOnCorrect ? "ON" : "OFF"}</span>
+            <span>{autoAdvanceOnCorrect ? "Auto: ON" : "Auto: OFF"}</span>
           </button>
         </div>
       </div>
 
       {/* Progress Bar */}
-      <div className="shrink-0 w-full h-1 sm:h-1.5 rounded-full overflow-hidden mb-1.5 sm:mb-2 bg-[var(--border)]">
+      <div className="shrink-0 w-full h-1 sm:h-1.5 rounded-full overflow-hidden mb-1.5 sm:mb-2 bg-[var(--border)]" role="progressbar" aria-valuenow={progressPercent} aria-valuemin={0} aria-valuemax={100} aria-label={`Question ${currentIndex + 1} of ${totalQuestions}`}>
         <motion.div
           className="h-full rounded-full"
           style={{
@@ -1123,6 +1140,7 @@ export default function NptelAssignmentTest() {
             {/* Top Question Metadata Row (shrink-0) */}
             <div className="shrink-0 flex flex-wrap items-center justify-between gap-1.5 sm:gap-2 pb-1.5 sm:pb-2 mb-1.5 sm:mb-2 border-b min-w-0" style={{ borderColor: "var(--border)" }}>
               <div className="flex flex-wrap items-center gap-1 sm:gap-1.5 min-w-0">
+                {/* Question number — always visible */}
                 <span
                   className="px-2 py-0.5 rounded-lg text-[11px] sm:text-xs font-black tracking-wide border shrink-0"
                   style={{
@@ -1131,13 +1149,15 @@ export default function NptelAssignmentTest() {
                     color: NPTEL_THEME.primary,
                   }}
                 >
-                  Question {currentQuestion.questionNumber} of {totalQuestions}
+                  Q {currentQuestion.questionNumber}/{totalQuestions}
                 </span>
 
-                <span className="text-[10px] sm:text-[11px] font-semibold px-1.5 sm:px-2 py-0.5 rounded text-gray-400 border shrink-0" style={{ borderColor: "var(--border)" }}>
+                {/* Points badge — hidden on xs to save room */}
+                <span className="hidden xs:inline-block text-[10px] sm:text-[11px] font-semibold px-1.5 sm:px-2 py-0.5 rounded text-gray-400 border shrink-0" style={{ borderColor: "var(--border)" }}>
                   {currentQuestion.points || 1} Pt
                 </span>
 
+                {/* MCQ/MSQ badge */}
                 <span
                   className="text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded-md border flex items-center gap-1 shrink-0"
                   style={{
@@ -1145,11 +1165,13 @@ export default function NptelAssignmentTest() {
                     borderColor: NPTEL_THEME.border,
                     color: NPTEL_THEME.primary,
                   }}
+                  title={isMulti ? "Multi-Select Question: choose all that apply" : "Multiple Choice: choose one answer"}
                 >
                   <span>{isMulti ? "MSQ" : "MCQ"}</span>
                   <span className="hidden sm:inline">{isMulti ? "(Multi-Select)" : "(Single Choice)"}</span>
                 </span>
 
+                {/* Locked badge */}
                 {isLocked && (
                   <span
                     className="text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded-md border flex items-center gap-1 shrink-0"
@@ -1165,6 +1187,7 @@ export default function NptelAssignmentTest() {
                   </span>
                 )}
 
+                {/* View Passage button */}
                 {hasPassage && (
                   <button
                     type="button"
@@ -1177,12 +1200,12 @@ export default function NptelAssignmentTest() {
                     }}
                   >
                     <FileText className="w-3 h-3" />
-                    <span>View Passage</span>
+                    <span>Passage</span>
                   </button>
                 )}
               </div>
 
-              {/* Bookmark & Flag */}
+              {/* Bookmark & Flag — always right-aligned */}
               <div className="flex items-center gap-1 sm:gap-1.5 shrink-0 ml-auto sm:ml-0">
                 <button
                   type="button"
@@ -1221,13 +1244,14 @@ export default function NptelAssignmentTest() {
             </div>
 
             {/* Question Text & Prompt (shrink-0) */}
-            <div className="shrink-0 mb-1.5 sm:mb-2 min-w-0">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-0.5 sm:mb-1 truncate">
+            <div className="shrink-0 mb-3 sm:mb-2 min-w-0">
+              {/* Topic label — only on sm+ to avoid crowding on phones */}
+              <div className="hidden sm:block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1 truncate">
                 Topic: {currentQuestion.sectionTitle}
               </div>
 
               <h2
-                className="text-xs sm:text-sm md:text-base font-bold leading-snug break-words"
+                className="text-[17px] leading-[1.5] sm:text-lg md:text-xl font-bold break-words"
                 style={{ color: "var(--text-primary)" }}
               >
                 {currentQuestion.questionText}
@@ -1235,9 +1259,10 @@ export default function NptelAssignmentTest() {
             </div>
 
             {/* Options List */}
-            {/* Reserves ample bottom padding on mobile so last option and feedback are never overlapped by docked panel */}
-            <div className={`space-y-1.5 sm:space-y-2 py-1 pr-0.5 sm:pr-1 min-w-0 lg:flex-1 lg:min-h-0 lg:overflow-y-auto ${
-              isCheckedInPractice ? "pb-44 sm:pb-48 lg:pb-1" : "pb-32 sm:pb-36 lg:pb-1"
+            {/* Reserve bottom padding on mobile so options are never hidden behind the fixed action bar.
+                Mobile bar height: ~100px base + ~52px solution strip when shown. Safe-area handled by the bar itself. */}
+            <div className={`space-y-2 sm:space-y-2.5 py-1 pr-0.5 sm:pr-1 min-w-0 lg:flex-1 lg:min-h-0 lg:overflow-y-auto ${
+              isCheckedInPractice ? "pb-52 sm:pb-44 lg:pb-1" : "pb-36 sm:pb-28 lg:pb-1"
             }`}>
               {currentQuestion.options.map((opt, optIdx) => {
                 const isSelected = isMulti
@@ -1268,7 +1293,7 @@ export default function NptelAssignmentTest() {
                     type="button"
                     disabled={isLocked}
                     onClick={() => handleSelectOption(opt)}
-                    className={`w-full p-2.5 sm:p-3 rounded-xl border text-left text-xs sm:text-sm font-medium transition flex items-start sm:items-center justify-between gap-2.5 group min-h-[44px] box-border min-w-0 ${
+                    className={`w-full px-3 py-3 sm:p-3.5 rounded-xl border text-left font-medium transition flex items-start justify-between gap-2.5 group min-h-[52px] sm:min-h-[48px] box-border min-w-0 focus-visible:outline-2 focus-visible:outline-offset-2 ${
                       isLocked ? "cursor-default" : "cursor-pointer hover:border-[#FF6B35]/50 active:scale-[0.99]"
                     }`}
                     style={{
@@ -1277,9 +1302,10 @@ export default function NptelAssignmentTest() {
                       color: "var(--text-primary)",
                       boxShadow: isSelected ? "0 4px 15px -3px rgba(255, 107, 53, 0.2)" : "none",
                       opacity: isLocked && !isSelected && !currentQuestion.correctAnswers.includes(opt) ? 0.65 : 1,
+                      outlineColor: NPTEL_THEME.primary,
                     }}
                   >
-                    <div className="flex items-start sm:items-center gap-2 sm:gap-2.5 min-w-0 flex-1">
+                    <div className="flex items-start gap-2.5 sm:gap-3 min-w-0 flex-1">
                       {isMulti ? (
                         /* Square Checkbox for MSQ */
                         <span
@@ -1339,7 +1365,7 @@ export default function NptelAssignmentTest() {
                         {letter}
                       </span>
 
-                      <span className="flex-1 min-w-0 break-words leading-relaxed">{opt}</span>
+                      <span className="flex-1 min-w-0 break-words text-[15px] leading-[1.55] sm:text-sm">{opt}</span>
                     </div>
 
                     {isCheckedInPractice && (
@@ -1361,15 +1387,16 @@ export default function NptelAssignmentTest() {
             </div>
 
             {/* ═══════════════════════════════════════════════
-                DOCKED BOTTOM RESULT PANEL & NAVIGATION CONTROLS
-                On mobile: positioned cleanly at viewport bottom (bottom-0) with safe-area padding
-                On desktop: docked at the bottom of student-card
+                DOCKED BOTTOM ACTION BAR
+                Mobile: fixed at viewport bottom with OS safe-area padding
+                Desktop: static, docked to card bottom
             ═══════════════════════════════════════════════ */}
             <div
-              className="fixed lg:static bottom-0 lg:bottom-auto left-0 right-0 z-30 px-3 py-2 sm:px-4 sm:py-2.5 lg:p-0 lg:mt-auto border-t lg:border-t-0 shadow-lg lg:shadow-none shrink-0 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]"
+              className="fixed lg:static bottom-0 lg:bottom-auto left-0 right-0 z-30 px-3 pt-2 sm:px-4 sm:pt-2.5 lg:p-0 lg:mt-auto border-t lg:border-t-0 shadow-[0_-2px_12px_rgba(0,0,0,0.18)] lg:shadow-none shrink-0"
               style={{
                 background: "var(--bg-primary)",
                 borderColor: "var(--border)",
+                paddingBottom: "max(0.625rem, env(safe-area-inset-bottom, 0.625rem))",
               }}
             >
               <div className="w-full max-w-[1600px] mx-auto space-y-1.5 sm:space-y-2">
@@ -1477,8 +1504,9 @@ export default function NptelAssignmentTest() {
                       type="button"
                       disabled={currentIndex === 0}
                       onClick={() => setCurrentIndex((prev) => Math.max(0, prev - 1))}
-                      className="px-3.5 py-1.5 rounded-xl text-xs font-bold border transition flex items-center gap-1.5 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed bg-[var(--bg-secondary)] hover:bg-[var(--bg-secondary)]/80 active:scale-95"
+                      className="px-4 py-2.5 sm:py-2 rounded-xl text-sm sm:text-xs font-bold border transition flex items-center gap-1.5 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed bg-[var(--bg-secondary)] hover:bg-[var(--bg-secondary)]/80 active:scale-95 min-h-[44px] sm:min-h-[36px]"
                       style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
+                      aria-label="Previous question"
                     >
                       <ChevronLeft className="w-4 h-4" />
                       <span>Prev</span>
@@ -1488,7 +1516,8 @@ export default function NptelAssignmentTest() {
                       <button
                         type="button"
                         onClick={handleClearAnswer}
-                        className="text-xs text-gray-400 hover:text-red-400 cursor-pointer px-2 py-1 transition"
+                        className="text-xs text-gray-400 hover:text-red-400 cursor-pointer px-2.5 py-2.5 sm:py-1 transition min-h-[44px] sm:min-h-[36px] flex items-center"
+                        aria-label="Clear selected answer"
                       >
                         Clear
                       </button>
@@ -1504,7 +1533,7 @@ export default function NptelAssignmentTest() {
                         (!isMulti || checkedPractice[currentQuestion?.id] || !isAnswered)
                       }
                       onClick={handleNext}
-                      className="px-4 py-1.5 rounded-xl text-xs font-bold text-white cursor-pointer transition flex items-center gap-1.5 shadow-md hover:opacity-95 disabled:opacity-30 disabled:cursor-not-allowed active:scale-95"
+                      className="px-5 py-2.5 sm:px-4 sm:py-2 rounded-xl text-sm sm:text-xs font-bold text-white cursor-pointer transition flex items-center gap-1.5 shadow-md hover:opacity-95 disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 min-h-[44px] sm:min-h-[36px]"
                       style={{
                         background: NPTEL_THEME.gradient,
                         boxShadow: NPTEL_THEME.glow,
@@ -1780,12 +1809,12 @@ export default function NptelAssignmentTest() {
       ═══════════════════════════════════════════════ */}
       <AnimatePresence>
         {passageModalOpen && currentQuestion?.passage && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm">
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="student-card rounded-3xl p-5 sm:p-6 max-w-2xl w-full border max-h-[85vh] flex flex-col"
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 40 }}
+              className="student-card rounded-t-3xl sm:rounded-3xl px-4 pt-5 pb-[max(1.25rem,env(safe-area-inset-bottom,1.25rem))] sm:p-6 max-w-2xl w-full border max-h-[88vh] flex flex-col"
               style={{ background: "var(--bg-primary)", borderColor: NPTEL_THEME.border }}
             >
               <div className="flex items-center justify-between mb-3 pb-2 border-b" style={{ borderColor: "var(--border)" }}>
@@ -1832,12 +1861,12 @@ export default function NptelAssignmentTest() {
       ═══════════════════════════════════════════════ */}
       <AnimatePresence>
         {explanationModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm">
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="student-card rounded-3xl p-5 sm:p-6 max-w-xl w-full border max-h-[85vh] flex flex-col"
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 40 }}
+              className="student-card rounded-t-3xl sm:rounded-3xl px-4 pt-5 pb-[max(1.25rem,env(safe-area-inset-bottom,1.25rem))] sm:p-6 max-w-xl w-full border max-h-[88vh] flex flex-col"
               style={{ background: "var(--bg-primary)", borderColor: NPTEL_THEME.border }}
             >
               <div className="flex items-center justify-between mb-3 pb-2 border-b" style={{ borderColor: "var(--border)" }}>
@@ -1910,15 +1939,15 @@ export default function NptelAssignmentTest() {
       <AnimatePresence>
         {confirmSubmitModal && (
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm"
             onClick={() => setConfirmSubmitModal(false)}
           >
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 40 }}
               onClick={(e) => e.stopPropagation()}
-              className="student-card rounded-2xl sm:rounded-3xl p-5 sm:p-7 max-w-md w-full border shadow-2xl"
+              className="student-card rounded-t-2xl sm:rounded-3xl px-4 pt-5 pb-[max(1.25rem,env(safe-area-inset-bottom,1.25rem))] sm:p-7 max-w-md w-full border shadow-2xl"
               style={{ background: "var(--bg-primary)", borderColor: NPTEL_THEME.border }}
             >
               <h3 className="text-lg sm:text-xl font-black mb-2" style={{ color: "var(--text-primary)" }}>
@@ -1966,15 +1995,15 @@ export default function NptelAssignmentTest() {
       <AnimatePresence>
         {confirmExitModal && (
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm"
             onClick={() => setConfirmExitModal(false)}
           >
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 40 }}
               onClick={(e) => e.stopPropagation()}
-              className="student-card rounded-2xl sm:rounded-3xl p-5 sm:p-7 max-w-md w-full border shadow-2xl"
+              className="student-card rounded-t-2xl sm:rounded-3xl px-4 pt-5 pb-[max(1.25rem,env(safe-area-inset-bottom,1.25rem))] sm:p-7 max-w-md w-full border shadow-2xl"
               style={{ background: "var(--bg-primary)", borderColor: "var(--border)" }}
             >
               <div className="flex items-center gap-2.5 sm:gap-3 mb-2.5 sm:mb-3">
