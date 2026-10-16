@@ -23,6 +23,8 @@ import {
   Zap,
   Layers,
   Lock,
+  Download,
+  Eye,
 } from "lucide-react";
 import api from "../../../core/api/api.js";
 import { getAuthToken } from "../../student/hooks/useStudentProfile.js";
@@ -45,6 +47,116 @@ import {
 const PREPHIRE_WEBSITE_URL =
   import.meta.env.VITE_PREPHIRE_URL ||
   "https://ai-interview-platform-pearl-five.vercel.app";
+
+const NPTEL_QUESTION_BANK_PDF_URL = "/NPTEL_Question_Bank_PrepHire.pdf";
+
+const SHEET_API_URL =
+  "https://script.google.com/macros/s/AKfycbxsE7P1-gC2LhaDlF5tElYAg-AGaULs5GP-q592Skpd6SvaHOfSMfaWn2EkMvthtFTjGA/exec";
+
+const VISITOR_STORAGE_KEY = "nptel_live_google_sheet_count_v2";
+
+function getCachedVisitorCount() {
+  try {
+    // Purge ALL legacy keys and contaminated fake values from prior tests
+    localStorage.removeItem("lastKnownCount");
+    localStorage.removeItem("fallbackCount");
+    localStorage.removeItem("realVisitorCount");
+    localStorage.removeItem("visitorCount");
+    localStorage.removeItem("realVisitorCount");
+
+    const raw = localStorage.getItem(VISITOR_STORAGE_KEY);
+    if (raw) {
+      const parsed = parseInt(raw, 10);
+      // Must be a valid positive number matching the Google Sheet counter
+      if (!isNaN(parsed) && parsed > 0) {
+        // Fast optimistic increment on refresh for instant visual feedback
+        const next = parsed + 1;
+        localStorage.setItem(VISITOR_STORAGE_KEY, String(next));
+        return next;
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return null;
+}
+
+/**
+ * Live Visitor Counter Badge
+ * Directly bound to the real Google Sheet counter (no fake numbers).
+ * Shows last real count instantly on refresh and synchronizes live with the sheet.
+ */
+function VisitorCounterBadge() {
+  const [visitorCount, setVisitorCount] = useState(() => getCachedVisitorCount());
+
+  useEffect(() => {
+    let isMounted = true;
+    async function updateVisitorCount() {
+      try {
+        const hitResponse = await fetch(`${SHEET_API_URL}?action=hit`, {
+          cache: "no-cache",
+        });
+        const hitData = await hitResponse.json();
+        if (isMounted && typeof hitData?.count === "number") {
+          setVisitorCount(hitData.count);
+          try {
+            localStorage.setItem(VISITOR_STORAGE_KEY, String(hitData.count));
+          } catch {
+            // ignore
+          }
+        }
+      } catch (error) {
+        console.warn("Visitor counter sync error:", error?.message);
+      }
+    }
+    updateVisitorCount();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  return (
+    <div
+      className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl sm:rounded-2xl border text-xs font-semibold select-none shadow-sm"
+      style={{
+        background: "rgba(255, 107, 53, 0.08)",
+        borderColor: "rgba(255, 107, 53, 0.25)",
+        color: "var(--text-secondary)",
+      }}
+      title="Live Visitor Count (from Google Sheet)"
+      aria-label="Visitor count"
+    >
+      <Eye className="w-4 h-4 text-[#FF6B35] shrink-0" />
+      <span className="text-[11px] font-medium text-gray-400">Visitors:</span>
+      <span id="visitorCount" className="font-mono font-bold text-white tabular-nums text-xs sm:text-[13px]">
+        {visitorCount !== null ? visitorCount : "..."}
+      </span>
+    </div>
+  );
+}
+
+/**
+ * Question Bank PDF Download / View button.
+ * Accessible to ALL candidates (both guests and signed-in users).
+ */
+function NptelQuestionBankPdfButton() {
+  return (
+    <a
+      href={NPTEL_QUESTION_BANK_PDF_URL}
+      target="_blank"
+      rel="noopener noreferrer"
+      download="NPTEL_Question_Bank_PrepHire.pdf"
+      id="nptel-question-bank-pdf-btn"
+      className="inline-flex items-center gap-2 px-3.5 sm:px-4 py-2.5 rounded-xl sm:rounded-2xl text-[13px] sm:text-sm font-bold text-[#FF8A3D] hover:text-white transition-all duration-200 border border-[#FF6B35]/35 bg-[#FF6B35]/10 hover:bg-[#FF6B35]/20 hover:border-[#FF6B35]/60 shadow-sm active:scale-[0.98] cursor-pointer"
+      title="Download NPTEL Question Bank PDF (120 Questions with Solutions)"
+      aria-label="Download Official NPTEL Question Bank PDF"
+    >
+      <FileText className="w-4 h-4 text-[#FF6B35] shrink-0" />
+      <span className="whitespace-nowrap">Question Bank PDF</span>
+      <Download className="w-3.5 h-3.5 text-[#FF6B35] shrink-0" />
+    </a>
+  );
+}
 
 /**
  * Guest-only footer branding showing "Built by Prephire Team".
@@ -963,12 +1075,12 @@ export default function NptelAssignmentTest() {
             </div>
           )}
 
-          {/* Guest-Only Prephire Team Footer Branding in Result view */}
-          {isGuest && (
-            <div className="flex items-center justify-center pt-4 pb-2">
-              <PrephireGuestBranding />
-            </div>
-          )}
+          {/* Footer: Question Bank PDF (everyone) + Visitor Counter (everyone) + Guest branding */}
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-5 pb-2">
+            <NptelQuestionBankPdfButton />
+            <VisitorCounterBadge />
+            {isGuest && <PrephireGuestBranding />}
+          </div>
         </motion.div>
       </div>
     );
@@ -1596,12 +1708,12 @@ export default function NptelAssignmentTest() {
                     )}
                   </div>
 
-                  {/* Desktop / Laptop guest-only footer branding (centered between Prev and Next) */}
-                  {isGuest && (
-                    <div className="hidden sm:flex items-center justify-center">
-                      <PrephireGuestBranding />
-                    </div>
-                  )}
+                  {/* Desktop / Laptop footer center: Question Bank PDF (everyone) + Visitor Counter (everyone) + Branding (guests) */}
+                  <div className="hidden sm:flex items-center justify-center gap-2.5">
+                    <NptelQuestionBankPdfButton />
+                    <VisitorCounterBadge />
+                    {isGuest && <PrephireGuestBranding />}
+                  </div>
 
                   {/* Right: Next / Check */}
                   <div className="flex items-center gap-2">
@@ -1633,12 +1745,12 @@ export default function NptelAssignmentTest() {
                   </div>
                 </div>
 
-                {/* Mobile / Narrow screen guest-only footer branding (centered below Prev and Next) */}
-                {isGuest && (
-                  <div className="flex sm:hidden items-center justify-center pt-2 pb-1">
-                    <PrephireGuestBranding />
-                  </div>
-                )}
+                {/* Mobile / Narrow screen footer: Question Bank PDF (everyone) + Visitor Counter (everyone) + Branding (guests) */}
+                <div className="flex sm:hidden flex-wrap items-center justify-center gap-2 pt-2 pb-1">
+                  <NptelQuestionBankPdfButton />
+                  <VisitorCounterBadge />
+                  {isGuest && <PrephireGuestBranding />}
+                </div>
               </div>
             </div>
           </div>

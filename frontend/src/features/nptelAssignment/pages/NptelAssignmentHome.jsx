@@ -13,10 +13,91 @@ import {
   Zap,
   ChevronRight,
   Star,
+  Download,
+  Eye,
 } from "lucide-react";
 import api from "../../../core/api/api.js";
 import { getAuthToken } from "../../student/hooks/useStudentProfile.js";
 import { NPTEL_THEME, getLocalTestProgress, clearLocalDraftAnswers } from "../data/nptelData.js";
+
+const SHEET_API_URL =
+  "https://script.google.com/macros/s/AKfycbxsE7P1-gC2LhaDlF5tElYAg-AGaULs5GP-q592Skpd6SvaHOfSMfaWn2EkMvthtFTjGA/exec";
+
+const VISITOR_STORAGE_KEY = "nptel_live_google_sheet_count_v2";
+
+function getCachedVisitorCount() {
+  try {
+    // Purge ALL legacy keys and contaminated fake values from prior tests
+    localStorage.removeItem("lastKnownCount");
+    localStorage.removeItem("fallbackCount");
+    localStorage.removeItem("realVisitorCount");
+    localStorage.removeItem("visitorCount");
+
+    const raw = localStorage.getItem(VISITOR_STORAGE_KEY);
+    if (raw) {
+      const parsed = parseInt(raw, 10);
+      // Must be a valid positive number matching the Google Sheet counter
+      if (!isNaN(parsed) && parsed > 0) {
+        // Fast optimistic increment on refresh for instant visual feedback
+        const next = parsed + 1;
+        localStorage.setItem(VISITOR_STORAGE_KEY, String(next));
+        return next;
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return null;
+}
+
+function VisitorCounterBadge() {
+  const [visitorCount, setVisitorCount] = useState(() => getCachedVisitorCount());
+
+  useEffect(() => {
+    let isMounted = true;
+    async function updateVisitorCount() {
+      try {
+        const hitResponse = await fetch(`${SHEET_API_URL}?action=hit`, {
+          cache: "no-cache",
+        });
+        const hitData = await hitResponse.json();
+        if (isMounted && typeof hitData?.count === "number") {
+          setVisitorCount(hitData.count);
+          try {
+            localStorage.setItem(VISITOR_STORAGE_KEY, String(hitData.count));
+          } catch {
+            // ignore
+          }
+        }
+      } catch (error) {
+        console.warn("Visitor counter sync error:", error?.message);
+      }
+    }
+    updateVisitorCount();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  return (
+    <div
+      className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl sm:rounded-2xl border text-xs font-semibold select-none shadow-sm"
+      style={{
+        background: "rgba(255, 107, 53, 0.08)",
+        borderColor: "rgba(255, 107, 53, 0.25)",
+        color: "var(--text-secondary)",
+      }}
+      title="Live Visitor Count (from Google Sheet)"
+      aria-label="Visitor count"
+    >
+      <Eye className="w-4 h-4 text-[#FF6B35] shrink-0" />
+      <span className="text-[11px] font-medium text-gray-400">Visitors:</span>
+      <span id="visitorCount" className="font-mono font-bold text-white tabular-nums text-xs sm:text-[13px]">
+        {visitorCount !== null ? visitorCount : "..."}
+      </span>
+    </div>
+  );
+}
 
 export default function NptelAssignmentHome() {
   const navigate = useNavigate();
@@ -310,6 +391,52 @@ export default function NptelAssignmentHome() {
             </button>
           </div>
         </motion.div>
+      </div>
+
+      {/* ── FOOTER RESOURCE: NPTEL QUESTION BANK PDF ── */}
+      <div
+        className="mt-6 sm:mt-10 pt-5 pb-5 px-4 sm:px-6 rounded-2xl border flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left"
+        style={{
+          background: "var(--card-bg)",
+          borderColor: "var(--border)",
+        }}
+      >
+        <div className="flex items-center gap-3">
+          <div
+            className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center shrink-0 border"
+            style={{
+              background: NPTEL_THEME.bgSubtle,
+              borderColor: NPTEL_THEME.border,
+              color: NPTEL_THEME.primary,
+            }}
+          >
+            <FileText className="w-5 h-5 text-[#FF6B35]" />
+          </div>
+          <div>
+            <h4 className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>
+              Official NPTEL Question Bank (PrepHire)
+            </h4>
+            <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+              Complete reference question bank with 120 questions, answer keys &amp; solutions (PDF)
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-center sm:justify-end gap-3">
+          <VisitorCounterBadge />
+          <a
+            href="/NPTEL_Question_Bank_PrepHire.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+            download="NPTEL_Question_Bank_PrepHire.pdf"
+            id="nptel-home-download-pdf-btn"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-white transition-all shadow-md hover:opacity-95 active:scale-95 shrink-0 cursor-pointer"
+            style={{ background: NPTEL_THEME.gradient, boxShadow: NPTEL_THEME.glow }}
+          >
+            <Download className="w-4 h-4" />
+            <span>Download Question Bank PDF</span>
+          </a>
+        </div>
       </div>
     </div>
   );
