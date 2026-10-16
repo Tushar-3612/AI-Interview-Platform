@@ -42,9 +42,74 @@ import {
   toggleLocalBookmark,
 } from "../data/nptelData.js";
 
+const PREPHIRE_WEBSITE_URL =
+  import.meta.env.VITE_PREPHIRE_URL ||
+  "https://ai-interview-platform-pearl-five.vercel.app";
+
+/**
+ * Guest-only footer branding showing "Built by Prephire Team".
+ * - Visible only to unauthenticated visitors
+ * - Desktop hover reveals subtle tooltip with the official website URL
+ * - Desktop click & mobile tap opens the official website
+ * - Black and orange styling matching Prephire's design system
+ * - Scaled to 1.5–1.7x size: 24px logo, 15px desktop / 13.5px mobile text, 16–20px horizontal & 10–12px vertical padding
+ */
+function PrephireGuestBranding() {
+  return (
+    <div className="relative group inline-flex items-center">
+      <a
+        href={PREPHIRE_WEBSITE_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        id="nptel-guest-footer-branding"
+        className="inline-flex items-center gap-2 sm:gap-2.5 px-4 sm:px-5 py-2.5 rounded-xl sm:rounded-2xl text-[13.5px] sm:text-[15px] font-medium text-gray-300 hover:text-white transition-all duration-200 border border-[#FF6B35]/25 bg-[#0d0f17]/75 hover:border-[#FF6B35]/50 hover:bg-[#FF6B35]/10 shadow-sm hover:shadow-[0_0_16px_rgba(255,107,53,0.15)] focus:outline-none focus:ring-2 focus:ring-[#FF6B35]/40 active:scale-[0.98] cursor-pointer"
+        aria-label="Built by Prephire Team"
+        title={PREPHIRE_WEBSITE_URL}
+      >
+        <img
+          src="/images/metadata.png"
+          alt=""
+          aria-hidden="true"
+          className="w-6 h-6 object-contain shrink-0"
+          onError={(e) => {
+            e.currentTarget.style.display = "none";
+          }}
+        />
+        <span className="tracking-tight whitespace-nowrap select-none">
+          Built by <strong className="font-extrabold text-[#FF6B35] group-hover:text-[#FF8A3D] transition-colors">Prephire</strong> Team
+        </span>
+      </a>
+
+      {/* Subtle Desktop Tooltip on Hover */}
+      <div
+        role="tooltip"
+        className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden lg:group-hover:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-mono tracking-tight text-gray-200 bg-[#0d0f17]/95 border border-[#FF6B35]/35 shadow-[0_4px_20px_rgba(0,0,0,0.5)] backdrop-blur-md whitespace-nowrap z-50 transition-opacity duration-150"
+      >
+        <span className="w-1.5 h-1.5 rounded-full bg-[#FF6B35] shrink-0" />
+        <span className="text-gray-300">{PREPHIRE_WEBSITE_URL}</span>
+        <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-[1px] border-4 border-transparent border-t-[#0d0f17]/95" />
+      </div>
+    </div>
+  );
+}
+
 export default function NptelAssignmentTest() {
   const navigate = useNavigate();
   const token = getAuthToken();
+  // Guest status: true if no valid token exists, immediately false if authenticated
+  const [isGuest, setIsGuest] = useState(() => !getAuthToken());
+
+  useEffect(() => {
+    const handleAuthChange = () => {
+      setIsGuest(!getAuthToken());
+    };
+    window.addEventListener("storage", handleAuthChange);
+    window.addEventListener("profile-updated", handleAuthChange);
+    return () => {
+      window.removeEventListener("storage", handleAuthChange);
+      window.removeEventListener("profile-updated", handleAuthChange);
+    };
+  }, []);
 
   // Dedicated practice mode with instant evaluation & auto-advance on correct
   const mode = "practice";
@@ -897,6 +962,13 @@ export default function NptelAssignmentTest() {
               )}
             </div>
           )}
+
+          {/* Guest-Only Prephire Team Footer Branding in Result view */}
+          {isGuest && (
+            <div className="flex items-center justify-center pt-4 pb-2">
+              <PrephireGuestBranding />
+            </div>
+          )}
         </motion.div>
       </div>
     );
@@ -1524,6 +1596,13 @@ export default function NptelAssignmentTest() {
                     )}
                   </div>
 
+                  {/* Desktop / Laptop guest-only footer branding (centered between Prev and Next) */}
+                  {isGuest && (
+                    <div className="hidden sm:flex items-center justify-center">
+                      <PrephireGuestBranding />
+                    </div>
+                  )}
+
                   {/* Right: Next / Check */}
                   <div className="flex items-center gap-2">
                     <button
@@ -1553,6 +1632,13 @@ export default function NptelAssignmentTest() {
                     </button>
                   </div>
                 </div>
+
+                {/* Mobile / Narrow screen guest-only footer branding (centered below Prev and Next) */}
+                {isGuest && (
+                  <div className="flex sm:hidden items-center justify-center pt-2 pb-1">
+                    <PrephireGuestBranding />
+                  </div>
+                )}
               </div>
             </div>
           </div>
