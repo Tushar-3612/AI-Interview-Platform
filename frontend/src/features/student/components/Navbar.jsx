@@ -4,13 +4,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Sun,
   Moon,
-  ChevronDown,
   User,
   Settings,
   LogOut,
-  Play,
   PanelLeft,
   ChevronRight,
+  GraduationCap,
 } from "lucide-react";
 import { useTheme } from "../../../core/hooks/useTheme.jsx";
 import { getAuthUser } from "../hooks/useStudentProfile.js";
@@ -146,11 +145,24 @@ function Navbar({
             className="lg:hidden flex items-center group focus:outline-none"
             aria-label="PrepHire Home"
           >
-            <img
-              src="/images/metadata.png"
-              alt="PrepHire Logo"
-              className="h-14 sm:h-15 w-auto object-contain transition-transform group-hover:scale-105"
-            />
+            {location.pathname.startsWith("/nptel-assignment") ? (
+              <div
+                className="w-9 h-9 rounded-xl flex items-center justify-center border shrink-0"
+                style={{
+                  background: "linear-gradient(135deg, rgba(255, 107, 53, 0.2) 0%, rgba(255, 107, 53, 0.08) 100%)",
+                  borderColor: "rgba(255, 107, 53, 0.35)",
+                  color: "#FF6B35",
+                }}
+              >
+                <GraduationCap className="w-5 h-5" />
+              </div>
+            ) : (
+              <img
+                src="/images/metadata.png"
+                alt="PrepHire Logo"
+                className="h-14 sm:h-15 w-auto object-contain transition-transform group-hover:scale-105"
+              />
+            )}
           </Link>
 
           {/* Desktop Sidebar Toggle Button */}

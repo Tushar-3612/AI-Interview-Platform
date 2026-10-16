@@ -16,7 +16,7 @@ import {
   RotateCcw,
   Send,
   Flag,
-  Sparkles,
+  BookOpen,
   Trophy,
   Check,
   X,
@@ -1842,7 +1842,7 @@ export default function NptelAssignmentTest() {
             >
               <div className="flex items-center justify-between mb-3 pb-2 border-b" style={{ borderColor: "var(--border)" }}>
                 <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4" style={{ color: NPTEL_THEME.primary }} />
+                  <BookOpen className="w-4 h-4" style={{ color: NPTEL_THEME.primary }} />
                   <h3 className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>
                     Explanation &amp; Accepted Rationale
                   </h3>

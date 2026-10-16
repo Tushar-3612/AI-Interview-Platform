@@ -8,7 +8,6 @@ import {
   CheckCircle2,
   FileText,
   ArrowRight,
-  Sparkles,
   Target,
   Award,
   Zap,
@@ -70,7 +69,7 @@ export default function NptelAssignmentHome() {
           className="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 sm:px-4 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-widest border mb-2.5 sm:mb-5"
           style={{ background: NPTEL_THEME.bgSubtle, borderColor: NPTEL_THEME.border, color: NPTEL_THEME.primary }}
         >
-          <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+          <GraduationCap className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
           <span>NPTEL · IIT Madras</span>
         </div>
 

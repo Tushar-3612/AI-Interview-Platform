@@ -47,6 +47,7 @@ export default function StudentSidebar({
   const { theme } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
+  const isNptel = location.pathname.startsWith("/nptel-assignment");
   const [authUser, setAuthUser] = useState(() => getAuthUser());
 
   useEffect(() => {
@@ -133,16 +134,29 @@ export default function StudentSidebar({
             }`}
             title="PrepHire Home"
           >
-            <img
-              src="/images/metadata.png"
-              alt="PrepHire Logo"
-              className={`object-contain shrink-0 transition-transform duration-200 group-hover:scale-130 ${
-                collapsed
-                  ? "h-14 w-14 scale-120 origin-center"
-                  : "h-14 w-14 scale-115 origin-center"
-              }`}
-              draggable="false"
-            />
+            {isNptel ? (
+              <div
+                className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border transition-all duration-200"
+                style={{
+                  background: "linear-gradient(135deg, rgba(255, 107, 53, 0.2) 0%, rgba(255, 107, 53, 0.08) 100%)",
+                  borderColor: "rgba(255, 107, 53, 0.35)",
+                  color: "#FF6B35",
+                }}
+              >
+                <GraduationCap className="w-5 h-5" />
+              </div>
+            ) : (
+              <img
+                src="/images/metadata.png"
+                alt="PrepHire Logo"
+                className={`object-contain shrink-0 transition-transform duration-200 group-hover:scale-130 ${
+                  collapsed
+                    ? "h-14 w-14 scale-120 origin-center"
+                    : "h-14 w-14 scale-115 origin-center"
+                }`}
+                draggable="false"
+              />
+            )}
             {!collapsed && (
               <span className="text-2xl font-black tracking-tight whitespace-nowrap overflow-hidden text-ellipsis">
                 <span style={{ color: theme === "dark" ? "#FFFFFF" : "#111827" }}>Prep</span>
@@ -379,11 +393,24 @@ export default function StudentSidebar({
                 }}
               >
                 <div className="flex items-center gap-2.5">
-                  <img
-                    src="/images/metadata.png"
-                    alt="PrepHire Logo"
-                    className="h-9 w-9 object-contain"
-                  />
+                  {isNptel ? (
+                    <div
+                      className="w-9 h-9 rounded-xl flex items-center justify-center border shrink-0"
+                      style={{
+                        background: "linear-gradient(135deg, rgba(255, 107, 53, 0.2) 0%, rgba(255, 107, 53, 0.08) 100%)",
+                        borderColor: "rgba(255, 107, 53, 0.35)",
+                        color: "#FF6B35",
+                      }}
+                    >
+                      <GraduationCap className="w-5 h-5" />
+                    </div>
+                  ) : (
+                    <img
+                      src="/images/metadata.png"
+                      alt="PrepHire Logo"
+                      className="h-9 w-9 object-contain"
+                    />
+                  )}
                   <span className="text-lg font-black tracking-tight">
                     <span style={{ color: theme === "dark" ? "#FFFFFF" : "#111827" }}>Prep</span>
                     <span style={{ color: "#FF6B35" }}>Hire</span>
