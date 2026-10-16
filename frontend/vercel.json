@@ -1,11 +1,30 @@
 {
+  "headers": [
+    {
+      "source": "/(.*)\\.pdf",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/pdf"
+        },
+        {
+          "key": "Content-Disposition",
+          "value": "inline; filename=\"NPTEL_Question_Bank_PrepHire.pdf\""
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    }
+  ],
   "rewrites": [
     {
       "source": "/api/:match*",
       "destination": "https://ai-interview-platform-a90b.onrender.com/api/:match*"
     },
     {
-      "source": "/(.*)",
+      "source": "/((?!.*\\.(?:pdf|png|jpg|jpeg|gif|svg|ico|json|css|js|woff|woff2|ttf)).*)",
       "destination": "/index.html"
     }
   ]

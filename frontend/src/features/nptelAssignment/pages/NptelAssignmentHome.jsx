@@ -13,8 +13,8 @@ import {
   Zap,
   ChevronRight,
   Star,
-  Download,
   Eye,
+  ExternalLink,
 } from "lucide-react";
 import api from "../../../core/api/api.js";
 import { getAuthToken } from "../../student/hooks/useStudentProfile.js";
@@ -428,13 +428,13 @@ export default function NptelAssignmentHome() {
             href="/NPTEL_Question_Bank_PrepHire.pdf"
             target="_blank"
             rel="noopener noreferrer"
-            download="NPTEL_Question_Bank_PrepHire.pdf"
             id="nptel-home-download-pdf-btn"
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-white transition-all shadow-md hover:opacity-95 active:scale-95 shrink-0 cursor-pointer"
             style={{ background: NPTEL_THEME.gradient, boxShadow: NPTEL_THEME.glow }}
+            title="Open NPTEL Question Bank PDF in New Tab"
           >
-            <Download className="w-4 h-4" />
-            <span>Download Question Bank PDF</span>
+            <ExternalLink className="w-4 h-4" />
+            <span>View Question Bank PDF</span>
           </a>
         </div>
       </div>

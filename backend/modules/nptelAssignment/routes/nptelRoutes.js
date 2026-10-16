@@ -1,6 +1,9 @@
 import express from "express";
 import jwt from "jsonwebtoken";
 import multer from "multer";
+import path from "path";
+import fs from "fs";
+import { fileURLToPath } from "url";
 import {
   getUnifiedTest,
   submitUnifiedTest,
@@ -14,10 +17,25 @@ import {
   downloadAdminTemplate,
 } from "../controllers/nptelController.js";
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const QUESTION_BANK_PDF_PATH = path.join(__dirname, "../data/NPTEL_Question_Bank_PrepHire.pdf");
+
 const router = express.Router();
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 15 * 1024 * 1024 }, // 15MB limit
+});
+
+// Public Question Bank PDF route (opens inline in browser tab)
+router.get("/question-bank-pdf", (req, res) => {
+  if (fs.existsSync(QUESTION_BANK_PDF_PATH)) {
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", 'inline; filename="NPTEL_Question_Bank_PrepHire.pdf"');
+    res.setHeader("Cache-Control", "public, max-age=86400");
+    return res.sendFile(QUESTION_BANK_PDF_PATH);
+  }
+  return res.status(404).json({ success: false, message: "PDF not found" });
 });
 
 const authCheck = (req, res, next) => {

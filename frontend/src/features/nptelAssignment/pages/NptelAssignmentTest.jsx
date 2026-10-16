@@ -23,8 +23,8 @@ import {
   Zap,
   Layers,
   Lock,
-  Download,
   Eye,
+  ExternalLink,
 } from "lucide-react";
 import api from "../../../core/api/api.js";
 import { getAuthToken } from "../../student/hooks/useStudentProfile.js";
@@ -109,9 +109,19 @@ function VisitorCounterBadge() {
         console.warn("Visitor counter sync error:", error?.message);
       }
     }
+    // Increment on initial page mount/refresh
     updateVisitorCount();
+
+    // Listen for quiz restart / retake triggers
+    const handleManualHit = () => {
+      setVisitorCount((prev) => (typeof prev === "number" ? prev + 1 : prev));
+      updateVisitorCount();
+    };
+    window.addEventListener("nptel-visitor-hit", handleManualHit);
+
     return () => {
       isMounted = false;
+      window.removeEventListener("nptel-visitor-hit", handleManualHit);
     };
   }, []);
 
@@ -138,6 +148,7 @@ function VisitorCounterBadge() {
 /**
  * Question Bank PDF Download / View button.
  * Accessible to ALL candidates (both guests and signed-in users).
+ * Opens PDF in a new tab instead of downloading directly.
  */
 function NptelQuestionBankPdfButton() {
   return (
@@ -145,15 +156,14 @@ function NptelQuestionBankPdfButton() {
       href={NPTEL_QUESTION_BANK_PDF_URL}
       target="_blank"
       rel="noopener noreferrer"
-      download="NPTEL_Question_Bank_PrepHire.pdf"
       id="nptel-question-bank-pdf-btn"
       className="inline-flex items-center gap-2 px-3.5 sm:px-4 py-2.5 rounded-xl sm:rounded-2xl text-[13px] sm:text-sm font-bold text-[#FF8A3D] hover:text-white transition-all duration-200 border border-[#FF6B35]/35 bg-[#FF6B35]/10 hover:bg-[#FF6B35]/20 hover:border-[#FF6B35]/60 shadow-sm active:scale-[0.98] cursor-pointer"
-      title="Download NPTEL Question Bank PDF (120 Questions with Solutions)"
-      aria-label="Download Official NPTEL Question Bank PDF"
+      title="Open NPTEL Question Bank PDF in New Tab (120 Questions with Solutions)"
+      aria-label="Open Official NPTEL Question Bank PDF in New Tab"
     >
       <FileText className="w-4 h-4 text-[#FF6B35] shrink-0" />
       <span className="whitespace-nowrap">Question Bank PDF</span>
-      <Download className="w-3.5 h-3.5 text-[#FF6B35] shrink-0" />
+      <ExternalLink className="w-3.5 h-3.5 text-[#FF6B35] shrink-0" />
     </a>
   );
 }
@@ -728,9 +738,14 @@ export default function NptelAssignmentTest() {
     setShowReviewModal(false);
     setResultData(null);
 
-    // 6. Transition to active phase
+    // 6. Transition to active phase & increment visitor/attempt count in Google Sheet
     setPhase("active");
     window.scrollTo({ top: 0, behavior: "smooth" });
+    try {
+      window.dispatchEvent(new Event("nptel-visitor-hit"));
+    } catch {
+      // ignore
+    }
   }, []);
 
   const answeredCount = Object.keys(answers).filter((k) => {

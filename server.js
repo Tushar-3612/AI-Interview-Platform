@@ -157,6 +157,15 @@ app.use("/api/individual/technical", individualTechnicalRoutes);
 app.use("/api/individual/project", individualProjectRoutes);
 app.use("/api/nptel", nptelRoutes);
 
+// Public route for NPTEL Question Bank PDF (production / load-balancer support)
+app.get("/NPTEL_Question_Bank_PrepHire.pdf", (req, res) => {
+  const pdfPath = path.join(__dirname, "backend", "modules", "nptelAssignment", "data", "NPTEL_Question_Bank_PrepHire.pdf");
+  res.setHeader("Content-Type", "application/pdf");
+  res.setHeader("Content-Disposition", 'inline; filename="NPTEL_Question_Bank_PrepHire.pdf"');
+  res.setHeader("Cache-Control", "public, max-age=86400");
+  res.sendFile(pdfPath);
+});
+
 app.use("/api/interview", interviewSTTRoutes);
 
 app.use("/api/admin/coding", adminCodingAssessmentRoutes);
